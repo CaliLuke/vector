@@ -1,0 +1,36 @@
+{
+  "task": "Celery Task publisher tests",
+  "worktree": "[local migration artifact omitted]",
+  "inputs": [
+    {
+      "path": "apps/go-api/internal/celery/task_test.go",
+      "sha256": "29c223a68ffb0d7e49cde42224fa30d95bcb263da0182d13f029656e7373f911"
+    },
+    {
+      "path": "apps/go-api/internal/celery/task_integration_test.go",
+      "sha256": "ecfe02a9fd63e6baa58ee9bee4f8d5a4ce53fdc570e0386d6e75ca587d61b936"
+    }
+  ],
+  "environment": {
+    "go_cache": "/tmp/plane-labels-go-cache",
+    "docker_profile": "default (Colima)",
+    "rabbitmq_image": "rabbitmq:3.13.6-management-alpine",
+    "setup": "export GOCACHE=/tmp/plane-labels-go-cache; eval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\""
+  },
+  "checks": [
+    {
+      "command": "go test ./internal/celery -run '^TestTask' -v",
+      "exit_status": 0,
+      "result": "PASS: TestTaskRejectsInvalidNameBeforePublishing; TestTaskRejectsUnencodableArgumentsBeforePublishing",
+      "duration_seconds": 0.463,
+      "log_path": null
+    },
+    {
+      "command": "go test -tags=integration ./internal/celery -run '^TestPublisherTaskEmitsPersistentCeleryProtocolV2Message$' -v",
+      "exit_status": 0,
+      "result": "PASS: real RabbitMQ integration; 14.07s",
+      "duration_seconds": 14.07,
+      "log_path": null
+    }
+  ]
+}

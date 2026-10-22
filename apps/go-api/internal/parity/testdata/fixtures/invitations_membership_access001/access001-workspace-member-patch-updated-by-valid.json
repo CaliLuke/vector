@@ -1,0 +1,1312 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-25>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-4>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-26>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-12>",
+          "role": 5,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-27>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-14>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-28>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-1>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-29>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-1>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-17>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-2>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-4>",
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-25>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-4>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-26>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-12>",
+          "role": 5,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-27>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-14>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-28>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-1>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-29>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-1>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-17>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-2>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "workspace_members"
+    ],
+    "expected_changed_tables": [
+      "workspace_members"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "updated_by": "<uuid-1>"
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/workspaces/invitations-membership-fixture/members/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "company_role": null,
+      "created_at": "<timestamp>",
+      "created_by": null,
+      "default_props": {
+        "display_filters": {
+          "calendar_date_range": "",
+          "group_by": null,
+          "layout": "list",
+          "order_by": "-created_at",
+          "show_empty_groups": true,
+          "sub_issue": true,
+          "type": null
+        },
+        "display_properties": {
+          "assignee": true,
+          "attachment_count": true,
+          "created_on": true,
+          "due_date": true,
+          "estimate": true,
+          "key": true,
+          "labels": true,
+          "link": true,
+          "priority": true,
+          "start_date": true,
+          "state": true,
+          "sub_issue_count": true,
+          "updated_on": true
+        },
+        "filters": {
+          "assignees": null,
+          "created_by": null,
+          "labels": null,
+          "priority": null,
+          "start_date": null,
+          "state": null,
+          "state_group": null,
+          "subscriber": null,
+          "target_date": null
+        }
+      },
+      "deleted_at": null,
+      "explored_features": {},
+      "getting_started_checklist": {},
+      "id": "<uuid-2>",
+      "is_active": true,
+      "issue_props": {
+        "all_issues": true,
+        "assigned": true,
+        "created": true,
+        "subscribed": true
+      },
+      "member": {
+        "avatar": "",
+        "avatar_url": null,
+        "display_name": "Invite Member",
+        "first_name": "",
+        "id": "<uuid-3>",
+        "is_bot": false,
+        "last_name": ""
+      },
+      "role": 15,
+      "tips": {},
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-4>",
+      "view_props": {
+        "display_filters": {
+          "calendar_date_range": "",
+          "group_by": null,
+          "layout": "list",
+          "order_by": "-created_at",
+          "show_empty_groups": true,
+          "sub_issue": true,
+          "type": null
+        },
+        "display_properties": {
+          "assignee": true,
+          "attachment_count": true,
+          "created_on": true,
+          "due_date": true,
+          "estimate": true,
+          "key": true,
+          "labels": true,
+          "link": true,
+          "priority": true,
+          "start_date": true,
+          "state": true,
+          "sub_issue_count": true,
+          "updated_on": true
+        },
+        "filters": {
+          "assignees": null,
+          "created_by": null,
+          "labels": null,
+          "priority": null,
+          "start_date": null,
+          "state": null,
+          "state_group": null,
+          "subscriber": null,
+          "target_date": null
+        }
+      },
+      "workspace": "<uuid-5>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "PATCH, DELETE, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "access001-workspace-member-patch-updated-by-valid"
+  }
+}

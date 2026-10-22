@@ -1,0 +1,4450 @@
+{
+  "metadata": {
+    "python_executable": "/usr/local/bin/python",
+    "python_version": "3.12.10 (main, May 31 2025, 03:27:52) [GCC 14.2.0]",
+    "container_image": "plane-notification-parity:3e312f0317845e2c808773dc",
+    "django_version": "5.2.15",
+    "validator_source": "/usr/local/lib/python3.12/site-packages/django/core/validators.py",
+    "unicode_version": "15.0.0",
+    "source_pinned_requirement": "apps/api/requirements/base.txt:4 Django==5.2.15",
+    "no_database_http_broker_access": true,
+    "validator_call_source_sha256": "b424237b51e4c82741ef9cb8aa4c1b22aa76336d25d24bba5b9f9e8a4762f81e"
+  },
+  "cases": [
+    {
+      "name": "nfkc-2047-host",
+      "input": "http://exa⁇mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa⁇mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2047-username",
+      "input": "http://us⁇er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us⁇er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2047-password",
+      "input": "http://user:pa⁇ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa⁇ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2047-path",
+      "input": "http://example.com/a⁇b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a⁇b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2047-query",
+      "input": "http://example.com/x?q=a⁇b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a⁇b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2048-host",
+      "input": "http://exa⁈mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa⁈mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2048-username",
+      "input": "http://us⁈er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us⁈er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2048-password",
+      "input": "http://user:pa⁈ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa⁈ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2048-path",
+      "input": "http://example.com/a⁈b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a⁈b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2048-query",
+      "input": "http://example.com/x?q=a⁈b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a⁈b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2049-host",
+      "input": "http://exa⁉mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa⁉mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2049-username",
+      "input": "http://us⁉er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us⁉er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2049-password",
+      "input": "http://user:pa⁉ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa⁉ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2049-path",
+      "input": "http://example.com/a⁉b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a⁉b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2049-query",
+      "input": "http://example.com/x?q=a⁉b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a⁉b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2100-host",
+      "input": "http://exa℀mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa℀mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2100-username",
+      "input": "http://us℀er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us℀er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2100-password",
+      "input": "http://user:pa℀ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa℀ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2100-path",
+      "input": "http://example.com/a℀b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a℀b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2100-query",
+      "input": "http://example.com/x?q=a℀b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a℀b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2101-host",
+      "input": "http://exa℁mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa℁mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2101-username",
+      "input": "http://us℁er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us℁er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2101-password",
+      "input": "http://user:pa℁ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa℁ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2101-path",
+      "input": "http://example.com/a℁b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a℁b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2101-query",
+      "input": "http://example.com/x?q=a℁b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a℁b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2105-host",
+      "input": "http://exa℅mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa℅mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2105-username",
+      "input": "http://us℅er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us℅er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2105-password",
+      "input": "http://user:pa℅ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa℅ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2105-path",
+      "input": "http://example.com/a℅b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a℅b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2105-query",
+      "input": "http://example.com/x?q=a℅b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a℅b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2106-host",
+      "input": "http://exa℆mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa℆mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2106-username",
+      "input": "http://us℆er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us℆er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2106-password",
+      "input": "http://user:pa℆ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa℆ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2106-path",
+      "input": "http://example.com/a℆b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a℆b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2106-query",
+      "input": "http://example.com/x?q=a℆b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a℆b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2A74-host",
+      "input": "http://exa⩴mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa⩴mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2A74-username",
+      "input": "http://us⩴er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us⩴er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2A74-password",
+      "input": "http://user:pa⩴ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa⩴ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-2A74-path",
+      "input": "http://example.com/a⩴b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a⩴b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-2A74-query",
+      "input": "http://example.com/x?q=a⩴b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a⩴b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE13-host",
+      "input": "http://exa︓mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa︓mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE13-username",
+      "input": "http://us︓er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us︓er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE13-password",
+      "input": "http://user:pa︓ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa︓ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE13-path",
+      "input": "http://example.com/a︓b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a︓b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE13-query",
+      "input": "http://example.com/x?q=a︓b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a︓b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE16-host",
+      "input": "http://exa︖mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa︖mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE16-username",
+      "input": "http://us︖er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us︖er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE16-password",
+      "input": "http://user:pa︖ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa︖ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE16-path",
+      "input": "http://example.com/a︖b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a︖b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE16-query",
+      "input": "http://example.com/x?q=a︖b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a︖b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE55-host",
+      "input": "http://exa﹕mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa﹕mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE55-username",
+      "input": "http://us﹕er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us﹕er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE55-password",
+      "input": "http://user:pa﹕ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa﹕ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE55-path",
+      "input": "http://example.com/a﹕b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a﹕b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE55-query",
+      "input": "http://example.com/x?q=a﹕b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a﹕b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE56-host",
+      "input": "http://exa﹖mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa﹖mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE56-username",
+      "input": "http://us﹖er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us﹖er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE56-password",
+      "input": "http://user:pa﹖ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa﹖ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE56-path",
+      "input": "http://example.com/a﹖b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a﹖b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE56-query",
+      "input": "http://example.com/x?q=a﹖b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a﹖b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE5F-host",
+      "input": "http://exa﹟mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa﹟mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE5F-username",
+      "input": "http://us﹟er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us﹟er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE5F-password",
+      "input": "http://user:pa﹟ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa﹟ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE5F-path",
+      "input": "http://example.com/a﹟b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a﹟b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE5F-query",
+      "input": "http://example.com/x?q=a﹟b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a﹟b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE6B-host",
+      "input": "http://exa﹫mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa﹫mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE6B-username",
+      "input": "http://us﹫er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us﹫er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE6B-password",
+      "input": "http://user:pa﹫ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa﹫ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FE6B-path",
+      "input": "http://example.com/a﹫b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a﹫b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FE6B-query",
+      "input": "http://example.com/x?q=a﹫b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a﹫b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF03-host",
+      "input": "http://exa＃mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa＃mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF03-username",
+      "input": "http://us＃er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us＃er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF03-password",
+      "input": "http://user:pa＃ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa＃ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF03-path",
+      "input": "http://example.com/a＃b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a＃b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF03-query",
+      "input": "http://example.com/x?q=a＃b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a＃b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF0F-host",
+      "input": "http://exa／mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa／mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF0F-username",
+      "input": "http://us／er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us／er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF0F-password",
+      "input": "http://user:pa／ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa／ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF0F-path",
+      "input": "http://example.com/a／b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a／b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF0F-query",
+      "input": "http://example.com/x?q=a／b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a／b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF1A-host",
+      "input": "http://exa：mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa：mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1A-username",
+      "input": "http://us：er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us：er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1A-password",
+      "input": "http://user:pa：ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa：ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1A-path",
+      "input": "http://example.com/a：b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a：b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF1A-query",
+      "input": "http://example.com/x?q=a：b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a：b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF1F-host",
+      "input": "http://exa？mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa？mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1F-username",
+      "input": "http://us？er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us？er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1F-password",
+      "input": "http://user:pa？ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa？ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF1F-path",
+      "input": "http://example.com/a？b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a？b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF1F-query",
+      "input": "http://example.com/x?q=a？b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a？b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF20-host",
+      "input": "http://exa＠mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parser_error": "netloc 'exa＠mple.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF20-username",
+      "input": "http://us＠er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parser_error": "netloc 'us＠er@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF20-password",
+      "input": "http://user:pa＠ss@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user:pa＠ss@example.com' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "nfkc-FF20-path",
+      "input": "http://example.com/a＠b",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a＠b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-FF20-query",
+      "input": "http://example.com/x?q=a＠b",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a＠b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0009-host",
+      "input": "http://exa\tmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0009-tld",
+      "input": "http://example.c\t/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c",
+        "hostname": "example.c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0009-username",
+      "input": "http://us\ter@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0009-path",
+      "input": "http://example.com/a\tb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/ab",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0009-query",
+      "input": "http://example.com/x?q=a\tb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=ab",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000A-host",
+      "input": "http://exa\nmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000A-tld",
+      "input": "http://example.c\n/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c",
+        "hostname": "example.c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000A-username",
+      "input": "http://us\ner@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000A-path",
+      "input": "http://example.com/a\nb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/ab",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000A-query",
+      "input": "http://example.com/x?q=a\nb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=ab",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000B-host",
+      "input": "http://exa\u000bmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\u000bmple.com",
+        "hostname": "exa\u000bmple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000B-tld",
+      "input": "http://example.c\u000b/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\u000b",
+        "hostname": "example.c\u000b",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000B-username",
+      "input": "http://us\u000ber@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\u000ber@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000B-path",
+      "input": "http://example.com/a\u000bb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\u000bb",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000B-query",
+      "input": "http://example.com/x?q=a\u000bb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\u000bb",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000C-host",
+      "input": "http://exa\fmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\fmple.com",
+        "hostname": "exa\fmple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000C-tld",
+      "input": "http://example.c\f/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\f",
+        "hostname": "example.c\f",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000C-username",
+      "input": "http://us\fer@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\fer@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000C-path",
+      "input": "http://example.com/a\fb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\fb",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000C-query",
+      "input": "http://example.com/x?q=a\fb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\fb",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000D-host",
+      "input": "http://exa\rmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000D-tld",
+      "input": "http://example.c\r/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c",
+        "hostname": "example.c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000D-username",
+      "input": "http://us\rer@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000D-path",
+      "input": "http://example.com/a\rb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/ab",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-000D-query",
+      "input": "http://example.com/x?q=a\rb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=ab",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001C-host",
+      "input": "http://exa\u001cmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\u001cmple.com",
+        "hostname": "exa\u001cmple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001C-tld",
+      "input": "http://example.c\u001c/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\u001c",
+        "hostname": "example.c\u001c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001C-username",
+      "input": "http://us\u001cer@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\u001cer@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001C-path",
+      "input": "http://example.com/a\u001cb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\u001cb",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001C-query",
+      "input": "http://example.com/x?q=a\u001cb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\u001cb",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001D-host",
+      "input": "http://exa\u001dmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\u001dmple.com",
+        "hostname": "exa\u001dmple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001D-tld",
+      "input": "http://example.c\u001d/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\u001d",
+        "hostname": "example.c\u001d",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001D-username",
+      "input": "http://us\u001der@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\u001der@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001D-path",
+      "input": "http://example.com/a\u001db",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\u001db",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001D-query",
+      "input": "http://example.com/x?q=a\u001db",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\u001db",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001E-host",
+      "input": "http://exa\u001emple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\u001emple.com",
+        "hostname": "exa\u001emple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001E-tld",
+      "input": "http://example.c\u001e/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\u001e",
+        "hostname": "example.c\u001e",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001E-username",
+      "input": "http://us\u001eer@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\u001eer@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001E-path",
+      "input": "http://example.com/a\u001eb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\u001eb",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001E-query",
+      "input": "http://example.com/x?q=a\u001eb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\u001eb",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001F-host",
+      "input": "http://exa\u001fmple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa\u001fmple.com",
+        "hostname": "exa\u001fmple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001F-tld",
+      "input": "http://example.c\u001f/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c\u001f",
+        "hostname": "example.c\u001f",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001F-username",
+      "input": "http://us\u001fer@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us\u001fer@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001F-path",
+      "input": "http://example.com/a\u001fb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a\u001fb",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-001F-query",
+      "input": "http://example.com/x?q=a\u001fb",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a\u001fb",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0020-host",
+      "input": "http://exa mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0020-tld",
+      "input": "http://example.c /x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0020-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0020-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0020-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0085-host",
+      "input": "http://example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0085-tld",
+      "input": "http://example.c/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c",
+        "hostname": "example.c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0085-username",
+      "input": "http://user@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0085-path",
+      "input": "http://example.com/ab",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/ab",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-0085-query",
+      "input": "http://example.com/x?q=ab",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=ab",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-00A0-host",
+      "input": "http://exa mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-00A0-tld",
+      "input": "http://example.c /x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-00A0-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-00A0-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-00A0-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-1680-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-1680-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-1680-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-1680-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-1680-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2000-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2000-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2000-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2000-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2000-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2001-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2001-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2001-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2001-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2001-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2002-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2002-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2002-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2002-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2002-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2003-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2003-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2003-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2003-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2003-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2004-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2004-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2004-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2004-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2004-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2005-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2005-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2005-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2005-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2005-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2006-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2006-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2006-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2006-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2006-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2007-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2007-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2007-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2007-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2007-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2008-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2008-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2008-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2008-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2008-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2009-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2009-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2009-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2009-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2009-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-200A-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-200A-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-200A-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-200A-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-200A-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2028-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2028-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2028-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2028-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2028-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2029-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2029-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2029-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2029-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-2029-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-202F-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-202F-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-202F-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-202F-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-202F-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-205F-host",
+      "input": "http://exa mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa mple.com",
+        "hostname": "exa mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-205F-tld",
+      "input": "http://example.c /x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c ",
+        "hostname": "example.c ",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-205F-username",
+      "input": "http://us er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-205F-path",
+      "input": "http://example.com/a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-205F-query",
+      "input": "http://example.com/x?q=a b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-3000-host",
+      "input": "http://exa　mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa　mple.com",
+        "hostname": "exa　mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-3000-tld",
+      "input": "http://example.c　/x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c　",
+        "hostname": "example.c　",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-3000-username",
+      "input": "http://us　er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us　er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-3000-path",
+      "input": "http://example.com/a　b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/a　b",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "whitespace-3000-query",
+      "input": "http://example.com/x?q=a　b",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "q=a　b",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-lowercase-expands-253",
+      "input": "http://İaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 262,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "İaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostname": "i̇aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-lowercase-expands-252",
+      "input": "http://İaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/x",
+      "valid": true,
+      "length": 261,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "İaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostname": "i̇aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipvfuture-userinfo",
+      "input": "http://[v1.a]@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 27,
+      "parser_error": "'example.com' does not appear to be an IPv4 or IPv6 address"
+    },
+    {
+      "name": "brackets-in-user",
+      "input": "http://us[abc]er@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 30,
+      "parser_error": "'example.com' does not appear to be an IPv4 or IPv6 address"
+    },
+    {
+      "name": "ipv6-host-before-prefix",
+      "input": "http://a[::1]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 15,
+      "parser_error": "Invalid IPv6 URL"
+    },
+    {
+      "name": "invalid-ipv6-after-query",
+      "input": "http://u?@[2001::db8::1]/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "@[2001::db8::1]/x",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "invalid-ipv6-after-fragment",
+      "input": "http://u#@[2001::db8::1]/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "",
+        "fragment": "@[2001::db8::1]/x"
+      }
+    },
+    {
+      "name": "unicode-bmp-host",
+      "input": "http://例子.中国/x",
+      "valid": true,
+      "length": 14,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "例子.中国",
+        "hostname": "例子.中国",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "unicode-bmp-label",
+      "input": "http://éxample.com/x",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "éxample.com",
+        "hostname": "éxample.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "unicode-astral-label",
+      "input": "http://😀.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 14,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "😀.com",
+        "hostname": "😀.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "unicode-astral-tld",
+      "input": "http://example.😀/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 18,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.😀",
+        "hostname": "example.😀",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "unicode-astral-path",
+      "input": "http://example.com/😀",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/😀",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "punycode-emoji",
+      "input": "http://xn--ls8h.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "xn--ls8h.com",
+        "hostname": "xn--ls8h.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "punycode-tld",
+      "input": "http://example.xn--p1ai/x",
+      "valid": true,
+      "length": 25,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.xn--p1ai",
+        "hostname": "example.xn--p1ai",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "single-label-punycode",
+      "input": "http://xn--ls8h/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 17,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "xn--ls8h",
+        "hostname": "xn--ls8h",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "invalid-punycode-looking-label-accepted",
+      "input": "http://xn--bad.com/x",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "xn--bad.com",
+        "hostname": "xn--bad.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "unicode-bmp-feff-label",
+      "input": "http://exa﻿mple.com/x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa﻿mple.com",
+        "hostname": "exa﻿mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ascii-upper-host",
+      "input": "HTTP://EXAMPLE.COM/x",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "EXAMPLE.COM",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ascii-user-pass",
+      "input": "http://user:pass@example.com/x",
+      "valid": true,
+      "length": 30,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user:pass@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "empty-password",
+      "input": "http://user:@example.com/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user:@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "empty-username",
+      "input": "http://:pass@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": ":pass@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "multiple-userinfo-at",
+      "input": "http://user@name@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 30,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user@name@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "literal-percent-path",
+      "input": "http://example.com/%",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/%",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "bad-percent-path",
+      "input": "http://example.com/%zz",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/%zz",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "literal-percent-user",
+      "input": "http://us%er@example.com/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "us%er@example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "literal-percent-host",
+      "input": "http://exa%mple.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "exa%mple.com",
+        "hostname": "exa%mple.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "five-digit-port",
+      "input": "http://example.com:99999/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com:99999",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "zero-port",
+      "input": "http://example.com:0/x",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com:0",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "six-digit-port",
+      "input": "http://example.com:999999/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 27,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com:999999",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "empty-port",
+      "input": "http://example.com:/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com:",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "non-numeric-port",
+      "input": "http://example.com:abc/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 24,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com:abc",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv4",
+      "input": "http://127.0.0.1/x",
+      "valid": true,
+      "length": 18,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "127.0.0.1",
+        "hostname": "127.0.0.1",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv4-leading-zero",
+      "input": "http://127.00.0.1/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "127.00.0.1",
+        "hostname": "127.00.0.1",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv4-octet-overflow",
+      "input": "http://256.0.0.1/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 18,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "256.0.0.1",
+        "hostname": "256.0.0.1",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv6",
+      "input": "http://[2001:db8::1]/x",
+      "valid": true,
+      "length": 22,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "[2001:db8::1]",
+        "hostname": "2001:db8::1",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv6-user-pass-port",
+      "input": "http://user:pass@[::1]:99999/x",
+      "valid": true,
+      "length": 30,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user:pass@[::1]:99999",
+        "hostname": "::1",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv6-invalid-double-compression",
+      "input": "http://[2001::db8::1]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 23,
+      "parser_error": "'2001::db8::1' does not appear to be an IPv4 or IPv6 address"
+    },
+    {
+      "name": "ipv6-invalid-userinfo",
+      "input": "http://user@[2001::db8::1]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 28,
+      "parser_error": "'2001::db8::1' does not appear to be an IPv4 or IPv6 address"
+    },
+    {
+      "name": "ipv6-unbracketed",
+      "input": "http://2001:db8::1/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "2001:db8::1",
+        "hostname": "2001",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "ipv6-zone",
+      "input": "http://[fe80::1%25eth0]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 25,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "[fe80::1%25eth0]",
+        "hostname": "fe80::1%25eth0",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "bracketed-ipv4",
+      "input": "http://[127.0.0.1]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 20,
+      "parser_error": "An IPv4 address cannot be in brackets"
+    },
+    {
+      "name": "ipvfuture",
+      "input": "http://[v1.a]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 15,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "[v1.a]",
+        "hostname": "v1.a",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "bracket-unmatched",
+      "input": "http://[::1/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 13,
+      "parser_error": "Invalid IPv6 URL"
+    },
+    {
+      "name": "bracket-unexpected-close",
+      "input": "http://::1]/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 13,
+      "parser_error": "Invalid IPv6 URL"
+    },
+    {
+      "name": "bracket-suffix",
+      "input": "http://[::1]suffix/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 20,
+      "parser_error": "Invalid IPv6 URL"
+    },
+    {
+      "name": "localhost",
+      "input": "http://LOCALHOST/x",
+      "valid": true,
+      "length": 18,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "LOCALHOST",
+        "hostname": "localhost",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "localhost-dot",
+      "input": "http://localhost./x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 19,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "localhost.",
+        "hostname": "localhost.",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "domain-dot",
+      "input": "http://example.com./x",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com.",
+        "hostname": "example.com.",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "empty-domain-label",
+      "input": "http://bad..example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 25,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "bad..example.com",
+        "hostname": "bad..example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "leading-label-hyphen",
+      "input": "http://-bad.example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 25,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "-bad.example.com",
+        "hostname": "-bad.example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "trailing-label-hyphen",
+      "input": "http://bad-.example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 25,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "bad-.example.com",
+        "hostname": "bad-.example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "label-63",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+      "valid": true,
+      "length": 76,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "label-64",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 77,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "tld-1",
+      "input": "http://example.c/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 18,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.c",
+        "hostname": "example.c",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "numeric-tld",
+      "input": "http://example.123/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 20,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.123",
+        "hostname": "example.123",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "scheme-ftp",
+      "input": "ftp://example.com/x",
+      "valid": true,
+      "length": 19,
+      "parsed": {
+        "scheme": "ftp",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "scheme-ftps",
+      "input": "ftps://example.com/x",
+      "valid": true,
+      "length": 20,
+      "parsed": {
+        "scheme": "ftps",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "scheme-mailto",
+      "input": "mailto://example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 22,
+      "parsed": {
+        "scheme": "mailto",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "leading-space",
+      "input": " http://example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "trailing-space",
+      "input": "http://example.com/x ",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x ",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "tab",
+      "input": "http://example.com/x\t",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "newline",
+      "input": "http://example.com/x\n",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "null-path",
+      "input": "http://example.com/x\u0000",
+      "valid": true,
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x\u0000",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "null-host",
+      "input": "http://example.com\u0000/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com\u0000",
+        "hostname": "example.com\u0000",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nel-path",
+      "input": "http://example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "python-extra-space-path",
+      "input": "http://example.com/x\u001c",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 21,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/x\u001c",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "userinfo-query-parser-branch",
+      "input": "http://user?@example.com/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user",
+        "hostname": "user",
+        "path": "",
+        "query": "@example.com/x",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "userinfo-fragment-parser-branch",
+      "input": "http://user#@example.com/x",
+      "valid": true,
+      "length": 26,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "user",
+        "hostname": "user",
+        "path": "",
+        "query": "",
+        "fragment": "@example.com/x"
+      }
+    },
+    {
+      "name": "nfkc-after-query-in-userinfo",
+      "input": "http://u?@exa／mple.com/x",
+      "valid": true,
+      "length": 24,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "@exa／mple.com/x",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "nfkc-after-fragment-in-userinfo",
+      "input": "http://u#@exa／mple.com/x",
+      "valid": true,
+      "length": 24,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "",
+        "fragment": "@exa／mple.com/x"
+      }
+    },
+    {
+      "name": "nfkc-before-query-in-userinfo",
+      "input": "http://user＠name?@example.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 31,
+      "parser_error": "netloc 'user＠name' contains invalid characters under NFKC normalization"
+    },
+    {
+      "name": "hostname-253",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/x",
+      "valid": true,
+      "length": 262,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-254",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 263,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-253-trailing-dot",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb./x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 263,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-long-ordinary",
+      "input": "http://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 268,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "hostname": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com",
+        "path": "/x",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-long-query-userinfo",
+      "input": "http://u?@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+      "valid": true,
+      "length": 271,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "hostname-long-fragment-userinfo",
+      "input": "http://u#@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x",
+      "valid": true,
+      "length": 271,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "u",
+        "hostname": "u",
+        "path": "",
+        "query": "",
+        "fragment": "@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com/x"
+      }
+    },
+    {
+      "name": "url-length-2048",
+      "input": "http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": true,
+      "length": 2048,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "url-length-2049",
+      "input": "http://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false,
+      "error_type": "ValidationError",
+      "error": "['Enter a valid URL.']",
+      "length": 2049,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "query": "",
+        "fragment": ""
+      }
+    },
+    {
+      "name": "url-unicode-length-2048",
+      "input": "http://example.com/😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+      "valid": true,
+      "length": 2048,
+      "parsed": {
+        "scheme": "http",
+        "netloc": "example.com",
+        "hostname": "example.com",
+        "path": "/😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+        "query": "",
+        "fragment": ""
+      }
+    }
+  ]
+}

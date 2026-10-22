@@ -1,0 +1,145 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": [
+        {
+          "avatar": "",
+          "avatar_asset_id": null,
+          "bot_type": null,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_location": "",
+          "date_joined": "<timestamp>",
+          "display_name": "csrf-reset-fixture",
+          "email": "csrf-reset-fixture@example.test",
+          "first_name": "CSRF",
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_bot": false,
+          "is_email_valid": false,
+          "is_email_verified": false,
+          "is_managed": false,
+          "is_password_autoset": true,
+          "is_password_expired": false,
+          "is_password_reset_required": false,
+          "is_staff": false,
+          "is_superuser": false,
+          "last_active": "<timestamp>",
+          "last_location": "",
+          "last_login": null,
+          "last_login_ip": "",
+          "last_login_medium": "email",
+          "last_login_time": null,
+          "last_login_uagent": "",
+          "last_logout_ip": "",
+          "last_logout_time": null,
+          "last_name": "",
+          "masked_at": null,
+          "mobile_number": null,
+          "password": "<secret:users.password>",
+          "token": "",
+          "token_updated_at": null,
+          "updated_at": "<timestamp>",
+          "user_timezone": "UTC",
+          "username": "csrf-reset-fixture@example.test"
+        }
+      ]
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": [
+        {
+          "avatar": "",
+          "avatar_asset_id": null,
+          "bot_type": null,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_location": "",
+          "date_joined": "<timestamp>",
+          "display_name": "csrf-reset-fixture",
+          "email": "csrf-reset-fixture@example.test",
+          "first_name": "CSRF",
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_bot": false,
+          "is_email_valid": false,
+          "is_email_verified": false,
+          "is_managed": false,
+          "is_password_autoset": true,
+          "is_password_expired": false,
+          "is_password_reset_required": false,
+          "is_staff": false,
+          "is_superuser": false,
+          "last_active": "<timestamp>",
+          "last_location": "",
+          "last_login": null,
+          "last_login_ip": "",
+          "last_login_medium": "email",
+          "last_login_time": null,
+          "last_login_uagent": "",
+          "last_logout_ip": "",
+          "last_logout_time": null,
+          "last_name": "",
+          "masked_at": null,
+          "mobile_number": null,
+          "password": "<secret:users.password>",
+          "token": "",
+          "token_updated_at": null,
+          "updated_at": "<timestamp>",
+          "user_timezone": "UTC",
+          "username": "csrf-reset-fixture@example.test"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "password": "<secret:password:reset>"
+    },
+    "cookies": {
+      "csrftoken": "<secret:cookie:csrftoken>"
+    },
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "HTTP_X_CSRFTOKEN": "<secret:x-csrftoken>",
+      "HTTP_X_FORWARDED_FOR": "198.51.100.93"
+    },
+    "method": "POST",
+    "path": "/auth/spaces/reset-password/MDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwOTcx/<secret:password:reset>/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {}
+  },
+  "response": {
+    "body": "<!-- templates/csrf_failure.html -->\n<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>CSRF Verification Failed</title>\n    <style>\n      body {\n        font-family: Arial, sans-serif;\n        background-color: #f8f9fa;\n        padding: 50px;\n        display: flex;\n        justify-content: center;\n        align-items: center;\n        height: 100vh;\n        margin: 0;\n      }\n      .card {\n        max-width: 400px;\n        padding: 30px;\n        background-color: #ffffff;\n        border-radius: 8px;\n        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);\n      }\n      .card-header {\n        text-align: center;\n        margin-bottom: 20px;\n      }\n      .btn-primary {\n        display: block;\n        width: 100%;\n        padding: 10px;\n        background-color: #007bff;\n        color: #fff;\n        text-align: center;\n        text-decoration: none;\n        border: none;\n        border-radius: 4px;\n        cursor: pointer;\n      }\n      .btn-primary:hover {\n        background-color: #0056b3;\n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"card\">\n      <div class=\"card-header\">\n        <h3>CSRF Verification Failed</h3>\n      </div>\n      <div class=\"card-body\">\n        <p>\n          It looks like your form submission has expired or there was a problem\n          with your request.\n        </p>\n        <p>Please try the following:</p>\n        <ul>\n          <li>Refresh the page and try submitting the form again.</li>\n          <li>Ensure that cookies are enabled in your browser.</li>\n        </ul>\n        <a href=\"https://web.example.test\" class=\"btn-primary\">Go to Home Page</a>\n      </div>\n    </div>\n  </body>\n</html>\n",
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "csrf-space-reset-post-invalid",
+    "csrf_checks": "enforced"
+  }
+}

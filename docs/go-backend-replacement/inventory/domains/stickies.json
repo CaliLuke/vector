@@ -1,0 +1,399 @@
+{
+  "$schema": "../domain.schema.json",
+  "schema_version": 1,
+  "source_ref": "1c8a60f858d8472aa56e29994ec1c7926da2c6ce",
+  "domain": "stickies",
+  "status": "characterized",
+  "migration": {
+    "source_runtime": "Django",
+    "target_runtime": "Go for the frontend app API; Django for external API v1",
+    "target_milestone": "M1",
+    "status": "five-frontend-operations-django-removed-and-routed-to-go, api-v1-deferred-to-m8"
+  },
+  "source_contract_balance": {
+    "total": 13,
+    "ported": 5,
+    "retained": 0,
+    "replaced": 1,
+    "removed": 0,
+    "deferred": 7
+  },
+  "route_families": [
+    {
+      "surface": "frontend app API",
+      "authentication": "Django BaseSessionAuthentication with the session-id cookie and Plane sessions table; CSRF enforcement is disabled",
+      "routes": [
+        {
+          "contract_id": "app.stickies.list",
+          "method": "GET",
+          "path": "/api/workspaces/{slug}/stickies/",
+          "handler": "plane.app.views.workspace.sticky.WorkspaceStickyViewSet.list",
+          "authorization": "Authenticated active workspace member with role admin, member, or guest; results are restricted to owner_id=request.user.id",
+          "disposition": "port"
+        },
+        {
+          "contract_id": "app.stickies.create",
+          "method": "POST",
+          "path": "/api/workspaces/{slug}/stickies/",
+          "handler": "plane.app.views.workspace.sticky.WorkspaceStickyViewSet.create",
+          "authorization": "Authenticated active workspace member with role admin, member, or guest",
+          "disposition": "port",
+          "notes": "The serializer exposes description_binary as read-only. It discards request input for that field. The future Loom input must omit or ignore it."
+        },
+        {
+          "contract_id": "app.stickies.retrieve",
+          "method": "GET",
+          "path": "/api/workspaces/{slug}/stickies/{id}/",
+          "handler": "rest_framework.mixins.RetrieveModelMixin.retrieve",
+          "authorization": "Authenticated owner scoped by workspace slug; source does not perform a current workspace-membership check",
+          "disposition": "port",
+          "notes": "M1-001 records the missing active-membership check as source behavior. The Go contract requires active membership and returns 404. StickyService.getSticky is the only in-repository frontend method for this route. It omits the trailing slash and has no call sites."
+        },
+        {
+          "contract_id": "app.stickies.partial-update",
+          "method": "PATCH",
+          "path": "/api/workspaces/{slug}/stickies/{id}/",
+          "handler": "plane.app.views.workspace.sticky.WorkspaceStickyViewSet.partial_update",
+          "authorization": "Authenticated active workspace member; object must be owned by and created by request.user",
+          "disposition": "port"
+        },
+        {
+          "contract_id": "app.stickies.destroy",
+          "method": "DELETE",
+          "path": "/api/workspaces/{slug}/stickies/{id}/",
+          "handler": "plane.app.views.workspace.sticky.WorkspaceStickyViewSet.destroy",
+          "authorization": "Authenticated active workspace member; object must be owned by and created by request.user",
+          "disposition": "port",
+          "notes": "The live StickyService.deleteSticky caller omits the trailing slash. Characterize the deployed redirect or proxy-normalization behavior before reproducing it."
+        }
+      ]
+    },
+    {
+      "surface": "external API v1",
+      "authentication": "X-Api-Key through APIKeyAuthentication; validation reads api_tokens and users and updates APIToken.last_used",
+      "routes": [
+        {
+          "contract_id": "api-v1.stickies.list",
+          "method": "GET",
+          "path": "/api/v1/workspaces/{slug}/stickies/",
+          "handler": "plane.api.views.sticky.StickyViewSet.list",
+          "authorization": "Authenticated API-token user must be an active workspace member; results are restricted to owner_id=request.user.id",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        },
+        {
+          "contract_id": "api-v1.stickies.create",
+          "method": "POST",
+          "path": "/api/v1/workspaces/{slug}/stickies/",
+          "handler": "plane.api.views.sticky.StickyViewSet.create",
+          "authorization": "Authenticated API-token user must be an active workspace member",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        },
+        {
+          "contract_id": "api-v1.stickies.retrieve",
+          "method": "GET",
+          "path": "/api/v1/workspaces/{slug}/stickies/{id}/",
+          "handler": "plane.api.views.sticky.StickyViewSet.retrieve",
+          "authorization": "Authenticated API-token user must be an active workspace member and the Sticky owner",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        },
+        {
+          "contract_id": "api-v1.stickies.update",
+          "method": "PUT",
+          "path": "/api/v1/workspaces/{slug}/stickies/{id}/",
+          "handler": "rest_framework.mixins.UpdateModelMixin.update",
+          "authorization": "Authenticated API-token user must be an active workspace member and the Sticky owner",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        },
+        {
+          "contract_id": "api-v1.stickies.partial-update",
+          "method": "PATCH",
+          "path": "/api/v1/workspaces/{slug}/stickies/{id}/",
+          "handler": "plane.api.views.sticky.StickyViewSet.partial_update",
+          "authorization": "Authenticated API-token user must be an active workspace member and the Sticky owner",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        },
+        {
+          "contract_id": "api-v1.stickies.destroy",
+          "method": "DELETE",
+          "path": "/api/v1/workspaces/{slug}/stickies/{id}/",
+          "handler": "plane.api.views.sticky.StickyViewSet.destroy",
+          "authorization": "Authenticated API-token user must be an active workspace member and the Sticky owner",
+          "disposition": "defer",
+          "defer_until": "M8 authentication and identity"
+        }
+      ]
+    }
+  ],
+  "tables": [
+    { "name": "stickies", "model": "plane.db.models.Sticky", "access": "read-write" },
+    { "name": "workspaces", "model": "plane.db.models.Workspace", "access": "read" },
+    { "name": "workspace_members", "model": "plane.db.models.WorkspaceMember", "access": "read" },
+    { "name": "users", "model": "plane.db.models.User", "access": "read" },
+    {
+      "name": "sessions",
+      "model": "plane.db.models.session.Session",
+      "access": "read",
+      "notes": "Used by the frontend app API session authenticator."
+    },
+    {
+      "name": "api_tokens",
+      "model": "plane.db.models.APIToken",
+      "access": "read-write",
+      "notes": "External API authentication reads the token and updates last_used on every authenticated request."
+    },
+    {
+      "name": "api_activity_logs",
+      "model": "plane.db.models.APIActivityLog",
+      "access": "write",
+      "notes": "The API-token logging worker persists one row for every request carrying X-Api-Key, including API v1 Sticky requests."
+    }
+  ],
+  "frontend_callers": [
+    {
+      "path": "apps/web/core/services/api.service.ts",
+      "symbol": "APIService",
+      "use": "Shared Axios transport: API_BASE_URL, withCredentials browser cookies, 401 redirect, and no Sticky-specific CSRF or API-key header",
+      "activity": "dependency",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/services/sticky.service.ts",
+      "symbol": "StickyService",
+      "use": "Direct HTTP caller for create, list, retrieve, patch, and delete. Retrieve is dormant. Live delete and dormant retrieve omit the trailing slash.",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/store/sticky/sticky.store.ts",
+      "symbol": "StickyStore",
+      "use": "Active service orchestration for recent/list/pagination/create/update/delete/sort; consumes next_cursor and next_page_results omitted by the StickyService return type",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/hooks/use-stickies.tsx",
+      "symbol": "useSticky",
+      "use": "Store access hook",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/constants/src/stickies.ts",
+      "symbol": "STICKIES_PER_PAGE",
+      "use": "The client pagination contract uses 30 rows. Django defaults to 20 when per_page is absent. The recent-Sticky request uses 1.",
+      "activity": "dependency",
+      "disposition": "retain"
+    },
+    {
+      "path": "packages/types/src/stickies.ts",
+      "symbol": "TSticky",
+      "use": "Client response dependency; narrower than Django fields=__all__ and omits owner, color, description_binary, description_stripped, and deleted_at",
+      "activity": "dependency",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/layout/stickies-infinite.tsx",
+      "symbol": "StickiesInfinite",
+      "use": "List and pagination workflow",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/layout/stickies-truncated.tsx",
+      "symbol": "StickiesTruncated",
+      "use": "List workflow used by the home widget and all-Stickies modal",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/modal/search.tsx",
+      "symbol": "StickySearch",
+      "use": "Search workflow",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/sticky/use-operations.tsx",
+      "symbol": "useStickyOperations",
+      "use": "Create, update, sort, and delete workflows",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/app/(all)/[workspaceSlug]/(projects)/stickies/header.tsx",
+      "symbol": "WorkspaceStickyHeader",
+      "use": "Mounted Sticky page search and create entry point",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/widget.tsx",
+      "symbol": "StickiesWidget",
+      "use": "Mounted home-dashboard search, list, and create entry point",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/layout/stickies-list.tsx",
+      "symbol": "StickiesList",
+      "use": "Mounted list, drag-sort, and create entry point",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/layout/sticky-dnd-wrapper.tsx",
+      "symbol": "StickyDndWrapper",
+      "use": "Mounted drag-and-drop caller of StickyNote and the sort workflow",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/sticky/root.tsx",
+      "symbol": "StickyNote",
+      "use": "Mounted create, debounced update, and delete workflow",
+      "activity": "active",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/action-bar.tsx",
+      "symbol": "StickyActionBar",
+      "use": "Recent-list, create, edit, delete, and all-Stickies modal source caller; no in-repository mount or import exists",
+      "activity": "dormant",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/components/stickies/modal/stickies.tsx",
+      "symbol": "Stickies",
+      "use": "Search, list, and create modal reachable only below the currently dormant StickyActionBar",
+      "activity": "dormant",
+      "disposition": "retain"
+    },
+    {
+      "path": "apps/web/core/store/root.store.ts",
+      "symbol": "CoreRootStore.stickyStore",
+      "use": "Sticky store construction and lifetime",
+      "activity": "active",
+      "disposition": "retain"
+    }
+  ],
+  "backend_callers": [],
+  "jobs": [
+    {
+      "contract_id": "job.stickies.soft-delete-related-objects",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "direction": "produced",
+      "payload_variants": ["app_label=db, model_name=sticky, pk=<sticky UUID>, using=<nullable database alias>"],
+      "child_tasks": [],
+      "disposition": "replace",
+      "notes": "SoftDeleteModel.delete calls enqueue_soft_delete_related_objects, which publishes this unclassified Sticky variant on the default celery queue. M1.10 proves that Sticky has no related cascade work. M1.19 replaces the dispatch with a soft delete in the application transaction."
+    },
+    {
+      "contract_id": "job.api-v1.api-activity-log",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "direction": "produced",
+      "payload_variants": [
+        "log_data={token_identifier=<HMAC of API key>, path, method, query_params, redacted headers, request body, response body, response_code, ip_address, user_agent}"
+      ],
+      "child_tasks": [],
+      "disposition": "defer",
+      "notes": "Global APITokenLogMiddleware publishes this task after any response whose request carried X-Api-Key. The worker writes api_activity_logs. Keep this API v1 side effect on Django with the deferred route family."
+    }
+  ],
+  "schedules": [],
+  "external_effects": [],
+  "cache_entries": [],
+  "tests": [
+    "apps/api/plane/tests/parity/test_sticky_recorder.py",
+    "apps/go-api/internal/parity/testdata/fixtures/stickies",
+    "apps/api/plane/tests/contract/api/test_authentication.py",
+    "apps/api/plane/tests/unit/middleware/test_api_authentication.py",
+    "apps/api/plane/tests/unit/middleware/test_logger.py",
+    "apps/api/plane/tests/unit/views/test_sticky_route_retirement.py",
+    "apps/go-api/internal/authentication/djangosession/validator_test.go",
+    "apps/go-api/internal/authentication/djangosession/postgres_integration_test.go",
+    "apps/go-api/internal/stickies/access_test.go",
+    "apps/go-api/internal/stickies/access_integration_test.go",
+    "apps/go-api/internal/htmlcompat",
+    "apps/go-api/internal/stickies/content",
+    "apps/go-api/internal/stickies/sort_repository_test.go",
+    "apps/go-api/internal/stickies/sort_repository_integration_test.go",
+    "apps/go-api/internal/stickies/repository_test.go",
+    "apps/go-api/internal/stickies/repository_integration_test.go",
+    "apps/go-api/internal/stickies/repository_parity_integration_test.go",
+    "apps/go-api/stickies_test.go"
+  ],
+  "disposition": "mixed",
+  "notes": [
+    "The frontend app family moved to Go in M1. Django no longer mounts its routes, view, or serializer.",
+    "The external API family stays on Django until M8 because API-token authentication updates last-used data.",
+    "No in-repository client calls the external API v1 Sticky family. Its external consumers cannot be enumerated from this repository.",
+    "No in-repository backend code calls either Sticky HTTP route family. Model deletion and global API-token logging enter as jobs.",
+    "BaseAPIView uses APIKeyRateThrottle. BaseViewSet does not. Authenticated StickyViewSet requests create no API-key throttle cache entry. The global anonymous throttle returns no cache key for authenticated users.",
+    "The current list order differs between the app API and external API families.",
+    "The frontend type and service pagination declarations are narrower than the runtime Django response. Preserve observed runtime serialization when building fixtures and Go handlers.",
+    "The source HTML, binary, and strip-tags utilities have deterministic Django fixtures and Go compatibility tests. Sticky requests cannot write description_binary because the serializer field is read-only.",
+    "M1-003 limits Go Sticky HTML to 4096 nested elements. Django accepts 4097. The Go parser returns a safe typed error before recursive processing.",
+    "M1-002 replaces the source unlocked sort-order allocation with a workspace row lock. The Go proof creates distinct and increasing values during concurrent writes.",
+    "Four deterministic fixtures record the source audit-field, deletion-time, and create sort-order behavior. Their exact replay passes against Django 5.2.15.",
+    "Commit 77a381c686 makes M1.17-M1.19 review ready. Commits d971a19def and 77a381c686 contain the M1.20 fixtures and test code.",
+    "M1.20 is complete. The live migrated proof compares the recorded Django create transition with the real Go repository across all 96 Plane application tables.",
+    "The differential test requires two separate databases from one fully migrated seed. It reads all 96 real Plane tables through CaptureAndCompare.",
+    "M1.21 and M1.22 are complete. Commits a9d66179ec and 0cc49bf818 fix the workflow and activate the five frontend operations. All six API v1 operations remain on Django.",
+    "The signed-in M1.21 workflow passed create, list, update, search, sort, and delete through Go on an isolated database copy.",
+    "The M1.21 workflow found two frontend compatibility defects. Commit a9d66179ec connects the drag target and supports retrieve and delete URLs without a trailing slash.",
+    "The M1.22 rehearsal proved both directions. Django read and changed Go-created rows. Go read and deleted the Django-changed rows after routing returned to Go.",
+    "Commit 0cc49bf818 activates only the five frontend Sticky operations. Commit a45e5e10fb advances them to Django removed without changing the Go proxy policy.",
+    "Commit 19a35f0d18 pins Loom v1.8.0-alpha.9. Its release tag points to commit a093bff307ec5c8d75501f3d151a91d3700ff345.",
+    "The alpha.9 upgrade keeps the current Sticky service on its reviewed design and does not use importer output.",
+    "Two alpha.9 forward generations produce the same aggregate hash. The full Go race and vet gates pass.",
+    "Loom nullable values preserve omitted, null, and concrete reviewed request strings for POST and PATCH. List responses preserve a null description_binary value.",
+    "The internal OpenAPI drift check passes. The focused Docker suite passes all 10 tests.",
+    "Commit b931d99632 upgrades the internal migration artifact to OpenAPI 3.1.0. The public API v1 OpenAPI behavior is unchanged.",
+    "Commit 8e97b2190c pins Loom v1.8.0-alpha.10 at release commit 0344b13e5e69aace253860e632d1f3ec99a9b097. Its tag object is 2539b131f14789addd2a14d81e67dda69bece486.",
+    "Two alpha.10 forward generations produce the same aggregate hash. The full Go race and vet gates pass.",
+    "Strict alpha.10 import and --allow-lossy both exit with code 0 and write equivalent designs for the reviewed Sticky slice.",
+    "The imported design compiles and preserves the reviewed contract. Alpha.10 contains the fixes for Loom issues #235 through #239, #269, and #277.",
+    "Alpha.10 forward generation fails for a bodyless 413 response. Loom issue #278 records that alpha.10 error.",
+    "The current Sticky service keeps its reviewed design. Do not adopt importer output until the complete round trip passes.",
+    "Commit 5dfae157e7 pins Loom v1.8.0-alpha.11 at release commit b8a790fa6b8f9212acdd9d12b10ced136486f3c4. Its tag object is 5b4546d3cddaa725566346372ab557847862ae6a.",
+    "Two alpha.11 forward generations produce the same aggregate hash. The full Go race and vet gates pass.",
+    "Strict alpha.11 import and --allow-lossy both exit with code 0 and write equivalent designs. Both imported designs compile.",
+    "Both forward generations complete and produce the same OpenAPI document. The document preserves operations, statuses, security, media types, nullable values, titles, and data-component names.",
+    "Alpha.11 contains the fixes for Loom issues #235 through #239, #269, #277, and #278.",
+    "Alpha.11 generated transport packages fail to compile because different 400 schemas share the Status400 name. Loom issue #279 records this error.",
+    "The generated document adds Loom error headers to the bodyless 413 response. It changes the nullable binary response from byte format to binary format.",
+    "The current Sticky service keeps its reviewed design. M1.20 remains in progress, and M1.21 remains not started.",
+    "Commit c755c408c2 pins Loom v1.8.0-alpha.12 at release commit bfc78191dcf66ad9f40e642816cb4432921a24fa. Its tag object is fda58796c5ab6a0145601ced9c0950579739f362.",
+    "Two alpha.12 forward generations produce the same aggregate hash. The full Go race and vet gates pass.",
+    "Strict alpha.12 import and --allow-lossy both exit with code 0 and write equivalent designs. Both imported designs compile.",
+    "Both forward generations and their complete transport trees compile. Loom issue #279 is fixed in alpha.12.",
+    "Both generations produce the same OpenAPI document. The document preserves operations, statuses, security, media types, nullable values, titles, and data-component names.",
+    "The alpha.12 audit found added Loom error headers on the bodyless 413 response. The audit filed Loom issue #291 for this contract loss.",
+    "The alpha.12 audit found that the nullable binary response changed from byte format to binary format. The audit filed Loom issue #292 for this contract loss.",
+    "The current Sticky service keeps its reviewed design. M1.20 remains in progress, and M1.21 remains not started.",
+    "The alpha.14 upgrade pins tag v1.8.0-alpha.14 at release commit fe0a75e49b42924f24fbdb94147ff5ae84d979d3. Its tag object is 4f06df7c4dde45306179dbad9c0cccb1849fa9db.",
+    "Two alpha.14 authored generations produce the same aggregate hash. Strict and --allow-lossy imports produce equivalent designs, and both imported designs compile.",
+    "Both alpha.14 imported forward generations produce the same OpenAPI document and complete transport trees compile. Issues #291 and #292 are fixed.",
+    "The alpha.14 round-trip audit preserves the reviewed operations, statuses, security, media types, nullable values, titles, data-component names, byte format, and bodyless 413 response.",
+    "The current Sticky service keeps its authored design. GO_STICKIES_ENABLED remains false, and all six API v1 operations remain on Django.",
+    "Commit 91bc8d3be7 pins tag v1.8.0-alpha.16 at module commit d476d04f497f3c6dd1e01b5c9fc30a222d1212af. Its tag object is e55483f49e5a7b08fd0c9f0ccf2ad42c06d7745e.",
+    "Strict alpha.16 import and --allow-lossy both exit with code 0. Both imported designs compile.",
+    "Both alpha.16 imported forward generations produce the same OpenAPI JSON and YAML documents. Both complete transport trees compile.",
+    "Alpha.16 fixes Loom issues #295, #296, #297, and #298. No new Sticky Loom defect appears.",
+    "The full 639-operation contract imports 512 operations and 327 schemas with --allow-lossy --skip-unrenderable under alpha.16. The complete contract remains outside the reviewed Sticky scope.",
+    "The alpha.19 upgrade pins tag v1.8.0-alpha.19 at module commit b1fb12a2da2c5c80029a3d12268a1ab1c902b25c. Its tag object is d4c1361d6a9f45159ae167d7ccb1c6f9e5d2c2a4.",
+    "Strict alpha.19 import and --allow-lossy both exit with code 0 for the reviewed Sticky slice. Both imported designs compile.",
+    "Both alpha.19 imported forward generations compile with their complete transport trees. The authored Sticky design remains in use.",
+    "The alpha.19 full-contract audit imports 494 of 639 operations in strict report mode and 634 with --allow-lossy --skip-unrenderable. Five operations remain skipped.",
+    "Alpha.19 fixes Loom issues #299, #300, #301, #302, and #303. Loom issue [#304](https://github.com/CaliLuke/loom/issues/304) records the single root cause: partial-import component pruning does not traverse Schema.OneOf. This leaves five response-schema references unresolved.",
+    "Loom alpha.21 fixes issues #304 and #306. Strict and lossy Sticky imports both succeed, their forward-generated OpenAPI artifacts match, and both complete transport trees compile.",
+    "The M1.20 gates pass: exact Django fixture replay, OpenAPI drift, authored Loom generation drift, Go test, race, vet, formatting, Python lint, and the Django-migrated 96-table live differential proof.",
+    "The branch cutover policy is ready. Django returns no frontend Sticky route, so the proxy cannot fall back to the removed Python implementation.",
+    "M1.23 still requires deployment during a maintenance window. M1.24 observation has not started."
+  ]
+}

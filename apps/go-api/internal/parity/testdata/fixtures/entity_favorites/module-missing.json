@@ -1,0 +1,45 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": []
+    },
+    "before": {
+      "user_favorites": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/entity-favorite-parity/projects/<uuid-1>/user-favorite-modules/<uuid-2>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "The required object does not exist."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "DELETE, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 404
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "module-missing"
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "actual": {
+    "methods": {},
+    "operations": 0,
+    "paths": 0
+  },
+  "artifact": "full-server.openapi.json",
+  "authority": {
+    "behavior_fixtures": "apps/go-api/internal/parity/testdata/fixtures",
+    "openapi_role": "migration-discovery-and-loom-input",
+    "route_inventory": "docs/go-backend-replacement/inventory"
+  },
+  "baseline": {
+    "methods": {
+      "GET": 3
+    },
+    "operations": 3,
+    "paths": 3
+  },
+  "bodyless_writes": [
+    {
+      "method": "POST",
+      "path": "/api/instances/admins/sign-up-screen-visited/",
+      "reason": "The sign-up screen marker has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/public/anchor/{anchor}/issues/{issue_id}/votes/",
+      "reason": "The vote action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archive/",
+      "reason": "The archive action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/",
+      "reason": "The archive action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archive/",
+      "reason": "The source action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+      "reason": "The archive action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+      "reason": "The archive action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+      "reason": "The archive action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-views/",
+      "reason": "The source action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/webhooks/{pk}/regenerate/",
+      "reason": "The regenerate action has no request payload."
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/workspace-views/",
+      "reason": "The source action has no request payload."
+    }
+  ],
+  "domains": [],
+  "exclusions": [
+    {
+      "method": "GET",
+      "path": "/api/schema/",
+      "reason": "Serves the public OpenAPI document and is not an application migration contract."
+    },
+    {
+      "method": "GET",
+      "path": "/api/schema/redoc/",
+      "reason": "Serves the public OpenAPI user interface and is not an application migration contract."
+    },
+    {
+      "method": "GET",
+      "path": "/api/schema/swagger-ui/",
+      "reason": "Serves the public OpenAPI user interface and is not an application migration contract."
+    }
+  ],
+  "filter_omissions": [],
+  "loom_full_contract_audit": {
+    "blockers": [],
+    "modes": [
+      {
+        "exit_code": 3,
+        "flags": [
+          "--report"
+        ],
+        "importable_operations": {
+          "count": 499,
+          "total": 639
+        },
+        "importable_schemas": {
+          "count": 312,
+          "total": 435
+        },
+        "name": "strict-report",
+        "status": "partial"
+      },
+      {
+        "exit_code": 0,
+        "flags": [
+          "--allow-lossy",
+          "--skip-unrenderable"
+        ],
+        "importable_operations": {
+          "count": 639,
+          "total": 639
+        },
+        "importable_schemas": {
+          "count": 425,
+          "total": 435
+        },
+        "name": "allow-lossy-skip-unrenderable",
+        "skipped_operations": 0,
+        "status": "complete"
+      }
+    ],
+    "scope": {
+      "artifact": "full-server.openapi.json",
+      "operations": 639,
+      "schemas": 435
+    },
+    "status": "complete",
+    "tool_version": "v1.8.0-alpha.21",
+    "warnings": [
+      {
+        "category": "incompatible_examples",
+        "count": 56
+      },
+      {
+        "category": "parameter_examples",
+        "count": 446
+      },
+      {
+        "category": "flattened_allOf",
+        "count": 1
+      },
+      {
+        "category": "promoted_inline_array_item_components",
+        "count": 24
+      }
+    ]
+  },
+  "loom_import": {
+    "blockers": [],
+    "round_trip_blockers": [],
+    "round_trip_status": "not-applicable",
+    "scope": {
+      "artifacts": [],
+      "domains": []
+    },
+    "strict_status": "not-applicable",
+    "tool_version": "v1.8.0-alpha.21"
+  },
+  "openapi_version": "3.1.0",
+  "operations": [],
+  "outside_drf_discovery": {
+    "groups": {
+      "browser_auth_and_oauth": 28,
+      "django_admin_auth": 3,
+      "health_and_robots": 2
+    },
+    "reason": "These Django browser, administration, health, and robots routes do not use DRF.",
+    "routes": 33
+  },
+  "public_api_behavior": "unchanged",
+  "reviewed_schema_exceptions": [],
+  "reviewed_warnings": [],
+  "route_families": {},
+  "runtime_versions": {
+    "django": "5.2.15",
+    "django-filter": "25.2",
+    "djangorestframework": "3.17.1",
+    "drf-spectacular": "0.29.0"
+  },
+  "schema_fallbacks": [],
+  "schema_gap_summary": {
+    "after": 0,
+    "before": 339,
+    "remaining_by_reason": {},
+    "resolved": 339
+  },
+  "schema_overrides": [],
+  "schema_version": 1,
+  "source_broken_operations": []
+}

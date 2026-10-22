@@ -1,0 +1,64 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": []
+    },
+    "before": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_type": "project",
+          "id": "<uuid-3>",
+          "is_folder": false,
+          "name": null,
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "user_favorites"
+    ],
+    "expected_changed_tables": [
+      "user_favorites"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/entity-favorite-parity/user-favorite-projects/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "DELETE, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "project-delete"
+  }
+}

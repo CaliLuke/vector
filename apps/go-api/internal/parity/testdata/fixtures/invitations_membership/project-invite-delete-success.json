@@ -1,0 +1,104 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "project_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "email": "invitee@example.com",
+          "id": "<uuid-2>",
+          "message": null,
+          "project_id": "<uuid-1>",
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:project_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-4>",
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "project_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-2>",
+          "message": null,
+          "project_id": "<uuid-1>",
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:project_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "project_member_invites"
+    ],
+    "expected_changed_tables": [
+      "project_member_invites"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload": {
+        "args": [
+          "db",
+          "projectmemberinvite",
+          "<uuid-2>"
+        ],
+        "kwargs": {
+          "using": null
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/invitations-membership-fixture/projects/<uuid-1>/invitations/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, DELETE, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "project-invite-delete-success"
+  }
+}

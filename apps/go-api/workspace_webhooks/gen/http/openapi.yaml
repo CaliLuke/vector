@@ -1,0 +1,1859 @@
+openapi: 3.1.1
+info:
+    title: Plane Workspace Webhooks API
+    description: Session-authenticated workspace webhook endpoints.
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane Workspace Webhooks API
+paths:
+    /api/workspaces/{slug}/webhook-logs/{webhook_id}/:
+        get:
+            tags:
+                - workspace_webhooks
+            summary: logs workspace_webhooks
+            operationId: workspace_webhooks.logs
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Recusandae omnis esse et accusantium id aliquid.
+                - name: webhook_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 9f889f64-46c5-47fd-9f50-77a18b7ef624
+                - name: search
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: Eum quia nobis.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/WebhookLog'
+                                example:
+                                    - created_at: "1995-07-28T16:08:50Z"
+                                      created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                      deleted_at: "2002-02-07T07:50:34Z"
+                                      event_type: rvk
+                                      id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                      request_body: Rem qui consequatur unde suscipit.
+                                      request_headers: Iure fuga earum quibusdam magni.
+                                      request_method: hvu
+                                      response_body: Qui repellat.
+                                      response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                      response_status: Esse voluptatum ullam blanditiis sed.
+                                      retry_count: 6625962477950255917
+                                      updated_at: "1995-01-17T07:02:58Z"
+                                      updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                      webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                      workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                                    - created_at: "1995-07-28T16:08:50Z"
+                                      created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                      deleted_at: "2002-02-07T07:50:34Z"
+                                      event_type: rvk
+                                      id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                      request_body: Rem qui consequatur unde suscipit.
+                                      request_headers: Iure fuga earum quibusdam magni.
+                                      request_method: hvu
+                                      response_body: Qui repellat.
+                                      response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                      response_status: Esse voluptatum ullam blanditiis sed.
+                                      retry_count: 6625962477950255917
+                                      updated_at: "1995-01-17T07:02:58Z"
+                                      updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                      webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                      workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                                    - created_at: "1995-07-28T16:08:50Z"
+                                      created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                      deleted_at: "2002-02-07T07:50:34Z"
+                                      event_type: rvk
+                                      id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                      request_body: Rem qui consequatur unde suscipit.
+                                      request_headers: Iure fuga earum quibusdam magni.
+                                      request_method: hvu
+                                      response_body: Qui repellat.
+                                      response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                      response_status: Esse voluptatum ullam blanditiis sed.
+                                      retry_count: 6625962477950255917
+                                      updated_at: "1995-01-17T07:02:58Z"
+                                      updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                      webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                      workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                            example:
+                                - created_at: "1995-07-28T16:08:50Z"
+                                  created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                  deleted_at: "2002-02-07T07:50:34Z"
+                                  event_type: rvk
+                                  id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                  request_body: Rem qui consequatur unde suscipit.
+                                  request_headers: Iure fuga earum quibusdam magni.
+                                  request_method: hvu
+                                  response_body: Qui repellat.
+                                  response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                  response_status: Esse voluptatum ullam blanditiis sed.
+                                  retry_count: 6625962477950255917
+                                  updated_at: "1995-01-17T07:02:58Z"
+                                  updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                  webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                  workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                                - created_at: "1995-07-28T16:08:50Z"
+                                  created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                  deleted_at: "2002-02-07T07:50:34Z"
+                                  event_type: rvk
+                                  id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                  request_body: Rem qui consequatur unde suscipit.
+                                  request_headers: Iure fuga earum quibusdam magni.
+                                  request_method: hvu
+                                  response_body: Qui repellat.
+                                  response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                  response_status: Esse voluptatum ullam blanditiis sed.
+                                  retry_count: 6625962477950255917
+                                  updated_at: "1995-01-17T07:02:58Z"
+                                  updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                  webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                  workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                                - created_at: "1995-07-28T16:08:50Z"
+                                  created_by: e279aa04-b3f2-4bba-a791-bac03f84eff0
+                                  deleted_at: "2002-02-07T07:50:34Z"
+                                  event_type: rvk
+                                  id: 4e03bb7c-f062-4ee6-ae96-af1105242f89
+                                  request_body: Rem qui consequatur unde suscipit.
+                                  request_headers: Iure fuga earum quibusdam magni.
+                                  request_method: hvu
+                                  response_body: Qui repellat.
+                                  response_headers: Molestiae praesentium exercitationem quod explicabo expedita atque.
+                                  response_status: Esse voluptatum ullam blanditiis sed.
+                                  retry_count: 6625962477950255917
+                                  updated_at: "1995-01-17T07:02:58Z"
+                                  updated_by: e8510806-9bcf-48c7-8811-86a61153df9b
+                                  webhook: 76bdd737-7802-4a79-a432-323350e0a3cc
+                                  workspace: b5b8d8bf-a844-4000-953a-1a16622083d7
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Sed soluta molestiae possimus delectus et nisi.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Sed soluta molestiae possimus delectus et nisi.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ipsam dignissimos amet.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Ipsam dignissimos amet.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Blanditiis accusantium ullam molestiae pariatur ducimus veritatis.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Blanditiis accusantium ullam molestiae pariatur ducimus veritatis.
+            security:
+                - webhook_session_cookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/webhooks/:
+        delete:
+            tags:
+                - workspace_webhooks
+            summary: delete_collection workspace_webhooks
+            operationId: workspace_webhooks.delete_collection
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Ut nostrum est natus.
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Non nam incidunt repellat.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Non nam incidunt repellat.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sunt qui at dolorem magnam.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Sunt qui at dolorem magnam.
+                "405":
+                    description: 'method_not_allowed: Method Not Allowed response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Perferendis et ut.
+                                $ref: '#/components/schemas/WebhookMethodNotAllowed'
+                            example:
+                                detail: Perferendis et ut.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Totam porro ut quia iusto.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Totam porro ut quia iusto.
+            security:
+                - webhook_session_cookie: []
+        get:
+            tags:
+                - workspace_webhooks
+            summary: list workspace_webhooks
+            operationId: workspace_webhooks.list
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Laborum vitae aut libero.
+                - name: search
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                  example: At sed fugit dolorum eum.
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Webhook'
+                                example:
+                                    - created_at: "1995-07-26T17:52:49Z"
+                                      created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                      cycle: false
+                                      deleted_at: "1999-04-04T08:21:15Z"
+                                      id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                      is_active: false
+                                      is_internal: true
+                                      issue: true
+                                      issue_comment: true
+                                      module: false
+                                      project: true
+                                      secret_key: nb6
+                                      updated_at: "1979-09-07T10:35:20Z"
+                                      updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                      url: vbw
+                                      version: jug
+                                      workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                    - created_at: "1995-07-26T17:52:49Z"
+                                      created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                      cycle: false
+                                      deleted_at: "1999-04-04T08:21:15Z"
+                                      id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                      is_active: false
+                                      is_internal: true
+                                      issue: true
+                                      issue_comment: true
+                                      module: false
+                                      project: true
+                                      secret_key: nb6
+                                      updated_at: "1979-09-07T10:35:20Z"
+                                      updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                      url: vbw
+                                      version: jug
+                                      workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                    - created_at: "1995-07-26T17:52:49Z"
+                                      created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                      cycle: false
+                                      deleted_at: "1999-04-04T08:21:15Z"
+                                      id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                      is_active: false
+                                      is_internal: true
+                                      issue: true
+                                      issue_comment: true
+                                      module: false
+                                      project: true
+                                      secret_key: nb6
+                                      updated_at: "1979-09-07T10:35:20Z"
+                                      updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                      url: vbw
+                                      version: jug
+                                      workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                    - created_at: "1995-07-26T17:52:49Z"
+                                      created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                      cycle: false
+                                      deleted_at: "1999-04-04T08:21:15Z"
+                                      id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                      is_active: false
+                                      is_internal: true
+                                      issue: true
+                                      issue_comment: true
+                                      module: false
+                                      project: true
+                                      secret_key: nb6
+                                      updated_at: "1979-09-07T10:35:20Z"
+                                      updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                      url: vbw
+                                      version: jug
+                                      workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                            example:
+                                - created_at: "1995-07-26T17:52:49Z"
+                                  created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                  cycle: false
+                                  deleted_at: "1999-04-04T08:21:15Z"
+                                  id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                  is_active: false
+                                  is_internal: true
+                                  issue: true
+                                  issue_comment: true
+                                  module: false
+                                  project: true
+                                  secret_key: nb6
+                                  updated_at: "1979-09-07T10:35:20Z"
+                                  updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                  url: vbw
+                                  version: jug
+                                  workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                - created_at: "1995-07-26T17:52:49Z"
+                                  created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                  cycle: false
+                                  deleted_at: "1999-04-04T08:21:15Z"
+                                  id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                  is_active: false
+                                  is_internal: true
+                                  issue: true
+                                  issue_comment: true
+                                  module: false
+                                  project: true
+                                  secret_key: nb6
+                                  updated_at: "1979-09-07T10:35:20Z"
+                                  updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                  url: vbw
+                                  version: jug
+                                  workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                - created_at: "1995-07-26T17:52:49Z"
+                                  created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                  cycle: false
+                                  deleted_at: "1999-04-04T08:21:15Z"
+                                  id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                  is_active: false
+                                  is_internal: true
+                                  issue: true
+                                  issue_comment: true
+                                  module: false
+                                  project: true
+                                  secret_key: nb6
+                                  updated_at: "1979-09-07T10:35:20Z"
+                                  updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                  url: vbw
+                                  version: jug
+                                  workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                                - created_at: "1995-07-26T17:52:49Z"
+                                  created_by: b9fac64b-f817-4467-9a8f-87311035bdcd
+                                  cycle: false
+                                  deleted_at: "1999-04-04T08:21:15Z"
+                                  id: f2c749ab-40a9-49ba-9864-ba8bd2fe6aa9
+                                  is_active: false
+                                  is_internal: true
+                                  issue: true
+                                  issue_comment: true
+                                  module: false
+                                  project: true
+                                  secret_key: nb6
+                                  updated_at: "1979-09-07T10:35:20Z"
+                                  updated_by: 2d8a7173-71ed-4fb1-b058-31e0ff8edabd
+                                  url: vbw
+                                  version: jug
+                                  workspace: baf753ba-fd41-4962-b588-1c87e4dde294
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Iste repudiandae sunt consequatur minima officia.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Iste repudiandae sunt consequatur minima officia.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Molestiae sunt impedit voluptatem iste voluptates.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Molestiae sunt impedit voluptatem iste voluptates.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sapiente ullam dolores.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Sapiente ullam dolores.
+            security:
+                - webhook_session_cookie: []
+        patch:
+            tags:
+                - workspace_webhooks
+            summary: patch_collection workspace_webhooks
+            operationId: workspace_webhooks.patch_collection
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Voluptas quam perspiciatis non nesciunt.
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Vitae ut praesentium.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Vitae ut praesentium.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Rerum ea.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Rerum ea.
+                "405":
+                    description: 'method_not_allowed: Method Not Allowed response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Culpa voluptatem neque maxime minima ut doloremque.
+                                $ref: '#/components/schemas/WebhookMethodNotAllowed'
+                            example:
+                                detail: Culpa voluptatem neque maxime minima ut doloremque.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Et et et culpa aut omnis sit.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Et et et culpa aut omnis sit.
+            security:
+                - webhook_session_cookie: []
+        post:
+            tags:
+                - workspace_webhooks
+            summary: create workspace_webhooks
+            operationId: workspace_webhooks.create
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Dolorem odio impedit.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                cycle: true
+                                is_active: false
+                                is_internal: true
+                                issue: false
+                                issue_comment: false
+                                module: true
+                                project: true
+                                url: rvf
+                                version: ia1
+                            $ref: '#/components/schemas/WebhookCreateRequest'
+                        example:
+                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            cycle: true
+                            is_active: false
+                            is_internal: true
+                            issue: false
+                            issue_comment: false
+                            module: true
+                            project: true
+                            url: rvf
+                            version: ia1
+                    application/x-www-form-urlencoded:
+                        schema:
+                            example:
+                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                cycle: true
+                                is_active: false
+                                is_internal: true
+                                issue: false
+                                issue_comment: false
+                                module: true
+                                project: true
+                                url: rvf
+                                version: ia1
+                            $ref: '#/components/schemas/WebhookCreateRequest'
+                        example:
+                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            cycle: true
+                            is_active: false
+                            is_internal: true
+                            issue: false
+                            issue_comment: false
+                            module: true
+                            project: true
+                            url: rvf
+                            version: ia1
+                    multipart/form-data:
+                        schema:
+                            example:
+                                created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                                cycle: true
+                                is_active: false
+                                is_internal: true
+                                issue: false
+                                issue_comment: false
+                                module: true
+                                project: true
+                                url: rvf
+                                version: ia1
+                            $ref: '#/components/schemas/WebhookCreateRequest'
+                        example:
+                            created_by: a0c472d2-9acf-486c-82cb-fc88304fb33e
+                            cycle: true
+                            is_active: false
+                            is_internal: true
+                            issue: false
+                            issue_comment: false
+                            module: true
+                            project: true
+                            url: rvf
+                            version: ia1
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "2007-07-27T08:38:50Z"
+                                    created_by: bd0ec8fc-2c89-49b2-a8ae-670163b763f9
+                                    cycle: true
+                                    deleted_at: "2006-01-28T20:37:28Z"
+                                    id: fedda3d1-24c8-48c1-b67c-3c4368f8005e
+                                    is_active: true
+                                    is_internal: false
+                                    issue: true
+                                    issue_comment: true
+                                    module: false
+                                    project: false
+                                    secret_key: m6d
+                                    updated_at: "2010-07-02T04:54:26Z"
+                                    updated_by: 00aa2c8e-3969-4318-8330-0525746aee78
+                                    url: z60
+                                    version: im3
+                                    workspace: e63ed727-1764-43a3-8089-24afdd330b61
+                                $ref: '#/components/schemas/Webhook'
+                            example:
+                                created_at: "2007-07-27T08:38:50Z"
+                                created_by: bd0ec8fc-2c89-49b2-a8ae-670163b763f9
+                                cycle: true
+                                deleted_at: "2006-01-28T20:37:28Z"
+                                id: fedda3d1-24c8-48c1-b67c-3c4368f8005e
+                                is_active: true
+                                is_internal: false
+                                issue: true
+                                issue_comment: true
+                                module: false
+                                project: false
+                                secret_key: m6d
+                                updated_at: "2010-07-02T04:54:26Z"
+                                updated_by: 00aa2c8e-3969-4318-8330-0525746aee78
+                                url: z60
+                                version: im3
+                                workspace: e63ed727-1764-43a3-8089-24afdd330b61
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_by:
+                                        - Earum id error.
+                                        - Provident et autem dolorem.
+                                        - Dolores voluptas tempora.
+                                        - Consequatur et itaque.
+                                    cycle:
+                                        - Repellendus quis sequi autem et.
+                                        - Sunt rerum.
+                                        - Harum ut quo non in delectus.
+                                    error: Incidunt dolorum numquam doloribus.
+                                    is_active:
+                                        - Libero commodi modi.
+                                        - Non impedit placeat reiciendis quia.
+                                    is_internal:
+                                        - Natus doloremque non non.
+                                        - Ut distinctio a.
+                                    issue:
+                                        - Dolore iusto et ipsum velit natus.
+                                        - Optio repellendus et aut deleniti.
+                                        - Inventore sint omnis.
+                                    issue_comment:
+                                        - Omnis quaerat maiores non praesentium.
+                                        - Quae quaerat dolorum.
+                                    module:
+                                        - Deserunt dolorem sapiente veritatis ut.
+                                        - Esse rem in sunt qui tenetur.
+                                        - Et velit quam soluta qui nemo.
+                                        - Neque odio consequatur.
+                                    non_field_errors:
+                                        - Aperiam hic nostrum.
+                                        - Veniam nulla voluptatum ea voluptatum sunt ipsa.
+                                    project:
+                                        - Necessitatibus est maxime rerum facilis ex esse.
+                                        - Nostrum laudantium nihil sint.
+                                        - Et cum illo est illo.
+                                        - Aut praesentium ea aut sunt.
+                                    url:
+                                        - Odit commodi distinctio nulla nihil.
+                                        - Aut doloribus accusamus.
+                                        - Ut quibusdam officia.
+                                    version:
+                                        - Et quam voluptatibus et sequi.
+                                        - Unde ut.
+                                        - Neque facere.
+                                $ref: '#/components/schemas/WebhookInvalid'
+                            example:
+                                created_by:
+                                    - Earum id error.
+                                    - Provident et autem dolorem.
+                                    - Dolores voluptas tempora.
+                                    - Consequatur et itaque.
+                                cycle:
+                                    - Repellendus quis sequi autem et.
+                                    - Sunt rerum.
+                                    - Harum ut quo non in delectus.
+                                error: Incidunt dolorum numquam doloribus.
+                                is_active:
+                                    - Libero commodi modi.
+                                    - Non impedit placeat reiciendis quia.
+                                is_internal:
+                                    - Natus doloremque non non.
+                                    - Ut distinctio a.
+                                issue:
+                                    - Dolore iusto et ipsum velit natus.
+                                    - Optio repellendus et aut deleniti.
+                                    - Inventore sint omnis.
+                                issue_comment:
+                                    - Omnis quaerat maiores non praesentium.
+                                    - Quae quaerat dolorum.
+                                module:
+                                    - Deserunt dolorem sapiente veritatis ut.
+                                    - Esse rem in sunt qui tenetur.
+                                    - Et velit quam soluta qui nemo.
+                                    - Neque odio consequatur.
+                                non_field_errors:
+                                    - Aperiam hic nostrum.
+                                    - Veniam nulla voluptatum ea voluptatum sunt ipsa.
+                                project:
+                                    - Necessitatibus est maxime rerum facilis ex esse.
+                                    - Nostrum laudantium nihil sint.
+                                    - Et cum illo est illo.
+                                    - Aut praesentium ea aut sunt.
+                                url:
+                                    - Odit commodi distinctio nulla nihil.
+                                    - Aut doloribus accusamus.
+                                    - Ut quibusdam officia.
+                                version:
+                                    - Et quam voluptatibus et sequi.
+                                    - Unde ut.
+                                    - Neque facere.
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Maiores dicta sequi.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Maiores dicta sequi.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Accusantium sapiente commodi beatae.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Accusantium sapiente commodi beatae.
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Excepturi sapiente adipisci.
+                                $ref: '#/components/schemas/WebhookConflict'
+                            example:
+                                error: Excepturi sapiente adipisci.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ea magnam ullam repellat praesentium.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Ea magnam ullam repellat praesentium.
+            security:
+                - webhook_session_cookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/webhooks/{pk}/:
+        delete:
+            tags:
+                - workspace_webhooks
+            summary: delete_detail workspace_webhooks
+            operationId: workspace_webhooks.delete_detail
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Neque nihil officia earum.
+                - name: pk
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: a536ab7a-e83f-4adf-9e1d-dba56861bfd7
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Delectus qui perspiciatis ut consequatur.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Delectus qui perspiciatis ut consequatur.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Omnis aut libero consectetur illo.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Omnis aut libero consectetur illo.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Sunt impedit itaque eum totam.
+                                $ref: '#/components/schemas/WebhookNotFound'
+                            example:
+                                error: Sunt impedit itaque eum totam.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ut doloribus error quis.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Ut doloribus error quis.
+            security:
+                - webhook_session_cookie: []
+        get:
+            tags:
+                - workspace_webhooks
+            summary: detail workspace_webhooks
+            operationId: workspace_webhooks.detail
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Incidunt dolor est est neque.
+                - name: pk
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 70e1a9aa-142a-40ba-a639-8472ecc8acc2
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "2013-12-10T10:45:07Z"
+                                    created_by: ad342db5-be9c-495d-9f27-6d6d6607ecac
+                                    cycle: true
+                                    deleted_at: "1992-11-09T02:21:48Z"
+                                    id: 820127bf-de1e-4392-9c97-cb224ebde5b3
+                                    is_active: false
+                                    is_internal: false
+                                    issue: true
+                                    issue_comment: true
+                                    module: false
+                                    project: true
+                                    secret_key: 94b
+                                    updated_at: "1993-06-15T12:36:02Z"
+                                    updated_by: ef2483a4-41e1-4b12-8073-461aca933c5a
+                                    url: nse
+                                    version: cf1
+                                    workspace: 44fcd5b6-5fdc-4418-b2ee-a37f97fa45d7
+                                $ref: '#/components/schemas/Webhook'
+                            example:
+                                created_at: "2013-12-10T10:45:07Z"
+                                created_by: ad342db5-be9c-495d-9f27-6d6d6607ecac
+                                cycle: true
+                                deleted_at: "1992-11-09T02:21:48Z"
+                                id: 820127bf-de1e-4392-9c97-cb224ebde5b3
+                                is_active: false
+                                is_internal: false
+                                issue: true
+                                issue_comment: true
+                                module: false
+                                project: true
+                                secret_key: 94b
+                                updated_at: "1993-06-15T12:36:02Z"
+                                updated_by: ef2483a4-41e1-4b12-8073-461aca933c5a
+                                url: nse
+                                version: cf1
+                                workspace: 44fcd5b6-5fdc-4418-b2ee-a37f97fa45d7
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Nam quas assumenda.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Nam quas assumenda.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Voluptas ea accusamus.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Voluptas ea accusamus.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ut corporis.
+                                $ref: '#/components/schemas/WebhookNotFound'
+                            example:
+                                error: Ut corporis.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Consectetur molestiae placeat impedit non et.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Consectetur molestiae placeat impedit non et.
+            security:
+                - webhook_session_cookie: []
+        patch:
+            tags:
+                - workspace_webhooks
+            summary: patch_detail workspace_webhooks
+            operationId: workspace_webhooks.patch_detail
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Ipsa ullam alias impedit enim sint.
+                - name: pk
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: d6fd4f48-2475-44e9-93a4-f79b198c14ca
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            example:
+                                created_by: 0fb98bee-4714-4802-b797-521367566b64
+                                cycle: true
+                                is_active: false
+                                is_internal: false
+                                issue: true
+                                issue_comment: true
+                                module: false
+                                project: false
+                                url: y5o
+                                version: 23y
+                            $ref: '#/components/schemas/WebhookPatchRequest'
+                        example:
+                            created_by: 0fb98bee-4714-4802-b797-521367566b64
+                            cycle: true
+                            is_active: false
+                            is_internal: false
+                            issue: true
+                            issue_comment: true
+                            module: false
+                            project: false
+                            url: y5o
+                            version: 23y
+                    application/x-www-form-urlencoded:
+                        schema:
+                            example:
+                                created_by: 0fb98bee-4714-4802-b797-521367566b64
+                                cycle: true
+                                is_active: false
+                                is_internal: false
+                                issue: true
+                                issue_comment: true
+                                module: false
+                                project: false
+                                url: y5o
+                                version: 23y
+                            $ref: '#/components/schemas/WebhookPatchRequest'
+                        example:
+                            created_by: 0fb98bee-4714-4802-b797-521367566b64
+                            cycle: true
+                            is_active: false
+                            is_internal: false
+                            issue: true
+                            issue_comment: true
+                            module: false
+                            project: false
+                            url: y5o
+                            version: 23y
+                    multipart/form-data:
+                        schema:
+                            example:
+                                created_by: 0fb98bee-4714-4802-b797-521367566b64
+                                cycle: true
+                                is_active: false
+                                is_internal: false
+                                issue: true
+                                issue_comment: true
+                                module: false
+                                project: false
+                                url: y5o
+                                version: 23y
+                            $ref: '#/components/schemas/WebhookPatchRequest'
+                        example:
+                            created_by: 0fb98bee-4714-4802-b797-521367566b64
+                            cycle: true
+                            is_active: false
+                            is_internal: false
+                            issue: true
+                            issue_comment: true
+                            module: false
+                            project: false
+                            url: y5o
+                            version: 23y
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "2000-08-03T05:20:08Z"
+                                    created_by: 75f0bb5a-1725-4d74-8b22-3787d7a8ed17
+                                    cycle: false
+                                    deleted_at: "1973-01-17T19:18:43Z"
+                                    id: fb458a7c-b1ad-468a-8bfb-125dcda061da
+                                    is_active: true
+                                    is_internal: true
+                                    issue: false
+                                    issue_comment: true
+                                    module: true
+                                    project: false
+                                    secret_key: 7qe
+                                    updated_at: "1984-04-06T11:44:20Z"
+                                    updated_by: 32db7f47-9119-41b5-80c6-811818aa7745
+                                    url: yik
+                                    version: d2g
+                                    workspace: 37e8c656-33c3-42a0-a021-8c02edb727e0
+                                $ref: '#/components/schemas/Webhook'
+                            example:
+                                created_at: "2000-08-03T05:20:08Z"
+                                created_by: 75f0bb5a-1725-4d74-8b22-3787d7a8ed17
+                                cycle: false
+                                deleted_at: "1973-01-17T19:18:43Z"
+                                id: fb458a7c-b1ad-468a-8bfb-125dcda061da
+                                is_active: true
+                                is_internal: true
+                                issue: false
+                                issue_comment: true
+                                module: true
+                                project: false
+                                secret_key: 7qe
+                                updated_at: "1984-04-06T11:44:20Z"
+                                updated_by: 32db7f47-9119-41b5-80c6-811818aa7745
+                                url: yik
+                                version: d2g
+                                workspace: 37e8c656-33c3-42a0-a021-8c02edb727e0
+                "400":
+                    description: 'invalid: Bad Request response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_by:
+                                        - Praesentium nihil doloribus voluptatem.
+                                        - Omnis et nihil et.
+                                        - Eaque iste.
+                                    cycle:
+                                        - Quae corrupti sed dignissimos.
+                                        - Quidem velit voluptas tenetur.
+                                    error: Quasi quo a qui voluptas hic quis.
+                                    is_active:
+                                        - Cumque aperiam.
+                                        - Sed laudantium.
+                                        - Eum est voluptatem.
+                                        - Quas deserunt ut et et.
+                                    is_internal:
+                                        - Harum porro omnis autem voluptas ullam.
+                                        - Est deleniti.
+                                        - Quaerat nihil consequatur non reiciendis.
+                                    issue:
+                                        - Porro molestias sit et.
+                                        - Voluptas neque doloremque alias dolorem autem aut.
+                                        - Odit officiis.
+                                    issue_comment:
+                                        - Dolorum qui perferendis eos eos.
+                                        - Facilis et minus.
+                                    module:
+                                        - Quibusdam ut doloribus sunt.
+                                        - Consequuntur rerum.
+                                        - At accusamus dolorem corrupti provident.
+                                        - Sit est ea magni mollitia.
+                                    non_field_errors:
+                                        - Molestiae aliquam et omnis.
+                                        - Quis ea excepturi dolore.
+                                        - Error quo aut adipisci qui repellat.
+                                        - Voluptatum id voluptas ut.
+                                    project:
+                                        - Perferendis aut doloribus expedita iusto architecto.
+                                        - Sit velit.
+                                    url:
+                                        - Repellendus tempore qui.
+                                        - Ducimus dolores dolor voluptatem excepturi dicta.
+                                    version:
+                                        - Eaque consectetur sint non accusamus.
+                                        - Illo ducimus blanditiis rem placeat commodi quae.
+                                $ref: '#/components/schemas/WebhookInvalid'
+                            example:
+                                created_by:
+                                    - Praesentium nihil doloribus voluptatem.
+                                    - Omnis et nihil et.
+                                    - Eaque iste.
+                                cycle:
+                                    - Quae corrupti sed dignissimos.
+                                    - Quidem velit voluptas tenetur.
+                                error: Quasi quo a qui voluptas hic quis.
+                                is_active:
+                                    - Cumque aperiam.
+                                    - Sed laudantium.
+                                    - Eum est voluptatem.
+                                    - Quas deserunt ut et et.
+                                is_internal:
+                                    - Harum porro omnis autem voluptas ullam.
+                                    - Est deleniti.
+                                    - Quaerat nihil consequatur non reiciendis.
+                                issue:
+                                    - Porro molestias sit et.
+                                    - Voluptas neque doloremque alias dolorem autem aut.
+                                    - Odit officiis.
+                                issue_comment:
+                                    - Dolorum qui perferendis eos eos.
+                                    - Facilis et minus.
+                                module:
+                                    - Quibusdam ut doloribus sunt.
+                                    - Consequuntur rerum.
+                                    - At accusamus dolorem corrupti provident.
+                                    - Sit est ea magni mollitia.
+                                non_field_errors:
+                                    - Molestiae aliquam et omnis.
+                                    - Quis ea excepturi dolore.
+                                    - Error quo aut adipisci qui repellat.
+                                    - Voluptatum id voluptas ut.
+                                project:
+                                    - Perferendis aut doloribus expedita iusto architecto.
+                                    - Sit velit.
+                                url:
+                                    - Repellendus tempore qui.
+                                    - Ducimus dolores dolor voluptatem excepturi dicta.
+                                version:
+                                    - Eaque consectetur sint non accusamus.
+                                    - Illo ducimus blanditiis rem placeat commodi quae.
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Itaque et excepturi voluptatem qui ipsum reprehenderit.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Itaque et excepturi voluptatem qui ipsum reprehenderit.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Aut quis sunt est recusandae quia voluptatem.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Aut quis sunt est recusandae quia voluptatem.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Vero iure reprehenderit repellat temporibus aut.
+                                $ref: '#/components/schemas/WebhookNotFound'
+                            example:
+                                error: Vero iure reprehenderit repellat temporibus aut.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Ut ullam.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Ut ullam.
+            security:
+                - webhook_session_cookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/webhooks/{pk}/regenerate/:
+        post:
+            tags:
+                - workspace_webhooks
+            summary: regenerate workspace_webhooks
+            operationId: workspace_webhooks.regenerate
+            parameters:
+                - name: slug
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                  example: Et architecto atque id quis reprehenderit sapiente.
+                - name: pk
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                  example: 48874090-bfc4-4b91-9b5e-34460673cfc7
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    created_at: "1991-03-23T18:40:43Z"
+                                    created_by: 24fee384-5e04-444f-b8fb-5c8d57775ccf
+                                    cycle: false
+                                    deleted_at: "1993-01-09T10:43:53Z"
+                                    id: 0f95e96e-a4fd-4f7c-b7a9-69bc76c833a8
+                                    is_active: true
+                                    is_internal: true
+                                    issue: false
+                                    issue_comment: false
+                                    module: true
+                                    project: false
+                                    secret_key: lnz
+                                    updated_at: "2011-08-16T09:29:49Z"
+                                    updated_by: 063c8b21-9576-4f1a-ae81-093b0bc5c289
+                                    url: s6f
+                                    version: opp
+                                    workspace: 5d14624b-4333-462a-b502-8641b76b3d83
+                                $ref: '#/components/schemas/Webhook'
+                            example:
+                                created_at: "1991-03-23T18:40:43Z"
+                                created_by: 24fee384-5e04-444f-b8fb-5c8d57775ccf
+                                cycle: false
+                                deleted_at: "1993-01-09T10:43:53Z"
+                                id: 0f95e96e-a4fd-4f7c-b7a9-69bc76c833a8
+                                is_active: true
+                                is_internal: true
+                                issue: false
+                                issue_comment: false
+                                module: true
+                                project: false
+                                secret_key: lnz
+                                updated_at: "2011-08-16T09:29:49Z"
+                                updated_by: 063c8b21-9576-4f1a-ae81-093b0bc5c289
+                                url: s6f
+                                version: opp
+                                workspace: 5d14624b-4333-462a-b502-8641b76b3d83
+                "401":
+                    description: 'unauthenticated: Unauthorized response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    detail: Aut doloribus.
+                                $ref: '#/components/schemas/WebhookUnauthenticated'
+                            example:
+                                detail: Aut doloribus.
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Perspiciatis sit autem consectetur repellat voluptatem autem.
+                                $ref: '#/components/schemas/WebhookForbidden'
+                            example:
+                                error: Perspiciatis sit autem consectetur repellat voluptatem autem.
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Consectetur dolorem ut deserunt illo qui.
+                                $ref: '#/components/schemas/WebhookNotFound'
+                            example:
+                                error: Consectetur dolorem ut deserunt illo qui.
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/json:
+                            schema:
+                                example:
+                                    error: Voluptatem in impedit et quia.
+                                $ref: '#/components/schemas/WebhookInternal'
+                            example:
+                                error: Voluptatem in impedit et quia.
+            security:
+                - webhook_session_cookie: []
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        Webhook:
+            type: object
+            properties:
+                created_at:
+                    type: string
+                    example: "2003-10-05T16:31:54Z"
+                    format: date-time
+                created_by:
+                    example: a893e31d-e241-4e86-8b76-ec66e1908b50
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                cycle:
+                    type: boolean
+                    example: false
+                deleted_at:
+                    example: "2005-10-16T21:17:41Z"
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                id:
+                    type: string
+                    example: b8c4ad58-399e-45fa-9880-068dd31bbbd6
+                    format: uuid
+                is_active:
+                    type: boolean
+                    example: false
+                is_internal:
+                    type: boolean
+                    example: false
+                issue:
+                    type: boolean
+                    example: true
+                issue_comment:
+                    type: boolean
+                    example: true
+                module:
+                    type: boolean
+                    example: true
+                project:
+                    type: boolean
+                    example: true
+                secret_key:
+                    type: string
+                    example: ejf
+                    maxLength: 255
+                updated_at:
+                    type: string
+                    example: "1991-11-04T01:19:09Z"
+                    format: date-time
+                updated_by:
+                    example: edcdd137-6ad9-444a-ad8d-33b2ef2acfde
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                url:
+                    type: string
+                    example: g23
+                    maxLength: 1024
+                version:
+                    type: string
+                    example: ip9
+                    maxLength: 50
+                workspace:
+                    type: string
+                    example: 244f2b41-3eb3-4e8b-afcd-9616ebc7f179
+                    format: uuid
+            example:
+                created_at: "1994-03-07T03:03:14Z"
+                created_by: 4d60ce7a-e34e-4b49-ab24-a3a8c53fefb9
+                cycle: false
+                deleted_at: "2003-04-13T13:43:33Z"
+                id: 3510d1b4-7d49-4724-a58b-b1c3ab6cec15
+                is_active: false
+                is_internal: true
+                issue: false
+                issue_comment: false
+                module: false
+                project: false
+                secret_key: kvu
+                updated_at: "1977-12-02T21:17:16Z"
+                updated_by: 76f1feda-2ff7-4f96-9805-03657f34a54a
+                url: qel
+                version: mle
+                workspace: 873502be-9581-41f8-b750-da9e0492f98b
+            required:
+                - id
+                - workspace
+                - created_at
+                - updated_at
+                - created_by
+                - updated_by
+                - deleted_at
+                - url
+                - is_active
+                - secret_key
+                - project
+                - issue
+                - module
+                - cycle
+                - issue_comment
+                - is_internal
+                - version
+        WebhookConflict:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: Quia nisi et velit corrupti.
+            example:
+                error: Qui impedit natus quas aperiam.
+            required:
+                - error
+        WebhookCreateRequest:
+            type: object
+            properties:
+                created_by:
+                    example: a1a542e5-c5f6-4f06-b108-c622241abee5
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                cycle:
+                    type: boolean
+                    example: false
+                is_active:
+                    type: boolean
+                    example: false
+                is_internal:
+                    type: boolean
+                    example: true
+                issue:
+                    type: boolean
+                    example: false
+                issue_comment:
+                    type: boolean
+                    example: true
+                module:
+                    type: boolean
+                    example: false
+                project:
+                    type: boolean
+                    example: true
+                url:
+                    type: string
+                    example: ln2
+                    maxLength: 1024
+                version:
+                    type: string
+                    example: 80t
+                    maxLength: 50
+            example:
+                created_by: 5f6c675a-111c-4428-9f0e-8123a00f525a
+                cycle: true
+                is_active: true
+                is_internal: true
+                issue: false
+                issue_comment: true
+                module: false
+                project: true
+                url: "672"
+                version: v6v
+        WebhookForbidden:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: Facilis velit.
+            example:
+                error: Nisi est voluptatum recusandae dolores adipisci.
+            required:
+                - error
+        WebhookInternal:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: Et ducimus minus.
+            example:
+                error: Eos totam maiores reiciendis eius perspiciatis nulla.
+            required:
+                - error
+        WebhookInvalid:
+            type: object
+            properties:
+                created_by:
+                    type: array
+                    items:
+                        type: string
+                        example: Nesciunt harum labore maxime debitis.
+                    example:
+                        - Culpa consequuntur quis sit excepturi.
+                        - Qui rem commodi.
+                cycle:
+                    type: array
+                    items:
+                        type: string
+                        example: Molestias consequatur.
+                    example:
+                        - Consectetur illo vel ut beatae.
+                        - Quo labore eos consequuntur qui.
+                error:
+                    type: string
+                    example: A repellendus illum molestias.
+                is_active:
+                    type: array
+                    items:
+                        type: string
+                        example: Tenetur consequatur sit enim sed rem.
+                    example:
+                        - Sint quod est incidunt earum nihil eaque.
+                        - Id quia blanditiis distinctio.
+                        - Neque alias.
+                is_internal:
+                    type: array
+                    items:
+                        type: string
+                        example: Modi possimus debitis dolorem.
+                    example:
+                        - Molestiae rerum aut est assumenda.
+                        - Velit sint labore rerum et fuga.
+                issue:
+                    type: array
+                    items:
+                        type: string
+                        example: Ea dolorem architecto voluptatem.
+                    example:
+                        - Molestias dolor nihil est et.
+                        - Unde quia.
+                        - Nobis quia vel laborum est blanditiis iure.
+                issue_comment:
+                    type: array
+                    items:
+                        type: string
+                        example: Omnis dicta quia facilis nihil.
+                    example:
+                        - Voluptate debitis quisquam asperiores nobis excepturi.
+                        - Soluta consequatur asperiores dolor.
+                module:
+                    type: array
+                    items:
+                        type: string
+                        example: Assumenda sunt sed non et numquam.
+                    example:
+                        - Animi consectetur perspiciatis nihil porro.
+                        - Dolor assumenda cupiditate.
+                non_field_errors:
+                    type: array
+                    items:
+                        type: string
+                        example: Consequatur sed hic.
+                    example:
+                        - Illum nihil magnam quis est sit.
+                        - Commodi voluptas dignissimos temporibus qui.
+                project:
+                    type: array
+                    items:
+                        type: string
+                        example: Eum inventore quam consequatur quia.
+                    example:
+                        - Qui ipsum quaerat molestiae praesentium sed et.
+                        - Consequuntur qui voluptatem consectetur.
+                        - Tenetur quod.
+                url:
+                    type: array
+                    items:
+                        type: string
+                        example: Officia magni tenetur explicabo.
+                    example:
+                        - Perspiciatis harum in.
+                        - Voluptas amet.
+                        - Consequuntur non rerum.
+                        - Illo quidem eum ea autem.
+                version:
+                    type: array
+                    items:
+                        type: string
+                        example: Aut hic et maxime est delectus tempore.
+                    example:
+                        - Est vel excepturi.
+                        - Necessitatibus dolore sed perspiciatis perferendis.
+                        - Et dolores.
+            example:
+                created_by:
+                    - Doloremque culpa.
+                    - Dolores autem et ea repellendus aut aut.
+                    - Ducimus aperiam ab quidem.
+                    - Et aperiam et sunt autem laboriosam nemo.
+                cycle:
+                    - Atque officia accusantium saepe qui.
+                    - Beatae iste odit.
+                    - Maxime blanditiis ducimus eum voluptatem ipsa.
+                    - Velit occaecati.
+                error: Numquam fugit deleniti.
+                is_active:
+                    - In nihil.
+                    - Accusamus ut quam ut cumque nam sit.
+                    - Quam eum voluptate voluptate et veritatis.
+                    - Autem aspernatur quasi et.
+                is_internal:
+                    - Eum sit possimus consequuntur.
+                    - Voluptatem sunt consequuntur voluptate ducimus distinctio.
+                    - Consectetur nostrum at quis rerum.
+                issue:
+                    - Dolore eligendi dolore doloribus vel neque.
+                    - Quo illo sed odit itaque repellendus.
+                    - Eos doloribus nesciunt rem mollitia consequatur.
+                issue_comment:
+                    - Et distinctio et.
+                    - Non aut reprehenderit.
+                    - Et dolorem ex laborum aut autem.
+                    - Illo tempore.
+                module:
+                    - Expedita et ut laboriosam.
+                    - Voluptas est.
+                    - Inventore officiis modi consequuntur ullam.
+                non_field_errors:
+                    - Omnis iure nobis officiis.
+                    - Soluta aut tempora.
+                    - Amet qui.
+                    - Quisquam dicta fugiat dolorem hic nobis.
+                project:
+                    - Non repellendus debitis debitis.
+                    - Accusantium cupiditate maiores aut.
+                url:
+                    - Fugit rerum at ut maxime non.
+                    - Non nobis et.
+                version:
+                    - Omnis sunt quia ut sint.
+                    - Inventore voluptas.
+                    - Sed minima.
+                    - Atque consequatur laboriosam culpa recusandae.
+        WebhookLog:
+            type: object
+            properties:
+                created_at:
+                    type: string
+                    example: "1990-09-27T14:58:55Z"
+                    format: date-time
+                created_by:
+                    example: bea248c5-6ec4-43c8-aa75-ea22c9407367
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    example: "1983-04-06T03:19:01Z"
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                event_type:
+                    example: hz0
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    example: 2bf3bdab-1507-43d7-9253-e6ed30c20593
+                    format: uuid
+                request_body:
+                    example: Nemo rem soluta dolorem tempore.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                request_headers:
+                    example: Numquam facere vel illum soluta.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                request_method:
+                    example: 83h
+                    anyOf:
+                        - type: string
+                          maxLength: 10
+                        - type: "null"
+                response_body:
+                    example: Recusandae et vel sint et.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                response_headers:
+                    example: Accusantium impedit.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                response_status:
+                    example: Libero vero ut aliquam nostrum.
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                retry_count:
+                    type: integer
+                    example: 1794906150329034949
+                    format: int64
+                updated_at:
+                    type: string
+                    example: "2008-01-24T18:43:18Z"
+                    format: date-time
+                updated_by:
+                    example: 5b23b4cd-d806-4817-a1c8-e2cea897e596
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                webhook:
+                    type: string
+                    example: 8f82db6b-5669-4e46-bc5d-9d1f659b4b7b
+                    format: uuid
+                workspace:
+                    type: string
+                    example: 86474936-a940-4540-9da5-c384703812d1
+                    format: uuid
+            example:
+                created_at: "2004-03-26T19:40:57Z"
+                created_by: 4a35f7af-5d6f-4e3a-b59e-60a7e77c298b
+                deleted_at: "2010-07-08T17:19:53Z"
+                event_type: 0pk
+                id: 03806590-f580-48e0-abbe-2b18065586b5
+                request_body: Eos molestiae ex.
+                request_headers: Sint earum illo.
+                request_method: czi
+                response_body: Placeat dolor deserunt quae qui laboriosam nesciunt.
+                response_headers: Et facilis modi quae repellendus delectus.
+                response_status: Quis molestias officia pariatur id repellat possimus.
+                retry_count: 8657194666047158606
+                updated_at: "1977-12-26T08:39:30Z"
+                updated_by: e03bf19d-c284-40e6-8f44-b923a74f8a82
+                webhook: 26479c1b-93cf-496e-94f0-c3a9eea7e37a
+                workspace: 1b9cddd4-f141-4dcd-8830-e515cd921e59
+            required:
+                - id
+                - workspace
+                - created_at
+                - updated_at
+                - created_by
+                - updated_by
+                - deleted_at
+                - webhook
+                - event_type
+                - request_method
+                - request_headers
+                - request_body
+                - response_status
+                - response_headers
+                - response_body
+                - retry_count
+        WebhookMethodNotAllowed:
+            type: object
+            properties:
+                detail:
+                    type: string
+                    example: Est pariatur debitis laboriosam vero.
+            example:
+                detail: Voluptas molestias dolores adipisci.
+            required:
+                - detail
+        WebhookNotFound:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: Eum at maiores nisi et.
+            example:
+                error: Dolorem magni.
+            required:
+                - error
+        WebhookPatchRequest:
+            type: object
+            properties:
+                created_by:
+                    example: 16f1a918-b11d-40b2-a76d-12f1b90508dc
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                cycle:
+                    type: boolean
+                    example: false
+                is_active:
+                    type: boolean
+                    example: true
+                is_internal:
+                    type: boolean
+                    example: true
+                issue:
+                    type: boolean
+                    example: false
+                issue_comment:
+                    type: boolean
+                    example: false
+                module:
+                    type: boolean
+                    example: false
+                project:
+                    type: boolean
+                    example: false
+                url:
+                    type: string
+                    example: k7v
+                    maxLength: 1024
+                version:
+                    type: string
+                    example: ko7
+                    maxLength: 50
+            example:
+                created_by: 1b70aa8c-d2ea-4a98-9f83-94acd9925ac8
+                cycle: true
+                is_active: false
+                is_internal: false
+                issue: true
+                issue_comment: true
+                module: true
+                project: false
+                url: v95
+                version: mya
+        WebhookUnauthenticated:
+            type: object
+            properties:
+                detail:
+                    type: string
+                    example: Odit porro deleniti officia.
+            example:
+                detail: Earum voluptates eos nulla saepe natus.
+            required:
+                - detail
+    responses:
+        NoContentResponse:
+            description: No Content response.
+    securitySchemes:
+        webhook_session_cookie:
+            type: apiKey
+            description: Plane Django session cookie.
+            name: session-id
+            in: cookie
+tags:
+    - name: workspace_webhooks
+      description: Manages workspace webhooks and their delivery logs.

@@ -1,0 +1,230 @@
+{
+  "cache": {
+    "rate_limit_history_after": [
+      "<timestamp>"
+    ],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-5>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Cycle parity",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-5>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Cycle parity",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/archived-cycles/",
+            "query_params": "per_page=1&cursor=1%3A1%3A0",
+            "response_body": {
+              "count": 1,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1:2:0",
+              "next_page_results": false,
+              "prev_cursor": "1:0:1",
+              "prev_page_results": true,
+              "results": [
+                {
+                  "archived_at": "2021-01-01T00:00:00Z",
+                  "backlog_issues": 1,
+                  "cancelled_issues": 1,
+                  "completed_estimates": 3.0,
+                  "completed_issues": 1,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": "2021-01-01T00:00:00Z",
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-2>",
+                  "logo_props": {},
+                  "name": "Cycle 6",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 6.0,
+                  "start_date": "<timestamp>",
+                  "started_estimates": 3.0,
+                  "started_issues": 1,
+                  "timezone": "UTC",
+                  "total_estimates": 15.0,
+                  "total_issues": 5,
+                  "unstarted_issues": 1,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                }
+              ],
+              "sub_grouped_by": null,
+              "total_count": 2,
+              "total_pages": 2,
+              "total_results": 2
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/archived-cycles/",
+    "principal": {
+      "kind": "api-key"
+    },
+    "query": {
+      "cursor": "1:1:0",
+      "per_page": "1"
+    }
+  },
+  "response": {
+    "body": {
+      "count": 1,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1:2:0",
+      "next_page_results": false,
+      "prev_cursor": "1:0:1",
+      "prev_page_results": true,
+      "results": [
+        {
+          "archived_at": "2021-01-01T00:00:00Z",
+          "backlog_issues": 1,
+          "cancelled_issues": 1,
+          "completed_estimates": 3.0,
+          "completed_issues": 1,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": "2021-01-01T00:00:00Z",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "logo_props": {},
+          "name": "Cycle 6",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 6.0,
+          "start_date": "<timestamp>",
+          "started_estimates": 3.0,
+          "started_issues": 1,
+          "timezone": "UTC",
+          "total_estimates": 15.0,
+          "total_issues": 5,
+          "unstarted_issues": 1,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        }
+      ],
+      "sub_grouped_by": null,
+      "total_count": 2,
+      "total_pages": 2,
+      "total_results": 2
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-ratelimit-remaining": "<x-ratelimit-remaining>",
+      "x-ratelimit-reset": "<x-ratelimit-reset>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "archived-page-two"
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "database": {
+    "after": {
+      "profiles": [
+        {
+          "background_color": "<timestamp>",
+          "billing_address": null,
+          "billing_address_country": "INDIA",
+          "company_name": "",
+          "created_at": "<timestamp>",
+          "goals": {},
+          "has_billing_address": false,
+          "has_marketing_email_consent": false,
+          "id": "<uuid-1>",
+          "is_app_rail_docked": true,
+          "is_mobile_onboarded": false,
+          "is_navigation_tour_completed": false,
+          "is_onboarded": true,
+          "is_smooth_cursor_enabled": false,
+          "is_subscribed_to_changelog": false,
+          "is_tour_completed": false,
+          "language": "en",
+          "last_workspace_id": null,
+          "mobile_onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_join": false
+          },
+          "mobile_timezone_auto_set": false,
+          "notification_view_mode": "full",
+          "onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_invite": false,
+            "workspace_join": false
+          },
+          "product_tour": {
+            "cycles": false,
+            "intake": false,
+            "modules": false,
+            "pages": false,
+            "work_items": false
+          },
+          "role": null,
+          "start_of_the_week": 0,
+          "theme": {},
+          "updated_at": "<timestamp>",
+          "use_case": null,
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "before": {
+      "profiles": [
+        {
+          "background_color": "<timestamp>",
+          "billing_address": null,
+          "billing_address_country": "INDIA",
+          "company_name": "",
+          "created_at": "<timestamp>",
+          "goals": {},
+          "has_billing_address": false,
+          "has_marketing_email_consent": false,
+          "id": "<uuid-1>",
+          "is_app_rail_docked": true,
+          "is_mobile_onboarded": false,
+          "is_navigation_tour_completed": false,
+          "is_onboarded": false,
+          "is_smooth_cursor_enabled": false,
+          "is_subscribed_to_changelog": false,
+          "is_tour_completed": false,
+          "language": "en",
+          "last_workspace_id": null,
+          "mobile_onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_join": false
+          },
+          "mobile_timezone_auto_set": false,
+          "notification_view_mode": "full",
+          "onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_invite": false,
+            "workspace_join": false
+          },
+          "product_tour": {
+            "cycles": false,
+            "intake": false,
+            "modules": false,
+            "pages": false,
+            "work_items": false
+          },
+          "role": null,
+          "start_of_the_week": 0,
+          "theme": {},
+          "updated_at": "<timestamp>",
+          "use_case": null,
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "profiles"
+    ],
+    "expected_changed_tables": [
+      "profiles"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "is_onboarded": true
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/users/me/onboard/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "message": "Updated successfully"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "PATCH, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "onboard-true",
+    "initial": false
+  }
+}

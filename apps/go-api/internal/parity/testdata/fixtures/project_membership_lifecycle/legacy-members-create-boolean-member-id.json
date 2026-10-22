@@ -1,0 +1,54 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "members": [
+        {
+          "member_id": true,
+          "role": 15
+        }
+      ]
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/project-membership-lifecycle/projects/<uuid-1>/members/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "The required object does not exist."
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "POST, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 404
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "legacy-members-create-boolean-member-id"
+  }
+}

@@ -1,0 +1,278 @@
+openapi: 3.1.1
+info:
+    title: Plane Authentication Redirects
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane Authentication Redirects
+paths:
+    /auth/magic-sign-in/:
+        post:
+            operationId: post_auth_magic_sign_in
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: MagicSignIn AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/magic-sign-in/
+        x-loom-cors:
+            runtime: true
+    /auth/magic-sign-up/:
+        post:
+            operationId: post_auth_magic_sign_up
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: MagicSignUp AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/magic-sign-up/
+        x-loom-cors:
+            runtime: true
+    /auth/reset-password/{uidb64}/{token}/:
+        post:
+            operationId: post_auth_reset_password_by_uidb64_by_token
+            parameters:
+                - $ref: '#/components/parameters/PathUidb64'
+                - $ref: '#/components/parameters/PathToken'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: ResetPassword AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/reset-password/{uidb64}/{token}/
+        x-loom-cors:
+            runtime: true
+    /auth/sign-in/:
+        post:
+            operationId: post_auth_sign_in
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: EmailSignIn AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/sign-in/
+        x-loom-cors:
+            runtime: true
+    /auth/sign-out/:
+        post:
+            operationId: post_auth_sign_out
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SignOut AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/sign-out/
+        x-loom-cors:
+            runtime: true
+    /auth/sign-up/:
+        post:
+            operationId: post_auth_sign_up
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: EmailSignUp AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/sign-up/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/magic-sign-in/:
+        post:
+            operationId: post_auth_spaces_magic_sign_in
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceMagicSignIn AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/magic-sign-in/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/magic-sign-up/:
+        post:
+            operationId: post_auth_spaces_magic_sign_up
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceMagicSignUp AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/magic-sign-up/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/reset-password/{uidb64}/{token}/:
+        post:
+            operationId: post_auth_spaces_reset_password_by_uidb64_by_token
+            parameters:
+                - $ref: '#/components/parameters/PathUidb64'
+                - $ref: '#/components/parameters/PathToken'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceResetPassword AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/reset-password/{uidb64}/{token}/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/sign-in/:
+        post:
+            operationId: post_auth_spaces_sign_in
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceEmailSignIn AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/sign-in/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/sign-out/:
+        post:
+            operationId: post_auth_spaces_sign_out
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceSignOut AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/sign-out/
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/sign-up/:
+        post:
+            operationId: post_auth_spaces_sign_up
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthMagicSignInRequestBody'
+            responses:
+                "302":
+                    $ref: '#/components/responses/PostAuthMagicSignInStatus302Response'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            summary: SpaceEmailSignUp AuthRedirects
+            tags:
+                - AuthRedirects
+            x-plane-contract-id: POST /auth/spaces/sign-up/
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        AuthRedirectForm:
+            type: object
+            properties:
+                code:
+                    type: string
+                email:
+                    type: string
+                next_path:
+                    type: string
+                password:
+                    type: string
+    parameters:
+        PathToken:
+            name: token
+            in: path
+            required: true
+            schema:
+                type: string
+        PathUidb64:
+            name: uidb64
+            in: path
+            required: true
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PostAuthMagicSignInRequestBody:
+            content:
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/AuthRedirectForm'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/AuthRedirectForm'
+    responses:
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                text/html:
+                    schema: {}
+        PostAuthMagicSignInStatus302Response:
+            description: Found response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+                Location:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        type: string
+                        format: binary
+tags:
+    - name: AuthRedirects

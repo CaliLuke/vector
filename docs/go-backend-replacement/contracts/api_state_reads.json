@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "family": "api_state_reads",
+  "source_revision": "050695c40526ecef5c4bd9bc017a224b920190b6",
+  "characterization_status": "complete: 66 source-recorded cases; immutable Django replay passed",
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_states": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used; no state/domain writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "per_page", "fields", "expand"],
+      "source_branches": [
+        {
+          "when": "no API key; invalid, expired or inactive token; inactive user",
+          "observable": "No key returns 401. A supplied but invalid key returns 403. A valid token updates api_tokens.last_used before project permission checks. Session cookies do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project membership and tenant scope",
+          "observable": "Safe GET permission requires a live active ProjectMember matching requester, workspace slug and project UUID; any project role including guest is allowed. Workspace membership is irrelevant. Missing, inactive or soft-deleted membership and wrong slug/project return 403 before queryset lookup.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "project state queryset",
+          "observable": "State.objects excludes deleted states and group=triage. The queryset also filters exact workspace slug/project UUID, active membership and is_triage=false, excludes archived projects, select_related project/workspace and DISTINCTs rows. It does not explicitly exclude soft-deleted projects or workspaces. Archived project gives an empty list; soft-deleted project/workspace behavior must be retained from recorder evidence.",
+          "source": "apps/api/plane/api/views/state.py::StateListCreateAPIEndpoint.get_queryset; apps/api/plane/db/models/state.py::StateManager"
+        },
+        {
+          "when": "ordering, cursor and page size",
+          "observable": "State.Meta orders by sequence ascending. The list uses BasePaginator with per_page default 1000 and max 1000; cursor is limit:page-index:is-prev, offset is page-index times per_page, with next and previous cursor metadata. Malformed cursor/per_page and values above 1000 return 400. per_page=0 and negative per_page are source edge probes; preserve observed runtime status and body.",
+          "source": "apps/api/plane/db/models/state.py::State.Meta; apps/api/plane/utils/paginator.py::BasePaginator; apps/api/plane/utils/paginator.py::OffsetPaginator"
+        },
+        {
+          "when": "list projection and expansions",
+          "observable": "StateSerializer emits all model fields by default. Exact comma-split fields are applied before expand; unknown fields disappear, empty selection means all, and whitespace is not trimmed. Only selected fields are expandable. BaseSerializer maps created_by/updated_by to UserLiteSerializer, workspace to WorkspaceLiteSerializer and project to ProjectLiteSerializer; a selected ordinary field named in expand is overwritten by its <field>_id value or null. Confirm null relation expansion from recorder output.",
+          "source": "apps/api/plane/api/views/base.py::BaseAPIView.fields; apps/api/plane/api/views/base.py::BaseAPIView.expand; apps/api/plane/api/serializers/base.py::BaseSerializer; apps/api/plane/api/serializers/state.py::StateSerializer"
+        },
+        {
+          "when": "response and timezone",
+          "observable": "Success returns the BasePaginator envelope with nullable grouped_by, sub_grouped_by and extra_stats, page counts/cursors and serialized State rows. Authenticated user timezone is activated after authentication, permissions and throttling and affects serialized datetimes. Invalid timezone follows BaseAPIView KeyError handling and returns 400.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator.paginate; apps/api/plane/api/views/base.py::TimezoneMixin.initial; apps/api/plane/api/views/base.py::BaseAPIView.handle_exception"
+        },
+        {
+          "when": "query parameters not used by this view",
+          "observable": "No state filter, search, grouping or order_by query handling is defined; those values are ignored. List supports only cursor, per_page, fields and expand.",
+          "source": "apps/api/plane/api/views/state.py::StateListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "API-key throttling and cache",
+          "observable": "ApiKeyRateThrottle uses cache key api_key:<raw API key>, stores sliding request timestamps, and returns 429 at the configured limit. Allowed requests receive X-RateLimit-Remaining and X-RateLimit-Reset. Permission denial occurs before throttle consumption.",
+          "source": "apps/api/plane/api/views/base.py::BaseAPIView.get_throttles; apps/api/plane/api/rate_limit.py::ApiKeyRateThrottle"
+        },
+        {
+          "when": "API audit middleware",
+          "observable": "After a response, every nonempty X-Api-Key request reaching APITokenLogMiddleware enqueues one durable plane.bgtasks.logger_task.process_logs Celery task with HMAC token identifier, redacted sensitive headers, request/response metadata and bodies. No worker runs and no APIActivityLog row is written in-request. CorsMiddleware short-circuits a valid preflight before the audit middleware, so preflight enqueues nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/settings/common.py::MIDDLEWARE"
+        },
+        {
+          "when": "database routing",
+          "observable": "The view declares use_read_replica=true; safe method reads use the configured replica while APIToken.last_used write uses the primary. No state/domain row is written by GET.",
+          "source": "apps/api/plane/api/views/state.py::StateListCreateAPIEndpoint.use_read_replica; apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "protocol methods",
+          "observable": "The URL view allows only GET and POST. HEAD and ordinary OPTIONS are not handlers and return 405; CORS preflight is handled by the outer CorsMiddleware.",
+          "source": "apps/api/plane/api/urls/state.py"
+        }
+      ],
+      "fixture_prefix": "list",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-bad-accept.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-cursor-overflow.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-deleted-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-duplicate-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-empty-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-fields-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-full-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-inactive-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-negative-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-order-filter-group-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-over-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-page-after-end.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-path-wins-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-scalar-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-state-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-unknown-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-unselected-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/list-zero-limit.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-state-reads/projects/00000000-0000-4000-8000-000000009601/states/",
+      "statuses": [200, 400, 401, 403, 405, 406, 429, 500],
+      "supported_query_parameters": ["cursor", "per_page", "fields", "expand"],
+      "ignored_query_parameters": ["order_by", "group_by", "sub_group_by", "search", "name", "group"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used; no state/domain writes"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "no API key; invalid, expired or inactive token; inactive user",
+          "observable": "No key returns 401. A supplied but invalid key returns 403. A valid token updates api_tokens.last_used before project permission checks. Session cookies do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project membership and tenant scope",
+          "observable": "Safe GET permission requires a live active ProjectMember matching requester, workspace slug and project UUID; any project role including guest is allowed. Workspace membership is irrelevant. Missing, inactive or soft-deleted membership and wrong slug/project return 403 before state lookup.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "project state queryset and detail lookup",
+          "observable": "State.objects excludes deleted states and group=triage. The queryset also filters exact workspace slug/project UUID, active membership, is_triage=false and project.archived_at IS NULL, with related project/workspace loaded. A missing, soft-deleted, triage, wrong-project, wrong-workspace or archived-project state raises DoesNotExist and returns 404. The source does not explicitly exclude soft-deleted project/workspace rows.",
+          "source": "apps/api/plane/api/views/state.py::StateDetailAPIEndpoint.get_queryset; apps/api/plane/api/views/state.py::StateDetailAPIEndpoint.get; apps/api/plane/db/models/state.py::StateManager"
+        },
+        {
+          "when": "projection",
+          "observable": "StateSerializer emits every model field by default. Although OpenAPI documents no query parameters for detail, BaseAPIView still applies fields and expand: exact comma-split fields before expansion; unknown fields disappear, empty selection means all, whitespace is not trimmed. Only selected fields expand; known relations map to user/workspace/project lite serializers, while a selected ordinary field named in expand becomes its <field>_id or null. Other query parameters including cursor/per_page are ignored.",
+          "source": "apps/api/plane/api/views/base.py::BaseAPIView.fields; apps/api/plane/api/views/base.py::BaseAPIView.expand; apps/api/plane/api/serializers/base.py::BaseSerializer; apps/api/plane/api/serializers/state.py::StateSerializer"
+        },
+        {
+          "when": "timezone and response",
+          "observable": "Success returns one StateSerializer object with authenticated user's timezone applied to datetime fields. Invalid timezone returns 400 through BaseAPIView KeyError handling. Detail's get_queryset().get missing-object path returns 404 with the BaseAPIView not-found body.",
+          "source": "apps/api/plane/api/views/base.py::TimezoneMixin.initial; apps/api/plane/api/views/base.py::BaseAPIView.handle_exception; apps/api/plane/api/views/state.py::StateDetailAPIEndpoint.get"
+        },
+        {
+          "when": "API-key throttling, cache and audit",
+          "observable": "The same API-key throttle/cache and post-response process_logs effect apply as for list. Every nonempty API key request reaching the middleware is audited; anonymous and CORS-preflight short circuits are not. The request has no state/domain writes; a valid token updates api_tokens.last_used.",
+          "source": "apps/api/plane/api/views/base.py::BaseAPIView.get_throttles; apps/api/plane/api/rate_limit.py::ApiKeyRateThrottle; apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "protocol methods and database routing",
+          "observable": "The URL view allows only GET, PATCH and DELETE. HEAD and ordinary OPTIONS return 405; outer CORS handles preflight. GET uses the read replica for reads; last_used persists on primary.",
+          "source": "apps/api/plane/api/urls/state.py; apps/api/plane/api/views/state.py::StateDetailAPIEndpoint.use_read_replica; apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware"
+        }
+      ],
+      "fixture_prefix": "detail",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-cross-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-deleted-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-invalid-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-null-audit-users-expanded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-pagination-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-state-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-triage-flag.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-triage-group.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-unknown-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_state_reads/detail-unselected-expand.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-state-reads/projects/00000000-0000-4000-8000-000000009601/states/00000000-0000-4000-8000-000000009701/",
+      "statuses": [200, 400, 401, 403, 404, 405],
+      "supported_query_parameters": ["fields", "expand"],
+      "ignored_query_parameters": ["cursor", "per_page", "order_by", "group_by", "sub_group_by", "search"]
+    }
+  },
+  "source_files": [
+    "apps/api/plane/api/urls/state.py",
+    "apps/api/plane/api/views/state.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/serializers/state.py",
+    "apps/api/plane/api/serializers/base.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/rate_limit.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/settings/common.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/middleware/db_routing.py",
+    "apps/api/plane/utils/core/dbrouters.py",
+    "apps/api/plane/db/models/state.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/api.py"
+  ],
+  "shared_transport_evidence": "Existing API-v1 API-key reads cover common authentication, throttling, timezone, CORS, read-replica routing and API audit middleware. This family records state-specific exact Allow, source status/body, projections, queryset branches, last_used/cache deltas and real durable process_logs envelopes.",
+  "reuse_analysis": "Extend the existing projectstatereads domain repository for the new API-v1 state serializer/pagination contract while keeping its session-authenticated app routes unchanged. Reuse the API-v1 service/middleware pattern from api_label_reads/api_cycle_reads; do not reuse old app-state authorization or response JSON as the v1 contract.",
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["cursor", "per_page", "fields", "expand"],
+    "evidence": "apps/api/plane/tests/parity/test_api_state_reads_recorder.py::test_api_state_read_contract",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/api-state-reads/projects/00000000-0000-4000-8000-000000009601/states/"
+    }
+  },
+  "runtime_questions": [],
+  "source_runtime_evidence": {
+    "recorder": "apps/api/plane/tests/parity/test_api_state_reads_recorder.py::test_api_state_read_contract",
+    "fixture_count": 66,
+    "fixture_manifest_sha256": "5c0de5fed0cb1406eb52e659a2bf3157a4af4b1bd9fcbd9a5535d98ccc321a55",
+    "fixture_manifest_bytes": 5917,
+    "source_recording": {
+      "command": "eval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\" && docker compose -p plane-api-state -f docker-compose-test.yml run --rm -e API_STATE_SOURCE_RECORDING=1 -e UPDATE_PARITY_FIXTURES=1 api-tests pytest plane/tests/parity/test_api_state_reads_recorder.py -q -s --tb=short",
+      "exit_code": 0,
+      "pytest_cases": 66,
+      "passed": 66,
+      "elapsed_seconds": 7.38
+    },
+    "notable_runtime_probe": "list-cursor-overflow returns 500 after API token last_used is persisted, enqueues one durable process_logs task with response_code 500, and changes rate-limit history from empty to one timestamp; this was recorded in transaction=True mode without request rollback.",
+    "fixture_corpus_bytes": 281374,
+    "fixture_hash_manifest": "/tmp/plane-api-state-reads/source-fixture-hashes.json",
+    "immutable_django_fixture_replay": {
+      "exit_code": 0,
+      "case_count": 66,
+      "duration_seconds": 3.77,
+      "passed": 66,
+      "pytest_cases": 66,
+      "target": "Django source fixture stability; UPDATE_PARITY_FIXTURES unset; not Go parity"
+    },
+    "compose_project": "plane-api-state (isolated; services left running for next stage)",
+    "overflow_probe": "PostgreSQL bigint out of range; 500 after APIToken.last_used persisted; cache history [] to [timestamp]; one persistent plane.bgtasks.logger_task.process_logs task with response_code 500",
+    "go_replay": {
+      "command": "PLANE_API_STATE_READS_PARITY_REUSE=1 go test -tags=integration ./internal/parity -run ^TestAPIStateReadsFixturesReplayAgainstGo$ -count=1",
+      "log": "/tmp/plane-api-state-reads/parity-replay-6.log",
+      "fixture_count": 66,
+      "pytest_passed": 1,
+      "pytest_skipped": 1,
+      "expected_skip": "source-only cursor-overflow case",
+      "marker": "API_STATE_READS_REPLAY_CASES=66",
+      "result": "passed; 66 internal source fixture cases; no mismatches"
+    },
+    "recorder_correction": {
+      "defect": "PRC-048 Django JsonResponse body was omitted by recorder extraction",
+      "fixture": "detail-invalid-uuid.json",
+      "old_sha256": "434044faef816e63f31de449c0e7542f54f1b7d916412c0ea1a8d77f1a6f9351",
+      "new_sha256": "58b5ed31b84bcb1d0695c9e1c50a73850686792b02cc5ed49db78ca2f40b5604",
+      "guard": "apps/api/plane/tests/parity/test_recorder_response_extraction.py::test_django_json_response_body_is_recorded"
+    },
+    "django_discovery": {
+      "artifact": "/tmp/plane-api-state-reads/migration-discovery-counts.json",
+      "environment": "ENABLE_DRF_SPECTACULAR=1",
+      "retired_candidate": {
+        "paths": 184,
+        "operations": 313,
+        "methods": {
+          "DELETE": 65,
+          "GET": 90,
+          "PATCH": 49,
+          "POST": 102,
+          "PUT": 7
+        }
+      },
+      "source_base": {
+        "paths": 184,
+        "operations": 315,
+        "methods": {
+          "DELETE": 65,
+          "GET": 92,
+          "PATCH": 49,
+          "POST": 102,
+          "PUT": 7
+        }
+      },
+      "delta": "exactly the two selected GET operations; no paths fully removed"
+    },
+    "migration_openapi_contract_test": {
+      "command": "docker compose -p plane-api-state -f docker-compose-test.yml run --rm -e ENABLE_DRF_SPECTACULAR=1 api-tests pytest plane/tests/unit/openapi/test_migration_openapi.py -q --tb=short",
+      "exit_code": 0,
+      "passed": 21
+    }
+  }
+}

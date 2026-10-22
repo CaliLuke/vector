@@ -1,0 +1,5 @@
+Base commit: 884590b2a2c325ffeb51ce3c58af6e315b841be4
+Decision: docs/go-backend-replacement/decisions/ACCESS-001-invitation-membership-corrections.md
+The portable test helper reconstructs pristine Django source with git archive, applies this patch for corrected source, then overlays the two regression tests and both fixture corpora from the checkout.
+Corrected Django source modules and copied regression tests are fingerprinted in source-inputs.SHA256SUMS.
+The corrected URL module includes ACCESS-001#7 (DefaultRouter include_format_suffixes=False).

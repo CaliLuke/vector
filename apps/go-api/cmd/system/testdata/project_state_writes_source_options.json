@@ -1,0 +1,252 @@
+{
+  "collection": {
+    "body": {
+      "actions": {
+        "POST": {
+          "color": {
+            "label": "State Color",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "default": {
+            "label": "Default",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "description": {
+            "label": "State Description",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "group": {
+            "choices": [
+              {
+                "display_name": "Backlog",
+                "value": "backlog"
+              },
+              {
+                "display_name": "Unstarted",
+                "value": "unstarted"
+              },
+              {
+                "display_name": "Started",
+                "value": "started"
+              },
+              {
+                "display_name": "Completed",
+                "value": "completed"
+              },
+              {
+                "display_name": "Cancelled",
+                "value": "cancelled"
+              },
+              {
+                "display_name": "Triage",
+                "value": "triage"
+              }
+            ],
+            "label": "Group",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "State Name",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "order": {
+            "label": "Order",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sequence": {
+            "label": "Sequence",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "State",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Date": "Wed, 21 Oct 2026 16:16:00 GMT",
+      "Referrer-Policy": "same-origin",
+      "Server": "WSGIServer/0.2 CPython/3.12.10",
+      "Transfer-Encoding": "chunked",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "Via": "1.1 Caddy",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "detail": {
+    "body": {
+      "description": "",
+      "name": "State",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Length": "152",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Date": "Wed, 21 Oct 2026 16:16:00 GMT",
+      "Referrer-Policy": "same-origin",
+      "Server": "WSGIServer/0.2 CPython/3.12.10",
+      "Vary": "Cookie, origin",
+      "Via": "1.1 Caddy",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "mark-default": {
+    "body": {
+      "actions": {
+        "POST": {
+          "color": {
+            "label": "State Color",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "default": {
+            "label": "Default",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "description": {
+            "label": "State Description",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "group": {
+            "choices": [
+              {
+                "display_name": "Backlog",
+                "value": "backlog"
+              },
+              {
+                "display_name": "Unstarted",
+                "value": "unstarted"
+              },
+              {
+                "display_name": "Started",
+                "value": "started"
+              },
+              {
+                "display_name": "Completed",
+                "value": "completed"
+              },
+              {
+                "display_name": "Cancelled",
+                "value": "cancelled"
+              },
+              {
+                "display_name": "Triage",
+                "value": "triage"
+              }
+            ],
+            "label": "Group",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "State Name",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "order": {
+            "label": "Order",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sequence": {
+            "label": "Sequence",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "State",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Date": "Wed, 21 Oct 2026 16:16:00 GMT",
+      "Referrer-Policy": "same-origin",
+      "Server": "WSGIServer/0.2 CPython/3.12.10",
+      "Transfer-Encoding": "chunked",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "Via": "1.1 Caddy",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  }
+}

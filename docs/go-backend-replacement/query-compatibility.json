@@ -1,0 +1,509 @@
+{
+  "version": 1,
+  "scope": "Shared query parsing and scalar selection for currently mounted Go transports, before Loom dependency upgrade",
+  "source_commit": "1fd78aa8d4a6a484faa856e3d37d3058394f1c7a",
+  "operation_manifest": [
+    {
+      "method": "GET",
+      "path": "/api/instances/workspace-slug-check/",
+      "parameters": ["slug"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/cycles/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/labels/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/members/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/meta/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/modules/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/settings/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/states/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/public/workspaces/{slug}/projects/{project_id}/anchor/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/me/workspaces/",
+      "parameters": ["owner", "search", "fields"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace-slug-check/",
+      "parameters": ["slug"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/",
+      "parameters": ["owner", "search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/",
+      "parameters": ["owner", "search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/draft-issues/",
+      "parameters": [
+        "cursor",
+        "per_page",
+        "order_by",
+        "search",
+        "status",
+        "state",
+        "state_group",
+        "estimate_point",
+        "priority",
+        "parent",
+        "labels",
+        "assignees",
+        "mentions",
+        "created_by",
+        "logged_by",
+        "name",
+        "created_at",
+        "updated_at",
+        "start_date",
+        "target_date",
+        "completed_at",
+        "type",
+        "project",
+        "cycle",
+        "module",
+        "intake_status",
+        "inbox_status",
+        "sub_issue",
+        "subscriber",
+        "start_target_date"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/estimates/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/members/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/members/{pk}/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/project-identifiers/",
+      "parameters": ["name"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/project-stats/",
+      "parameters": ["fields", "project_ids", "search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/details/",
+      "parameters": ["fields", "per_page", "cursor", "order_by", "search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/",
+      "parameters": ["cycle_view"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/",
+      "parameters": ["type"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/",
+      "parameters": [
+        "order_by",
+        "group_by",
+        "sub_group_by",
+        "cursor",
+        "per_page",
+        "state",
+        "state_group",
+        "estimate_point",
+        "priority",
+        "assignees",
+        "labels",
+        "created_by",
+        "logged_by",
+        "parent",
+        "mentions",
+        "name",
+        "created_at",
+        "updated_at",
+        "start_date",
+        "target_date",
+        "completed_at",
+        "project",
+        "cycle",
+        "module",
+        "intake_status",
+        "inbox_status",
+        "sub_issue",
+        "subscriber",
+        "start_target_date",
+        "type",
+        "filters"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inbox-issues/",
+      "parameters": [
+        "cursor",
+        "per_page",
+        "order_by",
+        "search",
+        "status",
+        "state",
+        "state_group",
+        "estimate_point",
+        "priority",
+        "parent",
+        "labels",
+        "assignees",
+        "mentions",
+        "created_by",
+        "logged_by",
+        "name",
+        "created_at",
+        "updated_at",
+        "start_date",
+        "target_date",
+        "completed_at",
+        "type",
+        "project",
+        "cycle",
+        "module",
+        "intake_status",
+        "inbox_status",
+        "sub_issue",
+        "subscriber",
+        "start_target_date"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intake-issues/",
+      "parameters": [
+        "cursor",
+        "per_page",
+        "order_by",
+        "search",
+        "status",
+        "state",
+        "state_group",
+        "estimate_point",
+        "priority",
+        "parent",
+        "labels",
+        "assignees",
+        "mentions",
+        "created_by",
+        "logged_by",
+        "name",
+        "created_at",
+        "updated_at",
+        "start_date",
+        "target_date",
+        "completed_at",
+        "type",
+        "project",
+        "cycle",
+        "module",
+        "intake_status",
+        "inbox_status",
+        "sub_issue",
+        "subscriber",
+        "start_target_date"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/",
+      "parameters": ["cursor"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/",
+      "parameters": ["fields"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/",
+      "parameters": [
+        "cursor",
+        "per_page",
+        "order_by",
+        "group_by",
+        "sub_group_by",
+        "state",
+        "state_group",
+        "estimate_point",
+        "priority",
+        "assignees",
+        "labels",
+        "created_by",
+        "parent",
+        "mentions",
+        "name",
+        "created_at",
+        "project",
+        "logged_by",
+        "updated_at",
+        "start_date",
+        "target_date",
+        "completed_at",
+        "cycle",
+        "module",
+        "intake_status",
+        "inbox_status",
+        "sub_issue",
+        "subscriber",
+        "start_target_date",
+        "type",
+        "filters"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/",
+      "parameters": ["search", "order_by"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+      "parameters": ["search", "order_by", "track_visit"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/",
+      "parameters": ["search"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/",
+      "parameters": ["grouped"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/recent-visits/",
+      "parameters": ["entity_name"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/stickies/",
+      "parameters": ["cursor", "per_page", "query"]
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/auth/get-csrf-token/",
+      "parameters": ["format"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/users/me/activities/",
+      "parameters": ["cursor", "order_by", "per_page"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/",
+      "parameters": ["cursor", "expand", "fields", "order_by", "per_page"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/{pk}/",
+      "parameters": ["cursor", "expand", "fields", "order_by", "per_page"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/",
+      "parameters": ["cursor", "expand", "fields", "order_by", "per_page"]
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/{pk}/",
+      "parameters": ["cursor", "expand", "fields", "order_by", "per_page"]
+    }
+  ],
+  "runtime": {
+    "python": "3.12.5",
+    "django": "5.2.15",
+    "charset": "utf-8",
+    "max_fields": 1000
+  },
+  "fixture": "apps/api/plane/tests/fixtures/query_compatibility.json",
+  "fixture_cases": 184,
+  "contract": [
+    {
+      "dimension": "decoding",
+      "expected": "Decode percent escapes and plus once; preserve malformed escapes as literal data; semicolons belong to keys/values and ampersand separates fields."
+    },
+    {
+      "dimension": "selection",
+      "expected": "All 44 declared root/activity scalar names and the 28 existing filter aliases select the last decoded occurrence, including blank and valueless occurrences. Unknown repeated fields retain all values in encounter order."
+    },
+    {
+      "dimension": "presence",
+      "expected": "Skip empty ampersand components; preserve actual empty keys and blank values; omitted names remain omitted."
+    },
+    {
+      "dimension": "unicode",
+      "expected": "Percent-encoded invalid UTF-8 uses Python replacement spans, including two replacements for FF FF and one for truncated E2 82."
+    },
+    {
+      "dimension": "schema",
+      "expected": "Resolve OpenAPI parameter/schema references before checking scalar coverage; future array/scalar name collisions fail the guard and require an operation-specific policy."
+    },
+    {
+      "dimension": "evidence",
+      "expected": "Clone request URLs, preserve RequestURI and captured original query, and remain idempotent. Original field count and pagination syntax stay available to existing compatibility checks."
+    },
+    {
+      "dimension": "protocol",
+      "expected": "Keep the normalizer inside the Go transport boundary and after outer compatibility captures. Preserve existing authentication, permission, negotiation, redirect, GET/HEAD, CORS and audit behavior; add no new error response policy."
+    },
+    {
+      "dimension": "field_limit",
+      "expected": "Django counts original ampersand components, including empty and trailing components, before decoding. Accept 1000 and reject 1001. All existing format/limit consumers use the first original-query snapshot, not normalized URL.RawQuery. Preserve their current error/auth/negotiation/session precedence."
+    },
+    {
+      "dimension": "public_metadata_logging",
+      "expected": "Generated production mount preserves original repeated, encoded and malformed query bytes in API activity QueryParams and the Django-position request log URL, even though generated handlers receive normalized scalar values."
+    }
+  ],
+  "sources": [
+    {
+      "paths": [
+        "apps/api/plane/utils/issue_filters.py",
+        "apps/api/plane/utils/filters/filterset.py",
+        "apps/api/plane/utils/paginator.py"
+      ],
+      "rule": "Scalar get/widget selection precedes CSV/date/filter parsing."
+    },
+    {
+      "commit": "d310b836b5^",
+      "paths": [
+        "apps/api/plane/app/views/cycle/issue.py",
+        "apps/api/plane/app/views/module/issue.py",
+        "apps/api/plane/app/views/page/base.py",
+        "apps/api/plane/app/views/intake/base.py",
+        "apps/api/plane/app/views/analytic/base.py"
+      ],
+      "rule": "Scalar GET.get for ordering/grouping/status/fields/project_ids; current base view serializers read fields and expand with GET.get."
+    },
+    {
+      "commit": "a45e5e10fb^",
+      "paths": [
+        "apps/api/plane/app/views/workspace/sticky.py",
+        "apps/api/plane/app/views/workspace/base.py",
+        "apps/api/plane/license/api/views/workspace.py"
+      ],
+      "rule": "Sticky query and workspace slug use GET/query_params.get; duplicate order is last-value selection."
+    },
+    {
+      "commit": "64f938096f^",
+      "path": "apps/api/plane/app/views/state/base.py",
+      "rule": "grouped uses GET.get."
+    },
+    {
+      "commit": "f90afffcd4^",
+      "path": "apps/api/plane/app/views/workspace/recent_visit.py",
+      "rule": "entity_name uses query_params.get."
+    },
+    {
+      "commit": "87a4e47c64^",
+      "paths": ["apps/api/plane/api/views/issue.py", "apps/api/plane/api/views/base.py"],
+      "rule": "Activity inherits scalar fields/expand and reads scalar order_by."
+    }
+  ],
+  "excluded": [
+    "No Loom dependency upgrade, route-state transition, or Django handler removal.",
+    "No rewriting queries before Django proxy fallback; its workspace activity project parameter uses getlist.",
+    "Raw invalid UTF-8 wire bytes have a separate ASGI ingress contract; these cases cover Unicode strings and ASCII percent-encoded bytes.",
+    "No new transport error envelope or change to existing field-limit error precedence."
+  ],
+  "verification": {
+    "django": "apps/api/plane/tests/unit/test_query_compatibility.py",
+    "go_parser": "apps/go-api/cmd/system/query_contract_test.go",
+    "go_transport": "apps/go-api/cmd/system/query_http_contract_test.go",
+    "existing_protocol": [
+      "apps/go-api/cmd/system/activity_reads_http_test.go",
+      "apps/go-api/cmd/system/read_services_http_test.go"
+    ],
+    "go_field_limit": "apps/go-api/cmd/system/query_limit_contract_test.go",
+    "go_logging": "apps/go-api/cmd/system/query_logging_contract_test.go",
+    "go_scalar_mount": "apps/go-api/cmd/system/query_scalar_mount_test.go"
+  },
+  "implementation_boundary": {
+    "decoder": "Keep normalizeDjangoTolerantQuery as a multi-value decoder. Decode all nonempty ampersand fields, including valid-looking percent-encoded invalid UTF-8. Use already-pinned x/text UTF-8 replacement instead of collapsing invalid byte runs.",
+    "scalar_selection": "Complete the existing readServiceScalarQueryParameters map with entity_name, expand, format, grouped, query, slug; keep last-value selection separate from decoding.",
+    "mount": "Compose original-query capture, tolerant decoding and existing scalar normalization inside the mounted Go mux boundary. Read compatibility also captures before its early normalization. Capture only when absent, so nested passes retain the first snapshot and existing activity integer-query capture remains intact.",
+    "unchanged": "No generated code, designs, dependency version, status policy, authorization or domain behavior changes.",
+    "original_query_consumers": {
+      "field_limit": "All three existing djangoQueryValues format consumers (readServicesContentNegotiationMiddleware, userMeReadCompatibilityMiddleware and publicProjectMetadataReadsCompatibilityMiddleware) read readServicesOriginalRawQuery(request). Count original ampersand components before decoder skips empty fields or selector collapses scalars; retain existing response envelopes and auth/negotiation/session ordering.",
+      "audit": "writeAPIActivityLog already reads readServicesOriginalRawQuery; the shared Go mount capture extends that guarantee to public metadata.",
+      "request_log": "logPublicProjectMetadataInnerResponse constructs its Django-escaped full path using the original raw query on a URL copy. Keep djangoFullPath and unrelated redirects unchanged."
+    }
+  }
+}

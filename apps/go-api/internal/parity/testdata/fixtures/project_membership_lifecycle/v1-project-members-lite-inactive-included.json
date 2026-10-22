@@ -1,0 +1,272 @@
+{
+  "cache": {
+    "rate_limit_history_after": [
+      "<timestamp>"
+    ],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-7>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Membership lifecycle",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-6>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-7>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Membership lifecycle",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-6>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/project-membership-lifecycle/projects/<uuid-1>/project-members-lite/",
+            "query_params": "",
+            "response_body": {
+              "count": 5,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1000:1:0",
+              "next_page_results": false,
+              "prev_cursor": "1000:-1:1",
+              "prev_page_results": false,
+              "results": [
+                {
+                  "avatar": "",
+                  "avatar_url": null,
+                  "display_name": "membership-bot",
+                  "email": "membership-bot@example.com",
+                  "first_name": "",
+                  "id": "<uuid-2>",
+                  "is_active": true,
+                  "is_bot": true,
+                  "last_name": "",
+                  "role": 15
+                },
+                {
+                  "avatar": "",
+                  "avatar_url": null,
+                  "display_name": "Membership Target",
+                  "email": "membership-target@example.com",
+                  "first_name": "Membership",
+                  "id": "<uuid-3>",
+                  "is_active": false,
+                  "is_bot": false,
+                  "last_name": "Target",
+                  "role": 15
+                },
+                {
+                  "avatar": "",
+                  "avatar_url": null,
+                  "display_name": "Membership Guest",
+                  "email": "membership-guest@example.com",
+                  "first_name": "Membership",
+                  "id": "<uuid-4>",
+                  "is_active": true,
+                  "is_bot": false,
+                  "last_name": "Guest",
+                  "role": 5
+                },
+                {
+                  "avatar": "",
+                  "avatar_url": null,
+                  "display_name": "Membership Member",
+                  "email": "membership-member@example.com",
+                  "first_name": "Membership",
+                  "id": "<uuid-5>",
+                  "is_active": true,
+                  "is_bot": false,
+                  "last_name": "Member",
+                  "role": 15
+                },
+                {
+                  "avatar": "",
+                  "avatar_url": null,
+                  "display_name": "Membership Owner",
+                  "email": "membership-owner@example.com",
+                  "first_name": "Membership",
+                  "id": "<uuid-6>",
+                  "is_active": true,
+                  "is_bot": false,
+                  "last_name": "Owner",
+                  "role": 20
+                }
+              ],
+              "sub_grouped_by": null,
+              "total_count": 5,
+              "total_pages": 1,
+              "total_results": 5
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/project-membership-lifecycle/projects/<uuid-1>/project-members-lite/",
+    "principal": {
+      "kind": "api-key",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "count": 5,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1000:1:0",
+      "next_page_results": false,
+      "prev_cursor": "1000:-1:1",
+      "prev_page_results": false,
+      "results": [
+        {
+          "avatar": "",
+          "avatar_url": null,
+          "display_name": "membership-bot",
+          "email": "membership-bot@example.com",
+          "first_name": "",
+          "id": "<uuid-2>",
+          "is_active": true,
+          "is_bot": true,
+          "last_name": "",
+          "role": 15
+        },
+        {
+          "avatar": "",
+          "avatar_url": null,
+          "display_name": "Membership Target",
+          "email": "membership-target@example.com",
+          "first_name": "Membership",
+          "id": "<uuid-3>",
+          "is_active": false,
+          "is_bot": false,
+          "last_name": "Target",
+          "role": 15
+        },
+        {
+          "avatar": "",
+          "avatar_url": null,
+          "display_name": "Membership Guest",
+          "email": "membership-guest@example.com",
+          "first_name": "Membership",
+          "id": "<uuid-4>",
+          "is_active": true,
+          "is_bot": false,
+          "last_name": "Guest",
+          "role": 5
+        },
+        {
+          "avatar": "",
+          "avatar_url": null,
+          "display_name": "Membership Member",
+          "email": "membership-member@example.com",
+          "first_name": "Membership",
+          "id": "<uuid-5>",
+          "is_active": true,
+          "is_bot": false,
+          "last_name": "Member",
+          "role": 15
+        },
+        {
+          "avatar": "",
+          "avatar_url": null,
+          "display_name": "Membership Owner",
+          "email": "membership-owner@example.com",
+          "first_name": "Membership",
+          "id": "<uuid-6>",
+          "is_active": true,
+          "is_bot": false,
+          "last_name": "Owner",
+          "role": 20
+        }
+      ],
+      "sub_grouped_by": null,
+      "total_count": 5,
+      "total_pages": 1,
+      "total_results": 5
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-ratelimit-remaining": "<x-ratelimit-remaining>",
+      "x-ratelimit-reset": "<x-ratelimit-reset>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "v1-project-members-lite-inactive-included"
+  }
+}

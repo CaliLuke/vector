@@ -1,0 +1,263 @@
+{
+  "source": "DRF ListField.get_value and Django form/multipart parsers in plane-notification-parity:3e312f0317845e2c808773dc",
+  "cases": [
+    {
+      "name": "repeated",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=first&labels=second&labels=first",
+      "partial": false,
+      "fields": {
+        "labels": "first"
+      },
+      "present": true,
+      "value": ["first", "second", "first"]
+    },
+    {
+      "name": "repeated-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=first&labels=second&labels=first",
+      "partial": true,
+      "fields": {
+        "labels": "first"
+      },
+      "present": true,
+      "value": ["first", "second", "first"]
+    },
+    {
+      "name": "empty-bare",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=&labels=second",
+      "partial": false,
+      "fields": {
+        "labels": "second"
+      },
+      "present": true,
+      "value": ["", "second"]
+    },
+    {
+      "name": "empty-bare-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=&labels=second",
+      "partial": true,
+      "fields": {
+        "labels": "second"
+      },
+      "present": true,
+      "value": ["", "second"]
+    },
+    {
+      "name": "bare-wins",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B0%5D=indexed&labels=bare",
+      "partial": false,
+      "fields": {
+        "labels[0]": "indexed",
+        "labels": "bare"
+      },
+      "present": true,
+      "value": ["bare"]
+    },
+    {
+      "name": "bare-wins-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B0%5D=indexed&labels=bare",
+      "partial": true,
+      "fields": {
+        "labels[0]": "indexed",
+        "labels": "bare"
+      },
+      "present": true,
+      "value": ["bare"]
+    },
+    {
+      "name": "out-of-order",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B10%5D=ten&labels%5B2%5D=two",
+      "partial": false,
+      "fields": {
+        "labels[10]": "ten",
+        "labels[2]": "two"
+      },
+      "present": true,
+      "value": ["two", "ten"]
+    },
+    {
+      "name": "out-of-order-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B10%5D=ten&labels%5B2%5D=two",
+      "partial": true,
+      "fields": {
+        "labels[10]": "ten",
+        "labels[2]": "two"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "duplicate-index",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B0%5D=first&labels%5B00%5D=second&labels%5B0%5D=last",
+      "partial": false,
+      "fields": {
+        "labels[0]": "last",
+        "labels[00]": "second"
+      },
+      "present": true,
+      "value": ["second"]
+    },
+    {
+      "name": "duplicate-index-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B0%5D=first&labels%5B00%5D=second&labels%5B0%5D=last",
+      "partial": true,
+      "fields": {
+        "labels[0]": "last",
+        "labels[00]": "second"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "huge-index",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B999999999999999999999999999999%5D=last&labels%5B1%5D=first",
+      "partial": false,
+      "fields": {
+        "labels[999999999999999999999999999999]": "last",
+        "labels[1]": "first"
+      },
+      "present": true,
+      "value": ["first", "last"]
+    },
+    {
+      "name": "huge-index-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B999999999999999999999999999999%5D=last&labels%5B1%5D=first",
+      "partial": true,
+      "fields": {
+        "labels[999999999999999999999999999999]": "last",
+        "labels[1]": "first"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "invalid-index",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B-1%5D=negative&labels%5B%5D=empty&labels%5B1x%5D=bad",
+      "partial": false,
+      "fields": {
+        "labels[-1]": "negative",
+        "labels[]": "empty",
+        "labels[1x]": "bad"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "invalid-index-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels%5B-1%5D=negative&labels%5B%5D=empty&labels%5B1x%5D=bad",
+      "partial": true,
+      "fields": {
+        "labels[-1]": "negative",
+        "labels[]": "empty",
+        "labels[1x]": "bad"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "absent",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "name=test",
+      "partial": false,
+      "fields": {
+        "name": "test"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "absent-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "name=test",
+      "partial": true,
+      "fields": {
+        "name": "test"
+      },
+      "present": false,
+      "value": null
+    },
+    {
+      "name": "literal-semicolon",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=one;two&labels=three",
+      "partial": false,
+      "fields": {
+        "labels": "three"
+      },
+      "present": true,
+      "value": ["one;two", "three"]
+    },
+    {
+      "name": "literal-semicolon-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=one;two&labels=three",
+      "partial": true,
+      "fields": {
+        "labels": "three"
+      },
+      "present": true,
+      "value": ["one;two", "three"]
+    },
+    {
+      "name": "invalid-escape",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=one%20two%ZZ&labels=tail%",
+      "partial": false,
+      "fields": {
+        "labels": "tail%"
+      },
+      "present": true,
+      "value": ["one two%ZZ", "tail%"]
+    },
+    {
+      "name": "invalid-escape-partial",
+      "content_type": "application/x-www-form-urlencoded",
+      "body": "labels=one%20two%ZZ&labels=tail%",
+      "partial": true,
+      "fields": {
+        "labels": "tail%"
+      },
+      "present": true,
+      "value": ["one two%ZZ", "tail%"]
+    },
+    {
+      "name": "multipart",
+      "content_type": "multipart/form-data; boundary=plane-input-boundary",
+      "body": "--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nfirst\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nsecond\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nfirst\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels[0]\"\r\n\r\nindexed\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nLast scalar\r\n--plane-input-boundary--\r\n",
+      "partial": false,
+      "fields": {
+        "labels": "first",
+        "labels[0]": "indexed",
+        "name": "Last scalar"
+      },
+      "present": true,
+      "value": ["first", "second", "first"]
+    },
+    {
+      "name": "multipart-partial",
+      "content_type": "multipart/form-data; boundary=plane-input-boundary",
+      "body": "--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nfirst\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nsecond\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels\"\r\n\r\nfirst\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"labels[0]\"\r\n\r\nindexed\r\n--plane-input-boundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nLast scalar\r\n--plane-input-boundary--\r\n",
+      "partial": true,
+      "fields": {
+        "labels": "first",
+        "labels[0]": "indexed",
+        "name": "Last scalar"
+      },
+      "present": true,
+      "value": ["first", "second", "first"]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+extensions:
+  logal_store:
+    path: ${env:LOGAL_DB_PATH}
+    retention_hours: ${env:LOGAL_RETENTION_HOURS}
+  logal_status:
+    endpoint: ${env:LOGAL_HEALTH_ENDPOINT}
+    max_in_flight_requests: ${env:LOGAL_MAX_IN_FLIGHT_REQUESTS}
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: ${env:LOGAL_OTLP_GRPC_ENDPOINT}
+        max_recv_msg_size_mib: 4
+      http:
+        endpoint: ${env:LOGAL_OTLP_HTTP_ENDPOINT}
+        max_request_body_size: 4194304
+        middlewares:
+          - id: logal_status
+
+exporters:
+  logal_sqlite:
+    store: logal_store
+  logal_sqlite/logs:
+    store: logal_store
+
+service:
+  telemetry:
+    metrics:
+      level: none
+  extensions: [logal_store, logal_status]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [logal_sqlite/logs]
+    traces:
+      receivers: [otlp]
+      exporters: [logal_sqlite]

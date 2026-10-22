@@ -1,0 +1,372 @@
+{
+  "version": 1,
+  "family": "account_authentication",
+  "source_files": [
+    "apps/api/plane/authentication/urls.py",
+    "apps/api/plane/authentication/views/app/check.py",
+    "apps/api/plane/authentication/views/space/check.py",
+    "apps/api/plane/authentication/views/app/password_management.py",
+    "apps/api/plane/authentication/views/space/password_management.py",
+    "apps/api/plane/authentication/views/app/magic.py",
+    "apps/api/plane/authentication/views/space/magic.py",
+    "apps/api/plane/authentication/views/common.py",
+    "apps/api/plane/authentication/rate_limit.py",
+    "apps/api/plane/authentication/provider/credentials/magic_code.py",
+    "apps/api/plane/bgtasks/forgot_password_task.py",
+    "apps/api/plane/bgtasks/magic_link_code_task.py"
+  ],
+  "operations": {
+    "post_auth_change_password": {
+      "method": "POST",
+      "path": "/auth/change-password/",
+      "statuses": [200, 400, 401],
+      "authentication": ["django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/change-password-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/change-password-authenticated-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/change-password-old-password-required.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/change-password-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [
+        "users.password",
+        "users.is_password_autoset",
+        "users login metadata",
+        "sessions row on success"
+      ],
+      "effects": [],
+      "permission_contract": "Requires an authenticated user; checks an existing password unless password is autoset; rejects weak new passwords.",
+      "source": "apps/api/plane/authentication/views/common.py::ChangePasswordEndpoint.post",
+      "operation_id": "post_auth_change_password",
+      "sample_path": "/auth/change-password/",
+      "source_statuses": ["200", "400", "401"]
+    },
+    "post_auth_email_check": {
+      "method": "POST",
+      "path": "/auth/email-check/",
+      "statuses": [200, 400, 429],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-email-check-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/email-check-authenticated-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-anonymous-csrf-enforced.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-authenticated-throttle-bypass.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-database-over-environment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-empty-database-over-environment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-encrypted-database.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-environment-default-magic-enabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-environment-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-environment-over-database.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-configuration-partial-database-default-magic-enabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-different-ip-isolated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-email-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-email-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-email-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-email-numeric.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-email-omitted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-existing-autoset-magic-login-disabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-existing-autoset-normalized.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-existing-autoset-smtp-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-existing-password.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-form-urlencoded-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-instance-not-configured-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-instance-not-configured.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-instance-setup-incomplete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-multipart-new-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-new-user-magic-disabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-new-user-magic-enabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-new-user-smtp-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-observable-effect-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-preflight-canonical-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-preflight-canonical-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-preflight-slashless-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-preflight-slashless-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-post.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-post.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-cookie-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-header-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-malformed-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-mismatched-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-missing-both.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-trusted-origin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-session-csrf-untrusted-origin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-shared-ip-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-unsupported-text-plain.json"
+      ],
+      "database_effects": [],
+      "effects": ["authentication-throttle-anonymous", "authentication-throttle-session"],
+      "permission_contract": "Public, throttled endpoint. Checks instance setup before parsing input and returns credential or magic-code status from user and SMTP configuration.",
+      "source": "apps/api/plane/authentication/views/app/check.py::EmailCheckEndpoint.post",
+      "operation_id": "post_auth_email_check",
+      "sample_path": "/auth/email-check/",
+      "source_statuses": ["200", "301", "400", "403", "405", "415", "429"],
+      "unsupported_method_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-patch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-put.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-canonical-trace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-patch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-put.json",
+        "apps/go-api/internal/parity/testdata/fixtures/auth_email_checks/app-protocol-slashless-trace.json"
+      ],
+      "protocol_notes": "OPTIONS is the supported companion. Unsupported verbs are retained in the auth_email_checks replay corpus and exercised by the all-method differential matrix; they do not claim route ownership."
+    },
+    "post_auth_forgot_password": {
+      "method": "POST",
+      "path": "/auth/forgot-password/",
+      "statuses": [200, 400, 429],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-forgot-password-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-forgot-password-session-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-forgot-password-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-forgot-password-user-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-forgot-password-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": ["forgot-password-task-anonymous", "forgot-password-task-session"],
+      "permission_contract": "Public, throttled endpoint; requires a configured instance and SMTP and distinguishes invalid email and missing account.",
+      "source": "apps/api/plane/authentication/views/app/password_management.py::ForgotPasswordEndpoint.post",
+      "operation_id": "post_auth_forgot_password",
+      "sample_path": "/auth/forgot-password/",
+      "source_statuses": ["200", "400", "429"]
+    },
+    "post_auth_magic_generate": {
+      "method": "POST",
+      "path": "/auth/magic-generate/",
+      "statuses": [200, 400, 429, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-magic-generate-invalid-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-magic-generate-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-magic-generate-session-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-magic-generate-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/app-magic-generate-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": ["magic-state-anonymous", "magic-task-anonymous", "magic-state-session", "magic-task-session"],
+      "permission_contract": "Public, throttled endpoint; requires a configured instance and valid email; returns the generated key.",
+      "source": "apps/api/plane/authentication/views/app/magic.py::MagicGenerateEndpoint.post",
+      "source_bug": "Malformed email raises an uncaught Django ValidationError and returns HTTP 500. Corrected Go behavior should return HTTP 400 INVALID_EMAIL with no magic-code state or task enqueue; throttle state may still change.",
+      "operation_id": "post_auth_magic_generate",
+      "sample_path": "/auth/magic-generate/",
+      "source_statuses": ["200", "429", "500"]
+    },
+    "post_auth_set_password": {
+      "method": "POST",
+      "path": "/auth/set-password/",
+      "statuses": [200, 400, 401],
+      "authentication": ["django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/set-password-already-set.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/set-password-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/set-password-authenticated-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/set-password-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [
+        "users.password",
+        "users.is_password_autoset",
+        "users login metadata",
+        "sessions row on success"
+      ],
+      "effects": ["set-password-cache-session"],
+      "permission_contract": "Requires an authenticated user whose password is autoset; rejects missing or weak passwords.",
+      "source": "apps/api/plane/authentication/views/common.py::SetUserPasswordEndpoint.post",
+      "operation_id": "post_auth_set_password",
+      "sample_path": "/auth/set-password/",
+      "source_statuses": ["200", "400", "401"]
+    },
+    "post_auth_spaces_email_check": {
+      "method": "POST",
+      "path": "/auth/spaces/email-check/",
+      "statuses": [200, 400, 429],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-email-check-authenticated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-email-check-invalid-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-email-check-magic-enabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-email-check-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-email-check-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": ["authentication-throttle-anonymous", "authentication-throttle-session"],
+      "permission_contract": "Space-host counterpart of public email-check; derives the same credential or magic-code result.",
+      "source": "apps/api/plane/authentication/views/space/check.py::EmailCheckSpaceEndpoint.post",
+      "operation_id": "post_auth_spaces_email_check",
+      "sample_path": "/auth/spaces/email-check/",
+      "source_statuses": ["200", "400", "429"]
+    },
+    "post_auth_spaces_forgot_password": {
+      "method": "POST",
+      "path": "/auth/spaces/forgot-password/",
+      "statuses": [200, 400, 429],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-forgot-password-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-forgot-password-session-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-forgot-password-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-forgot-password-user-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-forgot-password-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": ["forgot-password-task-anonymous", "forgot-password-task-session"],
+      "permission_contract": "Space-host counterpart of forgot-password; reset link uses the space base host.",
+      "source": "apps/api/plane/authentication/views/space/password_management.py::ForgotPasswordSpaceEndpoint.post",
+      "operation_id": "post_auth_spaces_forgot_password",
+      "sample_path": "/auth/spaces/forgot-password/",
+      "source_statuses": ["200", "400", "429"]
+    },
+    "post_auth_spaces_magic_generate": {
+      "method": "POST",
+      "path": "/auth/spaces/magic-generate/",
+      "statuses": [200, 400, 429, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "public",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-magic-generate-invalid-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-magic-generate-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-magic-generate-session-queued.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-magic-generate-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/account_authentication/space-magic-generate-authenticated-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": ["magic-state-anonymous", "magic-task-anonymous", "magic-state-session", "magic-task-session"],
+      "permission_contract": "Space-host counterpart of magic-generate.",
+      "source": "apps/api/plane/authentication/views/space/magic.py::MagicGenerateSpaceEndpoint.post",
+      "source_bug": "Malformed email raises an uncaught Django ValidationError and returns HTTP 500. Corrected Go behavior should return HTTP 400 INVALID_EMAIL with no magic-code state or task enqueue; throttle state may still change.",
+      "operation_id": "post_auth_spaces_magic_generate",
+      "sample_path": "/auth/spaces/magic-generate/",
+      "source_statuses": ["200", "429", "500"]
+    }
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/account_authentication_integration_test.go::TestAccountAuthenticationFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/users/me/",
+      "public": "/api/instances/"
+    },
+    "malformed_queries": [],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["post_auth_forgot_password:canonical:POST", "post_auth_spaces_forgot_password:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "fd62a53afdd49595ccd111b6ac06466a1690e7c8da4aeb0e884b5e0f4e937624",
+          "headers": {
+            "allow": null,
+            "content-type": "text/html; charset=utf-8"
+          }
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "1e70a19737fe77071b00538808b5d04bccc138422c51a405f7ce2f451478a429",
+          "headers": {
+            "allow": "POST, OPTIONS",
+            "content-type": "application/json"
+          }
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/account_authentication_middleware_test.go::TestAccountAuthenticationProductionMiddlewareOrderAndTimezoneProfile",
+  "middleware_notes": "All eight plain APIViews inspect supplied sessions without TimezoneMixin. Valid sessions bypass anonymous authentication throttling and require CSRF on unsafe methods; absent or invalid sessions remain allowed only on public routes. Password routes require authentication before user lookup. Production-chain tests cover request-size and audit ordering.",
+  "effect_contracts": {
+    "authentication-throttle-anonymous": {
+      "auth_profile": "anonymous",
+      "kind": "redis-throttle-cache",
+      "name": "authentication throttle cache",
+      "payload_fields": ["key", "before_count", "after_count"]
+    },
+    "authentication-throttle-session": {
+      "auth_profile": "django-session",
+      "kind": "redis-throttle-cache",
+      "name": "authentication throttle cache",
+      "payload_fields": ["key", "before_count", "after_count"]
+    },
+    "forgot-password-task-anonymous": {
+      "auth_profile": "anonymous",
+      "kind": "celery-task-consumed",
+      "name": "plane.bgtasks.forgot_password_task.forgot_password",
+      "payload_fields": ["consumed", "payload_recorded"]
+    },
+    "forgot-password-task-session": {
+      "auth_profile": "django-session",
+      "kind": "celery-task-consumed",
+      "name": "plane.bgtasks.forgot_password_task.forgot_password",
+      "payload_fields": ["consumed", "payload_recorded"]
+    },
+    "magic-state-anonymous": {
+      "auth_profile": "anonymous",
+      "kind": "redis-magic-state",
+      "name": "write Redis magic-code state",
+      "payload_fields": ["redis_database", "key", "exists_after_issue", "token_recorded"]
+    },
+    "magic-task-anonymous": {
+      "auth_profile": "anonymous",
+      "kind": "celery-task-consumed",
+      "name": "plane.bgtasks.magic_link_code_task.magic_link",
+      "payload_fields": ["consumed", "payload_recorded"]
+    },
+    "magic-state-session": {
+      "auth_profile": "django-session",
+      "kind": "redis-magic-state",
+      "name": "write Redis magic-code state",
+      "payload_fields": ["redis_database", "key", "exists_after_issue", "token_recorded"]
+    },
+    "magic-task-session": {
+      "auth_profile": "django-session",
+      "kind": "celery-task-consumed",
+      "name": "plane.bgtasks.magic_link_code_task.magic_link",
+      "payload_fields": ["consumed", "payload_recorded"]
+    },
+    "set-password-cache-session": {
+      "auth_profile": "django-session",
+      "kind": "cache-invalidation",
+      "name": "invalidate /api/users/me/ cache",
+      "payload_fields": ["path", "user_id", "invalidated"]
+    }
+  }
+}

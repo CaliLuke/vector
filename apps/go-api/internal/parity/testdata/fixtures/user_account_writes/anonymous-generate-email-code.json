@@ -1,0 +1,49 @@
+{
+  "database": {
+    "after": {
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "email": "user-account-new@example.test"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "POST",
+    "path": "/api/users/me/email/generate-code/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Authentication credentials were not provided."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 401
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "anonymous-generate-email-code",
+    "user_id": "<fixture-user>"
+  }
+}

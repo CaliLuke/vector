@@ -1,0 +1,57 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_FORWARDED_FOR": "198.51.100.43"
+    },
+    "method": "GET",
+    "path": "/auth/gitea/callback/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {
+      "code": "fixture-code",
+      "state": "invalid-fixture-state"
+    }
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Location": "?error_code=5123&error_message=GITEA_OAUTH_PROVIDER_ERROR",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 302
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "app-gitea-callback",
+    "instance_state": "unconfigured"
+  }
+}

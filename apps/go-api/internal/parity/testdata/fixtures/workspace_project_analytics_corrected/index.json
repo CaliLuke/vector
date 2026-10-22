@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "source_mode": "corrected_runtime",
+  "reason": "Monthly date filters returned a mid-month key that could not match TruncMonth aggregates, producing a zero-only chart despite three in-range active issues. The corrected oracle aligns the output bucket to month start and retains the in-range created and completed-state counts. The pinned project chart also exposes daily date keys from cycle/module IDs in a different private project. The corrected response returns the documented empty schema without revealing that project\u2019s date range. The empty 23-byte response is below Django GZipMiddleware\u2019s 200-byte threshold; its Vary header matches the source missing-bound empty response and omits Accept-Encoding.",
+  "cases": [
+    {
+      "case": "workspace-advance-chart-work-items-monthly-filtered",
+      "pristine_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics/workspace-advance-chart-work-items-monthly-filtered.json",
+      "pristine_sha256": "367721581eda451d9af2e03d75d3e700ce6419ac35f64ff13f87c77678fa7c3b",
+      "corrected_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics_corrected/workspace-advance-chart-work-items-monthly-filtered.json",
+      "corrected_sha256": "1f49276d6432f86767b514972b539e729777ee27bd1f601b99c886822cfa3964",
+      "changed_field": "response.body"
+    },
+    {
+      "case": "project-advance-chart-work-items-monthly-filtered",
+      "pristine_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics/project-advance-chart-work-items-monthly-filtered.json",
+      "pristine_sha256": "5a0f2ec4900e5d6f23e6946e0b898b395eee6935b7fa4a238f7192357a7f260c",
+      "corrected_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics_corrected/project-advance-chart-work-items-monthly-filtered.json",
+      "corrected_sha256": "fb48bdf66ae519142c9b22e53676de328b17f3e564712f18bb1d9cb9e0dbbb99",
+      "changed_field": "response.body"
+    },
+    {
+      "case": "project-advance-chart-work-items-foreign-cycle-bounds",
+      "pristine_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics/project-advance-chart-work-items-foreign-cycle-bounds.json",
+      "pristine_sha256": "941feed26806315fce033f5af6149f1d38790031f5dbe638e8b4f4d455d29dec",
+      "corrected_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics_corrected/project-advance-chart-work-items-foreign-cycle-bounds.json",
+      "corrected_sha256": "77cf4475ca93be63a8a23d442835c3d75e725695ad6774a0acce61a3efcc7c1d",
+      "changed_fields": [
+        "response.body",
+        "response.headers.Vary"
+      ]
+    },
+    {
+      "case": "project-advance-chart-work-items-foreign-module-bounds",
+      "pristine_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics/project-advance-chart-work-items-foreign-module-bounds.json",
+      "pristine_sha256": "f57605f79175e4f61179ca78c39670f28789ba51dc5386089500b7942713aaac",
+      "corrected_fixture": "apps/api/plane/tests/parity/fixtures/workspace_project_analytics_corrected/project-advance-chart-work-items-foreign-module-bounds.json",
+      "corrected_sha256": "1700cc385150f76a48f29266092eb9938eec3ed1b6abe66d8386cabe9f0fcc7a",
+      "changed_fields": [
+        "response.body",
+        "response.headers.Vary"
+      ]
+    }
+  ]
+}

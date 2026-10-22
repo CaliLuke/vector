@@ -1,0 +1,2601 @@
+openapi: 3.1.1
+info:
+    title: Plane Internal Django Migration API
+    description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Cycle Lifecycle API
+paths:
+    /api/v1/workspaces/{slug}/projects/{project_id}/archived-cycles/{cycle_id}/unarchive/:
+        delete:
+            description: Restore an archived cycle to active status, making it available for regular use.
+            operationId: delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_cycles_by_cycle_id_unarchive
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathCycleID'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource unarchived successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Unarchive cycle
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/v1/workspaces/{slug}/projects/{project_id}/archived-cycles/{cycle_id}/unarchive/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.cycle.CycleArchiveUnarchiveAPIEndpoint
+    /api/v1/workspaces/{slug}/projects/{project_id}/cycles/:
+        post:
+            description: Create a new development cycle with specified name, description, and date range. Supports external ID tracking for integration purposes.
+            operationId: post_api_v1_workspaces_by_slug_projects_by_project_id_cycles
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PlaneApiSerializersCycleCyclecreateserializerRequestRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/PlaneApiSerializersCycleCyclecreateserializerRequestRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/PlaneApiSerializersCycleCyclecreateserializerRequestRequest'
+            responses:
+                "201":
+                    description: Cycle created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PlaneApiSerializersCycleCycleserializerResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Create cycle
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/v1/workspaces/{slug}/projects/{project_id}/cycles/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.cycle.CycleListCreateAPIEndpoint
+    /api/v1/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/:
+        post:
+            description: Move a completed cycle to archived status for historical tracking. Only cycles that have ended can be archived.
+            operationId: post_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathCycleID'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource archived successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Archive cycle
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/v1/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.cycle.CycleArchiveUnarchiveAPIEndpoint
+    /api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/:
+        delete:
+            description: Permanently remove a cycle and all its associated issue relationships
+            operationId: delete_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource deleted successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Delete cycle
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.cycle.CycleDetailAPIEndpoint
+        patch:
+            description: Modify an existing cycle's properties like name, description, or date range. Completed cycles can only have their sort order changed.
+            operationId: patch_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneApiSerializersCycleCycleupdateserializerRequestRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneApiSerializersCycleCycleupdateserializerRequestRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneApiSerializersCycleCycleupdateserializerRequestRequest'
+            responses:
+                "200":
+                    description: Cycle updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PlaneApiSerializersCycleCycleserializerResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Update cycle
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/
+            x-plane-handler: patch
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.cycle.CycleDetailAPIEndpoint
+    /api/workspaces/{slug}/projects/{project_id}/archived-cycles/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/archived-cycles/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_archived_cycles
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            responses:
+                "200":
+                    $ref: '#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/archived-cycles/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+    /api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+    /api/workspaces/{slug}/projects/{project_id}/cycles/:
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_cycles
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDCyclesRequestBody'
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PlaneAppSerializersCycleCycleserializerResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/cycles/
+            x-plane-handler: create
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.base.CycleViewSet
+    /api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathCycleID'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathCycleID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.archive.CycleArchiveUnarchiveEndpoint
+    /api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/
+            x-plane-handler: destroy
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.base.CycleViewSet
+        patch:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: patch_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PlaneAppSerializersCycleCycleserializerResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/
+            x-plane-handler: partial_update
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.base.CycleViewSet
+        put:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: put_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDCyclesRequestBody'
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CycleAppReadonlyPutResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PUT /api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/
+            x-plane-handler: update
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.base.CycleViewSet
+    /api/workspaces/{slug}/projects/{project_id}/cycles/date-check/:
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_cycles_date_check
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RestFrameworkSerializersCycledatecheckrequestRequestRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/RestFrameworkSerializersCycledatecheckrequestRequestRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/RestFrameworkSerializersCycledatecheckrequestRequestRequest'
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersCycledatecheckresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - cycles
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/cycles/date-check/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.cycle.base.CycleDateCheckEndpoint
+components:
+    schemas:
+        CycleAppReadonlyPutResponse:
+            type: object
+            properties:
+                cancelled_issues:
+                    type: integer
+                completed_issues:
+                    type: integer
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                id:
+                    type: string
+                    format: uuid
+                is_favorite:
+                    type: boolean
+                logo_props: {}
+                name:
+                    title: Cycle Name
+                    type: string
+                owned_by_id:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                progress_snapshot: {}
+                project_id:
+                    type: string
+                    format: uuid
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                status:
+                    type: string
+                total_issues:
+                    type: integer
+                view_props: {}
+                workspace_id:
+                    type: string
+                    format: uuid
+            required:
+                - description
+        PatchedPlaneApiSerializersCycleCycleupdateserializerRequestRequest:
+            type: object
+            properties:
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                name:
+                    title: Cycle Name
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                owned_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                timezone:
+                    $ref: '#/components/schemas/TimezoneEnum'
+            description: |-
+                Serializer for updating cycles with enhanced ownership management.
+
+                Extends cycle creation with update-specific features including ownership
+                assignment and modification tracking for cycle lifecycle management.
+        PatchedPlaneAppSerializersCycleCyclewriteserializerRequestRequest:
+            type: object
+            properties:
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                logo_props: {}
+                name:
+                    title: Cycle Name
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                progress_snapshot: {}
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                timezone:
+                    $ref: '#/components/schemas/TimezoneEnum'
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                version:
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                view_props: {}
+        PlaneApiSerializersCycleCyclecreateserializerRequestRequest:
+            type: object
+            properties:
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                name:
+                    title: Cycle Name
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                owned_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                timezone:
+                    $ref: '#/components/schemas/TimezoneEnum'
+            description: |-
+                Serializer for creating cycles with timezone handling and date validation.
+
+                Manages cycle creation including project timezone conversion, date range validation,
+                and UTC normalization for time-bound iteration planning and sprint management.
+            required:
+                - name
+        PlaneApiSerializersCycleCycleserializerResponse:
+            type: object
+            properties:
+                archived_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                backlog_issues:
+                    type: integer
+                    readOnly: true
+                cancelled_issues:
+                    type: integer
+                    readOnly: true
+                completed_estimates:
+                    type: number
+                    readOnly: true
+                    format: double
+                completed_issues:
+                    type: integer
+                    readOnly: true
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                logo_props: {}
+                name:
+                    title: Cycle Name
+                    type: string
+                    maxLength: 255
+                owned_by:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                progress_snapshot: {}
+                project:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                started_estimates:
+                    type: number
+                    readOnly: true
+                    format: double
+                started_issues:
+                    type: integer
+                    readOnly: true
+                timezone:
+                    $ref: '#/components/schemas/TimezoneEnum'
+                total_estimates:
+                    type: number
+                    readOnly: true
+                    format: double
+                total_issues:
+                    type: integer
+                    readOnly: true
+                unstarted_issues:
+                    type: integer
+                    readOnly: true
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                version:
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                view_props: {}
+                workspace:
+                    type: string
+                    readOnly: true
+                    format: uuid
+            description: |-
+                Cycle serializer with comprehensive project metrics and time tracking.
+
+                Provides cycle details including work item counts by status, progress estimates,
+                and time-bound iteration data for project management and sprint planning.
+            required:
+                - description
+        PlaneAppSerializersCycleCycleserializerResponse:
+            type: object
+            properties:
+                assignee_ids:
+                    type: array
+                    items:
+                        type: string
+                    readOnly: true
+                completed_issues:
+                    type: integer
+                    readOnly: true
+                created_by:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                external_source:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_favorite:
+                    type: boolean
+                    readOnly: true
+                logo_props:
+                    readOnly: true
+                name:
+                    title: Cycle Name
+                    type: string
+                    readOnly: true
+                owned_by_id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                progress_snapshot:
+                    readOnly: true
+                project_id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sort_order:
+                    type: number
+                    readOnly: true
+                    format: double
+                start_date:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                status:
+                    type: string
+                    readOnly: true
+                total_issues:
+                    type: integer
+                    readOnly: true
+                version:
+                    type: integer
+                    readOnly: true
+                    format: int64
+                view_props:
+                    readOnly: true
+                workspace_id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+            required:
+                - assignee_ids
+                - description
+        PlaneAppSerializersCycleCyclewriteserializerRequestRequest:
+            type: object
+            properties:
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: Cycle Description
+                    type: string
+                end_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                logo_props: {}
+                name:
+                    title: Cycle Name
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                progress_snapshot: {}
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                timezone:
+                    $ref: '#/components/schemas/TimezoneEnum'
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                version:
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                view_props: {}
+            required:
+                - name
+        RestFrameworkSerializersArchiveresponseResponse:
+            type: object
+            properties:
+                archived_at:
+                    type: string
+            required:
+                - archived_at
+        RestFrameworkSerializersCycledatecheckrequestRequestRequest:
+            type: object
+            properties:
+                cycle_id:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                end_date:
+                    type: string
+                    format: date
+                start_date:
+                    type: string
+                    format: date
+            required:
+                - end_date
+                - start_date
+        RestFrameworkSerializersCycledatecheckresponseResponse:
+            type: object
+            properties:
+                error:
+                    type: string
+                status:
+                    type: boolean
+            required:
+                - status
+        TimezoneEnum:
+            type: string
+            description: |-
+                * `Africa/Abidjan` - Africa/Abidjan
+                * `Africa/Accra` - Africa/Accra
+                * `Africa/Addis_Ababa` - Africa/Addis_Ababa
+                * `Africa/Algiers` - Africa/Algiers
+                * `Africa/Asmara` - Africa/Asmara
+                * `Africa/Bamako` - Africa/Bamako
+                * `Africa/Bangui` - Africa/Bangui
+                * `Africa/Banjul` - Africa/Banjul
+                * `Africa/Bissau` - Africa/Bissau
+                * `Africa/Blantyre` - Africa/Blantyre
+                * `Africa/Brazzaville` - Africa/Brazzaville
+                * `Africa/Bujumbura` - Africa/Bujumbura
+                * `Africa/Cairo` - Africa/Cairo
+                * `Africa/Casablanca` - Africa/Casablanca
+                * `Africa/Ceuta` - Africa/Ceuta
+                * `Africa/Conakry` - Africa/Conakry
+                * `Africa/Dakar` - Africa/Dakar
+                * `Africa/Dar_es_Salaam` - Africa/Dar_es_Salaam
+                * `Africa/Djibouti` - Africa/Djibouti
+                * `Africa/Douala` - Africa/Douala
+                * `Africa/El_Aaiun` - Africa/El_Aaiun
+                * `Africa/Freetown` - Africa/Freetown
+                * `Africa/Gaborone` - Africa/Gaborone
+                * `Africa/Harare` - Africa/Harare
+                * `Africa/Johannesburg` - Africa/Johannesburg
+                * `Africa/Juba` - Africa/Juba
+                * `Africa/Kampala` - Africa/Kampala
+                * `Africa/Khartoum` - Africa/Khartoum
+                * `Africa/Kigali` - Africa/Kigali
+                * `Africa/Kinshasa` - Africa/Kinshasa
+                * `Africa/Lagos` - Africa/Lagos
+                * `Africa/Libreville` - Africa/Libreville
+                * `Africa/Lome` - Africa/Lome
+                * `Africa/Luanda` - Africa/Luanda
+                * `Africa/Lubumbashi` - Africa/Lubumbashi
+                * `Africa/Lusaka` - Africa/Lusaka
+                * `Africa/Malabo` - Africa/Malabo
+                * `Africa/Maputo` - Africa/Maputo
+                * `Africa/Maseru` - Africa/Maseru
+                * `Africa/Mbabane` - Africa/Mbabane
+                * `Africa/Mogadishu` - Africa/Mogadishu
+                * `Africa/Monrovia` - Africa/Monrovia
+                * `Africa/Nairobi` - Africa/Nairobi
+                * `Africa/Ndjamena` - Africa/Ndjamena
+                * `Africa/Niamey` - Africa/Niamey
+                * `Africa/Nouakchott` - Africa/Nouakchott
+                * `Africa/Ouagadougou` - Africa/Ouagadougou
+                * `Africa/Porto-Novo` - Africa/Porto-Novo
+                * `Africa/Sao_Tome` - Africa/Sao_Tome
+                * `Africa/Tripoli` - Africa/Tripoli
+                * `Africa/Tunis` - Africa/Tunis
+                * `Africa/Windhoek` - Africa/Windhoek
+                * `America/Adak` - America/Adak
+                * `America/Anchorage` - America/Anchorage
+                * `America/Anguilla` - America/Anguilla
+                * `America/Antigua` - America/Antigua
+                * `America/Araguaina` - America/Araguaina
+                * `America/Argentina/Buenos_Aires` - America/Argentina/Buenos_Aires
+                * `America/Argentina/Catamarca` - America/Argentina/Catamarca
+                * `America/Argentina/Cordoba` - America/Argentina/Cordoba
+                * `America/Argentina/Jujuy` - America/Argentina/Jujuy
+                * `America/Argentina/La_Rioja` - America/Argentina/La_Rioja
+                * `America/Argentina/Mendoza` - America/Argentina/Mendoza
+                * `America/Argentina/Rio_Gallegos` - America/Argentina/Rio_Gallegos
+                * `America/Argentina/Salta` - America/Argentina/Salta
+                * `America/Argentina/San_Juan` - America/Argentina/San_Juan
+                * `America/Argentina/San_Luis` - America/Argentina/San_Luis
+                * `America/Argentina/Tucuman` - America/Argentina/Tucuman
+                * `America/Argentina/Ushuaia` - America/Argentina/Ushuaia
+                * `America/Aruba` - America/Aruba
+                * `America/Asuncion` - America/Asuncion
+                * `America/Atikokan` - America/Atikokan
+                * `America/Bahia` - America/Bahia
+                * `America/Bahia_Banderas` - America/Bahia_Banderas
+                * `America/Barbados` - America/Barbados
+                * `America/Belem` - America/Belem
+                * `America/Belize` - America/Belize
+                * `America/Blanc-Sablon` - America/Blanc-Sablon
+                * `America/Boa_Vista` - America/Boa_Vista
+                * `America/Bogota` - America/Bogota
+                * `America/Boise` - America/Boise
+                * `America/Cambridge_Bay` - America/Cambridge_Bay
+                * `America/Campo_Grande` - America/Campo_Grande
+                * `America/Cancun` - America/Cancun
+                * `America/Caracas` - America/Caracas
+                * `America/Cayenne` - America/Cayenne
+                * `America/Cayman` - America/Cayman
+                * `America/Chicago` - America/Chicago
+                * `America/Chihuahua` - America/Chihuahua
+                * `America/Ciudad_Juarez` - America/Ciudad_Juarez
+                * `America/Costa_Rica` - America/Costa_Rica
+                * `America/Creston` - America/Creston
+                * `America/Cuiaba` - America/Cuiaba
+                * `America/Curacao` - America/Curacao
+                * `America/Danmarkshavn` - America/Danmarkshavn
+                * `America/Dawson` - America/Dawson
+                * `America/Dawson_Creek` - America/Dawson_Creek
+                * `America/Denver` - America/Denver
+                * `America/Detroit` - America/Detroit
+                * `America/Dominica` - America/Dominica
+                * `America/Edmonton` - America/Edmonton
+                * `America/Eirunepe` - America/Eirunepe
+                * `America/El_Salvador` - America/El_Salvador
+                * `America/Fort_Nelson` - America/Fort_Nelson
+                * `America/Fortaleza` - America/Fortaleza
+                * `America/Glace_Bay` - America/Glace_Bay
+                * `America/Goose_Bay` - America/Goose_Bay
+                * `America/Grand_Turk` - America/Grand_Turk
+                * `America/Grenada` - America/Grenada
+                * `America/Guadeloupe` - America/Guadeloupe
+                * `America/Guatemala` - America/Guatemala
+                * `America/Guayaquil` - America/Guayaquil
+                * `America/Guyana` - America/Guyana
+                * `America/Halifax` - America/Halifax
+                * `America/Havana` - America/Havana
+                * `America/Hermosillo` - America/Hermosillo
+                * `America/Indiana/Indianapolis` - America/Indiana/Indianapolis
+                * `America/Indiana/Knox` - America/Indiana/Knox
+                * `America/Indiana/Marengo` - America/Indiana/Marengo
+                * `America/Indiana/Petersburg` - America/Indiana/Petersburg
+                * `America/Indiana/Tell_City` - America/Indiana/Tell_City
+                * `America/Indiana/Vevay` - America/Indiana/Vevay
+                * `America/Indiana/Vincennes` - America/Indiana/Vincennes
+                * `America/Indiana/Winamac` - America/Indiana/Winamac
+                * `America/Inuvik` - America/Inuvik
+                * `America/Iqaluit` - America/Iqaluit
+                * `America/Jamaica` - America/Jamaica
+                * `America/Juneau` - America/Juneau
+                * `America/Kentucky/Louisville` - America/Kentucky/Louisville
+                * `America/Kentucky/Monticello` - America/Kentucky/Monticello
+                * `America/Kralendijk` - America/Kralendijk
+                * `America/La_Paz` - America/La_Paz
+                * `America/Lima` - America/Lima
+                * `America/Los_Angeles` - America/Los_Angeles
+                * `America/Lower_Princes` - America/Lower_Princes
+                * `America/Maceio` - America/Maceio
+                * `America/Managua` - America/Managua
+                * `America/Manaus` - America/Manaus
+                * `America/Marigot` - America/Marigot
+                * `America/Martinique` - America/Martinique
+                * `America/Matamoros` - America/Matamoros
+                * `America/Mazatlan` - America/Mazatlan
+                * `America/Menominee` - America/Menominee
+                * `America/Merida` - America/Merida
+                * `America/Metlakatla` - America/Metlakatla
+                * `America/Mexico_City` - America/Mexico_City
+                * `America/Miquelon` - America/Miquelon
+                * `America/Moncton` - America/Moncton
+                * `America/Monterrey` - America/Monterrey
+                * `America/Montevideo` - America/Montevideo
+                * `America/Montserrat` - America/Montserrat
+                * `America/Nassau` - America/Nassau
+                * `America/New_York` - America/New_York
+                * `America/Nome` - America/Nome
+                * `America/Noronha` - America/Noronha
+                * `America/North_Dakota/Beulah` - America/North_Dakota/Beulah
+                * `America/North_Dakota/Center` - America/North_Dakota/Center
+                * `America/North_Dakota/New_Salem` - America/North_Dakota/New_Salem
+                * `America/Nuuk` - America/Nuuk
+                * `America/Ojinaga` - America/Ojinaga
+                * `America/Panama` - America/Panama
+                * `America/Paramaribo` - America/Paramaribo
+                * `America/Phoenix` - America/Phoenix
+                * `America/Port-au-Prince` - America/Port-au-Prince
+                * `America/Port_of_Spain` - America/Port_of_Spain
+                * `America/Porto_Velho` - America/Porto_Velho
+                * `America/Puerto_Rico` - America/Puerto_Rico
+                * `America/Punta_Arenas` - America/Punta_Arenas
+                * `America/Rankin_Inlet` - America/Rankin_Inlet
+                * `America/Recife` - America/Recife
+                * `America/Regina` - America/Regina
+                * `America/Resolute` - America/Resolute
+                * `America/Rio_Branco` - America/Rio_Branco
+                * `America/Santarem` - America/Santarem
+                * `America/Santiago` - America/Santiago
+                * `America/Santo_Domingo` - America/Santo_Domingo
+                * `America/Sao_Paulo` - America/Sao_Paulo
+                * `America/Scoresbysund` - America/Scoresbysund
+                * `America/Sitka` - America/Sitka
+                * `America/St_Barthelemy` - America/St_Barthelemy
+                * `America/St_Johns` - America/St_Johns
+                * `America/St_Kitts` - America/St_Kitts
+                * `America/St_Lucia` - America/St_Lucia
+                * `America/St_Thomas` - America/St_Thomas
+                * `America/St_Vincent` - America/St_Vincent
+                * `America/Swift_Current` - America/Swift_Current
+                * `America/Tegucigalpa` - America/Tegucigalpa
+                * `America/Thule` - America/Thule
+                * `America/Tijuana` - America/Tijuana
+                * `America/Toronto` - America/Toronto
+                * `America/Tortola` - America/Tortola
+                * `America/Vancouver` - America/Vancouver
+                * `America/Whitehorse` - America/Whitehorse
+                * `America/Winnipeg` - America/Winnipeg
+                * `America/Yakutat` - America/Yakutat
+                * `Antarctica/Casey` - Antarctica/Casey
+                * `Antarctica/Davis` - Antarctica/Davis
+                * `Antarctica/DumontDUrville` - Antarctica/DumontDUrville
+                * `Antarctica/Macquarie` - Antarctica/Macquarie
+                * `Antarctica/Mawson` - Antarctica/Mawson
+                * `Antarctica/McMurdo` - Antarctica/McMurdo
+                * `Antarctica/Palmer` - Antarctica/Palmer
+                * `Antarctica/Rothera` - Antarctica/Rothera
+                * `Antarctica/Syowa` - Antarctica/Syowa
+                * `Antarctica/Troll` - Antarctica/Troll
+                * `Antarctica/Vostok` - Antarctica/Vostok
+                * `Arctic/Longyearbyen` - Arctic/Longyearbyen
+                * `Asia/Aden` - Asia/Aden
+                * `Asia/Almaty` - Asia/Almaty
+                * `Asia/Amman` - Asia/Amman
+                * `Asia/Anadyr` - Asia/Anadyr
+                * `Asia/Aqtau` - Asia/Aqtau
+                * `Asia/Aqtobe` - Asia/Aqtobe
+                * `Asia/Ashgabat` - Asia/Ashgabat
+                * `Asia/Atyrau` - Asia/Atyrau
+                * `Asia/Baghdad` - Asia/Baghdad
+                * `Asia/Bahrain` - Asia/Bahrain
+                * `Asia/Baku` - Asia/Baku
+                * `Asia/Bangkok` - Asia/Bangkok
+                * `Asia/Barnaul` - Asia/Barnaul
+                * `Asia/Beirut` - Asia/Beirut
+                * `Asia/Bishkek` - Asia/Bishkek
+                * `Asia/Brunei` - Asia/Brunei
+                * `Asia/Chita` - Asia/Chita
+                * `Asia/Choibalsan` - Asia/Choibalsan
+                * `Asia/Colombo` - Asia/Colombo
+                * `Asia/Damascus` - Asia/Damascus
+                * `Asia/Dhaka` - Asia/Dhaka
+                * `Asia/Dili` - Asia/Dili
+                * `Asia/Dubai` - Asia/Dubai
+                * `Asia/Dushanbe` - Asia/Dushanbe
+                * `Asia/Famagusta` - Asia/Famagusta
+                * `Asia/Gaza` - Asia/Gaza
+                * `Asia/Hebron` - Asia/Hebron
+                * `Asia/Ho_Chi_Minh` - Asia/Ho_Chi_Minh
+                * `Asia/Hong_Kong` - Asia/Hong_Kong
+                * `Asia/Hovd` - Asia/Hovd
+                * `Asia/Irkutsk` - Asia/Irkutsk
+                * `Asia/Jakarta` - Asia/Jakarta
+                * `Asia/Jayapura` - Asia/Jayapura
+                * `Asia/Jerusalem` - Asia/Jerusalem
+                * `Asia/Kabul` - Asia/Kabul
+                * `Asia/Kamchatka` - Asia/Kamchatka
+                * `Asia/Karachi` - Asia/Karachi
+                * `Asia/Kathmandu` - Asia/Kathmandu
+                * `Asia/Khandyga` - Asia/Khandyga
+                * `Asia/Kolkata` - Asia/Kolkata
+                * `Asia/Krasnoyarsk` - Asia/Krasnoyarsk
+                * `Asia/Kuala_Lumpur` - Asia/Kuala_Lumpur
+                * `Asia/Kuching` - Asia/Kuching
+                * `Asia/Kuwait` - Asia/Kuwait
+                * `Asia/Macau` - Asia/Macau
+                * `Asia/Magadan` - Asia/Magadan
+                * `Asia/Makassar` - Asia/Makassar
+                * `Asia/Manila` - Asia/Manila
+                * `Asia/Muscat` - Asia/Muscat
+                * `Asia/Nicosia` - Asia/Nicosia
+                * `Asia/Novokuznetsk` - Asia/Novokuznetsk
+                * `Asia/Novosibirsk` - Asia/Novosibirsk
+                * `Asia/Omsk` - Asia/Omsk
+                * `Asia/Oral` - Asia/Oral
+                * `Asia/Phnom_Penh` - Asia/Phnom_Penh
+                * `Asia/Pontianak` - Asia/Pontianak
+                * `Asia/Pyongyang` - Asia/Pyongyang
+                * `Asia/Qatar` - Asia/Qatar
+                * `Asia/Qostanay` - Asia/Qostanay
+                * `Asia/Qyzylorda` - Asia/Qyzylorda
+                * `Asia/Riyadh` - Asia/Riyadh
+                * `Asia/Sakhalin` - Asia/Sakhalin
+                * `Asia/Samarkand` - Asia/Samarkand
+                * `Asia/Seoul` - Asia/Seoul
+                * `Asia/Shanghai` - Asia/Shanghai
+                * `Asia/Singapore` - Asia/Singapore
+                * `Asia/Srednekolymsk` - Asia/Srednekolymsk
+                * `Asia/Taipei` - Asia/Taipei
+                * `Asia/Tashkent` - Asia/Tashkent
+                * `Asia/Tbilisi` - Asia/Tbilisi
+                * `Asia/Tehran` - Asia/Tehran
+                * `Asia/Thimphu` - Asia/Thimphu
+                * `Asia/Tokyo` - Asia/Tokyo
+                * `Asia/Tomsk` - Asia/Tomsk
+                * `Asia/Ulaanbaatar` - Asia/Ulaanbaatar
+                * `Asia/Urumqi` - Asia/Urumqi
+                * `Asia/Ust-Nera` - Asia/Ust-Nera
+                * `Asia/Vientiane` - Asia/Vientiane
+                * `Asia/Vladivostok` - Asia/Vladivostok
+                * `Asia/Yakutsk` - Asia/Yakutsk
+                * `Asia/Yangon` - Asia/Yangon
+                * `Asia/Yekaterinburg` - Asia/Yekaterinburg
+                * `Asia/Yerevan` - Asia/Yerevan
+                * `Atlantic/Azores` - Atlantic/Azores
+                * `Atlantic/Bermuda` - Atlantic/Bermuda
+                * `Atlantic/Canary` - Atlantic/Canary
+                * `Atlantic/Cape_Verde` - Atlantic/Cape_Verde
+                * `Atlantic/Faroe` - Atlantic/Faroe
+                * `Atlantic/Madeira` - Atlantic/Madeira
+                * `Atlantic/Reykjavik` - Atlantic/Reykjavik
+                * `Atlantic/South_Georgia` - Atlantic/South_Georgia
+                * `Atlantic/St_Helena` - Atlantic/St_Helena
+                * `Atlantic/Stanley` - Atlantic/Stanley
+                * `Australia/Adelaide` - Australia/Adelaide
+                * `Australia/Brisbane` - Australia/Brisbane
+                * `Australia/Broken_Hill` - Australia/Broken_Hill
+                * `Australia/Darwin` - Australia/Darwin
+                * `Australia/Eucla` - Australia/Eucla
+                * `Australia/Hobart` - Australia/Hobart
+                * `Australia/Lindeman` - Australia/Lindeman
+                * `Australia/Lord_Howe` - Australia/Lord_Howe
+                * `Australia/Melbourne` - Australia/Melbourne
+                * `Australia/Perth` - Australia/Perth
+                * `Australia/Sydney` - Australia/Sydney
+                * `Canada/Atlantic` - Canada/Atlantic
+                * `Canada/Central` - Canada/Central
+                * `Canada/Eastern` - Canada/Eastern
+                * `Canada/Mountain` - Canada/Mountain
+                * `Canada/Newfoundland` - Canada/Newfoundland
+                * `Canada/Pacific` - Canada/Pacific
+                * `Europe/Amsterdam` - Europe/Amsterdam
+                * `Europe/Andorra` - Europe/Andorra
+                * `Europe/Astrakhan` - Europe/Astrakhan
+                * `Europe/Athens` - Europe/Athens
+                * `Europe/Belgrade` - Europe/Belgrade
+                * `Europe/Berlin` - Europe/Berlin
+                * `Europe/Bratislava` - Europe/Bratislava
+                * `Europe/Brussels` - Europe/Brussels
+                * `Europe/Bucharest` - Europe/Bucharest
+                * `Europe/Budapest` - Europe/Budapest
+                * `Europe/Busingen` - Europe/Busingen
+                * `Europe/Chisinau` - Europe/Chisinau
+                * `Europe/Copenhagen` - Europe/Copenhagen
+                * `Europe/Dublin` - Europe/Dublin
+                * `Europe/Gibraltar` - Europe/Gibraltar
+                * `Europe/Guernsey` - Europe/Guernsey
+                * `Europe/Helsinki` - Europe/Helsinki
+                * `Europe/Isle_of_Man` - Europe/Isle_of_Man
+                * `Europe/Istanbul` - Europe/Istanbul
+                * `Europe/Jersey` - Europe/Jersey
+                * `Europe/Kaliningrad` - Europe/Kaliningrad
+                * `Europe/Kirov` - Europe/Kirov
+                * `Europe/Kyiv` - Europe/Kyiv
+                * `Europe/Lisbon` - Europe/Lisbon
+                * `Europe/Ljubljana` - Europe/Ljubljana
+                * `Europe/London` - Europe/London
+                * `Europe/Luxembourg` - Europe/Luxembourg
+                * `Europe/Madrid` - Europe/Madrid
+                * `Europe/Malta` - Europe/Malta
+                * `Europe/Mariehamn` - Europe/Mariehamn
+                * `Europe/Minsk` - Europe/Minsk
+                * `Europe/Monaco` - Europe/Monaco
+                * `Europe/Moscow` - Europe/Moscow
+                * `Europe/Oslo` - Europe/Oslo
+                * `Europe/Paris` - Europe/Paris
+                * `Europe/Podgorica` - Europe/Podgorica
+                * `Europe/Prague` - Europe/Prague
+                * `Europe/Riga` - Europe/Riga
+                * `Europe/Rome` - Europe/Rome
+                * `Europe/Samara` - Europe/Samara
+                * `Europe/San_Marino` - Europe/San_Marino
+                * `Europe/Sarajevo` - Europe/Sarajevo
+                * `Europe/Saratov` - Europe/Saratov
+                * `Europe/Simferopol` - Europe/Simferopol
+                * `Europe/Skopje` - Europe/Skopje
+                * `Europe/Sofia` - Europe/Sofia
+                * `Europe/Stockholm` - Europe/Stockholm
+                * `Europe/Tallinn` - Europe/Tallinn
+                * `Europe/Tirane` - Europe/Tirane
+                * `Europe/Ulyanovsk` - Europe/Ulyanovsk
+                * `Europe/Vaduz` - Europe/Vaduz
+                * `Europe/Vatican` - Europe/Vatican
+                * `Europe/Vienna` - Europe/Vienna
+                * `Europe/Vilnius` - Europe/Vilnius
+                * `Europe/Volgograd` - Europe/Volgograd
+                * `Europe/Warsaw` - Europe/Warsaw
+                * `Europe/Zagreb` - Europe/Zagreb
+                * `Europe/Zurich` - Europe/Zurich
+                * `GMT` - GMT
+                * `Indian/Antananarivo` - Indian/Antananarivo
+                * `Indian/Chagos` - Indian/Chagos
+                * `Indian/Christmas` - Indian/Christmas
+                * `Indian/Cocos` - Indian/Cocos
+                * `Indian/Comoro` - Indian/Comoro
+                * `Indian/Kerguelen` - Indian/Kerguelen
+                * `Indian/Mahe` - Indian/Mahe
+                * `Indian/Maldives` - Indian/Maldives
+                * `Indian/Mauritius` - Indian/Mauritius
+                * `Indian/Mayotte` - Indian/Mayotte
+                * `Indian/Reunion` - Indian/Reunion
+                * `Pacific/Apia` - Pacific/Apia
+                * `Pacific/Auckland` - Pacific/Auckland
+                * `Pacific/Bougainville` - Pacific/Bougainville
+                * `Pacific/Chatham` - Pacific/Chatham
+                * `Pacific/Chuuk` - Pacific/Chuuk
+                * `Pacific/Easter` - Pacific/Easter
+                * `Pacific/Efate` - Pacific/Efate
+                * `Pacific/Fakaofo` - Pacific/Fakaofo
+                * `Pacific/Fiji` - Pacific/Fiji
+                * `Pacific/Funafuti` - Pacific/Funafuti
+                * `Pacific/Galapagos` - Pacific/Galapagos
+                * `Pacific/Gambier` - Pacific/Gambier
+                * `Pacific/Guadalcanal` - Pacific/Guadalcanal
+                * `Pacific/Guam` - Pacific/Guam
+                * `Pacific/Honolulu` - Pacific/Honolulu
+                * `Pacific/Kanton` - Pacific/Kanton
+                * `Pacific/Kiritimati` - Pacific/Kiritimati
+                * `Pacific/Kosrae` - Pacific/Kosrae
+                * `Pacific/Kwajalein` - Pacific/Kwajalein
+                * `Pacific/Majuro` - Pacific/Majuro
+                * `Pacific/Marquesas` - Pacific/Marquesas
+                * `Pacific/Midway` - Pacific/Midway
+                * `Pacific/Nauru` - Pacific/Nauru
+                * `Pacific/Niue` - Pacific/Niue
+                * `Pacific/Norfolk` - Pacific/Norfolk
+                * `Pacific/Noumea` - Pacific/Noumea
+                * `Pacific/Pago_Pago` - Pacific/Pago_Pago
+                * `Pacific/Palau` - Pacific/Palau
+                * `Pacific/Pitcairn` - Pacific/Pitcairn
+                * `Pacific/Pohnpei` - Pacific/Pohnpei
+                * `Pacific/Port_Moresby` - Pacific/Port_Moresby
+                * `Pacific/Rarotonga` - Pacific/Rarotonga
+                * `Pacific/Saipan` - Pacific/Saipan
+                * `Pacific/Tahiti` - Pacific/Tahiti
+                * `Pacific/Tarawa` - Pacific/Tarawa
+                * `Pacific/Tongatapu` - Pacific/Tongatapu
+                * `Pacific/Wake` - Pacific/Wake
+                * `Pacific/Wallis` - Pacific/Wallis
+                * `US/Alaska` - US/Alaska
+                * `US/Arizona` - US/Arizona
+                * `US/Central` - US/Central
+                * `US/Eastern` - US/Eastern
+                * `US/Hawaii` - US/Hawaii
+                * `US/Mountain` - US/Mountain
+                * `US/Pacific` - US/Pacific
+                * `UTC` - UTC
+            enum:
+                - Africa/Abidjan
+                - Africa/Accra
+                - Africa/Addis_Ababa
+                - Africa/Algiers
+                - Africa/Asmara
+                - Africa/Bamako
+                - Africa/Bangui
+                - Africa/Banjul
+                - Africa/Bissau
+                - Africa/Blantyre
+                - Africa/Brazzaville
+                - Africa/Bujumbura
+                - Africa/Cairo
+                - Africa/Casablanca
+                - Africa/Ceuta
+                - Africa/Conakry
+                - Africa/Dakar
+                - Africa/Dar_es_Salaam
+                - Africa/Djibouti
+                - Africa/Douala
+                - Africa/El_Aaiun
+                - Africa/Freetown
+                - Africa/Gaborone
+                - Africa/Harare
+                - Africa/Johannesburg
+                - Africa/Juba
+                - Africa/Kampala
+                - Africa/Khartoum
+                - Africa/Kigali
+                - Africa/Kinshasa
+                - Africa/Lagos
+                - Africa/Libreville
+                - Africa/Lome
+                - Africa/Luanda
+                - Africa/Lubumbashi
+                - Africa/Lusaka
+                - Africa/Malabo
+                - Africa/Maputo
+                - Africa/Maseru
+                - Africa/Mbabane
+                - Africa/Mogadishu
+                - Africa/Monrovia
+                - Africa/Nairobi
+                - Africa/Ndjamena
+                - Africa/Niamey
+                - Africa/Nouakchott
+                - Africa/Ouagadougou
+                - Africa/Porto-Novo
+                - Africa/Sao_Tome
+                - Africa/Tripoli
+                - Africa/Tunis
+                - Africa/Windhoek
+                - America/Adak
+                - America/Anchorage
+                - America/Anguilla
+                - America/Antigua
+                - America/Araguaina
+                - America/Argentina/Buenos_Aires
+                - America/Argentina/Catamarca
+                - America/Argentina/Cordoba
+                - America/Argentina/Jujuy
+                - America/Argentina/La_Rioja
+                - America/Argentina/Mendoza
+                - America/Argentina/Rio_Gallegos
+                - America/Argentina/Salta
+                - America/Argentina/San_Juan
+                - America/Argentina/San_Luis
+                - America/Argentina/Tucuman
+                - America/Argentina/Ushuaia
+                - America/Aruba
+                - America/Asuncion
+                - America/Atikokan
+                - America/Bahia
+                - America/Bahia_Banderas
+                - America/Barbados
+                - America/Belem
+                - America/Belize
+                - America/Blanc-Sablon
+                - America/Boa_Vista
+                - America/Bogota
+                - America/Boise
+                - America/Cambridge_Bay
+                - America/Campo_Grande
+                - America/Cancun
+                - America/Caracas
+                - America/Cayenne
+                - America/Cayman
+                - America/Chicago
+                - America/Chihuahua
+                - America/Ciudad_Juarez
+                - America/Costa_Rica
+                - America/Creston
+                - America/Cuiaba
+                - America/Curacao
+                - America/Danmarkshavn
+                - America/Dawson
+                - America/Dawson_Creek
+                - America/Denver
+                - America/Detroit
+                - America/Dominica
+                - America/Edmonton
+                - America/Eirunepe
+                - America/El_Salvador
+                - America/Fort_Nelson
+                - America/Fortaleza
+                - America/Glace_Bay
+                - America/Goose_Bay
+                - America/Grand_Turk
+                - America/Grenada
+                - America/Guadeloupe
+                - America/Guatemala
+                - America/Guayaquil
+                - America/Guyana
+                - America/Halifax
+                - America/Havana
+                - America/Hermosillo
+                - America/Indiana/Indianapolis
+                - America/Indiana/Knox
+                - America/Indiana/Marengo
+                - America/Indiana/Petersburg
+                - America/Indiana/Tell_City
+                - America/Indiana/Vevay
+                - America/Indiana/Vincennes
+                - America/Indiana/Winamac
+                - America/Inuvik
+                - America/Iqaluit
+                - America/Jamaica
+                - America/Juneau
+                - America/Kentucky/Louisville
+                - America/Kentucky/Monticello
+                - America/Kralendijk
+                - America/La_Paz
+                - America/Lima
+                - America/Los_Angeles
+                - America/Lower_Princes
+                - America/Maceio
+                - America/Managua
+                - America/Manaus
+                - America/Marigot
+                - America/Martinique
+                - America/Matamoros
+                - America/Mazatlan
+                - America/Menominee
+                - America/Merida
+                - America/Metlakatla
+                - America/Mexico_City
+                - America/Miquelon
+                - America/Moncton
+                - America/Monterrey
+                - America/Montevideo
+                - America/Montserrat
+                - America/Nassau
+                - America/New_York
+                - America/Nome
+                - America/Noronha
+                - America/North_Dakota/Beulah
+                - America/North_Dakota/Center
+                - America/North_Dakota/New_Salem
+                - America/Nuuk
+                - America/Ojinaga
+                - America/Panama
+                - America/Paramaribo
+                - America/Phoenix
+                - America/Port-au-Prince
+                - America/Port_of_Spain
+                - America/Porto_Velho
+                - America/Puerto_Rico
+                - America/Punta_Arenas
+                - America/Rankin_Inlet
+                - America/Recife
+                - America/Regina
+                - America/Resolute
+                - America/Rio_Branco
+                - America/Santarem
+                - America/Santiago
+                - America/Santo_Domingo
+                - America/Sao_Paulo
+                - America/Scoresbysund
+                - America/Sitka
+                - America/St_Barthelemy
+                - America/St_Johns
+                - America/St_Kitts
+                - America/St_Lucia
+                - America/St_Thomas
+                - America/St_Vincent
+                - America/Swift_Current
+                - America/Tegucigalpa
+                - America/Thule
+                - America/Tijuana
+                - America/Toronto
+                - America/Tortola
+                - America/Vancouver
+                - America/Whitehorse
+                - America/Winnipeg
+                - America/Yakutat
+                - Antarctica/Casey
+                - Antarctica/Davis
+                - Antarctica/DumontDUrville
+                - Antarctica/Macquarie
+                - Antarctica/Mawson
+                - Antarctica/McMurdo
+                - Antarctica/Palmer
+                - Antarctica/Rothera
+                - Antarctica/Syowa
+                - Antarctica/Troll
+                - Antarctica/Vostok
+                - Arctic/Longyearbyen
+                - Asia/Aden
+                - Asia/Almaty
+                - Asia/Amman
+                - Asia/Anadyr
+                - Asia/Aqtau
+                - Asia/Aqtobe
+                - Asia/Ashgabat
+                - Asia/Atyrau
+                - Asia/Baghdad
+                - Asia/Bahrain
+                - Asia/Baku
+                - Asia/Bangkok
+                - Asia/Barnaul
+                - Asia/Beirut
+                - Asia/Bishkek
+                - Asia/Brunei
+                - Asia/Chita
+                - Asia/Choibalsan
+                - Asia/Colombo
+                - Asia/Damascus
+                - Asia/Dhaka
+                - Asia/Dili
+                - Asia/Dubai
+                - Asia/Dushanbe
+                - Asia/Famagusta
+                - Asia/Gaza
+                - Asia/Hebron
+                - Asia/Ho_Chi_Minh
+                - Asia/Hong_Kong
+                - Asia/Hovd
+                - Asia/Irkutsk
+                - Asia/Jakarta
+                - Asia/Jayapura
+                - Asia/Jerusalem
+                - Asia/Kabul
+                - Asia/Kamchatka
+                - Asia/Karachi
+                - Asia/Kathmandu
+                - Asia/Khandyga
+                - Asia/Kolkata
+                - Asia/Krasnoyarsk
+                - Asia/Kuala_Lumpur
+                - Asia/Kuching
+                - Asia/Kuwait
+                - Asia/Macau
+                - Asia/Magadan
+                - Asia/Makassar
+                - Asia/Manila
+                - Asia/Muscat
+                - Asia/Nicosia
+                - Asia/Novokuznetsk
+                - Asia/Novosibirsk
+                - Asia/Omsk
+                - Asia/Oral
+                - Asia/Phnom_Penh
+                - Asia/Pontianak
+                - Asia/Pyongyang
+                - Asia/Qatar
+                - Asia/Qostanay
+                - Asia/Qyzylorda
+                - Asia/Riyadh
+                - Asia/Sakhalin
+                - Asia/Samarkand
+                - Asia/Seoul
+                - Asia/Shanghai
+                - Asia/Singapore
+                - Asia/Srednekolymsk
+                - Asia/Taipei
+                - Asia/Tashkent
+                - Asia/Tbilisi
+                - Asia/Tehran
+                - Asia/Thimphu
+                - Asia/Tokyo
+                - Asia/Tomsk
+                - Asia/Ulaanbaatar
+                - Asia/Urumqi
+                - Asia/Ust-Nera
+                - Asia/Vientiane
+                - Asia/Vladivostok
+                - Asia/Yakutsk
+                - Asia/Yangon
+                - Asia/Yekaterinburg
+                - Asia/Yerevan
+                - Atlantic/Azores
+                - Atlantic/Bermuda
+                - Atlantic/Canary
+                - Atlantic/Cape_Verde
+                - Atlantic/Faroe
+                - Atlantic/Madeira
+                - Atlantic/Reykjavik
+                - Atlantic/South_Georgia
+                - Atlantic/St_Helena
+                - Atlantic/Stanley
+                - Australia/Adelaide
+                - Australia/Brisbane
+                - Australia/Broken_Hill
+                - Australia/Darwin
+                - Australia/Eucla
+                - Australia/Hobart
+                - Australia/Lindeman
+                - Australia/Lord_Howe
+                - Australia/Melbourne
+                - Australia/Perth
+                - Australia/Sydney
+                - Canada/Atlantic
+                - Canada/Central
+                - Canada/Eastern
+                - Canada/Mountain
+                - Canada/Newfoundland
+                - Canada/Pacific
+                - Europe/Amsterdam
+                - Europe/Andorra
+                - Europe/Astrakhan
+                - Europe/Athens
+                - Europe/Belgrade
+                - Europe/Berlin
+                - Europe/Bratislava
+                - Europe/Brussels
+                - Europe/Bucharest
+                - Europe/Budapest
+                - Europe/Busingen
+                - Europe/Chisinau
+                - Europe/Copenhagen
+                - Europe/Dublin
+                - Europe/Gibraltar
+                - Europe/Guernsey
+                - Europe/Helsinki
+                - Europe/Isle_of_Man
+                - Europe/Istanbul
+                - Europe/Jersey
+                - Europe/Kaliningrad
+                - Europe/Kirov
+                - Europe/Kyiv
+                - Europe/Lisbon
+                - Europe/Ljubljana
+                - Europe/London
+                - Europe/Luxembourg
+                - Europe/Madrid
+                - Europe/Malta
+                - Europe/Mariehamn
+                - Europe/Minsk
+                - Europe/Monaco
+                - Europe/Moscow
+                - Europe/Oslo
+                - Europe/Paris
+                - Europe/Podgorica
+                - Europe/Prague
+                - Europe/Riga
+                - Europe/Rome
+                - Europe/Samara
+                - Europe/San_Marino
+                - Europe/Sarajevo
+                - Europe/Saratov
+                - Europe/Simferopol
+                - Europe/Skopje
+                - Europe/Sofia
+                - Europe/Stockholm
+                - Europe/Tallinn
+                - Europe/Tirane
+                - Europe/Ulyanovsk
+                - Europe/Vaduz
+                - Europe/Vatican
+                - Europe/Vienna
+                - Europe/Vilnius
+                - Europe/Volgograd
+                - Europe/Warsaw
+                - Europe/Zagreb
+                - Europe/Zurich
+                - GMT
+                - Indian/Antananarivo
+                - Indian/Chagos
+                - Indian/Christmas
+                - Indian/Cocos
+                - Indian/Comoro
+                - Indian/Kerguelen
+                - Indian/Mahe
+                - Indian/Maldives
+                - Indian/Mauritius
+                - Indian/Mayotte
+                - Indian/Reunion
+                - Pacific/Apia
+                - Pacific/Auckland
+                - Pacific/Bougainville
+                - Pacific/Chatham
+                - Pacific/Chuuk
+                - Pacific/Easter
+                - Pacific/Efate
+                - Pacific/Fakaofo
+                - Pacific/Fiji
+                - Pacific/Funafuti
+                - Pacific/Galapagos
+                - Pacific/Gambier
+                - Pacific/Guadalcanal
+                - Pacific/Guam
+                - Pacific/Honolulu
+                - Pacific/Kanton
+                - Pacific/Kiritimati
+                - Pacific/Kosrae
+                - Pacific/Kwajalein
+                - Pacific/Majuro
+                - Pacific/Marquesas
+                - Pacific/Midway
+                - Pacific/Nauru
+                - Pacific/Niue
+                - Pacific/Norfolk
+                - Pacific/Noumea
+                - Pacific/Pago_Pago
+                - Pacific/Palau
+                - Pacific/Pitcairn
+                - Pacific/Pohnpei
+                - Pacific/Port_Moresby
+                - Pacific/Rarotonga
+                - Pacific/Saipan
+                - Pacific/Tahiti
+                - Pacific/Tarawa
+                - Pacific/Tongatapu
+                - Pacific/Wake
+                - Pacific/Wallis
+                - US/Alaska
+                - US/Arizona
+                - US/Central
+                - US/Eastern
+                - US/Hawaii
+                - US/Mountain
+                - US/Pacific
+                - UTC
+    parameters:
+        PathCycleID:
+            name: cycle_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathPk:
+            name: pk
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathProjectID:
+            name: project_id
+            in: path
+            description: Project ID
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathProjectID_28ef2be3:
+            name: project_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathSlug:
+            name: slug
+            in: path
+            description: Workspace slug
+            required: true
+            schema:
+                type: string
+        PathSlug_20b7c853:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+    requestBodies:
+        PostAPIWorkspacesBySlugProjectsByProjectIDCyclesRequestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/PlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/PlaneAppSerializersCycleCyclewriteserializerRequestRequest'
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        ConflictError:
+            description: Conflict response.
+            content:
+                application/json:
+                    schema: {}
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        MethodNotAllowedError:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema: {}
+        NoContentResponse:
+            description: No Content response.
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema: {}
+        RestFrameworkSerializersArchiveresponseResponseStatus200Response:
+            description: OK response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/RestFrameworkSerializersArchiveresponseResponse'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane session authentication without CSRF enforcement.
+            name: session-id
+            in: cookie
+tags:
+    - name: Assets
+      description: |-
+        **File Upload & Presigned URLs**
+
+        Generate presigned URLs for direct file uploads to cloud storage. Handle user avatars, cover images, and generic project assets with secure upload workflows.
+
+        *Key Features:*
+        - Generate presigned URLs for S3 uploads
+        - Support for user avatars and cover images
+        - Generic asset upload for projects
+        - File validation and size limits
+
+        *Use Cases:* User profile images, project file uploads, secure direct-to-cloud uploads.
+    - name: Cycles
+      description: |-
+        **Sprint & Development Cycles**
+
+        Create and manage development cycles (sprints) to organize work into time-boxed iterations. Track progress, assign work items, and monitor team velocity.
+
+        *Key Features:*
+        - Create and configure development cycles
+        - Assign work items to cycles
+        - Track cycle progress and completion
+        - Generate cycle analytics and reports
+
+        *Use Cases:* Sprint planning, iterative development, progress tracking, team velocity.
+    - name: Intake
+      description: |-
+        **Work Item Intake Queue**
+
+        Manage incoming work items through a dedicated intake queue for triage and review. Submit, update, and process work items before they enter the main project workflow.
+
+        *Key Features:*
+        - Submit work items to intake queue
+        - Review and triage incoming work items
+        - Update intake work item status and properties
+        - Accept, reject, or modify work items before approval
+
+        *Use Cases:* Work item triage, external submissions, quality review, approval workflows.
+    - name: Labels
+      description: |-
+        **Labels & Tags**
+
+        Create and manage labels to categorize and organize work items. Use color-coded labels for easy identification, filtering, and project organization.
+
+        *Key Features:*
+        - Create custom labels with colors and descriptions
+        - Apply labels to work items for categorization
+        - Filter and search by labels
+        - Organize labels across projects
+
+        *Use Cases:* Priority marking, feature categorization, bug classification, team organization.
+    - name: Members
+      description: |-
+        **Team Member Management**
+
+        Manage team members, roles, and permissions within projects and workspaces. Control access levels and track member participation.
+
+        *Key Features:*
+        - Invite and manage team members
+        - Assign roles and permissions
+        - Control project and workspace access
+        - Track member activity and participation
+
+        *Use Cases:* Team setup, access control, role management, collaboration.
+    - name: Modules
+      description: |-
+        **Feature Modules**
+
+        Group related work items into modules for better organization and tracking. Plan features, track progress, and manage deliverables at a higher level.
+
+        *Key Features:*
+        - Create and organize feature modules
+        - Group work items by module
+        - Track module progress and completion
+        - Manage module leads and assignments
+
+        *Use Cases:* Feature planning, release organization, progress tracking, team coordination.
+    - name: Projects
+      description: |-
+        **Project Management**
+
+        Create and manage projects to organize your development work. Configure project settings, manage team access, and control project visibility.
+
+        *Key Features:*
+        - Create, update, and delete projects
+        - Configure project settings and preferences
+        - Manage team access and permissions
+        - Control project visibility and sharing
+
+        *Use Cases:* Project setup, team collaboration, access control, project configuration.
+    - name: States
+      description: |-
+        **Workflow States**
+
+        Define custom workflow states for work items to match your team's process. Configure state transitions and track work item progress through different stages.
+
+        *Key Features:*
+        - Create custom workflow states
+        - Configure state transitions and rules
+        - Track work item progress through states
+        - Set state-based permissions and automation
+
+        *Use Cases:* Custom workflows, status tracking, process automation, progress monitoring.
+    - name: Users
+      description: |-
+        **Current User Information**
+
+        Get information about the currently authenticated user including profile details and account settings.
+
+        *Key Features:*
+        - Retrieve current user profile
+        - Access user account information
+        - View user preferences and settings
+        - Get authentication context
+
+        *Use Cases:* Profile display, user context, account information, authentication status.
+    - name: Work Item Activity
+      description: |-
+        **Activity History & Search**
+
+        View activity history and search for work items across the workspace. Get detailed activity logs and find work items using text search.
+
+        *Key Features:*
+        - View work item activity history
+        - Search work items across workspace
+        - Track changes and modifications
+        - Filter search results by project
+
+        *Use Cases:* Activity tracking, work item discovery, change history, workspace search.
+    - name: Work Item Attachments
+      description: |-
+        **Work Item File Attachments**
+
+        Generate presigned URLs for uploading files directly to specific work items. Upload and manage attachments associated with work items.
+
+        *Key Features:*
+        - Generate presigned URLs for work item attachments
+        - Upload files directly to work items
+        - Retrieve and manage attachment metadata
+        - Delete attachments from work items
+
+        *Use Cases:* Screenshots, error logs, design files, supporting documents.
+    - name: Work Item Comments
+      description: |-
+        **Comments & Discussions**
+
+        Add comments and discussions to work items for team collaboration. Support threaded conversations, mentions, and rich text formatting.
+
+        *Key Features:*
+        - Add comments to work items
+        - Thread conversations and replies
+        - Mention users and trigger notifications
+        - Rich text and markdown support
+
+        *Use Cases:* Team discussions, progress updates, code reviews, decision tracking.
+    - name: Work Item Links
+      description: |-
+        **External Links & References**
+
+        Link work items to external resources like documentation, repositories, or design files. Maintain connections between work items and external systems.
+
+        *Key Features:*
+        - Add external URL links to work items
+        - Validate and preview linked resources
+        - Organize links by type and category
+        - Track link usage and access
+
+        *Use Cases:* Documentation links, repository connections, design references, external tools.
+    - name: Work Items
+      description: |-
+        **Work Items & Tasks**
+
+        Create and manage work items like tasks, bugs, features, and user stories. The core entities for tracking work in your projects.
+
+        *Key Features:*
+        - Create, update, and manage work items
+        - Assign to team members and set priorities
+        - Track progress through workflow states
+        - Set due dates, estimates, and relationships
+
+        *Use Cases:* Bug tracking, task management, feature development, sprint planning.
+    - name: cycles
+    - name: projects

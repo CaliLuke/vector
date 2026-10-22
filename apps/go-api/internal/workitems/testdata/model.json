@@ -1,0 +1,30 @@
+{
+  "source": {
+    "issue_save": "apps/api/plane/db/models/issue.py:181-222 Issue.save",
+    "strip_tags": "apps/api/plane/utils/html_processor.py:10-30",
+    "strip_tags_runtime": "Python 3.12.12 html.parser.HTMLParser, convert_charrefs=True",
+    "uuid_lock_key": "apps/api/plane/utils/uuid.py:19-24 convert_uuid_to_integer",
+    "source_image": "plane-notification-parity:3e312f0317845e2c808773dc"
+  },
+  "strip_tags": [
+    { "name": "empty", "input": "", "output": "" },
+    { "name": "plaintext", "input": "plain text", "output": "plain text" },
+    { "name": "nested_tags", "input": "<p>Hello <b>world</b></p>", "output": "Hello world" },
+    { "name": "entities", "input": "<p>A &amp; B &#x1F642; &#65; &nbsp;</p>", "output": "A & B 🙂 A  " },
+    {
+      "name": "script_and_style_bodies",
+      "input": "<script>alert(1)</script><style>.x{}</style>",
+      "output": "alert(1).x{}"
+    },
+    { "name": "comments", "input": "before<!-- hidden -->after", "output": "beforeafter" },
+    { "name": "unclosed_tags", "input": "<p>unclosed <b>bold", "output": "unclosed bold" },
+    { "name": "malformed_angle_brackets", "input": "< broken > text", "output": "< broken > text" },
+    { "name": "adjacent_blocks", "input": "<div>one</div><div>two</div>", "output": "onetwo" }
+  ],
+  "project_lock_keys": [
+    { "uuid": "00000000-0000-0000-0000-000000000000", "key": 1349170572285598868 },
+    { "uuid": "00000000-0000-0000-0000-000000000001", "key": 8845554376707389133 },
+    { "uuid": "123e4567-e89b-12d3-a456-426614174000", "key": -7463575324062875093 },
+    { "uuid": "ffffffff-ffff-ffff-ffff-ffffffffffff", "key": 1411960639344678146 }
+  ]
+}

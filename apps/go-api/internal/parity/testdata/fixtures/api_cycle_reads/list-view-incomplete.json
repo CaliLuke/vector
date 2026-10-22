@@ -1,0 +1,503 @@
+{
+  "cache": {
+    "rate_limit_history_after": [
+      "<timestamp>"
+    ],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-9>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Cycle parity",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-9>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Cycle parity",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/cycles/",
+            "query_params": "cycle_view=incomplete",
+            "response_body": {
+              "count": 5,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1000:1:0",
+              "next_page_results": false,
+              "prev_cursor": "1000:-1:1",
+              "prev_page_results": false,
+              "results": [
+                {
+                  "archived_at": null,
+                  "backlog_issues": 0,
+                  "cancelled_issues": 0,
+                  "completed_issues": 0,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": null,
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-2>",
+                  "logo_props": {},
+                  "name": "Cycle 5",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 5.0,
+                  "start_date": "<timestamp>",
+                  "started_issues": 0,
+                  "timezone": "UTC",
+                  "total_issues": 0,
+                  "unstarted_issues": 0,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                },
+                {
+                  "archived_at": null,
+                  "backlog_issues": 0,
+                  "cancelled_issues": 0,
+                  "completed_issues": 0,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": "2099-01-01T00:00:00Z",
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-5>",
+                  "logo_props": {},
+                  "name": "Cycle 4",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 4.0,
+                  "start_date": null,
+                  "started_issues": 0,
+                  "timezone": "UTC",
+                  "total_issues": 0,
+                  "unstarted_issues": 0,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                },
+                {
+                  "archived_at": null,
+                  "backlog_issues": 0,
+                  "cancelled_issues": 0,
+                  "completed_issues": 0,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": null,
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-6>",
+                  "logo_props": {},
+                  "name": "Cycle 2",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 2.0,
+                  "start_date": null,
+                  "started_issues": 0,
+                  "timezone": "UTC",
+                  "total_issues": 0,
+                  "unstarted_issues": 0,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                },
+                {
+                  "archived_at": null,
+                  "backlog_issues": 0,
+                  "cancelled_issues": 0,
+                  "completed_issues": 0,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": "2099-01-01T00:00:00Z",
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-7>",
+                  "logo_props": {},
+                  "name": "Cycle 1",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 1.0,
+                  "start_date": "2099-01-01T00:00:00Z",
+                  "started_issues": 0,
+                  "timezone": "UTC",
+                  "total_issues": 0,
+                  "unstarted_issues": 0,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                },
+                {
+                  "archived_at": null,
+                  "backlog_issues": 1,
+                  "cancelled_issues": 1,
+                  "completed_issues": 1,
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description": "",
+                  "end_date": "2099-01-01T00:00:00Z",
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-8>",
+                  "logo_props": {},
+                  "name": "Cycle 0",
+                  "owned_by": "<uuid-3>",
+                  "progress_snapshot": {
+                    "total_issues": 999
+                  },
+                  "project": "<uuid-1>",
+                  "sort_order": 0.0,
+                  "start_date": "<timestamp>",
+                  "started_issues": 1,
+                  "timezone": "UTC",
+                  "total_issues": 5,
+                  "unstarted_issues": 1,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "version": 1,
+                  "view_props": {
+                    "created_at": "2011-06-17T13:14:15Z",
+                    "layout": "list"
+                  },
+                  "workspace": "<uuid-4>"
+                }
+              ],
+              "sub_grouped_by": null,
+              "total_count": 5,
+              "total_pages": 1,
+              "total_results": 5
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/cycles/",
+    "principal": {
+      "kind": "api-key"
+    },
+    "query": {
+      "cycle_view": "incomplete"
+    }
+  },
+  "response": {
+    "body": {
+      "count": 5,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1000:1:0",
+      "next_page_results": false,
+      "prev_cursor": "1000:-1:1",
+      "prev_page_results": false,
+      "results": [
+        {
+          "archived_at": null,
+          "backlog_issues": 0,
+          "cancelled_issues": 0,
+          "completed_issues": 0,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": null,
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "logo_props": {},
+          "name": "Cycle 5",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 5.0,
+          "start_date": "<timestamp>",
+          "started_issues": 0,
+          "timezone": "UTC",
+          "total_issues": 0,
+          "unstarted_issues": 0,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        },
+        {
+          "archived_at": null,
+          "backlog_issues": 0,
+          "cancelled_issues": 0,
+          "completed_issues": 0,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": "2099-01-01T00:00:00Z",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-5>",
+          "logo_props": {},
+          "name": "Cycle 4",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 4.0,
+          "start_date": null,
+          "started_issues": 0,
+          "timezone": "UTC",
+          "total_issues": 0,
+          "unstarted_issues": 0,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        },
+        {
+          "archived_at": null,
+          "backlog_issues": 0,
+          "cancelled_issues": 0,
+          "completed_issues": 0,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": null,
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "logo_props": {},
+          "name": "Cycle 2",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 2.0,
+          "start_date": null,
+          "started_issues": 0,
+          "timezone": "UTC",
+          "total_issues": 0,
+          "unstarted_issues": 0,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        },
+        {
+          "archived_at": null,
+          "backlog_issues": 0,
+          "cancelled_issues": 0,
+          "completed_issues": 0,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": "2099-01-01T00:00:00Z",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-7>",
+          "logo_props": {},
+          "name": "Cycle 1",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 1.0,
+          "start_date": "2099-01-01T00:00:00Z",
+          "started_issues": 0,
+          "timezone": "UTC",
+          "total_issues": 0,
+          "unstarted_issues": 0,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        },
+        {
+          "archived_at": null,
+          "backlog_issues": 1,
+          "cancelled_issues": 1,
+          "completed_issues": 1,
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description": "",
+          "end_date": "2099-01-01T00:00:00Z",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-8>",
+          "logo_props": {},
+          "name": "Cycle 0",
+          "owned_by": "<uuid-3>",
+          "progress_snapshot": {
+            "total_issues": 999
+          },
+          "project": "<uuid-1>",
+          "sort_order": 0.0,
+          "start_date": "<timestamp>",
+          "started_issues": 1,
+          "timezone": "UTC",
+          "total_issues": 5,
+          "unstarted_issues": 1,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "version": 1,
+          "view_props": {
+            "created_at": "2011-06-17T13:14:15Z",
+            "layout": "list"
+          },
+          "workspace": "<uuid-4>"
+        }
+      ],
+      "sub_grouped_by": null,
+      "total_count": 5,
+      "total_pages": 1,
+      "total_results": 5
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET, POST",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-ratelimit-remaining": "<x-ratelimit-remaining>",
+      "x-ratelimit-reset": "<x-ratelimit-reset>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-view-incomplete"
+  }
+}

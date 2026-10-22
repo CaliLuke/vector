@@ -1,0 +1,888 @@
+openapi: 3.1.1
+info:
+    title: Plane Internal Django Migration API
+    description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane Internal Django Migration API
+paths:
+    /api/users/me/activities/:
+        get:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: get_api_users_me_activities
+            parameters:
+                - name: cursor
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: order_by
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: per_page
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: integer
+            responses:
+                "200":
+                    description: OK response.
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersUseractivitypageResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - work-item-activities
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/users/me/activities/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.user.base.UserActivityEndpoint
+        options:
+            tags:
+                - PlaneInternalDjangoMigrationAPI
+            summary: GetAPIUsersMeActivitiesOptions PlaneInternalDjangoMigrationAPI
+            operationId: options_api_users_me_activities
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ActivityOptions'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/:
+        get:
+            description: Retrieve all activities for a work item. Supports filtering by activity type and date range.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathIssueID'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    $ref: '#/components/responses/RestFrameworkSerializersPaginatedissueactivityresponseResponseStatus200Response'
+                    description: Paginated list of issue activities
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            tags:
+                - work-item-activities
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.issue.IssueActivityListAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/{pk}/:
+        get:
+            description: Retrieve details of a specific activity.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathIssueID'
+                - $ref: '#/components/parameters/PathPk'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersIssueIssueactivityserializerResponseStatus200Response'
+                    description: Paginated list of work item activities
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            tags:
+                - work-item-activities
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/{pk}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.issue.IssueActivityDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/:
+        get:
+            description: Retrieve all activities for a work item. Supports filtering by activity type and date range.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathIssueID'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    $ref: '#/components/responses/RestFrameworkSerializersPaginatedissueactivityresponseResponseStatus200Response'
+                    description: Paginated list of issue activities
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            tags:
+                - work-item-activities
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.issue.IssueActivityListAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/{pk}/:
+        get:
+            description: Retrieve details of a specific activity.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathIssueID'
+                - $ref: '#/components/parameters/PathPk'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersIssueIssueactivityserializerResponseStatus200Response'
+                    description: Paginated list of work item activities
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            tags:
+                - work-item-activities
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/{pk}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.issue.IssueActivityDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0:
+            type: object
+            properties:
+                code: {}
+                detail: {}
+                error: {}
+                error_code: {}
+                error_message: {}
+                message: {}
+                status: {}
+        ActivityOptions:
+            type: object
+            properties:
+                description:
+                    type: string
+                name:
+                    type: string
+                parses:
+                    type: array
+                    items:
+                        type: string
+                renders:
+                    type: array
+                    items:
+                        type: string
+            required:
+                - name
+                - description
+                - renders
+                - parses
+        PlaneApiSerializersIssueIssueactivityserializerResponse:
+            type: object
+            properties:
+                actor:
+                    anyOf:
+                        - {}
+                        - type: "null"
+                attachments:
+                    type: array
+                    items:
+                        type: string
+                        format: uri
+                        maxLength: 200
+                    maxItems: 10
+                comment:
+                    type: string
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                epoch:
+                    anyOf:
+                        - type: number
+                          format: double
+                        - type: "null"
+                field:
+                    title: Field Name
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                issue:
+                    anyOf:
+                        - {}
+                        - type: "null"
+                issue_comment:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                new_identifier:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                new_value:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                old_identifier:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                old_value:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                project: {}
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                verb:
+                    title: Action
+                    type: string
+                    maxLength: 255
+                workspace: {}
+            description: |-
+                Serializer for work item activity and change history.
+
+                Tracks and represents work item modifications, state changes,
+                and user interactions for audit trails and activity feeds.
+            required:
+                - project
+                - workspace
+        PlaneAppSerializersIssueIssueactivityserializerResponse:
+            type: object
+            properties:
+                actor:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                actor_detail:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersUserUserliteserializerResponse'
+                attachments:
+                    type: array
+                    items:
+                        type: string
+                        format: uri
+                        maxLength: 200
+                    maxItems: 10
+                comment:
+                    type: string
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                epoch:
+                    anyOf:
+                        - type: number
+                          format: double
+                        - type: "null"
+                field:
+                    title: Field Name
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                issue:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                issue_comment:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                issue_detail:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersIssueIssueflatserializerResponse'
+                new_identifier:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                new_value:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                old_identifier:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                old_value:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                project:
+                    type: string
+                    format: uuid
+                project_detail:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersProjectProjectliteserializerResponse'
+                source_data:
+                    readOnly: true
+                    anyOf:
+                        - {}
+                        - type: "null"
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                verb:
+                    title: Action
+                    type: string
+                    maxLength: 255
+                workspace:
+                    type: string
+                    format: uuid
+                workspace_detail:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse'
+            required:
+                - project
+                - workspace
+        PlaneAppSerializersIssueIssueflatserializerResponse:
+            type: object
+            properties:
+                description_html:
+                    type: string
+                description_json: {}
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_draft:
+                    type: boolean
+                name:
+                    title: Issue Name
+                    type: string
+                    maxLength: 255
+                priority:
+                    title: Issue Priority
+                    enum:
+                        - urgent
+                        - high
+                        - medium
+                        - low
+                        - none
+                    allOf:
+                        - $ref: '#/components/schemas/PriorityEnum'
+                sequence_id:
+                    title: Issue Sequence ID
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                target_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+            required:
+                - name
+        PlaneAppSerializersProjectProjectliteserializerResponse:
+            type: object
+            properties:
+                cover_image:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                cover_image_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uri-reference
+                        - type: "null"
+                description:
+                    title: Project Description
+                    type: string
+                    readOnly: true
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                identifier:
+                    title: Project Identifier
+                    type: string
+                    readOnly: true
+                logo_props:
+                    readOnly: true
+                name:
+                    title: Project Name
+                    type: string
+                    readOnly: true
+        PlaneAppSerializersUserUserliteserializerResponse:
+            type: object
+            properties:
+                avatar:
+                    type: string
+                avatar_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uri-reference
+                        - type: "null"
+                display_name:
+                    type: string
+                    maxLength: 255
+                first_name:
+                    type: string
+                    maxLength: 255
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_bot:
+                    type: boolean
+                    readOnly: true
+                last_name:
+                    type: string
+                    maxLength: 255
+        PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                logo_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uri-reference
+                        - type: "null"
+                name:
+                    title: Workspace Name
+                    type: string
+                    readOnly: true
+                slug:
+                    type: string
+                    readOnly: true
+                    pattern: ^[\-0-9A-Z_a-z]+$
+        PriorityEnum:
+            type: string
+            description: |-
+                * `urgent` - Urgent
+                * `high` - High
+                * `medium` - Medium
+                * `low` - Low
+                * `none` - None
+            enum:
+                - urgent
+                - high
+                - medium
+                - low
+                - none
+        RestFrameworkSerializersPaginatedissueactivityresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersIssueIssueactivityserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        RestFrameworkSerializersUseractivitypageResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: object
+                          additionalProperties: true
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneAppSerializersIssueIssueactivityserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+    parameters:
+        PathIssueID:
+            name: issue_id
+            in: path
+            description: Issue ID
+            required: true
+            schema:
+                type: string
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        PathPk:
+            name: pk
+            in: path
+            description: Activity ID
+            required: true
+            schema:
+                type: string
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        PathProjectID:
+            name: project_id
+            in: path
+            description: Project ID
+            required: true
+            schema:
+                type: string
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        PathSlug:
+            name: slug
+            in: path
+            description: Workspace slug
+            required: true
+            schema:
+                type: string
+        QueryCursor:
+            name: cursor
+            in: query
+            description: Pagination cursor for getting next set of results
+            schema:
+                type: string
+        QueryExpand:
+            name: expand
+            in: query
+            description: Comma-separated list of related fields to expand in response
+            schema:
+                type: string
+        QueryFields:
+            name: fields
+            in: query
+            description: Comma-separated list of fields to include in response
+            schema:
+                type: string
+        QueryOrderBy:
+            name: order_by
+            in: query
+            description: Field to order results by. Prefix with '-' for descending order
+            schema:
+                type: string
+        QueryPerPage:
+            name: per_page
+            in: query
+            description: 'Number of results per page (default: 1000, max: 1000)'
+            schema:
+                type: integer
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        PlaneApiSerializersIssueIssueactivityserializerResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersIssueIssueactivityserializerResponse'
+        RestFrameworkSerializersPaginatedissueactivityresponseResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/RestFrameworkSerializersPaginatedissueactivityresponseResponse'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/ActivityHTTPErrorResponseBody_bf3110b06f0d3bb0'
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane session authentication without CSRF enforcement.
+            name: session-id
+            in: cookie
+tags:
+    - name: work-item-activities

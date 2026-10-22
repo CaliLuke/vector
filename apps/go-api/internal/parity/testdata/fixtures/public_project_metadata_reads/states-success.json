@@ -1,0 +1,291 @@
+{
+  "database": {
+    "after": {
+      "labels": [
+        {
+          "color": "#00FF00",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "name": "Child",
+          "parent_id": "<uuid-3>",
+          "project_id": "<uuid-4>",
+          "sort_order": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#FF0000",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-3>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-4>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "states": [
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-7>",
+          "is_triage": false,
+          "name": "Triage",
+          "project_id": "<uuid-4>",
+          "sequence": 300.0,
+          "slug": "triage",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "triage",
+          "id": "<uuid-8>",
+          "is_triage": false,
+          "name": "Inbox",
+          "project_id": "<uuid-4>",
+          "sequence": 400.0,
+          "slug": "inbox",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#60646C",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-1>",
+          "is_triage": false,
+          "name": "Backlog",
+          "project_id": "<uuid-4>",
+          "sequence": 100.0,
+          "slug": "backlog",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#F59E0B",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "started",
+          "id": "<uuid-2>",
+          "is_triage": false,
+          "name": "In Progress",
+          "project_id": "<uuid-4>",
+          "sequence": 200.5,
+          "slug": "in-progress",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "labels": [
+        {
+          "color": "#00FF00",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "name": "Child",
+          "parent_id": "<uuid-3>",
+          "project_id": "<uuid-4>",
+          "sort_order": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#FF0000",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-3>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-4>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "states": [
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-7>",
+          "is_triage": false,
+          "name": "Triage",
+          "project_id": "<uuid-4>",
+          "sequence": 300.0,
+          "slug": "triage",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "triage",
+          "id": "<uuid-8>",
+          "is_triage": false,
+          "name": "Inbox",
+          "project_id": "<uuid-4>",
+          "sequence": 400.0,
+          "slug": "inbox",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#60646C",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-1>",
+          "is_triage": false,
+          "name": "Backlog",
+          "project_id": "<uuid-4>",
+          "sequence": 100.0,
+          "slug": "backlog",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#F59E0B",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "started",
+          "id": "<uuid-2>",
+          "is_triage": false,
+          "name": "In Progress",
+          "project_id": "<uuid-4>",
+          "sequence": 200.5,
+          "slug": "in-progress",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/public/anchor/public-project-metadata-anchor/states/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": [
+      {
+        "color": "#60646C",
+        "group": "backlog",
+        "id": "<uuid-1>",
+        "name": "Backlog",
+        "sequence": 100.0
+      },
+      {
+        "color": "#F59E0B",
+        "group": "started",
+        "id": "<uuid-2>",
+        "name": "In Progress",
+        "sequence": 200.5
+      }
+    ],
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "states-success"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "start": "2026-10-11T01:47:40.027195+00:00",
+  "flows": [
+    "Home",
+    "six persisted project tickets",
+    "saved parent title/state/assignee/priority",
+    "both children persist and respond to Space/Enter toggle",
+    "relation expansion",
+    "assignee menu Escape restores focus"
+  ],
+  "warning_error_records": 0,
+  "failed_requests": [],
+  "span_count": 76,
+  "statuses": [
+    {
+      "service": "plane-django-api",
+      "status": "200",
+      "count": 54
+    },
+    {
+      "service": "plane-go-api",
+      "status": "200",
+      "count": 22
+    }
+  ],
+  "new_test_data": [],
+  "warnings_artifact": "/tmp/plane-work-item-core/review-repair-ui-warnings-final.json",
+  "spans_artifact": "/tmp/plane-work-item-core/review-repair-ui-spans-final.json",
+  "error_records": 0,
+  "errors_artifact": "/tmp/plane-work-item-core/review-repair-ui-errors-final.json"
+}

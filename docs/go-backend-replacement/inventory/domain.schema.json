@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go-plane.local/schemas/domain-inventory.json",
+  "title": "Go backend migration domain inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_ref",
+    "domain",
+    "status",
+    "migration",
+    "source_contract_balance",
+    "route_families",
+    "tables",
+    "frontend_callers",
+    "backend_callers",
+    "jobs",
+    "schedules",
+    "external_effects",
+    "cache_entries",
+    "tests",
+    "disposition"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": 1 },
+    "source_ref": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "domain": { "type": "string", "minLength": 1 },
+    "status": {
+      "enum": ["inventory-in-progress", "characterized", "implemented", "cut-over", "retained"]
+    },
+    "migration": { "$ref": "#/$defs/migration" },
+    "source_contract_balance": { "$ref": "#/$defs/sourceContractBalance" },
+    "route_families": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/routeFamily" }
+    },
+    "tables": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/table" }
+    },
+    "frontend_callers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/caller" }
+    },
+    "backend_callers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/caller" }
+    },
+    "jobs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/job" }
+    },
+    "schedules": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/schedule" }
+    },
+    "external_effects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/externalEffect" }
+    },
+    "cache_entries": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cacheEntry" }
+    },
+    "tests": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "disposition": { "$ref": "#/$defs/dispositionWithMixed" },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "disposition": {
+      "enum": ["port", "retain", "replace", "remove", "defer"]
+    },
+    "dispositionWithMixed": {
+      "enum": ["port", "retain", "replace", "remove", "defer", "mixed"]
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_runtime", "target_runtime", "target_milestone", "status"],
+      "properties": {
+        "source_runtime": { "type": "string" },
+        "target_runtime": { "type": "string" },
+        "target_milestone": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "sourceContractBalance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "ported", "retained", "replaced", "removed", "deferred"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "ported": { "type": "integer", "minimum": 0 },
+        "retained": { "type": "integer", "minimum": 0 },
+        "replaced": { "type": "integer", "minimum": 0 },
+        "removed": { "type": "integer", "minimum": 0 },
+        "deferred": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "routeFamily": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "authentication", "routes"],
+      "properties": {
+        "surface": { "type": "string" },
+        "authentication": { "type": "string" },
+        "routes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/route" }
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "method", "path", "handler", "authorization", "disposition"],
+      "properties": {
+        "contract_id": { "type": "string", "minLength": 1 },
+        "method": { "type": "string" },
+        "path": { "type": "string" },
+        "handler": { "type": "string" },
+        "authorization": { "type": "string" },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "defer_until": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "model", "access"],
+      "properties": {
+        "name": { "type": "string" },
+        "model": { "type": "string" },
+        "access": { "enum": ["read", "write", "read-write"] },
+        "notes": { "type": "string" }
+      }
+    },
+    "caller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "symbol", "use", "activity", "disposition"],
+      "properties": {
+        "path": { "type": "string" },
+        "symbol": { "type": "string" },
+        "use": { "type": "string" },
+        "activity": { "enum": ["active", "dormant", "dependency"] },
+        "disposition": { "$ref": "#/$defs/disposition" }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "name", "direction", "payload_variants", "child_tasks", "disposition"],
+      "properties": {
+        "contract_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "direction": { "enum": ["produced", "consumed", "both"] },
+        "payload_variants": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "child_tasks": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "notes": { "type": "string" }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_id",
+        "name",
+        "timezone",
+        "cadence",
+        "overlap_rule",
+        "missed_run_behavior",
+        "idempotency_key",
+        "disposition"
+      ],
+      "properties": {
+        "contract_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "timezone": { "type": "string" },
+        "cadence": { "type": "string" },
+        "overlap_rule": { "type": "string" },
+        "missed_run_behavior": { "type": "string" },
+        "idempotency_key": { "type": "string" },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "notes": { "type": "string" }
+      }
+    },
+    "externalEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "name", "kind", "disposition"],
+      "properties": {
+        "contract_id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "kind": { "enum": ["webhook", "email", "storage", "other"] },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "notes": { "type": "string" }
+      }
+    },
+    "cacheEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "key_pattern", "ttl", "invalidation", "disposition"],
+      "properties": {
+        "contract_id": { "type": "string", "minLength": 1 },
+        "key_pattern": { "type": "string" },
+        "ttl": { "type": "string" },
+        "invalidation": { "type": "string" },
+        "disposition": { "$ref": "#/$defs/disposition" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

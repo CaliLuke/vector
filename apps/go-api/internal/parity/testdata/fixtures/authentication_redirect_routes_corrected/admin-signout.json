@@ -1,0 +1,55 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {},
+    "cookies": {},
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "HTTP_X_FORWARDED_FOR": "198.51.100.48"
+    },
+    "method": "POST",
+    "path": "/api/instances/admins/sign-out/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Location": "https://admin.example.test/god-mode",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 302
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "admin-signout",
+    "instance_state": "unconfigured"
+  }
+}

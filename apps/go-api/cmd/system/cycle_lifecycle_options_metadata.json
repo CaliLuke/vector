@@ -1,0 +1,334 @@
+{
+  "/api/workspaces/{slug}/projects/{project_id}/cycles/": {
+    "status": 200,
+    "metadata": {
+      "actions": {
+        "POST": {
+          "backlog_issues": {
+            "label": "Backlog issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "cancelled_issues": {
+            "label": "Cancelled issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "completed_issues": {
+            "label": "Completed issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "description": {
+            "label": "Cycle Description",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "end_date": {
+            "label": "End Date",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "external_id": {
+            "label": "External id",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "external_source": {
+            "label": "External source",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_favorite": {
+            "label": "Is favorite",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "Cycle Name",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "owned_by_id": {
+            "label": "Owned by id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "progress_snapshot": {
+            "label": "Progress snapshot",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "start_date": {
+            "label": "Start Date",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "started_issues": {
+            "label": "Started issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "status": {
+            "label": "Status",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "total_issues": {
+            "label": "Total issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "unstarted_issues": {
+            "label": "Unstarted issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Cycle",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/": {
+    "status": 200,
+    "metadata": {
+      "actions": {
+        "PUT": {
+          "backlog_issues": {
+            "label": "Backlog issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "cancelled_issues": {
+            "label": "Cancelled issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "completed_issues": {
+            "label": "Completed issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "description": {
+            "label": "Cycle Description",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "end_date": {
+            "label": "End Date",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "external_id": {
+            "label": "External id",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "external_source": {
+            "label": "External source",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_favorite": {
+            "label": "Is favorite",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "Cycle Name",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "owned_by_id": {
+            "label": "Owned by id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "progress_snapshot": {
+            "label": "Progress snapshot",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "start_date": {
+            "label": "Start Date",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "started_issues": {
+            "label": "Started issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "status": {
+            "label": "Status",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "total_issues": {
+            "label": "Total issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "unstarted_issues": {
+            "label": "Unstarted issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Cycle",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "missing_metadata": {
+      "description": "",
+      "name": "Cycle",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/": {
+    "status": 200,
+    "metadata": {
+      "description": "",
+      "name": "Cycle Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/cycles/date-check/": {
+    "status": 200,
+    "metadata": {
+      "description": "",
+      "name": "Cycle Date Check Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/": {
+    "status": 200,
+    "metadata": {
+      "description": "",
+      "name": "Cycle Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/": {
+    "status": 200,
+    "metadata": {
+      "description": "",
+      "name": "Cycle Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  }
+}

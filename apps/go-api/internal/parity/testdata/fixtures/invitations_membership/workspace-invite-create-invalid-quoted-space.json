@@ -1,0 +1,120 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "emails": [
+        {
+          "email": "\"quoted space\"@example.com",
+          "role": 5
+        }
+      ]
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/invitations-membership-fixture/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "Invalid email - {'email': '\"quoted space\"@example.com', 'role': 5} provided a valid email address is required to send the invite"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-invite-create-invalid-quoted-space"
+  }
+}

@@ -1,0 +1,458 @@
+{
+  "version": 1,
+  "family": "work_item_history",
+  "source_revision": "d37ba7b8370d6cfec898f6aa1e0541f950d777af",
+  "characterization_status": "Pinned pristine Django evidence covers six GET operations in 47 cases. The original 45 cases passed together; two added shared-cursor edge cases were captured individually. Pristine 500s remain preserved for malformed and zero-size cursors, with three independently captured corrected-source HTTP 400 oracles. Focused Go replay is pending integration-owner verification.",
+  "operation_count": 6,
+  "source_files": [
+    "apps/api/plane/app/urls/issue.py",
+    "apps/api/plane/app/views/issue/activity.py",
+    "apps/api/plane/app/views/issue/base.py",
+    "apps/api/plane/app/views/issue/version.py",
+    "apps/api/plane/app/views/base.py"
+  ],
+  "fixture_count": 47,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/work_item_history",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/work-item-history/source-counters-composite.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/work-item-history/source-hashes.json",
+  "operations": {
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_history": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_history",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/history/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/issues/00000000-0000-4000-8000-000000000620/history/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["activity_type"],
+      "documented_query_parameters": ["activity_type"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/activity.py::IssueActivityEndpoint.get",
+      "source_branches": [
+        {
+          "when": "issue-history-mixed-activity-comments",
+          "observable": "Pinned source fixture records HTTP 500; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-mixed-activity-comments.json"
+        },
+        {
+          "when": "issue-history-property-variant",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-property-variant.json"
+        },
+        {
+          "when": "issue-history-comment-variant",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-comment-variant.json"
+        },
+        {
+          "when": "issue-history-nonmember-class-permission",
+          "observable": "Pinned source fixture records HTTP 403; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-nonmember-class-permission.json"
+        },
+        {
+          "when": "corrected source mixed activity/comment branch",
+          "observable": "Corrected-source oracle serializes the activity and comment querysets before merging them chronologically; returns three activities and two comments with HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/issue-history-mixed-activity-comments.json",
+          "receipt": "docs/go-backend-replacement/evidence/work-item-history/source-20261022T052523Z.log.exit"
+        },
+        {
+          "when": "authenticated HEAD on mixed history projection",
+          "observable": "pristine source returns HTTP 500 from the mixed-queryset indexing bug; corrected source returns HTTP 200 with no wire body",
+          "source": "apps/api/plane/app/views/issue/activity.py::IssueActivityEndpoint.get",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/history-head.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/history-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-mixed-activity-comments.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-property-variant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-comment-variant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-history-nonmember-class-permission.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/issue-history-mixed-activity-comments.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/history-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/history-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/history-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/history-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/history-anonymous.json"
+      ],
+      "source_statuses": ["200", "403", "500"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400, 500]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_meta": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_meta",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/meta/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/issues/00000000-0000-4000-8000-000000000620/meta/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/base.py::IssueMetaEndpoint.get",
+      "source_branches": [
+        {
+          "when": "issue-meta-visible-objects",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-visible-objects.json"
+        },
+        {
+          "when": "issue-meta-missing-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-missing-issue.json"
+        },
+        {
+          "when": "issue-meta-archived-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-archived-issue.json"
+        },
+        {
+          "when": "issue-meta-deleted-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-deleted-issue.json"
+        },
+        {
+          "when": "issue-meta-draft-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-draft-issue.json"
+        },
+        {
+          "when": "issue-meta-triage-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-triage-issue.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/meta-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-visible-objects.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-missing-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-archived-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-deleted-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-draft-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-meta-triage-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/meta-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/meta-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/meta-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/meta-anonymous.json"
+      ],
+      "source_statuses": ["200", "404"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_versions": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_versions",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/issues/00000000-0000-4000-8000-000000000620/versions/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["cursor"],
+      "documented_query_parameters": ["cursor"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/version.py::IssueVersionEndpoint.get",
+      "source_branches": [
+        {
+          "when": "issue-versions-newest-first",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-newest-first.json"
+        },
+        {
+          "when": "issue-versions-pagination-page-one",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-pagination-page-one.json"
+        },
+        {
+          "when": "issue-versions-pagination-page-two",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-pagination-page-two.json"
+        },
+        {
+          "when": "issue-versions-invalid-cursor",
+          "observable": "Pinned source fixture records HTTP 500; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-invalid-cursor.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/versions-options-invalid-timezone.json"
+        },
+        {
+          "when": "issue-versions-zero-page-size-cursor",
+          "observable": "Pristine source raises ZeroDivisionError and returns HTTP 500; corrected source rejects the non-positive page size with HTTP 400 {detail: Invalid cursor parameter.}.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-zero-page-size-cursor.json"
+        },
+        {
+          "when": "invalid cursor",
+          "observable": "Pristine source returns HTTP 500 for malformed cursor text; corrected source returns HTTP 400 with the detail validation envelope.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/issue-versions-invalid-cursor.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-newest-first.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-pagination-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-pagination-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/versions-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/versions-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/versions-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/versions-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/issue-versions-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-versions-zero-page-size-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/issue-versions-zero-page-size-cursor.json"
+      ],
+      "source_statuses": ["200", "500"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_versions_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_versions_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/issues/00000000-0000-4000-8000-000000000620/versions/00000000-0000-4000-8000-000000000672/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/version.py::IssueVersionEndpoint.get",
+      "source_branches": [
+        {
+          "when": "issue-version-detail",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-version-detail.json"
+        },
+        {
+          "when": "issue-version-detail-cross-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-version-detail-cross-issue.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/version-detail-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-version-detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/issue-version-detail-cross-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/version-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/version-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/version-detail-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/version-detail-anonymous.json"
+      ],
+      "source_statuses": ["200", "404"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_work_items_by_work_item_id_description_versions": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_work_items_by_work_item_id_description_versions",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/work-items/00000000-0000-4000-8000-000000000620/description-versions/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["cursor"],
+      "documented_query_parameters": ["cursor"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/version.py::WorkItemDescriptionVersionEndpoint.get",
+      "source_branches": [
+        {
+          "when": "description-versions-newest-first",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-newest-first.json"
+        },
+        {
+          "when": "description-versions-pagination-page-one",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-pagination-page-one.json"
+        },
+        {
+          "when": "description-versions-guest-denied",
+          "observable": "Pinned source fixture records HTTP 403; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-guest-denied.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-options-invalid-timezone.json"
+        },
+        {
+          "when": "description-versions-invalid-cursor",
+          "observable": "Pristine shared paginator raises on malformed cursor text and returns HTTP 500; corrected shared validation returns HTTP 400 with the detail envelope.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-invalid-cursor.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-newest-first.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-pagination-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-versions-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected/description-versions-invalid-cursor.json"
+      ],
+      "source_statuses": ["200", "403", "500"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_work_items_by_work_item_id_description_versions_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_work_items_by_work_item_id_description_versions_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/",
+      "sample_path": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/work-items/00000000-0000-4000-8000-000000000620/description-versions/00000000-0000-4000-8000-000000000682/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source": "apps/api/plane/app/views/issue/version.py::WorkItemDescriptionVersionEndpoint.get",
+      "source_branches": [
+        {
+          "when": "description-version-detail",
+          "observable": "Pinned source fixture records HTTP 200; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail.json"
+        },
+        {
+          "when": "description-version-cross-issue",
+          "observable": "Pinned source fixture records HTTP 404; complete response and read-only database projection are preserved.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-cross-issue.json"
+        },
+        {
+          "when": "authenticated OPTIONS with an invalid stored user timezone",
+          "observable": "HTTP 400 with the source BaseAPIView error envelope before domain handler execution",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-cross-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_history/description-version-detail-anonymous.json"
+      ],
+      "source_statuses": ["200", "404"],
+      "effects": [],
+      "permission_contract": "Project history requires active project membership; version reads follow the source view role and guest feature gate. Lookups are constrained by workspace slug, project, and work item. Metadata uses the issue_objects manager and hides excluded issue states.",
+      "status_note": "Pristine responses are retained; corrected-source behavior is explicitly called out where the source crashes.",
+      "statuses": [200, 400]
+    }
+  },
+  "corrected_fixture_count": 5,
+  "corrected_fixture_root": "apps/go-api/internal/parity/testdata/fixtures/work_item_history_corrected",
+  "corrected_source_receipt": "docs/go-backend-replacement/evidence/work-item-history/corrected-source-captures.json",
+  "corrected_case_count_receipt": "docs/go-backend-replacement/evidence/work-item-history/source-counters-corrected-composite.json",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/work_item_history_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/workspaces/work-item-history-contract/projects/00000000-0000-4000-8000-000000000602/issues/00000000-0000-4000-8000-000000000620/meta/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/HISTORY-001-mixed-history.md",
+        "cases": ["get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_history:canonical:GET"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2",
+          "headers": {
+            "vary": "cookie, origin"
+          }
+        },
+        "target": {
+          "status": 200,
+          "body_sha256": "29fadf7fe3455d7249ea1b5f300da764033b1c07572869bd5146c6f22cc3f915",
+          "headers": {
+            "vary": "accept-encoding, cookie, origin"
+          }
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/HISTORY-001-mixed-history.md",
+        "cases": ["get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_history:canonical:HEAD"],
+        "source": {
+          "status": 500,
+          "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "headers": {
+            "vary": "cookie, origin"
+          }
+        },
+        "target": {
+          "status": 200,
+          "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "headers": {
+            "vary": "accept-encoding, cookie, origin"
+          }
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/HISTORY-002-invalid-pagination.md",
+        "cases": [
+          "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_versions:malformed:cursor",
+          "get_api_workspaces_by_slug_projects_by_project_id_work_items_by_work_item_id_description_versions:malformed:cursor"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "d686111448b99ee605f1b238458f1a36961675e5f9ea134047033d9022c9437e"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "History ProjectEntityPermission runs before timezone initialization; the other five routes use authentication then timezone and domain authorization. The production middleware tests cover both orders, oversized rejection, anonymous rejection, OPTIONS and no API-key audit for sessions.",
+  "permission_classes_before_timezone": true
+}

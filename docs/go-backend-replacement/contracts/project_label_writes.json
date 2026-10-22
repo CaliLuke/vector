@@ -1,0 +1,1654 @@
+{
+  "version": 1,
+  "family": "project_label_writes",
+  "source_files": [
+    "apps/api/plane/app/urls/issue.py",
+    "apps/api/plane/app/views/issue/label.py",
+    "apps/api/plane/app/serializers/issue.py",
+    "apps/api/plane/app/serializers/base.py",
+    "apps/api/plane/db/models/label.py",
+    "apps/api/plane/db/models/workspace.py",
+    "apps/api/plane/db/models/base.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/utils/cache.py",
+    "apps/api/plane/authentication/session.py",
+    "apps/api/plane/bgtasks/deletion_task.py",
+    "apps/api/plane/celery_routing.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/web/core/services/issue/issue_label.service.ts",
+    "apps/web/core/store/label.store.ts",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/go-api/internal/routing/caddy.go"
+  ],
+  "operations": {
+    "post_api_workspaces_by_slug_projects_by_project_id_issue_labels": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-collects-all-field-errors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-null-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-too-long.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-existing-label-overrides-sort-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-deleted-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-form-urlencoded-name-coercion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-user-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-workspace-membership-denied-before-cache-invalidation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-invalid-timezone-after-base-permission-before-cache.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-invalid-timezone-base-permission-fails-first.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-escape.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-object-delimiter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-trailing-data.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-multipart-file-name-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-multipart-form-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-boolean-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-case-insensitive-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-exact-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null-character.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-numeric-coerced-to-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-surrogate-character.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-too-long.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-whitespace-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-nonobject-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-null-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-deleted-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-malformed-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-missing-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-same-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-soft-deleted-name-reusable.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-boolean-coerced.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-invalid-number.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-existing-labels-overridden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-first-label-mutates-before-render-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-null-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-unsupported-content-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-admin-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-member-denied-after-cache-invalidation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-wrong-workspace-slug.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Anonymous, expired, or inactive-user Django session",
+          "observable": "Authentication rejection before permission checks and domain/cache changes; preserve source status/envelope and session bookkeeping.",
+          "source": "apps/api/plane/authentication/session.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-anonymous.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-user-session.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json"
+          ],
+          "coverage_note": "Expired-session lifecycle is shared across methods; POST records the session-table and cookie behavior."
+        },
+        {
+          "when": "Supplied id, project_id, workspace_id, description, external fields, and unknown attributes",
+          "observable": "Read-only and undeclared fields are ignored. LabelSerializer runtime exposes only parent/name/color/sort_order as writable.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json"
+          ]
+        },
+        {
+          "when": "Query filters, ordering, grouping, cursor, fields, and expand",
+          "observable": "No write behavior or response projection; serializer is nondynamic and filter/search field lists are empty.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ],
+          "coverage_note": "Shared request-query evidence is recorded by PATCH; POST has no collection read projection."
+        },
+        {
+          "when": "Supported session request carrying X-Api-Key",
+          "observable": "Enqueue the existing API audit task with redacted credentials through the durable Celery publisher independently of endpoint success; preserve normalized task payload and ordering.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json"
+          ]
+        },
+        {
+          "when": "Base class permission fails",
+          "observable": "Active workspace ADMIN or MEMBER is required by ProjectBasePermission; reject before timezone, cache invalidation, and body parsing.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectBasePermission",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-workspace-membership-denied-before-cache-invalidation.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-invalid-timezone-base-permission-fails-first.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-wrong-workspace-slug.json"
+          ]
+        },
+        {
+          "when": "Base permission passes but method decorator rejects",
+          "observable": "Invalidate all workspace-label cache keys first, then return decorator permission error without parsing the body. Active project admin or workspace admin who is an active project member is required.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission; apps/api/plane/app/views/issue/label.py::LabelViewSet.create",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-deleted-project-membership.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-project-membership.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-member-denied-after-cache-invalidation.json"
+          ]
+        },
+        {
+          "when": "Valid minimal or full input",
+          "observable": "Create one label with route project, project-derived workspace, current created_by, null updated_by, model defaults, generated ID and timestamps; return201.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.create; apps/api/plane/db/models/base.py::BaseModel.save",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-existing-labels-overridden.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-admin-allowed.json"
+          ]
+        },
+        {
+          "when": "No existing visible project labels versus at least one",
+          "observable": "First label preserves submitted/default sort_order; later labels use live maximum+10000, overriding submitted order. Deleted labels do not contribute.",
+          "source": "apps/api/plane/db/models/label.py::Label.save",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-existing-label-overrides-sort-order.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-existing-labels-overridden.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-first-label-mutates-before-render-error.json"
+          ]
+        },
+        {
+          "when": "Name duplicates live label in project",
+          "observable": "Case-insensitive serializer precheck returns name:[LABEL_NAME_ALREADY_EXISTS]; database IntegrityError in create returns the custom same-name error.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/app/views/issue/label.py::LabelViewSet.create",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-case-insensitive-duplicate.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-exact-duplicate.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-soft-deleted-name-reusable.json"
+          ]
+        },
+        {
+          "when": "Serializer or body error after authorization",
+          "observable": "Cache has already been invalidated, no label write, source-shaped400/415/error result.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.create",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-nonobject-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-unsupported-content-type.json"
+          ]
+        },
+        {
+          "when": "name/color string, numeric, boolean, null, whitespace, length, null-byte or surrogate inputs",
+          "observable": "Record exact DRF CharField coercion and validation; preserve field-order validation and duplicate-check precedence.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-collects-all-field-errors.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-too-long.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-boolean-type.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-empty.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-numeric-coerced-to-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null-character.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-surrogate-character.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-too-long.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-whitespace-only.json"
+          ]
+        },
+        {
+          "when": "parent omitted/null/self/foreign-project/foreign-workspace/deleted/missing/malformed",
+          "observable": "Global live-label relation lookup, with no same-project constraint; null clears relation, omitted preserves/defaults. Exact malformed/missing errors come from source runtime.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-deleted-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-malformed-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-missing-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-project.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-workspace.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-same-project.json"
+          ],
+          "coverage_note": "Self and explicit null are covered by the shared serializer/update behavior fixtures; this POST set distinguishes scope, lookup and invalid identifier cases."
+        },
+        {
+          "when": "sort_order numeric/string/boolean/null/malformed/nonfinite input",
+          "observable": "Use source FloatField behavior and renderer/database outcomes; creation model ordering may override accepted input.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-boolean-coerced.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-invalid-number.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-existing-labels-overridden.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-first-label-mutates-before-render-error.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric.json"
+          ]
+        },
+        {
+          "when": "JSON object/nonobject/empty/malformed, form and multipart body",
+          "observable": "Parse lazily at source access point and preserve DRF parser/serializer errors and precedence.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/views/issue/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-form-urlencoded-name-coercion.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-multipart-form-body.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-nonobject-json.json"
+          ],
+          "coverage_note": "Empty JSON object is a valid create payload only when name is supplied; first-label fixture covers the valid object branch."
+        },
+        {
+          "when": "A live project-NULL label has the same exact name",
+          "observable": "Generated name UniqueValidator runs before validate_name for POST/PATCH/PUT and returns name:[Label with this name already exists.]. Case-only global collisions pass that validator; POST/PATCH then validate against the route project, while inherited PUT validates project NULL case-insensitively.",
+          "source": "apps/api/plane/db/models/label.py::Label.Meta.constraints; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json"
+          ]
+        },
+        {
+          "when": "Malformed JSON with trailing content, a missing object delimiter, or an invalid escape",
+          "observable": "Preserve Python JSON decoder error reason and character position.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-trailing-data.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-object-delimiter.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json-escape.json"
+          ]
+        },
+        {
+          "when": "JSON null body",
+          "observable": "Return non_field_errors:[No data provided], with no label mutation.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": ["apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-null-json.json"]
+        },
+        {
+          "when": "Multipart uploaded file supplied as name",
+          "observable": "DRF UploadedFile is not a string; return name:[Not a valid string.] without creating a label.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-multipart-file-name-invalid.json"
+          ]
+        }
+      ],
+      "source": "apps/api/plane/app/views/issue/label.py",
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "order_by",
+        "cursor",
+        "per_page"
+      ],
+      "response_contract": "Empty 204 on successful DELETE; successful POST/PUT/PATCH return the compact seven-field app LabelSerializer, preserving nullable parent and scalar types. Rejections preserve full source validation envelopes and headers.",
+      "cache_contract": "After base permission and timezone but before method role check/body access: delete all Django cache keys matching */api/workspaces/{slug}/labels/*, including query variants.",
+      "method": "POST",
+      "effects": ["api-key"],
+      "sample_path": "/api/workspaces/labels-contract/projects/00000000-0000-4000-8000-000000009103/issue-labels/",
+      "statuses": [201, 400, 401, 403, 415, 500],
+      "database_effects": [
+        "labels.created_at/created_by on create; updated_at/updated_by on every update; no issue_labels mutation in request"
+      ],
+      "source_branch_fixture_index": [
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-anonymous.json",
+          "status": 401,
+          "case": "post-anonymous"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json",
+          "status": 201,
+          "case": "post-api-key-audit-task"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-collects-all-field-errors.json",
+          "status": 400,
+          "case": "post-collects-all-field-errors"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-null-invalid.json",
+          "status": 400,
+          "case": "post-color-null-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-too-long.json",
+          "status": 400,
+          "case": "post-color-too-long"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-color-two-surrogates-first-error.json",
+          "status": 400,
+          "case": "post-color-two-surrogates-first-error"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-existing-label-overrides-sort-order.json",
+          "status": 201,
+          "case": "post-create-existing-label-overrides-sort-order"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json",
+          "status": 201,
+          "case": "post-create-first-label-ignores-readonly-ids"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-deleted-project-membership.json",
+          "status": 403,
+          "case": "post-deleted-project-membership"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json",
+          "status": 401,
+          "case": "post-expired-session"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-form-empty-sort-order.json",
+          "status": 201,
+          "case": "post-form-empty-sort-order"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-form-urlencoded-name-coercion.json",
+          "status": 201,
+          "case": "post-form-urlencoded-name-coercion"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+          "status": 201,
+          "case": "post-global-name-casefold-collision"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+          "status": 400,
+          "case": "post-global-name-exact-collision"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-project-membership.json",
+          "status": 403,
+          "case": "post-inactive-project-membership"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-user-session.json",
+          "status": 401,
+          "case": "post-inactive-user-session"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-inactive-workspace-membership-denied-before-cache-invalidation.json",
+          "status": 403,
+          "case": "post-inactive-workspace-membership-denied-before-cache-invalidation"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-invalid-timezone-after-base-permission-before-cache.json",
+          "status": 400,
+          "case": "post-invalid-timezone-after-base-permission-before-cache"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-invalid-timezone-base-permission-fails-first.json",
+          "status": 403,
+          "case": "post-invalid-timezone-base-permission-fails-first"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-malformed-json.json",
+          "status": 400,
+          "case": "post-malformed-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-multipart-form-body.json",
+          "status": 201,
+          "case": "post-multipart-form-body"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-boolean-type.json",
+          "status": 400,
+          "case": "post-name-boolean-type"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-case-insensitive-duplicate.json",
+          "status": 400,
+          "case": "post-name-case-insensitive-duplicate"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-color-python-control-whitespace-boundaries.json",
+          "status": 201,
+          "case": "post-name-color-python-control-whitespace-boundaries"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-empty.json",
+          "status": 400,
+          "case": "post-name-empty"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-exact-duplicate.json",
+          "status": 400,
+          "case": "post-name-exact-duplicate"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null.json",
+          "status": 400,
+          "case": "post-name-null"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null-character.json",
+          "status": 400,
+          "case": "post-name-null-character"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-numeric-coerced-to-string.json",
+          "status": 201,
+          "case": "post-name-numeric-coerced-to-string"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-python-control-whitespace-only.json",
+          "status": 400,
+          "case": "post-name-python-control-whitespace-only"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-surrogate-character.json",
+          "status": 400,
+          "case": "post-name-surrogate-character"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-too-long.json",
+          "status": 400,
+          "case": "post-name-too-long"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-two-surrogates-first-error.json",
+          "status": 400,
+          "case": "post-name-two-surrogates-first-error"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-whitespace-only.json",
+          "status": 400,
+          "case": "post-name-whitespace-only"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-nonobject-json.json",
+          "status": 400,
+          "case": "post-nonobject-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-deleted-id.json",
+          "status": 400,
+          "case": "post-parent-deleted-id"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-malformed-id.json",
+          "status": 400,
+          "case": "post-parent-malformed-id"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-missing-id.json",
+          "status": 400,
+          "case": "post-parent-missing-id"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-project.json",
+          "status": 201,
+          "case": "post-parent-valid-foreign-project"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-workspace.json",
+          "status": 201,
+          "case": "post-parent-valid-foreign-workspace"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-same-project.json",
+          "status": 201,
+          "case": "post-parent-valid-same-project"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-raw-exponent-name-coerces-inf.json",
+          "status": 201,
+          "case": "post-raw-exponent-name-coerces-inf"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-raw-negative-zero-name-coerces-zero.json",
+          "status": 201,
+          "case": "post-raw-negative-zero-name-coerces-zero"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-soft-deleted-name-reusable.json",
+          "status": 201,
+          "case": "post-soft-deleted-name-reusable"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-boolean-coerced.json",
+          "status": 201,
+          "case": "post-sort-order-boolean-coerced"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-invalid-number.json",
+          "status": 400,
+          "case": "post-sort-order-invalid-number"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-existing-labels-overridden.json",
+          "status": 201,
+          "case": "post-sort-order-nan-existing-labels-overridden"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-nan-first-label-mutates-before-render-error.json",
+          "status": 500,
+          "case": "post-sort-order-nan-first-label-mutates-before-render-error"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-null-invalid.json",
+          "status": 400,
+          "case": "post-sort-order-null-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric.json",
+          "status": 201,
+          "case": "post-sort-order-numeric"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric-string.json",
+          "status": 201,
+          "case": "post-sort-order-numeric-string"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-unsupported-content-type.json",
+          "status": 415,
+          "case": "post-unsupported-content-type"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-admin-allowed.json",
+          "status": 201,
+          "case": "post-workspace-member-project-admin-allowed"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-workspace-member-project-member-denied-after-cache-invalidation.json",
+          "status": 403,
+          "case": "post-workspace-member-project-member-denied-after-cache-invalidation"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-wrong-workspace-slug.json",
+          "status": 403,
+          "case": "post-wrong-workspace-slug"
+        }
+      ]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-deleted-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-inactive-user-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-malformed-json-body-is-unused.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-member-denied-before-cache-invalidation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-project-admin-without-workspace-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-soft-delete-and-publish-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-unsupported-content-type-is-unused.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-wrong-project-target.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Anonymous, expired, or inactive-user Django session",
+          "observable": "Authentication rejection before permission checks and domain/cache changes; preserve source status/envelope and session bookkeeping.",
+          "source": "apps/api/plane/authentication/session.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-anonymous.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-inactive-user-session.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json"
+          ],
+          "coverage_note": "Expired-session lifecycle is shared across methods; POST records the session-table and cookie behavior."
+        },
+        {
+          "when": "Supplied id, project_id, workspace_id, description, external fields, and unknown attributes",
+          "observable": "Read-only and undeclared fields are ignored. LabelSerializer runtime exposes only parent/name/color/sort_order as writable.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-malformed-json-body-is-unused.json"
+          ],
+          "coverage_note": "DELETE does not instantiate LabelSerializer; malformed request body is ignored."
+        },
+        {
+          "when": "Query filters, ordering, grouping, cursor, fields, and expand",
+          "observable": "No write behavior or response projection; serializer is nondynamic and filter/search field lists are empty.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ],
+          "coverage_note": "Shared query-ignore evidence comes from PATCH; DELETE has no list/read projection."
+        },
+        {
+          "when": "Supported session request carrying X-Api-Key",
+          "observable": "Enqueue the existing API audit task with redacted credentials through the durable Celery publisher independently of endpoint success; preserve normalized task payload and ordering.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json"
+          ],
+          "coverage_note": "Shared middleware behavior is evidenced by POST; no per-method duplicate is recorded."
+        },
+        {
+          "when": "Base class permission fails",
+          "observable": "Same ProjectBasePermission rule as PATCH/PUT; reject before timezone/cache/target lookup.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectBasePermission",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-member-denied-before-cache-invalidation.json"
+          ]
+        },
+        {
+          "when": "Missing/deleted/foreign target",
+          "observable": "Invalidate exact workspace-label cache, repeat method role check, then scoped target lookup returns404.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.destroy; apps/api/plane/app/views/issue/label.py::LabelViewSet.get_queryset",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-deleted-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-missing-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-wrong-project-target.json"
+          ]
+        },
+        {
+          "when": "Valid target including parent with child labels or issue associations",
+          "observable": "Save deleted_at, updated_at and updated_by first; emit exactly one durable soft_delete_related_objects task (db,label,target_uuid,using=None), empty204. Associations and child rows are unchanged during request.",
+          "source": "apps/api/plane/db/mixins.py::SoftDeleteModel.delete",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-soft-delete-and-publish-task.json"
+          ]
+        },
+        {
+          "when": "Task publication fails after save",
+          "observable": "The view saves the label soft delete, then attempts to enqueue the durable task. If the publisher raises, the view returns HTTP 500 with the source JSON envelope; the label remains soft-deleted, child labels remain live, and the cache is already invalidated. This injected failure evidence is separate from the real RabbitMQ success fixture.",
+          "source": "apps/api/plane/db/mixins.py::SoftDeleteModel.delete; apps/api/plane/app/views/base.py::BaseViewSet",
+          "fixture_refs": ["apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-json.json"],
+          "coverage_note": "Candidate replay requires an equivalent Go publisher spy and assertions for status, JSON body, database state, and cache effects. Real durable success remains proven only by delete-soft-delete-and-publish-task.",
+          "source_test_refs": [
+            "apps/api/plane/tests/parity/test_project_label_delete_worker.py::test_project_label_delete_publisher_failure_http_returns_500_after_persist",
+            "apps/api/plane/tests/parity/test_project_label_delete_worker.py::test_project_label_delete_publisher_failure_keeps_saved_row"
+          ],
+          "observed_status": 500,
+          "evidence_kind": "source-only APIClient test with in-process publisher spy; no durable task delivery is asserted"
+        },
+        {
+          "when": "Body is malformed or unsupported media",
+          "observable": "DELETE does not access request.data; preserve source behavior while shared middleware may still inspect raw body.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.destroy",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-malformed-json-body-is-unused.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-unsupported-content-type-is-unused.json"
+          ]
+        }
+      ],
+      "source": "apps/api/plane/app/views/issue/label.py",
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "order_by",
+        "cursor",
+        "per_page"
+      ],
+      "response_contract": "Empty 204 on successful DELETE; successful POST/PUT/PATCH return the compact seven-field app LabelSerializer, preserving nullable parent and scalar types. Rejections preserve full source validation envelopes and headers.",
+      "cache_contract": "After base permission and timezone: delete exact workspace-label cache key before decorator and target lookup; query variants remain.",
+      "method": "DELETE",
+      "effects": ["django-session"],
+      "sample_path": "/api/workspaces/labels-contract/projects/00000000-0000-4000-8000-000000009103/issue-labels/00000000-0000-4000-8000-000000009999/",
+      "statuses": [204, 401, 403, 404],
+      "database_effects": [
+        "labels.created_at/created_by on create; updated_at/updated_by on every update; no issue_labels mutation in request"
+      ],
+      "source_branch_fixture_index": [
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-anonymous.json",
+          "status": 401,
+          "case": "delete-anonymous"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-deleted-target.json",
+          "status": 404,
+          "case": "delete-deleted-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-inactive-user-session.json",
+          "status": 401,
+          "case": "delete-inactive-user-session"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-malformed-json-body-is-unused.json",
+          "status": 204,
+          "case": "delete-malformed-json-body-is-unused"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-member-denied-before-cache-invalidation.json",
+          "status": 403,
+          "case": "delete-member-denied-before-cache-invalidation"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-missing-target.json",
+          "status": 404,
+          "case": "delete-missing-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-project-admin-without-workspace-membership.json",
+          "status": 204,
+          "case": "delete-project-admin-without-workspace-membership"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-soft-delete-and-publish-task.json",
+          "status": 204,
+          "case": "delete-soft-delete-and-publish-task"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-unsupported-content-type-is-unused.json",
+          "status": 204,
+          "case": "delete-unsupported-content-type-is-unused"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-workspace-admin-project-guest.json",
+          "status": 204,
+          "case": "delete-workspace-admin-project-guest"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/delete-wrong-project-target.json",
+          "status": 404,
+          "case": "delete-wrong-project-target"
+        }
+      ]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-archived-project-target-still-visible.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-casefold-duplicate-serializer-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-color-null-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-project-target-still-visible.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-empty-object.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-exact-duplicate-before-missing-target-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-inactive-user-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-parent-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-timezone-base-permission-fails-first.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-malformed-json-before-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-member-denied-before-cache-invalidation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-name-numeric-coerced-to-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-nonobject-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-name-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-boolean-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-malformed-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-numeric-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-project-admin-without-workspace-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-self-parent-is-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-boolean-coerced.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-nan-mutates-before-render-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-null-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-overflow.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-underscore.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-unicode-digits.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-trims-name-and-updates-order-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-project-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-workspace-slug.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Anonymous, expired, or inactive-user Django session",
+          "observable": "Authentication rejection before permission checks and domain/cache changes; preserve source status/envelope and session bookkeeping.",
+          "source": "apps/api/plane/authentication/session.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-anonymous.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-inactive-user-session.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json"
+          ],
+          "coverage_note": "Expired-session lifecycle is shared across methods; POST records the session-table and cookie behavior."
+        },
+        {
+          "when": "Supplied id, project_id, workspace_id, description, external fields, and unknown attributes",
+          "observable": "Read-only and undeclared fields are ignored. LabelSerializer runtime exposes only parent/name/color/sort_order as writable.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ]
+        },
+        {
+          "when": "Query filters, ordering, grouping, cursor, fields, and expand",
+          "observable": "No write behavior or response projection; serializer is nondynamic and filter/search field lists are empty.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ],
+          "coverage_note": "This fixture sends these query keys and confirms they do not alter the detail response."
+        },
+        {
+          "when": "Supported session request carrying X-Api-Key",
+          "observable": "Enqueue the existing API audit task with redacted credentials through the durable Celery publisher independently of endpoint success; preserve normalized task payload and ordering.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json"
+          ],
+          "coverage_note": "Shared middleware behavior is evidenced by POST; no per-method duplicate is recorded."
+        },
+        {
+          "when": "Base class permission fails",
+          "observable": "Reject before timezone/cache/body: active project admin, or active project member and active workspace admin, is required.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectBasePermission",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-timezone-base-permission-fails-first.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-member-denied-before-cache-invalidation.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-workspace-slug.json"
+          ]
+        },
+        {
+          "when": "Exact raw name collides with another visible label in route project",
+          "observable": "After cache and repeated method role check, return custom duplicate400 BEFORE scoped target lookup; applies even if target is missing, deleted, or out of scope.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.partial_update",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-exact-duplicate-before-missing-target-lookup.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json"
+          ]
+        },
+        {
+          "when": "No exact collision but missing/deleted/foreign target",
+          "observable": "Target queryset requires matching slug/project/label and project membership join. Return source404 before serializer validation.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.get_queryset",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-missing-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-project-target.json"
+          ]
+        },
+        {
+          "when": "Partial valid input, including empty object",
+          "observable": "Update provided writable fields only, always save timestamp and updated_by, preserve created_by and omitted fields; return200.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.partial_update",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-empty-object.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-trims-name-and-updates-order-parent.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-self-parent-is-accepted.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-archived-project-target-still-visible.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-project-target-still-visible.json"
+          ]
+        },
+        {
+          "when": "Case-insensitive collision after trimming",
+          "observable": "Serializer compares route project and excludes current target; return field name error.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-casefold-duplicate-serializer-error.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json"
+          ]
+        },
+        {
+          "when": "name/color string, numeric, boolean, null, whitespace, length, null-byte or surrogate inputs",
+          "observable": "Record exact DRF CharField coercion and validation; preserve field-order validation and duplicate-check precedence.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-color-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-name-numeric-coerced-to-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-name-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-collects-all-field-errors.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null-character.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-surrogate-character.json"
+          ],
+          "coverage_note": "POST fixtures are reused for shared DRF CharField behavior; PATCH-specific coercion and null validation are separately recorded."
+        },
+        {
+          "when": "parent omitted/null/self/foreign-project/foreign-workspace/deleted/missing/malformed",
+          "observable": "Global live-label relation lookup, with no same-project constraint; null clears relation, omitted preserves/defaults. Exact malformed/missing errors come from source runtime.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-parent-deleted.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-malformed-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-self-parent-is-accepted.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-trims-name-and-updates-order-parent.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-project.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-workspace.json"
+          ],
+          "coverage_note": "POST foreign-parent cases are reused for the shared relation field; PATCH records deleted/malformed/self and update behavior."
+        },
+        {
+          "when": "sort_order numeric/string/boolean/null/malformed/nonfinite input",
+          "observable": "Use source FloatField behavior and renderer/database outcomes; creation model ordering may override accepted input.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-boolean-coerced.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-nan-mutates-before-render-error.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric-string.json"
+          ],
+          "coverage_note": "POST numeric float coercion fixtures are reused; PATCH records update-specific nonfinite persistence/render behavior."
+        },
+        {
+          "when": "JSON object/nonobject/empty/malformed, form and multipart body",
+          "observable": "Parse lazily at source access point and preserve DRF parser/serializer errors and precedence.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/views/issue/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-empty-object.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-malformed-json-before-missing-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-nonobject-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-json.json"
+          ],
+          "coverage_note": "Malformed body precedence is PATCH-specific; POST parser fixtures cover form and multipart support on the shared serializer."
+        },
+        {
+          "when": "A live project-NULL label has the same exact name",
+          "observable": "Generated name UniqueValidator runs before validate_name for POST/PATCH/PUT and returns name:[Label with this name already exists.]. Case-only global collisions pass that validator; POST/PATCH then validate against the route project, while inherited PUT validates project NULL case-insensitively.",
+          "source": "apps/api/plane/db/models/label.py::Label.Meta.constraints; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json"
+          ]
+        },
+        {
+          "when": "Float strings containing Unicode decimal digits, underscores, or overflow",
+          "observable": "Match Python float conversion; overflow persists Infinity before renderer HTML500, without Allow.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-unicode-digits.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-underscore.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-overflow.json"
+          ]
+        },
+        {
+          "when": "Integer or boolean parent primary key",
+          "observable": "Integers use UUID integer conversion then global live lookup; booleans fail with the explicit incorrect-type error.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-numeric-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-boolean-id.json"
+          ]
+        }
+      ],
+      "source": "apps/api/plane/app/views/issue/label.py",
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "order_by",
+        "cursor",
+        "per_page"
+      ],
+      "response_contract": "Empty 204 on successful DELETE; successful POST/PUT/PATCH return the compact seven-field app LabelSerializer, preserving nullable parent and scalar types. Rejections preserve full source validation envelopes and headers.",
+      "cache_contract": "After base permission and timezone but before method decorator/body/target lookup: delete exact workspace-label cache key only; query variants remain.",
+      "method": "PATCH",
+      "effects": [],
+      "sample_path": "/api/workspaces/labels-contract/projects/00000000-0000-4000-8000-000000009103/issue-labels/00000000-0000-4000-8000-000000009999/",
+      "statuses": [200, 400, 401, 403, 404, 500],
+      "database_effects": [
+        "labels.created_at/created_by on create; updated_at/updated_by on every update; no issue_labels mutation in request"
+      ],
+      "source_branch_fixture_index": [
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-anonymous.json",
+          "status": 401,
+          "case": "patch-anonymous"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-archived-project-target-still-visible.json",
+          "status": 200,
+          "case": "patch-archived-project-target-still-visible"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-casefold-duplicate-serializer-error.json",
+          "status": 400,
+          "case": "patch-casefold-duplicate-serializer-error"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-color-null-invalid.json",
+          "status": 400,
+          "case": "patch-color-null-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-project-target-still-visible.json",
+          "status": 200,
+          "case": "patch-deleted-project-target-still-visible"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-deleted-target.json",
+          "status": 404,
+          "case": "patch-deleted-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-empty-object.json",
+          "status": 200,
+          "case": "patch-empty-object"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-exact-duplicate-before-missing-target-lookup.json",
+          "status": 400,
+          "case": "patch-exact-duplicate-before-missing-target-lookup"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-form-empty-sort-order.json",
+          "status": 200,
+          "case": "patch-form-empty-sort-order"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json",
+          "status": 200,
+          "case": "patch-global-name-casefold-collision"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json",
+          "status": 400,
+          "case": "patch-global-name-exact-collision"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json",
+          "status": 200,
+          "case": "patch-ignored-query-and-readonly-ids"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-inactive-user-session.json",
+          "status": 401,
+          "case": "patch-inactive-user-session"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-parent-deleted.json",
+          "status": 400,
+          "case": "patch-invalid-parent-deleted"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-invalid-timezone-base-permission-fails-first.json",
+          "status": 403,
+          "case": "patch-invalid-timezone-base-permission-fails-first"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-json-empty-sort-order-invalid.json",
+          "status": 400,
+          "case": "patch-json-empty-sort-order-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-malformed-json-before-missing-target.json",
+          "status": 400,
+          "case": "patch-malformed-json-before-missing-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-member-denied-before-cache-invalidation.json",
+          "status": 403,
+          "case": "patch-member-denied-before-cache-invalidation"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-missing-target.json",
+          "status": 404,
+          "case": "patch-missing-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-multipart-empty-sort-order.json",
+          "status": 200,
+          "case": "patch-multipart-empty-sort-order"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-name-numeric-coerced-to-string.json",
+          "status": 200,
+          "case": "patch-name-numeric-coerced-to-string"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-nonobject-json.json",
+          "status": 400,
+          "case": "patch-nonobject-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-json.json",
+          "status": 500,
+          "case": "patch-null-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-null-name-invalid.json",
+          "status": 400,
+          "case": "patch-null-name-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-braced-malformed-hyphens.json",
+          "status": 200,
+          "case": "patch-parent-braced-malformed-hyphens"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-compact-urn-uuid.json",
+          "status": 200,
+          "case": "patch-parent-compact-urn-uuid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-malformed-id.json",
+          "status": 400,
+          "case": "patch-parent-malformed-id"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-parent-unicode-decimal-hex.json",
+          "status": 200,
+          "case": "patch-parent-unicode-decimal-hex"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-project-admin-without-workspace-membership.json",
+          "status": 200,
+          "case": "patch-project-admin-without-workspace-membership"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-self-parent-is-accepted.json",
+          "status": 200,
+          "case": "patch-self-parent-is-accepted"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-boolean-coerced.json",
+          "status": 200,
+          "case": "patch-sort-order-boolean-coerced"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-nan-mutates-before-render-error.json",
+          "status": 500,
+          "case": "patch-sort-order-nan-mutates-before-render-error"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-null-invalid.json",
+          "status": 400,
+          "case": "patch-sort-order-null-invalid"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-raw-exponent-overflow.json",
+          "status": 500,
+          "case": "patch-sort-order-raw-exponent-overflow"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-raw-integer-overflow.json",
+          "status": 400,
+          "case": "patch-sort-order-raw-integer-overflow"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-string-1000-zeroes.json",
+          "status": 200,
+          "case": "patch-sort-order-string-1000-zeroes"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-sort-order-string-1001-zeroes.json",
+          "status": 400,
+          "case": "patch-sort-order-string-1001-zeroes"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-trims-name-and-updates-order-parent.json",
+          "status": 200,
+          "case": "patch-trims-name-and-updates-order-parent"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-workspace-admin-project-guest.json",
+          "status": 200,
+          "case": "patch-workspace-admin-project-guest"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-project-target.json",
+          "status": 404,
+          "case": "patch-wrong-project-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-wrong-workspace-slug.json",
+          "status": 403,
+          "case": "patch-wrong-workspace-slug"
+        }
+      ]
+    },
+    "put_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-case-only-project-duplicate-without-project-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-exact-duplicate-name-without-project-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-existing-target-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-inactive-user-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-member-denied-before-target-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-required-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-omitted-optional-fields-preserved.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-project-admin-without-workspace-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-sort-order-nan-mutates-before-render-error.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Anonymous, expired, or inactive-user Django session",
+          "observable": "Authentication rejection before permission checks and domain/cache changes; preserve source status/envelope and session bookkeeping.",
+          "source": "apps/api/plane/authentication/session.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-anonymous.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-inactive-user-session.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-expired-session.json"
+          ],
+          "coverage_note": "Expired-session lifecycle is shared across methods; POST records the session-table and cookie behavior."
+        },
+        {
+          "when": "Supplied id, project_id, workspace_id, description, external fields, and unknown attributes",
+          "observable": "Read-only and undeclared fields are ignored. LabelSerializer runtime exposes only parent/name/color/sort_order as writable.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-create-first-label-ignores-readonly-ids.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ],
+          "coverage_note": "Shared serializer read-only-field evidence is reused from POST/PATCH; no PUT-specific unknown-field fixture is recorded."
+        },
+        {
+          "when": "Query filters, ordering, grouping, cursor, fields, and expand",
+          "observable": "No write behavior or response projection; serializer is nondynamic and filter/search field lists are empty.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-ignored-query-and-readonly-ids.json"
+          ],
+          "coverage_note": "Shared detail query-ignore behavior is evidenced by PATCH."
+        },
+        {
+          "when": "Supported session request carrying X-Api-Key",
+          "observable": "Enqueue the existing API audit task with redacted credentials through the durable Celery publisher independently of endpoint success; preserve normalized task payload and ordering.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-api-key-audit-task.json"
+          ],
+          "coverage_note": "Shared middleware behavior is evidenced by POST; no per-method duplicate is recorded."
+        },
+        {
+          "when": "Base class permission fails",
+          "observable": "Same ProjectBasePermission rule as PATCH/DELETE, before timezone/body/target access.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectBasePermission",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-member-denied-before-target-lookup.json"
+          ]
+        },
+        {
+          "when": "Missing/deleted/foreign target",
+          "observable": "Inherited update looks up scoped target before serializer/body validation; source404.",
+          "source": "apps/api/plane/app/views/issue/label.py::LabelViewSet.get_queryset; rest_framework.mixins.UpdateModelMixin",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target-before-malformed-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-existing-target-malformed-json.json"
+          ],
+          "coverage_note": "These fixtures distinguish target lookup before request-body decoding; no deleted/foreign PUT target case is recorded."
+        },
+        {
+          "when": "Full update valid or missing name",
+          "observable": "Inherited full serializer requires name; omitted optional color/parent/sort_order preserve existing instance values, including nullable parent. Save updated_by and updated_at.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; rest_framework.mixins.UpdateModelMixin",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-full-update.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-required-name.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-omitted-optional-fields-preserved.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-sort-order-nan-mutates-before-render-error.json"
+          ]
+        },
+        {
+          "when": "Name validation without custom project context",
+          "observable": "Inherited get_serializer supplies request/view/format but no project_id. Case-insensitive precheck compares project NULL; exact same-project DB collision becomes generic400 payload error; case-only same-project duplicate may succeed.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/app/views/base.py::BaseViewSet",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-case-only-project-duplicate-without-project-context.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-exact-duplicate-name-without-project-context.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json"
+          ]
+        },
+        {
+          "when": "name/color string, numeric, boolean, null, whitespace, length, null-byte or surrogate inputs",
+          "observable": "Record exact DRF CharField coercion and validation; preserve field-order validation and duplicate-check precedence.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-required-name.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-collects-all-field-errors.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-null-character.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-name-surrogate-character.json"
+          ],
+          "coverage_note": "Shared serializer behavior is reused from POST; PUT-specific cases cover required-field semantics and duplicate-query scope."
+        },
+        {
+          "when": "parent omitted/null/self/foreign-project/foreign-workspace/deleted/missing/malformed",
+          "observable": "Global live-label relation lookup, with no same-project constraint; null clears relation, omitted preserves/defaults. Exact malformed/missing errors come from source runtime.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-deleted-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-malformed-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-missing-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-project.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-foreign-workspace.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-parent-valid-same-project.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-omitted-optional-fields-preserved.json"
+          ],
+          "coverage_note": "POST cases evidence the shared relation field; PUT fixture proves omitted optional parent preservation."
+        },
+        {
+          "when": "sort_order numeric/string/boolean/null/malformed/nonfinite input",
+          "observable": "Use source FloatField behavior and renderer/database outcomes; creation model ordering may override accepted input.",
+          "source": "apps/api/plane/app/serializers/issue.py::LabelSerializer; apps/api/plane/db/models/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-boolean-coerced.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-invalid-number.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-null-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-sort-order-numeric.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-omitted-optional-fields-preserved.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-sort-order-nan-mutates-before-render-error.json"
+          ],
+          "coverage_note": "POST cases evidence shared FloatField behavior; PUT fixture proves omitted optional sort_order preservation."
+        },
+        {
+          "when": "JSON object/nonobject/empty/malformed, form and multipart body",
+          "observable": "Parse lazily at source access point and preserve DRF parser/serializer errors and precedence.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/views/issue/label.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-existing-target-malformed-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target-before-malformed-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-full-update.json"
+          ],
+          "coverage_note": "PUT body parsing is lazy and target lookup precedence is distinct; POST fixtures separately prove form and multipart parser support."
+        },
+        {
+          "when": "A live project-NULL label has the same exact name",
+          "observable": "Generated name UniqueValidator runs before validate_name for POST/PATCH/PUT and returns name:[Label with this name already exists.]. Case-only global collisions pass that validator; POST/PATCH then validate against the route project, while inherited PUT validates project NULL case-insensitively.",
+          "source": "apps/api/plane/db/models/label.py::Label.Meta.constraints; apps/api/plane/app/serializers/issue.py::LabelSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-exact-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/patch-global-name-casefold-collision.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json"
+          ]
+        },
+        {
+          "when": "JSON null body with existing target",
+          "observable": "Return non_field_errors:[No data provided] after scoped target lookup.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet; apps/api/plane/app/serializers/issue.py::LabelSerializer (DRF parsers and fields)",
+          "fixture_refs": ["apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-json.json"]
+        }
+      ],
+      "source": "apps/api/plane/app/views/issue/label.py",
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "order_by",
+        "cursor",
+        "per_page"
+      ],
+      "response_contract": "Empty 204 on successful DELETE; successful POST/PUT/PATCH return the compact seven-field app LabelSerializer, preserving nullable parent and scalar types. Rejections preserve full source validation envelopes and headers.",
+      "cache_contract": "No cache invalidation decorator on inherited update; preserve all cache entries on success and rejection.",
+      "method": "PUT",
+      "effects": [],
+      "sample_path": "/api/workspaces/labels-contract/projects/00000000-0000-4000-8000-000000009103/issue-labels/00000000-0000-4000-8000-000000009999/",
+      "statuses": [200, 400, 401, 403, 404, 500],
+      "database_effects": [
+        "labels.created_at/created_by on create; updated_at/updated_by on every update; no issue_labels mutation in request"
+      ],
+      "source_branch_fixture_index": [
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-anonymous.json",
+          "status": 401,
+          "case": "put-anonymous"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-case-only-project-duplicate-without-project-context.json",
+          "status": 200,
+          "case": "put-case-only-project-duplicate-without-project-context"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-exact-duplicate-name-without-project-context.json",
+          "status": 400,
+          "case": "put-exact-duplicate-name-without-project-context"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-existing-target-malformed-json.json",
+          "status": 400,
+          "case": "put-existing-target-malformed-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-form-empty-sort-order.json",
+          "status": 200,
+          "case": "put-form-empty-sort-order"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-full-update.json",
+          "status": 200,
+          "case": "put-full-update"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-inactive-user-session.json",
+          "status": 401,
+          "case": "put-inactive-user-session"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-member-denied-before-target-lookup.json",
+          "status": 403,
+          "case": "put-member-denied-before-target-lookup"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-required-name.json",
+          "status": 400,
+          "case": "put-missing-required-name"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target.json",
+          "status": 404,
+          "case": "put-missing-target"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-missing-target-before-malformed-json.json",
+          "status": 404,
+          "case": "put-missing-target-before-malformed-json"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-casefold-name-collision.json",
+          "status": 400,
+          "case": "put-null-project-casefold-name-collision"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-null-project-name-collision-without-project-context.json",
+          "status": 400,
+          "case": "put-null-project-name-collision-without-project-context"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-omitted-optional-fields-preserved.json",
+          "status": 200,
+          "case": "put-omitted-optional-fields-preserved"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-project-admin-without-workspace-membership.json",
+          "status": 200,
+          "case": "put-project-admin-without-workspace-membership"
+        },
+        {
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/put-sort-order-nan-mutates-before-render-error.json",
+          "status": 500,
+          "case": "put-sort-order-nan-mutates-before-render-error"
+        }
+      ]
+    }
+  },
+  "scope": "App project-label CRUD writes: POST collection and PUT/PATCH/DELETE detail, including OPTIONS metadata and unsupported-method dispatch when the last Django writes leave these paths. API v1 writes and bulk import remain separate. Existing GET/HEAD behavior is preserved.",
+  "reuse_analysis": "Extend internal/projectlabelreads domain with writes. Reuse Django session/CSRF/protocol boundary and durable Celery publisher.",
+  "phase": "prove and review",
+  "runtime_questions": [],
+  "shared_transport_evidence": "Reuse production session, CORS, content negotiation, slash handling, request-size and conditional API audit boundary. Raw Django Allow is captured in the OPTIONS fixtures. The current production proxy sends OPTIONS to Django until every method on the path retires and expands its Allow header to the full resource set. Candidate replay must assert that production Allow value, explicitly normalize only Allow for source comparison, and separately compare baseline and candidate proxy responses. For renderer failures, capture and compare the raw HTML response body; an absent Allow header remains absent. For NaN renderer failures, capture and compare the raw HTML response body and preserve the absent Allow header. The source fixtures record renderer failure bodies as raw_text_body. Go uses the shared marked HTML500 boundary for renderer failures and typed JSON500 for ordinary handler errors; the OpenAPI response carries the x-plane-renderer-failure metadata extension.",
+  "effect_contracts": {
+    "django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "permission_classes_before_timezone": true,
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": [],
+    "options_variants": ["ordinary", "preflight"],
+    "auth_probes": {
+      "django-session": "/api/workspaces/labels-contract/projects/00000000-0000-4000-8000-000000009103/issue-labels/"
+    }
+  },
+  "shared_contract": {
+    "permission_classes": "ProjectBasePermission executes in DRF initial() before TimezoneMixin activates user_timezone. POST requires active workspace role 15/20. Other writes require active project admin, or active project membership plus active workspace admin. The method decorator repeats project authorization after create/PATCH/DELETE cache invalidation.",
+    "timezone": "Invalid timezone raises ZoneInfoNotFoundError; BaseViewSet handles it as KeyError and returns 400 {error: The required key does not exist.}. Base permission failure wins with 403.",
+    "write_allow_headers": {
+      "collection": "POST, OPTIONS",
+      "detail": "PUT, PATCH, DELETE, OPTIONS"
+    },
+    "protocol_ownership": "Routing inventory retains HEAD/OPTIONS companions on the existing GET entries because reads and writes use separate families on each path. The generated write service implements the two authored OPTIONS methods. Once all methods are Go active, the existing retired read route makes the complete path route to Go; protocol fixtures and production-proxy comparison prove this composed ownership.",
+    "audit_effect": "X-Api-Key on any session write triggers shared API audit independently of endpoint success. The POST fixture records the shared effect with real RabbitMQ; this is not API-key authentication.",
+    "request_worker_boundary": "Successful DELETE saves only the label and publishes one durable soft-delete task. Descendants and issue associations are worker-owned and verified by the separate real RabbitMQ success fixture. A distinct source-only HTTP test injects publisher failure and proves the 500 JSON response plus committed soft-delete/audit/cache state; the injected failure itself is not recorded as a durable task.",
+    "allow_composition": {
+      "direct_django": {
+        "collection": "POST, OPTIONS",
+        "detail": "PUT, PATCH, DELETE, OPTIONS",
+        "evidence": [
+          "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-options-allow-header.json",
+          "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/detail-options-allow-header.json"
+        ]
+      },
+      "production_proxy": {
+        "collection": "GET, POST, HEAD, OPTIONS",
+        "detail": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS"
+      },
+      "source": "apps/go-api/internal/routing/caddy.go::RenderCaddy; pathAllowHeader",
+      "proof": "Source fixtures assert raw Django Allow. Go replay must assert the production-composed Allow header and explicitly normalize only this header for direct Django comparison. Independently compare baseline and candidate production-proxy responses while Caddy still routes OPTIONS to Django until every method retires; never substitute raw Django Allow for the proxy response.",
+      "proxy_header_policy": "Caddy expands Allow only when the upstream response already contains Allow. Assert the production-composed Allow values for OPTIONS and ordinary JSON responses; preserve the absence of Allow for PATCH sort_order NaN (HTML 500). Do not synthesize or normalize a missing header.",
+      "conditional_normalization": "Normalize only the observed Allow header for source-versus-Go comparison when present. Assert its absence for POST first-label NaN, PATCH NaN, and PUT NaN renderer failures; do not synthesize it. For these failures, compare raw_text_body as well as status, Content-Type, database state, and cache state."
+    }
+  },
+  "protocol_fixtures": [
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/detail-options-allow-header.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-collection-anonymous.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-collection-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-collection-workspace-guest-hides-actions.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-detail-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-detail-missing-target-hides-actions.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/options-detail-project-member-hides-actions.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/post-options-allow-header.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/trace-project-admin-method-not-allowed.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_label_writes/trace-project-member-denied-before-method-dispatch.json"
+  ],
+  "source_revision": "56b25859a056afe990ed2a6d0df23ca9ebf7d164",
+  "characterization_status": "144 source fixtures including 16 independently repeated final-review regressions; source and worker verification history is recorded below.",
+  "source_fixture_census": {
+    "source_recording_command": "UPDATE_PARITY_FIXTURES=1 bash /tmp/plane-label-writes/run-source.sh plane/tests/parity/test_project_label_write_recorder.py -q -k nan",
+    "write_cases": 134,
+    "operation_counts": {
+      "POST": 60,
+      "DELETE": 11,
+      "PATCH": 46,
+      "PUT": 17
+    },
+    "protocol_cases": {
+      "OPTIONS": 8,
+      "TRACE": 2
+    },
+    "total_cases": 144,
+    "focused_nan_source_capture": {
+      "status": "passed",
+      "selected_cases": 4,
+      "duration_seconds": 6.48,
+      "covers": [
+        "POST first label NaN mutates then renderer HTTP 500",
+        "POST with existing labels overrides NaN and returns 201",
+        "PATCH NaN mutation and renderer HTTP 500 replay",
+        "PUT NaN mutates then renderer HTTP 500"
+      ],
+      "result": "Raw HTML body, Content-Type, Allow absence, database deltas, and cache deltas recorded."
+    },
+    "delete_publisher_failure_http_test": {
+      "command": "bash /tmp/plane-label-writes/run-source.sh plane/tests/parity/test_project_label_delete_worker.py::test_project_label_delete_publisher_failure_http_returns_500_after_persist -q",
+      "status": "passed",
+      "tests": 1,
+      "duration_seconds": 4.73,
+      "source_test": "apps/api/plane/tests/parity/test_project_label_delete_worker.py::test_project_label_delete_publisher_failure_http_returns_500_after_persist",
+      "proof_limit": "In-process publisher spy proves HTTP 500 JSON envelope, exact enqueue attempt, saved soft-delete audit state (created_at/created_by preserved, updated_at advanced, updated_by set to the authenticated actor, deleted_at set), child remains live, cache invalidated, and no durable delivery. Real RabbitMQ success remains the separate delete-soft-delete-and-publish-task fixture."
+    },
+    "full_fixture_repeat": {
+      "command": "bash /tmp/plane-label-writes/run-source.sh plane/tests/parity/test_project_label_write_recorder.py plane/tests/parity/test_project_label_delete_worker.py -q --reuse-db",
+      "status": "passed",
+      "cases": 116,
+      "duration_seconds": 24.21,
+      "artifact": "/tmp/plane-label-writes/entry-source-verification.log"
+    },
+    "additional_options_timezone": {
+      "command": "UPDATE_PARITY_FIXTURES=0 bash /tmp/plane-label-writes/run-source.sh plane/tests/parity/test_project_label_write_recorder.py -q --reuse-db --tb=short -k 'options-collection-invalid-timezone or options-detail-invalid-timezone'",
+      "status": "passed",
+      "cases": 2,
+      "duration_seconds": 5.32,
+      "artifact": "/tmp/plane-label-writes/options-timezone-source.log"
+    },
+    "control_whitespace_repeat": {
+      "command": "UPDATE_PARITY_FIXTURES=0 [local migration artifact omitted]",
+      "status": "passed",
+      "cases": 2,
+      "source_revision": "f323ac33e9c3cd99b849dd8ce3f78d6ed46b1778",
+      "covers": ["post-name-python-control-whitespace-only", "post-name-color-python-control-whitespace-boundaries"]
+    },
+    "final_review_regressions": {
+      "status": "passed",
+      "cases": 16,
+      "record_and_repeat": "[local migration artifact omitted] with UPDATE_PARITY_FIXTURES=1, then0",
+      "manifest": "[local migration artifact omitted]",
+      "source_revision": "f323ac33e9c3cd99b849dd8ce3f78d6ed46b1778"
+    }
+  },
+  "candidate_evidence_pending": [
+    "Indexed production-proxy differential receipt and complete proof battery on the staged atomic retirement tree"
+  ],
+  "transport_entry": {
+    "pinned_loom": "v1.10.0-alpha.5.0.20261009105357-51b4c095fada",
+    "design": "apps/go-api/project_label_writes/design/design.go",
+    "import": "Select four inventory operations and their three referenced schemas from full-server.openapi.json; omit environment-only servers metadata. Reverse import via loom import openapi, then adopt first-class session cookies, raw request streams, typed source errors, and source-complete result fields.",
+    "protocol": "Two authored OPTIONS methods share RuntimeCORS preflight. Reuse common session-service boundary for slashless redirects, request size, session lifecycle, negotiation, audit and Django preflight response. Extend that boundary generically to delegate ordinary OPTIONS to authored methods and supply resource parameters to unsupported-method authorization; preserve existing notifications.",
+    "validation_order": "Raw request stream preserves permission_classes before timezone before method authorization/body access. Typed path decoder behavior is adapted by existing shared Django URL compatibility.",
+    "renderer_failure": "The source records persisted nonfinite writes followed by renderer HTTP 500 for POST with no existing labels, PATCH, and PUT; POST with existing labels overwrites incoming NaN with max sort_order + 10000 and returns 201. The Go operation contract uses typed JSON500 for ordinary API failures and the shared marked HTML500 compatibility boundary for source renderer failures. OpenAPI documents this with x-plane-renderer-failure metadata (text/html; charset=utf-8). This is shared transport behavior, not a route-specific designed HTML error.",
+    "proof_pending": []
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/project_label_writes_http_test.go::TestProjectLabelWritesMiddlewareOrderAndEffects"
+}

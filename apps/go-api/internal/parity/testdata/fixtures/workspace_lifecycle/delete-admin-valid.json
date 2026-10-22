@@ -1,0 +1,418 @@
+{
+  "database": {
+    "after": {
+      "profiles": [
+        {
+          "background_color": "<generated-color>",
+          "billing_address": null,
+          "billing_address_country": "INDIA",
+          "company_name": "",
+          "created_at": "<timestamp>",
+          "goals": {},
+          "has_billing_address": false,
+          "has_marketing_email_consent": false,
+          "id": "<uuid-1>",
+          "is_app_rail_docked": true,
+          "is_mobile_onboarded": false,
+          "is_navigation_tour_completed": false,
+          "is_onboarded": false,
+          "is_smooth_cursor_enabled": false,
+          "is_subscribed_to_changelog": false,
+          "is_tour_completed": false,
+          "language": "en",
+          "last_workspace_id": null,
+          "mobile_onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_join": false
+          },
+          "mobile_timezone_auto_set": false,
+          "notification_view_mode": "full",
+          "onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_invite": false,
+            "workspace_join": false
+          },
+          "product_tour": {
+            "cycles": false,
+            "intake": false,
+            "modules": false,
+            "pages": false,
+            "work_items": false
+          },
+          "role": null,
+          "start_of_the_week": 0,
+          "theme": {},
+          "updated_at": "<timestamp>",
+          "use_case": null,
+          "user_id": "<uuid-3>"
+        }
+      ],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-4>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-2>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "<generated-color>",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-2>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Lifecycle Seed",
+          "organization_size": null,
+          "owner_id": "<uuid-3>",
+          "slug": "<deleted-workspace-slug>",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "profiles": [
+        {
+          "background_color": "<generated-color>",
+          "billing_address": null,
+          "billing_address_country": "INDIA",
+          "company_name": "",
+          "created_at": "<timestamp>",
+          "goals": {},
+          "has_billing_address": false,
+          "has_marketing_email_consent": false,
+          "id": "<uuid-1>",
+          "is_app_rail_docked": true,
+          "is_mobile_onboarded": false,
+          "is_navigation_tour_completed": false,
+          "is_onboarded": false,
+          "is_smooth_cursor_enabled": false,
+          "is_subscribed_to_changelog": false,
+          "is_tour_completed": false,
+          "language": "en",
+          "last_workspace_id": "<uuid-2>",
+          "mobile_onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_join": false
+          },
+          "mobile_timezone_auto_set": false,
+          "notification_view_mode": "full",
+          "onboarding_step": {
+            "profile_complete": false,
+            "workspace_create": false,
+            "workspace_invite": false,
+            "workspace_join": false
+          },
+          "product_tour": {
+            "cycles": false,
+            "intake": false,
+            "modules": false,
+            "pages": false,
+            "work_items": false
+          },
+          "role": null,
+          "start_of_the_week": 0,
+          "theme": {},
+          "updated_at": "<timestamp>",
+          "use_case": null,
+          "user_id": "<uuid-3>"
+        }
+      ],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-4>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-2>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "<generated-color>",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-2>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Lifecycle Seed",
+          "organization_size": null,
+          "owner_id": "<uuid-3>",
+          "slug": "workspace-life-8",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "profiles",
+      "workspaces"
+    ],
+    "expected_changed_tables": [
+      "profiles",
+      "workspaces"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.event_tracking_task.track_event",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "event_name": "workspace_deleted",
+          "event_properties": {
+            "deleted_at": "<timestamp>",
+            "role": "owner",
+            "user_id": "<uuid-3>",
+            "workspace_id": "<uuid-2>",
+            "workspace_name": "Lifecycle Seed",
+            "workspace_slug": "workspace-life-8"
+          },
+          "slug": "workspace-life-8",
+          "user_id": "<uuid-3>"
+        }
+      },
+      "routing_key": "celery"
+    },
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload": {
+        "args": [
+          "db",
+          "workspace",
+          "<uuid-2>"
+        ],
+        "kwargs": {
+          "queue_scope": "workspace-deletion",
+          "using": null
+        }
+      },
+      "routing_key": "workspace-deletion"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/workspace-life-8/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "PUT, PATCH, DELETE, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "delete-admin-valid"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Vector",
+  "short_name": "Vector",
+  "description": "Vector helps you plan your work items, cycles, and product modules.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#3f76ff",
+  "icons": [
+    {
+      "src": "/vector.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

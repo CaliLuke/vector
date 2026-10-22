@@ -1,0 +1,315 @@
+{
+  "database": {
+    "after": {
+      "analytic_views": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": "<timestamp>",
+          "description": "Parity",
+          "id": "<uuid-1>",
+          "name": "Updated analytic",
+          "query": {},
+          "query_dict": {
+            "x_axis": "state_id",
+            "y_axis": "issue_count"
+          },
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-4>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-2>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-3>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Analytic Parity",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "analytic-parity",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "before": {
+      "analytic_views": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "description": "Parity",
+          "id": "<uuid-1>",
+          "name": "Updated analytic",
+          "query": {},
+          "query_dict": {
+            "x_axis": "state_id",
+            "y_axis": "issue_count"
+          },
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-4>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-2>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-3>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Analytic Parity",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "analytic-parity",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "analytic_views"
+    ],
+    "expected_changed_tables": [
+      "analytic_views"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/analytic-parity/analytic-view/<uuid-1>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "delete",
+    "data": {}
+  }
+}

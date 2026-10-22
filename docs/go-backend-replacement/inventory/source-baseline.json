@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "source_ref": "1c8a60f858d8472aa56e29994ec1c7926da2c6ce",
+  "recorded_on": "2026-08-12",
+  "generator": "docs/go-backend-replacement/inventory/scripts/source_inventory.py",
+  "source_tree_matches_selected_ref": true,
+  "counts": {
+    "python_files": 649,
+    "python_lines": 104473,
+    "django_models": 96,
+    "django_migrations": 128,
+    "django_path_declarations": 393,
+    "drf_router_registrations": 2,
+    "route_registrations": 395,
+    "view_classes": 280,
+    "celery_task_modules": 33,
+    "celery_task_declarations": 47,
+    "celery_workflow_primitive_calls": 0,
+    "celery_beat_entries": 12,
+    "frontend_service_calls": 494,
+    "python_test_files": 67,
+    "python_test_lines": 8944
+  }
+}

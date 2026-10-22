@@ -1,0 +1,294 @@
+package systemapi
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"reflect"
+	"strings"
+	"time"
+
+	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
+	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+	store "github.com/CaliLuke/go-plane/internal/workitems"
+	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
+	"github.com/CaliLuke/loom/clue/log"
+	loomhttp "github.com/CaliLuke/loom/http"
+	loom "github.com/CaliLuke/loom/pkg"
+	"github.com/CaliLuke/loom/security"
+	"github.com/jackc/pgx/v5/pgconn"
+)
+
+type collaborationRepository interface {
+	AuthorizeCollaborationInitial(context.Context, store.Request) error
+	ProtocolCollaborationPutAction(context.Context, store.Request) (bool, error)
+	ExecuteCollaboration(context.Context, store.Request, io.Reader, string) (store.Result, error)
+}
+
+type ticketCollaborationService struct {
+	repository collaborationRepository
+	sessions   activityReadsSessions
+	keys       activityReadsAPIKeys
+	throttle   activityReadsThrottle
+}
+type collaborationPrincipal struct{ user, timezone, key string }
+type collaborationPrincipalKey struct{}
+
+func (s *ticketCollaborationService) AuthorizeWorkItemProtocol(ctx context.Context, resource WorkItemProtocolResource) (metadata WorkItemProtocolMetadata, err error) {
+	defer func() {
+		if err != nil {
+			err = collaborationProtocolError(err)
+		}
+	}()
+	isAPI := strings.HasPrefix(resource.Pattern, "/api/v1/")
+	key, scheme := resource.SessionID, &security.APIKeyScheme{Name: "SessionAuth"}
+	if isAPI {
+		key, scheme = resource.APIKey, &security.APIKeyScheme{Name: "ApiKeyAuth"}
+	}
+	ctx, err = s.APIKeyAuth(ctx, key, scheme)
+	if err != nil {
+		return WorkItemProtocolMetadata{}, err
+	}
+	p := ctx.Value(collaborationPrincipalKey{}).(collaborationPrincipal)
+	operation := strings.ToLower(resource.Method) + "_" + strings.NewReplacer("/", "_", "-", "_", "{", "by_", "}", "").Replace(strings.Trim(resource.Pattern, "/"))
+	q := store.Request{Operation: operation, Method: resource.Method, Slug: resource.Params["slug"], ProjectID: resource.Params["project_id"], IssueID: resource.Params["issue_id"], Params: resource.Params, Present: map[string]bool{}, ActorID: p.user, Timezone: p.timezone, API: isAPI}
+
+	for key := range resource.Params {
+		q.Present[key] = true
+	}
+	if err = s.repository.AuthorizeCollaborationInitial(ctx, q); err != nil {
+		return WorkItemProtocolMetadata{}, workItemError(err)
+	}
+	if isAPI {
+		rate, e := s.throttle.Allow(ctx, p.key)
+		if e != nil {
+			return WorkItemProtocolMetadata{}, workItemError(e)
+		}
+		if effects := apikey.EffectsFromContext(ctx); effects != nil {
+			effects.Rate = &rate
+		}
+		if !rate.Allowed {
+			return WorkItemProtocolMetadata{}, workItemError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+		}
+	}
+	if err = djangosession.ValidateUserTimezone(p.timezone); errors.Is(err, djangosession.ErrTimezoneNotFound) {
+		err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+	}
+	if err != nil {
+		return WorkItemProtocolMetadata{}, workItemError(err)
+	}
+	if resource.Method == http.MethodOptions && !isAPI {
+		available, err := s.repository.ProtocolCollaborationPutAction(ctx, q)
+		if err != nil {
+			return WorkItemProtocolMetadata{}, workItemError(err)
+		}
+		return WorkItemProtocolMetadata{OmitPutAction: !available}, nil
+	}
+	return WorkItemProtocolMetadata{}, nil
+}
+
+// Native authentication errors retain the existing shared protocol writer's
+// opaque Django body contract when handling HEAD, OPTIONS and unsupported verbs.
+func collaborationProtocolError(err error) error {
+	var native *api.CollaborationError
+	if !errors.As(err, &native) {
+		return err
+	}
+	status := 500
+	_, _ = fmt.Sscanf(native.Kind, "status_%d", &status)
+	data, e := json.Marshal(native.Body)
+	if e != nil {
+		return workItemError(e)
+	}
+	var body map[string]any
+	if e = json.Unmarshal(data, &body); e != nil {
+		return workItemError(e)
+	}
+	return workItemError(&djangoapi.HTTPError{Status: status, Body: body})
+}
+
+func NewTicketCollaboration(repository collaborationRepository, sessions activityReadsSessions, keys activityReadsAPIKeys, throttle activityReadsThrottle) (api.Service, error) {
+	if repository == nil || sessions == nil || keys == nil || throttle == nil {
+		return nil, errors.New("work-item repository, session and API-key validators, and throttle are required")
+	}
+	return &ticketCollaborationService{repository: repository, sessions: sessions, keys: keys, throttle: throttle}, nil
+}
+
+func collaborationError(err error) error {
+	var already *api.CollaborationError
+	if errors.As(err, &already) {
+		return err
+	}
+	status, body := 500, map[string]any{"error": "Something went wrong please try again later"}
+	var failure *djangoapi.HTTPError
+	if errors.As(err, &failure) {
+		status, body = failure.Status, failure.Body
+	}
+	var filter *issuequery.FilterError
+	if errors.As(err, &filter) {
+		status = 400
+		body = map[string]any{"message": filter.Message, "code": filter.Code}
+		if filter.Errors != nil {
+			body["errors"] = filter.Errors
+		}
+	}
+	var postgres *pgconn.PgError
+	if errors.As(err, &postgres) {
+		if postgres.Code == "22P02" {
+			status = 400
+			body = map[string]any{"error": "Please provide valid detail"}
+		}
+		if strings.HasPrefix(postgres.Code, "23") {
+			status = 400
+			body = map[string]any{"error": "The payload is not valid"}
+		}
+	}
+	encoded, marshalErr := loom.JSONValueFrom(body)
+	if marshalErr != nil {
+		panic(marshalErr)
+	}
+	return &api.CollaborationError{Kind: fmt.Sprintf("status_%d", status), Body: encoded}
+}
+
+func (s *ticketCollaborationService) APIKeyAuth(ctx context.Context, key string, scheme *security.APIKeyScheme) (context.Context, error) {
+	p := collaborationPrincipal{}
+	if scheme != nil && scheme.Name == "ApiKeyAuth" {
+		principal, err := s.keys.Validate(ctx, key)
+		if err != nil {
+			status, message := 500, "Something went wrong please try again later"
+			if key == "" {
+				status, message = 401, unauthenticatedDetail
+			} else if errors.Is(err, apikey.ErrInvalid) {
+				status, message = 403, "Given API token is not valid"
+			}
+			return ctx, collaborationError(&djangoapi.HTTPError{Status: status, Body: map[string]any{"detail": message}})
+		}
+		p = collaborationPrincipal{principal.UserID.String(), principal.Timezone, key}
+		if effects := apikey.EffectsFromContext(ctx); effects != nil {
+			effects.Authenticated = true
+		}
+	} else {
+		id, zone, inspected := readServiceSessionPrincipal(ctx)
+		if !inspected {
+			if key == "" {
+				if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
+					if cookie, err := (&http.Request{Header: metadata.Headers()}).Cookie("session-id"); err == nil {
+						key = cookie.Value
+					}
+				}
+			}
+			if principal, err := s.sessions.Validate(ctx, key); err == nil {
+				id, zone = principal.UserID, principal.UserTimezone
+			}
+		}
+		if id == "" {
+			return ctx, collaborationError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+		}
+		p = collaborationPrincipal{user: id, timezone: zone}
+	}
+	return context.WithValue(ctx, collaborationPrincipalKey{}, p), nil
+}
+
+func collaborationRequest(ctx context.Context, operation string, payload any) store.Request {
+	raw := activityPayloadRequest(ctx, operation, payload)
+	// Resource-like names can also be legitimate query parameters (for example
+	// issue_id in search). Restore all queries, then protect only actual paths.
+	for name, values := range ReadServiceQueryValues(ctx) {
+		raw.Present[name] = true
+		if len(values) > 0 {
+			raw.Params[name] = values[len(values)-1]
+		}
+	}
+	// Query parameters may not replace any part of the authenticated resource path.
+	value := reflect.Indirect(reflect.ValueOf(payload))
+	for i := 0; i < value.NumField(); i++ {
+		name := strings.Split(value.Type().Field(i).Tag.Get("json"), ",")[0]
+		switch name {
+		case "slug", "project_id", "pk", "issue_id", "anchor", "comment_id", "subscriber_id", "reaction_code":
+			raw.Params[name] = fmt.Sprint(value.Field(i).Interface())
+		}
+	}
+	method, _, _ := strings.Cut(operation, "_")
+	q := store.Request{Operation: operation, Method: strings.ToUpper(method), Slug: raw.Params["slug"], ProjectID: raw.Params["project_id"], IssueID: raw.Params["issue_id"], Params: raw.Params, Present: raw.Present, API: strings.HasPrefix(operation, "get_api_v1_") || strings.Contains(operation, "_api_v1_")}
+
+	return q
+}
+
+func (s *ticketCollaborationService) execute(ctx context.Context, operation string, payload any, body io.ReadCloser) (*api.CollaborationResponse, io.ReadCloser, error) {
+	if body != nil {
+		defer body.Close()
+	}
+	p, ok := ctx.Value(collaborationPrincipalKey{}).(collaborationPrincipal)
+	q := collaborationRequest(ctx, operation, payload)
+	publicCommentRead := strings.HasPrefix(operation, "get_api_public_") && strings.Contains(operation, "_issues_by_issue_id_comments")
+	if !ok && publicCommentRead {
+		id, zone, inspected := readServiceSessionPrincipal(ctx)
+		if !inspected {
+			if metadata, yes := loomhttp.RequestMetadataFromContext(ctx); yes {
+				if cookie, e := (&http.Request{Header: metadata.Headers()}).Cookie("session-id"); e == nil {
+					if principal, e := s.sessions.Validate(ctx, cookie.Value); e == nil {
+						id, zone = principal.UserID, principal.UserTimezone
+					}
+				}
+			}
+		}
+		p, ok = collaborationPrincipal{user: id, timezone: zone}, true
+	}
+	if !ok {
+		return nil, nil, collaborationError(&djangoapi.HTTPError{Status: 401, Body: map[string]any{"detail": unauthenticatedDetail}})
+	}
+	q.ActorID, q.Timezone = p.user, p.timezone
+	if err := s.repository.AuthorizeCollaborationInitial(ctx, q); err != nil {
+		return nil, nil, collaborationError(err)
+	}
+	if q.API {
+		rate, err := s.throttle.Allow(ctx, p.key)
+		if err != nil {
+			return nil, nil, collaborationError(err)
+		}
+		if effects := apikey.EffectsFromContext(ctx); effects != nil {
+			effects.Rate = &rate
+		}
+		if !rate.Allowed {
+			return nil, nil, collaborationError(&djangoapi.HTTPError{Status: 429, Body: map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))}})
+		}
+	}
+	if err := djangosession.ValidateUserTimezone(p.timezone); p.user != "" && err != nil {
+		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
+			err = &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "The required key does not exist."}}
+		}
+		return nil, nil, collaborationError(err)
+	}
+	contentType := ""
+	if metadata, ok := loomhttp.RequestMetadataFromContext(ctx); ok {
+		contentType = metadata.Headers().Get("Content-Type")
+	}
+	result, err := s.repository.ExecuteCollaboration(ctx, q, body, contentType)
+	if err != nil {
+		var httpError *djangoapi.HTTPError
+		if !errors.As(err, &httpError) {
+			fields := []log.Fielder{log.KV{K: "msg", V: "Ticket collaboration operation failed"}, log.KV{K: "operation", V: operation}, log.KV{K: "error_type", V: fmt.Sprintf("%T", err)}, log.KV{K: "error_kind", V: workItemErrorKind(err)}}
+			var pg *pgconn.PgError
+			if errors.As(err, &pg) {
+				fields = append(fields, log.KV{K: "sqlstate", V: pg.Code}, log.KV{K: "table", V: pg.TableName}, log.KV{K: "column", V: pg.ColumnName}, log.KV{K: "constraint", V: pg.ConstraintName})
+			}
+			log.Print(ctx, fields...)
+		}
+		return nil, nil, collaborationError(err)
+	}
+	if result.Status == 204 {
+		return &api.CollaborationResponse{}, io.NopCloser(bytes.NewReader(nil)), nil
+	}
+	data, err := json.Marshal(activityTimestamps(result.Body, p.timezone))
+	if err != nil {
+		MarkReadServiceDjangoHTML500(ctx)
+		return nil, nil, collaborationError(err)
+	}
+	return &api.CollaborationResponse{}, io.NopCloser(bytes.NewReader(data)), nil
+}

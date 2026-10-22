@@ -1,0 +1,452 @@
+package workitems
+
+import (
+	"context"
+	"errors"
+	"io"
+	"maps"
+	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/google/uuid"
+)
+
+func (r *Repository) drafts(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	publish := strings.Contains(q.Operation, "_draft_to_issue")
+	roles := []int{15, 20}
+	if q.Method == "POST" && !publish {
+		roles = []int{5, 15, 20}
+	}
+	if q.Method == "DELETE" {
+		roles = []int{20}
+	}
+	permission := r.allowWorkspace(ctx, q, roles)
+	if permission != nil && (q.Method == "PATCH" || q.Method == "DELETE") {
+		if err := r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
+			return Result{}, err
+		}
+		table := "issues"
+		if q.Method == "DELETE" {
+			table = "draft_issues"
+		}
+		var creator bool
+		if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+table+` WHERE id=$1 AND created_by_id=$2 AND deleted_at IS NULL)`, q.Params["pk"], q.ActorID).Scan(&creator); err != nil {
+			return Result{}, err
+		}
+		if creator {
+			permission = nil
+		}
+	}
+	if permission != nil {
+		return Result{}, permission
+	}
+	workspace, err := r.row(ctx, `SELECT to_jsonb(w) FROM workspaces w WHERE slug=$1 AND deleted_at IS NULL`, q.Slug)
+	if err != nil {
+		return Result{}, err
+	}
+	var old map[string]any
+	if q.Method != "POST" || publish {
+		id := q.Params["pk"]
+		if publish {
+			id = q.Params["draft_id"]
+		}
+		predicate := ""
+		if q.Method == "PATCH" {
+			predicate = ` AND d.created_by_id=$3`
+		}
+		args := []any{id, workspace["id"]}
+		if q.Method == "PATCH" {
+			args = append(args, q.ActorID)
+		}
+		old, err = r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE d.id=$1 AND d.workspace_id=$2 AND d.deleted_at IS NULL`+predicate, args...)
+		if err != nil {
+			if q.Method == "PATCH" {
+				var e *djangoapi.HTTPError
+				if errors.As(err, &e) && e.Status == 404 {
+					return Result{}, failure(404, "error", "Issue not found")
+				}
+			}
+			if publish {
+				return Result{}, errors.New("missing draft publication source")
+			}
+			return Result{}, err
+		}
+	}
+	if q.Method == "DELETE" {
+		return Result{Status: 204}, r.deleteDraft(ctx, q, old)
+	}
+	if publish && old["project_id"] == nil {
+		return Result{}, failure(400, "error", "Project is required to create an issue.")
+	}
+	input, err := djangoinput.Parse(body, contentType)
+	if err != nil {
+		return Result{}, err
+	}
+	project := any(nil)
+	if old != nil {
+		project = old["project_id"]
+	}
+	if v, ok := input.Fields["project_id"]; ok && !publish {
+		project = v
+	}
+	optionsProject := ""
+	if project != nil {
+		optionsProject = djangoinput.ScalarString(project)
+	}
+	validation := input
+	validation.Fields = maps.Clone(input.Fields)
+	if !publish {
+		for _, f := range []string{"archived_at", "point", "sequence_id", "is_draft"} {
+			delete(validation.Fields, f)
+		}
+	}
+	for _, f := range []string{"assignee_ids", "label_ids"} {
+		if value, ok := input.ListValue(f, q.Method == "PATCH"); ok {
+			validation.Fields[f] = value
+		}
+	}
+	changes, err := r.validateIssue(ctx, validation, issueValidation{Timezone: q.Timezone, Partial: q.Method == "PATCH", Draft: !publish, ProjectID: optionsProject, WorkspaceID: workspace["id"].(string)})
+	if err != nil {
+		return Result{}, err
+	}
+	if !publish {
+		if value, ok := input.Fields["project"]; ok {
+			if value == nil || value == "" {
+				changes.values["project_id"] = nil
+			} else {
+				id, messages, e := r.primaryKey(ctx, value, "projects", false)
+				if e != nil {
+					return Result{}, e
+				}
+				if len(messages) > 0 {
+					return Result{}, invalid(map[string]any{"project": messages})
+				}
+				changes.values["project_id"] = id
+			}
+		}
+		if value, ok := input.Fields["completed_at"]; ok {
+			if value == nil {
+				changes.values["completed_at"] = nil
+			} else {
+				parsed, e := parseQueryDateTime(djangoinput.ScalarString(value), q.Timezone)
+				if e != nil {
+					return Result{}, invalid(map[string]any{"completed_at": []string{"Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."}})
+				}
+				changes.values["completed_at"] = parsed
+			}
+		}
+	}
+	effective := project
+	if v, ok := changes.values["project_id"]; ok {
+		effective = v
+	}
+	if err = r.validateDraftReferences(ctx, input.Fields, effective, workspace["id"]); err != nil {
+		return Result{}, err
+	}
+	if err = r.validateTypeTenant(ctx, changes.values, input.Fields, workspace["id"]); err != nil {
+		return Result{}, err
+	}
+	if publish {
+		return r.publishDraft(ctx, q, old, input, changes)
+	}
+	row := maps.Clone(old)
+	if old == nil {
+		row = defaultIssue(optionsProject)
+		for _, f := range []string{"archived_at", "point", "sequence_id", "is_draft"} {
+			delete(row, f)
+		}
+		row["name"] = nil
+		row["project_id"] = project
+		row["workspace_id"] = workspace["id"]
+	}
+	maps.Copy(row, changes.values)
+	if old != nil {
+		if err = r.replaceDraftRelations(ctx, q, old, changes, input, false); err != nil {
+			return Result{}, err
+		}
+	}
+	row, err = r.saveDraft(ctx, q.ActorID, row, old == nil)
+	if err != nil {
+		return Result{}, err
+	}
+	if old != nil {
+		return Result{Status: 204}, nil
+	}
+	if err = r.replaceDraftRelations(ctx, q, row, changes, input, true); err != nil {
+		return Result{}, err
+	}
+	if row["deleted_at"] != nil {
+		return Result{201, nil}, nil
+	}
+	result, err := r.draftProjection(ctx, row)
+	return Result{201, result}, err
+}
+
+func (r *Repository) validateDraftReferences(ctx context.Context, input map[string]any, project, workspace any) error {
+	if project != nil && project != "" {
+		if id, e := djangoinput.UUID(project); e == nil {
+			var foreign bool
+			if e = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects WHERE id=$1 AND workspace_id<>$2)`, id.String(), workspace).Scan(&foreign); e != nil {
+				return e
+			}
+			if foreign {
+				return invalid(map[string]any{"project": []string{"Invalid project."}})
+			}
+		}
+	}
+	failures := map[string]any{}
+	for _, entry := range []struct{ field, table, message string }{{"cycle_id", "cycles", "Invalid cycle."}, {"module_ids", "modules", "Invalid module."}} {
+		values := []any{input[entry.field]}
+		if entry.field == "module_ids" {
+			values, _ = input[entry.field].([]any)
+		}
+		for _, value := range values {
+			if id, e := djangoinput.UUID(value); e == nil {
+				var foreign bool
+				if e = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM `+entry.table+` WHERE id=$1 AND workspace_id<>$2)`, id.String(), workspace).Scan(&foreign); e != nil {
+					return e
+				}
+				if foreign {
+					failures[entry.field] = []string{entry.message}
+					break
+				}
+			}
+		}
+	}
+	if len(failures) > 0 {
+		return invalid(failures)
+	}
+	return nil
+}
+
+func (r *Repository) saveDraft(ctx context.Context, actor string, row map[string]any, create bool) (map[string]any, error) {
+	if row["project_id"] != nil {
+		project, err := r.project(ctx, djangoinput.ScalarString(row["project_id"]))
+		if err != nil {
+			return nil, err
+		}
+		row["workspace_id"] = project["workspace_id"]
+	}
+	now := timestamp(r.now())
+	if row["state_id"] == nil {
+		var state *string
+		if err := r.db.QueryRow(ctx, `SELECT (SELECT id::text FROM states WHERE project_id IS NOT DISTINCT FROM $1::uuid AND deleted_at IS NULL AND NOT is_triage ORDER BY "default" DESC,sequence LIMIT 1)`, row["project_id"]).Scan(&state); err != nil {
+			return nil, err
+		}
+		if state != nil {
+			row["state_id"] = *state
+		}
+	} else {
+		var completed bool
+		if err := r.db.QueryRow(ctx, `SELECT "group"='completed' FROM states WHERE id=$1`, row["state_id"]).Scan(&completed); err != nil {
+			return nil, err
+		}
+		row["completed_at"] = nil
+		if completed {
+			row["completed_at"] = now
+		}
+	}
+	row["description_stripped"] = stripTags(row["description_html"].(string))
+	row["updated_at"] = now
+	if create {
+		row["created_at"], row["created_by_id"], row["updated_by_id"] = now, actor, nil
+		var order *float64
+		if err := r.db.QueryRow(ctx, `SELECT MAX(sort_order) FROM draft_issues WHERE project_id IS NOT DISTINCT FROM $1::uuid AND state_id IS NOT DISTINCT FROM $2::uuid AND deleted_at IS NULL`, row["project_id"], row["state_id"]).Scan(&order); err != nil {
+			return nil, err
+		}
+		if order != nil {
+			row["sort_order"] = *order + 10000
+		}
+	} else {
+		row["updated_by_id"] = actor
+	}
+	data, err := issueRecordJSON(row)
+	if err != nil {
+		return nil, err
+	}
+	query := `INSERT INTO draft_issues SELECT (jsonb_populate_record(NULL::draft_issues,$1::jsonb)).*`
+	if !create {
+		query = `UPDATE draft_issues d SET (name,project_id,workspace_id,state_id,parent_id,type_id,estimate_point_id,description_json,description_html,description_stripped,priority,start_date,target_date,sort_order,completed_at,external_id,external_source,updated_at,updated_by_id,deleted_at)=(SELECT x.name,x.project_id,x.workspace_id,x.state_id,x.parent_id,x.type_id,x.estimate_point_id,x.description_json,x.description_html,x.description_stripped,x.priority,x.start_date,x.target_date,x.sort_order,x.completed_at,x.external_id,x.external_source,x.updated_at,x.updated_by_id,x.deleted_at FROM jsonb_populate_record(NULL::draft_issues,$1::jsonb) x) WHERE d.id=($1::jsonb->>'id')::uuid`
+	}
+	if _, err = r.db.Exec(ctx, query, data); err != nil {
+		return nil, err
+	}
+	return r.row(ctx, `SELECT to_jsonb(d) FROM draft_issues d WHERE id=$1`, row["id"])
+}
+
+func (r *Repository) deleteDraft(ctx context.Context, q Request, row map[string]any) error {
+	row["deleted_at"] = timestamp(r.now())
+	if _, err := r.saveDraft(ctx, q.ActorID, row, false); err != nil {
+		return err
+	}
+	return r.publisher.SoftDelete(ctx, "db", "draftissue", row["id"].(string))
+}
+
+func (r *Repository) replaceDraftRelations(ctx context.Context, q Request, row map[string]any, changes issueChanges, input djangoinput.Input, create bool) error {
+	cycle, cycleSet := input.Fields["cycle_id"]
+	module, moduleSet := input.Fields["module_ids"]
+	cycleIDs := []string{}
+	if cycle != nil && (create || truthy(cycle)) {
+		cycleIDs = append(cycleIDs, djangoinput.ScalarString(cycle))
+	}
+	for _, rel := range []struct {
+		kind, column  string
+		ids           []string
+		set, instance bool
+	}{{"assignees", "assignee_id", changes.assignees, changes.assigneesSet, false}, {"labels", "label_id", changes.labels, changes.labelsSet, false}, {"cycles", "cycle_id", cycleIDs, cycleSet, true}, {"modules", "module_id", nil, moduleSet && module != nil, false}} {
+		if !create && !rel.set {
+			continue
+		}
+		table := "draft_issue_" + rel.kind
+		if !create {
+			if _, err := r.db.Exec(ctx, `UPDATE `+table+` SET deleted_at=$2 WHERE draft_issue_id=$1 AND deleted_at IS NULL`, row["id"], timestamp(r.now())); err != nil {
+				return err
+			}
+		}
+		if rel.kind == "modules" {
+			// The source constructs raw module associations after replacing
+			// prior relationships and soft-deleting existing module links.
+			var err error
+			rel.ids, err = rawIDs(module)
+			if module != nil && err != nil {
+				return err
+			}
+		}
+		if len(rel.ids) == 0 {
+			continue
+		}
+		tx, err := r.db.Begin(ctx)
+		if err != nil {
+			return err
+		}
+		for _, id := range rel.ids {
+			creator, updater := row["created_by_id"], row["updated_by_id"]
+			workspace := row["workspace_id"]
+			if rel.instance {
+				creator, updater = q.ActorID, nil
+				if row["project_id"] != nil {
+					project, e := r.project(ctx, djangoinput.ScalarString(row["project_id"]))
+					if e != nil {
+						err = e
+						break
+					}
+					workspace = project["workspace_id"]
+				}
+			}
+			_, err = tx.Exec(ctx, `INSERT INTO `+table+`(id,draft_issue_id,`+rel.column+`,workspace_id,project_id,created_at,updated_at,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8)`, uuid.NewString(), row["id"], id, workspace, row["project_id"], timestamp(r.now()), creator, updater)
+			if err != nil {
+				break
+			}
+		}
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return err
+		}
+		if err = tx.Commit(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *Repository) draftProjection(ctx context.Context, row map[string]any) (map[string]any, error) {
+	result := projectFields(row, []string{"id", "name", "state_id", "sort_order", "completed_at", "estimate_point", "priority", "start_date", "target_date", "project_id", "parent_id", "created_at", "updated_at", "created_by", "updated_by", "type_id", "description_html"})
+	var cycle *string
+	if err := r.db.QueryRow(ctx, `SELECT (SELECT cycle_id::text FROM draft_issue_cycles WHERE draft_issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1)`, row["id"]).Scan(&cycle); err != nil {
+		return nil, err
+	}
+	result["cycle_id"] = cycle
+	for _, rel := range []struct{ table, column, field, predicate string }{{"draft_issue_labels", "label_id", "label_ids", ""}, {"draft_issue_assignees", "assignee_id", "assignee_ids", ` AND EXISTS(SELECT 1 FROM project_members pm WHERE pm.member_id=d.assignee_id AND pm.is_active)`}, {"draft_issue_modules", "module_id", "module_ids", ` AND EXISTS(SELECT 1 FROM modules m WHERE m.id=d.module_id AND m.archived_at IS NULL)`}} {
+		ids, err := r.filteredIDs(ctx, `SELECT DISTINCT `+rel.column+`::text FROM `+rel.table+` d WHERE draft_issue_id=$1 AND deleted_at IS NULL`+rel.predicate+` ORDER BY 1`, row["id"])
+		if err != nil {
+			return nil, err
+		}
+		result[rel.field] = ids
+	}
+	return result, nil
+}
+
+func (r *Repository) publishDraft(ctx context.Context, q Request, draft map[string]any, input djangoinput.Input, changes issueChanges) (Result, error) {
+	q.ProjectID = draft["project_id"].(string)
+	project, err := r.project(ctx, q.ProjectID)
+	if err != nil {
+		return Result{}, err
+	}
+	row := defaultIssue(q.ProjectID)
+	maps.Copy(row, changes.values)
+	row, err = r.saveIssue(ctx, q.ActorID, row, nil)
+	if err != nil {
+		return Result{}, err
+	}
+	if len(changes.assignees) == 0 && project["default_assignee_id"] != nil {
+		changes.assignees, err = r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, project["default_assignee_id"])
+		if err != nil {
+			return Result{}, err
+		}
+	}
+	if err = r.replaceIssueRelations(ctx, row, changes, true); err != nil {
+		return Result{}, err
+	}
+	q.IssueID = row["id"].(string)
+	requested, err := pythoncompat.Dumps(input.Fields, input.Raw)
+	if err != nil {
+		return Result{}, err
+	}
+	if err = r.activity(ctx, q, "issue.activity.created", requested, nil, false); err != nil {
+		return Result{}, err
+	}
+	if cycle := input.Fields["cycle_id"]; truthy(cycle) {
+		now := timestamp(r.now())
+		record := map[string]any{"id": uuid.NewString(), "issue_id": q.IssueID, "cycle_id": cycle, "project_id": q.ProjectID, "workspace_id": row["workspace_id"], "created_at": now, "updated_at": now, "deleted_at": nil, "created_by_id": q.ActorID, "updated_by_id": nil}
+		_, err = r.db.Exec(ctx, `INSERT INTO cycle_issues(id,issue_id,cycle_id,project_id,workspace_id,created_at,updated_at,created_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7)`, record["id"], q.IssueID, cycle, q.ProjectID, row["workspace_id"], now, q.ActorID)
+		if err != nil {
+			return Result{}, err
+		}
+		serialized, err := serializePlanningRecords("cycle", []map[string]any{record})
+		if err != nil {
+			return Result{}, err
+		}
+		current, _ := orderedDump(map[string]any{"updated_cycle_issues": nil, "created_cycle_issues": serialized}, []string{"updated_cycle_issues", "created_cycle_issues"})
+		if err = r.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, map[string]any{"type": "cycle.activity.created", "requested_data": nil, "actor_id": q.ActorID, "issue_id": nil, "project_id": "None", "current_instance": current, "epoch": r.now().Unix(), "notification": true, "origin": r.origin}); err != nil {
+			return Result{}, err
+		}
+	}
+	if truthy(input.Fields["module_ids"]) {
+		ids, err := rawIDs(input.Fields["module_ids"])
+		if err != nil {
+			return Result{}, err
+		}
+		tx, err := r.db.Begin(ctx)
+		if err != nil {
+			return Result{}, err
+		}
+		for _, id := range ids {
+			_, err = tx.Exec(ctx, `INSERT INTO module_issues(id,issue_id,module_id,project_id,workspace_id,created_at,updated_at,created_by_id,updated_by_id) VALUES($1,$2,$3,$4,$5,$6,$6,$7,$8)`, uuid.NewString(), q.IssueID, id, q.ProjectID, draft["workspace_id"], timestamp(r.now()), draft["created_by_id"], draft["updated_by_id"])
+			if err != nil {
+				break
+			}
+		}
+		if err != nil {
+			_ = tx.Rollback(ctx)
+			return Result{}, err
+		}
+		if err = tx.Commit(ctx); err != nil {
+			return Result{}, err
+		}
+		for _, id := range ids {
+			requested, _ := pythoncompat.Dumps(map[string]any{"module_id": id}, nil)
+			if err = r.activity(ctx, q, "module.activity.created", requested, nil, false); err != nil {
+				return Result{}, err
+			}
+		}
+	}
+	if _, err = r.db.Exec(ctx, `UPDATE file_assets SET issue_id=$2,entity_type='ISSUE_DESCRIPTION',draft_issue_id=NULL WHERE draft_issue_id=$1 AND deleted_at IS NULL`, draft["id"], q.IssueID); err != nil {
+		return Result{}, err
+	}
+	if err = r.deleteDraft(ctx, q, draft); err != nil {
+		return Result{}, err
+	}
+	return Result{201, appWriteProjection(row, input)}, nil
+}

@@ -1,0 +1,49 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "is_active": false
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/workspaces/project-membership-lifecycle/projects/<uuid-1>/members/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "You do not have permission to update member status"
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "PATCH, DELETE, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 403
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "legacy-members-patch-is-active-guard"
+  }
+}

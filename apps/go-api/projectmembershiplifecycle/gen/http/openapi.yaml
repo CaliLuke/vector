@@ -1,0 +1,1652 @@
+openapi: 3.1.1
+info:
+    title: Plane Internal Django Migration API
+    description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Project Membership Lifecycle
+paths:
+    /api/v1/workspaces/{slug}/projects/{project_id}/members/:
+        get:
+            description: Retrieve all users who are members of the specified project.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_members
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIV1WorkspacesBySlugProjectsByProjectIDMembersStatus200Response'
+                    description: List of project members with their roles
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List project members
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/members/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectMemberPermission
+            x-plane-view: plane.api.views.member.ProjectMemberListCreateAPIEndpoint
+        post:
+            description: Create a new project member
+            operationId: post_api_v1_workspaces_by_slug_projects_by_project_id_members
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugProjectsByProjectIDMembersRequestBody'
+            responses:
+                "201":
+                    $ref: '#/components/responses/PlaneApiSerializersMemberProjectmemberserializerResponseStatus201Response'
+                    description: Project member created
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Create project member
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/v1/workspaces/{slug}/projects/{project_id}/members/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberListCreateAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/:
+        delete:
+            description: Delete a project member
+            operationId: delete_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Project member deleted
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Delete project member
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        get:
+            description: Retrieve a project member by ID.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersUserUserliteserializerResponseStatus200Response'
+                    description: Project member
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Get project member
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectMemberPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        patch:
+            description: Update a project member
+            operationId: patch_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PatchAPIV1WorkspacesBySlugProjectsByProjectIDMembersByPkRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersMemberProjectmemberserializerResponseStatus200Response'
+                    description: Project member updated
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Update project member
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/
+            x-plane-handler: patch
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/project-members-lite/:
+        get:
+            description: Retrieve a paginated, lightweight list of project members for pickers and directories.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_lite
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - name: cursor
+                  in: query
+                  description: Pagination cursor for getting next set of results
+                  schema:
+                    type: string
+                - name: per_page
+                  in: query
+                  description: Number of results per page, parsed by the Django-compatible paginator
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Paginated list of project members with minimal fields
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedprojectmemberliteResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List project members (lite)
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/project-members-lite/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectMemberPermission
+            x-plane-view: plane.api.views.member.ProjectMemberLiteAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/project-members/:
+        get:
+            description: Retrieve all users who are members of the specified project.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_project_members
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIV1WorkspacesBySlugProjectsByProjectIDMembersStatus200Response'
+                    description: List of project members with their roles
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List project members
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/project-members/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectMemberPermission
+            x-plane-view: plane.api.views.member.ProjectMemberListCreateAPIEndpoint
+        post:
+            description: Create a new project member
+            operationId: post_api_v1_workspaces_by_slug_projects_by_project_id_project_members
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugProjectsByProjectIDMembersRequestBody'
+            responses:
+                "201":
+                    $ref: '#/components/responses/PlaneApiSerializersMemberProjectmemberserializerResponseStatus201Response'
+                    description: Project member created
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Create project member
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/v1/workspaces/{slug}/projects/{project_id}/project-members/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberListCreateAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/:
+        delete:
+            description: Delete a project member
+            operationId: delete_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Project member deleted
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Delete project member
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        get:
+            description: Retrieve a project member by ID.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersUserUserliteserializerResponseStatus200Response'
+                    description: Project member
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Get project member
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectMemberPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        patch:
+            description: Update a project member
+            operationId: patch_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PatchAPIV1WorkspacesBySlugProjectsByProjectIDMembersByPkRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersMemberProjectmemberserializerResponseStatus200Response'
+                    description: Project member updated
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Update project member
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/
+            x-plane-handler: patch
+            x-plane-permission-classes:
+                - plane.utils.permissions.project.ProjectAdminPermission
+            x-plane-view: plane.api.views.member.ProjectMemberDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/members/:
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_members
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ProjectMembershipBulkCreateRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/ProjectMembershipBulkCreateRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/ProjectMembershipBulkCreateRequest'
+            responses:
+                "201":
+                    description: Created response.
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ProjectMembershipRoleCreateResult'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/members/
+            x-plane-handler: create
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.project.member.ProjectMemberViewSet
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/members/{pk}/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/members/{pk}/
+            x-plane-handler: destroy
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.project.member.ProjectMemberViewSet
+        patch:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: patch_api_workspaces_by_slug_projects_by_project_id_members_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersProjectProjectmemberadminserializerRequestRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersProjectProjectmemberadminserializerRequestRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/PatchedPlaneAppSerializersProjectProjectmemberadminserializerRequestRequest'
+            responses:
+                "200":
+                    description: OK response.
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ProjectMembershipLegacyPatchResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/workspaces/{slug}/projects/{project_id}/members/{pk}/
+            x-plane-handler: partial_update
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.project.member.ProjectMemberViewSet
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/members/leave/:
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_members_leave
+            parameters:
+                - $ref: '#/components/parameters/PathSlug_20b7c853'
+                - $ref: '#/components/parameters/PathProjectID_28ef2be3'
+            requestBody:
+                content:
+                    '*/*':
+                        schema: {}
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - members
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/members/leave/
+            x-plane-handler: leave
+            x-plane-permission-classes:
+                - rest_framework.permissions.IsAuthenticated
+            x-plane-view: plane.app.views.project.member.ProjectMemberViewSet
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3:
+            type: object
+            properties:
+                code: {}
+                comment: {}
+                created_by: {}
+                default_props: {}
+                deleted_at: {}
+                detail: {}
+                error: {}
+                error_code: {}
+                error_message: {}
+                is_active: {}
+                member: {}
+                message: {}
+                non_field_errors: {}
+                preferences: {}
+                role: {}
+                sort_order: {}
+                status: {}
+                updated_by: {}
+                view_props: {}
+        PatchedPlaneApiSerializersMemberProjectmemberserializerRequestRequest:
+            type: object
+            properties:
+                member:
+                    type: string
+                    format: uuid
+                role:
+                    enum:
+                        - 20
+                        - 15
+                        - 5
+                    minimum: 0
+                    maximum: 32767
+                    allOf:
+                        - $ref: '#/components/schemas/RoleC37Enum'
+            description: Serializer for project members.
+        PatchedPlaneAppSerializersProjectProjectmemberadminserializerRequestRequest:
+            type: object
+            properties:
+                comment:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                default_props: {}
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                is_active:
+                    type: boolean
+                preferences: {}
+                role:
+                    enum:
+                        - 20
+                        - 15
+                        - 5
+                    minimum: 0
+                    maximum: 32767
+                    allOf:
+                        - $ref: '#/components/schemas/RoleC37Enum'
+                sort_order:
+                    type: number
+                    format: double
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                view_props: {}
+        PlaneApiSerializersMemberProjectmemberliteapiserializerResponse:
+            type: object
+            properties:
+                avatar:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                avatar_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                display_name:
+                    type: string
+                    readOnly: true
+                email:
+                    type: string
+                    readOnly: true
+                    format: email
+                first_name:
+                    type: string
+                    readOnly: true
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_active:
+                    type: boolean
+                    readOnly: true
+                is_bot:
+                    type: boolean
+                    readOnly: true
+                last_name:
+                    type: string
+                    readOnly: true
+                role:
+                    type: integer
+                    readOnly: true
+                    format: int64
+                    minimum: 0
+                    maximum: 32767
+            description: Minimal ProjectMember representation for paginated member pickers/directories.
+        PlaneApiSerializersMemberProjectmemberserializerRequestRequest:
+            type: object
+            properties:
+                member:
+                    type: string
+                    format: uuid
+                role:
+                    enum:
+                        - 20
+                        - 15
+                        - 5
+                    minimum: 0
+                    maximum: 32767
+                    allOf:
+                        - $ref: '#/components/schemas/RoleC37Enum'
+            description: Serializer for project members.
+            required:
+                - member
+        PlaneApiSerializersMemberProjectmemberserializerResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                member:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                role:
+                    type: integer
+                    minimum: 0
+                    maximum: 32767
+            description: Serializer for project members.
+            required:
+                - member
+        PlaneApiSerializersUserUserliteserializerResponse:
+            type: object
+            properties:
+                avatar:
+                    type: string
+                    readOnly: true
+                avatar_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                display_name:
+                    type: string
+                    readOnly: true
+                email:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                first_name:
+                    type: string
+                    readOnly: true
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                last_name:
+                    type: string
+                    readOnly: true
+            description: |-
+                Lightweight user serializer for minimal data transfer.
+
+                Provides essential user information including names, avatar, and contact details
+                optimized for member lists, assignee displays, and user references.
+        PlaneAppSerializersProjectProjectliteserializerResponse:
+            type: object
+            properties:
+                cover_image:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                cover_image_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                description:
+                    title: Project Description
+                    type: string
+                    readOnly: true
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                identifier:
+                    title: Project Identifier
+                    type: string
+                    readOnly: true
+                logo_props:
+                    readOnly: true
+                name:
+                    title: Project Name
+                    type: string
+                    readOnly: true
+        PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                logo_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                name:
+                    title: Workspace Name
+                    type: string
+                    readOnly: true
+                slug:
+                    type: string
+                    readOnly: true
+                    pattern: ^[\-0-9A-Z_a-z]+$
+        ProjectMembershipBulkCreateRequest:
+            type: object
+            properties:
+                members:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ProjectMembershipBulkMember'
+                    minItems: 1
+            required:
+                - members
+        ProjectMembershipBulkMember:
+            type: object
+            properties:
+                member_id:
+                    type: string
+                    format: uuid
+                role: {}
+            required:
+                - member_id
+        ProjectMembershipLegacyPatchResponse:
+            type: object
+            properties:
+                comment:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                default_props: {}
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_active:
+                    type: boolean
+                member:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/ProjectMembershipLegacyUserLite'
+                preferences: {}
+                project:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersProjectProjectliteserializerResponse'
+                role:
+                    type: integer
+                    minimum: 0
+                    maximum: 32767
+                sort_order:
+                    type: number
+                    format: double
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                view_props: {}
+                workspace:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse'
+        ProjectMembershipLegacyUserLite:
+            type: object
+            properties:
+                avatar:
+                    type: string
+                avatar_url:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                display_name:
+                    type: string
+                    maxLength: 255
+                first_name:
+                    type: string
+                    maxLength: 255
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_bot:
+                    type: boolean
+                    readOnly: true
+                last_name:
+                    type: string
+                    maxLength: 255
+        ProjectMembershipRoleCreateResult:
+            type: object
+            properties:
+                created_at:
+                    type: string
+                    format: date-time
+                id:
+                    type: string
+                    format: uuid
+                member:
+                    type: string
+                    format: uuid
+                original_role:
+                    type: integer
+                    format: int64
+                project:
+                    type: string
+                    format: uuid
+                role:
+                    type: integer
+                    format: int64
+            description: Legacy ProjectMemberRoleSerializer response returned by bulk member creation.
+            required:
+                - id
+                - role
+                - member
+                - project
+                - original_role
+                - created_at
+        RestFrameworkSerializersPaginatedprojectmemberliteResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberliteapiserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        RoleC37Enum:
+            type: integer
+            description: |-
+                * `20` - Admin
+                * `15` - Member
+                * `5` - Guest
+            enum:
+                - 20
+                - 15
+                - 5
+    parameters:
+        PathPk:
+            name: pk
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathProjectID:
+            name: project_id
+            in: path
+            description: Project ID
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathProjectID_28ef2be3:
+            name: project_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathSlug:
+            name: slug
+            in: path
+            description: Workspace slug
+            required: true
+            schema:
+                type: string
+        PathSlug_20b7c853:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PatchAPIV1WorkspacesBySlugProjectsByProjectIDMembersByPkRequestBody:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PatchedPlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/PatchedPlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/PatchedPlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+        PostAPIV1WorkspacesBySlugProjectsByProjectIDMembersRequestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberserializerRequestRequest'
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        GetAPIV1WorkspacesBySlugProjectsByProjectIDMembersStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        type: array
+                        items:
+                            $ref: '#/components/schemas/PlaneApiSerializersUserUserliteserializerResponse'
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        MethodNotAllowedError:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        NoContentResponse:
+            description: No Content response.
+        NotAcceptableError:
+            description: Not Acceptable response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        PlaneApiSerializersMemberProjectmemberserializerResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberserializerResponse'
+        PlaneApiSerializersMemberProjectmemberserializerResponseStatus201Response:
+            description: Created response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersMemberProjectmemberserializerResponse'
+        PlaneApiSerializersUserUserliteserializerResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersUserUserliteserializerResponse'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/MembershipLifecycleHTTPErrorResponseBody_58efbe27f961f5f3'
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane session authentication without CSRF enforcement.
+            name: session-id
+            in: cookie
+tags:
+    - name: Assets
+      description: |-
+        **File Upload & Presigned URLs**
+
+        Generate presigned URLs for direct file uploads to cloud storage. Handle user avatars, cover images, and generic project assets with secure upload workflows.
+
+        *Key Features:*
+        - Generate presigned URLs for S3 uploads
+        - Support for user avatars and cover images
+        - Generic asset upload for projects
+        - File validation and size limits
+
+        *Use Cases:* User profile images, project file uploads, secure direct-to-cloud uploads.
+    - name: Cycles
+      description: |-
+        **Sprint & Development Cycles**
+
+        Create and manage development cycles (sprints) to organize work into time-boxed iterations. Track progress, assign work items, and monitor team velocity.
+
+        *Key Features:*
+        - Create and configure development cycles
+        - Assign work items to cycles
+        - Track cycle progress and completion
+        - Generate cycle analytics and reports
+
+        *Use Cases:* Sprint planning, iterative development, progress tracking, team velocity.
+    - name: Intake
+      description: |-
+        **Work Item Intake Queue**
+
+        Manage incoming work items through a dedicated intake queue for triage and review. Submit, update, and process work items before they enter the main project workflow.
+
+        *Key Features:*
+        - Submit work items to intake queue
+        - Review and triage incoming work items
+        - Update intake work item status and properties
+        - Accept, reject, or modify work items before approval
+
+        *Use Cases:* Work item triage, external submissions, quality review, approval workflows.
+    - name: Labels
+      description: |-
+        **Labels & Tags**
+
+        Create and manage labels to categorize and organize work items. Use color-coded labels for easy identification, filtering, and project organization.
+
+        *Key Features:*
+        - Create custom labels with colors and descriptions
+        - Apply labels to work items for categorization
+        - Filter and search by labels
+        - Organize labels across projects
+
+        *Use Cases:* Priority marking, feature categorization, bug classification, team organization.
+    - name: Members
+      description: |-
+        **Team Member Management**
+
+        Manage team members, roles, and permissions within projects and workspaces. Control access levels and track member participation.
+
+        *Key Features:*
+        - Invite and manage team members
+        - Assign roles and permissions
+        - Control project and workspace access
+        - Track member activity and participation
+
+        *Use Cases:* Team setup, access control, role management, collaboration.
+    - name: Modules
+      description: |-
+        **Feature Modules**
+
+        Group related work items into modules for better organization and tracking. Plan features, track progress, and manage deliverables at a higher level.
+
+        *Key Features:*
+        - Create and organize feature modules
+        - Group work items by module
+        - Track module progress and completion
+        - Manage module leads and assignments
+
+        *Use Cases:* Feature planning, release organization, progress tracking, team coordination.
+    - name: Projects
+      description: |-
+        **Project Management**
+
+        Create and manage projects to organize your development work. Configure project settings, manage team access, and control project visibility.
+
+        *Key Features:*
+        - Create, update, and delete projects
+        - Configure project settings and preferences
+        - Manage team access and permissions
+        - Control project visibility and sharing
+
+        *Use Cases:* Project setup, team collaboration, access control, project configuration.
+    - name: States
+      description: |-
+        **Workflow States**
+
+        Define custom workflow states for work items to match your team's process. Configure state transitions and track work item progress through different stages.
+
+        *Key Features:*
+        - Create custom workflow states
+        - Configure state transitions and rules
+        - Track work item progress through states
+        - Set state-based permissions and automation
+
+        *Use Cases:* Custom workflows, status tracking, process automation, progress monitoring.
+    - name: Users
+      description: |-
+        **Current User Information**
+
+        Get information about the currently authenticated user including profile details and account settings.
+
+        *Key Features:*
+        - Retrieve current user profile
+        - Access user account information
+        - View user preferences and settings
+        - Get authentication context
+
+        *Use Cases:* Profile display, user context, account information, authentication status.
+    - name: Work Item Activity
+      description: |-
+        **Activity History & Search**
+
+        View activity history and search for work items across the workspace. Get detailed activity logs and find work items using text search.
+
+        *Key Features:*
+        - View work item activity history
+        - Search work items across workspace
+        - Track changes and modifications
+        - Filter search results by project
+
+        *Use Cases:* Activity tracking, work item discovery, change history, workspace search.
+    - name: Work Item Attachments
+      description: |-
+        **Work Item File Attachments**
+
+        Generate presigned URLs for uploading files directly to specific work items. Upload and manage attachments associated with work items.
+
+        *Key Features:*
+        - Generate presigned URLs for work item attachments
+        - Upload files directly to work items
+        - Retrieve and manage attachment metadata
+        - Delete attachments from work items
+
+        *Use Cases:* Screenshots, error logs, design files, supporting documents.
+    - name: Work Item Comments
+      description: |-
+        **Comments & Discussions**
+
+        Add comments and discussions to work items for team collaboration. Support threaded conversations, mentions, and rich text formatting.
+
+        *Key Features:*
+        - Add comments to work items
+        - Thread conversations and replies
+        - Mention users and trigger notifications
+        - Rich text and markdown support
+
+        *Use Cases:* Team discussions, progress updates, code reviews, decision tracking.
+    - name: Work Item Links
+      description: |-
+        **External Links & References**
+
+        Link work items to external resources like documentation, repositories, or design files. Maintain connections between work items and external systems.
+
+        *Key Features:*
+        - Add external URL links to work items
+        - Validate and preview linked resources
+        - Organize links by type and category
+        - Track link usage and access
+
+        *Use Cases:* Documentation links, repository connections, design references, external tools.
+    - name: Work Items
+      description: |-
+        **Work Items & Tasks**
+
+        Create and manage work items like tasks, bugs, features, and user stories. The core entities for tracking work in your projects.
+
+        *Key Features:*
+        - Create, update, and manage work items
+        - Assign to team members and set priorities
+        - Track progress through workflow states
+        - Set due dates, estimates, and relationships
+
+        *Use Cases:* Bug tracking, task management, feature development, sprint planning.
+    - name: members
+    - name: projects

@@ -1,0 +1,82 @@
+{
+  "kind": "bounded-issue-content-source-entry-receipt",
+  "recorded_at": "2026-10-10T06:47:31.826251+00:00",
+  "scope": "10 new real Django HTTP cases; no Go implementation or HTTP replay",
+  "source_fixture_count_before": 440,
+  "source_fixture_count_after": 450,
+  "old440_fixture_bytes_unchanged": true,
+  "input_sha256": {
+    "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py": "7c4b940d3c7e0eaa8b1972eac75db0d31c18bb73f59d252e909c38009654a4e8",
+    "apps/api/plane/tests/parity/work_item_core_harness.py": "43989f3a9cea91ef382c5128f145cd28556e6d42b50dd8aeea08a88f9ecaab4b",
+    "apps/api/plane/tests/parity/recorder.py": "2c48690b24e439c7686b7e9a56564a11a3570748e3809559a69bc746e5e2cb8f",
+    "apps/api/plane/app/serializers/issue.py": "25c2aa23e9acb12f1ce4f3701e91337dd661817dca1a615a064bbc2e5cb24c6b",
+    "apps/api/plane/api/serializers/issue.py": "4564f1fd753a7cb28894b2e59492e480b6cecf21f16c2e178c8b94e9dbf6d142",
+    "apps/api/plane/db/models/issue.py": "ae65e270f1e7e1edd51869d077fad82be04839b449b2a63e9afbf7b5b057542f",
+    "apps/api/plane/utils/content_validator.py": "451490fdbd3a8466956a3d68db54f4319398acc20f9c8b4faf6ff953a60d1b04",
+    "apps/api/plane/middleware/request_body_size.py": "f773319152b5ad3710c016dbdc6fa7096b9d968b190311766c63851d8f63078e",
+    "apps/api/plane/settings/common.py": "0cb2f5850e81763e1d190f9c731837532b2b9a0594e2ab9560488346a8fc7e5f",
+    "apps/api/plane/api/urls/work_item.py": "9f4ab41eeb2bd1e5012076da248e0b3c20df4bb56bfc05f3e554080546b2cf94"
+  },
+  "new_fixture_sha256": {
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-patch-invalid-binary-ignored.json": "3d8e1d40e77ac0f7f9fbcd0f6b9de075229f1a003decda457921159c3cd4995d",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-put-invalid-binary-ignored.json": "16195d5cc8dc95ac168524b2ba0923be3a89cbe73cc3293cac37847e93edda5a",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-detail-put-oversized-html-rejected.json": "28221fa1bc904b44ca6dc3d4f27b75ca2a757b5a2b30bb5e0ae43cbd134cbd9c",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-list-post-invalid-binary-ignored.json": "d4b977157c0cc9cf4d9fd5472b9efd6653a4c7f3d719e09e4f7a03abe920fc0e",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-list-post-oversized-html-rejected.json": "9605aad43ad80524143b59859a0589864305088b27f4aa55d9e0dbd9e67438b3",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-app-list-sanitized-valid-binary-ignored.json": "18704fa9ac6ca8d8e7e3414acdf7031f6a221aa48a31a0d360220c3f9b654526",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-patch-invalid-binary-ignored.json": "38311776483f0f3b28028840c5a353b4bc218c07828729760519982412b05497",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-patch-oversized-html-rejected.json": "ffdf9f5a03a425d7ed3b2ea876fa42a6c9956921f256e403a1e18794773bbda5",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-detail-sanitized-valid-binary-ignored.json": "4cebe9dd2c83af47fcc760893fe1978e891aae12c56f5b27d7a39034614958d6",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-content-v1-issues-list-post-invalid-binary-ignored.json": "e8b3d4ea07cbc24de8863cf03d77d0acbf83baa4e2939d4035567f1b66df22ee"
+  },
+  "fixture_set_sha256": "5e70e50eaceb53f64fc491539faf1985ab5a03bf6da567e729fbce195ce78e0c",
+  "components": [
+    {
+      "name": "initial source hypothesis (retained failure evidence)",
+      "command": "export GOCACHE=/tmp/plane-labels-go-cache\neval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\"\nUPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k entry-content --reuse-db -q",
+      "exit_code": 1,
+      "passed": 7,
+      "failed": 3,
+      "pytest_seconds": 10.95,
+      "log": "/tmp/plane-work-item-core/issue-source-receipt.content-record.log",
+      "reason": "Oversized requests were assumed serializer400 but observed middleware413; API did not audit or change token."
+    },
+    {
+      "name": "final source capture",
+      "command": "export GOCACHE=/tmp/plane-labels-go-cache\neval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\"\nUPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k entry-content --reuse-db -q",
+      "exit_code": 0,
+      "cases": 10,
+      "deselected": 440,
+      "pytest_seconds": 13.14,
+      "log": "/tmp/plane-work-item-core/issue-source-receipt.content-record-final.log"
+    },
+    {
+      "name": "immutable narrow source replay",
+      "command": "export GOCACHE=/tmp/plane-labels-go-cache\neval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\"\nUPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k entry-content --reuse-db -q",
+      "exit_code": 0,
+      "cases": 10,
+      "deselected": 440,
+      "pytest_seconds": 11.98,
+      "log": "/tmp/plane-work-item-core/issue-source-receipt.content-repeat.log"
+    },
+    {
+      "name": "static gate",
+      "command": "export GOCACHE=/tmp/plane-labels-go-cache\neval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\"\ngo -C apps/go-api run ./cmd/endpoint-retirement check --family work_item_core",
+      "exit_code": 0,
+      "log": "/tmp/plane-work-item-core/issue-source-receipt.content-gate.log",
+      "result": "72 operations, 0 routed to Go, 772 matched fixtures; no findings"
+    }
+  ],
+  "limits": {
+    "FILE_SIZE_LIMIT_bytes": 5242880,
+    "sanitizer_MAX_SIZE_bytes": 10485760,
+    "generated_html_utf8_bytes": 10485830,
+    "fixture_html_marker": "CONTENT_OVERSIZED_HTML: original exact content asserted then replaced by UTF8 length + SHA256; repeat reconstructs real request from recorder constant",
+    "native_jsonresponse": "Only oversized cases adapt actual Django JsonResponse.json() into recorder Response.data; no source response/middleware modification",
+    "binary": "QUJDRA== (ABCD) and PHNjcmlwdD4= (<script>) ignored by read-only field; create null/update existing seed-doc bytes unchanged",
+    "html": "App POST script/on-event stripped without wrapper; API PATCH lxml wraps sibling paragraphs in div before sanitation. 10MiB size rejection and sanitizer exception are not claimed HTTP-covered; normal5MiB middleware boundary prevents the former."
+  },
+  "go_replay": "not run",
+  "matrix_delta": "/tmp/plane-work-item-core/issue-matrix.content-delta.json",
+  "remaining_gaps": "/tmp/plane-work-item-core/issue-entry-gaps.content.md"
+}

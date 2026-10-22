@@ -1,0 +1,1068 @@
+{
+  "version": 1,
+  "family": "invitations_membership",
+  "characterization_status": "128 pristine source fixtures and 40 corrected-source fixtures recorded. Atomic activation/removal candidate prepared. Target proof must replay 118 unchanged cases plus 40 corrected cases; final proof and review remain pending.",
+  "source_revision": "884590b2a2c325ffeb51ce3c58af6e315b841be4",
+  "operation_count": 28,
+  "selected_inventory_state": "Django removed",
+  "source_files": [
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/rate_limit.py",
+    "apps/api/plane/api/serializers/invite.py",
+    "apps/api/plane/api/serializers/member.py",
+    "apps/api/plane/api/urls/invite.py",
+    "apps/api/plane/api/urls/member.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/views/invite.py",
+    "apps/api/plane/api/views/member.py",
+    "apps/api/plane/app/serializers/project.py",
+    "apps/api/plane/app/serializers/workspace.py",
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/app/urls/workspace.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/views/project/invite.py",
+    "apps/api/plane/app/views/workspace/invite.py",
+    "apps/api/plane/app/views/workspace/member.py",
+    "apps/api/plane/authentication/utils/workspace_project_join.py",
+    "apps/api/plane/authentication/session.py",
+    "apps/api/plane/bgtasks/deletion_task.py",
+    "apps/api/plane/bgtasks/event_tracking_task.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/bgtasks/project_invitation_task.py",
+    "apps/api/plane/bgtasks/workspace_invitation_task.py",
+    "apps/api/plane/middleware/logger.py"
+  ],
+  "shared_domain": "apps/go-api/internal/projectmembershipreads",
+  "operations": {
+    "get_api_users_me_workspaces_invitations": {
+      "operation_id": "get_api_users_me_workspaces_invitations",
+      "method": "GET",
+      "path": "/api/users/me/workspaces/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "user-workspace contract",
+          "observable": "Authenticated recipient list filters exact current-user email, including full private invite fields. Bulk acceptance filters supplied IDs by that email, silently ignores unmatched IDs, reactivates and replaces existing membership roles, bulk creates with ignored conflicts, queues join tracking and deletes selected invites. Empty acceptance succeeds with 204. Preserve cache invalidation and task order.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-search-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-success.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "effects": [],
+      "sample_path": "/api/users/me/workspaces/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "post_api_users_me_workspaces_invitations": {
+      "operation_id": "post_api_users_me_workspaces_invitations",
+      "method": "POST",
+      "path": "/api/users/me/workspaces/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "user-workspace contract",
+          "observable": "Authenticated recipient list filters exact current-user email, including full private invite fields. Bulk acceptance filters supplied IDs by that email, silently ignores unmatched IDs, reactivates and replaces existing membership roles, bulk creates with ignored conflicts, queues join tracking and deletes selected invites. Empty acceptance succeeds with 204. Preserve cache invalidation and task order.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-accept-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-accept-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-accept-success.json"
+      ],
+      "source_statuses": ["204", "401"],
+      "effects": [],
+      "sample_path": "/api/users/me/workspaces/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_users_me_workspaces_by_slug_projects_invitations": {
+      "operation_id": "get_api_users_me_workspaces_by_slug_projects_invitations",
+      "method": "GET",
+      "path": "/api/users/me/workspaces/{slug}/projects/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "user-project contract",
+          "observable": "Private list filters exact recipient email; the source list does not additionally filter the path workspace slug. POST independently requires active workspace role 15/20, selects only requested projects in that workspace, rejects secret projects for nonadmins, reactivates/creates memberships using workspace role and creates user properties. Foreign IDs are ignored and no invitation token is required by this project-join operation.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-search-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-success.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "effects": [],
+      "sample_path": "/api/users/me/workspaces/invitations-membership-fixture/projects/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "post_api_users_me_workspaces_by_slug_projects_invitations": {
+      "operation_id": "post_api_users_me_workspaces_by_slug_projects_invitations",
+      "method": "POST",
+      "path": "/api/users/me/workspaces/{slug}/projects/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "user-project contract",
+          "observable": "Private list filters exact recipient email; the source list does not additionally filter the path workspace slug. POST independently requires active workspace role 15/20, selects only requested projects in that workspace, rejects secret projects for nonadmins, reactivates/creates memberships using workspace role and creates user properties. Foreign IDs are ignored and no invitation token is required by this project-join operation.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-join-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-join-foreign-project-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-join-success.json"
+      ],
+      "source_statuses": ["201", "401"],
+      "effects": [],
+      "sample_path": "/api/users/me/workspaces/invitations-membership-fixture/projects/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_v1_workspaces_by_slug_invitations": {
+      "operation_id": "get_api_v1_workspaces_by_slug_invitations",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/invitations/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-list-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-list-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-options.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "post_api_v1_workspaces_by_slug_invitations": {
+      "operation_id": "post_api_v1_workspaces_by_slug_invitations",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/invitations/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-form-urlencoded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-invalid-quoted-space.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-json-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-multipart.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-quoted-local.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-tombstone-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-tombstone-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-trailing-json-no-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-create-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-create-tombstoned-workspace-before-body-validation.json"
+      ],
+      "source_statuses": ["201", "400", "401", "404", "415"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "delete_api_v1_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_invitations_by_pk",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-delete-success.json"
+      ],
+      "source_statuses": ["204", "401"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_v1_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "get_api_v1_workspaces_by_slug_invitations_by_pk",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-compact-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-dotted-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-malformed-pk-authenticated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-malformed-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-malformed-pk-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-malformed-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-missing-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-uppercase-letter-uuid.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "patch_api_v1_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "patch_api_v1_workspaces_by_slug_invitations_by_pk",
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-form-urlencoded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-json-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-multipart.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-trailing-json-no-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-patch-unsupported-media.json"
+      ],
+      "source_statuses": ["200", "400", "401", "415", "500"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "put_api_v1_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "put_api_v1_workspaces_by_slug_invitations_by_pk",
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "api-invite contract",
+          "observable": "API key authentication and active workspace owner role 20 precede action/object lookup. Queryset scopes invite by workspace slug and excludes invite tombstones. Narrow API serializer omits token, message and workspace. BaseViewSet does not use ApiKeyRateThrottle; authenticated requests update token last_used and keyed requests publish the durable audit task.",
+          "source": "apps/api/plane/api/views/invite.py"
+        },
+        {
+          "when": "full update",
+          "observable": "Pristine inherited PUT omits slug serializer context and returns the required-key 400 on valid fields. ACCESS-001 supplies context and allows unchanged immutable email while rejecting a changed email. PATCH behavior stays unchanged.",
+          "source": "apps/api/plane/api/views/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-put-source-key-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-changed-email-over-same-workspace-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-changed-email-rejected.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-cross-workspace-email-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-json-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-missing-target-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-missing-target-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-quoted-email-unchanged.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-required-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-v1-invite-put-unchanged-email-role-update.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404", "500"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_v1_workspaces_by_slug_members_lite": {
+      "operation_id": "get_api_v1_workspaces_by_slug_members_lite",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/members-lite/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": ["cursor", "per_page"],
+      "documented_query_parameters": ["cursor", "per_page"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "roster contract",
+          "observable": "API key authentication and active workspace role 15/20 precede explicit workspace existence checks. Include inactive members; exclude member tombstones through the default manager. Full roster is a raw user-lite array plus role; lite roster includes role/is_active/is_bot and cursor pagination ordered by descending membership created_at. BaseAPIView applies API-key throttling and audit effects.",
+          "source": "apps/api/plane/api/views/member.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-beyond-last-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-second-page-offset-times-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-tombstoned-workspace-404.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404", "405"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/members-lite/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_v1_workspaces_by_slug_members": {
+      "operation_id": "get_api_v1_workspaces_by_slug_members",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/members/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "roster contract",
+          "observable": "API key authentication and active workspace role 15/20 precede explicit workspace existence checks. Include inactive members; exclude member tombstones through the default manager. Full roster is a raw user-lite array plus role; lite roster includes role/is_active/is_bot and cursor pagination ordered by descending membership created_at. BaseAPIView applies API-key throttling and audit effects.",
+          "source": "apps/api/plane/api/views/member.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-list-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-list-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-list-tombstoned-workspace-400.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-options-invalid-timezone.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "405"],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/invitations-membership-fixture/members/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_invitations": {
+      "operation_id": "get_api_workspaces_by_slug_invitations",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace-invite contract",
+          "observable": "Class permission requires active workspace role 15/20 before timezone/action handling. Invite queryset is workspace-slug scoped, with default-manager tombstone filtering. Authenticated serializer includes token and invite_link; preserve its writable model fields and relation validation. Search is documented but inherited search_fields is empty.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-list-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-list-search-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-options.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "post_api_workspaces_by_slug_invitations": {
+      "operation_id": "post_api_workspaces_by_slug_invitations",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace-invite contract",
+          "observable": "Class permission requires active workspace role 15/20 before timezone/action handling. Invite queryset is workspace-slug scoped, with default-manager tombstone filtering. Authenticated serializer includes token and invite_link; preserve its writable model fields and relation validation. Search is documented but inherited search_fields is empty.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-invalid-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-invalid-quoted-space.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-quoted-local.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-role-cap-before-tombstone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-tombstone-before-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-create-unicode-lower-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-existing-member-before-invalid-email.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "delete_api_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_invitations_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace-invite contract",
+          "observable": "Class permission requires active workspace role 15/20 before timezone/action handling. Invite queryset is workspace-slug scoped, with default-manager tombstone filtering. Authenticated serializer includes token and invite_link; preserve its writable model fields and relation validation. Search is documented but inherited search_fields is empty.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-delete-success.json"
+      ],
+      "source_statuses": ["204", "401"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_invitations_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace-invite contract",
+          "observable": "Class permission requires active workspace role 15/20 before timezone/action handling. Invite queryset is workspace-slug scoped, with default-manager tombstone filtering. Authenticated serializer includes token and invite_link; preserve its writable model fields and relation validation. Search is documented but inherited search_fields is empty.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-compact-uuid-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-uppercase-letter-uuid-404.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "patch_api_workspaces_by_slug_invitations_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_invitations_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/invitations/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace-invite contract",
+          "observable": "Class permission requires active workspace role 15/20 before timezone/action handling. Invite queryset is workspace-slug scoped, with default-manager tombstone filtering. Authenticated serializer includes token and invite_link; preserve its writable model fields and relation validation. Search is documented but inherited search_fields is empty.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-patch-missing-target-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-patch-missing-target-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-invite-patch-json-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-invite-patch-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-invite-patch-missing-created-by-and-updated-by.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_invitations_by_pk_join": {
+      "operation_id": "get_api_workspaces_by_slug_invitations_by_pk_join",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/invitations/{pk}/join/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace-join contract",
+          "observable": "Public preview scopes invite by workspace and id and omits token/invite_link. POST resolves invite, checks token, session, invitee email and response state in that order. Acceptance saves responded invite then creates/reactivates recipient workspace membership with invite role and queues tracking when the source does so. Rejection retains responded invite; accepted input keeps source coercion behavior.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-public-get.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/join/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending.",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    },
+    "post_api_workspaces_by_slug_invitations_by_pk_join": {
+      "operation_id": "post_api_workspaces_by_slug_invitations_by_pk_join",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/invitations/{pk}/join/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace-join contract",
+          "observable": "Public preview scopes invite by workspace and id and omits token/invite_link. POST resolves invite, checks token, session, invitee email and response state in that order. Acceptance saves responded invite then creates/reactivates recipient workspace membership with invite role and queues tracking when the source does so. Rejection retains responded invite; accepted input keeps source coercion behavior.",
+          "source": "apps/api/plane/app/views/workspace/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-accept-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-anonymous-valid-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-email-mismatch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-post-existing-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-post-existing-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-post-missing-invite-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-post-missing-invite-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-reject-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-wrong-token.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404", "415"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/invitations/00000000-0000-4000-8000-000000018199/join/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending.",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    },
+    "post_api_workspaces_by_slug_members_leave": {
+      "operation_id": "post_api_workspaces_by_slug_members_leave",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/members/leave/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace-member contract",
+          "observable": "PATCH/DELETE action admission requires active workspace admin; leave permits active roles 5/15/20. Detail targets require active nonbot membership. Reject self editing/removal and preserve last-admin guards. ACCESS-001 validates PATCH before guest cascade and makes cascade/save atomic; deletion sole-project-member identity uses target user id. Other source predicates remain unchanged.",
+          "source": "apps/api/plane/app/views/workspace/member.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-leave-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-leave-malformed-body-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-leave-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-leave-unsupported-media-ignored.json"
+      ],
+      "source_statuses": ["204", "401"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/members/leave/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "delete_api_workspaces_by_slug_members_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_members_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/members/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace-member contract",
+          "observable": "PATCH/DELETE action admission requires active workspace admin; leave permits active roles 5/15/20. Detail targets require active nonbot membership. Reject self editing/removal and preserve last-admin guards. ACCESS-001 validates PATCH before guest cascade and makes cascade/save atomic; deletion sole-project-member identity uses target user id. Other source predicates remain unchanged.",
+          "source": "apps/api/plane/app/views/workspace/member.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-delete-compact-uuid-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-delete-uppercase-letter-uuid-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-delete-sole-project-admin-blocked.json"
+      ],
+      "source_statuses": ["204", "400", "401", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/members/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "patch_api_workspaces_by_slug_members_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_members_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/members/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace-member contract",
+          "observable": "PATCH/DELETE action admission requires active workspace admin; leave permits active roles 5/15/20. Detail targets require active nonbot membership. Reject self editing/removal and preserve last-admin guards. ACCESS-001 validates PATCH before guest cascade and makes cascade/save atomic; deletion sole-project-member identity uses target user id. Other source predicates remain unchanged.",
+          "source": "apps/api/plane/app/views/workspace/member.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-guest-cascade.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-missing-target-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-missing-target-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-other-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-other-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-self-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-invalid-does-not-cascade.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-json-empty-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-json-role-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-json-string-no-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-json-string-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-malformed-created-by.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-missing-created-by-and-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-workspace-member-patch-updated-by-valid.json"
+      ],
+      "source_statuses": ["200", "400", "401", "404", "415", "500"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/members/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_invitations": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_invitations",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project-invite contract",
+          "observable": "Invite queryset scopes project and workspace. Pristine source list/detail/delete require only authentication; ACCESS-001 corrects these actions to the existing create admin admission. Public preview and recipient list remain separate. Pristine nonempty create raises QuerySet.role before writes; corrected create validates the whole batch, normalizes emails, applies role caps and publishes the registered project_invitation task after inserts.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-list-search-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-head-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-list-inactive-workspace-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-list-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-list-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-list-workspace-admin-without-project-denied.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_invitations": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_invitations",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/invitations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "project-invite contract",
+          "observable": "Invite queryset scopes project and workspace. Pristine source list/detail/delete require only authentication; ACCESS-001 corrects these actions to the existing create admin admission. Public preview and recipient list remain separate. Pristine nonempty create raises QuerySet.role before writes; corrected create validates the whole batch, normalizes emails, applies role caps and publishes the registered project_invitation task after inserts.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-create-pristine-queryset-role-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-active-guest-mixed-case-cap.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-ascii-control-trim.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-guest-admin-role-mismatch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-inactive-workspace-member-no-cap.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-invalid-batch-atomic.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-invalid-quoted-space.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-quoted-local.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-bool-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-float-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-null-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-numeric-string-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-plus-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-role-whitespace-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-unicode-lower-expansion-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-create-workspace-admin-without-project-denied.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "500"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/invitations/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project-invite contract",
+          "observable": "Invite queryset scopes project and workspace. Pristine source list/detail/delete require only authentication; ACCESS-001 corrects these actions to the existing create admin admission. Public preview and recipient list remain separate. Pristine nonempty create raises QuerySet.role before writes; corrected create validates the whole batch, normalizes emails, applies role caps and publishes the registered project_invitation task after inserts.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-delete-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-delete-project-admin.json"
+      ],
+      "source_statuses": ["204", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project-invite contract",
+          "observable": "Invite queryset scopes project and workspace. Pristine source list/detail/delete require only authentication; ACCESS-001 corrects these actions to the existing create admin admission. Public preview and recipient list remain separate. Pristine nonempty create raises QuerySet.role before writes; corrected create validates the whole batch, normalizes emails, applies role caps and publishes the registered project_invitation task after inserts.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-compact-uuid-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-uppercase-letter-uuid-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-head-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-head-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-ordinary-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-out-of-project-404.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-project-admin.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/invitations/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending."
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_join_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_join_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project-join contract",
+          "observable": "Public preview scopes invite by workspace/project/id and omits email/token. POST resolves invite, checks token, session, invitee email, response state and strict boolean accepted input before saving. Corrected acceptance uses workspace+project+recipient membership lookup, preserves existing roles, applies workspace role cap for new membership, retains responded invite and queues no tracking task.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-public-get.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/join/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending.",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_join_by_pk": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_join_by_pk",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "project-join contract",
+          "observable": "Public preview scopes invite by workspace/project/id and omits email/token. POST resolves invite, checks token, session, invitee email, response state and strict boolean accepted input before saving. Corrected acceptance uses workspace+project+recipient membership lookup, preserves existing roles, applies workspace role cap for new membership, retains responded invite and queues no tracking task.",
+          "source": "apps/api/plane/app/views/project/invite.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-accept-foreign-project-membership-source-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-accept-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-anonymous-valid-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-email-mismatch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-post-existing-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-post-existing-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-post-missing-invite-before-malformed-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-post-missing-invite-before-unsupported-media.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-reject-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-wrong-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-join-create-target-not-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-join-reactivate-target-preserve-role.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404", "415"],
+      "effects": [],
+      "sample_path": "/api/workspaces/invitations-membership-fixture/projects/00000000-0000-4000-8000-000000018103/join/00000000-0000-4000-8000-000000018199/",
+      "status_note": "Source-recorded fixtures listed here do not yet establish all branches; corrected-source and target proof remain pending.",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    }
+  },
+  "intentional_source_repairs": [
+    {
+      "decision": "docs/go-backend-replacement/decisions/ACCESS-001-invitation-membership-corrections.md",
+      "evidence_status": "Pristine and corrected source cases, regression guards and target replay pending completion."
+    }
+  ],
+  "permission_classes_before_timezone": true,
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"],
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/invitations_membership_middleware_test.go::TestInvitationsMembershipProductionMiddleware",
+  "protocol_companion_policy": "Record method-specific HEAD/ordinary OPTIONS and unsupported-method precedence before finalizing dispatch; reuse shared CORS/session behavior. Class permissions precede timezone; action decorators follow timezone. No implicit authorization bypass for an unsupported method.",
+  "shared_protocol_fixture_refs": [
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-detail-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-invite-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/project-join-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-project-list-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/user-workspace-list-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-malformed-pk-anonymous.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-malformed-pk.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options-missing-id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-detail-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/v1-invite-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-detail-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-invite-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-join-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-leave-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-head.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-lite-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership/workspace-member-patch-options.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-head-ordinary-member-denied.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-detail-head-project-admin.json",
+    "apps/go-api/internal/parity/testdata/fixtures/invitations_membership_access001/access001-project-invite-head-ordinary-member-denied.json"
+  ],
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["cursor", "per_page"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/api/plane/tests/parity/test_invitations_membership_recorder.py::test_invitations_membership_contract",
+    "environment": "Compare immutable baseline and candidate production proxies with equivalent isolated PostgreSQL seeds, separate Redis namespaces and RabbitMQ vhosts, DEBUG=False, identical configured WEB_URL and explicit API-key throttle. Detail samples name a missing invitation or member; bodyless collection mutations do not accept invitations or add projects, and leave names the sole administrator. Successful mutations and durable effects are established by fixture replay. Preserved source serves selected Django paths while baseline Go serves already-retired paths.",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+      "django-session": "/api/users/me/workspaces/invitations/"
+    }
+  },
+  "middleware_details": {
+    "api-key-invitations": "Request size, API-key authentication on primary, class authorization, timezone, dispatch, audit. BaseViewSet does not use API-key rate throttling.",
+    "api-key-rosters": "Request size, API-key authentication on replica, class authorization, rate throttling, timezone, dispatch, audit.",
+    "django-session": "Request size and inspected session, class permissions, timezone, action authorization and dispatch; source decorators determine cache invalidation timing. Audit runs when an API key header is present, including session requests."
+  },
+  "durable_effects": {
+    "workspace-invitation-mail": {
+      "task": "plane.bgtasks.workspace_invitation_task.workspace_invitation",
+      "operations": ["post_api_workspaces_by_slug_invitations"],
+      "contract": "Persistent celery delivery after bulk insertion, including source conflict-ignored inputs; arguments contain email, workspace ID, token, configured origin and inviter email."
+    },
+    "project-invitation-mail": {
+      "task": "plane.bgtasks.project_invitation_task.project_invitation",
+      "operations": ["post_api_workspaces_by_slug_projects_by_project_id_invitations"],
+      "contract": "ACCESS-001 corrected registered task after whole-batch validation and bulk insertion; exact payload and delivery compared against corrected source."
+    },
+    "event-tracking": {
+      "task": "plane.bgtasks.event_tracking_task.track_event",
+      "operations": [
+        "post_api_workspaces_by_slug_invitations",
+        "post_api_users_me_workspaces_invitations",
+        "post_api_workspaces_by_slug_invitations_by_pk_join"
+      ],
+      "contract": "Source branch-specific user_invited_to_workspace or user_joined_workspace task; exact kwargs, persistence and order compared against source."
+    },
+    "soft-delete": {
+      "task": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "operations": [
+        "delete_api_v1_workspaces_by_slug_invitations_by_pk",
+        "delete_api_workspaces_by_slug_invitations_by_pk",
+        "delete_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk",
+        "post_api_workspaces_by_slug_invitations_by_pk_join"
+      ],
+      "contract": "Instance soft-delete branches publish model and object identity with using=null. QuerySet bulk deletion remains distinct and must not invent instance tasks."
+    },
+    "api-audit": {
+      "task": "plane.bgtasks.logger_task.process_logs",
+      "contract": "Any request carrying an API key header publishes the source redacted audit task when it reaches audit middleware, including resolver rejection on the Django fallback. Exact response, normalized request peer and keyed identifier are replayed."
+    }
+  }
+}

@@ -1,0 +1,1149 @@
+{
+  "version": 1,
+  "family": "project_membership_lifecycle",
+  "characterization_status": "Source-backed contracts for 15 operations. The immutable Django corpus contains 183 unique cases, including API-key and legacy session authorization, response and database behavior, cache state, durable task effects, form parsing, typed member identities, and method-specific permissions.",
+  "source_revision": "603996cef1fd7269badd3481a2ba6bee80c50595",
+  "operation_count": 15,
+  "source_files": [
+    "apps/api/plane/api/urls/member.py",
+    "apps/api/plane/api/views/member.py",
+    "apps/api/plane/api/serializers/member.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/rate_limit.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/app/views/project/member.py",
+    "apps/api/plane/app/serializers/project.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/utils/permissions/project.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/authentication/session.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/bgtasks/project_add_user_email_task.py",
+    "apps/api/plane/celery_routing.py",
+    "apps/api/plane/middleware/db_routing.py",
+    "apps/api/plane/app/views/base.py"
+  ],
+  "shared_domain": "apps/go-api/internal/projectmembershipreads",
+  "durable_effects": [
+    "plane.bgtasks.logger_task.process_logs (API-key requests only)",
+    "plane.bgtasks.project_add_user_email_task.project_add_user_email (legacy bulk create only)"
+  ],
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_members": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/members/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "workspace-scoped collection lookup and projection",
+          "observable": "The list first resolves workspace slug (missing workspace returns 400), scopes ProjectMember rows by project id and workspace slug, does not explicitly resolve project or filter is_active, and serializes UserLite users. User.Meta orders the returned users by descending created_at.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.get; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-members-head-project-member-denied",
+          "observable": "HEAD uses the admin permission branch before unsupported-method dispatch, so a project MEMBER receives 403.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-head-project-member-denied.json"
+          ]
+        },
+        {
+          "when": "v1-members-list-inactive-project-membership-denied",
+          "observable": "An inactive requester project membership does not authorize the API-key read; return 403.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-inactive-project-membership-denied.json"
+          ]
+        },
+        {
+          "when": "v1-members-options-anonymous",
+          "observable": "Ordinary OPTIONS with no API key is rejected with 401 before dispatch.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-options-anonymous.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-members-list",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-head-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-head-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-inactive-membership-included.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-inactive-project-membership-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-role10-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-options-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-options-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-project-member-denied.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "401", "403", "405"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_members",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/"
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_members": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/members/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "member creation and role validation",
+          "observable": "Body requires a workspace member and role; member must have a workspace membership (active flag is not required). Allowed roles are 20, 15 and 5; omitted role uses model default. Duplicate existing membership and missing/non-workspace member return source validation errors. Success creates ProjectMember and returns 201 {id, member, role}.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.post; apps/api/plane/api/serializers/member.py; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-members-create-inactive-workspace-member",
+          "observable": "API-key creation accepts an inactive workspace membership because its member validator checks existence only.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-inactive-workspace-member.json"
+          ]
+        },
+        {
+          "when": "v1-members-create-role-admin",
+          "observable": "A workspace MEMBER may be assigned project ADMIN by the authorized requester.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-admin.json"
+          ]
+        },
+        {
+          "when": "v1-members-create-workspace-admin-without-project-denied",
+          "observable": "Workspace ADMIN does not bypass the active project ADMIN permission required for this API-key write; return 403.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-workspace-admin-without-project-denied.json"
+          ]
+        },
+        {
+          "when": "role field coercion",
+          "observable": "The DRF choice field accepts the recorded string \"15\" as a role; a float (20.0), boolean true, whitespace-padded string \" 15 \", and out-of-range integer 42 each return 400. Role choice validation preserves Python/DRF choice identity rather than coercing these values to integers first.",
+          "source": "apps/api/plane/api/serializers/member.py; apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.post",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-numeric-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-float.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-boolean.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-whitespace-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-out-of-range.json"
+          ]
+        },
+        {
+          "when": "HTML form role default",
+          "observable": "For urlencoded form input, an empty optional role on create is treated as omitted and the source model default role 5 is returned.",
+          "source": "apps/api/plane/api/serializers/member.py::ProjectMemberListCreateSerializer; apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.post",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-form-role-blank.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-members-create",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-form-role-blank.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-inactive-workspace-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-invalid-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-missing-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-boolean.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-float.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-numeric-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-out-of-range.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-role-whitespace-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-create-workspace-admin-without-project-denied.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["201", "400", "401", "403"],
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_members",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/"
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "soft deactivation",
+          "observable": "Target is looked up by project, workspace slug and pk; missing/cross-scope target returns 404. Sets is_active=false, saves audit fields, returns 204. This does not set deleted_at or invoke soft-delete cascade.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        }
+      ],
+      "fixture_prefix": "v1-members-delete",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-delete-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-delete-soft-inactive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-delete-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["204", "401", "404"],
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/00000000-0000-4000-8000-000000008899/"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "single membership projection",
+          "observable": "Lookup is scoped to project, workspace slug and pk; missing or cross-scope membership returns 404. Returns UserLiteSerializer representation. Inactive rows remain available when not soft-deleted.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-members-detail-head-companion",
+          "observable": "An authenticated project ADMIN receives 405 for this unsupported protocol method after initialization.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-head-companion.json"
+          ]
+        },
+        {
+          "when": "v1-members-detail-options-companion",
+          "observable": "An authenticated project ADMIN receives 405 for this unsupported protocol method after initialization.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-options-companion.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-members-detail",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-cross-project-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-cross-workspace-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-head-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-options-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-detail-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "401", "404", "405"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/00000000-0000-4000-8000-000000008899/"
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk": {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "partial membership update",
+          "observable": "Target is looked up by project, workspace slug and pk; absent or cross-scope target returns 404. Partial serializer accepts role values 20, 15, 5; null/invalid role returns field validation error. Returns {id, member, role}.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "nullable member and stored non-choice role responses",
+          "observable": "An authorized empty PATCH of an existing membership whose member is null returns 200 with member:null. An authorized empty PATCH of a membership created by the legacy bulk route with stored role 10 succeeds and returns role 10; request role choice validation remains the constrained set.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint.patch; apps/api/plane/api/serializers/member.py; apps/api/plane/db/models/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-null-member.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-role10-response.json"
+          ]
+        },
+        {
+          "when": "HTML form role blank and nullable member",
+          "observable": "For urlencoded form input, role= on partial update is treated as omitted; an existing null-member row remains unchanged and the response includes member:null.",
+          "source": "apps/api/plane/api/serializers/member.py; apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint.patch",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-form-role-blank.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-null-member.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-members-patch-null",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-form-role-blank.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-null-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-null-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-role10-response.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-patch-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "400", "401", "404"],
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/00000000-0000-4000-8000-000000008899/"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_lite": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members-lite/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["cursor", "per_page"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "single membership projection",
+          "observable": "Lookup is scoped to project, workspace slug and pk; missing or cross-scope membership returns 404. Returns UserLiteSerializer representation. Inactive rows remain available when not soft-deleted.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "HEAD and OPTIONS protocol companions",
+          "observable": "Ordinary HEAD and OPTIONS return 405 because the URL view declares only its routed method(s); capture exact Allow and middleware effects. CORS preflight OPTIONS is handled before view dispatch and is distinct from ordinary OPTIONS.",
+          "source": "apps/api/plane/api/urls/member.py"
+        },
+        {
+          "when": "v1-project-members-lite-default-per-page",
+          "observable": "Omitted per_page uses the source paginator default and preserves the full envelope.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-default-per-page.json"
+          ]
+        },
+        {
+          "when": "v1-project-members-lite-options-invalid-timezone",
+          "observable": "Authenticated OPTIONS with invalid requester timezone returns 400 before unsupported-method dispatch.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-options-invalid-timezone.json"
+          ]
+        },
+        {
+          "when": "nullable member and unusual stored role projection",
+          "observable": "The lite projection includes a null-member row with avatar:null, avatar_url:null, is_active, and role, omitting user fields. It also returns stored role 10 created by the legacy bulk endpoint; the response role domain is broader than request role choices.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberLiteAPIEndpoint.get; apps/api/plane/api/serializers/member.py; apps/api/plane/db/models/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-null-member.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-role10-row.json"
+          ]
+        },
+        {
+          "when": "unsupported unsafe method permission branches",
+          "observable": "Project GUEST with workspace GUEST receives 403 for lite PATCH and POST before throttle consumption. A workspace MEMBER with no project membership passes the POST-specific permission, consumes throttle, then receives 405 because lite has no POST handler.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberLiteAPIEndpoint.get_permissions; apps/api/plane/utils/permissions/project.py::ProjectMemberPermission",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-patch-project-guest-denied.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-post-project-guest-denied.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-post-workspace-member-unsupported.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-project-members-lite",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-default-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-head-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-inactive-included.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-no-active-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-null-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-options-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-page-forward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-project-without-membership-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-role10-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-soft-deleted-excluded.json"
+      ],
+      "documented_query_parameters": ["cursor", "per_page"],
+      "source_statuses": ["200", "400", "401", "403", "405"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_lite",
+      "shadowed_branches": [
+        "cross-project and missing project lookup are denied by ProjectMemberPermission before endpoint 404 lookup",
+        "empty list is unreachable because the authorized requester membership appears in the result"
+      ],
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members-lite/"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "workspace-scoped collection lookup and projection",
+          "observable": "The list first resolves workspace slug (missing workspace returns 400), scopes ProjectMember rows by project id and workspace slug, does not explicitly resolve project or filter is_active, and serializes UserLite users. User.Meta orders the returned users by descending created_at.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.get; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-project-members-list-inactive-project-membership-denied",
+          "observable": "An inactive requester project membership does not authorize the API-key read; return 403.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-inactive-project-membership-denied.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-project-members-list-inactive",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-head-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-inactive-membership-included.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-inactive-project-membership-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-options-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-project-member-denied.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "401", "403", "405"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members/"
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_project_members": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "member creation and role validation",
+          "observable": "Body requires a workspace member and role; member must have a workspace membership (active flag is not required). Allowed roles are 20, 15 and 5; omitted role uses model default. Duplicate existing membership and missing/non-workspace member return source validation errors. Success creates ProjectMember and returns 201 {id, member, role}.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.post; apps/api/plane/api/serializers/member.py; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-project-members-create-inactive-workspace-member",
+          "observable": "API-key creation accepts an inactive workspace membership because its member validator checks existence only.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-inactive-workspace-member.json"
+          ]
+        },
+        {
+          "when": "v1-project-members-create-role-admin",
+          "observable": "A workspace MEMBER may be assigned project ADMIN by the authorized requester.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-admin.json"
+          ]
+        },
+        {
+          "when": "v1-project-members-create-workspace-admin-without-project-denied",
+          "observable": "Workspace ADMIN does not bypass the active project ADMIN permission required for this API-key write; return 403.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-workspace-admin-without-project-denied.json"
+          ]
+        },
+        {
+          "when": "role field coercion",
+          "observable": "The DRF choice field accepts the recorded string \"15\" as a role; a float (20.0), boolean true, whitespace-padded string \" 15 \", and out-of-range integer 42 each return 400. Role choice validation preserves Python/DRF choice identity rather than coercing these values to integers first.",
+          "source": "apps/api/plane/api/serializers/member.py; apps/api/plane/api/views/member.py::ProjectMemberListCreateAPIEndpoint.post",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-numeric-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-float.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-boolean.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-whitespace-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-out-of-range.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-project-members-create-invalid",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-inactive-workspace-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-invalid-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-missing-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-boolean.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-float.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-numeric-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-out-of-range.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-role-whitespace-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-create-workspace-admin-without-project-denied.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["201", "400", "401", "403"],
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_project_members",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members/"
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "soft deactivation",
+          "observable": "Target is looked up by project, workspace slug and pk; missing/cross-scope target returns 404. Sets is_active=false, saves audit fields, returns 204. This does not set deleted_at or invoke soft-delete cascade.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        }
+      ],
+      "fixture_prefix": "v1-project-members-delete-soft",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-delete-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-delete-soft-inactive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-delete-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["204", "401", "404"],
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members/00000000-0000-4000-8000-000000008899/"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "single membership projection",
+          "observable": "Lookup is scoped to project, workspace slug and pk; missing or cross-scope membership returns 404. Returns UserLiteSerializer representation. Inactive rows remain available when not soft-deleted.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "v1-project-members-detail-head-companion",
+          "observable": "An authenticated project ADMIN receives 405 for this unsupported protocol method after initialization.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-head-companion.json"
+          ]
+        },
+        {
+          "when": "v1-project-members-detail-options-companion",
+          "observable": "An authenticated project ADMIN receives 405 for this unsupported protocol method after initialization.",
+          "source": "apps/api/plane/api/views/member.py; apps/api/plane/api/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-options-companion.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-project-members-detail-cross-project",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-cross-project-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-cross-workspace-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-head-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-options-companion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-detail-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "401", "404", "405"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members/00000000-0000-4000-8000-000000008899/"
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk": {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/project-members/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "credential validation and API-key authorization",
+          "observable": "Missing X-Api-Key returns 401; malformed, expired, inactive token, or inactive user returns the source 403 response. A valid token updates APIToken.last_used before permission checks. Session cookies do not authenticate v1. GET requires active project membership including guests. The full collection/detail views require active project ADMIN for every other method, including HEAD and OPTIONS; the lite view permits active project members for safe-method authorization before its 405 dispatch. A workspace-admin role alone does not bypass project-admin authorization.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "partial membership update",
+          "observable": "Target is looked up by project, workspace slug and pk; absent or cross-scope target returns 404. Partial serializer accepts role values 20, 15, 5; null/invalid role returns field validation error. Returns {id, member, role}.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint; apps/api/plane/api/serializers/member.py"
+        },
+        {
+          "when": "API key audit and throttling effects",
+          "observable": "Nonempty X-Api-Key requests reaching API token log middleware enqueue one durable plane.bgtasks.logger_task.process_logs message, including rejected credentials and explicit 405s; anonymous requests and CORS preflight enqueue none. Successful authentication updates token last_used and throttle cache; capture cache headers/state and durable message envelope. No worker runs in request.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware; apps/api/plane/api/rate_limit.py; apps/api/plane/bgtasks/logger_task.py; apps/api/plane/celery_routing.py"
+        },
+        {
+          "when": "nullable member and stored non-choice role responses",
+          "observable": "An authorized empty PATCH of an existing membership whose member is null returns 200 with member:null. An authorized empty PATCH of a membership created by the legacy bulk route with stored role 10 succeeds and returns role 10; request role choice validation remains the constrained set.",
+          "source": "apps/api/plane/api/views/member.py::ProjectMemberDetailAPIEndpoint.patch; apps/api/plane/api/serializers/member.py; apps/api/plane/db/models/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-null-member.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-role10-response.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "v1-project-members-patch",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-null-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-null-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-role10-response.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-patch-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "400", "401", "404"],
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_project_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens.last_used; project_members only for successful POST/PATCH/DELETE"],
+      "sample_path": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/project-members/00000000-0000-4000-8000-000000008899/"
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_members": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "session authentication and project permission",
+          "observable": "Anonymous or expired/inactive session returns 401 before domain mutation. CSRF is disabled by BaseSessionAuthentication. The endpoint-specific decorators require active project membership; workspace-admin bypass applies only when requester also has active project membership.",
+          "source": "apps/api/plane/authentication/session.py::BaseSessionAuthentication; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "bulk add, reactivation, workspace-role caps, and invite effects",
+          "observable": "members defaults to []; empty list returns 400. Every requested user must have active workspace membership. Workspace ADMIN cannot grant project MEMBER/GUEST; workspace GUEST cannot grant ADMIN/MEMBER; workspace MEMBER has no role cap. Duplicate IDs collapse in role map with last role winning. Existing rows, including inactive rows, are reactivated and role-updated; new memberships and ProjectUserProperty rows use bulk_create/ignore_conflicts. Enqueues project_add_user_email per resulting row. Returns HTTP 201 with an array of ProjectMemberRoleSerializer rows: {id, member, role, project, original_role, created_at}. The source runtime fixture confirms this exact shape. Duplicate IDs collapse in the role map with the last role winning, while the original submitted list can still contribute inserts.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet; apps/api/plane/app/serializers/project.py; apps/api/plane/db/models/project_user_property.py; apps/api/plane/bgtasks/project_add_user_email_task.py::project_add_user_email",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-before-malformed-id.json"
+          ]
+        },
+        {
+          "when": "ordinary collection OPTIONS",
+          "observable": "Ordinary OPTIONS is handled by DRF metadata and returns 200 with POST actions for ProjectMemberAdminSerializer. An invalid timezone returns 400 before metadata dispatch. Collection HEAD belongs to the previously retired GET path and is excluded from this family replay; the production proxy preserves its existing Go behavior.",
+          "source": "apps/api/plane/app/urls/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-companion.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-invalid-timezone.json"
+          ]
+        },
+        {
+          "when": "legacy-members-create-default-role",
+          "observable": "A new membership with omitted role is created with role 5.",
+          "source": "apps/api/plane/app/views/project/member.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-default-role.json"
+          ]
+        },
+        {
+          "when": "legacy-members-create-existing-property-sort-order",
+          "observable": "A new project property uses the existing workspace/user minimum sort_order minus 10000.",
+          "source": "apps/api/plane/app/views/project/member.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-property-sort-order.json"
+          ]
+        },
+        {
+          "when": "legacy-members-create-member-role-admin",
+          "observable": "A workspace MEMBER may be assigned project ADMIN by the authorized requester.",
+          "source": "apps/api/plane/app/views/project/member.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-member-role-admin.json"
+          ]
+        },
+        {
+          "when": "bulk request shape, role coercion, and row updates",
+          "observable": "JSON null and JSON list request bodies each return 500 with the generic error and no recorded database delta. A guest-target role supplied as numeric 20 is rejected with 400, but string \"20\" passes the source role-cap membership check, is database-coerced to role 20, returns 201, and emits the invite task. A mixed batch with an inactive existing member and a later non-integer role returns 500 after the existing row is reactivated; no invite task is emitted.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.create; apps/api/plane/app/serializers/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-json-null.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-json-list.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-guest.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-guest-string.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-mixed-invalid-role.json"
+          ]
+        },
+        {
+          "when": "stored role values outside declared choices",
+          "observable": "An authorized project administrator can bulk-create a workspace MEMBER with integer role 10; the source bulk insert stores the value without model choice validation and returns it in the create representation. Later authorized list/lite/PATCH responses preserve stored role 10.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.create; apps/api/plane/db/models/project.py::ProjectMember",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role10.json"
+          ]
+        },
+        {
+          "when": "member identity coercion and lookup errors",
+          "observable": "Malformed UUID string and floating member_id return 400. A missing or null member_id, boolean true, numeric 123, or a syntactically valid but nonexistent workspace member return 404. JSON list/object member_id values return 500 with the generic error. These outcomes follow ORM UUID preparation and lookup rather than serializer choice validation.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.create; apps/api/plane/app/views/base.py; apps/api/plane/db/models/project.py::WorkspaceMember",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-malformed-member-uuid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-float-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-null-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-boolean-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-numeric-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-mixed-valid-invalid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-list-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-object-member-id.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-uuid-before-malformed.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-malformed-before-missing-uuid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-key-before-unhashable.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-member-braced-key.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-member-hyphenless-key.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-new-member-braced-property-key.json"
+          ]
+        },
+        {
+          "when": "collection OPTIONS metadata",
+          "observable": "Ordinary collection OPTIONS returns 200 DRF metadata with POST actions. Invalid timezone returns 400 before metadata dispatch. Collection HEAD belongs to the previously retired GET path and is excluded from this family replay.",
+          "source": "apps/api/plane/app/urls/project.py; apps/api/plane/app/views/project/member.py; apps/api/plane/middleware/db_routing.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-companion.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-invalid-timezone.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "legacy-members-create-duplicate-last",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-boolean-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-default-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-duplicate-last-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-empty-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-property-sort-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-float-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-inactive-workspace-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-json-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-list-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-malformed-member-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-member-role-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-mixed-invalid-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-mixed-valid-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-null-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-numeric-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-object-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-reactivate-existing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-guest-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role10.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-expired-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role-cap-before-malformed-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-uuid-before-malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-malformed-before-missing-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-missing-key-before-unhashable.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-member-braced-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-existing-member-hyphenless-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-new-member-braced-property-key.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["201", "400", "401", "404", "500"],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_members",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": ["django-session"],
+      "database_effects": [
+        "project_members; project_user_properties as needed; api audit rows only if shared logger writes them"
+      ],
+      "sample_path": "/api/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/"
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_members_leave": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/leave/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "session authentication and project permission",
+          "observable": "Anonymous or expired/inactive session returns 401 before domain mutation. CSRF is disabled by BaseSessionAuthentication. The endpoint-specific decorators require active project membership; workspace-admin bypass applies only when requester also has active project membership.",
+          "source": "apps/api/plane/authentication/session.py::BaseSessionAuthentication; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "self leave and last-administrator guard",
+          "observable": "Uses the authenticated requester’s active membership for this project. The last active project ADMIN cannot leave (400); other project roles may deactivate their own membership. Success sets is_active=false and returns 204; it does not set deleted_at.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "leave protocol companions",
+          "observable": "Ordinary leave OPTIONS returns 200 DRF metadata with POST actions for ProjectMemberAdminSerializer. Leave HEAD remains unsupported and returns 405. CORS preflight is handled by shared middleware before view dispatch.",
+          "source": "apps/api/plane/app/urls/project.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-head-companion.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-options-companion.json"
+          ]
+        },
+        {
+          "when": "role allowlist and workspace-admin override",
+          "observable": "Legacy leave requires an active project membership with declared role ADMIN, MEMBER, or GUEST, or the source workspace-admin override with active project membership. An active role-10 project member receives 403; a workspace ADMIN with the same active role-10 project membership may leave and receives 204.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission; apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.leave",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-role10-denied.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-role10-workspace-admin-override.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "legacy-members-leave-last",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-last-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-role10-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-role10-workspace-admin-override.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-success.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["204", "400", "401", "403"],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_members_leave",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": [],
+      "database_effects": ["project_members for successful mutation"],
+      "sample_path": "/api/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/leave/"
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_members_by_pk": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "session authentication and project permission",
+          "observable": "Anonymous or expired/inactive session returns 401 before domain mutation. CSRF is disabled by BaseSessionAuthentication. The endpoint-specific decorators require active project membership; workspace-admin bypass applies only when requester also has active project membership.",
+          "source": "apps/api/plane/authentication/session.py::BaseSessionAuthentication; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "target removal guards",
+          "observable": "Target queryset requires active membership and excludes bot users. Self removal returns 400; a target with higher role than requester returns 400. Otherwise is_active=false is saved and response is 204. Workspace-admin bypass still requires an active project membership.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet; apps/api/plane/db/models/project.py"
+        }
+      ],
+      "fixture_prefix": "legacy-members-destroy-workspace-admin-without-project",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-bot.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-cross-project-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-higher-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-self.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-destroy-workspace-admin-without-project-membership.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["204", "400", "401", "403", "404"],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": [],
+      "database_effects": ["project_members for successful mutation"],
+      "sample_path": "/api/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/00000000-0000-4000-8000-000000008899/"
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_members_by_pk": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/members/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "session authentication and project permission",
+          "observable": "Anonymous or expired/inactive session returns 401 before domain mutation. CSRF is disabled by BaseSessionAuthentication. The endpoint-specific decorators require active project membership; workspace-admin bypass applies only when requester also has active project membership.",
+          "source": "apps/api/plane/authentication/session.py::BaseSessionAuthentication; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "role, active-state, and serializer field authorization",
+          "observable": "Requester and target need active project memberships. Self-update is rejected except workspace admin. Non-workspace-admin role change requires project ADMIN; cannot alter equal/higher target role or assign equal/higher role; guest targets cannot be raised above guest. is_active uses its independent hierarchy guard. App serializer exposes all model fields except read-only workspace/project/member; deleted_at remains writable. Empty patch succeeds and saves updated_at/updated_by while preserving membership fields.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet; apps/api/plane/app/serializers/project.py::ProjectMemberSerializer; apps/api/plane/db/models/project.py"
+        },
+        {
+          "when": "null body and updated_by validation",
+          "observable": "A JSON null PATCH body returns 500 with the generic error before serializer validation. An invalid UUID for updated_by returns 400 with a UUID validation error; a syntactically valid but missing user UUID returns 400 with an invalid primary-key error. Neither rejected updated_by request changes membership state.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.partial_update; apps/api/plane/app/serializers/project.py::ProjectMemberSerializer",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-json-null.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-invalid-uuid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-missing-user.json"
+          ]
+        },
+        {
+          "when": "role allowlist and workspace-admin override",
+          "observable": "Legacy PATCH requires an active project membership with declared role ADMIN, MEMBER, or GUEST, or the source workspace-admin override with active project membership. An active role-10 project member receives 403; making that same workspace member ADMIN restores access through the override. Role 10 remains reachable through legacy bulk creation and is a response value, not an authorization role.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission; apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.partial_update",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-denied.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-workspace-admin-override.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-create-role10.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-response.json"
+          ]
+        },
+        {
+          "when": "HTML form input, JSON fields, and blank optional values",
+          "observable": "For urlencoded and multipart requests, DRF decodes JSONField form strings for preferences/view_props/default_props. Valid JSON form values are stored as objects; invalid view_props JSON returns 400 with a field error and no row update. role= on v1 create selects default role 5; role= on v1 PATCH is treated as omitted. Legacy deleted_at= is accepted as null and sort_order= is skipped as an optional blank value.",
+          "source": "apps/api/plane/app/serializers/project.py::ProjectMemberSerializer; apps/api/plane/api/serializers/member.py; DRF JSONField and Field HTML input handling",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-preferences-valid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-view-props-invalid-json.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-multipart-default-props-valid.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-deleted-at-blank-clears.json",
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-sort-order-blank-skips.json"
+          ]
+        },
+        {
+          "when": "nullable member target lookup",
+          "observable": "An active legacy target row whose member is null reaches the workspace-member lookup with member=None and returns 404 with the source missing-object response; it does not fail during row scanning or return a generic 500.",
+          "source": "apps/api/plane/app/views/project/member.py::ProjectMemberViewSet.partial_update; apps/api/plane/db/models/project.py::ProjectMember; apps/api/plane/app/views/base.py",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-null-member-target.json"
+          ]
+        },
+        {
+          "when": "boolean audit foreign key validation",
+          "observable": "Boolean true supplied for updated_by returns 400 with the source PrimaryKeyRelatedField error `Incorrect type. Expected pk value, received bool.` and does not update the membership.",
+          "source": "apps/api/plane/app/serializers/project.py::ProjectMemberSerializer; DRF PrimaryKeyRelatedField.to_internal_value",
+          "fixture_refs": [
+            "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-boolean.json"
+          ]
+        }
+      ],
+      "fixture_prefix": "legacy-members-patch",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-deleted-at-writable-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-deleted-at-writable-lower-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-deleted-at-blank-clears.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-preferences-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-sort-order-blank-skips.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-form-view-props-invalid-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-is-active-guard.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-member-role-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-multipart-default-props-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-null-member-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-response.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-role10-workspace-admin-override.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-boolean.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-invalid-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-patch-updated-by-missing-user.json"
+      ],
+      "documented_query_parameters": [],
+      "source_statuses": ["200", "400", "401", "403", "404", "500"],
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_members_by_pk",
+      "status_note": "Statuses and response bodies are source-recorded in required_fixtures; unrecorded branches remain explicitly identified in source_branches.",
+      "effects": [],
+      "database_effects": ["project_members for successful mutation"],
+      "sample_path": "/api/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/00000000-0000-4000-8000-000000008899/"
+    }
+  },
+  "known_source_security_limitation": "Legacy PATCH serializer includes writable deleted_at. Source fixtures prove lower-role project members and guests can set it on a higher-role membership without invoking the soft-delete cascade. Preserve the measured source behavior for parity; authorization hardening is a separate product change.",
+  "protocol_companion_policy": "API-key HEAD and ordinary OPTIONS return source 405 after method-specific authorization and timezone checks. The lite route additionally records unsupported PATCH and POST: permission checks are method-specific before its 405 dispatch. Legacy leave HEAD returns 405; legacy collection/detail GET and HEAD already belong to the retired read family and preserve its production behavior, verified by baseline/candidate proxy differential. Raw Django collection/detail HEAD no longer represents their live contract and is excluded from this family replay. Legacy ordinary OPTIONS returns 200 DRF metadata for collection, detail, and leave; collection/leave include POST action metadata and detail has no write-action metadata. Legacy collection OPTIONS with invalid timezone returns 400 before metadata dispatch. CORS preflight is a shared middleware response. New protocol fixtures are attached to matching GET operations where present; write-only protocol evidence remains in shared_protocol_fixture_refs.",
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"],
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["cursor", "per_page"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/api/plane/tests/parity/test_project_membership_lifecycle_recorder.py::test_project_membership_lifecycle_contract",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/membership-differential/projects/00000000-0000-4000-8000-000000008802/members/",
+      "django-session": "/api/users/me/workspaces/invitations/"
+    },
+    "environment": "Compare baseline and candidate production proxies with equivalent isolated seeds. The baseline proxy preserves already-retired legacy membership GETs; selected writes still route to immutable source Django. Detail samples use a missing membership and leave uses the sole administrator, so the method matrix preserves seed state; successful write effects are proven by source-fixture replay."
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/project_membership_lifecycle_http_test.go::TestProjectMembershipLifecycleMiddlewareOrderAndEffects",
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.project_add_user_email_task.project_add_user_email",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "shared_protocol_fixture_refs": [
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-detail-options-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-head-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-leave-options-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/legacy-members-options-invalid-timezone.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-head-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-members-options-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-head-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-head-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-options-companion.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-patch-project-guest-denied.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-post-project-guest-denied.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-lite-post-workspace-member-unsupported.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_membership_lifecycle/v1-project-members-options-companion.json"
+  ]
+}

@@ -1,0 +1,403 @@
+{
+  "version": 1,
+  "family": "external_integrations",
+  "source_files": [
+    "apps/api/plane/app/views/external/base.py",
+    "apps/api/plane/app/urls/external.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/license/utils/instance_value.py"
+  ],
+  "operations": {
+    "get_api_unsplash": {
+      "method": "GET",
+      "path": "/api/unsplash/",
+      "sample_path": "/api/unsplash/",
+      "statuses": [200, 401, 429],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": ["page", "per_page", "query"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/unsplash-search-encoded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/unsplash-upstream-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-no-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-search-encoded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-upstream-error.json"
+      ],
+      "database_effects": [],
+      "effects": ["GET /photos/", "GET /search/photos/"],
+      "permission_contract": "All operations require a session. Unsplash returns [] without an API key and otherwise relays upstream JSON/status. AI requires active workspace/project member or admin, then configuration, then valid task/prompt; provider model validation precedes the OpenAI SDK request. Error status from AI provider maps to the existing application 500 envelope.",
+      "source": "apps/api/plane/app/views/external/base.py::UnsplashEndpoint / GPTIntegrationEndpoint / WorkspaceGPTIntegrationEndpoint",
+      "source_branches": [
+        {
+          "when": "unsplash-search-encoded (corrected)",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/unsplash-search-encoded.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "unsplash-upstream-error (corrected)",
+          "observable": "HTTP 429; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/unsplash-upstream-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "unsplash-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-anonymous.json"
+        },
+        {
+          "when": "unsplash-head",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-head.json"
+        },
+        {
+          "when": "unsplash-list",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-list.json"
+        },
+        {
+          "when": "unsplash-no-key",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-no-key.json"
+        },
+        {
+          "when": "unsplash-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-options-invalid-timezone.json"
+        },
+        {
+          "when": "unsplash-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-options.json"
+        },
+        {
+          "when": "unsplash-search-encoded",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-search-encoded.json"
+        },
+        {
+          "when": "unsplash-upstream-error",
+          "observable": "HTTP 429; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/unsplash-upstream-error.json"
+        }
+      ]
+    },
+    "post_api_workspaces_by_slug_ai_assistant": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/ai-assistant/",
+      "sample_path": "/api/workspaces/external-integration-contract/ai-assistant/",
+      "statuses": [200, 400, 401, 403, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-array-body-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-missing-prompt-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-task-number-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-array-body-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-gemini-model.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-invalid-model.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-invalid-provider.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-config.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-prompt-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-task-number-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-upstream-error.json"
+      ],
+      "database_effects": [],
+      "effects": ["POST /v1/chat/completions"],
+      "permission_contract": "All operations require a session. Unsplash returns [] without an API key and otherwise relays upstream JSON/status. AI requires active workspace/project member or admin, then configuration, then valid task/prompt; provider model validation precedes the OpenAI SDK request. Error status from AI provider maps to the existing application 500 envelope.",
+      "source": "apps/api/plane/app/views/external/base.py::UnsplashEndpoint / GPTIntegrationEndpoint / WorkspaceGPTIntegrationEndpoint",
+      "source_branches": [
+        {
+          "when": "workspace-array-body-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-array-body-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "workspace-missing-prompt-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-missing-prompt-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "workspace-task-number-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/workspace-task-number-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "workspace-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-anonymous.json"
+        },
+        {
+          "when": "workspace-array-body-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-array-body-source-error.json"
+        },
+        {
+          "when": "workspace-gemini-model",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-gemini-model.json"
+        },
+        {
+          "when": "workspace-guest",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-guest.json"
+        },
+        {
+          "when": "workspace-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-inactive-member.json"
+        },
+        {
+          "when": "workspace-invalid-model",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-invalid-model.json"
+        },
+        {
+          "when": "workspace-invalid-provider",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-invalid-provider.json"
+        },
+        {
+          "when": "workspace-missing-config",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-config.json"
+        },
+        {
+          "when": "workspace-missing-prompt-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-prompt-source-error.json"
+        },
+        {
+          "when": "workspace-missing-task",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-missing-task.json"
+        },
+        {
+          "when": "workspace-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-nonmember.json"
+        },
+        {
+          "when": "workspace-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-options-invalid-timezone.json"
+        },
+        {
+          "when": "workspace-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-options.json"
+        },
+        {
+          "when": "workspace-success",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-success.json"
+        },
+        {
+          "when": "workspace-task-number-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-task-number-source-error.json"
+        },
+        {
+          "when": "workspace-upstream-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/workspace-upstream-error.json"
+        }
+      ]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_ai_assistant": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/ai-assistant/",
+      "sample_path": "/api/workspaces/external-integration-contract/projects/00000000-0000-4000-8000-000000000003/ai-assistant/",
+      "statuses": [200, 400, 401, 403, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-array-body-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-missing-prompt-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-task-number-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-array-body-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-invalid-model.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-invalid-provider.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-config.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-prompt-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-task-number-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-upstream-error.json"
+      ],
+      "database_effects": [],
+      "effects": ["POST /v1/chat/completions"],
+      "permission_contract": "All operations require a session. Unsplash returns [] without an API key and otherwise relays upstream JSON/status. AI requires active workspace/project member or admin, then configuration, then valid task/prompt; provider model validation precedes the OpenAI SDK request. Error status from AI provider maps to the existing application 500 envelope.",
+      "source": "apps/api/plane/app/views/external/base.py::UnsplashEndpoint / GPTIntegrationEndpoint / WorkspaceGPTIntegrationEndpoint",
+      "source_branches": [
+        {
+          "when": "project-array-body-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-array-body-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "project-missing-prompt-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-missing-prompt-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "project-task-number-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/corrected/project-task-number-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "project-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-anonymous.json"
+        },
+        {
+          "when": "project-array-body-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-array-body-source-error.json"
+        },
+        {
+          "when": "project-guest",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-guest.json"
+        },
+        {
+          "when": "project-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-inactive-member.json"
+        },
+        {
+          "when": "project-invalid-model",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-invalid-model.json"
+        },
+        {
+          "when": "project-invalid-provider",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-invalid-provider.json"
+        },
+        {
+          "when": "project-missing-config",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-config.json"
+        },
+        {
+          "when": "project-missing-prompt-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-prompt-source-error.json"
+        },
+        {
+          "when": "project-missing-task",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-missing-task.json"
+        },
+        {
+          "when": "project-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-nonmember.json"
+        },
+        {
+          "when": "project-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-options-invalid-timezone.json"
+        },
+        {
+          "when": "project-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-options.json"
+        },
+        {
+          "when": "project-success",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-success.json"
+        },
+        {
+          "when": "project-task-number-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-task-number-source-error.json"
+        },
+        {
+          "when": "project-upstream-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/external_integrations/project-upstream-error.json"
+        }
+      ]
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/external-integrations/run-source-recorder.sh",
+    "pristine_fixture_count": 39,
+    "corrected_fixture_count": 8,
+    "source_hashes": "docs/go-backend-replacement/evidence/external-integrations/external_integrations-source-hashes.json"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/external_integrations_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "All operations require a session. Unsplash returns [] without an API key and otherwise relays upstream JSON/status. AI requires active workspace/project member or admin, then configuration, then valid task/prompt; provider model validation precedes the OpenAI SDK request. Error status from AI provider maps to the existing application 500 envelope.",
+  "effect_contracts": {
+    "GET /search/photos/": {
+      "kind": "upstream-http",
+      "name": "GET /search/photos/",
+      "payload_fields": ["method", "path"],
+      "auth_profile": "django-session"
+    },
+    "GET /photos/": {
+      "kind": "upstream-http",
+      "name": "GET /photos/",
+      "payload_fields": ["method", "path"],
+      "auth_profile": "django-session"
+    },
+    "POST /v1/chat/completions": {
+      "kind": "upstream-http",
+      "name": "POST /v1/chat/completions",
+      "payload_fields": ["method", "path"],
+      "auth_profile": "django-session"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/project-membership-lifecycle/projects/<uuid-1>/members/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "You cannot remove a user having role higher than you"
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "PATCH, DELETE, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "legacy-members-destroy-higher-role"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "database": {
+    "after": {
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "code": "674219",
+      "email": "user-account-new@example.test"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/users/me/email/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Authentication credentials were not provided."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "PATCH, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 401
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "anonymous-update-email",
+    "user_id": "<fixture-user>"
+  }
+}

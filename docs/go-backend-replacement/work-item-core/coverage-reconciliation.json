@@ -1,0 +1,232 @@
+{
+  "family": "work_item_core",
+  "phase": "entry",
+  "scope": "Conservative correction of stale issue_core gap notes; no new behavior or source fixtures from this reconciliation.",
+  "applied": [
+    {
+      "operation": "get_api_v1_workspaces_by_slug_issues__project_identifier___issue_identifier",
+      "location": "untested_meaningful_branches",
+      "old": "Deleted duplicate project identifiers and signed/whitespace/Unicode/out-of-range values are recorded. Deleted requester membership on identifier lookup is not duplicated and requires source-helper integration evidence.",
+      "new": "Signed, whitespace, Unicode-decimal/non-decimal, out-of-range, missing-project, missing-sequence, and deleted-duplicate identifier cases are source-recorded; deleted requester membership on this lookup and multiple matching live projects still need identifier-specific evidence.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-positive-sign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-negative-sign-route-split.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-unicode-decimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-unicode-digit-not-int.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-out-of-range.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-sequence.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-identifier-deleted-duplicate-identifier.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:376-389"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "get_api_v1_workspaces_by_slug_issues__project_identifier___issue_identifier",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Missing project/sequence, signed/whitespace/Unicode/out-of-range issue_identifier distinctions and multiple same identifier projects.",
+      "new": "Deleted requester membership on identifier lookup and selection among multiple matching live projects remain unrecorded; all listed identifier parsing/missing-target variants and the deleted-duplicate case are source-recorded.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-sequence.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-positive-sign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-negative-sign-route-split.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-unicode-decimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-unicode-digit-not-int.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-out-of-range.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-identifier-deleted-duplicate-identifier.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "get_api_v1_workspaces_by_slug_work_items__project_identifier___issue_identifier",
+      "location": "untested_meaningful_branches",
+      "old": "Deleted duplicate project identifiers and signed/whitespace/Unicode/out-of-range values are recorded. Deleted requester membership on identifier lookup is not duplicated and requires source-helper integration evidence.",
+      "new": "Identifier grammar and missing/deleted-duplicate behavior reuse source fixtures on the canonical issues alias: identical handler and string URL converters, with this alias dispatch checked by success/auth/query fixtures. Deleted requester membership and multiple matching live projects remain unrecorded. Native Go composite routing on both aliases is still a separate entry capability gap.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-work-items-identifier-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-work-items-identifier-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-work-items-identifier-query-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-positive-sign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-unicode-decimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-out-of-range.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "get_api_v1_workspaces_by_slug_work_items__project_identifier___issue_identifier",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Missing project/sequence, signed/whitespace/Unicode/out-of-range issue_identifier distinctions and multiple same identifier projects.",
+      "new": "Identifier grammar and missing/deleted-duplicate behavior reuse source fixtures on the canonical issues alias: identical handler and string URL converters, with this alias dispatch checked by success/auth/query fixtures. Deleted requester membership and multiple matching live projects remain unrecorded. Native Go composite routing on both aliases is still a separate entry capability gap.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-v1-work-items-identifier-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-identifier-missing-sequence.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-identifier-deleted-duplicate-identifier.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "get_api_workspaces_by_slug_work_items__project_identifier___issue_identifier",
+      "location": "untested_meaningful_branches",
+      "old": "Deleted duplicate project identifiers and signed/whitespace/Unicode/out-of-range values are recorded. Deleted requester membership on identifier lookup is not duplicated and requires source-helper integration evidence.",
+      "new": "Signed, whitespace, Unicode-decimal/non-decimal, out-of-range, missing-project, missing-sequence, and deleted-duplicate identifier cases are source-recorded on this app work-items route; deleted requester membership on identifier lookup and selection among multiple matching live projects still need identifier-specific evidence.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-app-identifier-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-positive-sign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-unicode-decimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-out-of-range.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-app-identifier-deleted-duplicate-identifier.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "get_api_workspaces_by_slug_work_items__project_identifier___issue_identifier",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Missing project/sequence, signed/whitespace/Unicode/out-of-range issue_identifier distinctions and multiple same identifier projects.",
+      "new": "Deleted requester membership on identifier lookup and selection among multiple matching live projects remain unrecorded; all listed identifier parsing/missing-target variants and the deleted-duplicate case are source-recorded on this route.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-missing-sequence.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-positive-sign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-unicode-decimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-unicode-digit-not-int.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-identifier-out-of-range.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "post_api_v1_workspaces_by_slug_projects_by_project_id_issues",
+      "location": "untested_meaningful_branches",
+      "old": "No usable default state, sequence contention and swallowed through-row IntegrityError need the integration owner model/transaction evidence.",
+      "new": "The PostgreSQL model test proves concurrent sequence allocation/ledger/sort-order behavior, rollback after sequence-ledger failure, and nullable state when no usable state exists. Duplicate through-row IntegrityError swallowing during create remains unproved at the source/transaction boundary.",
+      "evidence": [
+        "docs/go-backend-replacement/work-item-core/foundation-receipt.json: checks[1] (TestIssueModelPostgresInvariants; 4 cases)",
+        "apps/go-api/internal/workitems/model_integration_test.go:25-220, especially subtests concurrent allocation, ledger failure, and no usable state"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "post_api_v1_workspaces_by_slug_projects_by_project_id_issues",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Missing default state / only triage state and sequence contention need repository integration checks; request cases consume but do not execute workers (retained worker evidence is owned separately).",
+      "new": "Sequence contention and the no-state nullable model case have PostgreSQL model evidence; only-triage default selection remains untested. The separate worker receipt covers deletion/description behavior, not every activity branch; request fixtures do not execute workers.",
+      "evidence": [
+        "docs/go-backend-replacement/work-item-core/foundation-receipt.json: checks[1]",
+        "apps/go-api/internal/workitems/model_integration_test.go:25-220",
+        "docs/go-backend-replacement/work-item-core/work-item-core-worker-receipt.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items",
+      "location": "untested_meaningful_branches",
+      "old": "No usable default state, sequence contention and swallowed through-row IntegrityError need the integration owner model/transaction evidence.",
+      "new": "The PostgreSQL model test proves concurrent sequence allocation/ledger/sort-order behavior, rollback after sequence-ledger failure, and nullable state when no usable state exists. Duplicate through-row IntegrityError swallowing during create remains unproved at the source/transaction boundary.",
+      "evidence": [
+        "docs/go-backend-replacement/work-item-core/foundation-receipt.json: checks[1]",
+        "apps/go-api/internal/workitems/model_integration_test.go:25-220"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Missing default state / only triage state and sequence contention need repository integration checks; request cases consume but do not execute workers (retained worker evidence is owned separately).",
+      "new": "Sequence contention and the no-state nullable model case have PostgreSQL model evidence; only-triage default selection remains untested. The separate worker receipt covers deletion/description behavior, not every activity branch; request fixtures do not execute workers.",
+      "evidence": [
+        "docs/go-backend-replacement/work-item-core/foundation-receipt.json: checks[1]",
+        "apps/go-api/internal/workitems/model_integration_test.go:25-220",
+        "docs/go-backend-replacement/work-item-core/work-item-core-worker-receipt.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "post_api_workspaces_by_slug_projects_by_project_id_issues",
+      "location": "untested_meaningful_branches",
+      "old": "No usable default state, sequence contention and swallowed through-row IntegrityError need the integration owner model/transaction evidence.",
+      "new": "The PostgreSQL model test proves concurrent sequence allocation/ledger/sort-order behavior, rollback after sequence-ledger failure, and nullable state when no usable state exists. Duplicate through-row IntegrityError swallowing during create remains unproved at the source/transaction boundary.",
+      "evidence": [
+        "docs/go-backend-replacement/work-item-core/foundation-receipt.json: checks[1]",
+        "apps/go-api/internal/workitems/model_integration_test.go:25-220"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_pk",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Type aliases, inactive/unlinked types and API global-default/deleted-link selection are recorded on canonical POST/PATCH; foreign-workspace and deleted IssueType references, multiple-default selection and PUT model-FK integration remain unrecorded.",
+      "new": "Foreign-workspace and deleted IssueType references are source-recorded on the canonical issues PATCH; multiple-global-default selection remains unrecorded. Additional app PUT model-FK integration remains unrecorded; PUT is selected in this family.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-foreign-workspace-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-deleted-reference-type.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:366-374",
+        "docs/go-backend-replacement/work-item-core/issue-source-receipt.json: fixture_sha256 entries for the two fixtures"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_pk",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Type aliases, inactive/unlinked types and API global-default/deleted-link selection are recorded on canonical POST/PATCH; foreign-workspace and deleted IssueType references, multiple-default selection and PUT model-FK integration remain unrecorded.",
+      "new": "Foreign-workspace and deleted IssueType references are source-recorded on this PATCH route; multiple-global-default selection remains unrecorded. Additional app PUT model-FK integration remains unrecorded; PUT is selected in this family.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-foreign-workspace-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-v1-issues-detail-deleted-reference-type.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:366-374"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "patch_api_workspaces_by_slug_projects_by_project_id_issues_by_pk",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Type aliases, inactive/unlinked types and API global-default/deleted-link selection are recorded on canonical POST/PATCH; foreign-workspace and deleted IssueType references, multiple-default selection and PUT model-FK integration remain unrecorded.",
+      "new": "Foreign-workspace and deleted IssueType references are source-recorded on this PATCH route; multiple-global-default selection remains unrecorded. Additional app PUT model-FK integration remains unrecorded; PUT is selected in this family.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-detail-foreign-workspace-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-app-detail-deleted-reference-type.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:366-374"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_pk",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Delete archived/draft/triage and already-deleted target variants beyond recorded GET/PATCH visibility; deletion worker cascade and activity worker effects are not executed by request recorder.",
+      "new": "Archived and already-deleted targets are now source-recorded for DELETE. Draft and triage DELETE target variants remain unrecorded; Deletion cascade has separate source worker evidence; request fixtures do not execute workers, and activity-worker effects remain unproved.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-app-detail-delete-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-app-detail-delete-deleted.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:391-395",
+        "docs/go-backend-replacement/work-item-core/work-item-core-worker-receipt.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    },
+    {
+      "operation": "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_pk",
+      "location": "source_contract.untested_meaningful_branches",
+      "old": "Delete archived/draft/triage and already-deleted target variants beyond recorded GET/PATCH visibility; deletion worker cascade and activity worker effects are not executed by request recorder.",
+      "new": "Archived and already-deleted targets are source-recorded for DELETE. Draft and triage DELETE target variants remain unrecorded; Deletion cascade has separate source worker evidence; request fixtures do not execute workers, and activity-worker effects remain unproved.",
+      "evidence": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-detail-delete-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-followup-v1-issues-detail-delete-deleted.json",
+        "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py:391-395",
+        "docs/go-backend-replacement/work-item-core/work-item-core-worker-receipt.json"
+      ],
+      "evidence_scope": "Source HTTP, shared-helper and Go model checks remain distinct; none claims Go HTTP parity."
+    }
+  ],
+  "owner_corrections": [
+    "App PUT is inside the selected manifest and its model-FK gaps remain.",
+    "Equivalent aliases may reuse identical handler/converter source evidence with alias dispatch proof; Go alias routing still requires transport capability proof.",
+    "Worker receipt does not prove every activity branch.",
+    "Go model integration is not Django/Go HTTP parity.",
+    "Corrected one nonexistent success fixture reference."
+  ],
+  "content_entry_followup": "Verify actual serializer writeability and request-size limits before treating binary/HTML validator branches as HTTP coverage obligations."
+}

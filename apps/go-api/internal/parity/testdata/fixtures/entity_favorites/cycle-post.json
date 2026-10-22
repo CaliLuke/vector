@@ -1,0 +1,66 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_type": "cycle",
+          "id": "<uuid-4>",
+          "is_folder": false,
+          "name": null,
+          "parent_id": null,
+          "project_id": "<uuid-2>",
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "user_favorites": []
+    },
+    "changed_tables": [
+      "user_favorites"
+    ],
+    "expected_changed_tables": [
+      "user_favorites"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "cycle": "<uuid-1>"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/entity-favorite-parity/projects/<uuid-2>/user-favorite-cycles/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "cycle-post"
+  }
+}

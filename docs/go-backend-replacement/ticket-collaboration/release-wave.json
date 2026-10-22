@@ -1,0 +1,9 @@
+{
+  "base_commit": "1b584933e87fbd2638f4d0a5cf9743b1331c89ff",
+  "staged_tree": "016ec5fb71e33e03d65dab1a3511437569b46922",
+  "unstaged_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "untracked_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "family": "ticket_collaboration",
+  "provisional": true,
+  "name": "ticket-collaboration-release-3"
+}

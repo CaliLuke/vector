@@ -1,0 +1,1041 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Workspace Analytics API",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Workspace Analytics API"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/advance-analytics-charts/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "advance_analytics_charts workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_advance_analytics_charts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          },
+          {
+            "$ref": "#/components/parameters/QueryXAxis"
+          },
+          {
+            "$ref": "#/components/parameters/QueryGroupBy"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/advance-analytics-stats/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "advance_analytics_stats workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_advance_analytics_stats",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/advance-analytics/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "advance_analytics workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_advance_analytics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "name": "tab",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/analytics/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "analytics workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_analytics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryXAxis"
+          },
+          {
+            "name": "y_axis",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/QuerySegment"
+          },
+          {
+            "$ref": "#/components/parameters/QueryState"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStateGroup"
+          },
+          {
+            "$ref": "#/components/parameters/QueryEstimatePoint"
+          },
+          {
+            "$ref": "#/components/parameters/QueryPriority"
+          },
+          {
+            "$ref": "#/components/parameters/QueryParent"
+          },
+          {
+            "$ref": "#/components/parameters/QueryLabels"
+          },
+          {
+            "$ref": "#/components/parameters/QueryAssignees"
+          },
+          {
+            "$ref": "#/components/parameters/QueryMentions"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCreatedBy"
+          },
+          {
+            "$ref": "#/components/parameters/QueryLoggedBy"
+          },
+          {
+            "$ref": "#/components/parameters/QueryName"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCreatedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryUpdatedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStartDate"
+          },
+          {
+            "$ref": "#/components/parameters/QueryTargetDate"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCompletedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProject"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCycle"
+          },
+          {
+            "$ref": "#/components/parameters/QueryModule"
+          },
+          {
+            "$ref": "#/components/parameters/QueryIntakeStatus"
+          },
+          {
+            "$ref": "#/components/parameters/QueryInboxStatus"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySubIssue"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySubscriber"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStartTargetDate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/default-analytics/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "default_analytics workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_default_analytics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryState"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStateGroup"
+          },
+          {
+            "$ref": "#/components/parameters/QueryEstimatePoint"
+          },
+          {
+            "$ref": "#/components/parameters/QueryPriority"
+          },
+          {
+            "$ref": "#/components/parameters/QueryParent"
+          },
+          {
+            "$ref": "#/components/parameters/QueryLabels"
+          },
+          {
+            "$ref": "#/components/parameters/QueryAssignees"
+          },
+          {
+            "$ref": "#/components/parameters/QueryMentions"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCreatedBy"
+          },
+          {
+            "$ref": "#/components/parameters/QueryLoggedBy"
+          },
+          {
+            "$ref": "#/components/parameters/QueryName"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCreatedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryUpdatedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStartDate"
+          },
+          {
+            "$ref": "#/components/parameters/QueryTargetDate"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCompletedAt"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProject"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCycle"
+          },
+          {
+            "$ref": "#/components/parameters/QueryModule"
+          },
+          {
+            "$ref": "#/components/parameters/QueryIntakeStatus"
+          },
+          {
+            "$ref": "#/components/parameters/QueryInboxStatus"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySubIssue"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySubscriber"
+          },
+          {
+            "$ref": "#/components/parameters/QueryStartTargetDate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/advance-analytics-charts/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "project_advance_analytics_charts workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_charts",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCycleID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryModuleID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryXAxis"
+          },
+          {
+            "$ref": "#/components/parameters/QueryGroupBy"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/advance-analytics-stats/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "project_advance_analytics_stats workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_stats",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "$ref": "#/components/parameters/QueryType"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCycleID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryModuleID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/advance-analytics/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "project_advance_analytics workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryDateFilter"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProjectIds"
+          },
+          {
+            "$ref": "#/components/parameters/QueryCycleID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryModuleID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/saved-analytic-view/{analytic_id}/": {
+      "get": {
+        "tags": [
+          "workspace_analytics"
+        ],
+        "summary": "saved_analytic_view workspace_analytics",
+        "operationId": "get_api_workspaces_by_slug_saved_analytic_view_by_analytic_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "name": "analytic_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/QuerySegment"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PathProjectID": {
+        "name": "project_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryAssignees": {
+        "name": "assignees",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryCompletedAt": {
+        "name": "completed_at",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryCreatedAt": {
+        "name": "created_at",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryCreatedBy": {
+        "name": "created_by",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryCycle": {
+        "name": "cycle",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryCycleID": {
+        "name": "cycle_id",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryDateFilter": {
+        "name": "date_filter",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryEstimatePoint": {
+        "name": "estimate_point",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryGroupBy": {
+        "name": "group_by",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryInboxStatus": {
+        "name": "inbox_status",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryIntakeStatus": {
+        "name": "intake_status",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryLabels": {
+        "name": "labels",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryLoggedBy": {
+        "name": "logged_by",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryMentions": {
+        "name": "mentions",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryModule": {
+        "name": "module",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryModuleID": {
+        "name": "module_id",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryName": {
+        "name": "name",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryParent": {
+        "name": "parent",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryPriority": {
+        "name": "priority",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryProject": {
+        "name": "project",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryProjectIds": {
+        "name": "project_ids",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QuerySegment": {
+        "name": "segment",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryStartDate": {
+        "name": "start_date",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryStartTargetDate": {
+        "name": "start_target_date",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryState": {
+        "name": "state",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryStateGroup": {
+        "name": "state_group",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QuerySubIssue": {
+        "name": "sub_issue",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QuerySubscriber": {
+        "name": "subscriber",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryTargetDate": {
+        "name": "target_date",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryType": {
+        "name": "type",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryUpdatedAt": {
+        "name": "updated_at",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryXAxis": {
+        "name": "x_axis",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "ContentTypeHeader": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "GetAPIWorkspacesBySlugAdvanceAnalyticsChartsStatus200Response": {
+        "description": "OK response.",
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/headers/ContentTypeHeader"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not Found response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session cookie authentication.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "workspace_analytics",
+      "description": "Workspace and project analytics read endpoints."
+    }
+  ]
+}

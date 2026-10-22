@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "family": "user_activity_reads",
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["cursor", "order_by", "per_page"],
+    "evidence": "apps/go-api/internal/parity/activity_reads_integration_test.go::TestActivityReadFixturesReplayAgainstGo",
+    "options_variants": ["ordinary", "preflight"]
+  },
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["api_key", "method", "path", "writes_table"]
+    }
+  },
+  "operations": {
+    "get_api_users_me_activities": {
+      "path": "/api/users/me/activities/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "statuses": [200, 400, 401, 500],
+      "query_parameters": ["cursor", "order_by", "per_page"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-api-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-inactive-session-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-missing-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-negative-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-pagination-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-pagination-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/user-activities-success.json"
+      ],
+      "effects": ["api-key"],
+      "sample_path": "/api/users/me/activities/",
+      "auth_profile": "django-session"
+    }
+  }
+}

@@ -1,0 +1,3779 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Invitations and Membership API",
+    "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Invitations and Membership API"
+    }
+  ],
+  "paths": {
+    "/api/users/me/workspaces/invitations/": {
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_users_me_workspaces_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/QuerySearch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesInvitationsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/users/me/workspaces/invitations/",
+        "x-plane-handler": "list",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.UserWorkspaceInvitationsViewSet"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_users_me_workspaces_invitations",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceInvitationSelectionRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceInvitationSelectionRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceInvitationSelectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/users/me/workspaces/invitations/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.UserWorkspaceInvitationsViewSet"
+      }
+    },
+    "/api/users/me/workspaces/{slug}/projects/invitations/": {
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_users_me_workspaces_by_slug_projects_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySearch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesBySlugProjectsInvitationsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/users/me/workspaces/{slug}/projects/invitations/",
+        "x-plane-handler": "list",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.UserProjectInvitationsViewset"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_users_me_workspaces_by_slug_projects_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectMembershipSelectionRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectMembershipSelectionRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectMembershipSelectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersMessageresponseResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/users/me/workspaces/{slug}/projects/invitations/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.UserProjectInvitationsViewset"
+      }
+    },
+    "/api/v1/workspaces/{slug}/invitations/": {
+      "get": {
+        "description": "List all workspace invites for a workspace",
+        "operationId": "get_api_v1_workspaces_by_slug_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace invites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "List workspace invites",
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/v1/workspaces/{slug}/invitations/",
+        "x-plane-handler": "list",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      },
+      "post": {
+        "description": "Create a workspace invite",
+        "operationId": "post_api_v1_workspaces_by_slug_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIV1WorkspacesBySlugInvitationsRequestBody"
+        },
+        "responses": {
+          "201": {
+            "description": "Workspace invite",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Create workspace invite",
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/v1/workspaces/{slug}/invitations/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      }
+    },
+    "/api/v1/workspaces/{slug}/invitations/{pk}/": {
+      "delete": {
+        "description": "Delete a workspace invite",
+        "operationId": "delete_api_v1_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "Workspace invite deleted"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Delete workspace invite",
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/v1/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      },
+      "get": {
+        "description": "Get a workspace invite by ID",
+        "operationId": "get_api_v1_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneApiSerializersInviteWorkspaceinviteserializerResponseStatus200Response",
+            "description": "Workspace invite"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get workspace invite",
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/v1/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "retrieve",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      },
+      "patch": {
+        "description": "Update a workspace invite",
+        "operationId": "patch_api_v1_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneApiSerializersInviteWorkspaceinviteserializerResponseStatus200Response",
+            "description": "Workspace invite"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Update workspace invite",
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/v1/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      },
+      "put": {
+        "description": "Endpoint for creating, listing and deleting workspace invites.",
+        "operationId": "put_api_v1_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "description": "A UUID string identifying this Workspace Member Invite.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIV1WorkspacesBySlugInvitationsRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneApiSerializersInviteWorkspaceinviteserializerResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PUT /api/v1/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "update",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkspaceOwnerPermission"
+        ],
+        "x-plane-view": "plane.api.views.invite.WorkspaceInvitationsViewset"
+      }
+    },
+    "/api/v1/workspaces/{slug}/members-lite/": {
+      "get": {
+        "description": "Retrieve a paginated, lightweight list of workspace members for pickers and directories.",
+        "operationId": "get_api_v1_workspaces_by_slug_members_lite",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Pagination cursor for getting next set of results",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of results per page (default: 20, max: 100)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of workspace members with minimal fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersPaginatedworkspacememberliteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "List workspace members (lite)",
+        "tags": [
+          "workspaces"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/v1/workspaces/{slug}/members-lite/",
+        "x-plane-handler": "get",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.api.views.member.WorkspaceMemberLiteAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/members/": {
+      "get": {
+        "description": "Retrieve all users who are members of the specified workspace.",
+        "operationId": "get_api_v1_workspaces_by_slug_members",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_a6aed7d4"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of workspace members with their roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlaneApiSerializersMemberWorkspacememberuserliteserializerResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "List workspace members",
+        "tags": [
+          "members"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/v1/workspaces/{slug}/members/",
+        "x-plane-handler": "get",
+        "x-plane-permission-classes": [
+          "plane.utils.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.api.views.member.WorkspaceMemberAPIEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/invitations/": {
+      "get": {
+        "description": "Endpoint for creating, listing and  deleting workspaces",
+        "operationId": "get_api_workspaces_by_slug_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySearch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesInvitationsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/invitations/",
+        "x-plane-handler": "list",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceInvitationsViewset"
+      },
+      "post": {
+        "description": "Endpoint for creating, listing and  deleting workspaces",
+        "operationId": "post_api_workspaces_by_slug_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersMessageresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/invitations/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceInvitationsViewset"
+      }
+    },
+    "/api/workspaces/{slug}/invitations/{pk}/": {
+      "delete": {
+        "description": "Endpoint for creating, listing and  deleting workspaces",
+        "operationId": "delete_api_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceInvitationsViewset"
+      },
+      "get": {
+        "description": "Endpoint for creating, listing and  deleting workspaces",
+        "operationId": "get_api_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "retrieve",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceInvitationsViewset"
+      },
+      "patch": {
+        "description": "Endpoint for creating, listing and  deleting workspaces",
+        "operationId": "patch_api_workspaces_by_slug_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberinviteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberinviteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberinviteserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/invitations/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.workspace.WorkSpaceAdminPermission"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceInvitationsViewset"
+      }
+    },
+    "/api/workspaces/{slug}/invitations/{pk}/join/": {
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_workspaces_by_slug_invitations_by_pk_join",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberinvitepublicserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {},
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/invitations/{pk}/join/",
+        "x-plane-handler": "get",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.AllowAny"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceJoinEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_invitations_by_pk_join",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugInvitationsByPkJoinRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersMessageresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {},
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/invitations/{pk}/join/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.AllowAny"
+        ],
+        "x-plane-view": "plane.app.views.workspace.invite.WorkspaceJoinEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/members/leave/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_members_leave",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "members"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/members/leave/",
+        "x-plane-handler": "leave",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.workspace.member.WorkSpaceMemberViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/members/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_members_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "members"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/members/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.workspace.member.WorkSpaceMemberViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_members_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberadminserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "members"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/members/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.workspace.member.WorkSpaceMemberViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/invitations/": {
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/QuerySearch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesBySlugProjectsInvitationsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/projects/{project_id}/invitations/",
+        "x-plane-handler": "list",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectInvitationsViewset"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_invitations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersMessageresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/invitations/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectInvitationsViewset"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectInvitationsViewset"
+      },
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_invitations_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersProjectProjectmemberinviteserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "invitations"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/",
+        "x-plane-handler": "retrieve",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectInvitationsViewset"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/": {
+      "get": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "get_api_workspaces_by_slug_projects_by_project_id_join_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersProjectProjectmemberinvitepublicserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {},
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/workspaces/{slug}/projects/{project_id}/join/{pk}/",
+        "x-plane-handler": "get",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.AllowAny"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectJoinEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_join_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugInvitationsByPkJoinRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersMessageresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {},
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/join/{pk}/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.AllowAny"
+        ],
+        "x-plane-view": "plane.app.views.project.invite.ProjectJoinEndpoint"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InvitationBatchRequest": {
+        "type": "object",
+        "properties": {
+          "emails": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationEntryRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "emails"
+        ]
+      },
+      "InvitationEntryRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "description": "Invitation role. Project invitations accept canonical choices 5, 15, or 20; workspace invitations preserve Django integer coercion and the caller role cap."
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "InvitationsMembershipHTTPError_855d3c76670f86d1": {
+        "type": "object",
+        "properties": {
+          "accepted": {},
+          "code": {},
+          "company_role": {},
+          "created_by": {},
+          "default_props": {},
+          "deleted_at": {},
+          "detail": {},
+          "email": {},
+          "error": {},
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "is_active": {},
+          "issue_props": {},
+          "non_field_errors": {},
+          "role": {},
+          "tips": {},
+          "updated_by": {},
+          "view_props": {},
+          "workspace": {},
+          "workspace_users": {}
+        }
+      },
+      "PatchedPlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          }
+        },
+        "description": "Serializer for workspace invites."
+      },
+      "PatchedPlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "company_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_props": {},
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "is_active": {
+            "type": "boolean"
+          },
+          "issue_props": {},
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "tips": {},
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "PatchedPlaneAppSerializersWorkspaceWorkspacememberinviteserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "PlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          }
+        },
+        "description": "Serializer for workspace invites.",
+        "required": [
+          "email"
+        ]
+      },
+      "PlaneApiSerializersInviteWorkspaceinviteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "responded_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          }
+        },
+        "description": "Serializer for workspace invites.",
+        "required": [
+          "email",
+          "created_at",
+          "id",
+          "updated_at"
+        ]
+      },
+      "PlaneApiSerializersMemberWorkspacememberliteapiserializerResponse": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "avatar_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "display_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "email": {
+            "type": "string",
+            "readOnly": true,
+            "format": "email"
+          },
+          "first_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "is_active": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "is_bot": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "last_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "role": {
+            "readOnly": true,
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          }
+        },
+        "description": "Minimal WorkspaceMember representation for paginated member pickers/directories.",
+        "required": [
+          "display_name",
+          "email",
+          "first_name",
+          "id",
+          "last_name"
+        ]
+      },
+      "PlaneApiSerializersMemberWorkspacememberuserliteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string",
+            "readOnly": true
+          },
+          "avatar_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "display_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "email": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "last_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "role": {
+            "type": "integer",
+            "readOnly": true
+          }
+        },
+        "description": "The existing workspace roster adds a role to the API user projection.",
+        "required": [
+          "avatar",
+          "display_name",
+          "first_name",
+          "id",
+          "last_name"
+        ]
+      },
+      "PlaneAppSerializersProjectProjectliteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "cover_image": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover_image_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "title": "Project Description",
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "identifier": {
+            "title": "Project Identifier",
+            "type": "string",
+            "readOnly": true
+          },
+          "logo_props": {
+            "readOnly": true
+          },
+          "name": {
+            "title": "Project Name",
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "identifier",
+          "name"
+        ]
+      },
+      "PlaneAppSerializersProjectProjectmemberinvitepublicserializerResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "message": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersProjectProjectliteserializerResponse"
+              }
+            ]
+          },
+          "responded_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "readOnly": true,
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "workspace": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse"
+              }
+            ]
+          }
+        },
+        "description": "Safe read-only serializer for the public project invite GET endpoint.\n\nIntentionally excludes ``email`` and ``token`` so that an unauthenticated\ncaller cannot retrieve the invitee's email address or the acceptance token\n(GHSA-2r58-hgv7-635q).",
+        "required": [
+          "id"
+        ]
+      },
+      "PlaneAppSerializersProjectProjectmemberinviteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersProjectProjectliteserializerResponse"
+              }
+            ]
+          },
+          "responded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "token": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspace": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "token",
+          "created_at",
+          "id",
+          "updated_at"
+        ]
+      },
+      "PlaneAppSerializersUserUseradminliteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "is_bot": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "last_login_medium": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "display_name",
+          "first_name",
+          "id",
+          "last_name",
+          "avatar"
+        ]
+      },
+      "PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "logo_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Workspace Name",
+            "type": "string",
+            "readOnly": true
+          },
+          "slug": {
+            "type": "string",
+            "readOnly": true,
+            "pattern": "^[\\-0-9A-Z_a-z]+$"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "PlaneAppSerializersWorkspaceWorkspacememberadminserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "company_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_props": {},
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "is_active": {
+            "type": "boolean"
+          },
+          "issue_props": {},
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "tips": {},
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "workspace"
+        ]
+      },
+      "PlaneAppSerializersWorkspaceWorkspacememberadminserializerResponse": {
+        "type": "object",
+        "properties": {
+          "company_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "default_props": {},
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "issue_props": {},
+          "member": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersUserUseradminliteserializerResponse"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "tips": {},
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "workspace",
+          "created_at",
+          "id",
+          "updated_at"
+        ]
+      },
+      "PlaneAppSerializersWorkspaceWorkspacememberinvitepublicserializerResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "message": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responded_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "readOnly": true,
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "workspace": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse"
+              }
+            ]
+          }
+        },
+        "description": "Safe read-only serializer for the public workspace invite GET endpoint.\n\nIntentionally excludes ``token`` and ``invite_link`` so that an\nunauthenticated caller cannot retrieve the acceptance token and use it to\nhijack an invitation (GHSA-86mg-259g-pwgg / GHSA-gf48-p6jp-cwc4).",
+        "required": [
+          "created_at",
+          "email",
+          "id",
+          "updated_at"
+        ]
+      },
+      "PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "invite_link": {
+            "type": "string",
+            "readOnly": true
+          },
+          "message": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "responded_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "enum": [
+              20,
+              15,
+              5
+            ],
+            "minimum": 0,
+            "maximum": 32767,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RoleC37Enum"
+              }
+            ]
+          },
+          "token": {
+            "type": "string",
+            "readOnly": true
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspace": {
+            "readOnly": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspaceliteserializerResponse"
+              }
+            ]
+          }
+        },
+        "required": [
+          "created_at",
+          "email",
+          "id",
+          "invite_link",
+          "token",
+          "updated_at"
+        ]
+      },
+      "ProjectMembershipSelectionRequest": {
+        "type": "object",
+        "properties": {
+          "project_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "RestFrameworkSerializersInvitationresponserequestRequestRequest": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "default": false
+          },
+          "token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "RestFrameworkSerializersMessageresponseResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "RestFrameworkSerializersPaginatedworkspacememberliteResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer"
+          },
+          "extra_stats": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "grouped_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "next_page_results": {
+            "type": "boolean"
+          },
+          "prev_cursor": {
+            "type": "string"
+          },
+          "prev_page_results": {
+            "type": "boolean"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlaneApiSerializersMemberWorkspacememberliteapiserializerResponse"
+            }
+          },
+          "sub_grouped_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_count": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "total_results": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "count",
+          "extra_stats",
+          "grouped_by",
+          "next_cursor",
+          "next_page_results",
+          "prev_cursor",
+          "prev_page_results",
+          "results",
+          "sub_grouped_by",
+          "total_count",
+          "total_pages",
+          "total_results"
+        ]
+      },
+      "RoleC37Enum": {
+        "type": "integer",
+        "description": "* `20` - Admin\n* `15` - Member\n* `5` - Guest",
+        "enum": [
+          20,
+          15,
+          5
+        ]
+      },
+      "WorkspaceInvitationSelectionRequest": {
+        "type": "object",
+        "properties": {
+          "invitations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "PathPk": {
+        "name": "pk",
+        "in": "path",
+        "description": "Workspace invite ID",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathPk_ec714d84": {
+        "name": "pk",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathProjectID": {
+        "name": "project_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PathSlug_a6aed7d4": {
+        "name": "slug",
+        "in": "path",
+        "description": "Workspace slug",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QuerySearch": {
+        "name": "search",
+        "in": "query",
+        "description": "A search term.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "requestBodies": {
+      "PostAPIV1WorkspacesBySlugInvitationsRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerRequestRequest"
+            }
+          }
+        }
+      },
+      "PostAPIWorkspacesBySlugInvitationsByPkJoinRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestFrameworkSerializersInvitationresponserequestRequestRequest"
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "$ref": "#/components/schemas/RestFrameworkSerializersInvitationresponserequestRequestRequest"
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/RestFrameworkSerializersInvitationresponserequestRequestRequest"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "ConflictError": {
+        "description": "Conflict response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "GetAPIUsersMeWorkspacesBySlugProjectsInvitationsStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlaneAppSerializersProjectProjectmemberinviteserializerResponse"
+              }
+            }
+          }
+        }
+      },
+      "GetAPIUsersMeWorkspacesInvitationsStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse"
+              }
+            }
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "NoContentResponse": {
+        "description": "No Content response."
+      },
+      "NotFoundError": {
+        "description": "Not Found response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "PlaneApiSerializersInviteWorkspaceinviteserializerResponseStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneApiSerializersInviteWorkspaceinviteserializerResponse"
+            }
+          }
+        }
+      },
+      "PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponseStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersWorkspaceWorkspacememberinviteserializerResponse"
+            }
+          }
+        }
+      },
+      "RestFrameworkSerializersMessageresponseResponseStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestFrameworkSerializersMessageresponseResponse"
+            }
+          }
+        }
+      },
+      "TooManyRequestsError": {
+        "description": "Too Many Requests response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      },
+      "UnsupportedMediaTypeError": {
+        "description": "Unsupported Media Type response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/InvitationsMembershipHTTPError_855d3c76670f86d1"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "description": "Plane API token authentication.",
+        "name": "X-Api-Key",
+        "in": "header"
+      },
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session authentication without CSRF enforcement.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "invitations"
+    },
+    {
+      "name": "members"
+    },
+    {
+      "name": "projects"
+    },
+    {
+      "name": "workspaces"
+    }
+  ]
+}

@@ -1,0 +1,252 @@
+{
+  "database": {
+    "after": {
+      "deploy_boards": [
+        {
+          "anchor": "public-project-meta-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-2>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "anchor": "public-project-meta-orphan",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-4>",
+          "entity_name": "project",
+          "id": "<uuid-5>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "anchor": "public-project-meta-wrong-kind",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "cycle",
+          "id": "<uuid-6>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": "https://example.com/cover.png",
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "Metadata & details",
+          "description_html": null,
+          "description_text": null,
+          "emoji": "\ud83d\ude80",
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": {
+            "color": "#123456",
+            "name": "rocket"
+          },
+          "id": "<uuid-1>",
+          "identifier": "PMETA",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Public <Project>",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "deploy_boards": [
+        {
+          "anchor": "public-project-meta-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-2>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "anchor": "public-project-meta-orphan",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-4>",
+          "entity_name": "project",
+          "id": "<uuid-5>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "anchor": "public-project-meta-wrong-kind",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "cycle",
+          "id": "<uuid-6>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {},
+          "workspace_id": "<uuid-3>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": "https://example.com/cover.png",
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "Metadata & details",
+          "description_html": null,
+          "description_text": null,
+          "emoji": "\ud83d\ude80",
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": {
+            "color": "#123456",
+            "name": "rocket"
+          },
+          "id": "<uuid-1>",
+          "identifier": "PMETA",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Public <Project>",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/public/anchor/public-project-meta-orphan/meta/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "Project is not published"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 404
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "meta-missing-project"
+  }
+}

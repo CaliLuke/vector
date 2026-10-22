@@ -1,0 +1,47 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_ACCESS_CONTROL_REQUEST_HEADERS": "x-api-key",
+      "HTTP_ACCESS_CONTROL_REQUEST_METHOD": "GET",
+      "HTTP_ORIGIN": "http://localhost:3000",
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "OPTIONS",
+    "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/cycles/<uuid-2>/cycle-issues/<uuid-3>/",
+    "principal": {
+      "kind": "api-key-not-reached"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "access-control-allow-credentials": "true",
+      "access-control-allow-headers": "accept, authorization, content-type, user-agent, x-csrftoken, x-requested-with, X-API-Key",
+      "access-control-allow-methods": "DELETE, GET, OPTIONS, PATCH, POST, PUT",
+      "access-control-allow-origin": "http://localhost:3000",
+      "access-control-max-age": "86400",
+      "content-type": "text/html; charset=utf-8",
+      "vary": "origin"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "issue-detail-cors-preflight"
+  }
+}

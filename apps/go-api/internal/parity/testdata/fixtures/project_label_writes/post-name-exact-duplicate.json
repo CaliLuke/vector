@@ -1,0 +1,422 @@
+{
+  "audit": {
+    "created_label_count": 0,
+    "created_label_has_actor": false,
+    "created_label_has_null_updater": false,
+    "created_label_sort_orders": [],
+    "target_created_at_preserved": false,
+    "target_created_by_preserved": false,
+    "target_soft_deleted": false,
+    "target_sort_order_is_nan": false,
+    "target_updated_at_advanced": false,
+    "target_updated_by_is_actor": false
+  },
+  "cache": {
+    "after": {
+      "/api/workspaces/labels-contract/labels/": null,
+      "/api/workspaces/labels-contract/labels/:secondary": null
+    },
+    "before": {
+      "/api/workspaces/labels-contract/labels/": {
+        "marker": "exact"
+      },
+      "/api/workspaces/labels-contract/labels/:secondary": {
+        "marker": "secondary"
+      }
+    }
+  },
+  "database": {
+    "after": {
+      "issue_labels": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-3>",
+          "issue_id": "<uuid-4>",
+          "label_id": "<uuid-5>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-7>",
+          "issue_id": "<uuid-4>",
+          "label_id": "<uuid-8>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        }
+      ],
+      "labels": [
+        {
+          "color": "#111111",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-8>",
+          "name": "Alpha",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#222222",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-9>",
+          "name": "Beta",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#333333",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 20010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#444444",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-5>",
+          "name": "Child existing",
+          "parent_id": "<uuid-8>",
+          "project_id": "<uuid-1>",
+          "sort_order": 30010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#555555",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-11>",
+          "name": "Foreign parent",
+          "parent_id": null,
+          "project_id": "<uuid-12>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#666666",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-13>",
+          "name": "Deleted parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 40010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#777777",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-14>",
+          "name": "Global",
+          "parent_id": null,
+          "project_id": null,
+          "sort_order": 70.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#888888",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-15>",
+          "name": "Foreign workspace parent",
+          "parent_id": null,
+          "project_id": "<uuid-16>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-17>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "before": {
+      "issue_labels": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-3>",
+          "issue_id": "<uuid-4>",
+          "label_id": "<uuid-5>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-7>",
+          "issue_id": "<uuid-4>",
+          "label_id": "<uuid-8>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        }
+      ],
+      "labels": [
+        {
+          "color": "#111111",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-8>",
+          "name": "Alpha",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#222222",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-9>",
+          "name": "Beta",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#333333",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 20010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#444444",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-5>",
+          "name": "Child existing",
+          "parent_id": "<uuid-8>",
+          "project_id": "<uuid-1>",
+          "sort_order": 30010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#555555",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-11>",
+          "name": "Foreign parent",
+          "parent_id": null,
+          "project_id": "<uuid-12>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#666666",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-13>",
+          "name": "Deleted parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 40010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#777777",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-14>",
+          "name": "Global",
+          "parent_id": null,
+          "project_id": null,
+          "sort_order": 70.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-6>"
+        },
+        {
+          "color": "#888888",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-15>",
+          "name": "Foreign workspace parent",
+          "parent_id": null,
+          "project_id": "<uuid-16>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-17>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": [],
+    "field_changes": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "name": "Alpha"
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/labels-contract/projects/<uuid-1>/issue-labels/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<uuid-2>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": [
+        "LABEL_NAME_ALREADY_EXISTS"
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "post-name-exact-duplicate"
+  }
+}

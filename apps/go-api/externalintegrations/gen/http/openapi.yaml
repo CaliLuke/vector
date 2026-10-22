@@ -1,0 +1,1677 @@
+openapi: 3.1.1
+info:
+    title: Plane External Integrations API
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane External Integrations API
+paths:
+    /api/unsplash/:
+        get:
+            tags:
+                - external_integrations
+            summary: unsplash external_integrations
+            operationId: get_api_unsplash
+            parameters:
+                - name: query
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: per_page
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIUnsplashStatus200Response'
+                "300":
+                    description: 'status_300: Multiple Choices response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "301":
+                    description: 'status_301: Moved Permanently response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "302":
+                    description: 'status_302: Found response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "303":
+                    description: 'status_303: See Other response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "304":
+                    description: 'status_304: Not Modified response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "305":
+                    description: 'status_305: Use Proxy response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "306":
+                    description: 'status_306:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "307":
+                    description: 'status_307: Temporary Redirect response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "308":
+                    description: 'status_308: Permanent Redirect response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "309":
+                    description: 'status_309:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "310":
+                    description: 'status_310:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "311":
+                    description: 'status_311:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "312":
+                    description: 'status_312:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "313":
+                    description: 'status_313:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "314":
+                    description: 'status_314:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "315":
+                    description: 'status_315:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "316":
+                    description: 'status_316:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "317":
+                    description: 'status_317:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "318":
+                    description: 'status_318:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "319":
+                    description: 'status_319:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "320":
+                    description: 'status_320:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "321":
+                    description: 'status_321:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "322":
+                    description: 'status_322:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "323":
+                    description: 'status_323:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "324":
+                    description: 'status_324:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "325":
+                    description: 'status_325:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "326":
+                    description: 'status_326:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "327":
+                    description: 'status_327:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "328":
+                    description: 'status_328:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "329":
+                    description: 'status_329:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "330":
+                    description: 'status_330:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "331":
+                    description: 'status_331:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "332":
+                    description: 'status_332:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "333":
+                    description: 'status_333:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "334":
+                    description: 'status_334:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "335":
+                    description: 'status_335:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "336":
+                    description: 'status_336:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "337":
+                    description: 'status_337:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "338":
+                    description: 'status_338:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "339":
+                    description: 'status_339:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "340":
+                    description: 'status_340:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "341":
+                    description: 'status_341:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "342":
+                    description: 'status_342:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "343":
+                    description: 'status_343:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "344":
+                    description: 'status_344:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "345":
+                    description: 'status_345:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "346":
+                    description: 'status_346:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "347":
+                    description: 'status_347:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "348":
+                    description: 'status_348:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "349":
+                    description: 'status_349:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "350":
+                    description: 'status_350:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "351":
+                    description: 'status_351:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "352":
+                    description: 'status_352:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "353":
+                    description: 'status_353:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "354":
+                    description: 'status_354:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "355":
+                    description: 'status_355:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "356":
+                    description: 'status_356:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "357":
+                    description: 'status_357:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "358":
+                    description: 'status_358:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "359":
+                    description: 'status_359:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "360":
+                    description: 'status_360:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "361":
+                    description: 'status_361:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "362":
+                    description: 'status_362:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "363":
+                    description: 'status_363:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "364":
+                    description: 'status_364:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "365":
+                    description: 'status_365:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "366":
+                    description: 'status_366:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "367":
+                    description: 'status_367:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "368":
+                    description: 'status_368:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "369":
+                    description: 'status_369:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "370":
+                    description: 'status_370:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "371":
+                    description: 'status_371:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "372":
+                    description: 'status_372:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "373":
+                    description: 'status_373:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "374":
+                    description: 'status_374:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "375":
+                    description: 'status_375:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "376":
+                    description: 'status_376:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "377":
+                    description: 'status_377:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "378":
+                    description: 'status_378:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "379":
+                    description: 'status_379:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "380":
+                    description: 'status_380:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "381":
+                    description: 'status_381:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "382":
+                    description: 'status_382:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "383":
+                    description: 'status_383:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "384":
+                    description: 'status_384:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "385":
+                    description: 'status_385:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "386":
+                    description: 'status_386:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "387":
+                    description: 'status_387:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "388":
+                    description: 'status_388:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "389":
+                    description: 'status_389:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "390":
+                    description: 'status_390:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "391":
+                    description: 'status_391:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "392":
+                    description: 'status_392:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "393":
+                    description: 'status_393:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "394":
+                    description: 'status_394:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "395":
+                    description: 'status_395:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "396":
+                    description: 'status_396:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "397":
+                    description: 'status_397:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "398":
+                    description: 'status_398:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "399":
+                    description: 'status_399:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "402":
+                    description: 'status_402: Payment Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    description: 'status_405: Method Not Allowed response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "406":
+                    description: 'status_406: Not Acceptable response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "407":
+                    description: 'status_407: Proxy Authentication Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "408":
+                    description: 'status_408: Request Timeout response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "409":
+                    description: 'status_409: Conflict response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "410":
+                    description: 'status_410: Gone response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "411":
+                    description: 'status_411: Length Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "412":
+                    description: 'status_412: Precondition Failed response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "413":
+                    description: 'status_413: Request Entity Too Large response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "414":
+                    description: 'status_414: Request URI Too Long response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "416":
+                    description: 'status_416: Requested Range Not Satisfiable response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "417":
+                    description: 'status_417: Expectation Failed response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "418":
+                    description: 'status_418: I''m a teapot response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "419":
+                    description: 'status_419:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "420":
+                    description: 'status_420:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "421":
+                    description: 'status_421: Misdirected Request response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "422":
+                    description: 'status_422: Unprocessable Entity response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "423":
+                    description: 'status_423: Locked response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "424":
+                    description: 'status_424: Failed Dependency response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "425":
+                    description: 'status_425: Too Early response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "426":
+                    description: 'status_426: Upgrade Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "427":
+                    description: 'status_427:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "428":
+                    description: 'status_428: Precondition Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "429":
+                    description: 'status_429: Too Many Requests response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "430":
+                    description: 'status_430:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "431":
+                    description: 'status_431: Request Header Fields Too Large response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "432":
+                    description: 'status_432:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "433":
+                    description: 'status_433:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "434":
+                    description: 'status_434:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "435":
+                    description: 'status_435:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "436":
+                    description: 'status_436:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "437":
+                    description: 'status_437:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "438":
+                    description: 'status_438:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "439":
+                    description: 'status_439:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "440":
+                    description: 'status_440:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "441":
+                    description: 'status_441:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "442":
+                    description: 'status_442:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "443":
+                    description: 'status_443:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "444":
+                    description: 'status_444:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "445":
+                    description: 'status_445:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "446":
+                    description: 'status_446:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "447":
+                    description: 'status_447:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "448":
+                    description: 'status_448:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "449":
+                    description: 'status_449:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "450":
+                    description: 'status_450:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "451":
+                    description: 'status_451: Unavailable For Legal Reasons response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "452":
+                    description: 'status_452:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "453":
+                    description: 'status_453:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "454":
+                    description: 'status_454:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "455":
+                    description: 'status_455:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "456":
+                    description: 'status_456:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "457":
+                    description: 'status_457:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "458":
+                    description: 'status_458:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "459":
+                    description: 'status_459:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "460":
+                    description: 'status_460:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "461":
+                    description: 'status_461:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "462":
+                    description: 'status_462:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "463":
+                    description: 'status_463:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "464":
+                    description: 'status_464:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "465":
+                    description: 'status_465:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "466":
+                    description: 'status_466:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "467":
+                    description: 'status_467:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "468":
+                    description: 'status_468:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "469":
+                    description: 'status_469:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "470":
+                    description: 'status_470:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "471":
+                    description: 'status_471:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "472":
+                    description: 'status_472:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "473":
+                    description: 'status_473:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "474":
+                    description: 'status_474:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "475":
+                    description: 'status_475:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "476":
+                    description: 'status_476:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "477":
+                    description: 'status_477:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "478":
+                    description: 'status_478:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "479":
+                    description: 'status_479:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "480":
+                    description: 'status_480:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "481":
+                    description: 'status_481:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "482":
+                    description: 'status_482:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "483":
+                    description: 'status_483:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "484":
+                    description: 'status_484:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "485":
+                    description: 'status_485:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "486":
+                    description: 'status_486:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "487":
+                    description: 'status_487:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "488":
+                    description: 'status_488:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "489":
+                    description: 'status_489:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "490":
+                    description: 'status_490:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "491":
+                    description: 'status_491:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "492":
+                    description: 'status_492:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "493":
+                    description: 'status_493:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "494":
+                    description: 'status_494:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "495":
+                    description: 'status_495:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "496":
+                    description: 'status_496:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "497":
+                    description: 'status_497:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "498":
+                    description: 'status_498:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "499":
+                    description: 'status_499:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+                "501":
+                    description: 'status_501: Not Implemented response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "502":
+                    description: 'status_502: Bad Gateway response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "503":
+                    description: 'status_503: Service Unavailable response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "504":
+                    description: 'status_504: Gateway Timeout response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "505":
+                    description: 'status_505: HTTP Version Not Supported response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "506":
+                    description: 'status_506: Variant Also Negotiates response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "507":
+                    description: 'status_507: Insufficient Storage response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "508":
+                    description: 'status_508: Loop Detected response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "509":
+                    description: 'status_509:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "510":
+                    description: 'status_510: Not Extended response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "511":
+                    description: 'status_511: Network Authentication Required response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "512":
+                    description: 'status_512:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "513":
+                    description: 'status_513:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "514":
+                    description: 'status_514:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "515":
+                    description: 'status_515:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "516":
+                    description: 'status_516:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "517":
+                    description: 'status_517:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "518":
+                    description: 'status_518:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "519":
+                    description: 'status_519:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "520":
+                    description: 'status_520:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "521":
+                    description: 'status_521:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "522":
+                    description: 'status_522:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "523":
+                    description: 'status_523:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "524":
+                    description: 'status_524:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "525":
+                    description: 'status_525:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "526":
+                    description: 'status_526:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "527":
+                    description: 'status_527:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "528":
+                    description: 'status_528:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "529":
+                    description: 'status_529:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "530":
+                    description: 'status_530:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "531":
+                    description: 'status_531:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "532":
+                    description: 'status_532:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "533":
+                    description: 'status_533:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "534":
+                    description: 'status_534:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "535":
+                    description: 'status_535:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "536":
+                    description: 'status_536:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "537":
+                    description: 'status_537:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "538":
+                    description: 'status_538:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "539":
+                    description: 'status_539:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "540":
+                    description: 'status_540:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "541":
+                    description: 'status_541:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "542":
+                    description: 'status_542:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "543":
+                    description: 'status_543:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "544":
+                    description: 'status_544:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "545":
+                    description: 'status_545:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "546":
+                    description: 'status_546:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "547":
+                    description: 'status_547:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "548":
+                    description: 'status_548:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "549":
+                    description: 'status_549:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "550":
+                    description: 'status_550:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "551":
+                    description: 'status_551:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "552":
+                    description: 'status_552:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "553":
+                    description: 'status_553:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "554":
+                    description: 'status_554:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "555":
+                    description: 'status_555:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "556":
+                    description: 'status_556:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "557":
+                    description: 'status_557:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "558":
+                    description: 'status_558:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "559":
+                    description: 'status_559:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "560":
+                    description: 'status_560:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "561":
+                    description: 'status_561:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "562":
+                    description: 'status_562:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "563":
+                    description: 'status_563:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "564":
+                    description: 'status_564:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "565":
+                    description: 'status_565:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "566":
+                    description: 'status_566:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "567":
+                    description: 'status_567:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "568":
+                    description: 'status_568:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "569":
+                    description: 'status_569:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "570":
+                    description: 'status_570:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "571":
+                    description: 'status_571:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "572":
+                    description: 'status_572:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "573":
+                    description: 'status_573:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "574":
+                    description: 'status_574:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "575":
+                    description: 'status_575:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "576":
+                    description: 'status_576:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "577":
+                    description: 'status_577:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "578":
+                    description: 'status_578:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "579":
+                    description: 'status_579:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "580":
+                    description: 'status_580:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "581":
+                    description: 'status_581:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "582":
+                    description: 'status_582:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "583":
+                    description: 'status_583:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "584":
+                    description: 'status_584:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "585":
+                    description: 'status_585:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "586":
+                    description: 'status_586:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "587":
+                    description: 'status_587:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "588":
+                    description: 'status_588:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "589":
+                    description: 'status_589:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "590":
+                    description: 'status_590:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "591":
+                    description: 'status_591:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "592":
+                    description: 'status_592:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "593":
+                    description: 'status_593:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "594":
+                    description: 'status_594:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "595":
+                    description: 'status_595:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "596":
+                    description: 'status_596:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "597":
+                    description: 'status_597:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "598":
+                    description: 'status_598:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+                "599":
+                    description: 'status_599:  response.'
+                    content:
+                        application/json:
+                            schema: {}
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/ai-assistant/:
+        post:
+            tags:
+                - external_integrations
+            summary: workspace_ai_assistant external_integrations
+            operationId: post_api_workspaces_by_slug_ai_assistant
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugAiAssistantRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIUnsplashStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/ai-assistant/:
+        post:
+            tags:
+                - external_integrations
+            summary: project_ai_assistant external_integrations
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_ai_assistant
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - name: project_id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugAiAssistantRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIUnsplashStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+components:
+    parameters:
+        PathSlug:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PostAPIWorkspacesBySlugAiAssistantRequestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                application/x-www-form-urlencoded:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                multipart/form-data:
+                    schema:
+                        type: object
+                        additionalProperties: true
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema: {}
+        GetAPIUnsplashStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane session cookie authentication.
+            name: session-id
+            in: cookie
+tags:
+    - name: external_integrations
+      description: Provides workspace-scoped AI assistance and Unsplash proxy access.

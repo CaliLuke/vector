@@ -1,0 +1,52 @@
+{
+  "objective": "Immutable source replay of the 10 new work-item detail OPTIONS cases",
+  "source": "pre-removal Django API archive copied from /tmp/plane-work-item-core/pre-removal-api into a Colima-mounted task-owned directory outside the git worktree",
+  "temporary_source_directory": "[local migration artifact omitted]",
+  "command": "python3 /tmp/plane-work-item-core/run-source-options-immutable.py -q plane/tests/parity/test_work_item_core_protocol_recorder.py -k 'issue-detail-missing or issue-detail-foreign-project or issue-detail-archived or issue-detail-draft or issue-detail-soft-deleted or issue-detail-filter- or issue-detail-triage or issue-detail-project-archived'",
+  "environment": {
+    "UPDATE_PARITY_FIXTURES": "0",
+    "WORK_ITEM_CORE_SOURCE_RECORDING": "1",
+    "test_image": "plane-notification-parity:3e312f0317845e2c808773dc",
+    "network": "plane-work-items-recording"
+  },
+  "result": {
+    "exit_code": 0,
+    "passed": 10,
+    "deselected": 71,
+    "duration_seconds": 3.8,
+    "all_statuses": 200,
+    "actions_put": "present only for filter-matches"
+  },
+  "console_log": "/tmp/plane-work-item-core/options-detail-source-immutable.log",
+  "fixture_sha256": {
+    "work-item-core-protocol-app-options-issue-detail-missing.json": "1314bccb6be61e37b84c46161c774619d05f4a28f78b202fcedd6c2e5340479e",
+    "work-item-core-protocol-app-options-issue-detail-foreign-project.json": "8ef9f395eb45eaf4ea8f8180a0a30b3672f750223f7462e707873b75999bfa29",
+    "work-item-core-protocol-app-options-issue-detail-archived.json": "6f0d2f928d0c512b839fca2a0f8ad6eee72245ca1395c280cff179609cda4cdc",
+    "work-item-core-protocol-app-options-issue-detail-draft.json": "60c8607e546f6c44f0beba91f37116614adc8666d1fe98338a08cf9d810da220",
+    "work-item-core-protocol-app-options-issue-detail-soft-deleted.json": "2c553d041aea6f15623371fdd295f920deb27c661a47eeaff4de142b7ca92856",
+    "work-item-core-protocol-app-options-issue-detail-filter-matches.json": "771ef36e301827e14547f2b6adbec255f6a3b9b4c0354b57d85c53756e0c17ec",
+    "work-item-core-protocol-app-options-issue-detail-filter-excludes.json": "b061fe0e9b8b315d9cd270776b22d321fd31c48bd0b00feb7e30676e7114e8fb",
+    "work-item-core-protocol-app-options-issue-detail-filter-malformed.json": "cd6a7eb9d9e1b5e9070912896c0dbbdc0cb56be02c1b5211cd2468e0195e8ee3",
+    "work-item-core-protocol-app-options-issue-detail-triage.json": "844bce7a8ce9cab6d3d47ec6a8b2b7fd44da989e3aca6c4affb23284c86a7289",
+    "work-item-core-protocol-app-options-issue-detail-project-archived.json": "da358f857392a3b76c001813e5d8d2462bbe216c75045e7c9b416ae494deeb73"
+  },
+  "prior_fixture_hash_assertions": {
+    "core-closeout-fixture-hashes-before.txt": {
+      "entry_count": 802,
+      "result": "all hashes unchanged"
+    },
+    "fixture-hashes-before.txt": {
+      "entry_count": 772,
+      "result": "all hashes unchanged"
+    },
+    "protocol-timezone-existing-hashes-before.txt": {
+      "entry_count": 872,
+      "result": "all hashes unchanged"
+    },
+    "remaining-issue-fixtures-before.txt": {
+      "entry_count": 480,
+      "result": "all hashes unchanged"
+    }
+  },
+  "generated_at_utc": "2026-10-10"
+}

@@ -1,0 +1,1362 @@
+{
+  "version": 1,
+  "family": "module_lifecycle",
+  "source_revision": "b1e50b13f199023e2aae92de08033e737b3fa831",
+  "characterization_status": "Retired and pushed in 1d18015d2627fcabecede349e816dd40f927f4a8. Source corpus contains 150 core and 48 link identities, with 20 core and 8 link sparse corrected overrides recording seven explicit corrections. All 198 effective cases and 344 production differential cases passed; all ten final proof components and four independent review scopes passed on tree 8d6c67283dcaf023b1f27630d39f933332881242. Local UI/Logal evidence and retained data are documented; no production deployment is claimed.",
+  "source_files": [
+    "apps/api/plane/app/views/module/base.py",
+    "apps/api/plane/api/views/module.py",
+    "apps/api/plane/app/views/module/archive.py",
+    "apps/api/plane/app/serializers/module.py",
+    "apps/api/plane/api/serializers/module.py",
+    "apps/api/plane/app/urls/module.py",
+    "apps/api/plane/api/urls/module.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/utils/permissions/project.py",
+    "apps/api/plane/db/models/module.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/bgtasks/webhook_task.py",
+    "apps/api/plane/bgtasks/issue_activities_task.py",
+    "apps/api/plane/bgtasks/deletion_task.py"
+  ],
+  "operations": {
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk_unarchive": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk_unarchive",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/unarchive/",
+      "sample_path": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/archived-modules/00000000-0000-4000-8000-000000020199/unarchive/",
+      "source": "apps/api/plane/api/views/module.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "API-key authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST/DELETE return empty 204.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes. API-key requests also update token bookkeeping and publish process_logs, including denied/invalid requests after authentication.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-unarchive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-unarchive-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-unarchive-success.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_target_statuses": [204, 401, 403]
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "sample_path": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/api/views/module.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "API-key authentication and ProjectEntityPermission require active project role 15 or 20. After scoped module lookup, only its creator or active project admin may delete; other project members get 403 {error: Only admin or creator can delete the module}. A guest creator or workspace-admin/project-guest cannot bypass ProjectEntityPermission.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Live Module lookup scopes ID, workspace slug and project; preserve permission-versus-missing-object precedence.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Request body is not read.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "204 with empty body on success; exact authorization and missing-object errors remain part of fixtures.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Soft-delete module and attached module-issue rows; remove all project/module favorites; retain recent visits.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "V1 DELETE emits one aggregate module.activity.deleted issue task (issue_id null, module_name and issue IDs in requested_data), then module soft-delete effects. API-key requests also update token bookkeeping and publish process_logs, including denied/invalid requests after authentication.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-creator-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-creator-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-noncreator-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-delete-workspace-admin-project-guest-denied.json"
+      ],
+      "database_effects": [
+        "Soft-delete module and attached module-issue rows; remove all project/module favorites; retain recent visits.",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.issue_activities_task.issue_activity",
+        "plane.bgtasks.logger_task.process_logs"
+      ],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 403, 404],
+      "recorded_target_statuses": [204, 401, 403, 404]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/archived-modules/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "After permission, collection routes without an ID return 400 {error: Module ID is required}; body/query IDs are ignored.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "Collection always returns the accepted missing-ID 400 for authorized callers.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "No mutation for missing-ID collection routes.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-collection-missing-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-unarchive-collection-missing-id.json"
+      ],
+      "database_effects": ["No mutation for missing-ID collection routes."],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [400, 401, 403, 404],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [400, 401]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/archived-modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST returns 200 {archived_at: str(datetime)}; DELETE returns empty 204.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-item-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-item-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-item-pk-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-unarchive-item-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-unarchive-item-pk-alias.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [401, 403, 500],
+      "recorded_target_statuses": [204, 401, 403, 404]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/archive/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST returns 200 {archived_at: str(datetime)}; DELETE returns empty 204.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-direct-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-direct-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-unarchive-direct-success.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 404],
+      "recorded_target_statuses": [204, 401, 404]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/module-links/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "authenticated"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope link by workspace/project/module and active project membership; exclude archived projects. Related parent soft deletion does not itself exclude an existing link. Missing scoped link gives the DRF ModuleLink 404.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "DELETE does not parse a request body.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST 201 with Location; PUT/PATCH 200 with ModuleLinkSerializer model representation. DELETE 204 with no body. Preserve null/blank field errors and exact duplicate/invalid-URL bodies.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "ModuleLink DELETE publishes the durable soft_delete_related_objects task.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/delete-missing-link.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/delete-project-guest-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/delete-success-soft-deletes-and-enqueues.json"
+      ],
+      "database_effects": [
+        "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle."
+      ],
+      "effects": [],
+      "queued_jobs": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 403, 404],
+      "recorded_target_statuses": [204, 401, 403, 404]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication then allow_permission([ADMIN], creator=True): active workspace membership is required first. A module creator may proceed even with project guest role; otherwise active project admin or workspace admin with active project membership is required. Noncreator ordinary members receive 403 {error: You don't have the required permissions.}. Scoped module lookup follows this authorization.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Live Module lookup scopes ID, workspace slug and project; preserve permission-versus-missing-object precedence.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Request body is not read.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "204 with empty body on success; exact authorization and missing-object errors remain part of fixtures.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Soft-delete module and attached module-issue rows; remove only requester module favorites; hard-delete matching module recent visits. Preserve unrelated module rows.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Legacy DELETE emits one module.activity.deleted issue task per linked issue with notification=true, then module soft-delete effects.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-creator-admin-revoked-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-creator-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-creator-inactive-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-creator-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-multiple-issues.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-noncreator-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-delete-workspace-admin-project-guest.json"
+      ],
+      "database_effects": [
+        "Soft-delete module and attached module-issue rows; remove only requester module favorites; hard-delete matching module recent visits. Preserve unrelated module rows."
+      ],
+      "effects": [],
+      "queued_jobs": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.issue_activities_task.issue_activity"
+      ],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 403, 404],
+      "recorded_target_statuses": [204, 401, 403, 404]
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "sample_path": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/api/views/module.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "API-key authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scoped live module lookup before body parsing; archived module returns 400 {error: Archived module cannot be edited}.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "ModuleCreate/UpdateSerializer uses members/lead, requires module_view, filters nonempty members to project members, validates date order only when both dates are supplied. Create duplicate-name error includes id/code/error/message; PATCH duplicate-name error has only error. View-level external identifier collisions return 409. Member children collect all shape and missing-user failures at their original indices before object/date validation. Empty strings normalize to null errors. The accepted composite-child correction rejects list/dict values with DRF incorrect_type messages before UUID conversion or rendering; scalar behavior is unchanged.",
+          "source": "apps/api/plane/api/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "Create returns ModuleSerializer; PATCH returns ModuleUpdateSerializer data. Preserve different field sets and DateField values.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Create/PATCH emit model_activity after save, including requested_data and prior serialized current_instance on PATCH; inherited PUT emits no model_activity. Member replacement retains source soft-delete effects. API-key requests also update token bookkeeping and publish process_logs, including denied/invalid requests after authentication.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Member-list child validation and field/object ordering",
+          "observable": "Validate every child and preserve original indices when merging malformed UUID and missing User errors. Null children and non-list outer values retain source-specific errors. A preceding valid child must not compact error indices. Collect all field errors before date/object validation; rejected app writes have no effects, API writes retain token bookkeeping and request audit only.",
+          "source": "apps/api/plane/app/serializers/module.py; apps/api/plane/api/serializers/module.py; rest_framework.fields.ListField.run_child_validation; rest_framework.relations.PrimaryKeyRelatedField.to_internal_value"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-clear-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-duplicate-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-empty-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-feature-disabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-historical-member-activity-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-historical-member-replacement-activity.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-empty-string-aggregates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-leading-existing-preserves-index.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-malformed-then-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-missing-then-malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-mixed-child-types.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-multiple-malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-multiple-missing-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-outer-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-member-list-outer-scalar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-null-external-id-clears-without-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-null-source-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-omitted-source-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-padded-unchanged-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-raw-external-id-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-raw-source-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-replace-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-single-date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-patch-whitespace-only-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-patch-historical-member-activity-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-patch-historical-member-replacement-activity.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-patch-member-list-mixed-child-types.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-patch-raw-external-id-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-patch-raw-source-collision-boundary.json"
+      ],
+      "database_effects": [
+        "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs", "plane.bgtasks.webhook_task.model_activity"],
+      "target_statuses": [200, 400, 401, 403, 404, 409, 415],
+      "recorded_source_statuses": [200, 400, 401, 403, 404, 409],
+      "recorded_target_statuses": [200, 400, 401, 403, 404, 409]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/module-links/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "authenticated"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope link by workspace/project/module and active project membership; exclude archived projects. Related parent soft deletion does not itself exclude an existing link. Missing scoped link gives the DRF ModuleLink 404.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Prepend http:// when neither http:// nor https:// is present; use source URL validation. POST and PUT require URL. PATCH without URL retains its source invalid-URL rejection. Duplicate URL within the module yields the distinct create/update error body. Route tenant/parent IDs and accepted-correction deleted_at are read-only.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST 201 with Location; PUT/PATCH 200 with ModuleLinkSerializer model representation. DELETE 204 with no body. Preserve null/blank field errors and exact duplicate/invalid-URL bodies.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-actor-timezone-timestamps.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-archived-project-link-hidden-invalid-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-archived-project-link-hidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-blank-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-deleted-at-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-deleted-module-link-remains-scoped.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-duplicate-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-foreign-project-link-hidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-invalid-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-missing-link-invalid-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-missing-link.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-null-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-project-guest-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-success-normalizes-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-title-field-error-precedes-missing-url-save-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/patch-title-only-rejected.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/patch-deleted-at-input.json"
+      ],
+      "database_effects": [
+        "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [200, 400, 401, 403, 404],
+      "recorded_target_statuses": [200, 400, 401, 403, 404]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. allow_permission admits active project role 15/20, or active workspace admin with active project membership of any role. Project-role grants do not require a workspace membership row.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scoped live module lookup before body parsing: missing returns 404 {error: Module not found}; archived returns 400 {error: Archived module cannot be updated}. Both checks precede parsing the request body.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "ModuleWriteSerializer accepts member_ids and both lead/lead_id input spellings without filtering users to project membership. Field conversion and relation validation precede object-level date ordering, which runs only when both dates are supplied. Duplicate name returns 400. Tenant/audit/archive/deletion fields are read-only. No module_view gate. Member children collect all shape and missing-user failures at their original indices before object/date validation. Empty strings normalize to null errors. The accepted composite-child correction rejects list/dict values with DRF incorrect_type messages before UUID conversion or rendering; scalar behavior is unchanged.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "PUT returns ModuleWriteSerializer representation, with actor-local audit/archive timestamps. The accepted live-members correction filters members/member_ids to live through rows ordered by User.created_at descending. Create/PATCH computed projections remain separate and unchanged.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Create/PATCH emit model_activity after save, including requested_data and prior serialized current_instance on PATCH; inherited PUT emits no model_activity. Member replacement retains source soft-delete effects.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Member-list child validation and field/object ordering",
+          "observable": "Validate every child and preserve original indices when merging malformed UUID and missing User errors. Null children and non-list outer values retain source-specific errors. A preceding valid child must not compact error indices. Collect all field errors before date/object validation; rejected app writes have no effects, API writes retain token bookkeeping and request audit only.",
+          "source": "apps/api/plane/app/serializers/module.py; apps/api/plane/api/serializers/module.py; rest_framework.fields.ListField.run_child_validation; rest_framework.relations.PrimaryKeyRelatedField.to_internal_value"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-clear-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-date-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-empty-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-field-error-precedes-date-validation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-historical-member-computed-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-invalid-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-invalid-member-precedes-date-validation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-empty-string-aggregates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-leading-existing-preserves-index.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-malformed-then-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-missing-then-malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-mixed-child-types.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-multiple-malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-multiple-missing-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-outer-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-member-list-outer-scalar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-replace-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-patch-member-list-mixed-child-types.json"
+      ],
+      "database_effects": [
+        "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules."
+      ],
+      "effects": [],
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity"],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [200, 400, 401, 403, 404],
+      "recorded_target_statuses": [200, 400, 401, 403, 404]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_modules": {
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/",
+      "sample_path": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/",
+      "source": "apps/api/plane/api/views/module.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "API-key authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scoped project lookup before parsing create body.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "ModuleCreate/UpdateSerializer uses members/lead, requires module_view, filters nonempty members to project members, validates date order only when both dates are supplied. Create duplicate-name error includes id/code/error/message; PATCH duplicate-name error has only error. View-level external identifier collisions return 409. Member children collect all shape and missing-user failures at their original indices before object/date validation. Empty strings normalize to null errors. The accepted composite-child correction rejects list/dict values with DRF incorrect_type messages before UUID conversion or rendering; scalar behavior is unchanged.",
+          "source": "apps/api/plane/api/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "Create returns ModuleSerializer; PATCH returns ModuleUpdateSerializer data. Preserve different field sets and DateField values.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Create/PATCH emit model_activity after save, including requested_data and prior serialized current_instance on PATCH; inherited PUT emits no model_activity. Member replacement retains source soft-delete effects. API-key requests also update token bookkeeping and publish process_logs, including denied/invalid requests after authentication.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Member-list child validation and field/object ordering",
+          "observable": "Validate every child and preserve original indices when merging malformed UUID and missing User errors. Null children and non-list outer values retain source-specific errors. A preceding valid child must not compact error indices. Collect all field errors before date/object validation; rejected app writes have no effects, API writes retain token bookkeeping and request audit only.",
+          "source": "apps/api/plane/app/serializers/module.py; apps/api/plane/api/serializers/module.py; rest_framework.fields.ListField.run_child_validation; rest_framework.relations.PrimaryKeyRelatedField.to_internal_value"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-duplicate-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-empty-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-feature-disabled-before-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-feature-disabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-ignores-app-only-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-ignores-nonexistent-lead-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-invalid-before-feature-disabled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-member-list-two-malformed-with-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-raw-external-id-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-raw-source-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-single-date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-create-whitespace-only-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-create-raw-external-id-collision-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/v1-create-raw-source-collision-boundary.json"
+      ],
+      "database_effects": [
+        "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs", "plane.bgtasks.webhook_task.model_activity"],
+      "target_statuses": [201, 400, 401, 403, 404, 409, 415],
+      "recorded_source_statuses": [201, 400, 401, 403, 409],
+      "recorded_target_statuses": [201, 400, 401, 403, 409]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk_archive": {
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk_archive",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/",
+      "sample_path": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/archive/",
+      "source": "apps/api/plane/api/views/module.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "API-key authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST/DELETE return empty 204.",
+          "source": "apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/api/views/module.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes. API-key requests also update token bookkeeping and publish process_logs, including denied/invalid requests after authentication.",
+          "source": "apps/api/plane/api/views/module.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-archive-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-archive-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/v1-archive-success.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "target_statuses": [204, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [204, 400, 401, 403],
+      "recorded_target_statuses": [204, 400, 401, 403]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_archived_modules": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/archived-modules/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "After permission, collection routes without an ID return 400 {error: Module ID is required}; body/query IDs are ignored.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "Collection always returns the accepted missing-ID 400 for authorized callers.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "No mutation for missing-ID collection routes.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-collection-missing-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-archive-collection-missing-id.json"
+      ],
+      "database_effects": ["No mutation for missing-ID collection routes."],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [400, 401, 403, 404],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [400, 401]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/archived-modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST returns 200 {archived_at: str(datetime)}; DELETE returns empty 204.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-item-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-item-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-item-pk-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-archive-item-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-archive-item-pk-alias.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [401, 403, 500],
+      "recorded_target_statuses": [200, 401, 403, 404]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_modules": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_modules",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. allow_permission admits active project role 15/20, or active workspace admin with active project membership of any role. Project-role grants do not require a workspace membership row.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scoped project lookup before parsing create body.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "ModuleWriteSerializer accepts member_ids and both lead/lead_id input spellings without filtering users to project membership. Field conversion and relation validation precede object-level date ordering, which runs only when both dates are supplied. Duplicate name returns 400. Tenant/audit/archive/deletion fields are read-only. No module_view gate. Member children collect all shape and missing-user failures at their original indices before object/date validation. Empty strings normalize to null errors. The accepted composite-child correction rejects list/dict values with DRF incorrect_type messages before UUID conversion or rendering; scalar behavior is unchanged.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "PUT returns ModuleWriteSerializer representation, with actor-local audit/archive timestamps. The accepted live-members correction filters members/member_ids to live through rows ordered by User.created_at descending. Create/PATCH computed projections remain separate and unchanged.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Create/PATCH emit model_activity after save, including requested_data and prior serialized current_instance on PATCH; inherited PUT emits no model_activity. Member replacement retains source soft-delete effects.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Member-list child validation and field/object ordering",
+          "observable": "Validate every child and preserve original indices when merging malformed UUID and missing User errors. Null children and non-list outer values retain source-specific errors. A preceding valid child must not compact error indices. Collect all field errors before date/object validation; rejected app writes have no effects, API writes retain token bookkeeping and request audit only.",
+          "source": "apps/api/plane/app/serializers/module.py; apps/api/plane/api/serializers/module.py; rest_framework.fields.ListField.run_child_validation; rest_framework.relations.PrimaryKeyRelatedField.to_internal_value"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-duplicate-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-empty-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-explicit-sort-order-empty-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-explicit-sort-order-soft-deleted-only-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-field-error-precedes-date-validation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-invalid-member-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-member-list-two-malformed-with-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-single-date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-create-success.json"
+      ],
+      "database_effects": [
+        "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules."
+      ],
+      "effects": [],
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity"],
+      "target_statuses": [201, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [201, 400, 401, 403],
+      "recorded_target_statuses": [201, 400, 401, 403]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/archive/",
+      "source": "apps/api/plane/app/views/module/archive.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope live Module by route ID, project and workspace. Legacy archived-item pk is bound to module_id by the accepted correction. No additional archived-project restriction.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Bodies are not read. POST accepts only completed/cancelled status; other statuses yield 400 {error: Only completed or cancelled modules can be archived}. DELETE permits repeated unarchive.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST returns 200 {archived_at: str(datetime)}; DELETE returns empty 204.",
+          "source": "apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/archive.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/archive.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-direct-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-direct-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-direct-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-direct-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-archive-direct-success.json"
+      ],
+      "database_effects": [
+        "POST saves archived_at and removes all matching workspace/project/module favorites, preserving unrelated favorites; DELETE clears archived_at. Save audit fields remain observable."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [200, 400, 401, 403, 404],
+      "recorded_target_statuses": [200, 400, 401, 403, 404]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/module-links/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "authenticated"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Validate fields, then look up a live Module by route ID, project and workspace before duplicate URL lookup/save. Missing, foreign or soft-deleted parent yields 404. Archived parent/project is permitted on create.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Prepend http:// when neither http:// nor https:// is present; use source URL validation. POST and PUT require URL. PATCH without URL retains its source invalid-URL rejection. Duplicate URL within the module yields the distinct create/update error body. Route tenant/parent IDs and accepted-correction deleted_at are read-only.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST 201 with Location; PUT/PATCH 200 with ModuleLinkSerializer model representation. DELETE 204 with no body. Preserve null/blank field errors and exact duplicate/invalid-URL bodies.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-archived-module-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-archived-project-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-blank-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-create-normalizes-scheme.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-create-on-deleted-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-deleted-at-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-duplicate-url-in-foreign-module-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-duplicate-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-foreign-workspace-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-invalid-url-before-foreign-module-save.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-invalid-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-missing-module-foreign-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-null-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-project-guest-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-readonly-route-ids-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-same-workspace-foreign-project-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-scheme-normalization-crosses-url-max-length.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/post-workspace-admin-project-guest-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-create-on-deleted-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-deleted-at-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-duplicate-url-in-foreign-module-scope.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-foreign-workspace-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-missing-module-foreign-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/post-same-workspace-foreign-project-module.json"
+      ],
+      "database_effects": [
+        "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [201, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [201, 400, 401, 403],
+      "recorded_target_statuses": [201, 400, 401, 403, 404]
+    },
+    "put_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk": {
+      "operation_id": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+      "method": "PUT",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/module-links/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "authenticated"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. ProjectEntityPermission requires an active project member with role 15 or 20 for these writes; a workspace-admin/project-guest fallback does not apply.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Scope link by workspace/project/module and active project membership; exclude archived projects. Related parent soft deletion does not itself exclude an existing link. Missing scoped link gives the DRF ModuleLink 404.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "Prepend http:// when neither http:// nor https:// is present; use source URL validation. POST and PUT require URL. PATCH without URL retains its source invalid-URL rejection. Duplicate URL within the module yields the distinct create/update error body. Route tenant/parent IDs and accepted-correction deleted_at are read-only.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "POST 201 with Location; PUT/PATCH 200 with ModuleLinkSerializer model representation. DELETE 204 with no body. Preserve null/blank field errors and exact duplicate/invalid-URL bodies.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "No domain task for archive actions or link create/update; request audit still applies to API-key routes.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-blank-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-deleted-at-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-missing-link.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-missing-url-required.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-null-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-project-guest-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle/put-success-full-replacement.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_link_lifecycle_corrected/put-deleted-at-input.json"
+      ],
+      "database_effects": [
+        "Create/update module_links with model audit fields; client deleted_at is ignored. DELETE sets deleted_at through the normal model lifecycle."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [200, 400, 401, 403, 404],
+      "recorded_target_statuses": [200, 400, 401, 403, 404]
+    },
+    "put_api_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "operation_id": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+      "method": "PUT",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "sample_path": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/00000000-0000-4000-8000-000000020199/",
+      "source": "apps/api/plane/app/views/module/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and permission precedence",
+          "observable": "Session authentication. allow_permission admits active project role 15/20, or active workspace admin with active project membership of any role. Project-role grants do not require a workspace membership row. This is an accepted correction to pristine authentication-only PUT; authorize before lookup or body validation.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Object lookup and body parsing order",
+          "observable": "Inherited full update scopes module by workspace/project before body parsing; missing returns 404 {detail: No Module matches the given query.}. Unlike PATCH it has no archived-module rejection.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Validation and request shape",
+          "observable": "ModuleWriteSerializer accepts member_ids and both lead/lead_id input spellings without filtering users to project membership. Field conversion and relation validation precede object-level date ordering, which runs only when both dates are supplied. Duplicate name returns 400. Tenant/audit/archive/deletion fields are read-only. No module_view gate. Member children collect all shape and missing-user failures at their original indices before object/date validation. Empty strings normalize to null errors. The accepted composite-child correction rejects list/dict values with DRF incorrect_type messages before UUID conversion or rendering; scalar behavior is unchanged.",
+          "source": "apps/api/plane/app/serializers/module.py"
+        },
+        {
+          "when": "Response schema and errors",
+          "observable": "PUT returns ModuleWriteSerializer representation, with actor-local audit/archive timestamps. The accepted live-members correction filters members/member_ids to live through rows ordered by User.created_at descending. Create/PATCH computed projections remain separate and unchanged.",
+          "source": "apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules.",
+          "source": "apps/api/plane/db/models/module.py; apps/api/plane/db/mixins.py; apps/api/plane/app/views/module/base.py"
+        },
+        {
+          "when": "Durable request effects",
+          "observable": "Create/PATCH emit model_activity after save, including requested_data and prior serialized current_instance on PATCH; inherited PUT emits no model_activity. Member replacement retains source soft-delete effects.",
+          "source": "apps/api/plane/app/views/module/base.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Member-list child validation and field/object ordering",
+          "observable": "Validate every child and preserve original indices when merging malformed UUID and missing User errors. Null children and non-list outer values retain source-specific errors. A preceding valid child must not compact error indices. Collect all field errors before date/object validation; rejected app writes have no effects, API writes retain token bookkeeping and request audit only.",
+          "source": "apps/api/plane/app/serializers/module.py; apps/api/plane/api/serializers/module.py; rest_framework.fields.ListField.run_child_validation; rest_framework.relations.PrimaryKeyRelatedField.to_internal_value"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-active-project-member-without-workspace-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-archived-at-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-guest-invalid-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-guest-missing-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-historical-member-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-ignored-members-does-not-relabel-member-ids-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-alias-assignment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-alias-both-fields-precedence.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-alias-invalid-relation-valid-lead.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-alias-valid-relation-invalid-lead.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-both-invalid-relations.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-clear.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-invalid-relation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-lead-relation-assignment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-member-list-mixed-with-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-null-name-nonexistent-lead-errors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-preserves-omitted-nondefault-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle/app-put-workspace-admin-with-project-guest-role.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-guest-invalid-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-guest-missing-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-historical-member-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/module_lifecycle_corrected/app-put-nonmember.json"
+      ],
+      "database_effects": [
+        "Persist accepted fields and audit values. Defaults apply only to creation; PUT preserves omitted optional fields. On create, sort_order is the existing project minimum minus 10000 when live rows exist, otherwise the explicit value or model default. Omitted members preserve membership; explicit empty clears existing membership; replacement soft-deletes existing through rows and bulk-creates requested members, preserving other modules."
+      ],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404, 415],
+      "recorded_source_statuses": [200, 400, 401, 404],
+      "recorded_target_statuses": [200, 400, 401, 403, 404]
+    }
+  },
+  "operation_count": 19,
+  "selected_inventory_state": "Django only",
+  "shared_domain": "apps/go-api/internal/modulereads",
+  "scope_decisions": "docs/go-backend-replacement/evidence/module-lifecycle/corrections.json",
+  "source_patch": "docs/go-backend-replacement/evidence/module-lifecycle/django-corrections.patch",
+  "projection_policy": "Sparse corrected Django fixtures override pristine fixtures by family and case ID; unchanged cases use the pristine fixture. Corrections are reconstructed from the pinned Django tree independently of Go.",
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["fields", "expand", "order_by"],
+    "evidence": "apps/api/plane/tests/parity/test_module_lifecycle_recorder.py",
+    "auth_probes": {
+      "django-session": "/api/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/",
+      "api-key": "/api/v1/workspaces/module-lifecycle-proxy/projects/00000000-0000-4000-8000-000000030103/modules/"
+    },
+    "environment": "Production Caddy differential uses isolated source/candidate database clones, Redis DB12/13 and dedicated RabbitMQ vhosts. Both sides seed module-lifecycle-proxy/project030103 with modules enabled. Fixture replay separately uses Redis DB11 and RabbitMQ /module_lifecycle; no worker runs during request parity."
+  },
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "remaining_evidence": [],
+  "middleware_evidence": "apps/go-api/cmd/system/module_lifecycle_middleware_test.go::TestModuleLifecycleProductionMiddlewareOrderRequestSizeSessionAPIThrottleDispatchAudit"
+}

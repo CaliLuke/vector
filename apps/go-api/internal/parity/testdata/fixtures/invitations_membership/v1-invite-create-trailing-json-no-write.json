@@ -1,0 +1,191 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ],
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ],
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": "{\"email\":\"trailing@example.com\",\"role\":15} {}",
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "POST",
+            "path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+            "query_params": "",
+            "response_body": {
+              "detail": "JSON parse error - Extra data: line 1 column 44 (char 43)"
+            },
+            "response_code": 400,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": {
+      "email": "trailing@example.com",
+      "role": 15
+    },
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "POST",
+    "path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+    "principal": {
+      "kind": "api-key",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "JSON parse error - Extra data: line 1 column 44 (char 43)"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "v1-invite-create-trailing-json-no-write"
+  }
+}

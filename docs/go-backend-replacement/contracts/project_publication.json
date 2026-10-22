@@ -1,0 +1,411 @@
+{
+  "version": 1,
+  "family": "project_publication",
+  "source_files": [
+    "apps/api/plane/app/views/project/base.py",
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/serializers/project.py",
+    "apps/api/plane/db/models/deploy_board.py",
+    "apps/api/plane/db/models/intake.py"
+  ],
+  "operations": {
+    "post_api_workspaces_by_slug_projects_by_project_id_project_deploy_boards": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/projects/00000000-0000-4000-8000-000000000004/project-deploy-boards/",
+      "statuses": [200, 400, 401, 403, 404, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-foreign-intake-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-intake-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-existing-resets-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-foreign-intake-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-intake-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-options-and-views.json"
+      ],
+      "database_effects": ["deploy_boards"],
+      "effects": [],
+      "permission_contract": "Publication create requires active workspace member/admin; update/delete require active project member/admin. Permission classes run before timezone. Detail lookups and intake references are scoped to the route project. Create updates existing board options; delete soft-deletes and durably admits descendant deletion.",
+      "source": "apps/api/plane/app/views/project/base.py::DeployBoardViewSet",
+      "source_branches": [
+        {
+          "when": "create-array-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-array-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "create-foreign-intake-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-foreign-intake-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "create-intake-source-error (corrected)",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/create-intake-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "create-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-anonymous.json"
+        },
+        {
+          "when": "create-array-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-array-source-error.json"
+        },
+        {
+          "when": "create-existing-resets-options",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-existing-resets-options.json"
+        },
+        {
+          "when": "create-foreign-intake-source-error",
+          "observable": "HTTP 500; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-foreign-intake-source-error.json"
+        },
+        {
+          "when": "create-guest",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-guest.json"
+        },
+        {
+          "when": "create-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-inactive-member.json"
+        },
+        {
+          "when": "create-intake-source-error",
+          "observable": "HTTP 500; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-intake-source-error.json"
+        },
+        {
+          "when": "create-member",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-member.json"
+        },
+        {
+          "when": "create-missing-project",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-missing-project.json"
+        },
+        {
+          "when": "create-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-nonmember.json"
+        },
+        {
+          "when": "create-options-and-views",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-options-and-views.json"
+        },
+        {
+          "when": "create-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-options-invalid-timezone.json"
+        },
+        {
+          "when": "create-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/create-options.json"
+        }
+      ]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_project_deploy_boards_by_pk": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/projects/00000000-0000-4000-8000-000000000004/project-deploy-boards/00000000-0000-4000-8000-000000000004/",
+      "statuses": [204, 401, 403, 404],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/delete-foreign-board-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-foreign-board-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-nonmember.json"
+      ],
+      "database_effects": ["deploy_boards"],
+      "effects": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "permission_contract": "Publication create requires active workspace member/admin; update/delete require active project member/admin. Permission classes run before timezone. Detail lookups and intake references are scoped to the route project. Create updates existing board options; delete soft-deletes and durably admits descendant deletion.",
+      "source": "apps/api/plane/app/views/project/base.py::DeployBoardViewSet",
+      "source_branches": [
+        {
+          "when": "delete-foreign-board-source-leak (corrected)",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/delete-foreign-board-source-leak.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "delete-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-anonymous.json"
+        },
+        {
+          "when": "delete-deleted",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-deleted.json"
+        },
+        {
+          "when": "delete-foreign-board-source-leak",
+          "observable": "HTTP 204; changed tables: deploy_boards; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-foreign-board-source-leak.json"
+        },
+        {
+          "when": "delete-guest",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-guest.json"
+        },
+        {
+          "when": "delete-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-inactive-member.json"
+        },
+        {
+          "when": "delete-member",
+          "observable": "HTTP 204; changed tables: deploy_boards; outbound effects: 1",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-member.json"
+        },
+        {
+          "when": "delete-missing",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-missing.json"
+        },
+        {
+          "when": "delete-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-nonmember.json"
+        },
+        {
+          "when": "delete-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-options-invalid-timezone.json"
+        },
+        {
+          "when": "delete-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-options.json"
+        },
+        {
+          "when": "patch-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-options-invalid-timezone.json"
+        },
+        {
+          "when": "patch-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-options.json"
+        }
+      ]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_project_deploy_boards_by_pk": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/projects/00000000-0000-4000-8000-000000000004/project-deploy-boards/00000000-0000-4000-8000-000000000004/",
+      "statuses": [200, 400, 401, 403, 404],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-foreign-board-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-foreign-intake-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-flags-and-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-foreign-board-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-foreign-intake-source-leak.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-invalid-boolean.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-nonmember.json"
+      ],
+      "database_effects": ["deploy_boards"],
+      "effects": [],
+      "permission_contract": "Publication create requires active workspace member/admin; update/delete require active project member/admin. Permission classes run before timezone. Detail lookups and intake references are scoped to the route project. Create updates existing board options; delete soft-deletes and durably admits descendant deletion.",
+      "source": "apps/api/plane/app/views/project/base.py::DeployBoardViewSet",
+      "source_branches": [
+        {
+          "when": "patch-array-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-array-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "patch-foreign-board-source-leak (corrected)",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-foreign-board-source-leak.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "patch-foreign-intake-source-leak (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/corrected/patch-foreign-intake-source-leak.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "delete-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-options-invalid-timezone.json"
+        },
+        {
+          "when": "delete-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/delete-options.json"
+        },
+        {
+          "when": "patch-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-anonymous.json"
+        },
+        {
+          "when": "patch-array-source-error",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-array-source-error.json"
+        },
+        {
+          "when": "patch-deleted",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-deleted.json"
+        },
+        {
+          "when": "patch-flags-and-json",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-flags-and-json.json"
+        },
+        {
+          "when": "patch-foreign-board-source-leak",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-foreign-board-source-leak.json"
+        },
+        {
+          "when": "patch-foreign-intake-source-leak",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-foreign-intake-source-leak.json"
+        },
+        {
+          "when": "patch-guest",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-guest.json"
+        },
+        {
+          "when": "patch-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-inactive-member.json"
+        },
+        {
+          "when": "patch-invalid-boolean",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-invalid-boolean.json"
+        },
+        {
+          "when": "patch-member",
+          "observable": "HTTP 200; changed tables: deploy_boards; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-member.json"
+        },
+        {
+          "when": "patch-missing",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-missing.json"
+        },
+        {
+          "when": "patch-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-nonmember.json"
+        },
+        {
+          "when": "patch-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-options-invalid-timezone.json"
+        },
+        {
+          "when": "patch-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_publication/patch-options.json"
+        }
+      ]
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/remaining-auxiliary/run-source-recorder.sh",
+    "pristine_fixture_count": 37,
+    "corrected_fixture_count": 7,
+    "source_hashes": "docs/go-backend-replacement/evidence/remaining-auxiliary/project_publication-source-hashes.json"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/project_publication_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["post_api_workspaces_by_slug_projects_by_project_id_project_deploy_boards:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "d19bad3d21b5ae702563a076c987eacd029a42b2fdd9104a2dea985a50697c04"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "Publication create requires active workspace member/admin; update/delete require active project member/admin. Permission classes run before timezone. Detail lookups and intake references are scoped to the route project. Create updates existing board options; delete soft-deletes and durably admits descendant deletion.",
+  "permission_classes_before_timezone": true,
+  "effect_contracts": {
+    "plane.bgtasks.deletion_task.soft_delete_related_objects": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    }
+  }
+}

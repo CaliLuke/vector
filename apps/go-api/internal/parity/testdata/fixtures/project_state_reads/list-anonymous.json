@@ -1,0 +1,206 @@
+{
+  "database": {
+    "after": {
+      "states": [
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": "<timestamp>",
+          "description": "Triage state",
+          "external_id": null,
+          "external_source": null,
+          "group": "triage",
+          "id": "<uuid-6>",
+          "is_triage": true,
+          "name": "Triage",
+          "project_id": "<uuid-1>",
+          "sequence": 400.75,
+          "slug": "triage",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#60646C",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": true,
+          "deleted_at": null,
+          "description": "First backlog state",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-2>",
+          "is_triage": false,
+          "name": "Backlog",
+          "project_id": "<uuid-1>",
+          "sequence": 100.0,
+          "slug": "backlog",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#7E6F8F",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "Second backlog state",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-4>",
+          "is_triage": false,
+          "name": "Icebox",
+          "project_id": "<uuid-1>",
+          "sequence": 200.5,
+          "slug": "icebox",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#F59E0B",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "started",
+          "id": "<uuid-5>",
+          "is_triage": false,
+          "name": "In Progress",
+          "project_id": "<uuid-1>",
+          "sequence": 300.25,
+          "slug": "in-progress",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "states": [
+        {
+          "color": "#4E5355",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": "<timestamp>",
+          "description": "Triage state",
+          "external_id": null,
+          "external_source": null,
+          "group": "triage",
+          "id": "<uuid-6>",
+          "is_triage": true,
+          "name": "Triage",
+          "project_id": "<uuid-1>",
+          "sequence": 400.75,
+          "slug": "triage",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#60646C",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": true,
+          "deleted_at": null,
+          "description": "First backlog state",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-2>",
+          "is_triage": false,
+          "name": "Backlog",
+          "project_id": "<uuid-1>",
+          "sequence": 100.0,
+          "slug": "backlog",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#7E6F8F",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "Second backlog state",
+          "external_id": null,
+          "external_source": null,
+          "group": "backlog",
+          "id": "<uuid-4>",
+          "is_triage": false,
+          "name": "Icebox",
+          "project_id": "<uuid-1>",
+          "sequence": 200.5,
+          "slug": "icebox",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#F59E0B",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default": false,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "group": "started",
+          "id": "<uuid-5>",
+          "is_triage": false,
+          "name": "In Progress",
+          "project_id": "<uuid-1>",
+          "sequence": 300.25,
+          "slug": "in-progress",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/project-state-reads/projects/<uuid-1>/states/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Authentication credentials were not provided."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 401
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-anonymous"
+  }
+}

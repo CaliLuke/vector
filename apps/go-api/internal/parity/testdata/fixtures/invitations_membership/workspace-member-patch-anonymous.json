@@ -1,0 +1,47 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "role": 5
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/workspaces/invitations-membership-fixture/members/<uuid-1>/",
+    "principal": {
+      "kind": "anonymous",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Authentication credentials were not provided."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "PATCH, DELETE, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 401
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-member-patch-anonymous"
+  }
+}

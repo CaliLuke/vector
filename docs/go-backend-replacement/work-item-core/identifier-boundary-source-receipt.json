@@ -1,0 +1,720 @@
+{
+  "kind": "source-characterization-component",
+  "family": "work_item_core",
+  "cases": 30,
+  "source_only": true,
+  "source_base": "79001fb3e5914648ba20a30f7079fe3da060a8bf",
+  "shell_setup": "export GOCACHE=/tmp/plane-labels-go-cache\neval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\"",
+  "checks": [
+    {
+      "command": "UPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k identifier-route --reuse-db -q -s",
+      "exit_code": 0,
+      "passed": 30,
+      "deselected": 450,
+      "seconds": 31.07
+    },
+    {
+      "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k identifier-route --reuse-db -q -s",
+      "exit_code": 0,
+      "passed": 30,
+      "deselected": 450,
+      "seconds": 32.61
+    },
+    {
+      "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_issue_recorder.py -k entry-content --reuse-db -q -s",
+      "exit_code": 0,
+      "passed": 10,
+      "deselected": 470,
+      "seconds": 18.96
+    },
+    {
+      "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_harness.py -q --tb=short",
+      "exit_code": 0,
+      "passed": 6,
+      "regression_red": {
+        "failed": 4,
+        "log": "/tmp/plane-work-item-core/json-response-adapter-red.log"
+      },
+      "log": "/tmp/plane-work-item-core/json-response-adapter-green.log"
+    }
+  ],
+  "previous_fixture_bytes_unchanged": 772,
+  "status_counts": {
+    "200": 4,
+    "400": 1,
+    "401": 4,
+    "404": 20,
+    "500": 1
+  },
+  "input_sha256": {
+    "apps/api/plane/tests/parity/test_work_item_core_issue_recorder.py": "9d3b7511bd7020ddf95b4d8e298792231c9608892632019b961049c286a92cbe",
+    "apps/api/plane/tests/parity/work_item_core_harness.py": "7780920bc041daff63218e7b40487256a87286983de52c172379a7be2e263202",
+    "apps/api/plane/tests/parity/test_work_item_core_harness.py": "b1dfc20fb63ddad810cbd63549c71dedc662c599e993c0307a0a68487c220af5",
+    "apps/api/plane/tests/parity/recorder.py": "2c48690b24e439c7686b7e9a56564a11a3570748e3809559a69bc746e5e2cb8f",
+    "apps/api/plane/api/urls/work_item.py": "9f4ab41eeb2bd1e5012076da248e0b3c20df4bb56bfc05f3e554080546b2cf94",
+    "apps/api/plane/app/urls/issue.py": "4e7ad80447ee296a5e70fafecdf33d978f2c64cbdaed3bfc597e112c063dc052"
+  },
+  "fixture_sha256": {
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-project-anonymous.json": "d63ce10d98c64f5f70b4e64b625020fe8cbbdc51a50fe546f999cc26e52de5a8",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-project-authenticated.json": "04ddd58f00f24f2928b61316caa9dc415d1925f9c884b2092442fdc7d8da68e1",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-sequence-anonymous.json": "31fa68d6078cd02bfcbc58741a401d8c5c43be5139636a32fa09be6ded1fe9d0",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-sequence-authenticated.json": "95604592f8f88b59a7f10654b3f2b648e60fcad65d747b0c8936789ac5d35467",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-delimiter-anonymous.json": "4e86b5b3922d195185b4cb40bdd942e2a831744dd226b3a29b9480f441e3ce92",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-delimiter-authenticated.json": "d2355aa630fd31e26a3e37b21c3dae3cb84cb8d5f51e59fd1e846010f5229934",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-project-anonymous.json": "d436264d88acde8e4394d16bf85fd7e5f2a5bca704948164ea971fcd774894eb",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-project-authenticated.json": "d5b1015f12bdf26a3ce63f9bfff8fac5aed1489922a85b7db8e7ace0bc0bdd54",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-sequence-anonymous.json": "2eedf6d25297979bc2c64f0707ae3fa5b10ec2e23ec1b26006d8ba1864f19cca",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-sequence-authenticated.json": "606d84e946ff8033b6c37bf0bfa8b6efd36a08a76215141c0b29a9da3127a927",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphen-sequence-anonymous.json": "e45c14c928269ed6539ff2d50c3c5c45c75ea1453f36df1b057715d877bc45bf",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphen-sequence-authenticated.json": "1c7f04b347c0a005b597290e200425f275c8b6818e42ec9ee62f5e540642427b",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphenated-project.json": "4204336c6c9477a6bd63220211f61ed3e68317fbfca50762e17a2544bd193bdc",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-anonymous.json": "2f3b0681eae0e84150c4512ba3efb539381ad546f938b24bd351900b2d6214cc",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-authenticated.json": "45fb2139b483dac1ade6a98c243e57bb1b861f1b0ed7362f25ef6e4035d09b94",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-project-anonymous.json": "2fa85a74a0782798180a3013aa72cf7e0ba8849e82de60a5558267ff73cfc0e2",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-project-authenticated.json": "bc9cf5868972265c368d717830e79016c2f8db64b0fc5526ec860b42c8f8737c",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-sequence-anonymous.json": "8dc8776535305faa0807df6a95500d88ce6617b1d84d84ca31980598618ef935",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-sequence-authenticated.json": "eadeddcf35eac27b5c47ea6dad79147cf6c2eaae26a7302275c58e06a76644fd",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-delimiter-anonymous.json": "12946563b8e5e59ca1c5969165c1cb99ce381fcf1274ac2aa15e750f21ea6af3",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-delimiter-authenticated.json": "58721089c111b47bd7bbc79a27df452732f4c5fa062d469c68dc4a6d8ef8eebb",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-project-anonymous.json": "28c328260ebaaa8273ec0dba251f21284b2cc9f044d59f2dc4a55c044071d9f6",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-project-authenticated.json": "a9e1e3340839ca210eef8201dd69c6c369f95ce56bfb3c842d97e32023512a7b",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-sequence-anonymous.json": "857106ed34e3750477300d32fdb7b7a811b897a6089b82f53421d50b5c4e6b87",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-sequence-authenticated.json": "942e89eaae4d251e972a509cb21a4a19f3a4ccf7d964d74ed7e135e03f6140b0",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphen-sequence-anonymous.json": "8e9dd02dfdd46e86ceafe4e5bbffa1b32073473f637e52c51776d0517fb5917f",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphen-sequence-authenticated.json": "9ea4207049a0adb998612b2168bb7d18a96f37f8c65cd9135c9151e1d79b0d3b",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphenated-project.json": "8493821709c17498f7022c242ca74f6e8b55f1e52b3de80426ee0f46d3e7344b",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-anonymous.json": "90228993b52f3f3afe3414075cde2bf8b3d70982a29e2e9f224625b76806e77a",
+    "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-authenticated.json": "48b8fd298dfa2bfbd57203d23839b1f864a410815e531a68328cf981984e6ddc"
+  },
+  "case_outcomes": [
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-project-anonymous.json",
+      "sha256": "d63ce10d98c64f5f70b4e64b625020fe8cbbdc51a50fe546f999cc26e52de5a8",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/-1/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-project-authenticated.json",
+      "sha256": "04ddd58f00f24f2928b61316caa9dc415d1925f9c884b2092442fdc7d8da68e1",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/-1/",
+      "principal": "django-session",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-sequence-anonymous.json",
+      "sha256": "31fa68d6078cd02bfcbc58741a401d8c5c43be5139636a32fa09be6ded1fe9d0",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC-/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-empty-sequence-authenticated.json",
+      "sha256": "95604592f8f88b59a7f10654b3f2b648e60fcad65d747b0c8936789ac5d35467",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC-/",
+      "principal": "django-session",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-delimiter-anonymous.json",
+      "sha256": "4e86b5b3922d195185b4cb40bdd942e2a831744dd226b3a29b9480f441e3ce92",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC%2D1/",
+      "principal": "anonymous",
+      "status": 401,
+      "response_body": {
+        "detail": "Authentication credentials were not provided."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-delimiter-authenticated.json",
+      "sha256": "d2355aa630fd31e26a3e37b21c3dae3cb84cb8d5f51e59fd1e846010f5229934",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC%2D1/",
+      "principal": "django-session",
+      "status": 200,
+      "response_body": {
+        "archived_at": null,
+        "assignee_ids": ["<uuid-1>"],
+        "attachment_count": 0,
+        "completed_at": null,
+        "created_at": "<timestamp>",
+        "created_by": "<uuid-1>",
+        "cycle_id": "<uuid-2>",
+        "description_html": "<p>Original</p>",
+        "estimate_point": "<uuid-3>",
+        "id": "<uuid-4>",
+        "is_draft": false,
+        "is_intake": false,
+        "is_subscribed": true,
+        "label_ids": ["<uuid-5>"],
+        "link_count": 1,
+        "module_ids": [],
+        "name": "Needle 0",
+        "parent_id": null,
+        "priority": "high",
+        "project_id": "<uuid-6>",
+        "sequence_id": 1,
+        "sort_order": 65535.0,
+        "start_date": "2020-01-01",
+        "state_id": "<uuid-7>",
+        "sub_issues_count": 1,
+        "target_date": "2020-02-01",
+        "updated_at": "<timestamp>",
+        "updated_by": "<uuid-1>"
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.recent_visited_task.recent_visited_task"],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-project-anonymous.json",
+      "sha256": "d436264d88acde8e4394d16bf85fd7e5f2a5bca704948164ea971fcd774894eb",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC%2FOTHER-1/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-project-authenticated.json",
+      "sha256": "d5b1015f12bdf26a3ce63f9bfff8fac5aed1489922a85b7db8e7ace0bc0bdd54",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC%2FOTHER-1/",
+      "principal": "django-session",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-sequence-anonymous.json",
+      "sha256": "2eedf6d25297979bc2c64f0707ae3fa5b10ec2e23ec1b26006d8ba1864f19cca",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC-1%2F2/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-encoded-slash-sequence-authenticated.json",
+      "sha256": "606d84e946ff8033b6c37bf0bfa8b6efd36a08a76215141c0b29a9da3127a927",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC-1%2F2/",
+      "principal": "django-session",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphen-sequence-anonymous.json",
+      "sha256": "e45c14c928269ed6539ff2d50c3c5c45c75ea1453f36df1b057715d877bc45bf",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC--/",
+      "principal": "anonymous",
+      "status": 401,
+      "response_body": {
+        "detail": "Authentication credentials were not provided."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphen-sequence-authenticated.json",
+      "sha256": "1c7f04b347c0a005b597290e200425f275c8b6818e42ec9ee62f5e540642427b",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC--/",
+      "principal": "django-session",
+      "status": 400,
+      "response_body": {
+        "error": "Invalid issue identifier"
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-hyphenated-project.json",
+      "sha256": "4204336c6c9477a6bd63220211f61ed3e68317fbfca50762e17a2544bd193bdc",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/FOO-BAR-1/",
+      "principal": "django-session",
+      "status": 200,
+      "response_body": {
+        "archived_at": null,
+        "assignee_ids": ["<uuid-1>"],
+        "attachment_count": 0,
+        "completed_at": null,
+        "created_at": "<timestamp>",
+        "created_by": "<uuid-1>",
+        "cycle_id": "<uuid-2>",
+        "description_html": "<p>Original</p>",
+        "estimate_point": "<uuid-3>",
+        "id": "<uuid-4>",
+        "is_draft": false,
+        "is_intake": false,
+        "is_subscribed": true,
+        "label_ids": ["<uuid-5>"],
+        "link_count": 1,
+        "module_ids": [],
+        "name": "Needle 0",
+        "parent_id": null,
+        "priority": "high",
+        "project_id": "<uuid-6>",
+        "sequence_id": 1,
+        "sort_order": 65535.0,
+        "start_date": "2020-01-01",
+        "state_id": "<uuid-7>",
+        "sub_issues_count": 1,
+        "target_date": "2020-02-01",
+        "updated_at": "<timestamp>",
+        "updated_by": "<uuid-1>"
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.recent_visited_task.recent_visited_task"],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-anonymous.json",
+      "sha256": "2f3b0681eae0e84150c4512ba3efb539381ad546f938b24bd351900b2d6214cc",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-app-identifier-no-hyphen-authenticated.json",
+      "sha256": "45fb2139b483dac1ade6a98c243e57bb1b861f1b0ed7362f25ef6e4035d09b94",
+      "request_path": "/api/workspaces/issue-core-contract/work-items/IC/",
+      "principal": "django-session",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-project-anonymous.json",
+      "sha256": "2fa85a74a0782798180a3013aa72cf7e0ba8849e82de60a5558267ff73cfc0e2",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/-1/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-project-authenticated.json",
+      "sha256": "bc9cf5868972265c368d717830e79016c2f8db64b0fc5526ec860b42c8f8737c",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/-1/",
+      "principal": "api-key",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Page not found."
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-sequence-anonymous.json",
+      "sha256": "8dc8776535305faa0807df6a95500d88ce6617b1d84d84ca31980598618ef935",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC-/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-empty-sequence-authenticated.json",
+      "sha256": "eadeddcf35eac27b5c47ea6dad79147cf6c2eaae26a7302275c58e06a76644fd",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC-/",
+      "principal": "api-key",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Page not found."
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-delimiter-anonymous.json",
+      "sha256": "12946563b8e5e59ca1c5969165c1cb99ce381fcf1274ac2aa15e750f21ea6af3",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC%2D1/",
+      "principal": "anonymous",
+      "status": 401,
+      "response_body": {
+        "detail": "Authentication credentials were not provided."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-delimiter-authenticated.json",
+      "sha256": "58721089c111b47bd7bbc79a27df452732f4c5fa062d469c68dc4a6d8ef8eebb",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC%2D1/",
+      "principal": "api-key",
+      "status": 200,
+      "response_body": {
+        "archived_at": null,
+        "assignees": ["<uuid-1>"],
+        "completed_at": null,
+        "created_at": "<timestamp>",
+        "created_by": "<uuid-1>",
+        "deleted_at": null,
+        "description_binary": null,
+        "description_html": "<p>Original</p>",
+        "estimate_point": "<uuid-2>",
+        "external_id": "one",
+        "external_source": "fixture",
+        "id": "<uuid-3>",
+        "is_draft": false,
+        "labels": ["<uuid-4>"],
+        "name": "Needle 0",
+        "parent": null,
+        "point": null,
+        "priority": "high",
+        "project": "<uuid-5>",
+        "sequence_id": 1,
+        "sort_order": 65535.0,
+        "start_date": "2020-01-01",
+        "state": "<uuid-6>",
+        "target_date": "2020-02-01",
+        "type": null,
+        "type_id": null,
+        "updated_at": "<timestamp>",
+        "updated_by": "<uuid-1>",
+        "workspace": "<uuid-7>"
+      },
+      "content_type": "application/json",
+      "changed_tables": ["api_tokens"],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "archived_at": null,
+          "assignees": ["<uuid-1>"],
+          "completed_at": null,
+          "created_at": "<timestamp>",
+          "created_by": "<uuid-1>",
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>Original</p>",
+          "estimate_point": "<uuid-2>",
+          "external_id": "one",
+          "external_source": "fixture",
+          "id": "<uuid-3>",
+          "is_draft": false,
+          "labels": ["<uuid-4>"],
+          "name": "Needle 0",
+          "parent": null,
+          "point": null,
+          "priority": "high",
+          "project": "<uuid-5>",
+          "sequence_id": 1,
+          "sort_order": 65535.0,
+          "start_date": "2020-01-01",
+          "state": "<uuid-6>",
+          "target_date": "2020-02-01",
+          "type": null,
+          "type_id": null,
+          "updated_at": "<timestamp>",
+          "updated_by": "<uuid-1>",
+          "workspace": "<uuid-7>"
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-project-anonymous.json",
+      "sha256": "28c328260ebaaa8273ec0dba251f21284b2cc9f044d59f2dc4a55c044071d9f6",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC%2FOTHER-1/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-project-authenticated.json",
+      "sha256": "a9e1e3340839ca210eef8201dd69c6c369f95ce56bfb3c842d97e32023512a7b",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC%2FOTHER-1/",
+      "principal": "api-key",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Page not found."
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-sequence-anonymous.json",
+      "sha256": "857106ed34e3750477300d32fdb7b7a811b897a6089b82f53421d50b5c4e6b87",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC-1%2F2/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-encoded-slash-sequence-authenticated.json",
+      "sha256": "942e89eaae4d251e972a509cb21a4a19f3a4ccf7d964d74ed7e135e03f6140b0",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC-1%2F2/",
+      "principal": "api-key",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Page not found."
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphen-sequence-anonymous.json",
+      "sha256": "8e9dd02dfdd46e86ceafe4e5bbffa1b32073473f637e52c51776d0517fb5917f",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC--/",
+      "principal": "anonymous",
+      "status": 401,
+      "response_body": {
+        "detail": "Authentication credentials were not provided."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphen-sequence-authenticated.json",
+      "sha256": "9ea4207049a0adb998612b2168bb7d18a96f37f8c65cd9135c9151e1d79b0d3b",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC--/",
+      "principal": "api-key",
+      "status": 500,
+      "response_body": {
+        "error": "Something went wrong please try again later"
+      },
+      "content_type": "application/json",
+      "changed_tables": ["api_tokens"],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Something went wrong please try again later"
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-hyphenated-project.json",
+      "sha256": "8493821709c17498f7022c242ca74f6e8b55f1e52b3de80426ee0f46d3e7344b",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/FOO-BAR-1/",
+      "principal": "api-key",
+      "status": 200,
+      "response_body": {
+        "archived_at": null,
+        "assignees": ["<uuid-1>"],
+        "completed_at": null,
+        "created_at": "<timestamp>",
+        "created_by": "<uuid-1>",
+        "deleted_at": null,
+        "description_binary": null,
+        "description_html": "<p>Original</p>",
+        "estimate_point": "<uuid-2>",
+        "external_id": "one",
+        "external_source": "fixture",
+        "id": "<uuid-3>",
+        "is_draft": false,
+        "labels": ["<uuid-4>"],
+        "name": "Needle 0",
+        "parent": null,
+        "point": null,
+        "priority": "high",
+        "project": "<uuid-5>",
+        "sequence_id": 1,
+        "sort_order": 65535.0,
+        "start_date": "2020-01-01",
+        "state": "<uuid-6>",
+        "target_date": "2020-02-01",
+        "type": null,
+        "type_id": null,
+        "updated_at": "<timestamp>",
+        "updated_by": "<uuid-1>",
+        "workspace": "<uuid-7>"
+      },
+      "content_type": "application/json",
+      "changed_tables": ["api_tokens"],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "archived_at": null,
+          "assignees": ["<uuid-1>"],
+          "completed_at": null,
+          "created_at": "<timestamp>",
+          "created_by": "<uuid-1>",
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>Original</p>",
+          "estimate_point": "<uuid-2>",
+          "external_id": "one",
+          "external_source": "fixture",
+          "id": "<uuid-3>",
+          "is_draft": false,
+          "labels": ["<uuid-4>"],
+          "name": "Needle 0",
+          "parent": null,
+          "point": null,
+          "priority": "high",
+          "project": "<uuid-5>",
+          "sequence_id": 1,
+          "sort_order": 65535.0,
+          "start_date": "2020-01-01",
+          "state": "<uuid-6>",
+          "target_date": "2020-02-01",
+          "type": null,
+          "type_id": null,
+          "updated_at": "<timestamp>",
+          "updated_by": "<uuid-1>",
+          "workspace": "<uuid-7>"
+        }
+      ]
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-anonymous.json",
+      "sha256": "90228993b52f3f3afe3414075cde2bf8b3d70982a29e2e9f224625b76806e77a",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC/",
+      "principal": "anonymous",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": [],
+      "audited_response_bodies": []
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/issue-core-entry-identifier-route-v1-issues-identifier-no-hyphen-authenticated.json",
+      "sha256": "48b8fd298dfa2bfbd57203d23839b1f864a410815e531a68328cf981984e6ddc",
+      "request_path": "/api/v1/workspaces/issue-core-contract/issues/IC/",
+      "principal": "api-key",
+      "status": 404,
+      "response_body": {
+        "error": "Page not found."
+      },
+      "content_type": "application/json",
+      "changed_tables": [],
+      "effects": ["plane.bgtasks.logger_task.process_logs"],
+      "audited_response_bodies": [
+        {
+          "error": "Page not found."
+        }
+      ]
+    }
+  ],
+  "observed_contracts": [
+    "Two nonempty string captures separated by a hyphen; greedy first capture leaves a nonempty second capture, including a literal hyphen.",
+    "Route mismatch precedes endpoint authentication; API-key requests still publish persistent process_logs audit messages without changing api_tokens.last_used.",
+    "Django APIClient decodes encoded delimiters and slashes before resolution; encoded-slash paths miss the route.",
+    "Native Django JsonResponse errors are recorded from their JSON content instead of implicit null; DRF response data remains unchanged."
+  ],
+  "limitations": [
+    "Django APIClient source evidence, not production HTTP/proxy encoded-path parity.",
+    "The API work-items alias reuses canonical issues handler/URL grammar; these30 cases did not exercise that alias.",
+    "No Go domain, production proxy or UI parity claim."
+  ]
+}

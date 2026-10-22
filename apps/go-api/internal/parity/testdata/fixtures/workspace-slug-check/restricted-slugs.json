@@ -1,0 +1,148 @@
+{
+  "database": {
+    "after": {
+      "workspaces": [
+        {
+          "background_color": "#F3F4F6",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Known Workspace",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "known-slug",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "before": {
+      "workspaces": [
+        {
+          "background_color": "#F3F4F6",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Known Workspace",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "known-slug",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspace-slug-check/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {
+      "slug": "404"
+    }
+  },
+  "response": {
+    "body": {
+      "status": false
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "restricted-slugs",
+    "slugs": [
+      "404",
+      "accounts",
+      "api",
+      "create-workspace",
+      "god-mode",
+      "installations",
+      "invitations",
+      "onboarding",
+      "profile",
+      "spaces",
+      "workspace-invitations",
+      "password",
+      "flags",
+      "monitor",
+      "monitoring",
+      "ingest",
+      "plane-pro",
+      "plane-ultimate",
+      "enterprise",
+      "plane-enterprise",
+      "disco",
+      "silo",
+      "chat",
+      "calendar",
+      "drive",
+      "channels",
+      "upgrade",
+      "billing",
+      "sign-in",
+      "sign-up",
+      "signin",
+      "signup",
+      "config",
+      "live",
+      "admin",
+      "m",
+      "import",
+      "importers",
+      "integrations",
+      "integration",
+      "configuration",
+      "initiatives",
+      "initiative",
+      "config",
+      "workflow",
+      "workflows",
+      "epics",
+      "epic",
+      "story",
+      "mobile",
+      "dashboard",
+      "desktop",
+      "onload",
+      "real-time",
+      "one",
+      "pages",
+      "mobile",
+      "business",
+      "pro",
+      "settings",
+      "monitor",
+      "license",
+      "licenses",
+      "instances",
+      "instance"
+    ]
+  }
+}

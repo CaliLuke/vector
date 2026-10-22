@@ -1,0 +1,292 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Workspace Search API",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Workspace Search API"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/entity-search/": {
+      "get": {
+        "tags": [
+          "workspace_search"
+        ],
+        "summary": "entity_search workspace_search",
+        "operationId": "get_api_workspaces_by_slug_entity_search",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ipsam tempora earum numquam aut dolorem."
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Occaecati quos."
+          },
+          {
+            "name": "query_type",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ipsam ut ea odit possimus ut."
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Optio incidunt."
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Cum aspernatur voluptas fuga quia et vitae."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Consectetur nihil laudantium."
+                },
+                "example": "Consectetur nihil laudantium."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Ut qui ducimus ut voluptas."
+                },
+                "example": "Ut qui ducimus ut voluptas."
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptatibus fuga veritatis ex aliquid asperiores voluptatem."
+                },
+                "example": "Voluptatibus fuga veritatis ex aliquid asperiores voluptatem."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Aut nisi magnam non officia qui dolorum."
+                },
+                "example": "Aut nisi magnam non officia qui dolorum."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptatem rerum dolorem architecto est voluptas."
+                },
+                "example": "Voluptatem rerum dolorem architecto est voluptas."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Blanditiis ullam beatae veritatis."
+                },
+                "example": "Blanditiis ullam beatae veritatis."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/search/": {
+      "get": {
+        "tags": [
+          "workspace_search"
+        ],
+        "summary": "global_search workspace_search",
+        "operationId": "get_api_workspaces_by_slug_search",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Aut aliquam ipsa."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Architecto itaque quis."
+          },
+          {
+            "name": "entities",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Quis sequi."
+          },
+          {
+            "name": "workspace_search",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Laboriosam et ut saepe."
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Labore velit temporibus fugiat."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Rerum et doloribus quis cumque."
+                },
+                "example": "Rerum et doloribus quis cumque."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Expedita enim quae non."
+                },
+                "example": "Expedita enim quae non."
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Provident magnam sunt."
+                },
+                "example": "Provident magnam sunt."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Pariatur ut aut quos."
+                },
+                "example": "Pariatur ut aut quos."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Maiores nesciunt impedit."
+                },
+                "example": "Maiores nesciunt impedit."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Atque ullam rerum ipsa."
+                },
+                "example": "Atque ullam rerum ipsa."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session cookie authentication.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "workspace_search",
+      "description": "Workspace search read endpoints."
+    }
+  ]
+}

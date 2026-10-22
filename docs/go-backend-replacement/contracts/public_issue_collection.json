@@ -1,0 +1,742 @@
+{
+  "version": 1,
+  "family": "public_issue_collection",
+  "source_revision": "9cb3baebc1baa06d4f6ae9d271a54c74acf1e065",
+  "characterization_status": "Characterized single GET operation with 57 pristine source fixtures and eleven corrected-source overrides, stored in the shared public_feedback fixture directories. Go reuses the established issue query, filtering, pagination, and grouping components. Grouped module membership is based on live issue-module bridges before pagination; ungrouped issue annotations retain the source raw module relation projection. Pending intake rows visible in grouped results contribute to the same filtered-queryset totals as their buckets.",
+  "source_files": [
+    "apps/api/plane/space/views/issue.py",
+    "apps/api/plane/space/views/intake.py",
+    "apps/api/plane/space/views/project.py",
+    "apps/api/plane/space/urls/issue.py",
+    "apps/api/plane/space/urls/intake.py",
+    "apps/api/plane/space/urls/project.py",
+    "apps/api/plane/utils/issue_filters.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/space/utils/grouper.py"
+  ],
+  "operation_count": 1,
+  "selected_inventory_state": "Django removed",
+  "operations": {
+    "get_api_public_anchor_by_anchor_issues": {
+      "operation_id": "get_api_public_anchor_by_anchor_issues",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/issues/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/issues/",
+      "source": "apps/api/plane/space/views/issue.py",
+      "auth_profile": "optional-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "cursor",
+        "cycle",
+        "estimate_point",
+        "filters",
+        "group_by",
+        "inbox_status",
+        "intake_status",
+        "labels",
+        "logged_by",
+        "mentions",
+        "module",
+        "name",
+        "order_by",
+        "parent",
+        "per_page",
+        "priority",
+        "project",
+        "search",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "status",
+        "sub_group_by",
+        "sub_issue",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at"
+      ],
+      "documented_query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "cycle",
+        "estimate_point",
+        "group_by",
+        "inbox_status",
+        "intake_status",
+        "labels",
+        "logged_by",
+        "mentions",
+        "module",
+        "name",
+        "order_by",
+        "parent",
+        "per_page",
+        "priority",
+        "project",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "sub_group_by",
+        "sub_issue",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at",
+        "cursor"
+      ],
+      "supported_query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "cycle",
+        "estimate_point",
+        "group_by",
+        "inbox_status",
+        "intake_status",
+        "labels",
+        "logged_by",
+        "mentions",
+        "module",
+        "name",
+        "order_by",
+        "parent",
+        "per_page",
+        "priority",
+        "project",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "sub_group_by",
+        "sub_issue",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at",
+        "cursor"
+      ],
+      "ignored_query_parameters": ["search"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-issues-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-options-protocol-pristine.json"
+        },
+        {
+          "when": "issues-board-cross-workspace-project-source-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-cross-workspace-project-source-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-board-cross-workspace-project-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-cross-workspace-project-source-pristine.json"
+        },
+        {
+          "when": "issues-board-disabled-source-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-disabled-source-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-board-disabled-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-disabled-source-pristine.json"
+        },
+        {
+          "when": "issues-board-identity-mismatch-source-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-identity-mismatch-source-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-board-identity-mismatch-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-identity-mismatch-source-pristine.json"
+        },
+        {
+          "when": "issues-collection-anonymous-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-anonymous-pristine.json"
+        },
+        {
+          "when": "issues-collection-deleted-board-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-deleted-board-pristine.json"
+        },
+        {
+          "when": "issues-collection-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-pristine.json"
+        },
+        {
+          "when": "issues-collection-wrong-board-kind-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-wrong-board-kind-pristine.json"
+        },
+        {
+          "when": "issues-filter-completed-at-bound-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"completed_at\": \"2026-06-02;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-completed-at-bound-pristine.json"
+        },
+        {
+          "when": "issues-filter-created-at-bound-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"created_at\": \"2026-06-02;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-created-at-bound-pristine.json"
+        },
+        {
+          "when": "issues-filter-created-by-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"created_by\": \"<uuid-1>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-created-by-pristine.json"
+        },
+        {
+          "when": "issues-filter-cycle-module-estimate-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"cycle\": \"<uuid-2>\", \"estimate_point\": \"<uuid-3>\", \"module\": \"<uuid-4>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-cycle-module-estimate-pristine.json"
+        },
+        {
+          "when": "issues-filter-cycle-module-null-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"cycle\": \"None\", \"module\": \"None\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-cycle-module-null-pristine.json"
+        },
+        {
+          "when": "issues-filter-date-unicode",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"start_date\": \"２０２６-０６-０１;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-date-unicode.json"
+        },
+        {
+          "when": "issues-filter-intake-inbox-status",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"inbox_status\": \"-2\", \"intake_status\": \"-2\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-intake-inbox-status.json"
+        },
+        {
+          "when": "issues-filter-invalid-uuid-null-ignored",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"priority\": \"null\", \"state\": \"not-a-uuid,null\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-invalid-uuid-null-ignored.json"
+        },
+        {
+          "when": "issues-filter-logged-by-missing-field-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"logged_by\": \"<uuid-2>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-logged-by-missing-field-pristine.json"
+        },
+        {
+          "when": "issues-filter-mentions-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"mentions\": \"<uuid-2>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-mentions-pristine.json"
+        },
+        {
+          "when": "issues-filter-name-project",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"name\": \"feedback\", \"project\": \"<uuid-2>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-name-project.json"
+        },
+        {
+          "when": "issues-filter-parent-label-assignee-none",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"assignees\": \"None\", \"labels\": \"None\", \"parent\": \"None\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-parent-label-assignee-none.json"
+        },
+        {
+          "when": "issues-filter-priority-state-group",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"priority\": \"high\", \"state\": \"<uuid-2>\", \"state_group\": \"started\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-priority-state-group.json"
+        },
+        {
+          "when": "issues-filter-relative-week-unicode",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"start_date\": \"२_weeks;after;fromnow\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-relative-week-unicode.json"
+        },
+        {
+          "when": "issues-filter-start-target-date-toggle-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"start_target_date\": \"true\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-start-target-date-toggle-pristine.json"
+        },
+        {
+          "when": "issues-filter-subscriber-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"subscriber\": \"<uuid-2>\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-subscriber-pristine.json"
+        },
+        {
+          "when": "issues-filter-target-date-bound-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"target_date\": \"2026-06-02;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-target-date-bound-pristine.json"
+        },
+        {
+          "when": "issues-filter-type-subissue",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"sub_issue\": \"false\", \"type\": \"all\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-type-subissue.json"
+        },
+        {
+          "when": "issues-filter-updated-at-bound-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"updated_at\": \"2026-06-02;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-updated-at-bound-pristine.json"
+        },
+        {
+          "when": "issues-filter-week-only",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"start_date\": \"2026-W23;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-week-only.json"
+        },
+        {
+          "when": "issues-group-same-field-error",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none; query: {\"group_by\": \"state\", \"sub_group_by\": \"state\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-error.json"
+        },
+        {
+          "when": "issues-group-date-week-only-empty-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\", \"start_date\": \"2026-W23;after\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-date-week-only-empty-pristine.json"
+        },
+        {
+          "when": "issues-group-subgroup-date-week-only-empty-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\", \"start_date\": \"2026-W23;after\", \"sub_group_by\": \"priority\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-subgroup-date-week-only-empty-pristine.json"
+        },
+        {
+          "when": "issues-group-same-field-invalid-per-page-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\", \"per_page\": \"bogus\", \"sub_group_by\": \"state_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-invalid-per-page-pristine.json"
+        },
+        {
+          "when": "issues-group-same-field-invalid-cursor-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none; query: {\"cursor\": \"not-a-cursor\", \"group_by\": \"state_id\", \"sub_group_by\": \"state_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-invalid-cursor-pristine.json"
+        },
+        {
+          "when": "issues-group-state",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-state.json"
+        },
+        {
+          "when": "issues-group-subgroup-state-priority",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\", \"sub_group_by\": \"priority\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-subgroup-state-priority.json"
+        },
+        {
+          "when": "issues-group-unsupported-field",
+          "observable": "HTTP 400; object keys: detail; changed tables: none; durable tasks: none; query: {\"group_by\": \"not-a-domain-field\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-unsupported-field.json"
+        },
+        {
+          "when": "issues-grouped-counts-triage-archive-draft-intake",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"priority\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-grouped-counts-triage-archive-draft-intake.json"
+        },
+        {
+          "when": "issues-invalid-cursor",
+          "observable": "HTTP 400; object keys: detail; changed tables: none; durable tasks: none; query: {\"cursor\": \"not-a-cursor\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-invalid-cursor.json"
+        },
+        {
+          "when": "issues-missing-anchor-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-missing-anchor-pristine.json"
+        },
+        {
+          "when": "issues-order-injection-fallback",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"order_by\": \"--created_at\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-order-injection-fallback.json"
+        },
+        {
+          "when": "issues-page-one",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"per_page\": \"1\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-page-one.json"
+        },
+        {
+          "when": "issues-page-valid-arbitrary-cursor",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"cursor\": \"1:2:0\", \"per_page\": \"1\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-page-valid-arbitrary-cursor.json"
+        },
+        {
+          "when": "issues-per-page-over-max",
+          "observable": "HTTP 400; object keys: detail; changed tables: none; durable tasks: none; query: {\"per_page\": \"1001\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-per-page-over-max.json"
+        },
+        {
+          "when": "issues-per-page-zero",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"per_page\": \"0\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-per-page-zero.json"
+        },
+        {
+          "when": "issues-search-ignored-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-public-feedback-issue\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-search-ignored-pristine.json"
+        },
+        {
+          "when": "issues-collection-ignored-status-filters-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"filters\": \"invalid\", \"status\": \"no-such-group\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-ignored-status-filters-pristine.json"
+        },
+        {
+          "when": "issues-collection-module-annotation-archived-and-deleted-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-annotation-archived-and-deleted-pristine.json"
+        },
+        {
+          "when": "issues-group-created-by-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"group_by\": \"created_by\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-created-by-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-group-created-by-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-created-by-pristine.json"
+        },
+        {
+          "when": "issues-group-start-date-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"group_by\": \"start_date\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-start-date-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-group-start-date-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-start-date-pristine.json"
+        },
+        {
+          "when": "issues-group-target-date-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"group_by\": \"target_date\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-target-date-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-group-target-date-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-target-date-pristine.json"
+        },
+        {
+          "when": "issues-group-triage-group-false-flag-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\": \"state_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-triage-group-false-flag-pristine.json"
+        },
+        {
+          "when": "issues-collection-module-grouping-outer-module-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\":\"issue_module__module_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-outer-module-pristine.json"
+        },
+        {
+          "when": "issues-collection-module-grouping-state-module-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\":\"state_id\",\"sub_group_by\":\"issue_module__module_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-state-module-pristine.json"
+        },
+        {
+          "when": "issues-collection-module-grouping-module-state-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"group_by\":\"issue_module__module_id\",\"sub_group_by\":\"state_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-module-state-pristine.json"
+        },
+        {
+          "when": "issues-collection-module-grouping-subgroup-only-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none; query: {\"sub_group_by\":\"issue_module__module_id\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-subgroup-only-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-group-subgroup-state-priority",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-subgroup-state-priority.json"
+        },
+        {
+          "when": "corrected source: issues-group-state",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-state.json"
+        },
+        {
+          "when": "corrected source: issues-group-triage-group-false-flag-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-triage-group-false-flag-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-collection-module-grouping-state-module-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-collection-module-grouping-state-module-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-collection-module-grouping-module-state-pristine",
+          "observable": "HTTP 200; object keys: count, extra_stats, grouped_by, next_cursor, next_page_results, prev_cursor, prev_page_results, results, sub_grouped_by, total_count, total_pages, total_results; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-collection-module-grouping-module-state-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-cross-workspace-project-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-board-identity-mismatch-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-deleted-board-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-ignored-status-filters-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-annotation-archived-and-deleted-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-module-state-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-outer-module-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-state-module-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-module-grouping-subgroup-only-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-collection-wrong-board-kind-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-completed-at-bound-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-created-at-bound-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-created-by-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-cycle-module-estimate-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-cycle-module-null-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-date-unicode.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-intake-inbox-status.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-invalid-uuid-null-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-logged-by-missing-field-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-mentions-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-name-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-parent-label-assignee-none.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-priority-state-group.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-relative-week-unicode.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-start-target-date-toggle-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-subscriber-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-target-date-bound-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-type-subissue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-updated-at-bound-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-filter-week-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-created-by-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-date-week-only-empty-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-invalid-cursor-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-same-field-invalid-per-page-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-start-date-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-subgroup-date-week-only-empty-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-subgroup-state-priority.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-target-date-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-triage-group-false-flag-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-group-unsupported-field.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-grouped-counts-triage-archive-draft-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-missing-anchor-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-order-injection-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-page-valid-arbitrary-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-per-page-over-max.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-per-page-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-search-ignored-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-cross-workspace-project-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-board-identity-mismatch-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-collection-module-grouping-module-state-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-collection-module-grouping-state-module-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-created-by-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-start-date-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-subgroup-state-priority.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-target-date-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-group-triage-group-false-flag-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 404, 500],
+      "recorded_source_statuses": [200, 400, 404, 500],
+      "recorded_target_statuses": [200, 404]
+    }
+  },
+  "source_fixture_cases": [
+    "anchor-by-anchor-issues-head-protocol-pristine",
+    "anchor-by-anchor-issues-options-invalid-timezone-pristine",
+    "anchor-by-anchor-issues-options-protocol-pristine",
+    "issues-board-cross-workspace-project-source-pristine",
+    "issues-board-disabled-source-pristine",
+    "issues-board-identity-mismatch-source-pristine",
+    "issues-collection-anonymous-pristine",
+    "issues-collection-deleted-board-pristine",
+    "issues-collection-ignored-status-filters-pristine",
+    "issues-collection-module-annotation-archived-and-deleted-pristine",
+    "issues-collection-module-grouping-module-state-pristine",
+    "issues-collection-module-grouping-outer-module-pristine",
+    "issues-collection-module-grouping-state-module-pristine",
+    "issues-collection-module-grouping-subgroup-only-pristine",
+    "issues-collection-pristine",
+    "issues-collection-wrong-board-kind-pristine",
+    "issues-filter-completed-at-bound-pristine",
+    "issues-filter-created-at-bound-pristine",
+    "issues-filter-created-by-pristine",
+    "issues-filter-cycle-module-estimate-pristine",
+    "issues-filter-cycle-module-null-pristine",
+    "issues-filter-date-unicode",
+    "issues-filter-intake-inbox-status",
+    "issues-filter-invalid-uuid-null-ignored",
+    "issues-filter-logged-by-missing-field-pristine",
+    "issues-filter-mentions-pristine",
+    "issues-filter-name-project",
+    "issues-filter-parent-label-assignee-none",
+    "issues-filter-priority-state-group",
+    "issues-filter-relative-week-unicode",
+    "issues-filter-start-target-date-toggle-pristine",
+    "issues-filter-subscriber-pristine",
+    "issues-filter-target-date-bound-pristine",
+    "issues-filter-type-subissue",
+    "issues-filter-updated-at-bound-pristine",
+    "issues-filter-week-only",
+    "issues-group-created-by-pristine",
+    "issues-group-date-week-only-empty-pristine",
+    "issues-group-same-field-error",
+    "issues-group-same-field-invalid-cursor-pristine",
+    "issues-group-same-field-invalid-per-page-pristine",
+    "issues-group-start-date-pristine",
+    "issues-group-state",
+    "issues-group-subgroup-date-week-only-empty-pristine",
+    "issues-group-subgroup-state-priority",
+    "issues-group-target-date-pristine",
+    "issues-group-triage-group-false-flag-pristine",
+    "issues-group-unsupported-field",
+    "issues-grouped-counts-triage-archive-draft-intake",
+    "issues-invalid-cursor",
+    "issues-missing-anchor-pristine",
+    "issues-order-injection-fallback",
+    "issues-page-one",
+    "issues-page-valid-arbitrary-cursor",
+    "issues-per-page-over-max",
+    "issues-per-page-zero",
+    "issues-search-ignored-pristine"
+  ],
+  "corrected_fixture_cases": [
+    "issues-board-cross-workspace-project-source-pristine",
+    "issues-board-disabled-source-pristine",
+    "issues-board-identity-mismatch-source-pristine",
+    "issues-collection-module-grouping-module-state-pristine",
+    "issues-collection-module-grouping-state-module-pristine",
+    "issues-group-created-by-pristine",
+    "issues-group-start-date-pristine",
+    "issues-group-state",
+    "issues-group-subgroup-state-priority",
+    "issues-group-target-date-pristine",
+    "issues-group-triage-group-false-flag-pristine"
+  ],
+  "source_fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/public_feedback",
+  "corrected_fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected",
+  "corrections_manifest": "docs/go-backend-replacement/evidence/public-feedback/corrections.json",
+  "source_patch": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+  "source_hashes_pristine": "docs/go-backend-replacement/evidence/public-feedback/source-hashes-pristine.json",
+  "source_hashes_corrected": "docs/go-backend-replacement/evidence/public-feedback/source-hashes-corrected.json",
+  "split_reason": "This independent GET route was separated from the 12-operation public_feedback family because it uses the same shared public route and issue query components but needed its own live-bridge grouping and filtered-row count characterization. It is now implemented and its Django route is retired atomically with the Go owner.",
+  "proof_reference": "/tmp/plane-public-issue-collection-owner",
+  "review_reference": "/tmp/plane-public-feedback-owner/review-contract-r2.md",
+  "source_fixtures": {
+    "directory": "apps/go-api/internal/parity/testdata/fixtures/public_feedback",
+    "count": 57
+  },
+  "corrected_fixture_count": 11,
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/public_feedback_middleware_test.go::TestPublicFeedbackProductionMiddlewareOrdersSessionTimezoneAndEffects",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/api/plane/tests/parity/test_public_feedback_recorder.py",
+    "operation_count": 1,
+    "source_fixture_count": 57,
+    "corrected_fixture_count": 11,
+    "auth_profiles": ["optional-session"],
+    "auth_profile_semantics": {
+      "optional-session": {
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json"
+        },
+        "cookie": null
+      }
+    },
+    "auth_probes": {
+      "optional-session": "/api/public/anchor/public-feedback-fixture-anchor/issues/"
+    },
+    "comparison_scope": ["status", "headers", "body"],
+    "protocol_methods": ["HEAD", "OPTIONS"],
+    "effects": "The operation is read-only; the production-proxy differential compares HTTP status, headers and body."
+  },
+  "scope_decisions": [
+    "The contract contains only the public issue collection GET and its HEAD/OPTIONS protocol companions.",
+    "Collection filtering and pagination reuse the shared issue query implementation; search remains source-recorded as ignored.",
+    "Grouped module membership uses live issue-module bridges before pagination. Missing relationships remain in the None bucket, while deleted-only relationships are excluded.",
+    "Ungrouped module annotations preserve the raw collection projection. Subgroup-only module selection remains flat pagination with the scalar relationship projection and no module_ids field.",
+    "Grouped result and subgroup totals count each row in the filtered queryset, including pending intake rows returned in those groups."
+  ]
+}

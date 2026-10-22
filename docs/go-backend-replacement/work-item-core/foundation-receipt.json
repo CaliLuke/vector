@@ -1,0 +1,51 @@
+{
+  "kind": "focused-pre-activation-foundations",
+  "production_routes": "Django only",
+  "checks": [
+    {
+      "command": "go -C apps/go-api test ./internal/djangoinput ./internal/projectlabelreads ./internal/workitems ./internal/stickies/content ./internal/celery ./internal/pythoncompat -count=1",
+      "exit_code": 0,
+      "log": "/tmp/plane-work-item-core/foundation-focused.log"
+    },
+    {
+      "command": "go -C apps/go-api test -race -tags=integration ./internal/workitems -run TestIssueModelPostgresInvariants -count=1 -v",
+      "exit_code": 0,
+      "cases": 4,
+      "log": "/tmp/plane-work-item-core/model-postgres-race.log",
+      "assertions": [
+        "16 simultaneous creates preserve sequence uniqueness, sequence ledger, sort order, audit fields and default state",
+        "completion time changes only with state transition",
+        "failed sequence-ledger insert rolls back the issue and preserves next sequence",
+        "no usable state remains nullable"
+      ]
+    }
+  ],
+  "source_vectors": {
+    "api_html": 29,
+    "model_strip_tags": 9,
+    "project_lock": 4,
+    "form_lists": 22
+  },
+  "input_sha256": {
+    "apps/go-api/internal/workitems/model_test.go": "a03846b683fe2dbe8692b66f830cc3e17995cf0b7fe26831ec447b7b5ee22e86",
+    "apps/go-api/internal/workitems/api_html_test.go": "b013e5e3b9d86e2df0cf0729f3ba296f34089f2f224f5fa68995b6fca837d48b",
+    "apps/go-api/internal/workitems/input.go": "196f4f4d6d17f9c494e57e914f3a6d014762c53937ea5987c263ceb9562db1db",
+    "apps/go-api/internal/workitems/model_integration_test.go": "e4a4dceb54efa63424e64f27d3935ed8253823e269e51efb5c2c308b955f5847",
+    "apps/go-api/internal/workitems/model.go": "eceabf4d0e22a50945c02bccb3df3085c2172f558b30c67dc1bcb813f6ab54e9",
+    "apps/go-api/internal/workitems/api_html.go": "2b883e0334552864c4547d5a032a7e10286bae08cde7404b51041d2e4cc00cce",
+    "apps/go-api/internal/workitems/repository.go": "cd26cb9b5249883e612851a7610e8129b21994876f283349a990783d59e3ab49",
+    "apps/go-api/internal/workitems/testdata/model.json": "94a4269644c90bf20cd997bcc9659d0bf050a620f35725be4aa5025e11afff05",
+    "apps/go-api/internal/workitems/testdata/api_html.json": "0597bd425228e7650c31c73bb118c0f95fc44a56319dfe0b5be33ad6259ed9fc",
+    "apps/go-api/internal/djangoinput/list.go": "2bee995be2a7113d4905d5fc37baecddd07e37868dcde0b624a3436ff6507692",
+    "apps/go-api/internal/djangoinput/input.go": "acad25c47d713d8aac0aa24cd23f4ca9dc1794b64489b0a6e899eef9f6c5fe9f",
+    "apps/go-api/internal/djangoinput/list_test.go": "37a66eedc4c6486a02e40518f1c79bcadd8503f5a5c4a6f9ece43f18efe44bc3",
+    "apps/go-api/internal/djangoinput/testdata/form_lists.json": "09dabbd1561c326b1b6902a7febf93034805d89ec9a3449d4e523005a8cd147a",
+    "apps/go-api/internal/stickies/content/html.go": "5a5da547bfba45cc62fa4ee0f4bec1bf1acbbe30e16538988d1b6ea0ed42b9f8",
+    "apps/go-api/internal/stickies/content/nonbreaking_space_test.go": "d56278f79e264e7ff8d3ddbdc6807973229be5d040af7b48beaf99c0e48be5c2"
+  },
+  "limits": [
+    "No HTTP Go fixture replay or production mount proof",
+    "Form list extraction is tested independently; domain wiring awaits entry clearance",
+    "Full proof, review, activation and retirement are pending"
+  ]
+}

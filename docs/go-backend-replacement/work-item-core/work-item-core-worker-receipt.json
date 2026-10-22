@@ -1,0 +1,34 @@
+{
+  "files": {
+    "apps/go-api/internal/parity/work_item_core_integration_test.go": "9c86cabfce39765fdc08fbc5dec495610e51edc1095d4510b406ceaab1066658",
+    "apps/api/plane/tests/parity/test_work_item_core_workers.py": "61815c3ef0a787ff8aa1fd6f2ce2b2e284004eca870ac65d65d7f1f972c98932"
+  },
+  "compile": {
+    "command": "go -C apps/go-api test -c -tags=integration ./internal/parity -o /tmp/plane-work-item-core/work-item-core-parity.test",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/work-item-core-runner-compile.log",
+    "scope": "compile only after target DB wiring update; no integration test executed"
+  },
+  "workers": {
+    "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_workers.py -q --reuse-db --tb=short",
+    "exit_code": 0,
+    "passed": 13,
+    "seconds": 3.27,
+    "log": "/tmp/plane-work-item-core/work-item-core-workers-closure.log",
+    "services": "plane-work-items-recording network; real PostgreSQL and durable RabbitMQ; serialized source runner; workers off except direct dispatch of consumed deliveries"
+  },
+  "coverage": [
+    "Issue recursive deletion crosses projects; active related rows remain until consumed delivery; CASCADE associations soft-deleted; SET_NULL intake and issue sequence retained; completed_at and sequence preserved; redelivery queues no duplicate children",
+    "Draft deletion retains asset reassigned to published issue and recursively soft-deletes unused draft asset and association",
+    "Description history uses current DB content; first version; same-owner <=600 second coalescing; different-owner version; expired version; unchanged skip; creation force; soft-deleted skip; invalid JSON skip",
+    "Issue and DraftIssue model publisher failure leaves parent soft-deleted with updated audit time while child remains active and no queue delivery exists.",
+    "Consumed Issue parent cascade saves child before recursive publisher failure; worker catches failure, grandchild remains active, redelivery skips already-deleted child and cannot retry lost recursive delivery."
+  ],
+  "limitations": [
+    "Full production Go replay intentionally not launched pending production service/mount readiness.",
+    "Description deliveries are real RabbitMQ messages encoded by Python to match the Go publisher protocol-v2 wire contract; this source run does not execute the Go publisher. Request replay will independently compare actual Go task envelopes.",
+    "Retained Python worker task functions execute from test-consumed deliveries, acknowledged after execution without a background Celery worker process.",
+    "Borrowed stack requires external serialization with source recording; default proof uses fresh shared-helper services.",
+    "Three publication-failure cases inject an exception at retained Python enqueue boundaries. They characterize source partial effects, not actual broker unavailability or Go request-publisher failures."
+  ]
+}

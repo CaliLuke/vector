@@ -1,0 +1,222 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "API User Identity",
+    "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for API User Identity"
+    }
+  ],
+  "paths": {
+    "/api/v1/users/me/": {
+      "get": {
+        "description": "Retrieve the authenticated user's profile information including basic details.",
+        "operationId": "get_api_v1_users_me",
+        "responses": {
+          "200": {
+            "description": "Current user profile",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersUserUserliteserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "status_406: Not Acceptable response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "status_429: Too Many Requests response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Get current user",
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "GET /api/v1/users/me/",
+        "x-plane-handler": "get",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.api.views.user.UserEndpoint"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "APIUserIdentityHTTPErrorBody_bf3110b06f0d3bb0": {
+        "type": "object",
+        "properties": {
+          "code": {},
+          "detail": {},
+          "error": {},
+          "error_code": {},
+          "error_message": {},
+          "message": {},
+          "status": {}
+        }
+      },
+      "PlaneApiSerializersUserUserliteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string",
+            "readOnly": true
+          },
+          "avatar_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "display_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "email": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_name": {
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "last_name": {
+            "type": "string",
+            "readOnly": true
+          }
+        },
+        "description": "Lightweight user serializer for minimal data transfer.\n\nProvides essential user information including names, avatar, and contact details\noptimized for member lists, assignee displays, and user references."
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "description": "Plane API token authentication.",
+        "name": "X-Api-Key",
+        "in": "header"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "users"
+    }
+  ]
+}

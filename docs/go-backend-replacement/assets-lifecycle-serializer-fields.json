@@ -1,0 +1,207 @@
+{
+  "kind": "DRF FileAssetSerializer field-validation probe; not an HTTP request or end-to-end parity fixture",
+  "source": "apps/api/plane/app/serializers/asset.py::FileAssetSerializer; apps/api/plane/db/models/asset.py::FileAsset",
+  "method": "QueryDict-backed partial serializer validation, including HTML form extraction; DB cursor execute/executemany patched to fail if called",
+  "db_access": "none",
+  "results": {
+    "attributes_json_null": {
+      "errors": null,
+      "field_class": "JSONField",
+      "field_extracted_value": "'null'",
+      "raw_multipart_value": "null",
+      "valid": true,
+      "validated_value": "None"
+    },
+    "boolean_empty": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": null,
+      "raw_multipart_value": "",
+      "valid": true,
+      "validated_value": "None"
+    },
+    "boolean_missing": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": null,
+      "raw_multipart_value": null,
+      "valid": true,
+      "validated_value": "None"
+    },
+    "boolean_no": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": "'no'",
+      "raw_multipart_value": "no",
+      "valid": true,
+      "validated_value": "False"
+    },
+    "boolean_off": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": "'off'",
+      "raw_multipart_value": "off",
+      "valid": true,
+      "validated_value": "False"
+    },
+    "boolean_on": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": "'on'",
+      "raw_multipart_value": "on",
+      "valid": true,
+      "validated_value": "True"
+    },
+    "boolean_yes": {
+      "errors": null,
+      "field_class": "BooleanField",
+      "field_extracted_value": "'yes'",
+      "raw_multipart_value": "yes",
+      "valid": true,
+      "validated_value": "True"
+    },
+    "char_256": {
+      "errors": ["Ensure this field has no more than 255 characters."],
+      "field_class": "CharField",
+      "field_extracted_value": "'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'",
+      "raw_multipart_value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "valid": false,
+      "validated_value": null
+    },
+    "char_blank": {
+      "errors": null,
+      "field_class": "CharField",
+      "field_extracted_value": "''",
+      "raw_multipart_value": "",
+      "valid": true,
+      "validated_value": "''"
+    },
+    "char_whitespace": {
+      "errors": null,
+      "field_class": "CharField",
+      "field_extracted_value": "'   '",
+      "raw_multipart_value": "   ",
+      "valid": true,
+      "validated_value": "''"
+    },
+    "deleted_at_date_only": {
+      "errors": null,
+      "field_class": "DateTimeField",
+      "field_extracted_value": "'2026-10-18'",
+      "raw_multipart_value": "2026-10-18",
+      "valid": true,
+      "validated_value": "datetime.datetime(2026, 10, 18, 0, 0, tzinfo=zoneinfo.ZoneInfo(key='UTC'))"
+    },
+    "deleted_at_empty": {
+      "errors": null,
+      "field_class": "DateTimeField",
+      "field_extracted_value": "None",
+      "raw_multipart_value": "",
+      "valid": true,
+      "validated_value": "None"
+    },
+    "deleted_at_literal_null": {
+      "errors": [
+        "Datetime has wrong format. Use one of these formats instead: YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z]."
+      ],
+      "field_class": "DateTimeField",
+      "field_extracted_value": "'null'",
+      "raw_multipart_value": "null",
+      "valid": false,
+      "validated_value": null
+    },
+    "deleted_at_space_separated": {
+      "errors": null,
+      "field_class": "DateTimeField",
+      "field_extracted_value": "'2026-10-18 12:34:56'",
+      "raw_multipart_value": "2026-10-18 12:34:56",
+      "valid": true,
+      "validated_value": "datetime.datetime(2026, 10, 18, 12, 34, 56, tzinfo=zoneinfo.ZoneInfo(key='UTC'))"
+    },
+    "nullable_relation_empty": {
+      "errors": null,
+      "field_class": "PrimaryKeyRelatedField",
+      "field_extracted_value": "None",
+      "raw_multipart_value": "",
+      "valid": true,
+      "validated_value": "None"
+    },
+    "nullable_relation_literal_null": {
+      "errors": ["“null” is not a valid UUID."],
+      "field_class": "PrimaryKeyRelatedField",
+      "field_extracted_value": "'null'",
+      "raw_multipart_value": "null",
+      "valid": false,
+      "validated_value": null
+    },
+    "nullable_relation_malformed_uuid": {
+      "errors": ["“not-a-uuid” is not a valid UUID."],
+      "field_class": "PrimaryKeyRelatedField",
+      "field_extracted_value": "'not-a-uuid'",
+      "raw_multipart_value": "not-a-uuid",
+      "valid": false,
+      "validated_value": null
+    },
+    "nullable_relation_whitespace": {
+      "errors": ["“   ” is not a valid UUID."],
+      "field_class": "PrimaryKeyRelatedField",
+      "field_extracted_value": "'   '",
+      "raw_multipart_value": "   ",
+      "valid": false,
+      "validated_value": null
+    },
+    "size_nan": {
+      "errors": null,
+      "field_class": "FloatField",
+      "field_extracted_value": "'nan'",
+      "raw_multipart_value": "nan",
+      "valid": true,
+      "validated_value": "nan"
+    },
+    "size_positive_infinity": {
+      "errors": null,
+      "field_class": "FloatField",
+      "field_extracted_value": "'inf'",
+      "raw_multipart_value": "inf",
+      "valid": true,
+      "validated_value": "inf"
+    },
+    "size_underscores": {
+      "errors": null,
+      "field_class": "FloatField",
+      "field_extracted_value": "'1_000'",
+      "raw_multipart_value": "1_000",
+      "valid": true,
+      "validated_value": "1000.0"
+    },
+    "storage_metadata_json_null": {
+      "errors": null,
+      "field_class": "JSONField",
+      "field_extracted_value": "'null'",
+      "raw_multipart_value": "null",
+      "valid": true,
+      "validated_value": "None"
+    }
+  },
+  "http_observations": {
+    "nonexistent_valid_uuid_relation": {
+      "fixture": "legacy-workspace-file-asset-create-multipart-nonexistent-valid-uuid-relation",
+      "status": 400,
+      "error": "Invalid pk \"<uuid-1>\" - object does not exist."
+    },
+    "malformed_uuid_relation": {
+      "fixture": "legacy-workspace-file-asset-create-multipart-malformed-uuid-relation",
+      "status": 400,
+      "error": "“not-a-uuid” is not a valid UUID."
+    },
+    "multiple_invalid_fields": {
+      "fixture": "legacy-workspace-file-asset-create-multipart-multiple-invalid-fields",
+      "status": 400,
+      "errors": {
+        "is_archived": ["Must be a valid boolean."],
+        "size": ["A valid number is required."]
+      }
+    }
+  },
+  "source_revision": "a1fe07a3b91b28a9572668d0161a171d597ad598"
+}

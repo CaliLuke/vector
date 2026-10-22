@@ -1,0 +1,99 @@
+{
+  "database": {
+    "after": {
+      "user_notification_preferences": [
+        {
+          "comment": true,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "issue_completed": true,
+          "mention": true,
+          "project_id": null,
+          "property_change": false,
+          "state_change": true,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "user_id": "<uuid-2>",
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "user_notification_preferences": [
+        {
+          "comment": true,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "issue_completed": true,
+          "mention": true,
+          "project_id": null,
+          "property_change": true,
+          "state_change": true,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "user_notification_preferences"
+    ],
+    "expected_changed_tables": [
+      "user_notification_preferences"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "property_change": false
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/users/me/notification-preferences/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "comment": true,
+      "created_at": "<timestamp>",
+      "created_by": null,
+      "deleted_at": null,
+      "id": "<uuid-1>",
+      "issue_completed": true,
+      "mention": true,
+      "project": null,
+      "property_change": false,
+      "state_change": true,
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-2>",
+      "user": "<uuid-2>",
+      "workspace": null
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PATCH, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "patch-valid",
+    "field": "property_change"
+  }
+}

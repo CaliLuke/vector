@@ -1,0 +1,2575 @@
+{
+  "capture": {
+    "command": "UPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_protocol_recorder.py -k protocol_options",
+    "exit_code": 0,
+    "result": "40 passed"
+  },
+  "environment": [
+    "export GOCACHE=/tmp/plane-labels-go-cache",
+    "eval \"$(go -C apps/go-api run ./cmd/endpoint-retirement env)\""
+  ],
+  "family": "work_item_core",
+  "fixture_integrity": {
+    "baseline_changed": [],
+    "baseline_fixture_count": 802,
+    "baseline_missing": [],
+    "new_fixture_count": 40,
+    "new_fixtures": [
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-intake-list-anonymous.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/",
+        "sha256": "bf46c9048ba5e1475c89581a68b064d581ec3ea24fd3e753b90f5274985baa74",
+        "status": 401
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-intake-list-authenticated.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/",
+        "sha256": "03349cda70ce4f4a9a99c351bad09107fd3a5981f016b9456a7695ecc9d4669c",
+        "status": 405
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-detail-anonymous.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/",
+        "sha256": "994ee8a8745fc11c52d09bfb08550341ab78c81d3732cb5b48a99fe7698476bc",
+        "status": 401
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-detail-authenticated.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/",
+        "sha256": "3d137c9077f3b9a98a7a72a90f4344933ade4afd0568a0fb845514613a3238f2",
+        "status": 405
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-identifier-anonymous.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/issues/IC-1/",
+        "sha256": "a4754a85e5e601f70abb4c422447b6627886b410e67f845bb3e7124a6f6bcf7f",
+        "status": 401
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-identifier-authenticated.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/issues/IC-1/",
+        "sha256": "802fb0cbae8e1852cf83608fcbda66f78b5363410e867d176b6256340af1c4d0",
+        "status": 405
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-list-anonymous.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "sha256": "2cf91d95c896d1aa1297dcf14ff42e5d79ff73d24f7ac9fb007aea9fe64eaf7e",
+        "status": 401
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-api-issue-list-authenticated.json",
+        "method": "OPTIONS",
+        "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "sha256": "c684838d1251beab850036c49efe22f544b025b99c7a90c3fdf1297e9d9a7e2d",
+        "status": 405
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-archived-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/archived-issues/",
+        "sha256": "e3965c49146635aa73ef04f1ef5abd761a7848d909281b62e83c19f11900d232",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-bulk-archive-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/bulk-archive-issues/",
+        "sha256": "6d1ad79b7ac86bee8b89a4ca3e5017569446f4b7288e80f7994aa0a9a8af5bf2",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-bulk-delete-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/bulk-delete-issues/",
+        "sha256": "d08ed833be0a84a4a99e28b3eb854d0fe564efc8ec108436af2804a89fee747f",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/cycle-issues/<uuid-3>/",
+        "sha256": "1927c9f5d2e0dcb23e4728f2c4a3626d2c425995918d25464e14d3f5465cc544",
+        "status": 500
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/cycle-issues/",
+        "sha256": "1e1ae851b5d532a109e28a6d6234c11766f71bec444962294109451ca312b5da",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-transfer.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/transfer-issues/",
+        "sha256": "561499b3212c6bf074380a5e3a23084d8d0615f616a27b433a41b904ff4fbb09",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-deleted-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/deleted-issues/",
+        "sha256": "13332740d2fc8342adb91fa59d2c7df0f3a0db0821eb3eb29b0c8702d4c85e59",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/draft-issues/<uuid-1>/",
+        "sha256": "c171675a72bc77c810aad52ad7b3a60e0c393b516b8d8a4722e7619bee9bdd33",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/draft-issues/",
+        "sha256": "b1eae4501019afe12cdb40484f18d2b7dbbf5aef038023baba9219309a6dd67f",
+        "status": 500
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-to-issue.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/draft-to-issue/<uuid-1>/",
+        "sha256": "4716eb192e8d99a9a8c6f64e6849f353ff58e17cfb35ee48e56893c0f5033f92",
+        "status": 500
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-inbox-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/inbox-issues/<uuid-2>/",
+        "sha256": "b9cfbe3f870981d83f79b74cac45646effff3b54632cedfb443cb743a3c64d89",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-inbox-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/inbox-issues/",
+        "sha256": "fb26eba46d7eb38fad1d7f1f3ce35892e2cb7d005534c1e7a7a6290deff1b869",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-intake-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/<uuid-2>/",
+        "sha256": "184bca3eec7939e6f7db0229e8f96e82985d89dbb4a299b05e190d40d0a04f76",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-intake-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/",
+        "sha256": "7cdc4d3ab988c5c6825961a02516b957efb55e3d111ca7b9a8da737b293bea00",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-archive-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/archive/",
+        "sha256": "b4eebada0581030a33c822b0ce7efcb235c649bd6408ddf02cba7a959e589c28",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-dates.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issue-dates/",
+        "sha256": "464d4c212c2f7225be3d696cbace43eb20b8a3c9869dbb494a1460c40e6a2d24",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-detail-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues-detail/",
+        "sha256": "b6122a360e8c277dde72587c4a83fc1656695a2ad75d147fa5c1245440497e3a",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/",
+        "sha256": "5844b4e392f11094a35ae59e17ca435a279b8771bb30bb20e5d19318ba70d58e",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-id-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/list/",
+        "sha256": "a6b21be46d1e6828d2700e9a73918fac8f3868abbe7adfde200b1f3dff037274",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-list-anonymous.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "sha256": "328e60695dcb10847919f23f8a521dfbee009be4c9910d8c66b8d9bc185afba1",
+        "status": 401
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "sha256": "96dee5aa06e583b019e41416300715556e8deb51b236698ae79f0e965d24ed68",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-modules.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/modules/",
+        "sha256": "c5918caeb33fcb18465c678e8072a963a76d14cdec1bb9d39d49212f39ec8b9c",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-relation.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/issue-relation/",
+        "sha256": "2308c756314413dd7c1cad3ee8e0ed17e588aae69545e6c9ab50f27110db3abb",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-remove-relation.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/remove-relation/",
+        "sha256": "fc6d48e012ecc4b61e41e4a253f809fae3fdd25109a46275b0b033c974768ae9",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-search.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/search-issues/",
+        "sha256": "5269dbcfa5943a138dfe60ef47fa638b57185b169fdf7d827008f9244adc314b",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-v2-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/v2/issues/",
+        "sha256": "371d06cf21edb9f91fa9a1d9d05e7255d20c141f32bf317acb348d30a94a96bd",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-module-issue-detail.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/modules/<uuid-2>/issues/<uuid-3>/",
+        "sha256": "798b1a29e9e2081c206ea2cb5ced3572172a5b42033d0b6d3935529c424074dd",
+        "status": 500
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-module-issue-list.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/modules/<uuid-2>/issues/",
+        "sha256": "eae53034d60b075bcb8e85c0fc900f6c4fea53f364d4eb99acce69a43e37b5f0",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-sub-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/sub-issues/",
+        "sha256": "75cb18162f34d79b44cd5f2718efb067ca346dba74bb2affe7f84eaa3071bd21",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-issue-identifier.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/work-items/IC-1/",
+        "sha256": "a004225451e1574a6c30a39c01bf9809c8544c27a2b5f37510b3679e7ce82a1b",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/issues/",
+        "sha256": "f43e1b16dd0fc572da2ecfca79cf8f17b01cd86c3d8f8d4c999efafd438f0ce0",
+        "status": 200
+      },
+      {
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-user-issues.json",
+        "method": "OPTIONS",
+        "path": "/api/workspaces/issue-core-contract/user-issues/<uuid-1>/",
+        "sha256": "f8aa7e166aadf629cc11d97b243b5e78da6f32c6e78325a82083d7f7010b201f",
+        "status": 200
+      }
+    ],
+    "status_counts": {
+      "200": 27,
+      "401": 5,
+      "405": 4,
+      "500": 4
+    }
+  },
+  "immutable_replay": {
+    "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py plane/tests/parity/test_work_item_core_protocol_recorder.py -k protocol_options",
+    "exit_code": 0,
+    "result": "40 passed"
+  },
+  "kind": "source-protocol-capture-and-replay",
+  "protocol_scope": {
+    "api_route_authentication_pairs": 8,
+    "app_options": [
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Archive",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-archived-issues.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/archived-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Bulk Archive Issues Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-bulk-archive-issues.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/bulk-archive-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Bulk Delete Issues Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-bulk-delete-issues.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/bulk-delete-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "error": "Something went wrong please try again later"
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/cycle-issues/<uuid-3>/",
+        "status": 500
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "cycle": {
+                "label": "Cycle",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "deleted_at": {
+                "label": "Deleted At",
+                "read_only": false,
+                "required": false,
+                "type": "datetime"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "issue": {
+                "label": "Issue",
+                "read_only": false,
+                "required": true,
+                "type": "field"
+              },
+              "issue_detail": {
+                "children": {
+                  "archived_at": {
+                    "label": "Archived at",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "assignee_details": {
+                    "child": {
+                      "children": {
+                        "avatar": {
+                          "label": "Avatar",
+                          "read_only": false,
+                          "required": false,
+                          "type": "string"
+                        },
+                        "avatar_url": {
+                          "label": "Avatar url",
+                          "read_only": true,
+                          "required": false,
+                          "type": "field"
+                        },
+                        "display_name": {
+                          "label": "Display name",
+                          "max_length": 255,
+                          "read_only": false,
+                          "required": false,
+                          "type": "string"
+                        },
+                        "first_name": {
+                          "label": "First name",
+                          "max_length": 255,
+                          "read_only": false,
+                          "required": false,
+                          "type": "string"
+                        },
+                        "id": {
+                          "label": "Id",
+                          "read_only": true,
+                          "required": false,
+                          "type": "field"
+                        },
+                        "is_bot": {
+                          "label": "Is bot",
+                          "read_only": true,
+                          "required": false,
+                          "type": "boolean"
+                        },
+                        "last_name": {
+                          "label": "Last name",
+                          "max_length": 255,
+                          "read_only": false,
+                          "required": false,
+                          "type": "string"
+                        }
+                      },
+                      "read_only": true,
+                      "required": false,
+                      "type": "nested object"
+                    },
+                    "label": "Assignee details",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "assignees": {
+                    "label": "Assignees",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "attachment_count": {
+                    "label": "Attachment count",
+                    "read_only": true,
+                    "required": false,
+                    "type": "integer"
+                  },
+                  "completed_at": {
+                    "label": "Completed at",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_at": {
+                    "label": "Created At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_by": {
+                    "label": "Created By",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "deleted_at": {
+                    "label": "Deleted At",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "description_binary": {
+                    "label": "Description binary",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description_html": {
+                    "label": "Description html",
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "description_json": {
+                    "label": "Description json",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description_stripped": {
+                    "label": "Description stripped",
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "estimate_point": {
+                    "label": "Estimate point",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "external_id": {
+                    "label": "External id",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "external_source": {
+                    "label": "External source",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "is_draft": {
+                    "label": "Is draft",
+                    "read_only": false,
+                    "required": false,
+                    "type": "boolean"
+                  },
+                  "label_details": {
+                    "child": {
+                      "children": {
+                        "color": {
+                          "label": "Color",
+                          "max_length": 255,
+                          "read_only": false,
+                          "required": false,
+                          "type": "string"
+                        },
+                        "id": {
+                          "label": "Id",
+                          "read_only": true,
+                          "required": false,
+                          "type": "field"
+                        },
+                        "name": {
+                          "label": "Name",
+                          "max_length": 255,
+                          "read_only": false,
+                          "required": true,
+                          "type": "string"
+                        }
+                      },
+                      "read_only": true,
+                      "required": false,
+                      "type": "nested object"
+                    },
+                    "label": "Label details",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "labels": {
+                    "label": "Labels",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "link_count": {
+                    "label": "Link count",
+                    "read_only": true,
+                    "required": false,
+                    "type": "integer"
+                  },
+                  "name": {
+                    "label": "Issue Name",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "parent": {
+                    "label": "Parent",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "point": {
+                    "label": "Point",
+                    "max_value": 12,
+                    "min_value": 0,
+                    "read_only": false,
+                    "required": false,
+                    "type": "integer"
+                  },
+                  "priority": {
+                    "choices": [
+                      {
+                        "display_name": "Urgent",
+                        "value": "urgent"
+                      },
+                      {
+                        "display_name": "High",
+                        "value": "high"
+                      },
+                      {
+                        "display_name": "Medium",
+                        "value": "medium"
+                      },
+                      {
+                        "display_name": "Low",
+                        "value": "low"
+                      },
+                      {
+                        "display_name": "None",
+                        "value": "none"
+                      }
+                    ],
+                    "label": "Issue Priority",
+                    "read_only": false,
+                    "required": false,
+                    "type": "choice"
+                  },
+                  "project": {
+                    "label": "Project",
+                    "read_only": false,
+                    "required": true,
+                    "type": "field"
+                  },
+                  "project_detail": {
+                    "children": {
+                      "cover_image": {
+                        "label": "Cover image",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      },
+                      "cover_image_url": {
+                        "label": "Cover image url",
+                        "read_only": true,
+                        "required": false,
+                        "type": "field"
+                      },
+                      "description": {
+                        "label": "Project Description",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      },
+                      "id": {
+                        "label": "Id",
+                        "read_only": true,
+                        "required": false,
+                        "type": "field"
+                      },
+                      "identifier": {
+                        "label": "Project Identifier",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      },
+                      "logo_props": {
+                        "label": "Logo props",
+                        "read_only": true,
+                        "required": false,
+                        "type": "field"
+                      },
+                      "name": {
+                        "label": "Project Name",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "label": "Project detail",
+                    "read_only": true,
+                    "required": false,
+                    "type": "nested object"
+                  },
+                  "sequence_id": {
+                    "label": "Issue Sequence ID",
+                    "max_value": 2147483647,
+                    "min_value": -2147483648,
+                    "read_only": false,
+                    "required": false,
+                    "type": "integer"
+                  },
+                  "sort_order": {
+                    "label": "Sort order",
+                    "read_only": false,
+                    "required": false,
+                    "type": "float"
+                  },
+                  "start_date": {
+                    "label": "Start date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "state": {
+                    "label": "State",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "state_detail": {
+                    "children": {
+                      "color": {
+                        "label": "State Color",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      },
+                      "group": {
+                        "label": "Group",
+                        "read_only": true,
+                        "required": false,
+                        "type": "choice"
+                      },
+                      "id": {
+                        "label": "Id",
+                        "read_only": true,
+                        "required": false,
+                        "type": "field"
+                      },
+                      "name": {
+                        "label": "State Name",
+                        "read_only": true,
+                        "required": false,
+                        "type": "string"
+                      }
+                    },
+                    "label": "State detail",
+                    "read_only": true,
+                    "required": false,
+                    "type": "nested object"
+                  },
+                  "sub_issues_count": {
+                    "label": "Sub issues count",
+                    "read_only": true,
+                    "required": false,
+                    "type": "integer"
+                  },
+                  "target_date": {
+                    "label": "Target date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "type": {
+                    "label": "Type",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "updated_at": {
+                    "label": "Last Modified At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "updated_by": {
+                    "label": "Last Modified By",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "workspace": {
+                    "label": "Workspace",
+                    "read_only": false,
+                    "required": true,
+                    "type": "field"
+                  }
+                },
+                "label": "Issue detail",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "project": {
+                "label": "Project",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sub_issues_count": {
+                "label": "Sub issues count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "workspace": {
+                "label": "Workspace",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Cycle Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/cycle-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Transfer Cycle Issue Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-cycle-transfer.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/cycles/<uuid-2>/transfer-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Deleted Issues List",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-deleted-issues.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/deleted-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Workspace Draft Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/draft-issues/<uuid-1>/",
+        "status": 200
+      },
+      {
+        "body": {
+          "error": "Something went wrong please try again later"
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/draft-issues/",
+        "status": 500
+      },
+      {
+        "body": {
+          "error": "Something went wrong please try again later"
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-draft-to-issue.json",
+        "path": "/api/workspaces/issue-core-contract/draft-to-issue/<uuid-1>/",
+        "status": 500
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Intake Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-inbox-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/inbox-issues/<uuid-2>/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "created_by": {
+                "label": "Created By",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "duplicate_to": {
+                "label": "Duplicate to",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "issue": {
+                "children": {
+                  "created_at": {
+                    "label": "Created At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_by": {
+                    "label": "Created By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "label_ids": {
+                    "child": {
+                      "read_only": false,
+                      "required": true,
+                      "type": "string"
+                    },
+                    "label": "Label ids",
+                    "read_only": false,
+                    "required": false,
+                    "type": "list"
+                  },
+                  "name": {
+                    "label": "Issue Name",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "priority": {
+                    "label": "Issue Priority",
+                    "read_only": true,
+                    "required": false,
+                    "type": "choice"
+                  },
+                  "project_id": {
+                    "label": "Project id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "sequence_id": {
+                    "label": "Issue Sequence ID",
+                    "read_only": true,
+                    "required": false,
+                    "type": "integer"
+                  }
+                },
+                "label": "Issue",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "snoozed_till": {
+                "label": "Snoozed till",
+                "read_only": false,
+                "required": false,
+                "type": "datetime"
+              },
+              "source": {
+                "label": "Source",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "status": {
+                "choices": [
+                  {
+                    "display_name": "Pending",
+                    "value": -2
+                  },
+                  {
+                    "display_name": "Rejected",
+                    "value": -1
+                  },
+                  {
+                    "display_name": "Snoozed",
+                    "value": 0
+                  },
+                  {
+                    "display_name": "Accepted",
+                    "value": 1
+                  },
+                  {
+                    "display_name": "Duplicate",
+                    "value": 2
+                  }
+                ],
+                "label": "Status",
+                "read_only": false,
+                "required": false,
+                "type": "choice"
+              }
+            }
+          },
+          "description": "",
+          "name": "Intake Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-inbox-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/inbox-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Intake Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-intake-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/<uuid-2>/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "created_by": {
+                "label": "Created By",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "duplicate_to": {
+                "label": "Duplicate to",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "issue": {
+                "children": {
+                  "created_at": {
+                    "label": "Created At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_by": {
+                    "label": "Created By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "label_ids": {
+                    "child": {
+                      "read_only": false,
+                      "required": true,
+                      "type": "string"
+                    },
+                    "label": "Label ids",
+                    "read_only": false,
+                    "required": false,
+                    "type": "list"
+                  },
+                  "name": {
+                    "label": "Issue Name",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "priority": {
+                    "label": "Issue Priority",
+                    "read_only": true,
+                    "required": false,
+                    "type": "choice"
+                  },
+                  "project_id": {
+                    "label": "Project id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "sequence_id": {
+                    "label": "Issue Sequence ID",
+                    "read_only": true,
+                    "required": false,
+                    "type": "integer"
+                  }
+                },
+                "label": "Issue",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "snoozed_till": {
+                "label": "Snoozed till",
+                "read_only": false,
+                "required": false,
+                "type": "datetime"
+              },
+              "source": {
+                "label": "Source",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "status": {
+                "choices": [
+                  {
+                    "display_name": "Pending",
+                    "value": -2
+                  },
+                  {
+                    "display_name": "Rejected",
+                    "value": -1
+                  },
+                  {
+                    "display_name": "Snoozed",
+                    "value": 0
+                  },
+                  {
+                    "display_name": "Accepted",
+                    "value": 1
+                  },
+                  {
+                    "display_name": "Duplicate",
+                    "value": 2
+                  }
+                ],
+                "label": "Status",
+                "read_only": false,
+                "required": false,
+                "type": "choice"
+              }
+            }
+          },
+          "description": "",
+          "name": "Intake Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-intake-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/intake-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "description_html": {
+                "label": "Description html",
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "description_json": {
+                "label": "Description json",
+                "read_only": false,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "is_draft": {
+                "label": "Is draft",
+                "read_only": false,
+                "required": false,
+                "type": "boolean"
+              },
+              "name": {
+                "label": "Issue Name",
+                "max_length": 255,
+                "read_only": false,
+                "required": true,
+                "type": "string"
+              },
+              "priority": {
+                "choices": [
+                  {
+                    "display_name": "Urgent",
+                    "value": "urgent"
+                  },
+                  {
+                    "display_name": "High",
+                    "value": "high"
+                  },
+                  {
+                    "display_name": "Medium",
+                    "value": "medium"
+                  },
+                  {
+                    "display_name": "Low",
+                    "value": "low"
+                  },
+                  {
+                    "display_name": "None",
+                    "value": "none"
+                  }
+                ],
+                "label": "Issue Priority",
+                "read_only": false,
+                "required": false,
+                "type": "choice"
+              },
+              "sequence_id": {
+                "label": "Issue Sequence ID",
+                "max_value": 2147483647,
+                "min_value": -2147483648,
+                "read_only": false,
+                "required": false,
+                "type": "integer"
+              },
+              "sort_order": {
+                "label": "Sort order",
+                "read_only": false,
+                "required": false,
+                "type": "float"
+              },
+              "start_date": {
+                "label": "Start date",
+                "read_only": false,
+                "required": false,
+                "type": "date"
+              },
+              "target_date": {
+                "label": "Target date",
+                "read_only": false,
+                "required": false,
+                "type": "date"
+              }
+            }
+          },
+          "description": "",
+          "name": "Issue Archive",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-archive-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/archive/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Bulk Update Date Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-dates.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issue-dates/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Detail Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-detail-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues-detail/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "PUT": {
+              "archived_at": {
+                "label": "Archived at",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "assignee_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Assignee ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "attachment_count": {
+                "label": "Attachment count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "completed_at": {
+                "label": "Completed at",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "cycle_id": {
+                "label": "Cycle id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "estimate_point": {
+                "label": "Estimate point",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "is_draft": {
+                "label": "Is draft",
+                "read_only": true,
+                "required": false,
+                "type": "boolean"
+              },
+              "label_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Label ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "link_count": {
+                "label": "Link count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "module_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Module ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "name": {
+                "label": "Issue Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "parent_id": {
+                "label": "Parent id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "priority": {
+                "label": "Issue Priority",
+                "read_only": true,
+                "required": false,
+                "type": "choice"
+              },
+              "project_id": {
+                "label": "Project id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sequence_id": {
+                "label": "Issue Sequence ID",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "sort_order": {
+                "label": "Sort order",
+                "read_only": true,
+                "required": false,
+                "type": "float"
+              },
+              "start_date": {
+                "label": "Start date",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "state_id": {
+                "label": "State id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sub_issues_count": {
+                "label": "Sub issues count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "target_date": {
+                "label": "Target date",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue List Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-id-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/list/",
+        "status": 200
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-list-anonymous.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "status": 401
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "archived_at": {
+                "label": "Archived at",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "assignee_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Assignee ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "attachment_count": {
+                "label": "Attachment count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "completed_at": {
+                "label": "Completed at",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "cycle_id": {
+                "label": "Cycle id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "estimate_point": {
+                "label": "Estimate point",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "is_draft": {
+                "label": "Is draft",
+                "read_only": true,
+                "required": false,
+                "type": "boolean"
+              },
+              "label_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Label ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "link_count": {
+                "label": "Link count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "module_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "string"
+                },
+                "label": "Module ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "name": {
+                "label": "Issue Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "parent_id": {
+                "label": "Parent id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "priority": {
+                "label": "Issue Priority",
+                "read_only": true,
+                "required": false,
+                "type": "choice"
+              },
+              "project_id": {
+                "label": "Project id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sequence_id": {
+                "label": "Issue Sequence ID",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "sort_order": {
+                "label": "Sort order",
+                "read_only": true,
+                "required": false,
+                "type": "float"
+              },
+              "start_date": {
+                "label": "Start date",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "state_id": {
+                "label": "State id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sub_issues_count": {
+                "label": "Sub issues count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "target_date": {
+                "label": "Target date",
+                "read_only": true,
+                "required": false,
+                "type": "date"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "deleted_at": {
+                "label": "Deleted At",
+                "read_only": false,
+                "required": false,
+                "type": "datetime"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "issue": {
+                "label": "Issue",
+                "read_only": false,
+                "required": true,
+                "type": "field"
+              },
+              "issue_detail": {
+                "children": {
+                  "cover_image": {
+                    "label": "Cover image",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "cover_image_url": {
+                    "label": "Cover image url",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description": {
+                    "label": "Project Description",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "identifier": {
+                    "label": "Project Identifier",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "logo_props": {
+                    "label": "Logo props",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "name": {
+                    "label": "Project Name",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "label": "Issue detail",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "module": {
+                "label": "Module",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "module_detail": {
+                "children": {
+                  "archived_at": {
+                    "label": "Archived at",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_at": {
+                    "label": "Created At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_by": {
+                    "label": "Created By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "deleted_at": {
+                    "label": "Deleted At",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "description": {
+                    "label": "Module Description",
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "description_html": {
+                    "label": "Module Description HTML",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description_text": {
+                    "label": "Module Description RT",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "external_id": {
+                    "label": "External id",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "external_source": {
+                    "label": "External source",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "lead": {
+                    "label": "Lead",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "logo_props": {
+                    "label": "Logo props",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "members": {
+                    "label": "Members",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "name": {
+                    "label": "Module Name",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "project": {
+                    "label": "Project",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "sort_order": {
+                    "label": "Sort order",
+                    "read_only": false,
+                    "required": false,
+                    "type": "float"
+                  },
+                  "start_date": {
+                    "label": "Start date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "status": {
+                    "choices": [
+                      {
+                        "display_name": "Backlog",
+                        "value": "backlog"
+                      },
+                      {
+                        "display_name": "Planned",
+                        "value": "planned"
+                      },
+                      {
+                        "display_name": "In Progress",
+                        "value": "in-progress"
+                      },
+                      {
+                        "display_name": "Paused",
+                        "value": "paused"
+                      },
+                      {
+                        "display_name": "Completed",
+                        "value": "completed"
+                      },
+                      {
+                        "display_name": "Cancelled",
+                        "value": "cancelled"
+                      }
+                    ],
+                    "label": "Status",
+                    "read_only": false,
+                    "required": false,
+                    "type": "choice"
+                  },
+                  "target_date": {
+                    "label": "Target date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "updated_at": {
+                    "label": "Last Modified At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "updated_by": {
+                    "label": "Last Modified By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "view_props": {
+                    "label": "View props",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "workspace": {
+                    "label": "Workspace",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  }
+                },
+                "label": "Module detail",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "project": {
+                "label": "Project",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sub_issues_count": {
+                "label": "Sub issues count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "workspace": {
+                "label": "Workspace",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Module Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-modules.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/modules/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "assignee_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "field"
+                },
+                "label": "Assignee ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "name": {
+                "label": "Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "priority": {
+                "label": "Priority",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "project_id": {
+                "label": "Project id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "relation_type": {
+                "label": "Relation type",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "sequence_id": {
+                "label": "Sequence id",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "state_id": {
+                "label": "State id",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Issue Relation",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-relation.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/issue-relation/",
+        "status": 200
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "assignee_ids": {
+                "child": {
+                  "read_only": false,
+                  "required": true,
+                  "type": "field"
+                },
+                "label": "Assignee ids",
+                "read_only": false,
+                "required": false,
+                "type": "list"
+              },
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "name": {
+                "label": "Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "priority": {
+                "label": "Priority",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "project_id": {
+                "label": "Project id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "relation_type": {
+                "label": "Relation type",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "sequence_id": {
+                "label": "Sequence id",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "state_id": {
+                "label": "State id",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Issue Relation",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-remove-relation.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/remove-relation/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Search Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-search.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/search-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Paginated",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-issue-v2-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/v2/issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "error": "Something went wrong please try again later"
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-module-issue-detail.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/modules/<uuid-2>/issues/<uuid-3>/",
+        "status": 500
+      },
+      {
+        "body": {
+          "actions": {
+            "POST": {
+              "created_at": {
+                "label": "Created At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "created_by": {
+                "label": "Created By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "deleted_at": {
+                "label": "Deleted At",
+                "read_only": false,
+                "required": false,
+                "type": "datetime"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "issue": {
+                "label": "Issue",
+                "read_only": false,
+                "required": true,
+                "type": "field"
+              },
+              "issue_detail": {
+                "children": {
+                  "cover_image": {
+                    "label": "Cover image",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "cover_image_url": {
+                    "label": "Cover image url",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description": {
+                    "label": "Project Description",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "identifier": {
+                    "label": "Project Identifier",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "logo_props": {
+                    "label": "Logo props",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "name": {
+                    "label": "Project Name",
+                    "read_only": true,
+                    "required": false,
+                    "type": "string"
+                  }
+                },
+                "label": "Issue detail",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "module": {
+                "label": "Module",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "module_detail": {
+                "children": {
+                  "archived_at": {
+                    "label": "Archived at",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_at": {
+                    "label": "Created At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "created_by": {
+                    "label": "Created By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "deleted_at": {
+                    "label": "Deleted At",
+                    "read_only": false,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "description": {
+                    "label": "Module Description",
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "description_html": {
+                    "label": "Module Description HTML",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "description_text": {
+                    "label": "Module Description RT",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "external_id": {
+                    "label": "External id",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "external_source": {
+                    "label": "External source",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": false,
+                    "type": "string"
+                  },
+                  "id": {
+                    "label": "Id",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "lead": {
+                    "label": "Lead",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "logo_props": {
+                    "label": "Logo props",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "members": {
+                    "label": "Members",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "name": {
+                    "label": "Module Name",
+                    "max_length": 255,
+                    "read_only": false,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "project": {
+                    "label": "Project",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "sort_order": {
+                    "label": "Sort order",
+                    "read_only": false,
+                    "required": false,
+                    "type": "float"
+                  },
+                  "start_date": {
+                    "label": "Start date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "status": {
+                    "choices": [
+                      {
+                        "display_name": "Backlog",
+                        "value": "backlog"
+                      },
+                      {
+                        "display_name": "Planned",
+                        "value": "planned"
+                      },
+                      {
+                        "display_name": "In Progress",
+                        "value": "in-progress"
+                      },
+                      {
+                        "display_name": "Paused",
+                        "value": "paused"
+                      },
+                      {
+                        "display_name": "Completed",
+                        "value": "completed"
+                      },
+                      {
+                        "display_name": "Cancelled",
+                        "value": "cancelled"
+                      }
+                    ],
+                    "label": "Status",
+                    "read_only": false,
+                    "required": false,
+                    "type": "choice"
+                  },
+                  "target_date": {
+                    "label": "Target date",
+                    "read_only": false,
+                    "required": false,
+                    "type": "date"
+                  },
+                  "updated_at": {
+                    "label": "Last Modified At",
+                    "read_only": true,
+                    "required": false,
+                    "type": "datetime"
+                  },
+                  "updated_by": {
+                    "label": "Last Modified By",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "view_props": {
+                    "label": "View props",
+                    "read_only": false,
+                    "required": false,
+                    "type": "field"
+                  },
+                  "workspace": {
+                    "label": "Workspace",
+                    "read_only": true,
+                    "required": false,
+                    "type": "field"
+                  }
+                },
+                "label": "Module detail",
+                "read_only": true,
+                "required": false,
+                "type": "nested object"
+              },
+              "project": {
+                "label": "Project",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "sub_issues_count": {
+                "label": "Sub issues count",
+                "read_only": true,
+                "required": false,
+                "type": "integer"
+              },
+              "updated_at": {
+                "label": "Last Modified At",
+                "read_only": true,
+                "required": false,
+                "type": "datetime"
+              },
+              "updated_by": {
+                "label": "Last Modified By",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "workspace": {
+                "label": "Workspace",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              }
+            }
+          },
+          "description": "",
+          "name": "Module Issue",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-module-issue-list.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/modules/<uuid-2>/issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Sub Issues Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-sub-issues.json",
+        "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/<uuid-2>/sub-issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Issue Detail Identifier Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-issue-identifier.json",
+        "path": "/api/workspaces/issue-core-contract/work-items/IC-1/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Workspace View Issues",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-issues.json",
+        "path": "/api/workspaces/issue-core-contract/issues/",
+        "status": 200
+      },
+      {
+        "body": {
+          "description": "",
+          "name": "Workspace User Profile Issues Endpoint",
+          "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+          "renders": ["application/json"]
+        },
+        "fixture": "apps/go-api/internal/parity/testdata/fixtures/work_item_core/work-item-core-protocol-app-options-workspace-user-issues.json",
+        "path": "/api/workspaces/issue-core-contract/user-issues/<uuid-1>/",
+        "status": 200
+      }
+    ],
+    "app_options_fixture_cases": 32,
+    "app_options_route_count": 31
+  },
+  "replay_scope": "No target replay; parent owns target census/replay.",
+  "source_outcomes": {
+    "api_options_status_counts": {
+      "401": 4,
+      "405": 4
+    },
+    "api_unauthorized_effect": "api_tokens last_used update and audit-task effect are captured in fixtures",
+    "app_options_status_counts": {
+      "200": 27,
+      "401": 1,
+      "500": 4
+    },
+    "metadata": "all app OPTIONS statuses and exact serializer actions/metadata are source fixture-backed; four source 500 responses are preserved verbatim"
+  }
+}

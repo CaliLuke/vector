@@ -1,0 +1,2099 @@
+{
+  "components": {
+    "schemas": {
+      "ModuleStatusEnum": {
+        "description": "* `backlog` - Backlog\n* `planned` - Planned\n* `in-progress` - In Progress\n* `paused` - Paused\n* `completed` - Completed\n* `cancelled` - Cancelled",
+        "enum": ["backlog", "planned", "in-progress", "paused", "completed", "cancelled"],
+        "type": "string"
+      },
+      "PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest": {
+        "description": "Serializer for updating modules with enhanced validation and member management.\n\nExtends module creation with update-specific validations including\nmember reassignment, name conflict checking,\nand relationship management for module modifications.",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "members": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          }
+        },
+        "type": "object"
+      },
+      "PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest": {
+        "properties": {
+          "deleted_at": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "metadata": {},
+          "title": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "url": {
+            "format": "uri",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest": {
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description HTML"
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description RT"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "lead_id": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "sort_order": {
+            "format": "double",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "view_props": {}
+        },
+        "type": "object"
+      },
+      "PlaneApiSerializersModuleModulecreateserializerRequestRequest": {
+        "description": "Serializer for creating modules with member validation and date checking.\n\nHandles module creation including member assignment validation, date range\nverification, and duplicate name prevention for feature-based\nproject organization setup.",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "members": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
+      "PlaneApiSerializersModuleModuleserializerResponse": {
+        "description": "Comprehensive module serializer with work item metrics and member management.\n\nProvides complete module data including work item counts by status, member\nrelationships, and progress tracking for feature-based project organization.",
+        "properties": {
+          "archived_at": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "backlog_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "cancelled_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "completed_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description HTML"
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description RT"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "logo_props": {},
+          "name": {
+            "maxLength": 255,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "project": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sort_order": {
+            "format": "double",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "started_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "total_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "unstarted_issues": {
+            "readOnly": true,
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Last Modified By",
+            "type": ["string", "null"]
+          },
+          "view_props": {},
+          "workspace": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
+      "PlaneAppSerializersModuleModulelinkserializerRequestRequest": {
+        "properties": {
+          "deleted_at": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "metadata": {},
+          "title": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "url": {
+            "format": "uri",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": ["url"],
+        "type": "object"
+      },
+      "PlaneAppSerializersModuleModulelinkserializerResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "metadata": {},
+          "module": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "project": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Last Modified By",
+            "type": ["string", "null"]
+          },
+          "url": {
+            "format": "uri",
+            "maxLength": 200,
+            "type": "string"
+          },
+          "workspace": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": ["url"],
+        "type": "object"
+      },
+      "PlaneAppSerializersModuleModulewriteserializerRequestRequest": {
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description HTML"
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description RT"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "lead_id": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "sort_order": {
+            "format": "double",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "view_props": {}
+        },
+        "required": ["name"],
+        "type": "object"
+      },
+      "PlaneAppSerializersModuleModulewriteserializerResponse": {
+        "properties": {
+          "archived_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "deleted_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": ["string", "null"]
+          },
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description HTML"
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Module Description RT"
+          },
+          "external_id": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "external_source": {
+            "maxLength": 255,
+            "type": ["string", "null"]
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "lead": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "lead_id": {
+            "format": "uuid",
+            "type": ["string", "null"]
+          },
+          "logo_props": {},
+          "members": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "name": {
+            "maxLength": 255,
+            "title": "Module Name",
+            "type": "string"
+          },
+          "project": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "sort_order": {
+            "format": "double",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "format": "date",
+            "type": ["string", "null"]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "title": "Last Modified By",
+            "type": ["string", "null"]
+          },
+          "view_props": {},
+          "workspace": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "type": "object"
+      },
+      "RestFrameworkSerializersArchiveresponseResponse": {
+        "properties": {
+          "archived_at": {
+            "type": "string"
+          }
+        },
+        "required": ["archived_at"],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "description": "Plane API token authentication.",
+        "in": "header",
+        "name": "X-Api-Key",
+        "type": "apiKey"
+      },
+      "PlaneSessionCookie": {
+        "description": "Plane session authentication without CSRF enforcement.",
+        "in": "cookie",
+        "name": "session-id",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "description": "Django and API v1 module lifecycle operations.",
+    "title": "Module Lifecycle API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/unarchive/": {
+      "delete": {
+        "description": "Restore an archived module to active status, making it available for regular use.",
+        "operationId": "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk_unarchive",
+        "parameters": [
+          {
+            "description": "Module ID",
+            "examples": {
+              "ExampleModuleID": {
+                "description": "A typical module UUID",
+                "summary": "Example module ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Project ID",
+            "examples": {
+              "ExampleProjectID": {
+                "description": "A typical project UUID",
+                "summary": "Example project ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace slug",
+            "examples": {
+              "ExampleWorkspace": {
+                "description": "A typical workspace slug",
+                "summary": "Example workspace",
+                "value": "my-workspace"
+              }
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          },
+          "401": {
+            "description": "Authentication credentials were not provided or are invalid."
+          },
+          "403": {
+            "description": "Permission denied. User lacks required permissions."
+          },
+          "404": {
+            "description": "Module not found"
+          }
+        },
+        "summary": "Unarchive module",
+        "tags": ["projects"],
+        "x-plane-authentication-classes": ["plane.api.middleware.api_authentication.APIKeyAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/unarchive/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.api.views.module.ModuleArchiveUnarchiveAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/": {
+      "post": {
+        "description": "Create a new project module with specified name, description, and timeline.",
+        "operationId": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules",
+        "parameters": [
+          {
+            "description": "Project ID",
+            "examples": {
+              "ExampleProjectID": {
+                "description": "A typical project UUID",
+                "summary": "Example project ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace slug",
+            "examples": {
+              "ExampleWorkspace": {
+                "description": "A typical workspace slug",
+                "summary": "Example workspace",
+                "value": "my-workspace"
+              }
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "ModuleCreateSerializer": {
+                  "description": "Example request for creating a module",
+                  "value": {
+                    "description": "New module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "New Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "examples": {
+                "ModuleCreateSerializer": {
+                  "description": "Example request for creating a module",
+                  "value": {
+                    "description": "New module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "New Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "examples": {
+                "ModuleCreateSerializer": {
+                  "description": "Example request for creating a module",
+                  "value": {
+                    "description": "New module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "New Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Module": {
+                    "value": {
+                      "backlog_issues": 0,
+                      "cancelled_issues": 0,
+                      "completed_issues": 5,
+                      "created_at": "2024-01-01T10:30:00Z",
+                      "description": "User authentication and authorization features",
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "Authentication Module",
+                      "start_date": "2024-01-01",
+                      "started_issues": 4,
+                      "status": "in-progress",
+                      "target_date": "2024-02-15",
+                      "total_issues": 12,
+                      "unstarted_issues": 3,
+                      "updated_at": "2024-01-10T15:45:00Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse"
+                }
+              }
+            },
+            "description": "Module created"
+          },
+          "400": {
+            "description": "Invalid request data provided"
+          },
+          "401": {
+            "description": "Authentication credentials were not provided or are invalid."
+          },
+          "403": {
+            "description": "Permission denied. User lacks required permissions."
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "409": {
+            "description": "Resource with same external ID already exists"
+          }
+        },
+        "summary": "Create module",
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.api.middleware.api_authentication.APIKeyAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/v1/workspaces/{slug}/projects/{project_id}/modules/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.api.views.module.ModuleListCreateAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/": {
+      "delete": {
+        "description": "Permanently remove a module and all its associated issue relationships.",
+        "operationId": "delete_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "description": "Module ID",
+            "examples": {
+              "ExampleModuleID": {
+                "description": "A typical module UUID",
+                "summary": "Example module ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Project ID",
+            "examples": {
+              "ExampleProjectID": {
+                "description": "A typical project UUID",
+                "summary": "Example project ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace slug",
+            "examples": {
+              "ExampleWorkspace": {
+                "description": "A typical workspace slug",
+                "summary": "Example workspace",
+                "value": "my-workspace"
+              }
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Resource deleted successfully"
+          },
+          "401": {
+            "description": "Authentication credentials were not provided or are invalid."
+          },
+          "403": {
+            "description": "Only admin or creator can perform this action"
+          },
+          "404": {
+            "description": "Module not found"
+          }
+        },
+        "summary": "Delete module",
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.api.middleware.api_authentication.APIKeyAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.api.views.module.ModuleDetailAPIEndpoint"
+      },
+      "patch": {
+        "description": "Modify an existing module's properties like name, description, status, or timeline.",
+        "operationId": "patch_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "description": "Module ID",
+            "examples": {
+              "ExampleModuleID": {
+                "description": "A typical module UUID",
+                "summary": "Example module ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Project ID",
+            "examples": {
+              "ExampleProjectID": {
+                "description": "A typical project UUID",
+                "summary": "Example project ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace slug",
+            "examples": {
+              "ExampleWorkspace": {
+                "description": "A typical workspace slug",
+                "summary": "Example workspace",
+                "value": "my-workspace"
+              }
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "ModuleUpdateSerializer": {
+                  "description": "Example request for updating a module",
+                  "value": {
+                    "description": "Updated module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "Updated Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "examples": {
+                "ModuleUpdateSerializer": {
+                  "description": "Example request for updating a module",
+                  "value": {
+                    "description": "Updated module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "Updated Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "examples": {
+                "ModuleUpdateSerializer": {
+                  "description": "Example request for updating a module",
+                  "value": {
+                    "description": "Updated module description",
+                    "end_date": "2021-01-31",
+                    "external_id": "1234567890",
+                    "external_source": "github",
+                    "name": "Updated Module",
+                    "start_date": "2021-01-01"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Module": {
+                    "value": {
+                      "backlog_issues": 0,
+                      "cancelled_issues": 0,
+                      "completed_issues": 5,
+                      "created_at": "2024-01-01T10:30:00Z",
+                      "description": "User authentication and authorization features",
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "name": "Authentication Module",
+                      "start_date": "2024-01-01",
+                      "started_issues": 4,
+                      "status": "in-progress",
+                      "target_date": "2024-02-15",
+                      "total_issues": 12,
+                      "unstarted_issues": 3,
+                      "updated_at": "2024-01-10T15:45:00Z"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse"
+                }
+              }
+            },
+            "description": "Module updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ModuleUpdateSerializer": {
+                    "description": "Example request for updating a module",
+                    "value": {
+                      "description": "Updated module description",
+                      "end_date": "2021-01-31",
+                      "external_id": "1234567890",
+                      "external_source": "github",
+                      "name": "Updated Module",
+                      "start_date": "2021-01-01"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse"
+                }
+              }
+            },
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "Authentication credentials were not provided or are invalid."
+          },
+          "403": {
+            "description": "Permission denied. User lacks required permissions."
+          },
+          "404": {
+            "description": "Module not found"
+          },
+          "409": {
+            "description": "Module with same external ID already exists"
+          }
+        },
+        "summary": "Update module",
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.api.middleware.api_authentication.APIKeyAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "patch",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.api.views.module.ModuleDetailAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/": {
+      "post": {
+        "description": "Move a module to archived status for historical tracking.",
+        "operationId": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk_archive",
+        "parameters": [
+          {
+            "description": "Module ID",
+            "examples": {
+              "ExampleModuleID": {
+                "description": "A typical module UUID",
+                "summary": "Example module ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Project ID",
+            "examples": {
+              "ExampleProjectID": {
+                "description": "A typical project UUID",
+                "summary": "Example project ID",
+                "value": "550e8400-e29b-41d4-a716-446655440000"
+              }
+            },
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace slug",
+            "examples": {
+              "ExampleWorkspace": {
+                "description": "A typical workspace slug",
+                "summary": "Example workspace",
+                "value": "my-workspace"
+              }
+            },
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          },
+          "400": {
+            "description": "Resource cannot be archived in current state"
+          },
+          "401": {
+            "description": "Authentication credentials were not provided or are invalid."
+          },
+          "403": {
+            "description": "Permission denied. User lacks required permissions."
+          },
+          "404": {
+            "description": "Module not found"
+          }
+        },
+        "summary": "Archive module",
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.api.middleware.api_authentication.APIKeyAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.api.views.module.ModuleArchiveUnarchiveAPIEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/archived-modules/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "tags": ["projects"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersArchiveresponseResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["projects"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "tags": ["projects"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersArchiveresponseResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["projects"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": ["rest_framework.permissions.IsAuthenticated"],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersArchiveresponseResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      },
+      "put": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PUT /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "update",
+        "x-plane-permission-classes": ["plane.app.permissions.project.ProjectEntityPermission"],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": ["rest_framework.permissions.IsAuthenticated"],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": ["rest_framework.permissions.IsAuthenticated"],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      },
+      "put": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": ["modules"],
+        "x-plane-authentication-classes": ["plane.authentication.session.BaseSessionAuthentication"],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PUT /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "update",
+        "x-plane-permission-classes": ["rest_framework.permissions.IsAuthenticated"],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "**File Upload & Presigned URLs**\n\nGenerate presigned URLs for direct file uploads to cloud storage. Handle user avatars, cover images, and generic project assets with secure upload workflows.\n\n*Key Features:*\n- Generate presigned URLs for S3 uploads\n- Support for user avatars and cover images\n- Generic asset upload for projects\n- File validation and size limits\n\n*Use Cases:* User profile images, project file uploads, secure direct-to-cloud uploads.",
+      "name": "Assets"
+    },
+    {
+      "description": "**Sprint & Development Cycles**\n\nCreate and manage development cycles (sprints) to organize work into time-boxed iterations. Track progress, assign work items, and monitor team velocity.\n\n*Key Features:*\n- Create and configure development cycles\n- Assign work items to cycles\n- Track cycle progress and completion\n- Generate cycle analytics and reports\n\n*Use Cases:* Sprint planning, iterative development, progress tracking, team velocity.",
+      "name": "Cycles"
+    },
+    {
+      "description": "**Work Item Intake Queue**\n\nManage incoming work items through a dedicated intake queue for triage and review. Submit, update, and process work items before they enter the main project workflow.\n\n*Key Features:*\n- Submit work items to intake queue\n- Review and triage incoming work items\n- Update intake work item status and properties\n- Accept, reject, or modify work items before approval\n\n*Use Cases:* Work item triage, external submissions, quality review, approval workflows.",
+      "name": "Intake"
+    },
+    {
+      "description": "**Labels & Tags**\n\nCreate and manage labels to categorize and organize work items. Use color-coded labels for easy identification, filtering, and project organization.\n\n*Key Features:*\n- Create custom labels with colors and descriptions\n- Apply labels to work items for categorization\n- Filter and search by labels\n- Organize labels across projects\n\n*Use Cases:* Priority marking, feature categorization, bug classification, team organization.",
+      "name": "Labels"
+    },
+    {
+      "description": "**Team Member Management**\n\nManage team members, roles, and permissions within projects and workspaces. Control access levels and track member participation.\n\n*Key Features:*\n- Invite and manage team members\n- Assign roles and permissions\n- Control project and workspace access\n- Track member activity and participation\n\n*Use Cases:* Team setup, access control, role management, collaboration.",
+      "name": "Members"
+    },
+    {
+      "description": "**Feature Modules**\n\nGroup related work items into modules for better organization and tracking. Plan features, track progress, and manage deliverables at a higher level.\n\n*Key Features:*\n- Create and organize feature modules\n- Group work items by module\n- Track module progress and completion\n- Manage module leads and assignments\n\n*Use Cases:* Feature planning, release organization, progress tracking, team coordination.",
+      "name": "Modules"
+    },
+    {
+      "description": "**Project Management**\n\nCreate and manage projects to organize your development work. Configure project settings, manage team access, and control project visibility.\n\n*Key Features:*\n- Create, update, and delete projects\n- Configure project settings and preferences\n- Manage team access and permissions\n- Control project visibility and sharing\n\n*Use Cases:* Project setup, team collaboration, access control, project configuration.",
+      "name": "Projects"
+    },
+    {
+      "description": "**Workflow States**\n\nDefine custom workflow states for work items to match your team's process. Configure state transitions and track work item progress through different stages.\n\n*Key Features:*\n- Create custom workflow states\n- Configure state transitions and rules\n- Track work item progress through states\n- Set state-based permissions and automation\n\n*Use Cases:* Custom workflows, status tracking, process automation, progress monitoring.",
+      "name": "States"
+    },
+    {
+      "description": "**Current User Information**\n\nGet information about the currently authenticated user including profile details and account settings.\n\n*Key Features:*\n- Retrieve current user profile\n- Access user account information\n- View user preferences and settings\n- Get authentication context\n\n*Use Cases:* Profile display, user context, account information, authentication status.",
+      "name": "Users"
+    },
+    {
+      "description": "**Activity History & Search**\n\nView activity history and search for work items across the workspace. Get detailed activity logs and find work items using text search.\n\n*Key Features:*\n- View work item activity history\n- Search work items across workspace\n- Track changes and modifications\n- Filter search results by project\n\n*Use Cases:* Activity tracking, work item discovery, change history, workspace search.",
+      "name": "Work Item Activity"
+    },
+    {
+      "description": "**Work Item File Attachments**\n\nGenerate presigned URLs for uploading files directly to specific work items. Upload and manage attachments associated with work items.\n\n*Key Features:*\n- Generate presigned URLs for work item attachments\n- Upload files directly to work items\n- Retrieve and manage attachment metadata\n- Delete attachments from work items\n\n*Use Cases:* Screenshots, error logs, design files, supporting documents.",
+      "name": "Work Item Attachments"
+    },
+    {
+      "description": "**Comments & Discussions**\n\nAdd comments and discussions to work items for team collaboration. Support threaded conversations, mentions, and rich text formatting.\n\n*Key Features:*\n- Add comments to work items\n- Thread conversations and replies\n- Mention users and trigger notifications\n- Rich text and markdown support\n\n*Use Cases:* Team discussions, progress updates, code reviews, decision tracking.",
+      "name": "Work Item Comments"
+    },
+    {
+      "description": "**External Links & References**\n\nLink work items to external resources like documentation, repositories, or design files. Maintain connections between work items and external systems.\n\n*Key Features:*\n- Add external URL links to work items\n- Validate and preview linked resources\n- Organize links by type and category\n- Track link usage and access\n\n*Use Cases:* Documentation links, repository connections, design references, external tools.",
+      "name": "Work Item Links"
+    },
+    {
+      "description": "**Work Items & Tasks**\n\nCreate and manage work items like tasks, bugs, features, and user stories. The core entities for tracking work in your projects.\n\n*Key Features:*\n- Create, update, and manage work items\n- Assign to team members and set priorities\n- Track progress through workflow states\n- Set due dates, estimates, and relationships\n\n*Use Cases:* Bug tracking, task management, feature development, sprint planning.",
+      "name": "Work Items"
+    }
+  ]
+}

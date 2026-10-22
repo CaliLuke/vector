@@ -1,0 +1,1137 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
+    "title": "Plane Internal Django Migration API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/workspaces/{slug}/projects/{project_id}/pages/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_pages",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/pages/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/",
+        "x-plane-handler": "access",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/",
+        "x-plane-handler": "unarchive",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/",
+        "x-plane-handler": "archive",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/": {
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePagebinaryupdateserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePagebinaryupdateserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersPagePagebinaryupdateserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestFrameworkSerializersPagedescriptionupdateresponseResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PagesDescriptionViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePagedetailserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageDuplicateEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/",
+        "x-plane-handler": "unlock",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "page_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersPagePageserializerResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "pages"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/",
+        "x-plane-handler": "lock",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.page.ProjectPagePermission"
+        ],
+        "x-plane-view": "plane.app.views.page.base.PageViewSet"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PlaneAppSerializersPagePageserializerResponse": {
+        "properties": {
+          "access": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccessEnum"
+              }
+            ],
+            "maximum": 32767,
+            "minimum": 0
+          },
+          "archived_at": {
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "is_favorite": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "label_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "logo_props": {},
+          "name": {
+            "type": "string"
+          },
+          "owned_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "parent": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "project_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "title": "Last Modified By",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AccessEnum": {
+        "description": "* `0` - Public\n* `1` - Private",
+        "enum": [
+          0,
+          1
+        ],
+        "type": "integer"
+      },
+      "PlaneAppSerializersPagePageserializerRequestRequest": {
+        "properties": {
+          "access": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccessEnum"
+              }
+            ],
+            "maximum": 32767,
+            "minimum": 0
+          },
+          "archived_at": {
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "label_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "labels": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "logo_props": {},
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "project_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "title": "Last Modified By",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "view_props": {}
+        },
+        "type": "object"
+      },
+      "PlaneAppSerializersPagePagedetailserializerResponse": {
+        "properties": {
+          "access": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccessEnum"
+              }
+            ],
+            "maximum": 32767,
+            "minimum": 0
+          },
+          "archived_at": {
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description_html": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "is_favorite": {
+            "readOnly": true,
+            "type": "boolean"
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "label_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "logo_props": {},
+          "name": {
+            "type": "string"
+          },
+          "owned_by": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          },
+          "parent": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "project_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "readOnly": true,
+            "title": "Last Modified At",
+            "type": "string"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "title": "Last Modified By",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "format": "uuid",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "description_html"
+        ],
+        "type": "object"
+      },
+      "RestFrameworkSerializersPagedescriptionupdateresponseResponse": {
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "type": "object"
+      },
+      "PatchedPlaneAppSerializersPagePagebinaryupdateserializerRequestRequest": {
+        "description": "Serializer for updating page binary description with validation",
+        "properties": {
+          "description_binary": {
+            "type": "string"
+          },
+          "description_html": {
+            "type": "string"
+          },
+          "description_json": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PatchedPlaneAppSerializersPagePageserializerRequestRequest": {
+        "properties": {
+          "access": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccessEnum"
+              }
+            ],
+            "maximum": 32767,
+            "minimum": 0
+          },
+          "archived_at": {
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "color": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "created_by": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "label_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "labels": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array",
+            "writeOnly": true
+          },
+          "logo_props": {},
+          "name": {
+            "type": "string"
+          },
+          "parent": {
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "project_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updated_by": {
+            "format": "uuid",
+            "title": "Last Modified By",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "view_props": {}
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "description": "Plane session authentication without CSRF enforcement.",
+        "in": "cookie",
+        "name": "session-id",
+        "type": "apiKey"
+      }
+    }
+  }
+}

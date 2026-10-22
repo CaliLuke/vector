@@ -1,0 +1,53 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "view_props": "not-json"
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    "method": "PATCH",
+    "path": "/api/workspaces/project-membership-lifecycle/projects/<uuid-1>/members/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "view_props": [
+        "Value must be valid JSON."
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "PATCH, DELETE, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "legacy-members-patch-form-view-props-invalid-json"
+  }
+}

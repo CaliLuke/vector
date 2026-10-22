@@ -1,0 +1,27 @@
+{
+  "phase": "entry",
+  "base": "79001fb3e5914648ba20a30f7079fe3da060a8bf",
+  "operation_count": 72,
+  "source_fixture_count": 772,
+  "static_gate": "pass",
+  "production_routes": "Django only",
+  "input_sha256": {
+    "docs/go-backend-replacement/contracts/work_item_core.json": "014840827c7512e69341d4109ee450eeb34a3ca037f7325588a0ad28b9e7457d",
+    "docs/go-backend-replacement/work-item-core-proof.json": "7f20b7326b2877a508a08cc8d2dbe16c1c376e78f489b4e5f48874ce1980e9f2",
+    "apps/go-api/work_item_core/design/design.go": "f7b38c9b50fdeb827033bea30c381138ec32af58f4a04385940621c7d7dff06d",
+    "apps/go-api/work_item_core/design/transport_test.go": "1f27e69c70a1b025cabd9677ba2fe7372fe6489751820e0a5fdb93cd0bfdb0cf",
+    "apps/go-api/work_item_core/design/identifier_test.go": "00c92c9600128549343c52521137d098f329cc4a51bcc4cf1ef5ef5ac7e4853d",
+    "apps/go-api/work_item_core/design/target_errors_test.go": "32ea2f145fc29557d96f59f2070817117937c15813ed7f950ae2841f5baec164",
+    "apps/go-api/work_item_core/gen/http/openapi.json": "f1d56dbb429f481bf0421e6f579dfa06fdedcb400861c7f5fa25c74cf22b7602",
+    "docs/go-backend-replacement/work-item-core/target-contract-decisions.json": "f44cbc1c15831c8c5c9aefd6151157c359413e5e981b76d91ea1b547072251db",
+    "docs/go-backend-replacement/work-item-core/entry-generated-receipt.json": "93fc8ae664c2fffc353f081517addd295905eecbd474f7503bd829878504ed5d",
+    "docs/go-backend-replacement/work-item-core/issue-source-receipt.json": "58bba93172a284afb78430f49d92e9a183e8129c00a5727b09be32b687b0186e",
+    "docs/go-backend-replacement/work-item-core/membership-source-receipt.json": "7a303ecb96fca8d4a40402b0df450c9c58efe6d0100a4ac8a1099c514dba6b52"
+  },
+  "focused_reviews": "Tenant decisions and identifier schema repair CLEAN; not full phase exit or final review.",
+  "limitations": [
+    "Pinned composite-segment routing regression remains unresolved; wait for user readiness signal before changing Loom.",
+    "Remaining source/helper branches are explicit in the per-operation matrix.",
+    "Intentional-difference domain regressions, Go HTTP replay, production proxy/UI/Logal sweep, complete proof, final reviews and both retirement commits remain pending."
+  ]
+}

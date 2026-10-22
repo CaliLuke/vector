@@ -1,0 +1,80 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-2>",
+          "is_folder": true,
+          "name": "Renamed",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-1>",
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-2>",
+          "is_folder": true,
+          "name": "Renamed",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-1>",
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/favorite-parity/user-favorites/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Authentication credentials were not provided."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 401
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "anonymous"
+  }
+}

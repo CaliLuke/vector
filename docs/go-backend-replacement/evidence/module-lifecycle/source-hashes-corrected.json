@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_revision": "b1e50b13f199023e2aae92de08033e737b3fa831",
+  "source_snapshot": "plane-cycle-lifecycle-source:/tmp/module_lifecycle/corrected_source/plane (pinned Django plus django-corrections.patch)",
+  "files": {
+    "plane.app.views.module.base": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/app/views/module/base.py",
+      "sha256": "d4e0e10edb9e0211fcbd6b57a94210d8be3af86c13088c95260a7bf7987924de"
+    },
+    "plane.app.views.module.archive": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/app/views/module/archive.py",
+      "sha256": "bbc62e3b851e315882749bb9b711ce6a6d2189eadf242892cb278f86258cac35"
+    },
+    "plane.app.serializers.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/app/serializers/module.py",
+      "sha256": "825330962452a6e82b35ddafd182e19374c6302244b65166f4bc34ca96dea087"
+    },
+    "plane.app.urls.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/app/urls/module.py",
+      "sha256": "1fece549a70b320de53a4a81beb74d39801abf7a8d10655fb4ba4953b08450d9"
+    },
+    "plane.app.permissions.base": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/app/permissions/base.py",
+      "sha256": "43594a4e66a72ef3859ef0b1de82b46d6cc0824b7fcefecb7e99b326f08a64e2"
+    },
+    "plane.api.views.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/api/views/module.py",
+      "sha256": "b213f3d98ad6218cdec3997ecb67494db02bee7f3b526bb4ae55abc796ef8ad3"
+    },
+    "plane.api.serializers.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/api/serializers/module.py",
+      "sha256": "8f1766b75aa2243377ab93f5cc186b1875d179940a6dcf448f5258cd0725c98e"
+    },
+    "plane.api.urls.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/api/urls/module.py",
+      "sha256": "887f4789776d02d98724ca8fdd1ef656df02d9123007ecac48dfd7f9502a4482"
+    },
+    "plane.db.models.module": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/db/models/module.py",
+      "sha256": "b82d53ef77a5110d22fa4fcdc37258f4c4c4fd061a64b75c36a8dc5909af0777"
+    },
+    "plane.db.models.project": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/db/models/project.py",
+      "sha256": "38c57a3857f8ef7d0013ecc24887c47248e010cc82115f805829b6d99f5a6c41"
+    },
+    "plane.db.mixins": {
+      "path": "/tmp/module_lifecycle/corrected_source/plane/db/mixins.py",
+      "sha256": "92c52aa5b1ed827e1612313b4b616a49e66a7d1cb827813c66dbdbe2f76bb2d8"
+    }
+  }
+}

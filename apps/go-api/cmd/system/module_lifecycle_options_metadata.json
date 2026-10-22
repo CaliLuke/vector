@@ -1,0 +1,611 @@
+{
+  "/api/workspaces/{slug}/projects/{project_id}/archived-modules/": {
+    "metadata": {
+      "description": "",
+      "name": "Module Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/": {
+    "metadata": {
+      "description": "",
+      "name": "Module Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/modules/": {
+    "metadata": {
+      "actions": {
+        "POST": {
+          "archived_at": {
+            "label": "Archived at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "backlog_issues": {
+            "label": "Backlog issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "cancelled_issues": {
+            "label": "Cancelled issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "completed_estimate_points": {
+            "label": "Completed estimate points",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "completed_issues": {
+            "label": "Completed issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "description": {
+            "label": "Module Description",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "description_html": {
+            "label": "Module Description HTML",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "description_text": {
+            "label": "Module Description RT",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "external_id": {
+            "label": "External id",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "external_source": {
+            "label": "External source",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_favorite": {
+            "label": "Is favorite",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "lead_id": {
+            "label": "Lead id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "member_ids": {
+            "child": {
+              "read_only": false,
+              "required": true,
+              "type": "string"
+            },
+            "label": "Member ids",
+            "read_only": false,
+            "required": false,
+            "type": "list"
+          },
+          "name": {
+            "label": "Module Name",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "start_date": {
+            "label": "Start date",
+            "read_only": true,
+            "required": false,
+            "type": "date"
+          },
+          "started_issues": {
+            "label": "Started issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "status": {
+            "label": "Status",
+            "read_only": true,
+            "required": false,
+            "type": "choice"
+          },
+          "target_date": {
+            "label": "Target date",
+            "read_only": true,
+            "required": false,
+            "type": "date"
+          },
+          "total_estimate_points": {
+            "label": "Total estimate points",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "total_issues": {
+            "label": "Total issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "unstarted_issues": {
+            "label": "Unstarted issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Module",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/": {
+    "metadata": {
+      "description": "",
+      "name": "Module Archive Unarchive Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/": {
+    "guest_metadata": {
+      "description": "",
+      "name": "Module Link",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "metadata": {
+      "actions": {
+        "POST": {
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "metadata": {
+            "label": "Metadata",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "module": {
+            "label": "Module",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "project": {
+            "label": "Project",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "title": {
+            "label": "Title",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "url": {
+            "label": "Url",
+            "max_length": 200,
+            "read_only": false,
+            "required": true,
+            "type": "url"
+          },
+          "workspace": {
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Module Link",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/": {
+    "guest_metadata": {
+      "description": "",
+      "name": "Module Link",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "metadata": {
+      "actions": {
+        "PUT": {
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "metadata": {
+            "label": "Metadata",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "module": {
+            "label": "Module",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "project": {
+            "label": "Project",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "title": {
+            "label": "Title",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "url": {
+            "label": "Url",
+            "max_length": 200,
+            "read_only": false,
+            "required": true,
+            "type": "url"
+          },
+          "workspace": {
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Module Link",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "missing_metadata": {
+      "description": "",
+      "name": "Module Link",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/": {
+    "metadata": {
+      "actions": {
+        "PUT": {
+          "archived_at": {
+            "label": "Archived at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "backlog_issues": {
+            "label": "Backlog issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "cancelled_issues": {
+            "label": "Cancelled issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "completed_estimate_points": {
+            "label": "Completed estimate points",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "completed_issues": {
+            "label": "Completed issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "description": {
+            "label": "Module Description",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "description_html": {
+            "label": "Module Description HTML",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "description_text": {
+            "label": "Module Description RT",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "external_id": {
+            "label": "External id",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "external_source": {
+            "label": "External source",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_favorite": {
+            "label": "Is favorite",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "lead_id": {
+            "label": "Lead id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "member_ids": {
+            "child": {
+              "read_only": false,
+              "required": true,
+              "type": "string"
+            },
+            "label": "Member ids",
+            "read_only": false,
+            "required": false,
+            "type": "list"
+          },
+          "name": {
+            "label": "Module Name",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "project_id": {
+            "label": "Project id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "start_date": {
+            "label": "Start date",
+            "read_only": true,
+            "required": false,
+            "type": "date"
+          },
+          "started_issues": {
+            "label": "Started issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "status": {
+            "label": "Status",
+            "read_only": true,
+            "required": false,
+            "type": "choice"
+          },
+          "target_date": {
+            "label": "Target date",
+            "read_only": true,
+            "required": false,
+            "type": "date"
+          },
+          "total_estimate_points": {
+            "label": "Total estimate points",
+            "read_only": true,
+            "required": false,
+            "type": "float"
+          },
+          "total_issues": {
+            "label": "Total issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "unstarted_issues": {
+            "label": "Unstarted issues",
+            "read_only": true,
+            "required": false,
+            "type": "integer"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "workspace_id": {
+            "label": "Workspace id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Module",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "missing_metadata": {
+      "description": "",
+      "name": "Module",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    },
+    "status": 200
+  }
+}

@@ -1,0 +1,1801 @@
+{
+  "database": {
+    "after": {
+      "labels": [
+        {
+          "color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "name": "Other source label",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#abcdef",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-4>",
+          "name": "Source label",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#fedcba",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-7>",
+          "name": "Foreign workspace label",
+          "parent_id": null,
+          "project_id": "<uuid-8>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "page_labels": [],
+      "page_logs": [],
+      "page_versions": [],
+      "pages": [
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p></p>",
+          "description_json": {},
+          "description_stripped": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Child source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": "<uuid-2>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p></p>",
+          "description_json": {},
+          "description_stripped": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-13>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Foreign parent page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-9>"
+        },
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>original</p>",
+          "description_json": {
+            "type": "doc"
+          },
+          "description_stripped": "original",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {
+            "emoji": "P"
+          },
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Public source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": true
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "access": 1,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>private</p>",
+          "description_json": {},
+          "description_stripped": "private",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-12>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Private source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "project_members": [
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-14>",
+          "is_active": true,
+          "member_id": "<uuid-11>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 20,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-15>",
+          "is_active": true,
+          "member_id": "<uuid-16>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 15,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-17>",
+          "is_active": true,
+          "member_id": "<uuid-3>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 5,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "project_pages": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-18>",
+          "page_id": "<uuid-10>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-19>",
+          "page_id": "<uuid-12>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-20>",
+          "page_id": "<uuid-2>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-21>",
+          "page_id": "<uuid-13>",
+          "project_id": "<uuid-8>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-1>",
+          "identifier": "PLC",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Page Lifecycle Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-22>",
+          "identifier": "PLC2",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Unadministered Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-8>",
+          "identifier": "PLF",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Foreign Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "user_favorites": [],
+      "user_recent_visits": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-23>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-11>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-24>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-16>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-25>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 5,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Page Lifecycle",
+          "organization_size": null,
+          "owner_id": "<uuid-11>",
+          "slug": "page-lifecycle-fixture",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        },
+        {
+          "background_color": "#654321",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-9>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Foreign Page Lifecycle",
+          "organization_size": null,
+          "owner_id": "<uuid-11>",
+          "slug": "page-lifecycle-foreign",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "before": {
+      "labels": [
+        {
+          "color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "name": "Other source label",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#abcdef",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-4>",
+          "name": "Source label",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "color": "#fedcba",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-7>",
+          "name": "Foreign workspace label",
+          "parent_id": null,
+          "project_id": "<uuid-8>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "page_labels": [],
+      "page_logs": [],
+      "page_versions": [],
+      "pages": [
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p></p>",
+          "description_json": {},
+          "description_stripped": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Child source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": "<uuid-2>",
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p></p>",
+          "description_json": {},
+          "description_stripped": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-13>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Foreign parent page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-9>"
+        },
+        {
+          "access": 0,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>original</p>",
+          "description_json": {
+            "type": "doc"
+          },
+          "description_stripped": "original",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {
+            "emoji": "P"
+          },
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Public source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": true
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "access": 1,
+          "archived_at": null,
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>private</p>",
+          "description_json": {},
+          "description_stripped": "private",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-12>",
+          "is_global": false,
+          "is_locked": false,
+          "logo_props": {},
+          "moved_to_page": null,
+          "moved_to_project": null,
+          "name": "Private source page",
+          "owned_by_id": "<uuid-11>",
+          "parent_id": null,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "full_width": false
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "project_members": [
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-14>",
+          "is_active": true,
+          "member_id": "<uuid-11>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 20,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-15>",
+          "is_active": true,
+          "member_id": "<uuid-16>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 15,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-17>",
+          "is_active": true,
+          "member_id": "<uuid-3>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 5,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "project_pages": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-18>",
+          "page_id": "<uuid-10>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-19>",
+          "page_id": "<uuid-12>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-20>",
+          "page_id": "<uuid-2>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-21>",
+          "page_id": "<uuid-13>",
+          "project_id": "<uuid-8>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-1>",
+          "identifier": "PLC",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Page Lifecycle Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-22>",
+          "identifier": "PLC2",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Unadministered Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-8>",
+          "identifier": "PLF",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "Foreign Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-9>"
+        }
+      ],
+      "user_favorites": [],
+      "user_recent_visits": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-23>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-11>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-24>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-16>",
+          "role": 15,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-25>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 5,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-5>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Page Lifecycle",
+          "organization_size": null,
+          "owner_id": "<uuid-11>",
+          "slug": "page-lifecycle-fixture",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        },
+        {
+          "background_color": "#654321",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-9>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Foreign Page Lifecycle",
+          "organization_size": null,
+          "owner_id": "<uuid-11>",
+          "slug": "page-lifecycle-foreign",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "access": 1
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/page-lifecycle-fixture/projects/<uuid-1>/pages/<uuid-2>/access/",
+    "principal": {
+      "kind": "django-session",
+      "project_role": 5,
+      "user_id": "<uuid-3>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "You do not have permission to perform this action."
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "POST, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 403
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "access-guest-denied",
+    "operation": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access"
+  }
+}

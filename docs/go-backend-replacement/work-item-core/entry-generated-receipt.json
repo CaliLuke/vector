@@ -1,0 +1,55 @@
+{
+  "family": "work_item_core",
+  "phase": "entry",
+  "generation": {
+    "command": "go -C apps/go-api generate ./work_item_core/design",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/request-limit-generation.log"
+  },
+  "focused_check": {
+    "command": "go -C apps/go-api test ./work_item_core/design -run 'TestWorkItemGenerated(IdentifierSchema|Errors|Client|SuccessStatuses|Contract)' -count=1 -v",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/content-generated-green.log",
+    "source_client_error_bodies": 296,
+    "selected_target_error_bodies": 11,
+    "source_identifier_spellings": 3
+  },
+  "regression_red_runs": [
+    {
+      "log": "/tmp/plane-work-item-core/identifier-spelling-red.log",
+      "exit_code": 1,
+      "reason": "Native Int narrows source string grammar."
+    },
+    {
+      "log": "/tmp/plane-work-item-core/target-errors-red.log",
+      "exit_code": 1,
+      "reason": "Typed schema omitted cycle_id, module_ids and removed_modules error keys."
+    }
+  ],
+  "input_sha256": {
+    "apps/go-api/work_item_core/design/design.go": "f7b38c9b50fdeb827033bea30c381138ec32af58f4a04385940621c7d7dff06d",
+    "apps/go-api/work_item_core/design/identifier_test.go": "00c92c9600128549343c52521137d098f329cc4a51bcc4cf1ef5ef5ac7e4853d",
+    "apps/go-api/work_item_core/design/transport_test.go": "1f27e69c70a1b025cabd9677ba2fe7372fe6489751820e0a5fdb93cd0bfdb0cf",
+    "apps/go-api/work_item_core/design/target_errors_test.go": "32ea2f145fc29557d96f59f2070817117937c15813ed7f950ae2841f5baec164",
+    "apps/go-api/work_item_core/gen/http/openapi.json": "f1d56dbb429f481bf0421e6f579dfa06fdedcb400861c7f5fa25c74cf22b7602",
+    "docs/go-backend-replacement/work-item-core/target-contract-decisions.json": "f44cbc1c15831c8c5c9aefd6151157c359413e5e981b76d91ea1b547072251db"
+  },
+  "limits": [
+    "The source-error bodies are replayed through a fake service and real generated transport; this is not business parity.",
+    "Selected target bodies deliberately differ from source; this does not prove tenant checks are implemented.",
+    "Identifier models/OpenAPI retain source spelling; actual composite native client URLs/server dispatch and Go numeric lookup remain unproved.",
+    "Known composite regression remains red on current Loom pin; deliberately not rerun or bypassed.",
+    "413 is declared for native client/OpenAPI response handling; production request-limit middleware already exists, and its family mount still needs later HTTP parity."
+  ],
+  "shared_request_size_boundary": [
+    "apps/go-api/cmd/system/api_v1_compatibility_test.go",
+    "apps/go-api/cmd/system/session_service_protocol_test.go",
+    "apps/go-api/cmd/system/project_label_writes_http_test.go"
+  ],
+  "selected_contract_metadata_repeat": {
+    "command": "go -C apps/go-api test ./work_item_core/design -run TestWorkItemGeneratedErrorsPreserveSelectedTargetBodies -count=1",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/final-target-contract-check.log",
+    "reason": "Only decision review-status metadata changed after the combined focused run; semantic contract unchanged."
+  }
+}

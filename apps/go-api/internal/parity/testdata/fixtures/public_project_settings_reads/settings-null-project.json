@@ -1,0 +1,156 @@
+{
+  "database": {
+    "after": {
+      "deploy_boards": [
+        {
+          "anchor": "public-project-settings-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-5>",
+          "entity_name": "project",
+          "id": "<uuid-6>",
+          "intake_id": null,
+          "is_activity_enabled": false,
+          "is_comments_enabled": true,
+          "is_disabled": true,
+          "is_reactions_enabled": true,
+          "is_votes_enabled": true,
+          "project_id": "<uuid-5>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>",
+          "view_props": {
+            "kanban": false,
+            "list": true
+          },
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "anchor": "public-project-settings-null-project",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-2>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": null,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>",
+          "view_props": {},
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "deploy_boards": [
+        {
+          "anchor": "public-project-settings-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-5>",
+          "entity_name": "project",
+          "id": "<uuid-6>",
+          "intake_id": null,
+          "is_activity_enabled": false,
+          "is_comments_enabled": true,
+          "is_disabled": true,
+          "is_reactions_enabled": true,
+          "is_votes_enabled": true,
+          "project_id": "<uuid-5>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>",
+          "view_props": {
+            "kanban": false,
+            "list": true
+          },
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "anchor": "public-project-settings-null-project",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-2>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": false,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": false,
+          "project_id": null,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>",
+          "view_props": {},
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/public/anchor/public-project-settings-null-project/settings/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "anchor": "public-project-settings-null-project",
+      "created_at": "<timestamp>",
+      "created_by": null,
+      "deleted_at": null,
+      "entity_identifier": "<uuid-1>",
+      "entity_name": "project",
+      "id": "<uuid-2>",
+      "intake": null,
+      "is_activity_enabled": true,
+      "is_comments_enabled": false,
+      "is_disabled": false,
+      "is_reactions_enabled": false,
+      "is_votes_enabled": false,
+      "project": null,
+      "project_details": null,
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-3>",
+      "view_props": {},
+      "workspace": "<uuid-4>",
+      "workspace_detail": {
+        "id": "<uuid-4>",
+        "logo_url": "https://example.com/workspace.png",
+        "name": "Public Settings",
+        "slug": "public-settings"
+      }
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "settings-null-project"
+  }
+}

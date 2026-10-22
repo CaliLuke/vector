@@ -1,0 +1,620 @@
+{
+  "collection": {
+    "actions": {
+      "POST": {
+        "access": {
+          "choices": [
+            {
+              "display_name": "Public",
+              "value": 0
+            },
+            {
+              "display_name": "Private",
+              "value": 1
+            }
+          ],
+          "label": "Access",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        },
+        "archived_at": {
+          "label": "Archived at",
+          "read_only": false,
+          "required": false,
+          "type": "date"
+        },
+        "color": {
+          "label": "Color",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "created_at": {
+          "label": "Created At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "is_favorite": {
+          "label": "Is favorite",
+          "read_only": true,
+          "required": false,
+          "type": "boolean"
+        },
+        "is_locked": {
+          "label": "Is locked",
+          "read_only": false,
+          "required": false,
+          "type": "boolean"
+        },
+        "label_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Label ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "labels": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "field"
+          },
+          "label": "Labels",
+          "read_only": false,
+          "required": false,
+          "type": "list"
+        },
+        "logo_props": {
+          "label": "Logo props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "name": {
+          "label": "Name",
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "owned_by": {
+          "label": "Owned by",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "parent": {
+          "label": "Parent",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "project_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Project ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "updated_at": {
+          "label": "Last Modified At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "updated_by": {
+          "label": "Last Modified By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "view_props": {
+          "label": "View props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "workspace": {
+          "label": "Workspace",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        }
+      }
+    },
+    "description": "",
+    "name": "Page",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "detail": {
+    "description": "",
+    "name": "Page",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "description": {
+    "description": "",
+    "name": "Pages Description",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "access": {
+    "actions": {
+      "POST": {
+        "access": {
+          "choices": [
+            {
+              "display_name": "Public",
+              "value": 0
+            },
+            {
+              "display_name": "Private",
+              "value": 1
+            }
+          ],
+          "label": "Access",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        },
+        "archived_at": {
+          "label": "Archived at",
+          "read_only": false,
+          "required": false,
+          "type": "date"
+        },
+        "color": {
+          "label": "Color",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "created_at": {
+          "label": "Created At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "is_favorite": {
+          "label": "Is favorite",
+          "read_only": true,
+          "required": false,
+          "type": "boolean"
+        },
+        "is_locked": {
+          "label": "Is locked",
+          "read_only": false,
+          "required": false,
+          "type": "boolean"
+        },
+        "label_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Label ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "labels": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "field"
+          },
+          "label": "Labels",
+          "read_only": false,
+          "required": false,
+          "type": "list"
+        },
+        "logo_props": {
+          "label": "Logo props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "name": {
+          "label": "Name",
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "owned_by": {
+          "label": "Owned by",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "parent": {
+          "label": "Parent",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "project_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Project ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "updated_at": {
+          "label": "Last Modified At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "updated_by": {
+          "label": "Last Modified By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "view_props": {
+          "label": "View props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "workspace": {
+          "label": "Workspace",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        }
+      }
+    },
+    "description": "",
+    "name": "Page",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "archive": {
+    "actions": {
+      "POST": {
+        "access": {
+          "choices": [
+            {
+              "display_name": "Public",
+              "value": 0
+            },
+            {
+              "display_name": "Private",
+              "value": 1
+            }
+          ],
+          "label": "Access",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        },
+        "archived_at": {
+          "label": "Archived at",
+          "read_only": false,
+          "required": false,
+          "type": "date"
+        },
+        "color": {
+          "label": "Color",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "created_at": {
+          "label": "Created At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "is_favorite": {
+          "label": "Is favorite",
+          "read_only": true,
+          "required": false,
+          "type": "boolean"
+        },
+        "is_locked": {
+          "label": "Is locked",
+          "read_only": false,
+          "required": false,
+          "type": "boolean"
+        },
+        "label_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Label ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "labels": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "field"
+          },
+          "label": "Labels",
+          "read_only": false,
+          "required": false,
+          "type": "list"
+        },
+        "logo_props": {
+          "label": "Logo props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "name": {
+          "label": "Name",
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "owned_by": {
+          "label": "Owned by",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "parent": {
+          "label": "Parent",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "project_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Project ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "updated_at": {
+          "label": "Last Modified At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "updated_by": {
+          "label": "Last Modified By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "view_props": {
+          "label": "View props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "workspace": {
+          "label": "Workspace",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        }
+      }
+    },
+    "description": "",
+    "name": "Page",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "duplicate": {
+    "description": "",
+    "name": "Page Duplicate Endpoint",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "lock": {
+    "actions": {
+      "POST": {
+        "access": {
+          "choices": [
+            {
+              "display_name": "Public",
+              "value": 0
+            },
+            {
+              "display_name": "Private",
+              "value": 1
+            }
+          ],
+          "label": "Access",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        },
+        "archived_at": {
+          "label": "Archived at",
+          "read_only": false,
+          "required": false,
+          "type": "date"
+        },
+        "color": {
+          "label": "Color",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "created_at": {
+          "label": "Created At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "is_favorite": {
+          "label": "Is favorite",
+          "read_only": true,
+          "required": false,
+          "type": "boolean"
+        },
+        "is_locked": {
+          "label": "Is locked",
+          "read_only": false,
+          "required": false,
+          "type": "boolean"
+        },
+        "label_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Label ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "labels": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "field"
+          },
+          "label": "Labels",
+          "read_only": false,
+          "required": false,
+          "type": "list"
+        },
+        "logo_props": {
+          "label": "Logo props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "name": {
+          "label": "Name",
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "owned_by": {
+          "label": "Owned by",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "parent": {
+          "label": "Parent",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "project_ids": {
+          "child": {
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "label": "Project ids",
+          "read_only": true,
+          "required": false,
+          "type": "list"
+        },
+        "updated_at": {
+          "label": "Last Modified At",
+          "read_only": true,
+          "required": false,
+          "type": "datetime"
+        },
+        "updated_by": {
+          "label": "Last Modified By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "view_props": {
+          "label": "View props",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "workspace": {
+          "label": "Workspace",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        }
+      }
+    },
+    "description": "",
+    "name": "Page",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  }
+}

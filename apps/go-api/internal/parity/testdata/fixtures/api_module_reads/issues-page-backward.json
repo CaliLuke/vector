@@ -1,0 +1,216 @@
+{
+  "cache": {
+    "rate_limit_history_after": [
+      "<timestamp>"
+    ],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-7>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-8>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-7>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-8>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/api-module-reads/projects/<uuid-1>/modules/<uuid-2>/module-issues/",
+            "query_params": "per_page=1&cursor=1%3A1%3A1",
+            "response_body": {
+              "count": 1,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1:2:0",
+              "next_page_results": true,
+              "prev_cursor": "1:0:1",
+              "prev_page_results": true,
+              "results": [
+                {
+                  "archived_at": null,
+                  "assignees": [],
+                  "completed_at": "2021-01-02T00:00:00Z",
+                  "created_at": "<timestamp>",
+                  "created_by": null,
+                  "deleted_at": null,
+                  "description_binary": null,
+                  "description_html": "<p>Module issue</p>",
+                  "estimate_point": "<uuid-3>",
+                  "external_id": null,
+                  "external_source": null,
+                  "id": "<uuid-4>",
+                  "is_draft": false,
+                  "labels": [],
+                  "name": "Issue 1",
+                  "parent": null,
+                  "point": null,
+                  "priority": "low",
+                  "project": "<uuid-1>",
+                  "sequence_id": 2,
+                  "sort_order": 1.0,
+                  "start_date": "2020-01-02",
+                  "state": "<uuid-5>",
+                  "target_date": "2021-01-02",
+                  "type": null,
+                  "type_id": null,
+                  "updated_at": "<timestamp>",
+                  "updated_by": null,
+                  "workspace": "<uuid-6>"
+                }
+              ],
+              "sub_grouped_by": null,
+              "total_count": 6,
+              "total_pages": 6,
+              "total_results": 6
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/api-module-reads/projects/<uuid-1>/modules/<uuid-2>/module-issues/",
+    "principal": {
+      "kind": "api-key"
+    },
+    "query": {
+      "cursor": "1:1:1",
+      "per_page": "1"
+    }
+  },
+  "response": {
+    "body": {
+      "count": 1,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1:2:0",
+      "next_page_results": true,
+      "prev_cursor": "1:0:1",
+      "prev_page_results": true,
+      "results": [
+        {
+          "archived_at": null,
+          "assignees": [],
+          "completed_at": "2021-01-02T00:00:00Z",
+          "created_at": "<timestamp>",
+          "created_by": null,
+          "deleted_at": null,
+          "description_binary": null,
+          "description_html": "<p>Module issue</p>",
+          "estimate_point": "<uuid-3>",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-4>",
+          "is_draft": false,
+          "labels": [],
+          "name": "Issue 1",
+          "parent": null,
+          "point": null,
+          "priority": "low",
+          "project": "<uuid-1>",
+          "sequence_id": 2,
+          "sort_order": 1.0,
+          "start_date": "2020-01-02",
+          "state": "<uuid-5>",
+          "target_date": "2021-01-02",
+          "type": null,
+          "type_id": null,
+          "updated_at": "<timestamp>",
+          "updated_by": null,
+          "workspace": "<uuid-6>"
+        }
+      ],
+      "sub_grouped_by": null,
+      "total_count": 6,
+      "total_pages": 6,
+      "total_results": 6
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET, POST",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-ratelimit-remaining": "<x-ratelimit-remaining>",
+      "x-ratelimit-reset": "<x-ratelimit-reset>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "issues-page-backward"
+  }
+}

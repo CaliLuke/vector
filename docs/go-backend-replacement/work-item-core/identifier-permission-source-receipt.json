@@ -1,0 +1,51 @@
+{
+  "objective": "Source-captured and immutably replayed API-key unsafe-method permissions for issue identifier aliases",
+  "source": "pre-removal Django API archive at cdc0e4f2a9 baseline copied outside the worktree for Colima mounting",
+  "cases": 10,
+  "aliases": ["/api/v1/workspaces/{slug}/issues/IC-999999/", "/api/v1/workspaces/{slug}/work-items/IC-999999/"],
+  "methods": ["POST", "PUT", "PATCH", "DELETE", "TRACE"],
+  "source_result": {
+    "status": 403,
+    "capture_passed": 10,
+    "immutable_replay_passed": 10,
+    "immutable_replay_deselected": 81,
+    "all_fixture_statuses_403": true
+  },
+  "capture_command": "UPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source-identifiers.py -q plane/tests/parity/test_work_item_core_protocol_recorder.py -k 'api-issue-identifier-post-api-key or api-issue-identifier-put-api-key or api-issue-identifier-patch-api-key or api-issue-identifier-delete-api-key or api-issue-identifier-trace-api-key or api-work-item-identifier-post-api-key or api-work-item-identifier-put-api-key or api-work-item-identifier-patch-api-key or api-work-item-identifier-delete-api-key or api-work-item-identifier-trace-api-key'",
+  "immutable_replay_command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source-identifiers.py -q plane/tests/parity/test_work_item_core_protocol_recorder.py -k 'api-issue-identifier-post-api-key or api-issue-identifier-put-api-key or api-issue-identifier-patch-api-key or api-issue-identifier-delete-api-key or api-issue-identifier-trace-api-key or api-work-item-identifier-post-api-key or api-work-item-identifier-put-api-key or api-work-item-identifier-patch-api-key or api-work-item-identifier-delete-api-key or api-work-item-identifier-trace-api-key'",
+  "logs": {
+    "capture": "/tmp/plane-work-item-core/options-identifier-source-capture.log",
+    "immutable_replay": "/tmp/plane-work-item-core/options-identifier-source-immutable.log"
+  },
+  "fixture_sha256": {
+    "work-item-core-protocol-api-issue-identifier-delete-api-key.json": "f380e5ccf3c4b635ab36a768dca5402c1a792a226ef44ab522faa71880151aff",
+    "work-item-core-protocol-api-issue-identifier-patch-api-key.json": "7ccd65d017d388864e4b0988ca3f7f67889dcb4c6237b200f677213b49aeae5e",
+    "work-item-core-protocol-api-issue-identifier-post-api-key.json": "29086ecfcbb03e6cc5e0a6a50f6c35e04c8bc5283095fdbed017ffde54ae85fc",
+    "work-item-core-protocol-api-issue-identifier-put-api-key.json": "37905181c2388abc64fadf3764f73b069c6cca23a87e8d7f866c9453de46e45d",
+    "work-item-core-protocol-api-issue-identifier-trace-api-key.json": "4bc8244e6d589f1b04f870007248355a570c42bdae2e4a539e8bf101254bf5d0",
+    "work-item-core-protocol-api-work-item-identifier-delete-api-key.json": "6fd1922cd5497d2c1da11a4c7697ad8ccdd4806580523988f461d266583cc372",
+    "work-item-core-protocol-api-work-item-identifier-patch-api-key.json": "6c720fd5d08a1b4fdf75a8ac1c8c440d5d66be5ec2879c52f4e7a656f846167b",
+    "work-item-core-protocol-api-work-item-identifier-post-api-key.json": "b959771247c78a5d36cc0ca3937f87f0745a73fa53c573467e2a5bb7313b8e8e",
+    "work-item-core-protocol-api-work-item-identifier-put-api-key.json": "04789314161dc74c47d62debe0c6a8dd0fd3054a7b47769b3950e7db70b1c2cf",
+    "work-item-core-protocol-api-work-item-identifier-trace-api-key.json": "0df89312a030a6b62f80f1baa0f09a9e537b4b35583ee41865c578352fa108da"
+  },
+  "prior_fixture_hash_snapshots": {
+    "core-closeout-fixture-hashes-before.txt": {
+      "entries": 802,
+      "unchanged": true
+    },
+    "fixture-hashes-before.txt": {
+      "entries": 772,
+      "unchanged": true
+    },
+    "protocol-timezone-existing-hashes-before.txt": {
+      "entries": 872,
+      "unchanged": true
+    },
+    "remaining-issue-fixtures-before.txt": {
+      "entries": 480,
+      "unchanged": true
+    }
+  },
+  "generated_at": "2026-10-10"
+}

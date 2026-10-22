@@ -1,0 +1,580 @@
+{
+  "version": 1,
+  "family": "api_module_reads",
+  "source_revision": "c2742bb3b5124c08cbb07f32ca5fdba5c8904353",
+  "characterization_status": "complete: 149 source-recorded cases, including nested asset URL omissions/null IDs",
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid API key; no domain row writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "per_page"],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project member including guest, independent of workspace membership",
+          "observable": "Safe method authorization checks live active ProjectMember scoped to requester/project/workspace slug; no role threshold. Missing, deleted or inactive project membership and cross-tenant slug deny 403. Related project deletion/archival does not itself deny permission.",
+          "source": "apps/api/plane/utils/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/module.py"
+        },
+        {
+          "when": "fields and expand used on dynamic serializers",
+          "observable": "Comma-separated exact untrimmed tokens. Unknown selected fields disappear; empty selection behaves as all. Expansion only acts on selected declared fields. Known relation names expand to API lite/full serializers, even null relations; other fields use <name>_id or null. Write-only declared fields can reappear via expand. Metadata JSON remains opaque.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer"
+        },
+        {
+          "when": "full module statistics and liveness",
+          "observable": "Live modules scoped by project and workspace slug. No explicit live Project lookup. List/detail exclude archived modules; archived list requires archived_at. Total counts distinct live ModuleIssue IDs with issue archived_at null and not draft; group metrics count DISTINCT state.group, hence 0 or 1. Issue deleted_at is not filtered in aggregate joins. No member multiplication. User order_by ignored, fixed -created_at.",
+          "source": "apps/api/plane/api/views/module.py::get_queryset"
+        },
+        {
+          "when": "module projection, expansion and members",
+          "observable": "Exact field tokens precede expansion; members is unconditionally re-added afterward, including fields=unknown. Members includes duplicate and soft-deleted through rows, ordered by user -created_at, including inactive users. Lead expansion remains scalar lead_id. JSON metadata is opaque; start_date/target_date are date-only. Lite ignores fields/expand and has no metrics.",
+          "source": "apps/api/plane/api/serializers/module.py::ModuleSerializer"
+        },
+        {
+          "when": "module issue queryset and ordering",
+          "observable": "Missing/deleted/archived module does not raise or hide links. IssueManager excludes deleted/archived/draft/triage issues and archived project. Assignee/label ordering introduces duplicate rows, preserving base total_count. issue_module__module__name reuses the filtered module JOIN, so it does not introduce other-module rows or duplicates. All fourteen issue sorts supported; other filters/grouping ignored.",
+          "source": "apps/api/plane/api/views/module.py::ModuleIssueListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "pagination and lite ordering",
+          "observable": "Shared source BasePaginator default/max1000; invalid values and zero/negative observed. Forward/backward cursor. Detail ignores pagination. Lite supports \u00b1created_at,updated_at,name,start_date,target_date,status,sort_order; invalid falls back -created_at.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "expanded user/project assets",
+          "observable": "Attachment/description asset URLs stringify nullable project/issue IDs as None. Missing asset workspace omits avatar_url/cover_image_url entirely; an unknown entity type emits explicit null. Expanded issue assignees use the same UserLite serializer.",
+          "source": "apps/api/plane/db/models/asset.py::FileAsset.asset_url; apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        }
+      ],
+      "fixture_prefix": "archived",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-order-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/archived-unknown-fields.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/archived-modules/",
+      "statuses": [200, 400, 401, 403, 405],
+      "supported_query_parameters": ["cursor", "per_page", "fields", "expand"],
+      "ignored_query_parameters": ["group_by", "sub_group_by", "search", "order_by"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_modules_lite": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules-lite/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid API key; no domain row writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "per_page", "order_by"],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project member including guest, independent of workspace membership",
+          "observable": "Safe method authorization checks live active ProjectMember scoped to requester/project/workspace slug; no role threshold. Missing, deleted or inactive project membership and cross-tenant slug deny 403. Related project deletion/archival does not itself deny permission.",
+          "source": "apps/api/plane/utils/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/module.py"
+        },
+        {
+          "when": "fields and expand used on dynamic serializers",
+          "observable": "Comma-separated exact untrimmed tokens. Unknown selected fields disappear; empty selection behaves as all. Expansion only acts on selected declared fields. Known relation names expand to API lite/full serializers, even null relations; other fields use <name>_id or null. Write-only declared fields can reappear via expand. Metadata JSON remains opaque.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer"
+        },
+        {
+          "when": "full module statistics and liveness",
+          "observable": "Live modules scoped by project and workspace slug. No explicit live Project lookup. List/detail exclude archived modules; archived list requires archived_at. Total counts distinct live ModuleIssue IDs with issue archived_at null and not draft; group metrics count DISTINCT state.group, hence 0 or 1. Issue deleted_at is not filtered in aggregate joins. No member multiplication. User order_by ignored, fixed -created_at.",
+          "source": "apps/api/plane/api/views/module.py::get_queryset"
+        },
+        {
+          "when": "module projection, expansion and members",
+          "observable": "Exact field tokens precede expansion; members is unconditionally re-added afterward, including fields=unknown. Members includes duplicate and soft-deleted through rows, ordered by user -created_at, including inactive users. Lead expansion remains scalar lead_id. JSON metadata is opaque; start_date/target_date are date-only. Lite ignores fields/expand and has no metrics.",
+          "source": "apps/api/plane/api/serializers/module.py::ModuleSerializer"
+        },
+        {
+          "when": "module issue queryset and ordering",
+          "observable": "Missing/deleted/archived module does not raise or hide links. IssueManager excludes deleted/archived/draft/triage issues and archived project. Assignee/label ordering introduces duplicate rows, preserving base total_count. issue_module__module__name reuses the filtered module JOIN, so it does not introduce other-module rows or duplicates. All fourteen issue sorts supported; other filters/grouping ignored.",
+          "source": "apps/api/plane/api/views/module.py::ModuleIssueListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "pagination and lite ordering",
+          "observable": "Shared source BasePaginator default/max1000; invalid values and zero/negative observed. Forward/backward cursor. Detail ignores pagination. Lite supports \u00b1created_at,updated_at,name,start_date,target_date,status,sort_order; invalid falls back -created_at.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "expanded user/project assets",
+          "observable": "Attachment/description asset URLs stringify nullable project/issue IDs as None. Missing asset workspace omits avatar_url/cover_image_url entirely; an unknown entity type emits explicit null. Expanded issue assignees use the same UserLite serializer.",
+          "source": "apps/api/plane/db/models/asset.py::FileAsset.asset_url; apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        }
+      ],
+      "fixture_prefix": "lite",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-duplicate-deleted-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-invalid-order-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--created_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--sort_order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--start_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--status.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--target_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order--updated_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-created_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-sort_order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-start_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-status.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-target_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-order-updated_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-projection-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/lite-success.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/modules-lite/",
+      "statuses": [200, 400, 401, 403, 405],
+      "supported_query_parameters": ["cursor", "per_page", "order_by"],
+      "ignored_query_parameters": ["group_by", "sub_group_by", "search", "fields", "expand"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_modules": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous", "invalid-api-key"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid API key; no domain row writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "per_page", "order_by", "fields", "expand"],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project member including guest, independent of workspace membership",
+          "observable": "Safe method authorization checks live active ProjectMember scoped to requester/project/workspace slug; no role threshold. Missing, deleted or inactive project membership and cross-tenant slug deny 403. Related project deletion/archival does not itself deny permission.",
+          "source": "apps/api/plane/utils/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/module.py"
+        },
+        {
+          "when": "fields and expand used on dynamic serializers",
+          "observable": "Comma-separated exact untrimmed tokens. Unknown selected fields disappear; empty selection behaves as all. Expansion only acts on selected declared fields. Known relation names expand to API lite/full serializers, even null relations; other fields use <name>_id or null. Write-only declared fields can reappear via expand. Metadata JSON remains opaque.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer"
+        },
+        {
+          "when": "full module statistics and liveness",
+          "observable": "Live modules scoped by project and workspace slug. No explicit live Project lookup. List/detail exclude archived modules; archived list requires archived_at. Total counts distinct live ModuleIssue IDs with issue archived_at null and not draft; group metrics count DISTINCT state.group, hence 0 or 1. Issue deleted_at is not filtered in aggregate joins. No member multiplication. User order_by ignored, fixed -created_at.",
+          "source": "apps/api/plane/api/views/module.py::get_queryset"
+        },
+        {
+          "when": "module projection, expansion and members",
+          "observable": "Exact field tokens precede expansion; members is unconditionally re-added afterward, including fields=unknown. Members includes duplicate and soft-deleted through rows, ordered by user -created_at, including inactive users. Lead expansion remains scalar lead_id. JSON metadata is opaque; start_date/target_date are date-only. Lite ignores fields/expand and has no metrics.",
+          "source": "apps/api/plane/api/serializers/module.py::ModuleSerializer"
+        },
+        {
+          "when": "module issue queryset and ordering",
+          "observable": "Missing/deleted/archived module does not raise or hide links. IssueManager excludes deleted/archived/draft/triage issues and archived project. Assignee/label ordering introduces duplicate rows, preserving base total_count. issue_module__module__name reuses the filtered module JOIN, so it does not introduce other-module rows or duplicates. All fourteen issue sorts supported; other filters/grouping ignored.",
+          "source": "apps/api/plane/api/views/module.py::ModuleIssueListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "pagination and lite ordering",
+          "observable": "Shared source BasePaginator default/max1000; invalid values and zero/negative observed. Forward/backward cursor. Detail ignores pagination. Lite supports \u00b1created_at,updated_at,name,start_date,target_date,status,sort_order; invalid falls back -created_at.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "expanded user/project assets",
+          "observable": "Attachment/description asset URLs stringify nullable project/issue IDs as None. Missing asset workspace omits avatar_url/cover_image_url entirely; an unknown entity type emits explicit null. Expanded issue assignees use the same UserLite serializer.",
+          "source": "apps/api/plane/db/models/asset.py::FileAsset.asset_url; apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        }
+      ],
+      "fixture_prefix": "list",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-archived-issue-counts.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-bad-accept.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-deleted-bridge-counts.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-deleted-issue-counts.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-deleted-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-draft-issue-counts.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-duplicate-deleted-members.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-duplicate-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-empty-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-fields-whitespace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-members-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-null-lead.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-order-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-per-page--1.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-per-page-0.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-per-page-1001.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-unknown-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-unknown-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/list-workspace-inactive.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/modules/",
+      "statuses": [200, 400, 401, 403, 405, 406, 429, 500],
+      "supported_query_parameters": ["cursor", "per_page", "fields", "expand"],
+      "ignored_query_parameters": ["group_by", "sub_group_by", "search", "order_by"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_issues": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-issues/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid API key; no domain row writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "per_page"],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project member including guest, independent of workspace membership",
+          "observable": "Safe method authorization checks live active ProjectMember scoped to requester/project/workspace slug; no role threshold. Missing, deleted or inactive project membership and cross-tenant slug deny 403. Related project deletion/archival does not itself deny permission.",
+          "source": "apps/api/plane/utils/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/module.py"
+        },
+        {
+          "when": "fields and expand used on dynamic serializers",
+          "observable": "Comma-separated exact untrimmed tokens. Unknown selected fields disappear; empty selection behaves as all. Expansion only acts on selected declared fields. Known relation names expand to API lite/full serializers, even null relations; other fields use <name>_id or null. Write-only declared fields can reappear via expand. Metadata JSON remains opaque.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer"
+        },
+        {
+          "when": "full module statistics and liveness",
+          "observable": "Live modules scoped by project and workspace slug. No explicit live Project lookup. List/detail exclude archived modules; archived list requires archived_at. Total counts distinct live ModuleIssue IDs with issue archived_at null and not draft; group metrics count DISTINCT state.group, hence 0 or 1. Issue deleted_at is not filtered in aggregate joins. No member multiplication. User order_by ignored, fixed -created_at.",
+          "source": "apps/api/plane/api/views/module.py::get_queryset"
+        },
+        {
+          "when": "module projection, expansion and members",
+          "observable": "Exact field tokens precede expansion; members is unconditionally re-added afterward, including fields=unknown. Members includes duplicate and soft-deleted through rows, ordered by user -created_at, including inactive users. Lead expansion remains scalar lead_id. JSON metadata is opaque; start_date/target_date are date-only. Lite ignores fields/expand and has no metrics.",
+          "source": "apps/api/plane/api/serializers/module.py::ModuleSerializer"
+        },
+        {
+          "when": "module issue queryset and ordering",
+          "observable": "Missing/deleted/archived module does not raise or hide links. IssueManager excludes deleted/archived/draft/triage issues and archived project. Assignee/label ordering introduces duplicate rows, preserving base total_count. issue_module__module__name reuses the filtered module JOIN, so it does not introduce other-module rows or duplicates. All fourteen issue sorts supported; other filters/grouping ignored.",
+          "source": "apps/api/plane/api/views/module.py::ModuleIssueListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "pagination and lite ordering",
+          "observable": "Shared source BasePaginator default/max1000; invalid values and zero/negative observed. Forward/backward cursor. Detail ignores pagination. Lite supports \u00b1created_at,updated_at,name,start_date,target_date,status,sort_order; invalid falls back -created_at.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "expanded user/project assets",
+          "observable": "Attachment/description asset URLs stringify nullable project/issue IDs as None. Missing asset workspace omits avatar_url/cover_image_url entirely; an unknown entity type emits explicit null. Expanded issue assignees use the same UserLite serializer.",
+          "source": "apps/api/plane/db/models/asset.py::FileAsset.asset_url; apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        }
+      ],
+      "fixture_prefix": "issues",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-archived-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-archived-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-assignee-missing-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-deleted-bridge.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-deleted-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-deleted-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-draft-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-expand-write-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-filter-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-invalid-order-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-long-binary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-missing-module-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-null-estimate-expanded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-archived_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-assignees__first_name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-completed_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-created_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-descending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-issue_module__module__name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-labels__name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-priority.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-sequence_id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-sort_order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-start_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-state__group.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-state__name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-target_date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-order-updated_at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-path-wins-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/issues-triage.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/modules/00000000-0000-4000-8000-000000009801/module-issues/",
+      "statuses": [200, 400, 401, 403, 405],
+      "supported_query_parameters": ["cursor", "per_page", "order_by", "fields", "expand"],
+      "ignored_query_parameters": ["group_by", "sub_group_by", "search"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid API key; no domain row writes"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "active project member including guest, independent of workspace membership",
+          "observable": "Safe method authorization checks live active ProjectMember scoped to requester/project/workspace slug; no role threshold. Missing, deleted or inactive project membership and cross-tenant slug deny 403. Related project deletion/archival does not itself deny permission.",
+          "source": "apps/api/plane/utils/permissions/project.py::ProjectEntityPermission"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/module.py"
+        },
+        {
+          "when": "fields and expand used on dynamic serializers",
+          "observable": "Comma-separated exact untrimmed tokens. Unknown selected fields disappear; empty selection behaves as all. Expansion only acts on selected declared fields. Known relation names expand to API lite/full serializers, even null relations; other fields use <name>_id or null. Write-only declared fields can reappear via expand. Metadata JSON remains opaque.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer"
+        },
+        {
+          "when": "full module statistics and liveness",
+          "observable": "Live modules scoped by project and workspace slug. No explicit live Project lookup. List/detail exclude archived modules; archived list requires archived_at. Total counts distinct live ModuleIssue IDs with issue archived_at null and not draft; group metrics count DISTINCT state.group, hence 0 or 1. Issue deleted_at is not filtered in aggregate joins. No member multiplication. User order_by ignored, fixed -created_at.",
+          "source": "apps/api/plane/api/views/module.py::get_queryset"
+        },
+        {
+          "when": "module projection, expansion and members",
+          "observable": "Exact field tokens precede expansion; members is unconditionally re-added afterward, including fields=unknown. Members includes duplicate and soft-deleted through rows, ordered by user -created_at, including inactive users. Lead expansion remains scalar lead_id. JSON metadata is opaque; start_date/target_date are date-only. Lite ignores fields/expand and has no metrics.",
+          "source": "apps/api/plane/api/serializers/module.py::ModuleSerializer"
+        },
+        {
+          "when": "module issue queryset and ordering",
+          "observable": "Missing/deleted/archived module does not raise or hide links. IssueManager excludes deleted/archived/draft/triage issues and archived project. Assignee/label ordering introduces duplicate rows, preserving base total_count. issue_module__module__name reuses the filtered module JOIN, so it does not introduce other-module rows or duplicates. All fourteen issue sorts supported; other filters/grouping ignored.",
+          "source": "apps/api/plane/api/views/module.py::ModuleIssueListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "pagination and lite ordering",
+          "observable": "Shared source BasePaginator default/max1000; invalid values and zero/negative observed. Forward/backward cursor. Detail ignores pagination. Lite supports \u00b1created_at,updated_at,name,start_date,target_date,status,sort_order; invalid falls back -created_at.",
+          "source": "apps/api/plane/utils/paginator.py::BasePaginator"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "expanded user/project assets",
+          "observable": "Attachment/description asset URLs stringify nullable project/issue IDs as None. Missing asset workspace omits avatar_url/cover_image_url entirely; an unknown entity type emits explicit null. Expanded issue assignees use the same UserLite serializer.",
+          "source": "apps/api/plane/db/models/asset.py::FileAsset.asset_url; apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        }
+      ],
+      "fixture_prefix": "detail",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-archived-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-deleted-module.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-nested-attachment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-nested-description.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-nested-missing-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-order-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-pagination-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_module_reads/detail-unknown-fields.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/modules/00000000-0000-4000-8000-000000009801/",
+      "statuses": [200, 401, 403, 404, 405],
+      "supported_query_parameters": ["fields", "expand"],
+      "ignored_query_parameters": ["group_by", "sub_group_by", "search", "order_by"]
+    }
+  },
+  "source_files": [
+    "apps/api/plane/api/urls/module.py",
+    "apps/api/plane/api/views/module.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/serializers/module.py",
+    "apps/api/plane/api/serializers/issue.py",
+    "apps/api/plane/api/serializers/base.py",
+    "apps/api/plane/utils/permissions/project.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/rate_limit.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/utils/order_queryset.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/models/module.py",
+    "apps/api/plane/db/mixins.py"
+  ],
+  "shared_transport_evidence": "Existing API-key activity reads cover common authentication/rate-limit/timezone/middleware behavior. This family records exact Allow and explicit absence of HEAD/OPTIONS handlers, plus real durable API audit envelopes for every source request.",
+  "reuse_analysis": "Extend internal/modulereads repository ownership. Existing app endpoints use different serializers/permissions/annotation and archival contracts; do not reuse their final JSON or app pagination blindly.",
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["cursor", "per_page", "order_by", "fields", "expand"],
+    "evidence": "apps/api/plane/tests/parity/test_api_module_read_recorder.py::test_api_module_read_contract",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/api-cycle-reads/projects/00000000-0000-4000-8000-000000009601/modules/"
+    }
+  },
+  "tie_order_normalization": "Only adjacent equal-key groups on already-selected pages: lite dates/status, issues archived_at/priority/state IDs and target-module ordering. Never normalize distinct keys or repaginate. Module-name issue ordering reuses the filtered target module so all keys tie.",
+  "runtime_questions": [],
+  "source_runtime_evidence": {
+    "recorder": "apps/api/plane/tests/parity/test_api_module_read_recorder.py",
+    "fixture_count": 149,
+    "record_log": "/tmp/api-module-source-record.log",
+    "verify_log": "/tmp/api-module-source-final-verify.log",
+    "evidence": "/tmp/api-module-owner-prep.md",
+    "source_database": "test_plane_api_module",
+    "record_result": "143 passed in 20.02s",
+    "verify_result": "144 passed in 16.30s"
+  }
+}

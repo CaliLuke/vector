@@ -1,0 +1,464 @@
+{
+  "audit": {
+    "created_label_count": 1,
+    "created_label_has_actor": true,
+    "created_label_has_null_updater": true,
+    "created_label_sort_orders": [
+      40010.0
+    ],
+    "target_created_at_preserved": false,
+    "target_created_by_preserved": false,
+    "target_soft_deleted": false,
+    "target_sort_order_is_nan": false,
+    "target_updated_at_advanced": false,
+    "target_updated_by_is_actor": false
+  },
+  "cache": {
+    "after": {
+      "/api/workspaces/labels-contract/labels/": null,
+      "/api/workspaces/labels-contract/labels/:secondary": null
+    },
+    "before": {
+      "/api/workspaces/labels-contract/labels/": {
+        "marker": "exact"
+      },
+      "/api/workspaces/labels-contract/labels/:secondary": {
+        "marker": "secondary"
+      }
+    }
+  },
+  "database": {
+    "after": {
+      "issue_labels": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "issue_id": "<uuid-6>",
+          "label_id": "<uuid-7>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-8>",
+          "issue_id": "<uuid-6>",
+          "label_id": "<uuid-9>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "labels": [
+        {
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-3>",
+          "name": "inf",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 40010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#111111",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-9>",
+          "name": "Alpha",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#222222",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "name": "Beta",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#333333",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-11>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 20010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#444444",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-7>",
+          "name": "Child existing",
+          "parent_id": "<uuid-9>",
+          "project_id": "<uuid-1>",
+          "sort_order": 30010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#555555",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-12>",
+          "name": "Foreign parent",
+          "parent_id": null,
+          "project_id": "<uuid-13>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#666666",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-14>",
+          "name": "Deleted parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 40010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#777777",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-15>",
+          "name": "Global",
+          "parent_id": null,
+          "project_id": null,
+          "sort_order": 70.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#888888",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-16>",
+          "name": "Foreign workspace parent",
+          "parent_id": null,
+          "project_id": "<uuid-17>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-18>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "before": {
+      "issue_labels": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "issue_id": "<uuid-6>",
+          "label_id": "<uuid-7>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-8>",
+          "issue_id": "<uuid-6>",
+          "label_id": "<uuid-9>",
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "labels": [
+        {
+          "color": "#111111",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-9>",
+          "name": "Alpha",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#222222",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-10>",
+          "name": "Beta",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 10010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#333333",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-11>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 20010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#444444",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-7>",
+          "name": "Child existing",
+          "parent_id": "<uuid-9>",
+          "project_id": "<uuid-1>",
+          "sort_order": 30010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#555555",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-12>",
+          "name": "Foreign parent",
+          "parent_id": null,
+          "project_id": "<uuid-13>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#666666",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-14>",
+          "name": "Deleted parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 40010.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#777777",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-15>",
+          "name": "Global",
+          "parent_id": null,
+          "project_id": null,
+          "sort_order": 70.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "color": "#888888",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-16>",
+          "name": "Foreign workspace parent",
+          "parent_id": null,
+          "project_id": "<uuid-17>",
+          "sort_order": 10.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-18>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "labels"
+    ],
+    "expected_changed_tables": [
+      "labels"
+    ],
+    "field_changes": [
+      {
+        "fields": [
+          "color",
+          "created_at",
+          "created_by_id",
+          "description",
+          "id",
+          "name",
+          "project_id",
+          "sort_order",
+          "updated_at",
+          "workspace_id"
+        ],
+        "record": "new",
+        "table": "labels"
+      }
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": "{\"name\":1e309}",
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/labels-contract/projects/<uuid-1>/issue-labels/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<uuid-2>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "color": "",
+      "id": "<uuid-3>",
+      "name": "inf",
+      "parent": null,
+      "project_id": "<uuid-1>",
+      "sort_order": 40010.0,
+      "workspace_id": "<uuid-4>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 201
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "post-raw-exponent-name-coerces-inf"
+  }
+}

@@ -1,0 +1,1028 @@
+openapi: 3.1.1
+info:
+    title: API Module Reads
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for API Module Reads
+paths:
+    /api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/:
+        get:
+            description: Retrieve all modules that have been archived in the project.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    description: Paginated list of archived modules
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedarchivedmoduleresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List archived modules
+            tags:
+                - APIModuleReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.module.ModuleArchiveUnarchiveAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/modules-lite/:
+        get:
+            description: Retrieve a paginated, lightweight list of modules in a project for pickers and references.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_modules_lite
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    description: Paginated list of modules with minimal fields
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedmoduleliteresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List modules (lite)
+            tags:
+                - APIModuleReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/modules-lite/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.module.ModuleListLiteAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/modules/:
+        get:
+            description: Retrieve all modules in a project.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_modules
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    description: Paginated list of modules
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedmoduleresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List modules
+            tags:
+                - APIModuleReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/modules/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.module.ModuleListCreateAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-issues/:
+        get:
+            description: Retrieve all work items assigned to a module with detailed information.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_issues
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - name: module_id
+                  in: path
+                  description: Module ID
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryOrderBy'
+                - $ref: '#/components/parameters/QueryPerPage'
+            responses:
+                "200":
+                    description: Paginated list of module work items
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedmoduleissueresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: List module work items
+            tags:
+                - APIModuleReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-issues/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.module.ModuleIssueListCreateAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/:
+        get:
+            description: Retrieve details of a specific module.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - name: pk
+                  in: path
+                  description: Module ID
+                  required: true
+                  schema:
+                    type: string
+                    format: uuid
+                - name: fields
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+                - name: expand
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Module
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: Retrieve module
+            tags:
+                - APIModuleReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.module.ModuleDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0:
+            type: object
+            properties:
+                code: {}
+                detail: {}
+                error: {}
+                error_code: {}
+                error_message: {}
+                message: {}
+                status: {}
+        ModuleStatusEnum:
+            type: string
+            description: |-
+                * `backlog` - Backlog
+                * `planned` - Planned
+                * `in-progress` - In Progress
+                * `paused` - Paused
+                * `completed` - Completed
+                * `cancelled` - Cancelled
+            enum:
+                - backlog
+                - planned
+                - in-progress
+                - paused
+                - completed
+                - cancelled
+        PlaneApiSerializersIssueIssueserializerResponse:
+            type: object
+            properties:
+                archived_at:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                completed_at:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description_binary:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: byte
+                        - type: "null"
+                description_html:
+                    type: string
+                estimate_point:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_draft:
+                    type: boolean
+                name:
+                    title: Issue Name
+                    type: string
+                    maxLength: 255
+                parent:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                point:
+                    anyOf:
+                        - type: integer
+                          minimum: 0
+                          maximum: 12
+                        - type: "null"
+                priority:
+                    title: Issue Priority
+                    enum:
+                        - urgent
+                        - high
+                        - medium
+                        - low
+                        - none
+                    allOf:
+                        - $ref: '#/components/schemas/PriorityEnum'
+                project:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sequence_id:
+                    title: Issue Sequence ID
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                state:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                target_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                type:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                type_id:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                workspace:
+                    type: string
+                    readOnly: true
+                    format: uuid
+            description: |-
+                Comprehensive work item serializer with full relationship management.
+
+                Handles complete work item lifecycle including assignees, labels, validation,
+                and related model updates. Supports dynamic field expansion and HTML content
+                processing.
+            required:
+                - name
+        PlaneApiSerializersModuleModuleliteserializerResponse:
+            type: object
+            properties:
+                archived_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: Module Description
+                    type: string
+                description_html: {}
+                description_text: {}
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                lead:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                logo_props: {}
+                members:
+                    type: array
+                    items:
+                        type: string
+                        format: uuid
+                    readOnly: true
+                name:
+                    title: Module Name
+                    type: string
+                    maxLength: 255
+                project:
+                    type: string
+                    format: uuid
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                status:
+                    $ref: '#/components/schemas/ModuleStatusEnum'
+                target_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                view_props: {}
+                workspace:
+                    type: string
+                    format: uuid
+            description: |-
+                Lightweight module serializer for minimal data transfer.
+
+                Provides essential module information without computed metrics,
+                optimized for list views and reference lookups.
+            required:
+                - name
+                - project
+                - workspace
+        PlaneApiSerializersModuleModuleserializerResponse:
+            type: object
+            properties:
+                archived_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                backlog_issues:
+                    type: integer
+                    readOnly: true
+                cancelled_issues:
+                    type: integer
+                    readOnly: true
+                completed_issues:
+                    type: integer
+                    readOnly: true
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: Module Description
+                    type: string
+                description_html: {}
+                description_text: {}
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                lead:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                logo_props: {}
+                name:
+                    title: Module Name
+                    type: string
+                    maxLength: 255
+                project:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sort_order:
+                    type: number
+                    format: double
+                start_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                started_issues:
+                    type: integer
+                    readOnly: true
+                status:
+                    $ref: '#/components/schemas/ModuleStatusEnum'
+                target_date:
+                    anyOf:
+                        - type: string
+                          format: date
+                        - type: "null"
+                total_issues:
+                    type: integer
+                    readOnly: true
+                unstarted_issues:
+                    type: integer
+                    readOnly: true
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                view_props: {}
+                workspace:
+                    type: string
+                    readOnly: true
+                    format: uuid
+            description: |-
+                Comprehensive module serializer with work item metrics and member management.
+
+                Provides complete module data including work item counts by status, member
+                relationships, and progress tracking for feature-based project organization.
+            required:
+                - name
+        PriorityEnum:
+            type: string
+            description: |-
+                * `urgent` - Urgent
+                * `high` - High
+                * `medium` - Medium
+                * `low` - Low
+                * `none` - None
+            enum:
+                - urgent
+                - high
+                - medium
+                - low
+                - none
+        RestFrameworkSerializersPaginatedarchivedmoduleresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        RestFrameworkSerializersPaginatedmoduleissueresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersIssueIssueserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        RestFrameworkSerializersPaginatedmoduleliteresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersModuleModuleliteserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        RestFrameworkSerializersPaginatedmoduleresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+    parameters:
+        PathProjectID:
+            name: project_id
+            in: path
+            description: Project ID
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathSlug:
+            name: slug
+            in: path
+            description: Workspace slug
+            required: true
+            schema:
+                type: string
+        QueryCursor:
+            name: cursor
+            in: query
+            description: Pagination cursor for getting next set of results
+            schema:
+                type: string
+        QueryExpand:
+            name: expand
+            in: query
+            description: Comma-separated list of related fields to expand in response
+            schema:
+                type: string
+        QueryFields:
+            name: fields
+            in: query
+            description: Comma-separated list of fields to include in response
+            schema:
+                type: string
+        QueryOrderBy:
+            name: order_by
+            in: query
+            description: Field to order results by. Prefix with '-' for descending order
+            schema:
+                type: string
+        QueryPerPage:
+            name: per_page
+            in: query
+            description: 'Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)'
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        MethodNotAllowedError:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        NotAcceptableError:
+            description: Not Acceptable response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIModuleReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+tags:
+    - name: APIModuleReads

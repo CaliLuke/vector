@@ -1,0 +1,46 @@
+{
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "admin-session-id": "<secret:cookie:admin-session-id>"
+    },
+    "headers": {},
+    "method": "GET",
+    "path": "/api/instances/workspace-slug-check/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {
+      "slug": "taken-slug"
+    }
+  },
+  "response": {
+    "body": {
+      "status": false
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "real-admin-session",
+    "slug": "taken-slug"
+  }
+}

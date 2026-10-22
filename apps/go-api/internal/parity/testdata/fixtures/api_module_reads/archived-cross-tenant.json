@@ -1,0 +1,123 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-2>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-2>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/foreign-api-module/projects/<uuid-1>/archived-modules/",
+            "query_params": "",
+            "response_body": {
+              "detail": "You do not have permission to perform this action."
+            },
+            "response_code": 403,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/foreign-api-module/projects/<uuid-1>/archived-modules/",
+    "principal": {
+      "kind": "api-key"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "You do not have permission to perform this action."
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 403
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "archived-cross-tenant"
+  }
+}

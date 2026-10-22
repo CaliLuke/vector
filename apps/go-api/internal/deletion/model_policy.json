@@ -1,0 +1,4878 @@
+{
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "models": [
+    {
+      "app": "db",
+      "model": "account",
+      "table": "accounts",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "analyticview",
+      "table": "analytic_views",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "apiactivitylog",
+      "table": "api_activity_logs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "apitoken",
+      "table": "api_tokens",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "auth",
+      "model": "group",
+      "table": "auth_group",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "auth",
+      "model": "group_permissions",
+      "table": "auth_group_permissions",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": [
+        {
+          "column": "group_id",
+          "target_table": "auth_group",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        },
+        {
+          "column": "permission_id",
+          "target_table": "auth_permission",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        }
+      ]
+    },
+    {
+      "app": "auth",
+      "model": "permission",
+      "table": "auth_permission",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": [
+        {
+          "column": "content_type_id",
+          "target_table": "django_content_type",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "license",
+      "model": "changelog",
+      "table": "changelogs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "commentreaction",
+      "table": "comment_reactions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "comment_id",
+          "target_table": "issue_comments",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "cycleissue",
+      "table": "cycle_issues",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "cycle_id",
+          "target_table": "cycles",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "cycleuserproperties",
+      "table": "cycle_user_properties",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "cycle_id",
+          "target_table": "cycles",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "cycle",
+      "table": "cycles",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "deployboard",
+      "table": "deploy_boards",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "intake_id",
+          "target_table": "intakes",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "descriptionversion",
+      "table": "description_versions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "description_id",
+          "target_table": "descriptions",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "description",
+      "table": "descriptions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "devicesession",
+      "table": "device_sessions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "device_id",
+          "target_table": "devices",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "session_id",
+          "target_table": "sessions",
+          "target_column": "session_key",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "device",
+      "table": "devices",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "clockedschedule",
+      "table": "django_celery_beat_clockedschedule",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "crontabschedule",
+      "table": "django_celery_beat_crontabschedule",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "intervalschedule",
+      "table": "django_celery_beat_intervalschedule",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "periodictask",
+      "table": "django_celery_beat_periodictask",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": [
+        {
+          "column": "clocked_id",
+          "target_table": "django_celery_beat_clockedschedule",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "crontab_id",
+          "target_table": "django_celery_beat_crontabschedule",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "interval_id",
+          "target_table": "django_celery_beat_intervalschedule",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "solar_id",
+          "target_table": "django_celery_beat_solarschedule",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "periodictasks",
+      "table": "django_celery_beat_periodictasks",
+      "pk": "ident",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "django_celery_beat",
+      "model": "solarschedule",
+      "table": "django_celery_beat_solarschedule",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "contenttypes",
+      "model": "contenttype",
+      "table": "django_content_type",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "sessions",
+      "model": "session",
+      "table": "django_session",
+      "pk": "session_key",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "db",
+      "model": "draftissueassignee",
+      "table": "draft_issue_assignees",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "assignee_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "draft_issue_id",
+          "target_table": "draft_issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "draftissuecycle",
+      "table": "draft_issue_cycles",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "cycle_id",
+          "target_table": "cycles",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "draft_issue_id",
+          "target_table": "draft_issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "draftissuelabel",
+      "table": "draft_issue_labels",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "draft_issue_id",
+          "target_table": "draft_issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "label_id",
+          "target_table": "labels",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "draftissuemodule",
+      "table": "draft_issue_modules",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "draft_issue_id",
+          "target_table": "draft_issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "module_id",
+          "target_table": "modules",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "draftissue",
+      "table": "draft_issues",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "estimate_point_id",
+          "target_table": "estimate_points",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "state_id",
+          "target_table": "states",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "type_id",
+          "target_table": "issue_types",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "emailnotificationlog",
+      "table": "email_notification_logs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "receiver_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "triggered_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "estimatepoint",
+      "table": "estimate_points",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "estimate_id",
+          "target_table": "estimates",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "estimate",
+      "table": "estimates",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "exporterhistory",
+      "table": "exporters",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "initiated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "fileasset",
+      "table": "file_assets",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "comment_id",
+          "target_table": "issue_comments",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "draft_issue_id",
+          "target_table": "draft_issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "page_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "githubcommentsync",
+      "table": "github_comment_syncs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "comment_id",
+          "target_table": "issue_comments",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_sync_id",
+          "target_table": "github_issue_syncs",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "githubissuesync",
+      "table": "github_issue_syncs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "repository_sync_id",
+          "target_table": "github_repository_syncs",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "githubrepository",
+      "table": "github_repositories",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "githubrepositorysync",
+      "table": "github_repository_syncs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "label_id",
+          "target_table": "labels",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "repository_id",
+          "target_table": "github_repositories",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": true,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_integration_id",
+          "target_table": "workspace_integrations",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "importer",
+      "table": "importers",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "initiated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "token_id",
+          "target_table": "api_tokens",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "license",
+      "model": "instanceadmin",
+      "table": "instance_admins",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "instance_id",
+          "target_table": "instances",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "license",
+      "model": "instanceconfiguration",
+      "table": "instance_configurations",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "license",
+      "model": "instance",
+      "table": "instances",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "intakeissue",
+      "table": "intake_issues",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "duplicate_to_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "intake_id",
+          "target_table": "intakes",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "intake",
+      "table": "intakes",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "integration",
+      "table": "integrations",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueactivity",
+      "table": "issue_activities",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_comment_id",
+          "target_table": "issue_comments",
+          "target_column": "id",
+          "on_delete": "DO_NOTHING",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "DO_NOTHING",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueassignee",
+      "table": "issue_assignees",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "assignee_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueattachment",
+      "table": "issue_attachments",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueblocker",
+      "table": "issue_blockers",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "block_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "blocked_by_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuecomment",
+      "table": "issue_comments",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "description_id",
+          "target_table": "descriptions",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": true,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "issue_comments",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuedescriptionversion",
+      "table": "issue_description_versions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuelabel",
+      "table": "issue_labels",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "label_id",
+          "target_table": "labels",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuelink",
+      "table": "issue_links",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuemention",
+      "table": "issue_mentions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "mention_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuereaction",
+      "table": "issue_reactions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuerelation",
+      "table": "issue_relations",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "related_issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuesequence",
+      "table": "issue_sequences",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuesubscriber",
+      "table": "issue_subscribers",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "subscriber_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuetype",
+      "table": "issue_types",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueversion",
+      "table": "issue_versions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "activity_id",
+          "target_table": "issue_activities",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issueview",
+      "table": "issue_views",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issuevote",
+      "table": "issue_votes",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "issue",
+      "table": "issues",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "estimate_point_id",
+          "target_table": "estimate_points",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "state_id",
+          "target_table": "states",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "type_id",
+          "target_table": "issue_types",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "label",
+      "table": "labels",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "labels",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "moduleissue",
+      "table": "module_issues",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_id",
+          "target_table": "issues",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "module_id",
+          "target_table": "modules",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "modulelink",
+      "table": "module_links",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "module_id",
+          "target_table": "modules",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "modulemember",
+      "table": "module_members",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "member_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "module_id",
+          "target_table": "modules",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "moduleuserproperties",
+      "table": "module_user_properties",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "module_id",
+          "target_table": "modules",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "module",
+      "table": "modules",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "lead_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "notification",
+      "table": "notifications",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "receiver_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "triggered_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "pagelabel",
+      "table": "page_labels",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "label_id",
+          "target_table": "labels",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "page_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "pagelog",
+      "table": "page_logs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "page_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "pageversion",
+      "table": "page_versions",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "page_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "page",
+      "table": "pages",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owned_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "profile",
+      "table": "profiles",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": true,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectdeployboard",
+      "table": "project_deploy_boards",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "intake_id",
+          "target_table": "intakes",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectidentifier",
+      "table": "project_identifiers",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": true,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectissuetype",
+      "table": "project_issue_types",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "issue_type_id",
+          "target_table": "issue_types",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectmemberinvite",
+      "table": "project_member_invites",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectmember",
+      "table": "project_members",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "member_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectpage",
+      "table": "project_pages",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "page_id",
+          "target_table": "pages",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectpublicmember",
+      "table": "project_public_members",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "member_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectuserproperty",
+      "table": "project_user_properties",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "projectwebhook",
+      "table": "project_webhooks",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "webhook_id",
+          "target_table": "webhooks",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "project",
+      "table": "projects",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "cover_image_asset_id",
+          "target_table": "file_assets",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "default_assignee_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "default_state_id",
+          "target_table": "states",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "estimate_id",
+          "target_table": "estimates",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_lead_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "session",
+      "table": "sessions",
+      "pk": "session_key",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": []
+    },
+    {
+      "app": "db",
+      "model": "slackprojectsync",
+      "table": "slack_project_syncs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_integration_id",
+          "target_table": "workspace_integrations",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "socialloginconnection",
+      "table": "social_login_connections",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "state",
+      "table": "states",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "sticky",
+      "table": "stickies",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owner_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "team",
+      "table": "teams",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "userfavorite",
+      "table": "user_favorites",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "parent_id",
+          "target_table": "user_favorites",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "usernotificationpreference",
+      "table": "user_notification_preferences",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "userrecentvisit",
+      "table": "user_recent_visits",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "user",
+      "table": "users",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "avatar_asset_id",
+          "target_table": "file_assets",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "cover_image_asset_id",
+          "target_table": "file_assets",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "user_groups",
+      "table": "users_groups",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": [
+        {
+          "column": "group_id",
+          "target_table": "auth_group",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "user_user_permissions",
+      "table": "users_user_permissions",
+      "pk": "id",
+      "soft_delete": false,
+      "updated_at": false,
+      "relations": [
+        {
+          "column": "permission_id",
+          "target_table": "auth_permission",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": false
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "webhooklog",
+      "table": "webhook_logs",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "webhook",
+      "table": "webhooks",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspacehomepreference",
+      "table": "workspace_home_preferences",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspaceintegration",
+      "table": "workspace_integrations",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "api_token_id",
+          "target_table": "api_tokens",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "integration_id",
+          "target_table": "integrations",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspacememberinvite",
+      "table": "workspace_member_invites",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspacemember",
+      "table": "workspace_members",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "member_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspacetheme",
+      "table": "workspace_themes",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "actor_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspaceuserlink",
+      "table": "workspace_user_links",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owner_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "project_id",
+          "target_table": "projects",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspaceuserpreference",
+      "table": "workspace_user_preferences",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspaceuserproperties",
+      "table": "workspace_user_properties",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "user_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "workspace_id",
+          "target_table": "workspaces",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    },
+    {
+      "app": "db",
+      "model": "workspace",
+      "table": "workspaces",
+      "pk": "id",
+      "soft_delete": true,
+      "updated_at": true,
+      "relations": [
+        {
+          "column": "created_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "logo_asset_id",
+          "target_table": "file_assets",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "owner_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "CASCADE",
+          "one_to_one": false,
+          "soft_reverse": true
+        },
+        {
+          "column": "updated_by_id",
+          "target_table": "users",
+          "target_column": "id",
+          "on_delete": "SET_NULL",
+          "one_to_one": false,
+          "soft_reverse": true
+        }
+      ]
+    }
+  ]
+}

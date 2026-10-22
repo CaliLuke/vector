@@ -1,0 +1,629 @@
+openapi: 3.1.1
+info:
+    title: API State Reads
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for API State Reads
+paths:
+    /api/v1/workspaces/{slug}/projects/{project_id}/states/:
+        get:
+            description: Retrieve workflow states for a project using the API v1 serializer and pagination contract.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_states
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - name: cursor
+                  in: query
+                  schema:
+                    type: string
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/QueryFields'
+                - name: per_page
+                  in: query
+                  description: 'Pagination input interpreted by Django-compatible pagination (default and maximum: 1000)'
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: Paginated workflow states
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestFrameworkSerializersPaginatedstateresponseResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: GetAPIV1WorkspacesBySlugProjectsByProjectIDStates APIStateReads
+            tags:
+                - APIStateReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/states/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.state.StateListCreateAPIEndpoint
+        post:
+            operationId: post_api_v1_workspaces_by_slug_projects_by_project_id_states
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugProjectsByProjectIDStatesRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersStateStateserializerResponseStatus200Response'
+                    description: Workflow state after mutation
+                "400":
+                    $ref: '#/components/responses/BadRequestError_ce48d601'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError_e5a84986'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError_e8903931'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError_2a4828e0'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError_829fc4d6'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError_f12f51a9'
+                    description: 'status_406: Not Acceptable response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError_5a97d1c3'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_55074e64'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: CreateAPIV1WorkspacesBySlugProjectsByProjectIDStates APIStateReads
+            tags:
+                - APIStateReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/v1/workspaces/{slug}/projects/{project_id}/states/
+            x-plane-handler: post
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.state.StateListCreateAPIEndpoint
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/:
+        delete:
+            operationId: delete_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathStateID'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/HeaderContentType'
+            responses:
+                "204":
+                    description: No Content response.
+                "400":
+                    $ref: '#/components/responses/BadRequestError_ce48d601'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError_e5a84986'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError_e8903931'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError_2a4828e0'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError_829fc4d6'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError_f12f51a9'
+                    description: 'status_406: Not Acceptable response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError_5a97d1c3'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_55074e64'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: DeleteAPIV1WorkspacesBySlugProjectsByProjectIDStatesByStateID APIStateReads
+            tags:
+                - APIStateReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/
+            x-plane-handler: delete
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.state.StateDetailAPIEndpoint
+        get:
+            description: Retrieve one workflow state using the API v1 serializer.
+            operationId: get_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathStateID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersStateStateserializerResponseStatus200Response'
+                    description: Workflow state
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: GetAPIV1WorkspacesBySlugProjectsByProjectIDStatesByStateID APIStateReads
+            tags:
+                - APIStateReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: GET /api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/
+            x-plane-handler: get
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.state.StateDetailAPIEndpoint
+        patch:
+            operationId: patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathStateID'
+                - $ref: '#/components/parameters/QueryFields'
+                - $ref: '#/components/parameters/QueryExpand'
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugProjectsByProjectIDStatesRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PlaneApiSerializersStateStateserializerResponseStatus200Response'
+                    description: Workflow state after mutation
+                "400":
+                    $ref: '#/components/responses/BadRequestError_ce48d601'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError_e5a84986'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError_e8903931'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError_2a4828e0'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError_829fc4d6'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError_f12f51a9'
+                    description: 'status_406: Not Acceptable response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError_5a97d1c3'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_55074e64'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+            summary: UpdateAPIV1WorkspacesBySlugProjectsByProjectIDStatesByStateID APIStateReads
+            tags:
+                - APIStateReads
+            x-plane-authentication-classes:
+                - plane.api.middleware.api_authentication.APIKeyAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/
+            x-plane-handler: patch
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectEntityPermission
+            x-plane-view: plane.api.views.state.StateDetailAPIEndpoint
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0:
+            type: object
+            properties:
+                code: {}
+                detail: {}
+                error: {}
+                error_code: {}
+                error_message: {}
+                message: {}
+                status: {}
+        GroupEnum:
+            type: string
+            description: |-
+                * `backlog` - Backlog
+                * `unstarted` - Unstarted
+                * `started` - Started
+                * `completed` - Completed
+                * `cancelled` - Cancelled
+                * `triage` - Triage
+            enum:
+                - backlog
+                - unstarted
+                - started
+                - completed
+                - cancelled
+                - triage
+        PlaneApiSerializersStateStateserializerResponse:
+            type: object
+            properties:
+                color:
+                    title: State Color
+                    type: string
+                    maxLength: 255
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                default:
+                    type: boolean
+                deleted_at:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description:
+                    title: State Description
+                    type: string
+                external_id:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                external_source:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                group:
+                    $ref: '#/components/schemas/GroupEnum'
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                is_triage:
+                    type: boolean
+                name:
+                    title: State Name
+                    type: string
+                    maxLength: 255
+                project:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sequence:
+                    type: number
+                    format: double
+                slug:
+                    type: string
+                    readOnly: true
+                    pattern: ^[\-0-9A-Z_a-z]+$
+                updated_at:
+                    title: Last Modified At
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    title: Last Modified By
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                workspace:
+                    type: string
+                    readOnly: true
+                    format: uuid
+            description: |-
+                Serializer for work item states with default state management.
+
+                Handles state creation and updates including default state validation
+                and automatic default state switching for workflow management.
+            required:
+                - color
+                - name
+        RestFrameworkSerializersPaginatedstateresponseResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlaneApiSerializersStateStateserializerResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                total_pages:
+                    type: integer
+                total_results:
+                    type: integer
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+    parameters:
+        HeaderContentType:
+            name: Content-Type
+            in: header
+            schema:
+                type: string
+        PathProjectID:
+            name: project_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathSlug:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+        PathStateID:
+            name: state_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        QueryExpand:
+            name: expand
+            in: query
+            schema:
+                type: string
+        QueryFields:
+            name: fields
+            in: query
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PostAPIV1WorkspacesBySlugProjectsByProjectIDStatesRequestBody:
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                application/x-www-form-urlencoded:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                multipart/form-data:
+                    schema:
+                        type: object
+                        additionalProperties: true
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        BadRequestError_ce48d601:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        ConflictError:
+            description: Conflict response.
+            content:
+                application/json:
+                    schema: {}
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        ForbiddenError_e8903931:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        InternalServerErrorError_55074e64:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        MethodNotAllowedError:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        MethodNotAllowedError_829fc4d6:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema: {}
+        NotAcceptableError:
+            description: Not Acceptable response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        NotAcceptableError_f12f51a9:
+            description: Not Acceptable response.
+            content:
+                application/json:
+                    schema: {}
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        NotFoundError_2a4828e0:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema: {}
+        PlaneApiSerializersStateStateserializerResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/PlaneApiSerializersStateStateserializerResponse'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        TooManyRequestsError_5a97d1c3:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/APIStateReadsHTTPErrorResponseBody_bf3110b06f0d3bb0'
+        UnauthorizedError_e5a84986:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+tags:
+    - name: APIStateReads

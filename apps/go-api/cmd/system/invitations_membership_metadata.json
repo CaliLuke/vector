@@ -1,0 +1,1017 @@
+{
+  "/api/users/me/workspaces/invitations/": {
+    "fixture": "user-workspace-list-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "invite_link": {
+            "label": "Invite link",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "message": {
+            "label": "Message",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "token": {
+            "label": "Token",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "",
+      "name": "User Workspace Invitations",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/users/me/workspaces/{slug}/projects/invitations/": {
+    "fixture": "user-project-list-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "message": {
+            "label": "Message",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "project": {
+            "children": {
+              "cover_image": {
+                "label": "Cover image",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "cover_image_url": {
+                "label": "Cover image url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "description": {
+                "label": "Project Description",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "identifier": {
+                "label": "Project Identifier",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "logo_props": {
+                "label": "Logo props",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Project Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              }
+            },
+            "label": "Project",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "token": {
+            "label": "Token",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "",
+      "name": "User Project Invitations Viewset",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/v1/workspaces/{slug}/invitations/": {
+    "fixture": "v1-invite-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          }
+        }
+      },
+      "description": "Endpoint for creating, listing and deleting workspace invites.",
+      "name": "Workspace Invitations Viewset List",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/v1/workspaces/{slug}/invitations/{pk}/": {
+    "fixture": "v1-invite-detail-options.json",
+    "metadata": {
+      "actions": {
+        "PUT": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          }
+        }
+      },
+      "description": "Endpoint for creating, listing and deleting workspace invites.",
+      "name": "Workspace Invitations Viewset Instance",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/invitations/": {
+    "fixture": "workspace-invite-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "invite_link": {
+            "label": "Invite link",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "message": {
+            "label": "Message",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "token": {
+            "label": "Token",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "Endpoint for creating, listing and  deleting workspaces",
+      "name": "Workspace Invitations Viewset",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/invitations/{pk}/": {
+    "fixture": "workspace-invite-detail-options.json",
+    "metadata": {
+      "description": "Endpoint for creating, listing and  deleting workspaces",
+      "name": "Workspace Invitations Viewset",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/invitations/{pk}/join/": {
+    "fixture": "workspace-join-options.json",
+    "metadata": {
+      "description": "",
+      "name": "Workspace Join Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/members/{pk}/": {
+    "fixture": "workspace-member-patch-options.json",
+    "metadata": {
+      "description": "",
+      "name": "Work Space Member",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/invitations/": {
+    "fixture": "project-invite-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "message": {
+            "label": "Message",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "project": {
+            "children": {
+              "cover_image": {
+                "label": "Cover image",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "cover_image_url": {
+                "label": "Cover image url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "description": {
+                "label": "Project Description",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "identifier": {
+                "label": "Project Identifier",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "logo_props": {
+                "label": "Logo props",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Project Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              }
+            },
+            "label": "Project",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "token": {
+            "label": "Token",
+            "max_length": 255,
+            "read_only": false,
+            "required": true,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "",
+      "name": "Project Invitations Viewset",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/invitations/{pk}/": {
+    "fixture": "project-invite-detail-options.json",
+    "metadata": {
+      "description": "",
+      "name": "Project Invitations Viewset",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/projects/{project_id}/join/{pk}/": {
+    "fixture": "project-join-options.json",
+    "metadata": {
+      "description": "",
+      "name": "Project Join Endpoint",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  },
+  "/api/workspaces/{slug}/members/leave/": {
+    "fixture": "workspace-member-leave-options.json",
+    "metadata": {
+      "actions": {
+        "POST": {
+          "company_role": {
+            "label": "Company role",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "default_props": {
+            "label": "Default props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "explored_features": {
+            "label": "Explored features",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "getting_started_checklist": {
+            "label": "Getting started checklist",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_active": {
+            "label": "Is active",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "issue_props": {
+            "label": "Issue props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "member": {
+            "children": {
+              "avatar": {
+                "label": "Avatar",
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "avatar_url": {
+                "label": "Avatar url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "display_name": {
+                "label": "Display name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "email": {
+                "label": "Email",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "first_name": {
+                "label": "First name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "is_bot": {
+                "label": "Is bot",
+                "read_only": true,
+                "required": false,
+                "type": "boolean"
+              },
+              "last_login_medium": {
+                "label": "Last login medium",
+                "max_length": 20,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "last_name": {
+                "label": "Last name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              }
+            },
+            "label": "Member",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "tips": {
+            "label": "Tips",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "label": "Workspace",
+            "read_only": false,
+            "required": true,
+            "type": "field"
+          }
+        }
+      },
+      "description": "",
+      "name": "Work Space Member",
+      "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+      "renders": ["application/json"]
+    }
+  }
+}

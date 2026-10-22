@@ -1,0 +1,19 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: migrations/support
+    queries: internal/database/queries
+    gen:
+      go:
+        package: db
+        out: internal/database/db
+        sql_package: pgx/v5
+        emit_json_tags: true
+        rename:
+          related_ids: RelatedIDs
+        overrides:
+          - db_type: uuid
+            nullable: false
+            go_type:
+              import: uuid
+              type: UUID

@@ -1,0 +1,8 @@
+{
+  "canonical_openapi_sha256_at_capture": "5b06bf9fdbbee272c38b35d0898bdcb70462368c4dd9bc24881947363dce9a51",
+  "manifest_sha256_at_capture": "8eea9573a662f69f08c3accbc3cd5abf7056dce1ed437f6b1839332daf342d46",
+  "reachable_component_count": 24,
+  "selected_operation_count": 28,
+  "selected_path_count": 14,
+  "source_revision": "884590b2a2c325ffeb51ce3c58af6e315b841be4"
+}

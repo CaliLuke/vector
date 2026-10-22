@@ -1,0 +1,301 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "OPTIONS",
+    "path": "/api/workspaces/project-membership-lifecycle/projects/<uuid-1>/members/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "actions": {
+        "POST": {
+          "comment": {
+            "label": "Comment",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "default_props": {
+            "label": "Default props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_active": {
+            "label": "Is active",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "member": {
+            "children": {
+              "avatar": {
+                "label": "Avatar",
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "avatar_url": {
+                "label": "Avatar url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "display_name": {
+                "label": "Display name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "email": {
+                "label": "Email",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "first_name": {
+                "label": "First name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "is_bot": {
+                "label": "Is bot",
+                "read_only": true,
+                "required": false,
+                "type": "boolean"
+              },
+              "last_login_medium": {
+                "label": "Last login medium",
+                "max_length": 20,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              },
+              "last_name": {
+                "label": "Last name",
+                "max_length": 255,
+                "read_only": false,
+                "required": false,
+                "type": "string"
+              }
+            },
+            "label": "Member",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          },
+          "preferences": {
+            "label": "Preferences",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "project": {
+            "children": {
+              "cover_image": {
+                "label": "Cover image",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "cover_image_url": {
+                "label": "Cover image url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "description": {
+                "label": "Project Description",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "identifier": {
+                "label": "Project Identifier",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "logo_props": {
+                "label": "Logo props",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Project Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              }
+            },
+            "label": "Project",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "sort_order": {
+            "label": "Sort order",
+            "read_only": false,
+            "required": false,
+            "type": "float"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "view_props": {
+            "label": "View props",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "",
+      "name": "Project Member",
+      "parses": [
+        "application/json",
+        "application/x-www-form-urlencoded",
+        "multipart/form-data"
+      ],
+      "renders": [
+        "application/json"
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "POST, OPTIONS",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "legacy-members-options-companion"
+  }
+}

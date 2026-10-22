@@ -1,0 +1,959 @@
+{
+  "version": 1,
+  "family": "cycle_lifecycle",
+  "source_revision": "e10b8aa6963c64ae99ae67a175d2e588a7fc7fab",
+  "characterization_status": "Complete: 112 pristine and 112 corrected source cases; 90 identical cases and 22 explicitly accepted changed cases. Focused source captures for 14 additional authorization, validation-precedence, and conflict branches passed. Full Go parity and release proof remain pending.",
+  "source_files": [
+    "apps/api/plane/app/urls/cycle.py",
+    "apps/api/plane/api/urls/cycle.py",
+    "apps/api/plane/app/views/cycle/base.py",
+    "apps/api/plane/app/views/cycle/archive.py",
+    "apps/api/plane/api/views/cycle.py",
+    "apps/api/plane/app/serializers/cycle.py",
+    "apps/api/plane/api/serializers/cycle.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/utils/permissions/project.py",
+    "apps/api/plane/db/models/cycle.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/user.py",
+    "apps/api/plane/bgtasks/webhook_task.py",
+    "apps/api/plane/bgtasks/issue_activities_task.py",
+    "apps/api/plane/utils/host.py",
+    "apps/api/plane/authentication/session.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/api/plane/celery_routing.py",
+    "apps/api/plane/utils/timezone_converter.py"
+  ],
+  "operations": {
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_cycles_by_cycle_id_unarchive": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archived-cycles/{cycle_id}/unarchive/",
+      "sample_path": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/archived-cycles/00000000-0000-4000-8000-000000019999/unarchive/",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: archived_at and audit-field save"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        }
+      ],
+      "source": "apps/api/plane/api/views/cycle.py",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_cycles_by_cycle_id_unarchive",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-delete-unarchive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-delete-unarchive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-delete-unarchive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-delete-unarchive.json"
+      ],
+      "request_body": false,
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs API-key request audit"],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [204, 401],
+      "recorded_target_statuses": [204, 401]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_cycles": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/",
+      "sample_path": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key", "invalid-api-key"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: insert with source defaults, timezone/date conversion and sort-order model hook"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Create validation and side effects",
+          "observable": "Check raw paired-date presence before serializer validation, so a missing-name error does not mask a one-sided date; require both dates or neither; serializer converts project-timezone dates and rejects start after end. V1 requires cycle_view and returns 409 for duplicate external identifiers. Successful creation publishes model_activity after save.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/api/serializers/cycle.py; apps/api/plane/api/views/cycle.py; apps/api/plane/bgtasks/webhook_task.py"
+        }
+      ],
+      "source": "apps/api/plane/api/views/cycle.py",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_cycles",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-blank-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-dated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-external-id-conflict.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-null-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-numeric-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-create-paired-date-missing-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-blank-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-dated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-external-id-conflict.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-null-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-numeric-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-create-paired-date-missing-name.json"
+      ],
+      "request_body": true,
+      "queued_jobs": [
+        "plane.bgtasks.webhook_task.model_activity after save",
+        "plane.bgtasks.logger_task.process_logs API-key request audit"
+      ],
+      "target_statuses": [201, 400, 401, 403, 404, 409],
+      "recorded_source_statuses": [201, 400, 401, 403, 409],
+      "recorded_target_statuses": [201, 400, 401, 403, 409]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/",
+      "sample_path": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/archive/",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "protocol_methods": [],
+      "database_effects": [
+        "cycles: archived_at and audit-field save",
+        "user_favorites: delete matching project/cycle favorites"
+      ],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        }
+      ],
+      "source": "apps/api/plane/api/views/cycle.py",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-archive-completed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-post-archive-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-archive-completed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-post-archive-draft.json"
+      ],
+      "request_body": false,
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs API-key request audit"],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 500],
+      "recorded_target_statuses": [204, 400, 401]
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "sample_path": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key"],
+      "protocol_methods": [],
+      "database_effects": [
+        "cycles: source soft-delete traversal and queued deletion effects",
+        "user_favorites: legacy requester only; v1 all matching project/cycle favorites",
+        "user_recent_visits: legacy hard delete only"
+      ],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Delete side effects",
+          "observable": "Delete emits issue_activity before row removal. Legacy deletes only requester favorite and matching recent visits; v1 deletes project cycle favorites. Task payloads differ by route stack.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/api/views/cycle.py; apps/api/plane/bgtasks/issue_activities_task.py"
+        }
+      ],
+      "source": "apps/api/plane/api/views/cycle.py",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-delete-detail-guest-owner-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-delete-detail-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-delete-detail-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-delete-detail-guest-owner-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-delete-detail-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-delete-detail-owner.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [
+        "plane.bgtasks.issue_activities_task.issue_activity before delete; soft-delete task per model lifecycle",
+        "plane.bgtasks.logger_task.process_logs API-key request audit"
+      ],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [204, 403],
+      "recorded_target_statuses": [204, 403]
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk": {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "sample_path": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: update validated effective fields and audit fields"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Completed cycle",
+          "observable": "For completed cycles, filter request data to sort_order only before serializer validation, persistence, response serialization and model_activity requested_data. Archived cycles return 400.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Effective update payload and owner",
+          "observable": "Corrected source exposes sort_order on updates, filters completed-cycle fields before duplicate checks and task serialization, and preserves owner when owned_by is omitted. Explicit null retains separately recorded source behavior.",
+          "source": "apps/api/plane/api/views/cycle.py; apps/api/plane/api/serializers/cycle.py"
+        },
+        {
+          "when": "Only start_date supplied",
+          "observable": "Preserve the supplied aware timestamp and do not compare the new start against an omitted persisted end date. The raw requested_data date string is preserved in the activity event.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/api/serializers/cycle.py"
+        },
+        {
+          "when": "Actor timezone differs from project timezone",
+          "observable": "Serializer dates and activity current_instance use the actor timezone; app values responses use project timezone. App datetime input is parsed in actor timezone before extracting the project-local day.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin; apps/api/plane/api/views/base.py::TimezoneMixin; apps/api/plane/app/serializers/cycle.py::CycleWriteSerializer"
+        }
+      ],
+      "source": "apps/api/plane/api/views/cycle.py",
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-active-conflicting-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-cross-project-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-dates-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-completed-conflicting-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-completed-sort-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-completed-without-sort.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-current.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-explicit-null-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-detail-preserves-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-invalid-owner-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-single-date-start-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/v1-patch-workspace-admin-project-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-active-conflicting-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-cross-project-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-dates-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-completed-conflicting-external-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-completed-sort-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-completed-without-sort.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-current.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-explicit-null-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-detail-preserves-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-invalid-owner-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-single-date-start-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/v1-patch-workspace-admin-project-guest-denied.json"
+      ],
+      "request_body": true,
+      "queued_jobs": [
+        "plane.bgtasks.webhook_task.model_activity after save",
+        "plane.bgtasks.logger_task.process_logs API-key request audit"
+      ],
+      "target_statuses": [200, 400, 401, 403, 404, 409],
+      "recorded_source_statuses": [200, 400, 403, 404, 409],
+      "recorded_target_statuses": [200, 400, 403, 404, 409]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/archived-cycles/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "database_effects": [],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Archived collection alias",
+          "observable": "POST or DELETE without a cycle identifier returns 400 after authorization with {error: Cycle ID is required}.",
+          "source": "apps/api/plane/app/urls/cycle.py; apps/api/plane/app/views/cycle/archive.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archived-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archived-collection-missing-cycle-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archived-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archived-collection-missing-cycle-id.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [400, 401, 403],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [400, 401],
+      "success_contract": "This identifier-free mutation cannot succeed. The accepted correction returns 400 after authorization; pristine Django returned 500. No cycle identifier is inferred from the body or query."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_archived_cycles": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/archived-cycles/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "database_effects": [],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Archived collection alias",
+          "observable": "POST or DELETE without a cycle identifier returns 400 after authorization with {error: Cycle ID is required}.",
+          "source": "apps/api/plane/app/urls/cycle.py; apps/api/plane/app/views/cycle/archive.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_archived_cycles",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archived-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archived-collection-missing-cycle-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archived-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archived-collection-missing-cycle-id.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [400, 401, 403],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [400, 401],
+      "success_contract": "This identifier-free mutation cannot succeed. The accepted correction returns 400 after authorization; pristine Django returned 500. No cycle identifier is inferred from the body or query."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/archived-cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: archived_at and audit-field save"],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Archived item alias",
+          "observable": "Legacy archived item route accepts its pk and invokes the intended archive/unarchive transition.",
+          "source": "apps/api/plane/app/urls/cycle.py; apps/api/plane/app/views/cycle/archive.py"
+        },
+        {
+          "when": "Delete side effects",
+          "observable": "Delete emits issue_activity before row removal. Legacy deletes only requester favorite and matching recent visits; v1 deletes project cycle favorites. Task payloads differ by route stack.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/api/views/cycle.py; apps/api/plane/bgtasks/issue_activities_task.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archived-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archived-item-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archived-item-pk-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archived-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archived-item-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archived-item-pk-alias.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [204, 401, 404]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/archived-cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "database_effects": [
+        "cycles: archived_at and audit-field save",
+        "user_favorites: delete matching project/cycle favorites"
+      ],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Archived item alias",
+          "observable": "Legacy archived item route accepts its pk and invokes the intended archive/unarchive transition.",
+          "source": "apps/api/plane/app/urls/cycle.py; apps/api/plane/app/views/cycle/archive.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_archived_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archived-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archived-item-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archived-item-pk-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archived-item-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archived-item-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archived-item-pk-alias.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404],
+      "recorded_source_statuses": [401, 500],
+      "recorded_target_statuses": [200, 401, 404]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_cycles": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["OPTIONS"],
+      "database_effects": ["cycles: insert with source defaults, timezone/date conversion and sort-order model hook"],
+      "effects": ["django-session"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Create validation and side effects",
+          "observable": "Check raw paired-date presence before serializer validation, so a missing-name error does not mask a one-sided date; require both dates or neither; serializer converts project-timezone dates and rejects start after end. V1 requires cycle_view and returns 409 for duplicate external identifiers. Successful creation publishes model_activity after save.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/api/serializers/cycle.py; apps/api/plane/api/views/cycle.py; apps/api/plane/bgtasks/webhook_task.py"
+        },
+        {
+          "when": "Client-supplied protected audit/deletion fields",
+          "observable": "Ignore created_by, updated_by and deleted_at input; retain original creator, perform normal actor auditing, and require the DELETE endpoint for deletion effects.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/db/models/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Actor timezone differs from project timezone",
+          "observable": "Serializer dates and activity current_instance use the actor timezone; app values responses use project timezone. App datetime input is parsed in actor timezone before extracting the project-local day.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin; apps/api/plane/api/views/base.py::TimezoneMixin; apps/api/plane/app/serializers/cycle.py::CycleWriteSerializer"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_cycles",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-collection-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-collection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-actor-timezone-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-blank-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-date-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-dated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-null-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-numeric-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-paired-date-missing-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-partial-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-create-writable-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-collection-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-collection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-actor-timezone-input.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-blank-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-date-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-dated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-null-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-numeric-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-paired-date-missing-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-partial-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-create-writable-fields.json"
+      ],
+      "request_body": true,
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity after save"],
+      "target_statuses": [200, 201, 400, 401, 403, 404],
+      "recorded_source_statuses": [200, 201, 400, 401, 403],
+      "recorded_target_statuses": [200, 201, 400, 401, 403]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_cycles_date_check": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/date-check/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/date-check/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["OPTIONS"],
+      "database_effects": [],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Date overlap check",
+          "observable": "Missing date endpoints return 400; overlap returns 200 status=false; no overlap returns 200 status=true. Include touching intervals, excluded cycle and timezone cases.",
+          "source": "apps/api/plane/app/views/cycle/base.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_cycles_date_check",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-date-check-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-date-check.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-clear.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-excludes-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-missing-end.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-overlap.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-date-check-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-date-check-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-date-check.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-clear.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-excludes-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-missing-end.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-overlap.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-date-check-workspace-admin-project-guest.json"
+      ],
+      "request_body": true,
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404],
+      "recorded_source_statuses": [200, 400, 401],
+      "recorded_target_statuses": [200, 400, 401]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: archived_at and audit-field save"],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-unarchive-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-unarchive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-unarchive-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-unarchive.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [204, 401, 404],
+      "recorded_target_statuses": [204, 401, 404]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["OPTIONS"],
+      "database_effects": [
+        "cycles: archived_at and audit-field save",
+        "user_favorites: delete matching project/cycle favorites"
+      ],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Archive state transition",
+          "observable": "Draft and uncompleted cycles reject archive with 400. Completed cycles archive; legacy removes favorites and returns archived_at JSON 200, while v1 returns empty 204. Unarchive returns empty 204.",
+          "source": "apps/api/plane/app/views/cycle/archive.py; apps/api/plane/api/views/cycle.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_cycles_by_cycle_id_archive",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-archive-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-archive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archive-completed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archive-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-post-archive-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-archive-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-archive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archive-completed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archive-draft.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-post-archive-workspace-admin-project-guest.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404],
+      "recorded_source_statuses": [200, 400, 401, 404, 500],
+      "recorded_target_statuses": [200, 400, 401, 404]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "protocol_methods": [],
+      "database_effects": [
+        "cycles: source soft-delete traversal and queued deletion effects",
+        "user_favorites: legacy requester only; v1 all matching project/cycle favorites",
+        "user_recent_visits: legacy hard delete only"
+      ],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Delete side effects",
+          "observable": "Delete emits issue_activity before row removal. Legacy deletes only requester favorite and matching recent visits; v1 deletes project cycle favorites. Task payloads differ by route stack.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/api/views/cycle.py; apps/api/plane/bgtasks/issue_activities_task.py"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-creator-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-creator-no-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-detail-nonowner-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-detail-original-creator.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-detail-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-revoked-workspace-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-delete-workspace-admin-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-creator-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-creator-no-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-detail-nonowner-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-detail-original-creator.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-detail-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-revoked-workspace-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-delete-workspace-admin-project-member.json"
+      ],
+      "request_body": false,
+      "queued_jobs": [
+        "plane.bgtasks.issue_activities_task.issue_activity before delete; soft-delete task per model lifecycle"
+      ],
+      "target_statuses": [204, 400, 401, 403, 404],
+      "recorded_source_statuses": [204, 403, 404],
+      "recorded_target_statuses": [204, 403, 404]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "protocol_methods": [],
+      "database_effects": ["cycles: update validated effective fields and audit fields"],
+      "effects": ["django-session"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Missing target",
+          "observable": "Missing or foreign scoped cycles return 404 under the target contract.",
+          "source": "apps/api/plane/app/views/cycle/base.py"
+        },
+        {
+          "when": "Completed cycle",
+          "observable": "For completed cycles, filter request data to sort_order only before serializer validation, persistence, response serialization and model_activity requested_data. Archived cycles return 400.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/api/views/cycle.py"
+        },
+        {
+          "when": "Client-supplied protected audit/deletion fields",
+          "observable": "Ignore created_by, updated_by and deleted_at input; retain original creator, perform normal actor auditing, and require the DELETE endpoint for deletion effects.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/db/models/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Archived project",
+          "observable": "The app queryset excludes archived projects. Inherited PUT returns 404; PATCH fixes the source missing-row crash to return 404 with Cycle not found. Neither mutates the cycle or queues a domain task.",
+          "source": "apps/api/plane/app/views/cycle/base.py::CycleViewSet.get_queryset"
+        },
+        {
+          "when": "Only start_date supplied",
+          "observable": "Preserve the supplied aware timestamp and do not compare the new start against an omitted persisted end date. The raw requested_data date string is preserved in the activity event.",
+          "source": "apps/api/plane/app/serializers/cycle.py; apps/api/plane/api/serializers/cycle.py"
+        },
+        {
+          "when": "Actor timezone differs from project timezone",
+          "observable": "Serializer dates and activity current_instance use the actor timezone; app values responses use project timezone. App datetime input is parsed in actor timezone before extracting the project-local day.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin; apps/api/plane/api/views/base.py::TimezoneMixin; apps/api/plane/app/serializers/cycle.py::CycleWriteSerializer"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-cross-project-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-dates-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-deleted-at-bypass.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-detail-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-detail-completed-sort-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-detail-current.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-protected-audit-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-single-date-start-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-soft-deleted-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-patch-workspace-admin-project-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-cross-project-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-dates-non-utc.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-deleted-at-bypass.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-detail-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-detail-completed-sort-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-detail-current.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-inactive-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-protected-audit-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-reversed-dates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-single-date-start-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-soft-deleted-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-patch-workspace-admin-project-guest.json"
+      ],
+      "request_body": true,
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity after save"],
+      "target_statuses": [200, 400, 401, 403, 404],
+      "recorded_source_statuses": [200, 400, 403, 500],
+      "recorded_target_statuses": [200, 400, 403, 404]
+    },
+    "put_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk": {
+      "method": "PUT",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/",
+      "sample_path": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/00000000-0000-4000-8000-000000019999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["OPTIONS"],
+      "database_effects": [
+        "cycles: inherited read-only serializer save; submitted fields ignored; audit effects require source recording"
+      ],
+      "effects": [],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Legacy app routes use session authentication and allow_permission: active project ADMIN/MEMBER roles, or an active workspace ADMIN with any active project membership. App DELETE additionally requires active workspace membership before its created_by grant; that creator grant can apply without an active project membership. API v1 uses API-key authentication and ProjectEntityPermission; the app workspace-admin fallback does not apply. Missing and cross-scope behavior is captured per operation.",
+          "source": "apps/api/plane/app/permissions/base.py; apps/api/plane/utils/permissions/project.py"
+        },
+        {
+          "when": "Legacy PUT serializer",
+          "observable": "Inherited update instantiates CycleSerializer, whose fields are all read-only; it behaves as a no-op. Verify whether save/update audit effects and task publication occur, independently from custom PATCH.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/app/serializers/cycle.py"
+        },
+        {
+          "when": "Inherited PUT by an active guest member",
+          "observable": "Any active joined project member may use inherited PUT, including a guest. CycleSerializer exposes read-only fields: the submitted changes are ignored, the row is saved with audit effects, and no model_activity task is published.",
+          "source": "apps/api/plane/app/views/cycle/base.py; apps/api/plane/app/views/base.py; apps/api/plane/app/serializers/cycle.py"
+        },
+        {
+          "when": "Archived project",
+          "observable": "The app queryset excludes archived projects. Inherited PUT returns 404; PATCH fixes the source missing-row crash to return 404 with Cycle not found. Neither mutates the cycle or queues a domain task.",
+          "source": "apps/api/plane/app/views/cycle/base.py::CycleViewSet.get_queryset"
+        },
+        {
+          "when": "Actor timezone differs from project timezone",
+          "observable": "Serializer dates and activity current_instance use the actor timezone; app values responses use project timezone. App datetime input is parsed in actor timezone before extracting the project-local day.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin; apps/api/plane/api/views/base.py::TimezoneMixin; apps/api/plane/app/serializers/cycle.py::CycleWriteSerializer"
+        }
+      ],
+      "source": "apps/api/plane/app/views/cycle/base.py",
+      "operation_id": "put_api_workspaces_by_slug_projects_by_project_id_cycles_by_pk",
+      "documented_query_parameters": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-detail-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-options-detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-put-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-put-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-put-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-put-detail-readonly-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle/app-put-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-detail-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-options-detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-put-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-put-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-put-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-put-detail-readonly-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/cycle_lifecycle_corrected/app-put-guest.json"
+      ],
+      "request_body": true,
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 403, 404],
+      "recorded_source_statuses": [200, 400, 401, 404],
+      "recorded_target_statuses": [200, 400, 401, 404]
+    }
+  },
+  "effect_contracts": {
+    "django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.webhook_task.model_activity",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/cycle_lifecycle_middleware_test.go::TestCycleLifecycleProductionMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["fields", "expand", "order_by"],
+    "evidence": "apps/api/plane/tests/parity/test_cycle_lifecycle_recorder.py",
+    "auth_probes": {
+      "django-session": "/api/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/",
+      "api-key": "/api/v1/workspaces/cycle-lifecycle-fixture/projects/00000000-0000-4000-8000-000000019603/cycles/"
+    },
+    "environment": "Pinned Django plus the accepted source correction patch, pinned baseline Go/proxy and staged candidate Go/proxy use two separately seeded PostgreSQL clones, Redis10/11 and dedicated RabbitMQ vhosts. DEBUG=False is asserted. Missing cycle detail samples and invalid empty writes keep the matrix repeatable; successful writes and durable effects are covered by fixture replay."
+  },
+  "scope_decisions": [
+    "legacy missing PATCH returns 404",
+    "draft archive returns 400",
+    "completed PATCH applies only filtered sort_order and serializes/publishes model_activity requested_data containing only effective filtered fields",
+    "legacy archived-item pk aliases work",
+    "legacy archived collection mutation without an ID returns 400 after authorization with {error: Cycle ID is required}",
+    "API v1 guest denial remains, including guest owner",
+    "legacy PUT uses inherited all-read-only CycleSerializer and is a no-op; verify save/audit effects independently",
+    "v1 update exposes sort_order and preserves existing owned_by when omitted; completed-cycle duplicate checks use effective filtered fields",
+    "legacy create/PATCH treat deleted_at, created_by and updated_by as read-only; preserve actor auditing and original creator-based DELETE permission"
+  ],
+  "operation_count": 16,
+  "selected_inventory_state": "Django only",
+  "shared_domain": "apps/go-api/internal/cyclereads",
+  "shared_authentication_evidence": {
+    "policy": "Operation fixtures cover valid principals and denials; invalid API key is represented by v1 create. Inactive project memberships retain the authenticated principal kind and exercise role checks in both PATCH stacks. Shared session/token validation is reused, not multiplied across every operation.",
+    "files": [
+      "apps/go-api/cycle_lifecycle_test.go",
+      "apps/go-api/internal/authentication/djangosession/validator_test.go",
+      "apps/go-api/internal/authentication/apikey/validator_test.go"
+    ],
+    "production_transport": "Pending candidate mount tests and final production-proxy differential receipt."
+  },
+  "serializer_field_contract": "docs/go-backend-replacement/evidence/cycle-lifecycle/source-serializer-fields.json"
+}

@@ -1,0 +1,396 @@
+{
+  "version": 1,
+  "family": "user_account_writes",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "Twenty immutable source fixtures cover all four successful writes, anonymous 401s, invalid/timezone 400s, three pristine non-object body cases including two email-handler crashes, the email-verification 429 throttle, and cache, session, database, and Celery effects. Two separately captured corrected fixtures replace only the documented email-handler 500 responses with typed 400 validation responses.",
+  "operation_count": 4,
+  "source_files": [
+    "apps/api/plane/app/urls/user.py",
+    "apps/api/plane/app/views/user/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/serializers/user.py",
+    "apps/api/plane/authentication/rate_limit.py",
+    "apps/api/plane/authentication/utils/host.py",
+    "apps/api/plane/bgtasks/user_deactivation_email_task.py",
+    "apps/api/plane/bgtasks/user_email_update_task.py",
+    "apps/api/plane/license/models/instance.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/session.py",
+    "apps/api/plane/db/models/user.py",
+    "apps/api/plane/db/models/workspace.py",
+    "apps/api/plane/utils/host.py"
+  ],
+  "fixture_count": 20,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/user-account-writes/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/user-account-writes/source-hashes.json",
+  "operations": {
+    "patch_api_users_me": {
+      "operation_id": "patch_api_users_me",
+      "method": "PATCH",
+      "path": "/api/users/me/",
+      "sample_path": "/api/users/me/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "statuses": [200, 400, 401],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "source_branches": [
+        {
+          "when": "authenticated partial profile update",
+          "observable": "Applies UserSerializer as a partial update to the authenticated user and returns UserMeSerializer output. The captured first_name update changes only the users row.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.partial_update"
+        },
+        {
+          "when": "anonymous request",
+          "observable": "The session-protected user route rejects requests without an authenticated user with HTTP 401.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet.permission_classes"
+        },
+        {
+          "when": "invalid first_name",
+          "observable": "Serializer validation rejects a value longer than the model field limit without changing the user row.",
+          "source": "apps/api/plane/app/serializers/user.py::UserSerializer"
+        },
+        {
+          "when": "top-level JSON list",
+          "observable": "The user serializer rejects a non-dictionary body with HTTP 400 and leaves the user unchanged.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.partial_update"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/patch-me.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/anonymous-patch-me.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-patch-me-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-patch-me.json"
+      ],
+      "database_effects": ["users fields accepted by UserSerializer"],
+      "effects": []
+    },
+    "delete_api_users_me": {
+      "operation_id": "delete_api_users_me",
+      "method": "DELETE",
+      "path": "/api/users/me/",
+      "sample_path": "/api/users/me/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "statuses": [204, 400, 401],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "source_branches": [
+        {
+          "when": "eligible authenticated user deactivates account",
+          "observable": "Deactivates active project/workspace memberships when allowed, removes workspace invitations and sessions, resets profile onboarding fields, replaces the password, marks the user inactive, records logout metadata, and enqueues the deactivation email. Instance admins and sole project/workspace admins receive 400 before mutation.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.deactivate"
+        },
+        {
+          "when": "anonymous request",
+          "observable": "The session-protected user route rejects requests without an authenticated user with HTTP 401.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet.permission_classes"
+        },
+        {
+          "when": "authenticated OPTIONS with invalid timezone",
+          "observable": "Timezone initialization occurs before the OPTIONS handler and returns HTTP 400 for an invalid configured timezone.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial"
+        },
+        {
+          "when": "instance administrator attempts deactivation",
+          "observable": "The endpoint returns HTTP 400 before mutating the user or profile.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.deactivate"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/deactivate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/anonymous-deactivate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/options-deactivate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-deactivate.json"
+      ],
+      "database_effects": [
+        "users",
+        "profiles",
+        "project_members",
+        "workspace_members",
+        "workspace_member_invites",
+        "sessions"
+      ],
+      "effects": ["plane.bgtasks.user_deactivation_email_task.user_deactivation_email"]
+    },
+    "patch_api_users_me_email": {
+      "operation_id": "patch_api_users_me_email",
+      "method": "PATCH",
+      "path": "/api/users/me/email/",
+      "sample_path": "/api/users/me/email/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "statuses": [200, 400, 401, 500],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "source_branches": [
+        {
+          "when": "email, uniqueness, and verification checks",
+          "observable": "Normalizes the requested address, rejects invalid/current/duplicate addresses, requires a matching unexpired per-user verification code, checks uniqueness again before updating, then changes email and clears is_email_verified.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.update_email"
+        },
+        {
+          "when": "successful update effects",
+          "observable": "Deletes the magic_email_update_<user-id>_<email> cache entry, logs out the current session (including expiring its browser cookie), enqueues confirmation email tasks for both the new and previous addresses, and returns UserMeSerializer output.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.update_email"
+        },
+        {
+          "when": "anonymous request",
+          "observable": "The session-protected user route rejects requests without an authenticated user with HTTP 401.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet.permission_classes"
+        },
+        {
+          "when": "authenticated OPTIONS with invalid timezone",
+          "observable": "Timezone initialization occurs before the OPTIONS handler and returns HTTP 400 for an invalid configured timezone.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial"
+        },
+        {
+          "when": "invalid email address",
+          "observable": "Email validation returns HTTP 400 before reading or deleting the verification cache entry or changing the user.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint._validate_new_email"
+        },
+        {
+          "when": "top-level JSON array reaches the handler",
+          "observable": "The pristine endpoint crashes while calling .get on request.data; the separately corrected source validates the top-level JSON type and returns HTTP 400 with the existing missing-email validation response, without changing rows, cache, or queue state. The corrected response and unchanged effect snapshots are captured separately.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.update_email",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-update-email-list.json",
+          "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-update-email-list.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/update-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/anonymous-update-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/options-update-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-update-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-update-email-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-update-email-list.json"
+      ],
+      "database_effects": ["users.email", "users.is_email_verified", "sessions"],
+      "effects": [
+        "cache delete: magic_email_update_<user-id>_<email>",
+        "plane.bgtasks.user_email_update_task.send_email_update_confirmation:new-email",
+        "plane.bgtasks.user_email_update_task.send_email_update_confirmation:old-email"
+      ],
+      "status_note": "Pristine source raises HTTP 500 on a JSON list because the action calls .get on request.data. The corrected source validates the top-level body before reading fields and returns HTTP 400 with the endpoint’s existing validation envelope; the response and no-effect projection are replayed from the corrected fixture."
+    },
+    "post_api_users_me_email_generate_code": {
+      "operation_id": "post_api_users_me_email_generate_code",
+      "method": "POST",
+      "path": "/api/users/me/email/generate-code/",
+      "sample_path": "/api/users/me/email/generate-code/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session"],
+      "statuses": [200, 400, 401, 429, 500],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "source_branches": [
+        {
+          "when": "email verification code generation",
+          "observable": "Applies the per-user EmailVerificationThrottle (3 requests per hour), normalizes and validates a distinct available address, generates a six-digit code, stores JSON text {token:<code>} at magic_email_update_<user-id>_<email> for 600 seconds, enqueues one email task, and returns a success message. Invalid addresses create no code or task.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.generate_email_verification_code; apps/api/plane/authentication/rate_limit.py::EmailVerificationThrottle"
+        },
+        {
+          "when": "anonymous request",
+          "observable": "The session-protected user route rejects requests without an authenticated user with HTTP 401.",
+          "source": "apps/api/plane/app/views/base.py::BaseViewSet.permission_classes"
+        },
+        {
+          "when": "authenticated OPTIONS with invalid timezone",
+          "observable": "Timezone initialization occurs before the OPTIONS handler and returns HTTP 400 for an invalid configured timezone.",
+          "source": "apps/api/plane/app/views/base.py::TimezoneMixin.initial"
+        },
+        {
+          "when": "invalid email address",
+          "observable": "Email validation returns HTTP 400 without creating a cache entry or task.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint._validate_new_email"
+        },
+        {
+          "when": "fourth code request in one hour",
+          "observable": "EmailVerificationThrottle rejects the request with HTTP 429 and creates no additional email task.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.get_throttles; apps/api/plane/authentication/rate_limit.py::EmailVerificationThrottle"
+        },
+        {
+          "when": "top-level JSON array reaches the handler",
+          "observable": "The pristine endpoint crashes while calling .get on request.data; the separately corrected source validates the top-level JSON type and returns HTTP 400 with the existing missing-email validation response, without changing rows, cache, or queue state. The corrected response and unchanged effect snapshots are captured separately.",
+          "source": "apps/api/plane/app/views/user/base.py::UserEndpoint.generate_email_verification_code",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-generate-email-code-list.json",
+          "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-generate-email-code-list.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/generate-email-code.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/anonymous-generate-email-code.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/options-generate-email-code.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-generate-email-code.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/generate-email-code-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-generate-email-code-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-generate-email-code-list.json"
+      ],
+      "database_effects": [],
+      "effects": [
+        "cache set: magic_email_update_<user-id>_<email> with JSON string value and 600-second TTL",
+        "plane.bgtasks.user_email_update_task.send_email_update_magic_code"
+      ],
+      "status_note": "Pristine source raises HTTP 500 on a JSON list because the action calls .get on request.data. The corrected source validates the top-level body before reading fields and returns HTTP 400 with the endpoint’s existing validation envelope; the response and no-effect projection are replayed from the corrected fixture."
+    }
+  },
+  "effect_contracts": {
+    "cache delete: magic_email_update_<user-id>_<email>": {
+      "kind": "redis-delete",
+      "key": "magic_email_update_<user-id>_<normalized-email>",
+      "auth_profile": "django-session",
+      "name": "email-verification-cache",
+      "payload_fields": ["key"]
+    },
+    "cache set: magic_email_update_<user-id>_<email> with JSON string value and 600-second TTL": {
+      "kind": "redis-set",
+      "key": "magic_email_update_<user-id>_<normalized-email>",
+      "value": "JSON text containing a six-digit token",
+      "ttl_seconds": 600,
+      "auth_profile": "django-session",
+      "name": "email-verification-cache",
+      "payload_fields": ["key", "value", "ttl_seconds"]
+    },
+    "plane.bgtasks.user_email_update_task.send_email_update_magic_code": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.user_email_update_task.send_email_update_magic_code",
+      "payload_fields": ["args", "kwargs"],
+      "task_args": ["normalized-email", "six-digit-code"],
+      "delivery_mode": 2,
+      "routing_key": "celery",
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.user_email_update_task.send_email_update_confirmation:new-email": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.user_email_update_task.send_email_update_confirmation",
+      "payload_fields": ["args", "kwargs"],
+      "task_args": ["new-email"],
+      "delivery_mode": 2,
+      "routing_key": "celery",
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.user_email_update_task.send_email_update_confirmation:old-email": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.user_email_update_task.send_email_update_confirmation",
+      "payload_fields": ["args", "kwargs"],
+      "task_args": ["old-email"],
+      "delivery_mode": 2,
+      "routing_key": "celery",
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.user_deactivation_email_task.user_deactivation_email": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.user_deactivation_email_task.user_deactivation_email",
+      "payload_fields": ["args", "kwargs"],
+      "delivery_mode": 2,
+      "routing_key": "celery",
+      "auth_profile": "django-session"
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "entry_effect_scope": {
+    "database": "users, profiles, sessions, and relevant project/workspace membership rows",
+    "cache": "email code value and TTL; verification throttle key",
+    "queue": "durable Celery task identity, delivery mode, routing, and positional args"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": [],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/user_account_writes_integration_test.go::TestUserAccountWritesFixturesReplayAgainstGo (corrected fixture overrides for the two documented array cases)",
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["post_api_users_me_email_generate_code:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "7a0125e81c083671ffc459474702b10acb1253ab947d6080235045819f6f93db"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["patch_api_users_me_email:canonical:PATCH"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "ede25f94779b32726e2f1efb1d50b08305eb6e3148beb8d734fb97ec819903d8"
+        }
+      }
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/user_account_writes_http_test.go::TestUserAccountWritesProductionMiddlewareEvidence",
+  "corrected_fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected",
+  "corrected_fixture_count": 2,
+  "source_bug_corrections": [
+    {
+      "operation_id": "post_api_users_me_email_generate_code",
+      "input": "JSON array []",
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-generate-email-code-list.json",
+      "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-generate-email-code-list.json",
+      "pristine_status": 500,
+      "corrected_status": 400,
+      "response_projection": {
+        "error": "Email is required"
+      },
+      "database_changes": [],
+      "cache_changes": [],
+      "task_effects": [],
+      "correction": "Validate the top-level JSON value before reading email. Return the existing missing-email validation response instead of exposing the AttributeError as HTTP 500."
+    },
+    {
+      "operation_id": "patch_api_users_me_email",
+      "input": "JSON array []",
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/invalid-update-email-list.json",
+      "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/user_account_writes/corrected/invalid-update-email-list.json",
+      "pristine_status": 500,
+      "corrected_status": 400,
+      "response_projection": {
+        "error": "Invalid email format"
+      },
+      "database_changes": [],
+      "cache_changes": [],
+      "task_effects": [],
+      "correction": "Validate the top-level JSON value before reading email or code. Return the existing invalid-email validation response instead of exposing the AttributeError as HTTP 500."
+    }
+  ],
+  "corrected_source_receipt": "docs/go-backend-replacement/evidence/user-account-writes/source-counters-corrected.json",
+  "source_runtime_evidence": {
+    "pristine_baseline": {
+      "receipt": "docs/go-backend-replacement/evidence/user-account-writes/source-20261022T121222Z.log.exit",
+      "cases": 18,
+      "status": "passed"
+    },
+    "pristine_added_cases": {
+      "capture": "docs/go-backend-replacement/evidence/user-account-writes/source-20261022T124628Z.log.exit",
+      "verification": "docs/go-backend-replacement/evidence/user-account-writes/source-20261022T124925Z.log.exit",
+      "cases": 2,
+      "status": "passed"
+    },
+    "corrected_added_cases": {
+      "capture": "docs/go-backend-replacement/evidence/user-account-writes/source-20261022T124657Z.log.exit",
+      "verification": "docs/go-backend-replacement/evidence/user-account-writes/source-20261022T124916Z.log.exit",
+      "cases": 2,
+      "status": "passed"
+    }
+  },
+  "shared_transport_evidence": "The pristine OPTIONS fixtures options-patch-me and options-deactivate retain Django’s raw Allow value (PATCH, DELETE, OPTIONS) for its invalid-timezone metadata response. The production proxy composes this family with the already retired GET/HEAD owner on /api/users/me/, so canonical production OPTIONS returns Allow: GET, PATCH, DELETE, HEAD, OPTIONS on both baseline and candidate. The production-proxy differential compares that composed response; it does not rewrite either source fixture or treat the raw Django Allow value as the production-proxy contract."
+}

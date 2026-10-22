@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "source_revision": "9cb3baebc1baa06d4f6ae9d271a54c74acf1e065",
+  "source_snapshot": "plane-cycle-lifecycle-source:/code/plane (pinned pristine Django at 9cb3baebc1baa06d4f6ae9d271a54c74acf1e065)",
+  "files": {
+    "plane.space.views.issue": {
+      "path": "/code/plane/space/views/issue.py",
+      "sha256": "cf69d891a6b352a5503a961e1dd13b228bc3ece4993d0807cb714a3cbefd36be"
+    },
+    "plane.space.views.intake": {
+      "path": "/code/plane/space/views/intake.py",
+      "sha256": "0f210037e035d03ac651bfc5973552e56a90d9b674f712cbb77fc000e7d0f8f4"
+    },
+    "plane.space.views.project": {
+      "path": "/code/plane/space/views/project.py",
+      "sha256": "43a3ebc6a7a14bafabf4f76eac9ef076bd1964d2c828ece3fcbf710dc22a83be"
+    }
+  }
+}

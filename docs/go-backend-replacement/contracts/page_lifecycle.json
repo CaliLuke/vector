@@ -1,0 +1,852 @@
+{
+  "version": 1,
+  "family": "page_lifecycle",
+  "source_files": [
+    "apps/api/plane/app/views/page/base.py",
+    "apps/api/plane/app/serializers/page.py",
+    "apps/api/plane/app/permissions/page.py",
+    "apps/api/plane/db/models/page.py",
+    "apps/api/plane/app/urls/page.py",
+    "apps/api/plane/db/models/base.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/utils/content_validator.py",
+    "apps/api/plane/bgtasks/page_transaction_task.py",
+    "apps/api/plane/bgtasks/page_version_task.py",
+    "apps/api/plane/bgtasks/copy_s3_object.py",
+    "apps/api/plane/bgtasks/deletion_task.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/middleware/request_body_size.py",
+    "apps/api/plane/middleware/logger.py"
+  ],
+  "operations": {
+    "post_api_workspaces_by_slug_projects_by_project_id_pages": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-archived-project-response-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-base64-binary-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-boolean-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-boolean-parent-existing-id-reaches-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-child-response-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-coerced-name-and-writable-json-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-description-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-empty-description-html-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-empty-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-empty-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-foreign-label-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-foreign-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-foreign-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-child-type-aggregation-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-composite-child-preserves-json-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-from-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-from-other-project-same-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-ids-project-ids-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-ids-project-ids-repeated-form.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-missing-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-project-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-shape-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-label-uuid-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-malformed-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-null-description-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-null-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-null-json-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-null-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-null-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-numeric-description-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-omitted-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-overlength-color.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-padded-html-form-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-parent-falsy-empty-list-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/create-parent-falsy-false-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-archived-project-response-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-base64-binary-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-boolean-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-boolean-parent-existing-id-reaches-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-child-response-lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-coerced-name-and-writable-json-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-description-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-empty-description-html-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-empty-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-empty-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-foreign-label-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-foreign-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-foreign-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-child-type-aggregation-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-composite-child-preserves-json-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-from-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-from-other-project-same-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-ids-project-ids-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-ids-project-ids-repeated-form.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-missing-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-project-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-shape-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-label-uuid-before-raw-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-malformed-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-null-description-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-null-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-null-json-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-null-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-null-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-numeric-description-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-omitted-metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-overlength-color.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-padded-html-form-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-parent-falsy-empty-list-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/create-parent-falsy-false-aggregate.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "POST parses request.data after project permission; PageSerializer validates writable metadata/labels. name is blank-allowed and has no required model default assertion. Workspace and owner are server-owned. description_html/json/binary come separately from raw request context, not PageBinaryUpdateSerializer. Preserve omitted versus null and JSON versus form behavior. Complete label list/UUID/workspace lookup validation and field-error collection precede raw description model context and the first write; combined invalid labels cannot be hidden by model-context errors. The inherited labels field aggregates indexed null/empty, boolean-type, malformed UUID and workspace-scoped missing-PK errors with other serializer fields. Missing-PK messages preserve the original integer or UUID text; all field validation finishes before persistence. PATCH retains its handler parent/access checks before serializer validation.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "201 PageDetailSerializer over the newly created page with is_favorite, label_ids and project_ids. Pristine collection lookup can return errors after persistence for child pages, archived projects, search exclusions or invalid order_by. The intentional correction projects the created page directly, so read collection filters cannot turn a successful write into an error. Foreign parent still rejects404 before any page, link or task write.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Create Page, requested ProjectPage and optional PageLabels; model defaults and distinct save versus bulk-create audit fields remain observable. Validate parent within requested workspace/project active link and labels within workspace (same-workspace labels from other projects remain valid).",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Handler and serializer phase boundary",
+          "observable": "Corrected create order: authorization, truthy raw parent scope lookup, serializer field/relation aggregation, raw description model context, transaction, durable effects. Raw parent lookup uses Django ORM UUID typing and a generic malformed-detail400 or absent-scoped-parent404. Nullable parent serializer validation is a separate phase, aggregates with name/labels, and preserves null/empty-string clearing. Composite relation errors use source-aware Python representation with original child JSON, preserving dictionary order and nested values.",
+          "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch; apps/api/plane/app/serializers/page.py; apps/api/plane/db/models/page.py"
+        }
+      ],
+      "effects": ["page-transaction"],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_pages",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/",
+      "recorded_source_statuses": [201, 400, 401, 403, 404, 500],
+      "recorded_corrected_statuses": [201, 400, 401, 403, 404, 500],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "POST",
+      "request_body": true,
+      "database_effects": [
+        "Create Page, requested ProjectPage and optional PageLabels; model defaults and distinct save versus bulk-create audit fields remain observable. Validate parent within requested workspace/project active link and labels within workspace (same-workspace labels from other projects remain valid)."
+      ],
+      "queued_jobs": ["plane.bgtasks.page_transaction_task.page_transaction"],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/delete-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/delete-archived-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/delete-public-member-unarchived-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/delete-unarchived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/public-owner-member-role-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/delete-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/delete-archived-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/delete-public-member-unarchived-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/delete-unarchived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/public-owner-member-role-delete.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "DELETE ignores request body. ProjectPagePermission checks owner or public ADMIN before handler. Handler first requires archived_at; otherwise 400 {error: The page should be archived before deleting}. Then owner/admin delete authorization.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "204 empty on success. Private nonowner, absent page/link/member and public nonadmin are permission denials before handler-level validation. Preserve owner role shortcut.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Detach direct children scoped to workspace/requested project; Page instance soft-delete saves audit fields and publishes recursive deletion task. Then bulk-soft-delete favorites for entity_type=page and requested project/workspace and hard-delete matching entity_name=page recent visits. Bulk updates do not call model save or rewrite audit fields.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": ["page-soft-delete"],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/",
+      "recorded_source_statuses": [204, 400, 401, 403],
+      "recorded_corrected_statuses": [204, 400, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "DELETE",
+      "request_body": false,
+      "database_effects": [
+        "Detach direct children scoped to workspace/requested project; Page instance soft-delete saves audit fields and publishes recursive deletion task. Then bulk-soft-delete favorites for entity_type=page and requested project/workspace and hard-delete matching entity_name=page recent visits. Bulk updates do not call model save or rewrite audit fields."
+      ],
+      "queued_jobs": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/member-with-inactive-workspace-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/member-without-workspace-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/missing-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-access-invalid-choice-nonowner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-access-string-zero-nonowner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-ancestor-parent-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-api-key-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-asia-kolkata-response-timestamps.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-boolean-parent-before-invalid-field.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-boolean-parent-existing-id-reaches-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-cycle-through-deleted-intermediate-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-cycle-through-unlinked-same-workspace-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-descendant-parent-cycle-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-empty-metadata-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-empty-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-label-child-type-aggregation-with-name-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-label-composite-child-preserves-json-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-label-from-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-labels-populated-audit-actors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-locked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-malformed-parent-before-invalid-field.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-member-access-change.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-blank-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-html-padded-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-html-page-transaction.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-html-truthiness-nonzero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-html-truthiness-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-metadata-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-missing-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-null-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-null-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-numeric-parent-existing-descendant-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-numeric-parent-existing-id-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-owner-invalid-access-choice.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-parent-falsy-empty-dict-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-parent-falsy-zero-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-reparent-valid-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-self-parent-cycle-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/patch-self-parent-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/member-with-inactive-workspace-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/member-without-workspace-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/missing-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-access-invalid-choice-nonowner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-access-string-zero-nonowner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-ancestor-parent-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-api-key-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-asia-kolkata-response-timestamps.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-boolean-parent-before-invalid-field.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-boolean-parent-existing-id-reaches-serializer.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-cycle-through-deleted-intermediate-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-cycle-through-unlinked-same-workspace-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-descendant-parent-cycle-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-empty-metadata-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-empty-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-label-child-type-aggregation-with-name-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-label-composite-child-preserves-json-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-label-from-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-labels-populated-audit-actors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-locked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-malformed-parent-before-invalid-field.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-member-access-change.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-blank-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-html-padded-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-html-page-transaction.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-html-truthiness-nonzero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-html-truthiness-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-metadata-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-missing-parent-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-null-labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-null-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-numeric-parent-existing-descendant-cycle.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-numeric-parent-existing-id-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-owner-invalid-access-choice.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-parent-falsy-empty-dict-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-parent-falsy-zero-aggregate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-reparent-valid-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-self-parent-cycle-before-invalid-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/patch-self-parent-cycle.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "PATCH: permission, scoped page lookup, locked check, optional scoped parent lookup, owner-only access-change check, then partial PageDetailSerializer. Locked returns 400 {error: Page is locked}; missing parent uses source 400 ownership-message envelope. Corrected self/ancestor cycle validation traverses the same-workspace parent graph, including unlinked intermediate nodes. Parent view lookup follows raw Python truthiness. The ownership guard compares raw access with the stored integer before field coercion (numeric string differs from integer). Metadata HTML rejects blank; labels reject explicit null. The inherited labels field aggregates indexed null/empty, boolean-type, malformed UUID and workspace-scoped missing-PK errors with other serializer fields. Missing-PK messages preserve the original integer or UUID text; all field validation finishes before persistence. PATCH retains its handler parent/access checks before serializer validation.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "200 PageDetailSerializer directly on saved instance: annotation-only is_favorite, label_ids and project_ids are absent unless source supplied those transient serializer attributes. Do not reuse read/list projection. Invalid access uses serializer choice errors; nonowner access changes return exact ownership message.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Apply only serializer writable metadata and description_html, replace labels through bulk soft-delete/create, then model save. No description_json/binary update through this metadata serializer. PATCH empty payload still saves/audits the page. Corrected label lookup scopes workspace before mutation. Labels-only and ignored-field-only input also save the page. New label rows inherit the page's pre-save creator/updater, including legitimate nulls; deleting old links changes only deleted_at. Transaction task presence and new HTML payload use the original request value, not trimmed/coerced storage text.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Handler and serializer phase boundary",
+          "observable": "Corrected PATCH order: permission/scoped page, lock, truthy raw parent lookup, raw access ownership guard, cycle detection, serializer field/relation aggregation, transaction, durable effects. Cycle detection traverses all same-workspace pages, including deleted or unlinked intermediate rows; the submitted parent itself still requires a live scoped page/link. Nullable parent serializer validation is separate from raw prechecks and aggregates typed relation errors with other fields. Composite relation errors use source-aware Python representation with original child JSON, preserving dictionary order and nested values.",
+          "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch; apps/api/plane/app/serializers/page.py; apps/api/plane/db/models/page.py"
+        }
+      ],
+      "effects": ["page-transaction"],
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/",
+      "recorded_source_statuses": [200, 400, 401, 403],
+      "recorded_corrected_statuses": [200, 400, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "PATCH",
+      "request_body": true,
+      "database_effects": [
+        "Apply only serializer writable metadata and description_html, replace labels through bulk soft-delete/create, then model save. No description_json/binary update through this metadata serializer. PATCH empty payload still saves/audits the page. Corrected label lookup scopes workspace before mutation. Labels-only and ignored-field-only input also save the page. New label rows inherit the page's pre-save creator/updater, including legitimate nulls; deleting old links changes only deleted_at. Transaction task presence and new HTML payload use the original request value, not trimmed/coerced storage text."
+      ],
+      "queued_jobs": ["plane.bgtasks.page_transaction_task.page_transaction"],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/access/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-member-change-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-member-same-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-owner-float-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-owner-invalid-choice.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-owner-null-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-owner-private-to-public.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/access-owner-string-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-member-change-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-member-same-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-owner-float-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-owner-invalid-choice.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-owner-null-value.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-owner-private-to-public.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/access-owner-string-value.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "POST parses request.data after page permission. Omitted access defaults 0. Nonowner cannot change existing access; same-value allowed. Corrected endpoint validates existing Page ACCESS_CHOICES through DRF ChoiceField, including accepted numeric strings, before persistence; invalid choice yields source-corrected 400 list envelope. After choice validation, the ownership comparison still uses the original raw request value, so a numeric string is not equal to the stored integer for a nonowner.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "204 empty. Existing nonowner access-change message is 400 {error: Access cannot be updated since this page is owned by someone else}. Permission denial precedes body parsing.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Save only access and normal model save/audit behavior; no domain task. Preserve omitted-access source branch separately from explicit same-value request.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": [],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/access/",
+      "recorded_source_statuses": [204, 400, 401, 403],
+      "recorded_corrected_statuses": [204, 400, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "POST",
+      "request_body": true,
+      "database_effects": [
+        "Save only access and normal model save/audit behavior; no domain task. Preserve omitted-access source branch separately from explicit same-value request."
+      ],
+      "queued_jobs": [],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unarchive-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unarchive-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unarchive-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unarchive-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unarchive-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unarchive-owner.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "DELETE ignores body. Nonowner public MEMBER fails permission403 before handler. Owner/admin permitted. Handler retains exact 400 {error: Only the owner or admin can un archive the page} branch where reachable.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "204 empty. If root parent is archived, detach root parent before recursive unarchive; repeat unarchive is allowed.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Parent detachment uses save(update_fields=[parent]); only that field persists despite model save hooks. Recursive SQL clears archived_at and preserves unrelated save audit columns. Corrected recursion is cycle-safe and scoped to workspace/requested active project links.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": [],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/archive/",
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_corrected_statuses": [204, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "DELETE",
+      "request_body": false,
+      "database_effects": [
+        "Parent detachment uses save(update_fields=[parent]); only that field persists despite model save hooks. Recursive SQL clears archived_at and preserves unrelated save audit columns. Corrected recursion is cycle-safe and scoped to workspace/requested active project links."
+      ],
+      "queued_jobs": [],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/archive-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/archive-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/archive-owner-tree.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/archive-self-cycle-statement-timeout.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/archive-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/archive-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/archive-owner-tree.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/archive-self-cycle-statement-timeout.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "POST ignores body. After page permission, nonowner active project role <=15 receives 400 {error: Only the owner or admin can archive the page}. Guests fail permission earlier; owner bypasses method role restriction.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "200 {archived_at: string(datetime.now())}; this response timestamp is separate from the DateField stored value. Corrected legacy cycles terminate successfully using UNION distinct IDs.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Bulk-soft-delete requested-project/workspace/page favorites, then recursive raw SQL sets archived_at. Corrected recursion mutates only same-workspace pages with active requested-project links. Raw SQL and bulk updates do not rewrite updated_at/updated_by; no queued task.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": [],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/archive/",
+      "recorded_source_statuses": [200, 400, 401, 500],
+      "recorded_corrected_statuses": [200, 400, 401],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "POST",
+      "request_body": false,
+      "database_effects": [
+        "Bulk-soft-delete requested-project/workspace/page favorites, then recursive raw SQL sets archived_at. Corrected recursion mutates only same-workspace pages with active requested-project links. Raw SQL and bulk updates do not rewrite updated_at/updated_by; no queued task."
+      ],
+      "queued_jobs": [],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-empty-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-empty-save-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-form-json-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-form-json-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-html-padded-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-html-truthiness-nonzero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-html-truthiness-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-invalid-base64.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-long-html-and-binary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-null-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-null-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-page-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-page-locked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-sanitized.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/description-unchanged-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-empty-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-empty-save-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-form-json-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-form-json-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-html-padded-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-html-truthiness-nonzero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-html-truthiness-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-invalid-base64.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-long-html-and-binary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-null-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-null-json-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-page-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-page-locked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-sanitized.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/description-unchanged-html.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "PATCH: permission then scoped public-or-owned page lookup; locked400 {error_code: PAGE_LOCKED code, error_message: PAGE_LOCKED} before archived400 PAGE_ARCHIVED. PageBinaryUpdateSerializer accepts only description_binary/html/json; binary and HTML allow empty but not null, JSON allows null. Use existing shared base64/content validators and sanitizer. HTML and base64 serializer fields have no 255-character cap; the existing content-size validators apply. Description JSON uses DRF JSONField form parsing, unlike create's raw context.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "200 {message: Updated successfully}, never page detail. Reject malformed binary and disallowed HTML before save/tasks. Preserve empty, unchanged, omitted and null behavior.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Save validated description fields and model-derived stripped HTML; no metadata/access/labels mutation. After every successful serializer save publish track_page_version, including empty/unchanged input. Only truthy raw description_html also publishes page_transaction first; task uses raw new HTML while stored HTML may be sanitized. Version task receives JSON string of old HTML.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": ["page-transaction", "page-version"],
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/description/",
+      "recorded_source_statuses": [200, 400, 401],
+      "recorded_corrected_statuses": [200, 400, 401],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "PATCH",
+      "request_body": true,
+      "database_effects": [
+        "Save validated description fields and model-derived stripped HTML; no metadata/access/labels mutation. After every successful serializer save publish track_page_version, including empty/unchanged input. Only truthy raw description_html also publishes page_transaction first; task uses raw new HTML while stored HTML may be sanitized. Version task receives JSON string of old HTML."
+      ],
+      "queued_jobs": [
+        "plane.bgtasks.page_transaction_task.page_transaction",
+        "plane.bgtasks.page_version_task.track_page_version"
+      ],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/duplicate/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-authorized-second-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-cross-project-link.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-private-non-owner-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-private-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/duplicate-public.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/private-owner-guest-role-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-authorized-second-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-cross-project-link.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-private-non-owner-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-private-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/duplicate-public.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/private-owner-guest-role-duplicate.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "POST ignores request body. Active membership/link then owner bypass or public ADMIN/MEMBER; private nonowner denied. Corrected extra project links require active ADMIN/MEMBER role and matching Page, ProjectPage and Project workspace. Retain requested project for authorized owner/guest shortcut.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "201 PageDetailSerializer with project_ids annotation, no is_favorite or label_ids annotation. Name gains \" (Copy)\"; new owner is caller; binary clears, other copied model state remains.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Duplicate Page and authorized project links; do not copy PageLabel rows. Preserve source instance-save creation/audit semantics. Publish page_transaction with original HTML/null old value, then asset-copy task with new page ID and stable requested project ID (correcting loop-variable leakage).",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": ["page-transaction", "page-copy-assets"],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/duplicate/",
+      "recorded_source_statuses": [201, 401, 403],
+      "recorded_corrected_statuses": [201, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "POST",
+      "request_body": false,
+      "database_effects": [
+        "Duplicate Page and authorized project links; do not copy PageLabel rows. Preserve source instance-save creation/audit semantics. Publish page_transaction with original HTML/null old value, then asset-copy task with new page ID and stable requested project ID (correcting loop-variable leakage)."
+      ],
+      "queued_jobs": [
+        "plane.bgtasks.page_transaction_task.page_transaction",
+        "plane.bgtasks.copy_s3_object.copy_s3_objects_of_description_and_assets"
+      ],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unlock-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unlock-public-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/unlock-public-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unlock-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unlock-public-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/unlock-public-owner.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "DELETE ignores body; owner shortcut or public ADMIN after scoped membership/link permission. Public nonowner MEMBER denied403.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "204 empty; repeated unlock still performs save.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Set is_locked=false and call model save semantics, including stripped HTML/audit updates. No domain task.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": [],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/lock/",
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_corrected_statuses": [204, 401, 403],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "DELETE",
+      "request_body": false,
+      "database_effects": [
+        "Set is_locked=false and call model save semantics, including stripped HTML/audit updates. No domain task."
+      ],
+      "queued_jobs": [],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock": {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/lock/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/lock-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/lock-public-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/lock-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/lock-public-member.json"
+      ],
+      "source_branches": [
+        {
+          "when": "Authentication and authorization precedence",
+          "observable": "Session authentication and ProjectPagePermission precede TimezoneMixin activation; timezone validation then precedes method dispatch/body parsing. Active project membership is required; when page_id is present, an active scoped ProjectPage is also required; missing page/link denies403. Private nonowner denied. Owner (public or private) bypasses method role restriction only after membership checks. Public POST/PATCH require ADMIN/MEMBER; DELETE requires ADMIN. Corrected writes additionally require active workspace membership.",
+          "source": "apps/api/plane/app/permissions/page.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        },
+        {
+          "when": "Body parsing and validation",
+          "observable": "POST ignores body; owner shortcut or public ADMIN/MEMBER after scoped membership/link permission. Private nonowner and public guest denied.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Response and error shape",
+          "observable": "204 empty; repeated lock still performs save.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/app/serializers/page.py"
+        },
+        {
+          "when": "Database changes",
+          "observable": "Set is_locked=true and call model save semantics, including stripped HTML/audit updates. No domain task.",
+          "source": "apps/api/plane/app/views/page/base.py; apps/api/plane/db/models/page.py; apps/api/plane/db/mixins.py; apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+        }
+      ],
+      "effects": [],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock",
+      "source": "apps/api/plane/app/views/page/base.py",
+      "sample_path": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/71000000-0000-4000-8000-000000000010/lock/",
+      "recorded_source_statuses": [204, 401],
+      "recorded_corrected_statuses": [204, 401],
+      "evidence_status": "Expanded source fixtures captured; repaired candidate focused replay passed. Final release proof pending.",
+      "method": "POST",
+      "request_body": false,
+      "database_effects": [
+        "Set is_locked=true and call model save semantics, including stripped HTML/audit updates. No domain task."
+      ],
+      "queued_jobs": [],
+      "protocol_note": "Existing page_reads owns OPTIONS on collection, detail and description. This batch adds four action companions; shared paths assign OPTIONS once, to the listed owning operation."
+    }
+  },
+  "source_revision": "ff7493a5100564110700a0f153fc6037a4ef6781",
+  "operation_count": 10,
+  "characterization_status": "Retired and pushed in52e1be5bbd5ddee80672e3ccd1acb0cffb3be7f4. Final154-case strict parity and181-case differential pass; all ten proof steps and four final review scopes pass on reviewed tree3399f8845c945138ad966850db252e3edab08d49. All308 fixture hashes verified; corrected oracle, source, effects and focused regression evidence retained.",
+  "effect_contracts": {
+    "page-transaction": {
+      "auth_profile": "django-session",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.page_transaction_task.page_transaction",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "page-version": {
+      "auth_profile": "django-session",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.page_version_task.track_page_version",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "page-copy-assets": {
+      "auth_profile": "django-session",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.copy_s3_object.copy_s3_objects_of_description_and_assets",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "page-soft-delete": {
+      "auth_profile": "django-session",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "approved_corrections": [
+    {
+      "decision": "Require active workspace membership for lifecycle writes before owner shortcut.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Reject foreign-workspace labels on create and PATCH; retain same-workspace other-project labels.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Validate create parent in requested workspace/project before any persistent effect.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Validate dedicated access action using existing 0/1 ChoiceField.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Duplicate only requested and authorized active same-workspace project links; asset task targets requested project.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Archive recursion uses distinct IDs and scopes mutations to workspace/project; new parent cycles rejected using same-workspace graph, including unlinked intermediate pages.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Treat label_ids/project_ids as read-only serializer outputs; corrected source ignores supplied annotation values instead of raising a create-time crash.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch"
+    },
+    {
+      "decision": "Return the newly created page after a valid create, independently of collection root-only, archived-project, search and order_by filters. Preserve authorization and parent scope checks before writes.",
+      "source": "apps/api/plane/tests/parity/page_lifecycle_corrected_source.patch",
+      "decision_basis": "Integration owner default, stated in the conversation after optional clarification, applying the user's earlier direction not to preserve clear bugs; not a new explicit user answer."
+    }
+  ],
+  "shared_contract_evidence": [
+    "Existing session authentication/invalid-session, UTF-8 JSON, CSRF, CORS and parser compatibility tests are reused; do not multiply identical transport permutations per operation.",
+    "The 128-case pristine and corrected indexes include active-family anonymous denials, source action OPTIONS metadata, invalid-user-timezone snapshots, PageSerializer annotation field metadata/coercion, and an Asia/Kolkata timestamp/instant fixture. See the source fixture indexes and corrected-source patch.",
+    "Page writes also preserve the global conditional process_logs audit for nonempty X-Api-Key, including denied requests. Header-absent ordinary session requests emit no API audit. The production mount must apply the existing request-size boundary before authentication; a manually composed test stack is not mount evidence.",
+    "Create ignores collection-only search/order_by query values under the recorded successful-create correction. Pristine and corrected Django probes preserve the response, persistence and task difference; these are not generated write parameters."
+  ],
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["fields", "order_by", "cursor", "per_page"],
+    "auth_probes": {
+      "django-session": "/api/workspaces/page-lifecycle-fixture/projects/71000000-0000-4000-8000-000000000001/pages/"
+    },
+    "evidence": "apps/api/plane/tests/parity/test_page_lifecycle_recorder.py",
+    "evidence_status": "Pending stable source/candidate proxy comparison; use non-mutating probe requests as defined by the differential runner."
+  },
+  "permission_classes_before_timezone": true,
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/page_lifecycle_middleware_test.go::TestPageLifecycleProductionWriteTransportBoundary",
+  "source_fixtures": {
+    "directory": "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle",
+    "count": 154,
+    "index": "apps/api/plane/tests/parity/.page_lifecycle_source_hashes_pristine.json",
+    "index_sha256": "8cab81a55d5ac364c293ab3715f370385e2538b05bb8d79cc40b90f8eba5f6b0"
+  },
+  "corrected_fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected",
+  "corrected_fixture_count": 154,
+  "corrected_fixture_index": "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected_index.json",
+  "corrected_fixture_index_sha256": "e7030bff123c74327014849f50e3a3ab159dc540e5040e5ee4e8f5e78da26892",
+  "source_fixture_format": "DjangoFixtureRecorder schema_version 1; pristine and corrected request/response, DB delta, and durable Celery effects. Corrected source keeps label_ids/project_ids read-only; pristine create-crash fixtures are preserved."
+}

@@ -1,0 +1,109 @@
+{
+  "database": {
+    "after": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#111111"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#ffffff"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "id": "<uuid-2>",
+          "name": "Light",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#111111"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "workspace_themes"
+    ],
+    "expected_changed_tables": [
+      "workspace_themes"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "colors": {
+        "primary": "#ffffff"
+      },
+      "name": "Light"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/parity-theme/workspace-themes/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "actor": "<uuid-1>",
+      "colors": {
+        "primary": "#ffffff"
+      },
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "id": "<uuid-2>",
+      "name": "Light",
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-3>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 201
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "create"
+  }
+}

@@ -1,0 +1,324 @@
+components:
+  schemas: {}
+  securitySchemes:
+    ApiKeyAuth:
+      description: Plane API token authentication.
+      in: header
+      name: X-Api-Key
+      type: apiKey
+    DjangoCsrfCookie:
+      description: Django CSRF cookie for unsafe standard-session requests.
+      in: cookie
+      name: csrftoken
+      type: apiKey
+    DjangoCsrfHeader:
+      description: Django CSRF header for unsafe standard-session requests.
+      in: header
+      name: X-CSRFToken
+      type: apiKey
+    DjangoSessionCookie:
+      description: Standard Django session authentication.
+      in: cookie
+      name: session-id
+      type: apiKey
+    PlaneAdminSessionCookie:
+      description: Plane instance-administration session authentication without CSRF enforcement.
+      in: cookie
+      name: admin-session-id
+      type: apiKey
+    PlaneSessionCookie:
+      description: Plane session authentication without CSRF enforcement.
+      in: cookie
+      name: session-id
+      type: apiKey
+info:
+  description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact
+    does not change the public /api/v1 schema.
+  title: Plane Internal Django Migration API
+  version: 1.0.0
+openapi: 3.1.0
+paths: {}
+servers:
+- description: Local
+  url: http://localhost:8000
+- description: Production
+  url: https://api.plane.so
+tags:
+- description: '**File Upload & Presigned URLs**
+
+
+    Generate presigned URLs for direct file uploads to cloud storage. Handle user avatars, cover images, and generic project
+    assets with secure upload workflows.
+
+
+    *Key Features:*
+
+    - Generate presigned URLs for S3 uploads
+
+    - Support for user avatars and cover images
+
+    - Generic asset upload for projects
+
+    - File validation and size limits
+
+
+    *Use Cases:* User profile images, project file uploads, secure direct-to-cloud uploads.'
+  name: Assets
+- description: '**Sprint & Development Cycles**
+
+
+    Create and manage development cycles (sprints) to organize work into time-boxed iterations. Track progress, assign work
+    items, and monitor team velocity.
+
+
+    *Key Features:*
+
+    - Create and configure development cycles
+
+    - Assign work items to cycles
+
+    - Track cycle progress and completion
+
+    - Generate cycle analytics and reports
+
+
+    *Use Cases:* Sprint planning, iterative development, progress tracking, team velocity.'
+  name: Cycles
+- description: '**Work Item Intake Queue**
+
+
+    Manage incoming work items through a dedicated intake queue for triage and review. Submit, update, and process work items
+    before they enter the main project workflow.
+
+
+    *Key Features:*
+
+    - Submit work items to intake queue
+
+    - Review and triage incoming work items
+
+    - Update intake work item status and properties
+
+    - Accept, reject, or modify work items before approval
+
+
+    *Use Cases:* Work item triage, external submissions, quality review, approval workflows.'
+  name: Intake
+- description: '**Labels & Tags**
+
+
+    Create and manage labels to categorize and organize work items. Use color-coded labels for easy identification, filtering,
+    and project organization.
+
+
+    *Key Features:*
+
+    - Create custom labels with colors and descriptions
+
+    - Apply labels to work items for categorization
+
+    - Filter and search by labels
+
+    - Organize labels across projects
+
+
+    *Use Cases:* Priority marking, feature categorization, bug classification, team organization.'
+  name: Labels
+- description: '**Team Member Management**
+
+
+    Manage team members, roles, and permissions within projects and workspaces. Control access levels and track member participation.
+
+
+    *Key Features:*
+
+    - Invite and manage team members
+
+    - Assign roles and permissions
+
+    - Control project and workspace access
+
+    - Track member activity and participation
+
+
+    *Use Cases:* Team setup, access control, role management, collaboration.'
+  name: Members
+- description: '**Feature Modules**
+
+
+    Group related work items into modules for better organization and tracking. Plan features, track progress, and manage
+    deliverables at a higher level.
+
+
+    *Key Features:*
+
+    - Create and organize feature modules
+
+    - Group work items by module
+
+    - Track module progress and completion
+
+    - Manage module leads and assignments
+
+
+    *Use Cases:* Feature planning, release organization, progress tracking, team coordination.'
+  name: Modules
+- description: '**Project Management**
+
+
+    Create and manage projects to organize your development work. Configure project settings, manage team access, and control
+    project visibility.
+
+
+    *Key Features:*
+
+    - Create, update, and delete projects
+
+    - Configure project settings and preferences
+
+    - Manage team access and permissions
+
+    - Control project visibility and sharing
+
+
+    *Use Cases:* Project setup, team collaboration, access control, project configuration.'
+  name: Projects
+- description: '**Workflow States**
+
+
+    Define custom workflow states for work items to match your team''s process. Configure state transitions and track work
+    item progress through different stages.
+
+
+    *Key Features:*
+
+    - Create custom workflow states
+
+    - Configure state transitions and rules
+
+    - Track work item progress through states
+
+    - Set state-based permissions and automation
+
+
+    *Use Cases:* Custom workflows, status tracking, process automation, progress monitoring.'
+  name: States
+- description: '**Current User Information**
+
+
+    Get information about the currently authenticated user including profile details and account settings.
+
+
+    *Key Features:*
+
+    - Retrieve current user profile
+
+    - Access user account information
+
+    - View user preferences and settings
+
+    - Get authentication context
+
+
+    *Use Cases:* Profile display, user context, account information, authentication status.'
+  name: Users
+- description: '**Activity History & Search**
+
+
+    View activity history and search for work items across the workspace. Get detailed activity logs and find work items using
+    text search.
+
+
+    *Key Features:*
+
+    - View work item activity history
+
+    - Search work items across workspace
+
+    - Track changes and modifications
+
+    - Filter search results by project
+
+
+    *Use Cases:* Activity tracking, work item discovery, change history, workspace search.'
+  name: Work Item Activity
+- description: '**Work Item File Attachments**
+
+
+    Generate presigned URLs for uploading files directly to specific work items. Upload and manage attachments associated
+    with work items.
+
+
+    *Key Features:*
+
+    - Generate presigned URLs for work item attachments
+
+    - Upload files directly to work items
+
+    - Retrieve and manage attachment metadata
+
+    - Delete attachments from work items
+
+
+    *Use Cases:* Screenshots, error logs, design files, supporting documents.'
+  name: Work Item Attachments
+- description: '**Comments & Discussions**
+
+
+    Add comments and discussions to work items for team collaboration. Support threaded conversations, mentions, and rich
+    text formatting.
+
+
+    *Key Features:*
+
+    - Add comments to work items
+
+    - Thread conversations and replies
+
+    - Mention users and trigger notifications
+
+    - Rich text and markdown support
+
+
+    *Use Cases:* Team discussions, progress updates, code reviews, decision tracking.'
+  name: Work Item Comments
+- description: '**External Links & References**
+
+
+    Link work items to external resources like documentation, repositories, or design files. Maintain connections between
+    work items and external systems.
+
+
+    *Key Features:*
+
+    - Add external URL links to work items
+
+    - Validate and preview linked resources
+
+    - Organize links by type and category
+
+    - Track link usage and access
+
+
+    *Use Cases:* Documentation links, repository connections, design references, external tools.'
+  name: Work Item Links
+- description: '**Work Items & Tasks**
+
+
+    Create and manage work items like tasks, bugs, features, and user stories. The core entities for tracking work in your
+    projects.
+
+
+    *Key Features:*
+
+    - Create, update, and manage work items
+
+    - Assign to team members and set priorities
+
+    - Track progress through workflow states
+
+    - Set due dates, estimates, and relationships
+
+
+    *Use Cases:* Bug tracking, task management, feature development, sprint planning.'
+  name: Work Items

@@ -1,0 +1,128 @@
+{
+  "cache": {
+    "api_key_history_after": [
+      "<timestamp>"
+    ],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "OPTIONS",
+            "path": "/api/v1/workspaces/invitations-membership-fixture/members-lite/",
+            "query_params": "",
+            "response_body": {
+              "detail": "Method \"OPTIONS\" not allowed."
+            },
+            "response_code": 405,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "OPTIONS",
+    "path": "/api/v1/workspaces/invitations-membership-fixture/members-lite/",
+    "principal": {
+      "kind": "api-key",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Method \"OPTIONS\" not allowed."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-RateLimit-Remaining": "59",
+      "X-RateLimit-Reset": "<timestamp>"
+    },
+    "status": 405
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-member-lite-options"
+  }
+}

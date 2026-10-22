@@ -1,0 +1,242 @@
+{
+  "version": 1,
+  "family": "api_label_reads",
+  "source_revision": "b7cc47c768f091ada3f872fb4e7a83e98f6bf6ba",
+  "characterization_status": "complete: 60 source-recorded cases",
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_labels": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used; no domain writes"],
+      "effects": ["api-key"],
+      "query_parameters": ["cursor", "expand", "fields", "order_by", "per_page"],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/label.py"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "authorization",
+          "observable": "ProjectMemberPermission safe methods require live active project membership, any role; workspace membership does not matter. POST checks live active WorkspaceMember role15/20; other unsafe methods ProjectMember role15/20. Read replica for safe reads; token last_used primary.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectMemberPermission"
+        },
+        {
+          "when": "queryset",
+          "observable": "Label.objects excludes deleted labels; project/workspace slug exact; active project membership join with no deleted predicate, DISTINCT labels, project.archived_at null; deleted project/workspace not excluded. Permission remains independent live membership guard. Detail missing/cross-project/deleted/archived raises404; list empty200.",
+          "source": "apps/api/plane/api/views/issue.py::LabelListCreateAPIEndpoint.get_queryset"
+        },
+        {
+          "when": "queries",
+          "observable": "List fixed-created_at descending; order_by query ignored (source reads kwargs). name/color/search/group_by/sub_group_by ignored. Shared cursor/per_page default/max1000 incl backward and malformed. Detail ignores ALL query parameters.",
+          "source": "apps/api/plane/api/views/issue.py::LabelListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "serialization",
+          "observable": "All Label model fields incl nullable parent/audit/external IDs, float sort_order, localized timestamps. List exact untrimmed fields tokens before expand; unknown selected fields omitted; empty selection all. Known user/workspace/project relations use source lite serializers; parent label is passed to IssueLiteSerializer so emits id/project_id but omits sequence_id. Null parent becomes{}. Deleted parent still expands (forward FK). Scalar expand becomes <name>_id or null, unknown expand ignored. Detail always full unexpanded LabelSerializer, ignores fields/expand.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer; apps/api/plane/api/serializers/issue.py::LabelSerializer"
+        }
+      ],
+      "fixture_prefix": "list",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-page-backward.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-unknown-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-duplicate-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-over-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-zero-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-whitespace-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-parent-expanded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-deleted-label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-audit-users-expanded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-null-parent-expanded.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-workspace-inactive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-deleted-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-scalar-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-path-wins-query.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-invalid-order-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-deleted-parent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-negative-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-empty-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-unselected-expansion.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-filter-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-bad-accept.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/list-order-ignored.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-label-reads/projects/00000000-0000-4000-8000-000000009601/labels/",
+      "statuses": [200, 400, 401, 403, 405, 406, 429, 500],
+      "supported_query_parameters": ["cursor", "per_page", "fields", "expand"],
+      "ignored_query_parameters": ["order_by", "name", "color", "search", "group_by", "sub_group_by"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_labels_by_pk": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used; no domain writes"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "source_branches": [
+        {
+          "when": "no API key, invalid/expired/inactive token or inactive user",
+          "observable": "Missing key returns 401, invalid credentials return 403. Valid key updates api_tokens.last_used before permission checks. Sessions do not authenticate this API.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "request carrying any nonempty API key reaches audit middleware, including credential rejection or 405",
+          "observable": "One durable Celery process_logs task on the default empty exchange with celery routing key, delivery_mode 2. Payload contains HMAC token identifier, redacted request headers, exact query string/path/method/body/status/serialized response. No worker runs; no audit row is inserted during request. Anonymous request and CORS short-circuit enqueue nothing.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "HEAD or ordinary OPTIONS with valid key/member",
+          "observable": "405 because URL as_view explicitly excludes both; authentication, last_used and audit still execute. Allow preserves original mixed methods. CORS preflight short-circuits before authentication/audit.",
+          "source": "apps/api/plane/api/urls/label.py"
+        },
+        {
+          "when": "database ownership and routing",
+          "observable": "For GET/HEAD/OPTIONS, use_read_replica=True routes token lookup, project permission and domain/queryset reads to the configured read replica. APIToken.last_used writes route to primary. Match existing apiKeyValidator=NewWithReaderWriter(activityReadsPool,pool), not the identity primary-only validator. Non-read unsupported methods use primary protocol authorization. Durable API audit publishes after response without running a worker.",
+          "source": "apps/api/plane/middleware/db_routing.py::ReadReplicaRoutingMiddleware; apps/api/plane/utils/core/dbrouters.py::ReadReplicaRouter"
+        },
+        {
+          "when": "authorization",
+          "observable": "ProjectMemberPermission safe methods require live active project membership, any role; workspace membership does not matter. POST checks live active WorkspaceMember role15/20; other unsafe methods ProjectMember role15/20. Read replica for safe reads; token last_used primary.",
+          "source": "apps/api/plane/app/permissions/project.py::ProjectMemberPermission"
+        },
+        {
+          "when": "queryset",
+          "observable": "Label.objects excludes deleted labels; project/workspace slug exact; active project membership join with no deleted predicate, DISTINCT labels, project.archived_at null; deleted project/workspace not excluded. Permission remains independent live membership guard. Detail missing/cross-project/deleted/archived raises404; list empty200.",
+          "source": "apps/api/plane/api/views/issue.py::LabelListCreateAPIEndpoint.get_queryset"
+        },
+        {
+          "when": "queries",
+          "observable": "List fixed-created_at descending; order_by query ignored (source reads kwargs). name/color/search/group_by/sub_group_by ignored. Shared cursor/per_page default/max1000 incl backward and malformed. Detail ignores ALL query parameters.",
+          "source": "apps/api/plane/api/views/issue.py::LabelListCreateAPIEndpoint.get"
+        },
+        {
+          "when": "serialization",
+          "observable": "All Label model fields incl nullable parent/audit/external IDs, float sort_order, localized timestamps. List exact untrimmed fields tokens before expand; unknown selected fields omitted; empty selection all. Known user/workspace/project relations use source lite serializers; parent label is passed to IssueLiteSerializer so emits id/project_id but omits sequence_id. Null parent becomes{}. Deleted parent still expands (forward FK). Scalar expand becomes <name>_id or null, unknown expand ignored. Detail always full unexpanded LabelSerializer, ignores fields/expand.",
+          "source": "apps/api/plane/api/serializers/base.py::BaseSerializer; apps/api/plane/api/serializers/issue.py::LabelSerializer"
+        }
+      ],
+      "fixture_prefix": "detail",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-cross-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-projection-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-deleted-label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_label_reads/detail-archived-project.json"
+      ],
+      "sample_path": "/api/v1/workspaces/api-label-reads/projects/00000000-0000-4000-8000-000000009601/labels/00000000-0000-4000-8000-000000009701/",
+      "statuses": [200, 401, 403, 404, 405],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [
+        "order_by",
+        "name",
+        "color",
+        "search",
+        "group_by",
+        "sub_group_by",
+        "fields",
+        "expand",
+        "cursor",
+        "per_page"
+      ]
+    }
+  },
+  "source_files": [
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/serializers/issue.py",
+    "apps/api/plane/api/serializers/base.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/rate_limit.py",
+    "apps/api/plane/middleware/logger.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/utils/order_queryset.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/api/urls/label.py"
+  ],
+  "shared_transport_evidence": "Existing API-key activity reads cover common authentication/rate-limit/timezone/middleware behavior. This family records exact Allow and explicit absence of HEAD/OPTIONS handlers, plus real durable API audit envelopes for every source request.",
+  "reuse_analysis": "Extend internal/projectlabelreads with API contract; app endpoints preserve existing compact serializer and workspace authorization.",
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["cursor", "per_page", "order_by", "fields", "expand"],
+    "evidence": "apps/api/plane/tests/parity/test_api_label_read_recorder.py::test_api_label_read_contract",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/api-label-reads/projects/00000000-0000-4000-8000-000000009601/labels/"
+    }
+  },
+  "runtime_questions": [],
+  "source_runtime_evidence": {
+    "recorder": "apps/api/plane/tests/parity/test_api_label_read_recorder.py",
+    "fixture_count": 60,
+    "record_log": "[local migration artifact omitted]",
+    "verify_log": "[local migration artifact omitted]"
+  }
+}

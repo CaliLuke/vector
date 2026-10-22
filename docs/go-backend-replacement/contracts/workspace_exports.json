@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "family": "workspace_exports",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "7 pristine source cases passed immutable verification; 0 corrected source oracle(s) are preserved. Focused runtime diagnostics and Go regressions are recorded with family evidence. Final current-tree replay, differential, and activation proof remain pending.",
+  "operation_count": 3,
+  "source_files": [
+    "apps/api/plane/app/urls/exporter.py",
+    "apps/api/plane/app/urls/analytic.py",
+    "apps/api/plane/app/views/exporter/base.py",
+    "apps/api/plane/app/views/analytic/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/db/models/exporter.py",
+    "apps/api/plane/bgtasks/export_task.py",
+    "apps/api/plane/bgtasks/analytic_plot_export.py",
+    "apps/api/plane/utils/analytics_plot.py"
+  ],
+  "fixture_count": 7,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/workspace-exports/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/workspace-exports/source-hashes.json",
+  "operations": {
+    "post_api_workspaces_by_slug_export_issues": {
+      "operation_id": "post_api_workspaces_by_slug_export_issues",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/export-issues/",
+      "sample_path": "/api/workspaces/workspace-exports-contract/export-issues/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "issue-export-create-csv",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-create-csv.json"
+        },
+        {
+          "when": "issue-export-create-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-create-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-create-csv.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-create-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 401],
+      "effects": ["plane.bgtasks.export_task.issue_export_task"],
+      "status_note": "Seven pristine cases cover issue-export creation and history, valid and invalid analytics exports, and anonymous rejection for both issue-export methods and analytics export. The history fixture exercises cursor pagination and order_by. Successful requests emit the typed Celery task; issue-export creation stores requester provenance and returns the source message."
+    },
+    "get_api_workspaces_by_slug_export_issues": {
+      "operation_id": "get_api_workspaces_by_slug_export_issues",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/export-issues/",
+      "sample_path": "/api/workspaces/workspace-exports-contract/export-issues/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["cursor", "order_by", "per_page"],
+      "documented_query_parameters": ["cursor", "order_by", "per_page"],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "issue-export-history-page",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-history-page.json"
+        },
+        {
+          "when": "issue-export-history-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-history-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-history-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/issue-export-history-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 401],
+      "effects": [],
+      "status_note": "Seven pristine cases cover issue-export creation and history, valid and invalid analytics exports, and anonymous rejection for both issue-export methods and analytics export. The history fixture exercises cursor pagination and order_by. Successful requests emit the typed Celery task; issue-export creation stores requester provenance and returns the source message."
+    },
+    "post_api_workspaces_by_slug_export_analytics": {
+      "operation_id": "post_api_workspaces_by_slug_export_analytics",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/export-analytics/",
+      "sample_path": "/api/workspaces/workspace-exports-contract/export-analytics/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "analytics-export-valid",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-valid.json"
+        },
+        {
+          "when": "analytics-export-invalid",
+          "observable": "Pinned Django fixture records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-invalid.json"
+        },
+        {
+          "when": "analytics-export-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_exports/analytics-export-valid.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "statuses": [200, 400, 401],
+      "effects": ["plane.bgtasks.analytic_plot_export.analytic_export_task"],
+      "status_note": "Seven pristine cases cover issue-export creation and history, valid and invalid analytics exports, and anonymous rejection for both issue-export methods and analytics export. The history fixture exercises cursor pagination and order_by. Successful requests emit the typed Celery task; issue-export creation stores requester provenance and returns the source message."
+    }
+  },
+  "corrected_fixture_count": 0,
+  "source_runtime_evidence": {
+    "pristine": "docs/go-backend-replacement/evidence/workspace-exports/source-counters.json",
+    "pristine_count": 7,
+    "record_log": "docs/go-backend-replacement/evidence/workspace-exports/source-20261022T110143Z.log"
+  },
+  "effect_contracts": {
+    "plane.bgtasks.export_task.issue_export_task": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.export_task.issue_export_task",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.analytic_plot_export.analytic_export_task": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.analytic_plot_export.analytic_export_task",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    }
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/workspace_exports_integration_test.go::TestWorkspaceExportsFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["cursor", "order_by", "per_page"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "The production chain is tested on issue-export creation: oversized body rejection precedes session inspection, anonymous rejection precedes timezone inspection, invalid timezone is rejected before export dispatch, authorized requests dispatch the generated service, and session requests emit no API-key audit. Export-specific authorization and queue effects are covered by production-mount and replay tests."
+}

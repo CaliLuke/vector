@@ -1,0 +1,309 @@
+{
+  "version": 1,
+  "family": "notification_remaining_writes",
+  "source_files": [
+    "apps/api/plane/app/views/notification/base.py",
+    "apps/api/plane/app/urls/notification.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/serializers/notification.py",
+    "apps/api/plane/db/models/notification.py"
+  ],
+  "operations": {
+    "post_api_workspaces_by_slug_users_notifications_mark_all_read": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/users/notifications/mark-all-read/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/users/notifications/mark-all-read/",
+      "statuses": [200, 400, 401, 403, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/corrected/mark-all-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/corrected/mark-all-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-assigned.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-created-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-created.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-snoozed-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-snoozed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-string-truthiness.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-unknown.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-watching.json"
+      ],
+      "database_effects": ["notifications"],
+      "effects": [],
+      "permission_contract": "Active workspace member including guest is required. Snooze lookup is scoped to workspace and receiver; omitted or null snooze clears it. Mark-all applies source snoozed/archive/type filters, changes only unread matching notifications, and creates no queued effect.",
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet / MarkAllReadNotificationViewSet",
+      "source_branches": [
+        {
+          "when": "mark-all-options (corrected)",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/corrected/mark-all-options.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "mark-all-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-anonymous.json"
+        },
+        {
+          "when": "mark-all-archived",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-archived.json"
+        },
+        {
+          "when": "mark-all-assigned",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-assigned.json"
+        },
+        {
+          "when": "mark-all-created-guest",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-created-guest.json"
+        },
+        {
+          "when": "mark-all-created",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-created.json"
+        },
+        {
+          "when": "mark-all-guest",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-guest.json"
+        },
+        {
+          "when": "mark-all-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-inactive-member.json"
+        },
+        {
+          "when": "mark-all-member",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-member.json"
+        },
+        {
+          "when": "mark-all-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-nonmember.json"
+        },
+        {
+          "when": "mark-all-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options-invalid-timezone.json"
+        },
+        {
+          "when": "mark-all-options",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options.json"
+        },
+        {
+          "when": "mark-all-snoozed-archived",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-snoozed-archived.json"
+        },
+        {
+          "when": "mark-all-snoozed",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-snoozed.json"
+        },
+        {
+          "when": "mark-all-string-truthiness",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-string-truthiness.json"
+        },
+        {
+          "when": "mark-all-unknown",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-unknown.json"
+        },
+        {
+          "when": "mark-all-watching",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-watching.json"
+        },
+        {
+          "when": "mark-all-array-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-array-source-error.json"
+        },
+        {
+          "when": "mark-all-array-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/corrected/mark-all-array-source-error.json"
+        }
+      ]
+    },
+    "patch_api_workspaces_by_slug_users_notifications_by_pk": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/users/notifications/00000000-0000-4000-8000-000000000004/",
+      "statuses": [200, 400, 401, 403, 404],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-invalid-date.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-null-clears.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-omitted-clears.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-other-receiver.json"
+      ],
+      "database_effects": ["notifications"],
+      "effects": [],
+      "permission_contract": "Active workspace member including guest is required. Snooze lookup is scoped to workspace and receiver; omitted or null snooze clears it. Mark-all applies source snoozed/archive/type filters, changes only unread matching notifications, and creates no queued effect.",
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet / MarkAllReadNotificationViewSet",
+      "source_branches": [
+        {
+          "when": "mark-all-options (corrected)",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/corrected/mark-all-options.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "mark-all-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options-invalid-timezone.json"
+        },
+        {
+          "when": "mark-all-options",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/mark-all-options.json"
+        },
+        {
+          "when": "snooze-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-anonymous.json"
+        },
+        {
+          "when": "snooze-deleted",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-deleted.json"
+        },
+        {
+          "when": "snooze-guest",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-guest.json"
+        },
+        {
+          "when": "snooze-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-inactive-member.json"
+        },
+        {
+          "when": "snooze-invalid-date",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-invalid-date.json"
+        },
+        {
+          "when": "snooze-member",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-member.json"
+        },
+        {
+          "when": "snooze-missing",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-missing.json"
+        },
+        {
+          "when": "snooze-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-nonmember.json"
+        },
+        {
+          "when": "snooze-null-clears",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-null-clears.json"
+        },
+        {
+          "when": "snooze-omitted-clears",
+          "observable": "HTTP 200; changed tables: notifications; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-omitted-clears.json"
+        },
+        {
+          "when": "snooze-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-options-invalid-timezone.json"
+        },
+        {
+          "when": "snooze-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-options.json"
+        },
+        {
+          "when": "snooze-other-receiver",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/notification_remaining_writes/snooze-other-receiver.json"
+        }
+      ]
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/remaining-auxiliary/run-source-recorder.sh",
+    "pristine_fixture_count": 30,
+    "corrected_fixture_count": 2,
+    "source_hashes": "docs/go-backend-replacement/evidence/remaining-auxiliary/notification_remaining_writes-source-hashes.json"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/notification_remaining_writes_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["post_api_workspaces_by_slug_users_notifications_mark_all_read:canonical:OPTIONS"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 200,
+          "body_sha256": "074efb512a9191181aa8a68d570c68a922f128b10921a1492752760e5ce29396"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md",
+        "cases": ["post_api_workspaces_by_slug_users_notifications_mark_all_read:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "fd12dc1e6b6d65dce0330eb571c36e538e513e08629bc30452c75308387f1e5c"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "Active workspace member including guest is required. Snooze lookup is scoped to workspace and receiver; omitted or null snooze clears it. Mark-all applies source snoozed/archive/type filters, changes only unread matching notifications, and creates no queued effect."
+}

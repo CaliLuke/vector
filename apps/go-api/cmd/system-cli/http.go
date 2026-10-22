@@ -1,0 +1,44 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+
+	cli "github.com/CaliLuke/go-plane/gen/http/cli/system"
+	loomhttp "github.com/CaliLuke/loom/http"
+	loom "github.com/CaliLuke/loom/pkg"
+)
+
+func doHTTP(scheme, host string, timeout int, debug bool) (loom.Endpoint, any, error) {
+	var (
+		doer loomhttp.Doer
+	)
+	{
+		doer = &http.Client{Timeout: time.Duration(timeout) * time.Second}
+		if debug {
+			doer = loomhttp.NewDebugDoer(doer)
+		}
+	}
+
+	endpoint, payload, err := cli.ParseEndpoint(
+		scheme,
+		host,
+		doer,
+		loomhttp.RequestEncoder,
+		loomhttp.ResponseDecoder,
+		debug,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse endpoint: %w", err)
+	}
+	return endpoint, payload, nil
+}
+
+func httpUsageCommands() []string {
+	return cli.UsageCommands()
+}
+
+func httpUsageExamples() string {
+	return cli.UsageExamples()
+}

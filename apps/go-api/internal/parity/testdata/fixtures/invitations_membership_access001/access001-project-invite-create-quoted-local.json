@@ -1,0 +1,130 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "project_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "email": "\"quoted\"@example.com",
+          "id": "<uuid-6>",
+          "message": null,
+          "project_id": "<uuid-1>",
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:project_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-4>",
+          "message": null,
+          "project_id": "<uuid-1>",
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:project_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "project_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-4>",
+          "message": null,
+          "project_id": "<uuid-1>",
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:project_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "project_member_invites"
+    ],
+    "expected_changed_tables": [
+      "project_member_invites"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.project_invitation_task.project_invitation",
+      "payload": {
+        "args": [
+          "\"quoted\"@example.com",
+          "<uuid-1>",
+          "<secret:invite.token>",
+          "http://localhost:8000",
+          "invite-owner@example.com"
+        ],
+        "kwargs": {}
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": {
+      "emails": [
+        {
+          "email": "\"quoted\"@example.com",
+          "role": 15
+        }
+      ]
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/invitations-membership-fixture/projects/<uuid-1>/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "message": "Email sent successfully"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "access001-project-invite-create-quoted-local"
+  }
+}

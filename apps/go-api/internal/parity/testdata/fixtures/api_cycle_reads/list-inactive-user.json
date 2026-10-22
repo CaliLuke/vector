@@ -1,0 +1,75 @@
+{
+  "cache": {
+    "rate_limit_history_after": [],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/cycles/",
+            "query_params": "",
+            "response_body": {
+              "detail": "Given API token is not valid"
+            },
+            "response_code": 403,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/api-cycle-reads/projects/<uuid-1>/cycles/",
+    "principal": {
+      "kind": "invalid-api-key"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "Given API token is not valid"
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET, POST",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY"
+    },
+    "status": 403
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-inactive-user"
+  }
+}

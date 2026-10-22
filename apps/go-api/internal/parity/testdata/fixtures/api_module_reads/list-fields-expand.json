@@ -1,0 +1,446 @@
+{
+  "cache": {
+    "rate_limit_history_after": [
+      "<timestamp>"
+    ],
+    "rate_limit_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-4>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-4>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Module parity",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/api-module-reads/projects/<uuid-1>/modules/",
+            "query_params": "fields=id%2Cname%2Cworkspace%2Cproject%2Clead%2Cmembers%2Ccreated_by%2Cupdated_by%2Cunknown&expand=id%2Cname%2Cworkspace%2Cproject%2Clead%2Cmembers%2Ccreated_by%2Cupdated_by%2Cunknown",
+            "response_body": {
+              "count": 6,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1000:1:0",
+              "next_page_results": false,
+              "prev_cursor": "1000:-1:1",
+              "prev_page_results": false,
+              "results": [
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                },
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                },
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                },
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                },
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                },
+                {
+                  "created_by": {},
+                  "id": null,
+                  "lead": "<uuid-2>",
+                  "members": [
+                    "<uuid-2>"
+                  ],
+                  "name": null,
+                  "project": {
+                    "archived_at": null,
+                    "cover_image": null,
+                    "cover_image_url": null,
+                    "description": "",
+                    "emoji": null,
+                    "icon_prop": null,
+                    "id": "<uuid-1>",
+                    "identifier": "ACR",
+                    "name": "API Modules"
+                  },
+                  "updated_by": {},
+                  "workspace": {
+                    "id": "<uuid-3>",
+                    "name": "API Modules",
+                    "slug": "api-module-reads"
+                  }
+                }
+              ],
+              "sub_grouped_by": null,
+              "total_count": 6,
+              "total_pages": 1,
+              "total_results": 6
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/api-module-reads/projects/<uuid-1>/modules/",
+    "principal": {
+      "kind": "api-key"
+    },
+    "query": {
+      "expand": "id,name,workspace,project,lead,members,created_by,updated_by,unknown",
+      "fields": "id,name,workspace,project,lead,members,created_by,updated_by,unknown"
+    }
+  },
+  "response": {
+    "body": {
+      "count": 6,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1000:1:0",
+      "next_page_results": false,
+      "prev_cursor": "1000:-1:1",
+      "prev_page_results": false,
+      "results": [
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        },
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        },
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        },
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        },
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        },
+        {
+          "created_by": {},
+          "id": null,
+          "lead": "<uuid-2>",
+          "members": [
+            "<uuid-2>"
+          ],
+          "name": null,
+          "project": {
+            "archived_at": null,
+            "cover_image": null,
+            "cover_image_url": null,
+            "description": "",
+            "emoji": null,
+            "icon_prop": null,
+            "id": "<uuid-1>",
+            "identifier": "ACR",
+            "name": "API Modules"
+          },
+          "updated_by": {},
+          "workspace": {
+            "id": "<uuid-3>",
+            "name": "API Modules",
+            "slug": "api-module-reads"
+          }
+        }
+      ],
+      "sub_grouped_by": null,
+      "total_count": 6,
+      "total_pages": 1,
+      "total_results": 6
+    },
+    "cookies": {},
+    "headers": {
+      "allow": "GET, POST",
+      "content-type": "application/json",
+      "cross-origin-opener-policy": "same-origin",
+      "referrer-policy": "same-origin",
+      "vary": "Accept-Encoding, Cookie, origin",
+      "x-content-type-options": "nosniff",
+      "x-frame-options": "DENY",
+      "x-ratelimit-remaining": "<x-ratelimit-remaining>",
+      "x-ratelimit-reset": "<x-ratelimit-reset>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-fields-expand"
+  }
+}

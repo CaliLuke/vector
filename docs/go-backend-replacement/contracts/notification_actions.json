@@ -1,0 +1,500 @@
+{
+  "version": 1,
+  "family": "notification_actions",
+  "source_files": [
+    "apps/api/plane/app/urls/notification.py",
+    "apps/api/plane/app/views/notification/base.py",
+    "apps/api/plane/app/serializers/notification.py",
+    "apps/api/plane/db/models/notification.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/db/models/base.py",
+    "apps/api/plane/app/serializers/user.py",
+    "apps/api/plane/db/models/user.py",
+    "apps/api/plane/db/models/asset.py",
+    "apps/api/plane/utils/order_queryset.py",
+    "apps/api/plane/bgtasks/deletion_task.py",
+    "apps/api/plane/celery_routing.py",
+    "apps/api/plane/authentication/session.py",
+    "packages/services/src/workspace/notification.service.ts",
+    "apps/web/core/services/workspace-notification.service.ts"
+  ],
+  "operations": {
+    "delete_api_workspaces_by_slug_users_notifications_by_pk": {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-malformed-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-repeated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/delete-wrong-receiver.json"
+      ],
+      "auth_profile": "django-session",
+      "database_effects": [
+        "notifications.deleted_at=now",
+        "notifications.updated_at=now",
+        "notifications.updated_by=requester"
+      ],
+      "effects": ["django-session"],
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "snoozed",
+        "archived",
+        "read",
+        "type",
+        "mentioned",
+        "per_page",
+        "cursor",
+        "order_by"
+      ],
+      "permission_contract": "Session only, no workspace membership decorator. Still receiver+slug+notification liveness scope.",
+      "source_branches": [
+        {
+          "when": "anonymous, expired or inactive-user session",
+          "observable": "Authentication rejection before domain queries; source runtime fixture supplies exact DRF status/envelope.",
+          "source": "apps/api/plane/authentication/session.py; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "missing, other receiver, other workspace or soft-deleted notification",
+          "observable": "404; inherited retrieve/destroy use DRF detail error, custom actions use {error: The required object does not exist.}.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception"
+        },
+        {
+          "when": "notification owned by requester, including requester without active workspace membership",
+          "observable": "204 empty response for DELETE.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; DRF ModelViewSet.destroy"
+        },
+        {
+          "when": "search/fields/expand filters",
+          "observable": "No projection/search effect: BaseViewSet search_fields/filterset_fields empty; serializer is nondynamic.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "successful soft-delete",
+          "observable": "Save audit fields and enqueue exactly one soft_delete_related_objects task; no worker run and no synchronous cascade.",
+          "source": "apps/api/plane/db/mixins.py::SoftDeleteModel.delete"
+        },
+        {
+          "when": "durable publication fails after soft-delete save",
+          "observable": "500 {error: Something went wrong please try again later}; deleted_at, updated_at and updated_by remain saved. Do not roll back the source save or synchronously run the worker.",
+          "source": "apps/api/plane/db/mixins.py::SoftDeleteModel.delete; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception",
+          "verification": "apps/go-api/internal/notifications/actions_integration_test.go::TestNotificationActionPublicationFailurePreservesSave"
+        }
+      ],
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; DRF ModelViewSet.destroy",
+      "sample_path": "/api/workspaces/notifications-parity/users/notifications/00000000-0000-4000-8000-000000009999/",
+      "method": "DELETE",
+      "statuses": [204, 401, 404]
+    },
+    "post_api_workspaces_by_slug_users_notifications_by_pk_read": {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/read/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-malformed-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-repeated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-wrong-receiver.json"
+      ],
+      "auth_profile": "django-session",
+      "database_effects": [
+        "notifications.read_at=now",
+        "notifications.updated_at=now",
+        "notifications.updated_by=requester"
+      ],
+      "effects": [],
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "snoozed",
+        "archived",
+        "read",
+        "type",
+        "mentioned",
+        "per_page",
+        "cursor",
+        "order_by"
+      ],
+      "permission_contract": "shared_contract.workspace_authorization",
+      "source_branches": [
+        {
+          "when": "anonymous, expired or inactive-user session",
+          "observable": "Authentication rejection before domain queries; source runtime fixture supplies exact DRF status/envelope.",
+          "source": "apps/api/plane/authentication/session.py; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "nonmember, inactive/deleted membership, disallowed role or missing slug",
+          "observable": "403 permission error before target lookup or request.data parsing.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission"
+        },
+        {
+          "when": "missing, other receiver, other workspace or soft-deleted notification",
+          "observable": "404; inherited retrieve/destroy use DRF detail error, custom actions use {error: The required object does not exist.}.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception"
+        },
+        {
+          "when": "existing target, including already in requested state",
+          "observable": "200 unannotated full serializer; set read_at=now and perform audit save every time.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_read"
+        },
+        {
+          "when": "any body",
+          "observable": "Handler never accesses request.data: body fields ignored and lazy parser is not triggered by action itself.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_read"
+        }
+      ],
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_read",
+      "sample_path": "/api/workspaces/notifications-parity/users/notifications/00000000-0000-4000-8000-000000009999/read/",
+      "method": "POST",
+      "statuses": [200, 401, 403, 404]
+    },
+    "delete_api_workspaces_by_slug_users_notifications_by_pk_read": {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/read/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/read-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-malformed-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-repeated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unread-wrong-receiver.json"
+      ],
+      "auth_profile": "django-session",
+      "database_effects": [
+        "notifications.read_at=null",
+        "notifications.updated_at=now",
+        "notifications.updated_by=requester"
+      ],
+      "effects": [],
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "snoozed",
+        "archived",
+        "read",
+        "type",
+        "mentioned",
+        "per_page",
+        "cursor",
+        "order_by"
+      ],
+      "permission_contract": "shared_contract.workspace_authorization",
+      "source_branches": [
+        {
+          "when": "anonymous, expired or inactive-user session",
+          "observable": "Authentication rejection before domain queries; source runtime fixture supplies exact DRF status/envelope.",
+          "source": "apps/api/plane/authentication/session.py; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "nonmember, inactive/deleted membership, disallowed role or missing slug",
+          "observable": "403 permission error before target lookup or request.data parsing.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission"
+        },
+        {
+          "when": "missing, other receiver, other workspace or soft-deleted notification",
+          "observable": "404; inherited retrieve/destroy use DRF detail error, custom actions use {error: The required object does not exist.}.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception"
+        },
+        {
+          "when": "existing target, including already in requested state",
+          "observable": "200 unannotated full serializer; set read_at=null and perform audit save every time.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_unread"
+        },
+        {
+          "when": "any body",
+          "observable": "Handler never accesses request.data: body fields ignored and lazy parser is not triggered by action itself.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_unread"
+        }
+      ],
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.mark_unread",
+      "sample_path": "/api/workspaces/notifications-parity/users/notifications/00000000-0000-4000-8000-000000009999/read/",
+      "method": "DELETE",
+      "statuses": [200, 400, 401, 403, 404]
+    },
+    "post_api_workspaces_by_slug_users_notifications_by_pk_archive": {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/archive/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-malformed-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-repeated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-wrong-receiver.json"
+      ],
+      "auth_profile": "django-session",
+      "database_effects": [
+        "notifications.archived_at=now",
+        "notifications.updated_at=now",
+        "notifications.updated_by=requester"
+      ],
+      "effects": [],
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "snoozed",
+        "archived",
+        "read",
+        "type",
+        "mentioned",
+        "per_page",
+        "cursor",
+        "order_by"
+      ],
+      "permission_contract": "shared_contract.workspace_authorization",
+      "source_branches": [
+        {
+          "when": "anonymous, expired or inactive-user session",
+          "observable": "Authentication rejection before domain queries; source runtime fixture supplies exact DRF status/envelope.",
+          "source": "apps/api/plane/authentication/session.py; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "nonmember, inactive/deleted membership, disallowed role or missing slug",
+          "observable": "403 permission error before target lookup or request.data parsing.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission"
+        },
+        {
+          "when": "missing, other receiver, other workspace or soft-deleted notification",
+          "observable": "404; inherited retrieve/destroy use DRF detail error, custom actions use {error: The required object does not exist.}.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception"
+        },
+        {
+          "when": "existing target, including already in requested state",
+          "observable": "200 unannotated full serializer; set archived_at=now and perform audit save every time.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.archive"
+        },
+        {
+          "when": "any body",
+          "observable": "Handler never accesses request.data: body fields ignored and lazy parser is not triggered by action itself.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.archive"
+        }
+      ],
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.archive",
+      "sample_path": "/api/workspaces/notifications-parity/users/notifications/00000000-0000-4000-8000-000000009999/archive/",
+      "method": "POST",
+      "statuses": [200, 401, 403, 404]
+    },
+    "delete_api_workspaces_by_slug_users_notifications_by_pk_archive": {
+      "path": "/api/workspaces/{slug}/users/notifications/{pk}/archive/",
+      "authentication": ["anonymous", "django-session", "inactive-django-session"],
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/archive-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-malformed-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-repeated.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/notification_actions/unarchive-wrong-receiver.json"
+      ],
+      "auth_profile": "django-session",
+      "database_effects": [
+        "notifications.archived_at=null",
+        "notifications.updated_at=now",
+        "notifications.updated_by=requester"
+      ],
+      "effects": [],
+      "ignored_query_parameters": [
+        "search",
+        "fields",
+        "expand",
+        "group_by",
+        "sub_group_by",
+        "snoozed",
+        "archived",
+        "read",
+        "type",
+        "mentioned",
+        "per_page",
+        "cursor",
+        "order_by"
+      ],
+      "permission_contract": "shared_contract.workspace_authorization",
+      "source_branches": [
+        {
+          "when": "anonymous, expired or inactive-user session",
+          "observable": "Authentication rejection before domain queries; source runtime fixture supplies exact DRF status/envelope.",
+          "source": "apps/api/plane/authentication/session.py; apps/api/plane/app/views/base.py::BaseViewSet"
+        },
+        {
+          "when": "nonmember, inactive/deleted membership, disallowed role or missing slug",
+          "observable": "403 permission error before target lookup or request.data parsing.",
+          "source": "apps/api/plane/app/permissions/base.py::allow_permission"
+        },
+        {
+          "when": "missing, other receiver, other workspace or soft-deleted notification",
+          "observable": "404; inherited retrieve/destroy use DRF detail error, custom actions use {error: The required object does not exist.}.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.get_queryset; apps/api/plane/app/views/base.py::BaseViewSet.handle_exception"
+        },
+        {
+          "when": "existing target, including already in requested state",
+          "observable": "200 unannotated full serializer; set archived_at=null and perform audit save every time.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.unarchive"
+        },
+        {
+          "when": "any body",
+          "observable": "Handler never accesses request.data: body fields ignored and lazy parser is not triggered by action itself.",
+          "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.unarchive"
+        }
+      ],
+      "source": "apps/api/plane/app/views/notification/base.py::NotificationViewSet.unarchive",
+      "sample_path": "/api/workspaces/notifications-parity/users/notifications/00000000-0000-4000-8000-000000009999/archive/",
+      "method": "DELETE",
+      "statuses": [200, 400, 401, 403, 404]
+    }
+  },
+  "source_revision": "b923ab463c514bd47433e6c0774008316b9845da",
+  "characterization_status": "68 source fixtures: 58 reused action cases, one shared detail OPTIONS timezone case, nine new malformed-body and repeat-action cases. All source cases passed against original Django; real RabbitMQ envelopes consumed without a worker.",
+  "shared_contract": {
+    "authentication": "DRF IsAuthenticated and BaseSessionAuthentication; inactive/missing sessions are anonymous; CSRF disabled. TimezoneMixin activates authenticated user_timezone after DRF initial authentication/permission/content negotiation.",
+    "workspace_authorization": "Decorated handlers require an undeleted active WorkspaceMember for receiver and slug with role exactly 5,15,20. No joined Workspace.deleted_at or Project.deleted_at/archived_at test is present. Missing, inactive, soft-deleted or other-role membership gives 403 {error: You don't have the required permissions.}. Duplicate memberships use exists, not single-row get.",
+    "receiver_scope": "Every notification lookup restricts notification.deleted_at IS NULL, receiver_id=current user and workspace.slug=path slug. Related workspace/project/triggered_by deletion or inactivity does not independently hide a notification.",
+    "query_parsing": "Django QueryDict get takes last scalar value. Blank values remain blank. Reuse original-query field-count limit and shared percent-decoding behavior. Search, fields, expand, group_by, sub_group_by and unrelated filters have no notification-domain effect. format remains a shared negotiation input.",
+    "serializer": "NotificationSerializer fields=__all__; exact common response fields defined by notification_schema. List adds 3 annotated booleans; detail and mutations omit these absent annotations. triggered_by_details is null when triggered_by is null; otherwise full UserLiteSerializer even for inactive related user (User has no deleted_at column). No fields/expand projection.",
+    "instance_save": "Read/unread/archive/unarchive/delete call BaseModel.save: updated_at advances and updated_by becomes the request user even if the field already has its target value; created_at/created_by are preserved. DELETE additionally publishes the durable effect described below.",
+    "transport": "UUID pk Django converter requires canonical lowercase hyphenated UUID shape; malformed paths never reach view. HEAD exists for collection/detail/unread and executes GET without body. OPTIONS and unsupported methods follow shared DRF protocol; action methods do not acquire GET/HEAD. Slashless redirects, session cookies, CORS, content negotiation, request size and compression must use shared compatibility stack.",
+    "request_parsing": "All five actions ignore request bodies. Authentication, target lookup, authorization where applicable, and shared request-size middleware still run; malformed/unsupported media bodies must not be parsed."
+  },
+  "notification_schema": {
+    "required_fields": [
+      "id",
+      "created_at",
+      "updated_at",
+      "created_by",
+      "updated_by",
+      "deleted_at",
+      "workspace",
+      "project",
+      "data",
+      "entity_identifier",
+      "entity_name",
+      "title",
+      "message",
+      "message_html",
+      "message_stripped",
+      "sender",
+      "triggered_by",
+      "receiver",
+      "read_at",
+      "snoozed_till",
+      "archived_at",
+      "triggered_by_details"
+    ],
+    "nullable_fields": [
+      "created_by",
+      "updated_by",
+      "deleted_at",
+      "project",
+      "data",
+      "entity_identifier",
+      "message",
+      "message_stripped",
+      "triggered_by",
+      "read_at",
+      "snoozed_till",
+      "archived_at",
+      "triggered_by_details"
+    ],
+    "arbitrary_json_fields": ["data", "message"],
+    "list_only_fields": ["is_inbox_issue", "is_intake_issue", "is_mentioned_notification"],
+    "triggered_by_details_fields": ["id", "first_name", "last_name", "avatar", "avatar_url", "is_bot", "display_name"],
+    "avatar_url": "User.avatar_url uses related asset.asset_url when asset exists, else nonempty avatar, else null. FileAsset.entity_type selects static, issue-attachment, description URL or null; do not assume every asset is a static avatar. Source: db/models/user.py::avatar_url and db/models/asset.py::asset_url.",
+    "dates": "DRF DateTimeField representation uses active requester timezone and ISO8601; null remains null."
+  },
+  "effect_contracts": {
+    "django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "delete_effect_contract": {
+    "source": "apps/api/plane/db/mixins.py::SoftDeleteModel.delete; apps/api/plane/bgtasks/deletion_task.py::enqueue_soft_delete_related_objects; apps/api/plane/celery_routing.py::PlaneTaskRouter",
+    "task": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+    "args": ["db", "notification", "<notification UUID>"],
+    "kwargs": {
+      "using": null
+    },
+    "queue": "celery",
+    "persistence": "Celery default persistent delivery; consume real RabbitMQ envelope to verify. UUID task argument uses Kombu UUID typed JSON representation before normalization.",
+    "ordering": "Instance soft-delete save completes before publishing; worker cascade is not executed inside request parity. Publish failure therefore must not undo already committed row update.",
+    "worker": "Existing soft_delete_related_objects worker owns related-object cascade."
+  },
+  "runtime_questions": [],
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": [],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/notification_actions_integration_test.go::TestNotificationActionFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/workspaces/notifications-parity/users/notifications/"
+    }
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/notifications_middleware_test.go::TestNotificationMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationDispatchAudit"
+}

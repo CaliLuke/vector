@@ -1,0 +1,105 @@
+{
+  "database": {
+    "after": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#222222"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-2>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#ffffff"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Light",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#222222"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-2>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "actor_id": "<uuid-1>",
+          "colors": {
+            "primary": "#ffffff"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Light",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {},
+    "cookies": {},
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/parity-theme/workspace-themes/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "name": [
+        "This field is required."
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 400
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "invalid-create"
+  }
+}

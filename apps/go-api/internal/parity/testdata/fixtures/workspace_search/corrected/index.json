@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "source_mode": "corrected_runtime",
+  "reason": "An invalid count string raises an uncaught conversion exception in the pinned source and returns HTTP 500. Corrected behavior validates the input before querying and returns HTTP 400 with a field validation error.",
+  "cases": [
+    {
+      "case": "entity-search-invalid-count",
+      "pristine_fixture": "apps/api/plane/tests/parity/fixtures/workspace_search/entity-search-invalid-count.json",
+      "pristine_sha256": "f4c81a30c7c31ecc28b86316ed807ce4725ba2471aa5c086f30e9dab2ed77073",
+      "corrected_fixture": "apps/api/plane/tests/parity/fixtures/workspace_search/corrected/entity-search-invalid-count.json",
+      "corrected_sha256": "7adfb547c6259efdc3490144cd687537f192b3510781ff9124126ef9f0938226",
+      "changed_field": "response.status,response.body"
+    }
+  ]
+}

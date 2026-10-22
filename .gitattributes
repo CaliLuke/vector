@@ -1,0 +1,4 @@
+*.sh text eol=lf
+
+# Preserve byte-identical upstream HTML parser fixtures, including significant whitespace.
+apps/go-api/internal/htmlcompat/testdata/** -whitespace

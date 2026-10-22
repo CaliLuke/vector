@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "decision": "docs/go-backend-replacement/decisions/ASSET-001-invalid-methods.md",
+  "status": "All 23 selected invalid method/path combinations confirmed by immutable source fixtures; original 500/400 responses retained. Go target implementation and full replay are in progress.",
+  "included_operation_count": 23,
+  "excluded_discovery_operation_count": 4,
+  "operations": [
+    "delete_api_assets_v2_user_assets",
+    "patch_api_assets_v2_user_assets",
+    "post_api_assets_v2_user_assets_by_asset_id",
+    "delete_api_assets_v2_workspaces_by_slug",
+    "get_api_assets_v2_workspaces_by_slug",
+    "patch_api_assets_v2_workspaces_by_slug",
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+    "post_api_assets_v2_workspaces_by_slug_by_asset_id",
+    "delete_api_public_assets_v2_anchor_by_anchor",
+    "get_api_public_assets_v2_anchor_by_anchor",
+    "patch_api_public_assets_v2_anchor_by_anchor",
+    "post_api_public_assets_v2_anchor_by_anchor_by_pk",
+    "delete_api_users_file_assets",
+    "get_api_users_file_assets",
+    "post_api_users_file_assets_by_asset_key",
+    "post_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+    "delete_api_workspaces_by_slug_file_assets",
+    "get_api_workspaces_by_slug_file_assets",
+    "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments"
+  ],
+  "routes": [
+    {
+      "path": "/api/assets/v2/user-assets/",
+      "invalid_methods": ["PATCH", "DELETE"],
+      "source_allow": "POST, PATCH, DELETE, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "POST, PATCH, DELETE, OPTIONS",
+      "target_allow": "PATCH, DELETE, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "invalid_methods": ["GET", "PATCH", "DELETE"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "invalid_methods": ["GET", "PATCH", "DELETE"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "invalid_methods": ["PATCH", "DELETE"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, POST, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "invalid_methods": ["GET", "PATCH", "DELETE"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, PATCH, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/users/file-assets/",
+      "invalid_methods": ["GET", "DELETE"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/users/file-assets/{asset_key}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "invalid_methods": ["POST"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, DELETE, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "invalid_methods": ["GET", "DELETE"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "POST, OPTIONS"
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "invalid_methods": ["DELETE"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "GET, POST, HEAD, OPTIONS"
+    },
+    {
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "invalid_methods": ["GET", "POST"],
+      "source_allow": "GET, POST, DELETE, HEAD, OPTIONS",
+      "target_allow": "DELETE, OPTIONS"
+    }
+  ],
+  "source_fixture_refs": [
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_assets_v2_user_assets.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-patch_api_assets_v2_user_assets.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_assets_v2_user_assets_by_asset_id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_assets_v2_workspaces_by_slug.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/v2-workspace-asset-collection-get-signature-error.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-patch_api_assets_v2_workspaces_by_slug.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-get_api_assets_v2_workspaces_by_slug_projects_by_project_id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-patch_api_assets_v2_workspaces_by_slug_projects_by_project_id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_assets_v2_workspaces_by_slug_by_asset_id.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_public_assets_v2_anchor_by_anchor.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/public-asset-collection-get-signature-error.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-patch_api_public_assets_v2_anchor_by_anchor.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_public_assets_v2_anchor_by_anchor_by_pk.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_users_file_assets.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/legacy-user-collection-get-signature-error.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_users_file_assets_by_asset_key.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-post_api_workspaces_file_assets_by_workspace_id_by_asset_key.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_workspaces_by_slug_file_assets.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-get_api_workspaces_by_slug_file_assets.json",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/source-invalid-method-delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments.json"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "source_revision": "9cb3baebc1baa06d4f6ae9d271a54c74acf1e065",
+  "source_snapshot": "plane-cycle-lifecycle-source:/tmp/public_feedback_source/overlay/plane (pinned Django plus django-corrections.patch)",
+  "files": {
+    "plane.space.views.issue": {
+      "path": "/tmp/public_feedback_source/overlay/plane/space/views/issue.py",
+      "sha256": "a66b264256730aaa407e4295180f57f3c43d75a59fffa6fc5370ec59e99ab204"
+    },
+    "plane.space.views.intake": {
+      "path": "/tmp/public_feedback_source/overlay/plane/space/views/intake.py",
+      "sha256": "7b7845275311c8c809cb87eb55cc839a7c9cd0b54e5d7e385789ba9ab1263f29"
+    },
+    "plane.space.views.project": {
+      "path": "/tmp/public_feedback_source/overlay/plane/space/views/project.py",
+      "sha256": "a8a267cb781c7f49fd9918c131f1ec9311974a59431a31b30dd2dfd08d563a0c"
+    }
+  }
+}

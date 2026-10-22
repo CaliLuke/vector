@@ -1,0 +1,701 @@
+{
+  "database": {
+    "after": {
+      "accounts": [],
+      "analytic_views": [],
+      "api_activity_logs": [],
+      "api_tokens": [],
+      "changelogs": [],
+      "comment_reactions": [],
+      "cycle_issues": [],
+      "cycle_user_properties": [],
+      "cycles": [],
+      "deploy_boards": [],
+      "description_versions": [],
+      "descriptions": [],
+      "device_sessions": [],
+      "devices": [],
+      "draft_issue_assignees": [],
+      "draft_issue_cycles": [],
+      "draft_issue_labels": [],
+      "draft_issue_modules": [],
+      "draft_issues": [],
+      "email_notification_logs": [],
+      "estimate_points": [],
+      "estimates": [],
+      "exporters": [],
+      "file_assets": [],
+      "github_comment_syncs": [],
+      "github_issue_syncs": [],
+      "github_repositories": [],
+      "github_repository_syncs": [],
+      "importers": [],
+      "instance_admins": [],
+      "instance_configurations": [],
+      "instances": [],
+      "intake_issues": [],
+      "intakes": [],
+      "integrations": [],
+      "issue_activities": [],
+      "issue_assignees": [],
+      "issue_attachments": [],
+      "issue_blockers": [],
+      "issue_comments": [],
+      "issue_description_versions": [],
+      "issue_labels": [],
+      "issue_links": [],
+      "issue_mentions": [],
+      "issue_reactions": [],
+      "issue_relations": [],
+      "issue_sequences": [],
+      "issue_subscribers": [],
+      "issue_types": [],
+      "issue_versions": [],
+      "issue_views": [],
+      "issue_votes": [],
+      "issues": [],
+      "labels": [],
+      "module_issues": [],
+      "module_links": [],
+      "module_members": [],
+      "module_user_properties": [],
+      "modules": [],
+      "notifications": [],
+      "page_labels": [],
+      "page_logs": [],
+      "page_versions": [],
+      "pages": [],
+      "profiles": [],
+      "project_deploy_boards": [],
+      "project_identifiers": [],
+      "project_issue_types": [],
+      "project_member_invites": [],
+      "project_members": [],
+      "project_pages": [],
+      "project_public_members": [],
+      "project_user_properties": [],
+      "project_webhooks": [],
+      "projects": [],
+      "sessions": [],
+      "slack_project_syncs": [],
+      "social_login_connections": [],
+      "states": [],
+      "stickies": [],
+      "teams": [],
+      "user_favorites": [],
+      "user_notification_preferences": [
+        {
+          "comment": true,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "issue_completed": true,
+          "mention": true,
+          "project_id": null,
+          "property_change": true,
+          "state_change": true,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "workspace_id": null
+        }
+      ],
+      "user_recent_visits": [],
+      "users": [
+        {
+          "avatar": "",
+          "avatar_asset_id": null,
+          "bot_type": null,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_location": "",
+          "date_joined": "<timestamp>",
+          "display_name": "test",
+          "email": "test@plane.so",
+          "first_name": "Test",
+          "id": "<uuid-2>",
+          "is_active": true,
+          "is_bot": false,
+          "is_email_valid": false,
+          "is_email_verified": false,
+          "is_managed": false,
+          "is_password_autoset": false,
+          "is_password_expired": false,
+          "is_password_reset_required": false,
+          "is_staff": false,
+          "is_superuser": false,
+          "last_active": "<timestamp>",
+          "last_location": "",
+          "last_login": null,
+          "last_login_ip": "",
+          "last_login_medium": "email",
+          "last_login_time": null,
+          "last_login_uagent": "",
+          "last_logout_ip": "",
+          "last_logout_time": null,
+          "last_name": "User",
+          "masked_at": null,
+          "mobile_number": null,
+          "password": "<secret:users.password>",
+          "token": "",
+          "token_updated_at": null,
+          "updated_at": "<timestamp>",
+          "user_timezone": "UTC",
+          "username": ""
+        }
+      ],
+      "webhook_logs": [],
+      "webhooks": [],
+      "workspace_home_preferences": [],
+      "workspace_integrations": [],
+      "workspace_member_invites": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-3>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-2>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "workspace_themes": [],
+      "workspace_user_links": [],
+      "workspace_user_preferences": [],
+      "workspace_user_properties": [],
+      "workspaces": [
+        {
+          "background_color": "#F3F4F6",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Test Workspace",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "test-workspace",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "before": {
+      "accounts": [],
+      "analytic_views": [],
+      "api_activity_logs": [],
+      "api_tokens": [],
+      "changelogs": [],
+      "comment_reactions": [],
+      "cycle_issues": [],
+      "cycle_user_properties": [],
+      "cycles": [],
+      "deploy_boards": [],
+      "description_versions": [],
+      "descriptions": [],
+      "device_sessions": [],
+      "devices": [],
+      "draft_issue_assignees": [],
+      "draft_issue_cycles": [],
+      "draft_issue_labels": [],
+      "draft_issue_modules": [],
+      "draft_issues": [],
+      "email_notification_logs": [],
+      "estimate_points": [],
+      "estimates": [],
+      "exporters": [],
+      "file_assets": [],
+      "github_comment_syncs": [],
+      "github_issue_syncs": [],
+      "github_repositories": [],
+      "github_repository_syncs": [],
+      "importers": [],
+      "instance_admins": [],
+      "instance_configurations": [],
+      "instances": [],
+      "intake_issues": [],
+      "intakes": [],
+      "integrations": [],
+      "issue_activities": [],
+      "issue_assignees": [],
+      "issue_attachments": [],
+      "issue_blockers": [],
+      "issue_comments": [],
+      "issue_description_versions": [],
+      "issue_labels": [],
+      "issue_links": [],
+      "issue_mentions": [],
+      "issue_reactions": [],
+      "issue_relations": [],
+      "issue_sequences": [],
+      "issue_subscribers": [],
+      "issue_types": [],
+      "issue_versions": [],
+      "issue_views": [],
+      "issue_votes": [],
+      "issues": [],
+      "labels": [],
+      "module_issues": [],
+      "module_links": [],
+      "module_members": [],
+      "module_user_properties": [],
+      "modules": [],
+      "notifications": [],
+      "page_labels": [],
+      "page_logs": [],
+      "page_versions": [],
+      "pages": [],
+      "profiles": [],
+      "project_deploy_boards": [],
+      "project_identifiers": [],
+      "project_issue_types": [],
+      "project_member_invites": [],
+      "project_members": [],
+      "project_pages": [],
+      "project_public_members": [],
+      "project_user_properties": [],
+      "project_webhooks": [],
+      "projects": [],
+      "sessions": [],
+      "slack_project_syncs": [],
+      "social_login_connections": [],
+      "states": [],
+      "stickies": [],
+      "teams": [],
+      "user_favorites": [],
+      "user_notification_preferences": [
+        {
+          "comment": true,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "issue_completed": true,
+          "mention": true,
+          "project_id": null,
+          "property_change": true,
+          "state_change": true,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "workspace_id": null
+        }
+      ],
+      "user_recent_visits": [],
+      "users": [
+        {
+          "avatar": "",
+          "avatar_asset_id": null,
+          "bot_type": null,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_location": "",
+          "date_joined": "<timestamp>",
+          "display_name": "test",
+          "email": "test@plane.so",
+          "first_name": "Test",
+          "id": "<uuid-2>",
+          "is_active": true,
+          "is_bot": false,
+          "is_email_valid": false,
+          "is_email_verified": false,
+          "is_managed": false,
+          "is_password_autoset": false,
+          "is_password_expired": false,
+          "is_password_reset_required": false,
+          "is_staff": false,
+          "is_superuser": false,
+          "last_active": "<timestamp>",
+          "last_location": "",
+          "last_login": null,
+          "last_login_ip": "",
+          "last_login_medium": "email",
+          "last_login_time": null,
+          "last_login_uagent": "",
+          "last_logout_ip": "",
+          "last_logout_time": null,
+          "last_name": "User",
+          "masked_at": null,
+          "mobile_number": null,
+          "password": "<secret:users.password>",
+          "token": "",
+          "token_updated_at": null,
+          "updated_at": "<timestamp>",
+          "user_timezone": "UTC",
+          "username": ""
+        }
+      ],
+      "webhook_logs": [],
+      "webhooks": [],
+      "workspace_home_preferences": [],
+      "workspace_integrations": [],
+      "workspace_member_invites": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-3>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-2>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "workspace_themes": [],
+      "workspace_user_links": [],
+      "workspace_user_preferences": [],
+      "workspace_user_properties": [],
+      "workspaces": [
+        {
+          "background_color": "#F3F4F6",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Test Workspace",
+          "organization_size": null,
+          "owner_id": "<uuid-2>",
+          "slug": "test-workspace",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "result": {
+    "1024": {
+      "clean_matches_input": true,
+      "clean_tag_count": 1024,
+      "error": null,
+      "input_utf8_bytes": 9220,
+      "is_valid": true
+    },
+    "511": {
+      "clean_matches_input": true,
+      "clean_tag_count": 511,
+      "error": null,
+      "input_utf8_bytes": 4603,
+      "is_valid": true
+    },
+    "512": {
+      "clean_matches_input": true,
+      "clean_tag_count": 512,
+      "error": null,
+      "input_utf8_bytes": 4612,
+      "is_valid": true
+    },
+    "div_1024": {
+      "clean_matches_input": true,
+      "clean_sha256": "253d5de125f6672286fe95dc35356314cea7c9298e40cd8ae237e66b2e1df47b",
+      "error": null,
+      "is_valid": true
+    },
+    "div_512": {
+      "clean_matches_input": true,
+      "clean_sha256": "9fd2872de4301efbfb44e349cbc8201dac90a3b880b5a41964df9668235a76b5",
+      "error": null,
+      "is_valid": true
+    },
+    "malformed_nesting_at_512": {
+      "clean_matches_expected": true,
+      "clean_sha256": "18861e580f968bff27a89bc45b85f9d33e2cc61dd05bbf61077d880d7a75ee73",
+      "error": null,
+      "is_valid": true
+    },
+    "mixed_600": {
+      "clean_matches_input": true,
+      "clean_sha256": "1757212df826d88433133047b4c5ee9ac18f04fdbb54ed525ef895225c822b6f",
+      "error": null,
+      "is_valid": true
+    },
+    "sanitization_at_512": {
+      "clean_matches_expected": true,
+      "clean_sha256": "7ad7527c425d67da942a7d693edd2f3b13517b46c745d846b5d9004a5c93158f",
+      "error": null,
+      "is_valid": true
+    },
+    "source_availability_4096": {
+      "clean_matches_input": true,
+      "clean_sha256": "d1a58fc490924f2166ee29bbdbb2a4f6b35587c008daa0cc1d69986ee8561392",
+      "error": null,
+      "input_utf8_bytes": 45060,
+      "is_valid": true
+    },
+    "source_availability_4097": {
+      "clean_matches_input": true,
+      "clean_sha256": "7f3dce3be3276c277136ddd04f86ff1a5e8b76742c41af56c0f20d2fe003d3b4",
+      "error": null,
+      "input_utf8_bytes": 45071,
+      "is_valid": true
+    },
+    "table_at_512": {
+      "clean_matches_expected": true,
+      "clean_sha256": "815c22268ac40cff128ad728d016e08e7ddea550fac67df565fc237e5662a04a",
+      "error": null,
+      "is_valid": true
+    }
+  },
+  "schema_version": 1,
+  "seed": {
+    "stickies": [],
+    "user_notification_preferences": [
+      {
+        "id": "<uuid-1>",
+        "user_id": "<uuid-2>"
+      }
+    ],
+    "users": [
+      {
+        "email": "test@plane.so",
+        "id": "<uuid-2>"
+      }
+    ],
+    "workspace_members": [
+      {
+        "id": "<uuid-3>",
+        "is_active": true,
+        "role": 20,
+        "user_id": "<uuid-2>",
+        "workspace_id": "<uuid-4>"
+      }
+    ],
+    "workspaces": [
+      {
+        "id": "<uuid-4>",
+        "owner_id": "<uuid-2>",
+        "slug": "test-workspace"
+      }
+    ]
+  },
+  "source_call": {
+    "callable": "plane.utils.content_validator.validate_html_content",
+    "input": {
+      "availability_depths": [
+        4096,
+        4097
+      ],
+      "deep_container_cases": {
+        "div_1024": {
+          "closing_html": "</div>",
+          "opening_html": "<div>",
+          "repeats": 1024
+        },
+        "div_512": {
+          "closing_html": "</div>",
+          "opening_html": "<div>",
+          "repeats": 512
+        },
+        "mixed_600": {
+          "closing_html": "</blockquote></dl></div>",
+          "opening_html": "<div><dl><blockquote>",
+          "repeats": 200
+        }
+      },
+      "depths": [
+        511,
+        512,
+        1024
+      ],
+      "kind": "valid-deep-nesting-boundary",
+      "structural_cases": {
+        "malformed_nesting_at_512": {
+          "expected_inner_html": "<p></p><div>x<p></p>y</div>",
+          "html": "<p><div>x</p>y"
+        },
+        "table_at_512": {
+          "expected_inner_html": "<table><tbody><tr><td>x</td></tr></tbody></table>",
+          "html": "<table><tr><td>x</td></tr></table>"
+        }
+      },
+      "tag": "dl",
+      "unsafe_inner_html": "<a href=\"javascript:alert(1)\" target=\"_blank\">Link</a><script>alert(\"removed\")</script><p data-id=\"kept\" onclick=\"removed\">Text</p>",
+      "x_net_tree_builder_limit": 512
+    }
+  }
+}

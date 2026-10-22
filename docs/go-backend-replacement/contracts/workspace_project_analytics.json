@@ -1,0 +1,565 @@
+{
+  "version": 1,
+  "family": "workspace_project_analytics",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "Pinned Django captures cover all nine GET operations with 75 source cases, plus four sparse corrected-source oracles for filtered monthly charts. Coverage includes populated projections, authorization roles, supported query fields, triage exclusion across issue_objects queries, explicit triage inclusion in Issue.objects intake counts, project/workspace membership count distinctions, monthly and daily chart windows, HEAD and OPTIONS protocol behavior, invalid-timezone middleware behavior, and saved analytics. Runtime receipts are recorded under evidence/workspace-project-analytics. Two foreign-project cycle/module date-bound leaks are documented in pristine fixtures and corrected to empty scoped results.",
+  "operation_count": 9,
+  "source_files": [
+    "apps/api/plane/app/urls/analytic.py",
+    "apps/api/plane/app/views/analytic/advance.py",
+    "apps/api/plane/app/views/analytic/project_analytics.py",
+    "apps/api/plane/app/views/analytic/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/utils/date_utils.py",
+    "apps/api/plane/utils/issue_filters.py",
+    "apps/api/plane/utils/analytics_plot.py",
+    "apps/api/plane/db/models/analytic.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/state.py",
+    "apps/api/plane/db/models/workspace.py"
+  ],
+  "fixture_count": 79,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/workspace-project-analytics/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/workspace-project-analytics/source-hashes.json",
+  "operations": {
+    "get_api_workspaces_by_slug_advance_analytics_charts": {
+      "operation_id": "get_api_workspaces_by_slug_advance_analytics_charts",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/advance-analytics-charts/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["date_filter", "group_by", "project_ids", "type", "x_axis"],
+      "documented_query_parameters": ["date_filter", "group_by", "project_ids", "type", "x_axis"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member or admin, type=projects",
+          "observable": "Returns project, work-item, cycle, module, intake, member, page, and view count rows."
+        },
+        {
+          "when": "workspace member or admin, type=custom-work-items",
+          "observable": "Groups populated work items using x_axis and group_by and applies chart period filtering."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member or admin, type=work-items",
+          "observable": "Returns one bucket per month from workspace creation through the current month. Counts and completed state groups are bucketed by issue created date, independently of completed_at."
+        },
+        {
+          "when": "member or admin, type=work-items with a recognized date_filter",
+          "observable": "Counts issues created in the date window and emits month-start buckets from the later of workspace creation and the date-window start through the current month."
+        },
+        {
+          "when": "workspace member with project_ids, type=projects, and a triage issue linked to intake",
+          "observable": "The project chart excludes triage from issue_objects work-item counts, includes the triage issue in the explicit Issue.objects intake count, and keeps members workspace-scoped even though the selected project has only one project member."
+        },
+        {
+          "when": "workspace member, type=work-items or custom-work-items with a triage issue",
+          "observable": "Monthly and grouped work-item charts exclude triage issues."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-projects.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-custom-grouping.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_chart-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_chart-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_chart-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-chart-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-work-items-monthly.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-work-items-monthly-filtered.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-project-ids-triage-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-monthly-triage.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-chart-custom-triage.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/advance-analytics-charts/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_advance_analytics_stats": {
+      "operation_id": "get_api_workspaces_by_slug_advance_analytics_stats",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/advance-analytics-stats/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["date_filter", "project_ids", "type"],
+      "documented_query_parameters": ["date_filter", "project_ids", "type"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member or admin, type=work-items",
+          "observable": "Returns per-project issue counts grouped by cancelled, completed, backlog, unstarted, and started state."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member, type=work-items with a triage issue",
+          "observable": "Per-project state counts exclude the triage issue."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-stats.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_stats-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_stats-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_stats-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-stats-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-stats-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/advance-analytics-stats/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_advance_analytics": {
+      "operation_id": "get_api_workspaces_by_slug_advance_analytics",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/advance-analytics/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["date_filter", "project_ids", "tab"],
+      "documented_query_parameters": ["date_filter", "project_ids", "tab"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member or admin, tab=overview",
+          "observable": "Returns populated workspace, membership, project, work-item, cycle, and intake counts; project_ids restrict the requested data."
+        },
+        {
+          "when": "authenticated user without workspace membership",
+          "observable": "Returns 403."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member, tab=overview with a triage issue linked to intake",
+          "observable": "The total work-item count excludes triage while the Issue.objects intake count includes the linked triage issue."
+        },
+        {
+          "when": "workspace member, tab=work-items with a triage issue",
+          "observable": "Work-item statistics exclude triage."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-overview-project-filter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_advance-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_advance-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace_advance-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-overview-triage-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-advance-work-items-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/advance-analytics/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_analytics": {
+      "operation_id": "get_api_workspaces_by_slug_analytics",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/analytics/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "estimate_point",
+        "labels",
+        "mentions",
+        "name",
+        "parent",
+        "priority",
+        "project",
+        "segment",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at",
+        "x_axis",
+        "y_axis"
+      ],
+      "documented_query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "estimate_point",
+        "labels",
+        "mentions",
+        "name",
+        "parent",
+        "priority",
+        "project",
+        "segment",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at",
+        "x_axis",
+        "y_axis"
+      ],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member or admin with state_id x-axis and priority segment",
+          "observable": "Applies issue priority and type filters, returns a nonempty grouped distribution and state details, and leaves unrequested label details empty."
+        },
+        {
+          "when": "workspace member or admin with labels__id x-axis",
+          "observable": "Returns issue_objects distribution and label details from Issue.objects; the fixture exposes an archived-only label detail absent from the distribution."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member with a triage issue and state_id x-axis",
+          "observable": "The Issue.issue_objects graph total and distribution exclude the triage issue."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-generic-state-segment-priority-filter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-generic-label-detail-archived-issue.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-generic-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/generic-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/generic-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/generic-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-generic-triage.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/analytics/",
+      "status_note": "The archived-only label detail is a source-observed projection distinction and is recorded for review.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_default_analytics": {
+      "operation_id": "get_api_workspaces_by_slug_default_analytics",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/default-analytics/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "estimate_point",
+        "labels",
+        "mentions",
+        "name",
+        "parent",
+        "priority",
+        "project",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at"
+      ],
+      "documented_query_parameters": [
+        "assignees",
+        "completed_at",
+        "created_at",
+        "created_by",
+        "estimate_point",
+        "labels",
+        "mentions",
+        "name",
+        "parent",
+        "priority",
+        "project",
+        "start_date",
+        "start_target_date",
+        "state",
+        "state_group",
+        "subscriber",
+        "target_date",
+        "type",
+        "updated_at"
+      ],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member, type=active",
+          "observable": "Returns filtered totals, state groups, completion and user summaries, and estimate sums from Issue.point."
+        },
+        {
+          "when": "workspace guest, type=all",
+          "observable": "Guest is permitted and receives populated default analytics."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member with a triage issue",
+          "observable": "Default analytics totals exclude the triage issue through Issue.issue_objects."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-default-active-state-groups.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-default-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/default-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/default-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/default-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-default-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/workspace-default-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/default-analytics/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_charts": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_charts",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/advance-analytics-charts/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["cycle_id", "date_filter", "group_by", "module_id", "project_ids", "type", "x_axis"],
+      "documented_query_parameters": [
+        "cycle_id",
+        "date_filter",
+        "group_by",
+        "module_id",
+        "project_ids",
+        "type",
+        "x_axis"
+      ],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project guest with active project membership, type=custom-work-items",
+          "observable": "Guest access is allowed and returns populated work-item groups."
+        },
+        {
+          "when": "project member, type=custom-work-items",
+          "observable": "Returns populated work-item groups filtered by project and grouping dimensions."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "project member, type=work-items",
+          "observable": "Returns one bucket per month from project creation through the current month. Counts and completed state groups are bucketed by issue created date, independently of completed_at."
+        },
+        {
+          "when": "project member, type=work-items with cycle_id or module_id",
+          "observable": "Emits one daily bucket over the selected cycle/module start and end dates; created counts use cycle/module link creation dates and completed counts use the linked issue state. Missing start or end bounds return an empty data list and empty schema."
+        },
+        {
+          "when": "project member, type=work-items with recognized date_filter",
+          "observable": "Filters issue creation dates to the selected relative window and emits month-start buckets from the later of project creation and the window start through the current month."
+        },
+        {
+          "when": "cycle_id or module_id belongs to a different project",
+          "observable": "Intentional security correction: return empty data/schema; never disclose the foreign project date bounds. Pristine Django leaks date keys."
+        },
+        {
+          "when": "project member, type=custom-work-items or work-items with a triage issue",
+          "observable": "Custom and monthly chart projections exclude triage issues through Issue.issue_objects."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-custom-grouping.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-chart-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_chart-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_chart-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_chart-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-chart-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-monthly.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-monthly-filtered.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-cycle-daily.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-module-daily.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-cycle-no-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-module-no-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-foreign-cycle-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics_corrected/project-advance-chart-work-items-foreign-cycle-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-work-items-foreign-module-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics_corrected/project-advance-chart-work-items-foreign-module-bounds.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-custom-triage.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-chart-monthly-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/projects/00000000-0000-4000-8000-000000000902/advance-analytics-charts/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_stats": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics_stats",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/advance-analytics-stats/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["date_filter", "project_ids"],
+      "documented_query_parameters": ["date_filter", "project_ids"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project member",
+          "observable": "Returns populated project work-item counts grouped by source state group."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "project member with an active and an assigned triage issue",
+          "observable": "Assignee statistics include the active issue and exclude the triage issue."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-stats.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_stats-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_stats-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_stats-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-stats-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-stats-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/projects/00000000-0000-4000-8000-000000000902/advance-analytics-stats/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_advance_analytics",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/advance-analytics/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["cycle_id", "date_filter", "module_id", "project_ids"],
+      "documented_query_parameters": ["cycle_id", "date_filter", "module_id", "project_ids"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "project member",
+          "observable": "Returns populated issue count summary for the selected project."
+        },
+        {
+          "when": "workspace admin with active project guest membership",
+          "observable": "Workspace admin fallback permits analytics when the principal remains an active project member."
+        },
+        {
+          "when": "workspace admin without project membership",
+          "observable": "Returns 403."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "project member with a triage issue",
+          "observable": "Project work-item statistics exclude triage."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-workspace-admin-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_advance-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_advance-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project_advance-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/project-advance-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/projects/00000000-0000-4000-8000-000000000902/advance-analytics/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    },
+    "get_api_workspaces_by_slug_saved_analytic_view_by_analytic_id": {
+      "operation_id": "get_api_workspaces_by_slug_saved_analytic_view_by_analytic_id",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/saved-analytic-view/{analytic_id}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["segment"],
+      "documented_query_parameters": ["segment"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace member with saved x_axis/y_axis and valid segment",
+          "observable": "Returns nonempty saved analytics distribution and total."
+        },
+        {
+          "when": "anonymous",
+          "observable": "Returns 401."
+        },
+        {
+          "when": "workspace member with a saved state graph and a triage issue",
+          "observable": "Saved analytics totals and distribution exclude the triage issue."
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-analytic-view.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-analytic-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_project_analytics/saved-analytic-triage.json"
+      ],
+      "source_statuses": ["200", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-analytics-contract/saved-analytic-view/00000000-0000-4000-8000-000000000905/",
+      "status_note": "Pinned Django response captured from populated relational fixtures.",
+      "statuses": [200, 400]
+    }
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/workspace_project_analytics_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/workspaces/workspace-analytics-contract/advance-analytics-charts/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"]
+  },
+  "middleware_notes": "The production mount rejects oversized requests before session inspection, anonymous requests before timezone/domain calls, invalid timezones before domain calls, and validates OPTIONS timezones. Authorized requests reach the actual generated service. Session requests do not emit API-key audit logs. Domain authorization is separately covered by each family production-mount and database replay tests."
+}

@@ -1,0 +1,36 @@
+{
+  "family": "page_lifecycle",
+  "source_openapi": "docs/go-backend-replacement/openapi/full-server.openapi.json",
+  "source_openapi_sha256": "20139d4e5fcfd9eb82f8a6039043fcbd96ea04bfdf04fa601d46fd412fb8f59c",
+  "route_inventory": "apps/go-api/internal/routing/route-inventory.json",
+  "selected_operation_ids": [
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+    "delete_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock",
+    "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id",
+    "patch_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_description",
+    "post_api_workspaces_by_slug_projects_by_project_id_pages",
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_access",
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_archive",
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_duplicate",
+    "post_api_workspaces_by_slug_projects_by_project_id_pages_by_page_id_lock"
+  ],
+  "operation_count": 10,
+  "import_input": "apps/go-api/page_lifecycle/source/import-input.openapi.json",
+  "import_input_sha256": "98288124fa8916d9792d6f6ea131dfd2c15f4754c3a0cf3ed11b62df903e0666",
+  "import_command": [
+    "go",
+    "-C",
+    "apps/go-api",
+    "tool",
+    "loom",
+    "import",
+    "openapi",
+    "page_lifecycle/source/import-input.openapi.json",
+    "--allow-lossy",
+    "-o",
+    "page_lifecycle/imported.go"
+  ],
+  "import_output": "apps/go-api/page_lifecycle/imported.go",
+  "import_output_sha256": "6eee735814221720f76ea68eb35a067e998f0f9edbbdb1af2e1a6d4580d874a6"
+}

@@ -1,0 +1,66 @@
+{
+  "status": "Baseline repairs verified before ticket collaboration implementation; routes remain Django owned.",
+  "scope": [
+    "Editor protocol initialization and shared lifecycle",
+    "Priority dropdown Escape focus restoration",
+    "Subscription accessible names including mobile/loading"
+  ],
+  "validation": {
+    "frontend_suite": {
+      "command": "pnpm_config_verify_deps_before_run=false pnpm test:frontend",
+      "exit_status": 0,
+      "cases": 96
+    },
+    "focused_tests": {
+      "cases": 4,
+      "exit_status": 0,
+      "real_dependencies": [
+        "Propel Button",
+        "ComboDropDown",
+        "Tooltip",
+        "outside-click hook",
+        "Tiptap editor customLink marks"
+      ]
+    },
+    "typechecks": ["@plane/editor", "web"],
+    "lint_and_format": "Oxlint zero warnings/errors; oxfmt clean",
+    "fresh_read_only_review": "CLEAN source and final editor regression delta; both findings repaired"
+  },
+  "browser": {
+    "entry": "http://localhost:8000/",
+    "flows": [
+      "Home",
+      "project tickets six existing records",
+      "GOPLANE-3 detail and persisted comment/link after reload",
+      "Priority menu open, selected Medium, Escape closes and focus returns Medium BUTTON",
+      "subscription toggle and restore with accessible loading name",
+      "priority filtering and reload persistence then clear",
+      "Your work subscribed list existing records",
+      "Inbox",
+      "account settings and Escape focus return"
+    ],
+    "source_hmr": "Temporary provider comment applied through running watcher, UI retained existing rows, comment restored.",
+    "fresh_logal_start": "2026-10-11T03:41:04Z",
+    "fresh_requests": "All exercised UI API calls succeeded, including unsubscribe204 and subscribe201. Unrelated MCP/OAuth discovery probes to localhost8001 returned404; no browser UI path failed.",
+    "application_warnings": "No linkify protocol initialization warnings after repair.",
+    "tooling_limitation": {
+      "observed": "Hydration mismatch from extra codex-browser-sidebar-comments-root DIV under html.",
+      "evidence": "Authenticated server document response lacks the injected element; browser DOM contains it. Layout warning identifies unexpected DIV in HTML.",
+      "classification": "Browser tool injection, supported by this captured run; future hydration warnings require separate investigation.",
+      "discovery_probes": "48 source-backend404 spans for /mcp and well-known OAuth/OpenID paths, from external tool discovery; preserved in fresh trace evidence."
+    },
+    "earlier_request_failure": {
+      "status": 500,
+      "cause": "Go trace context_canceled; concurrent browser duplicate GET canceled ERR_ABORTED and replacement returns200.",
+      "request_id": "01a128f5-bc83-7be6-a7a6-fc1b3c9a7070"
+    }
+  },
+  "retained_data": {
+    "ticket": "GOPLANE-3",
+    "comment": "Ticket collaboration migration baseline \u2014 Oct 10",
+    "link": "Collaboration migration baseline \u2014 Oct 10 \u2014 https://example.com/",
+    "subscription": "restored subscribed",
+    "filters": "cleared"
+  },
+  "next_exit_condition": "Complete immutable Django corpus and matrix, settle targeted security/effects decisions, then implement existing workitems domain and native family transport."
+}

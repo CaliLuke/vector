@@ -1,0 +1,160 @@
+{
+  "audit": {
+    "created_label_count": 1,
+    "created_label_has_actor": true,
+    "created_label_has_null_updater": true,
+    "created_label_sort_orders": [
+      17.0
+    ],
+    "target_created_at_preserved": false,
+    "target_created_by_preserved": false,
+    "target_soft_deleted": false,
+    "target_sort_order_is_nan": false,
+    "target_updated_at_advanced": false,
+    "target_updated_by_is_actor": false
+  },
+  "cache": {
+    "after": {
+      "/api/workspaces/labels-contract/labels/": null,
+      "/api/workspaces/labels-contract/labels/:secondary": null
+    },
+    "before": {
+      "/api/workspaces/labels-contract/labels/": {
+        "marker": "exact"
+      },
+      "/api/workspaces/labels-contract/labels/:secondary": {
+        "marker": "secondary"
+      }
+    }
+  },
+  "database": {
+    "after": {
+      "issue_labels": [],
+      "labels": [
+        {
+          "color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-5>",
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-6>",
+          "name": "First label",
+          "parent_id": null,
+          "project_id": "<uuid-4>",
+          "sort_order": 17.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-7>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "issue_labels": [],
+      "labels": [],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "labels"
+    ],
+    "expected_changed_tables": [
+      "labels"
+    ],
+    "field_changes": [
+      {
+        "fields": [
+          "color",
+          "created_at",
+          "created_by_id",
+          "description",
+          "id",
+          "name",
+          "project_id",
+          "sort_order",
+          "updated_at",
+          "workspace_id"
+        ],
+        "record": "new",
+        "table": "labels"
+      }
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "color": "#123456",
+      "description": "ignored",
+      "external_id": "ignored",
+      "id": "<uuid-1>",
+      "name": "  First label  ",
+      "project_id": "<uuid-2>",
+      "sort_order": 17,
+      "unknown": "ignored",
+      "workspace_id": "<uuid-3>"
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/labels-contract/projects/<uuid-4>/issue-labels/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<uuid-5>"
+    },
+    "query": {
+      "cursor": "invalid",
+      "expand": "parent",
+      "fields": "name",
+      "group_by": "color",
+      "order_by": "-name",
+      "per_page": "invalid",
+      "search": "no-match",
+      "sub_group_by": "parent"
+    }
+  },
+  "response": {
+    "body": {
+      "color": "#123456",
+      "id": "<uuid-6>",
+      "name": "First label",
+      "parent": null,
+      "project_id": "<uuid-4>",
+      "sort_order": 17.0,
+      "workspace_id": "<uuid-7>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "POST, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 201
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "post-create-first-label-ignores-readonly-ids"
+  }
+}

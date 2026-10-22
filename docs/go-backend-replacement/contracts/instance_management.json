@@ -1,0 +1,664 @@
+{
+  "version": 1,
+  "family": "instance_management",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "91 pristine source-recorded fixtures cover all 14 selected operations, including anonymous authorization, HEAD/OPTIONS, invalid-timezone ordering, public-session requests, and non-object write bodies. Thirteen corrected source fixtures specify authenticated 405 routing corrections and DRF 400 validation for four source-crash cases, preserving preceding cache effects. The corrected disable-email behavior also invalidates the configuration list cache. ADMIN-005 records the four source-crashing truthy numeric/boolean name and slug inputs as field-specific 400 validation errors with explicit user approval. Source anonymous-rate and authenticated-bypass regression passes; Final parity and live differential acceptance are recorded by the exact-tree gate receipts. Thirty-two additional source cases cover Unicode workspace names, URL/slug validation, accepted cursor shapes, literal wildcard search, and workspace creation defaults and optional-field validation.",
+  "operation_count": 14,
+  "source_files": [
+    "apps/api/plane/license/urls.py",
+    "apps/api/plane/license/api/views/instance.py",
+    "apps/api/plane/license/api/views/admin.py",
+    "apps/api/plane/license/api/views/configuration.py",
+    "apps/api/plane/license/api/views/workspace.py",
+    "apps/api/plane/license/api/views/base.py",
+    "apps/api/plane/license/api/permissions/instance.py",
+    "apps/api/plane/license/api/serializers/instance.py",
+    "apps/api/plane/license/api/serializers/configuration.py",
+    "apps/api/plane/license/api/serializers/admin.py",
+    "apps/api/plane/license/api/serializers/workspace.py",
+    "apps/api/plane/license/models/instance.py",
+    "apps/api/plane/db/models/workspace.py",
+    "apps/api/plane/utils/content_validator.py",
+    "apps/api/plane/utils/url.py",
+    "apps/api/plane/utils/constants.py",
+    "apps/api/plane/utils/paginator.py"
+  ],
+  "operations": {
+    "get_api_instances": {
+      "operation_id": "get_api_instances",
+      "method": "GET",
+      "path": "/api/instances/",
+      "auth_profile": "public",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Public; returns the configured instance projection with runtime configuration flags. The source response omits is_activated when an instance exists. Root GET cache is private max-age=12.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "anonymous public request exceeds shared 30/minute budget",
+          "observable": "HTTP 429 with error_code 5900, error_message RATE_LIMIT_EXCEEDED and Retry-After. Authenticated sessions bypass anonymous throttling. Root and signup-visited share the client-address cache key.",
+          "source": "apps/api/plane/app/views/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/root-get-configured.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/root-get-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-head-root-get-configured.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-root-get-configured.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-root-patch.json"
+      ],
+      "source_statuses": ["200", "429"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    },
+    "patch_api_instances": {
+      "operation_id": "patch_api_instances",
+      "method": "PATCH",
+      "path": "/api/instances/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; partial InstanceSerializer update and invalidates /api/instances/ cache.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "authorized top-level JSON array",
+          "observable": "Source serializer rejects with HTTP 400 and non_field_errors.",
+          "source": "apps/api/plane/license/api/views/instance.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/root-patch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/root-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/root-patch-array.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/"
+    },
+    "delete_api_instances_admins": {
+      "operation_id": "delete_api_instances_admins",
+      "method": "DELETE",
+      "path": "/api/instances/admins/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Pristine source admin request raises a signature mismatch and returns generic 500; anonymous gets 401 and authenticated non-admin gets 403 first. Corrected target is 405 after auth/role checks because the collection has no delete action. Authenticated OPTIONS and invalid-timezone ordering are recorded once for this route path.",
+          "source": "apps/api/plane/license/api/views/"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-delete-collection-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-delete-collection-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-delete-collection-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/admins-delete-collection-signature-error.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "405", "500"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/"
+    },
+    "get_api_instances_admins": {
+      "operation_id": "get_api_instances_admins",
+      "method": "GET",
+      "path": "/api/instances/admins/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; returns the instance admin serializer array.",
+          "source": "apps/api/plane/license/api/views/"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-get-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-head-admins-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-admins-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-admins-get.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/"
+    },
+    "post_api_instances_admins": {
+      "operation_id": "post_api_instances_admins",
+      "method": "POST",
+      "path": "/api/instances/admins/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; creates membership for an existing user, default role 20, invalidates /api/instances/ cache.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "authorized top-level JSON array",
+          "observable": "Source crashes with HTTP 500; corrected source rejects with the standard DRF non_field_errors HTTP 400 body, preserving preceding cache invalidation and no database writes or durable effects.",
+          "source": "apps/api/plane/license/api/views/admin.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-post.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-post-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-post-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/admins-post-array.json"
+      ],
+      "source_statuses": ["201", "401"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/"
+    },
+    "post_api_instances_admins_sign_up_screen_visited": {
+      "operation_id": "post_api_instances_admins_sign_up_screen_visited",
+      "method": "POST",
+      "path": "/api/instances/admins/sign-up-screen-visited/",
+      "auth_profile": "public",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Public; marks the configured instance signup screen as visited and invalidates /api/instances/ cache. An authenticated invalid-timezone OPTIONS request still returns 200 because the public route bypasses instance-admin timezone activation.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "anonymous public request exceeds shared 30/minute budget",
+          "observable": "HTTP 429 with error_code 5900, error_message RATE_LIMIT_EXCEEDED and Retry-After. Authenticated sessions bypass anonymous throttling. Root and signup-visited share the client-address cache key.",
+          "source": "apps/api/plane/app/views/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/signup-visited.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/signup-visited-session.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-signup-visited.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-signup-visited.json"
+      ],
+      "source_statuses": ["200", "204", "429"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/sign-up-screen-visited/",
+      "permission_classes": ["rest_framework.permissions.AllowAny"],
+      "security": [{}]
+    },
+    "delete_api_instances_admins_by_pk": {
+      "operation_id": "delete_api_instances_admins_by_pk",
+      "method": "DELETE",
+      "path": "/api/instances/admins/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["POST"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; deletes the selected admin membership and invalidates /api/instances/ cache. Detail POST is a source signature mismatch (500), corrected to authenticated 405; its anonymous and non-admin precedence is recorded here. Live differential uses a verified absent UUID; source-recorded successful deletion remains on its explicit seeded target.",
+          "source": "apps/api/plane/license/api/views/"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-post-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-post-signature-error-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-post-signature-error-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/admins-detail-post-signature-error.json"
+      ],
+      "source_statuses": ["204", "400", "401", "403", "405", "500"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/00000000-0000-4000-8000-000000009099/"
+    },
+    "get_api_instances_admins_by_pk": {
+      "operation_id": "get_api_instances_admins_by_pk",
+      "method": "GET",
+      "path": "/api/instances/admins/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Pristine source route reaches a method signature mismatch and returns generic 500; anonymous gets 401 and authenticated non-admin gets 403 first. Corrected target is 405 after auth/role checks; no detail-read behavior is introduced.",
+          "source": "apps/api/plane/license/api/views/"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-get-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-get-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/admins-detail-get-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-admins-detail-get-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-head-admins-detail-get-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-admins-detail-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/admins-detail-get-signature-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/protocol-head-admins-detail-get-signature-error.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "405", "500"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/admins/00000000-0000-4000-8000-000000009099/"
+    },
+    "get_api_instances_configurations": {
+      "operation_id": "get_api_instances_configurations",
+      "method": "GET",
+      "path": "/api/instances/configurations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; lists all configurations and decrypts stored encrypted values in the response.",
+          "source": "apps/api/plane/license/api/views/"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-get-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-head-config-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-config-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-config-get.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/configurations/"
+    },
+    "patch_api_instances_configurations": {
+      "operation_id": "patch_api_instances_configurations",
+      "method": "PATCH",
+      "path": "/api/instances/configurations/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; updates only existing keys, trims stringified values, encrypts configured secret values, and invalidates configuration and root cache keys.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "authorized top-level JSON array",
+          "observable": "Source crashes with HTTP 500; corrected source rejects with the standard DRF non_field_errors HTTP 400 body, preserving preceding cache invalidation and no database writes or durable effects.",
+          "source": "apps/api/plane/license/api/views/configuration.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-patch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-patch-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/config-patch-array.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/configurations/"
+    },
+    "delete_api_instances_configurations_disable_email_feature": {
+      "operation_id": "delete_api_instances_configurations_disable_email_feature",
+      "method": "DELETE",
+      "path": "/api/instances/configurations/disable-email-feature/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; clears SMTP settings, sets ENABLE_SMTP to 0, and invalidates /api/instances/ cache.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "configuration list prefetched before disabling email",
+          "observable": "Pristine source invalidates root cache only and serves stale configuration values for up to two hours. ADMIN-004 also invalidates the configuration-list cache so subsequent reads immediately reflect disabled email. Value-only updates preserve updated_at.",
+          "source": "apps/api/plane/license/api/views/configuration.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-disable-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/config-disable-email-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-config-disable-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-config-disable-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/config-disable-email.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/configurations/disable-email-feature/"
+    },
+    "post_api_instances_email_credentials_check": {
+      "operation_id": "post_api_instances_email_credentials_check",
+      "method": "POST",
+      "path": "/api/instances/email-credentials-check/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; sends the fixed test email to receiver_email. Parity uses a local deterministic mail sink and never sends externally.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "authorized top-level JSON array",
+          "observable": "Source crashes with HTTP 500; corrected source rejects with the standard DRF non_field_errors HTTP 400 body, preserving preceding cache invalidation and no database writes or durable effects.",
+          "source": "apps/api/plane/license/api/views/configuration.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/email-credentials-check.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/email-credentials-check-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-email-credentials-check.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-email-credentials-check.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/email-credentials-check-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/email-credentials-check-array.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/email-credentials-check/"
+    },
+    "get_api_instances_workspaces": {
+      "operation_id": "get_api_instances_workspaces",
+      "method": "GET",
+      "path": "/api/instances/workspaces/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; searches workspace names case-insensitively and returns the shared paginator projection with project/member counts.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "cursor embeds a different page size or a floating-point first component",
+          "observable": "Accepts the shared Python cursor grammar and computes the page offset from the requested per_page, with default and maximum 10. The captured second page has two of twelve records and preserves next/previous cursor metadata.",
+          "source": "apps/api/plane/utils/paginator.py"
+        },
+        {
+          "when": "search contains SQL LIKE wildcard characters",
+          "observable": "Treats search as a literal case-insensitive substring, escaping percent and underscore rather than using them as wildcards. The percent capture returns zero records despite an existing workspace.",
+          "source": "apps/api/plane/license/api/views/workspace.py"
+        },
+        {
+          "when": "per_page is zero or invalid",
+          "observable": "Go returns HTTP 400 for invalid pagination. Zero previously reaches a Django division-by-zero failure; returning 400 is the user-approved invalid-pagination correction.",
+          "source": "apps/api/plane/utils/paginator.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-get-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-head-workspaces-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/protocol-options-workspaces-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/timezone-invalid-workspaces-get.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-get-cursor-size-mismatch.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-get-cursor-float.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-get-search-literal-percent.json"
+      ],
+      "source_statuses": ["200", "400"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/workspaces/"
+    },
+    "post_api_instances_workspaces": {
+      "operation_id": "post_api_instances_workspaces",
+      "method": "POST",
+      "path": "/api/instances/workspaces/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "observable": "Instance-admin authorized; creates a workspace and active role-20 owner membership. Source does not wrap the two writes in one explicit transaction.",
+          "source": "apps/api/plane/license/api/views/"
+        },
+        {
+          "when": "authorized top-level JSON array",
+          "observable": "Source crashes with HTTP 500; corrected source rejects with the standard DRF non_field_errors HTTP 400 body, preserving preceding cache invalidation and no database writes or durable effects.",
+          "source": "apps/api/plane/license/api/views/workspace.py"
+        },
+        {
+          "when": "workspace name or slug exercises serializer validation",
+          "observable": "Accepts Unicode letters/numbers and measures the 80-character name bound in characters. Rejects names containing bare domains or IPv4 addresses and restricted or malformed slugs with field-specific 400 errors before writes.",
+          "source": "apps/api/plane/license/api/serializers/workspace.py"
+        },
+        {
+          "when": "background_color is omitted",
+          "observable": "Creation generates a six-digit hexadecimal color and returns the same color persisted on the workspace. Parity validates format and response/database equality before normalizing the nondeterministic random draw. Explicit colors remain exact.",
+          "source": "apps/api/plane/db/models/workspace.py"
+        },
+        {
+          "when": "multiple optional fields are invalid or deleted_at is supplied",
+          "observable": "Serializer collects independent field errors in one 400 body. A valid supplied deleted_at remains writable and persists with the created workspace and member, returning 201.",
+          "source": "apps/api/plane/license/api/serializers/workspace.py"
+        },
+        {
+          "when": "truthy numeric or boolean name/slug input",
+          "observable": "Pristine Django fails before writes with generic HTTP 500 because the view applies len() before serializer validation. The user-approved correction changes these four cases to field-specific HTTP 400 Not a valid string. errors, with no writes or durable effects; the user explicitly approved returning 400 for invalid types and creating nothing.",
+          "source": "apps/api/plane/license/api/views/workspace.py",
+          "decision": "docs/go-backend-replacement/decisions/ADMIN-005-workspace-scalar-validation.md"
+        },
+        {
+          "when": "company_role is omitted, null, scalar, list, or object",
+          "observable": "The view passes company_role directly to WorkspaceMember TextField: omission persists empty string; null stays NULL; numbers and booleans stringify as Python text; list/object values use Python representations, preserving JSON key order.",
+          "source": "apps/api/plane/license/api/views/workspace.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/workspaces-post-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-unicode-letter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-unicode-numeric.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-unicode-boundary.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-bare-domain.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-ipv4-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-reserved-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-invalid-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-url-dotless-i.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-url-dotted-i.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-url-nbsp.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-minimal.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-duplicate-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-raw-length-before-trim.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-overlong-org.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-missing-logo-asset.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-blank-color.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-rich-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-combined-field-errors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-deleted-at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-number-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/workspaces-post-number-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-bool-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/workspaces-post-bool-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-number-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/workspaces-post-number-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-bool-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management_corrected/workspaces-post-bool-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-company-number.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-company-bool.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-company-object.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-company-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/instance_management/workspaces-post-company-null.json"
+      ],
+      "source_statuses": ["201", "400", "401", "500"],
+      "effects": [],
+      "status_note": "Source-recorded; corrected routing overlays are explicitly identified above. Go parity acceptance is recorded by the exact-tree proof receipt.",
+      "sample_path": "/api/instances/workspaces/"
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/instance-management/run-source-recorder.sh",
+    "pristine_log": "docs/go-backend-replacement/evidence/instance-management/source-20261021T232518Z.log",
+    "corrected_log": "docs/go-backend-replacement/evidence/instance-management/source-20261021T233808Z.log",
+    "pristine_fixture_count": 91,
+    "corrected_fixture_count": 13,
+    "supporting_capture_logs": [
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T215641Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T215702Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T231605Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T231732Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T231751Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T232105Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T232114Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T232226Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T232518Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261021T233808Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T004952Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T005011Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T005407Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T011941Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T011948Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T012033Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T024515Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T024758Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T025314Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T025531Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T030107Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T030145Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T030440Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T030526Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T033215Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T033838Z.log",
+      "docs/go-backend-replacement/evidence/instance-management/source-20261022T034151Z.log"
+    ],
+    "mail_effect": "Django locmem backend; deterministic assertion of message envelope; no external delivery"
+  },
+  "permission_classes_before_timezone": true,
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/instance_management_http_test.go::TestInstanceManagementMiddlewareAuthorizationTimezoneDispatchAudit",
+  "middleware_note": "License BaseAPIView runs InstanceAdminPermission during APIView.initial before TimezoneMixin activates the actor timezone. Public root GET and signup-screen POST override that permission. Session requests do not emit API-key audit messages.",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "evidence": "apps/api/plane/tests/parity/test_instance_management_recorder.py",
+    "auth_probes": {
+      "django-session": "/api/instances/admins/"
+    },
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": [
+          "delete_api_instances_admins:canonical:DELETE",
+          "get_api_instances_admins:canonical:DELETE",
+          "post_api_instances_admins:canonical:DELETE"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "e93f84a99b10c0f2863ac4a267ca519e5a57c85a9fe0b573c3e84688eb249e0b"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": ["delete_api_instances_admins_by_pk:canonical:GET", "get_api_instances_admins_by_pk:canonical:GET"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "0a721532497036ff7d8b228dd8d4ef5e91777b0bd2b11f49f5b2ccddd55eb259"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": ["delete_api_instances_admins_by_pk:canonical:HEAD", "get_api_instances_admins_by_pk:canonical:HEAD"],
+        "source": {
+          "status": 500,
+          "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": ["delete_api_instances_admins_by_pk:canonical:POST", "get_api_instances_admins_by_pk:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "3986c0d4df30cfcf7db784ea02470c5776de9c1121b7306350b346bb695a752f"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-002-object-request-validation.md",
+        "cases": [
+          "delete_api_instances_admins:canonical:POST",
+          "get_api_instances_admins:canonical:POST",
+          "get_api_instances_configurations:canonical:PATCH",
+          "get_api_instances_workspaces:canonical:POST",
+          "patch_api_instances_configurations:canonical:PATCH",
+          "post_api_instances_admins:canonical:POST",
+          "post_api_instances_email_credentials_check:canonical:POST",
+          "post_api_instances_workspaces:canonical:POST"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "a2a6b84f286ebd8e0272c947ed4f7b39a9a8ba6a68c1143faf44e6d4ea052edc"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-004-disable-email-cache.md",
+        "cases": ["get_api_instances_configurations:canonical:GET"],
+        "source": {
+          "status": 200,
+          "body_sha256": "f2253524f20c0675e0f360c62e54842490b80aab9c47fe86efdd01c0b8ede6b8"
+        },
+        "target": {
+          "status": 200,
+          "body_sha256": "9454e26a60191bde8b8556268ff08e0c11337ed796ef72b6b2815db0d0f8fa1a"
+        }
+      }
+    ]
+  }
+}

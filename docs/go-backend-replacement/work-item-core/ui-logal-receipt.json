@@ -1,0 +1,140 @@
+{
+  "family": "work_item_core",
+  "start": "2026-10-10T21:12:11Z",
+  "end": "2026-10-10T21:18:09.965729+00:00",
+  "entry": "http://localhost:8000/",
+  "status": "passed with classified tooling warnings",
+  "flows": [
+    "Home",
+    "six persisted project tickets; High priority filters to one; Clear all restores six",
+    "issue persisted title, state, assignee, priority",
+    "two persisted sub-items after reload and Enter/Space toggle",
+    "sub-item filter Enter/selection/Escape/focus return",
+    "relation expansion shows linked ticket",
+    "assignee menu Escape returns focus",
+    "one persisted draft",
+    "profile Created list and counts",
+    "Inbox",
+    "Security lazy import and disabled empty password submit"
+  ],
+  "request_status_counts": [
+    {
+      "service": "plane-django-api",
+      "status": "200",
+      "count": 132
+    },
+    {
+      "service": "plane-django-api",
+      "status": "404",
+      "count": 2
+    },
+    {
+      "service": "plane-go-api",
+      "status": "200",
+      "count": 151
+    }
+  ],
+  "failed_requests": [
+    {
+      "status": "404",
+      "path": "http://localhost:8001/mcp",
+      "user_agent": "codex-mcp-client/0.162.1"
+    },
+    {
+      "status": "404",
+      "path": "http://localhost:8001/mcp",
+      "user_agent": "codex-mcp-client/0.162.1"
+    }
+  ],
+  "warning_error_records": 53,
+  "unclassified_application_warnings": 0,
+  "tooling_warning": "The in-app browser injects codex-browser-sidebar-comments-root as a third HTML child. Raw server HTML lacks it. React hydration recovers. Evidence: /tmp/plane-work-item-core/ui-hydration-evidence.json.",
+  "retained_data": [
+    "GOPLANE-4 Work item migration smoke \u2014 verified Oct 10, High/In Progress/Luca",
+    "GOPLANE-5 Migration smoke child \u2014 Oct 10, parent GOPLANE-4",
+    "GOPLANE-6 Migration child atomic-update check \u2014 Oct 10, parent GOPLANE-4",
+    "GOPLANE-4 relates to GOPLANE-5",
+    "Migration draft smoke \u2014 Oct 10"
+  ],
+  "hot_reload_evidence": "/tmp/plane-work-item-core/ui-hmr-restoration.json",
+  "screenshot": "/tmp/plane-work-item-core/ui-verified-issue.png",
+  "artifacts": {
+    "/tmp/plane-work-item-core/ui-acceptance-warnings.json": "a9d33d50895d664929a1e566bc2a456ae015d7bf29a00e3f1df06f3e73862c92",
+    "/tmp/plane-work-item-core/ui-acceptance-spans.json": "a33776d60574b0fba2a355d71e115030da609855c54928345c819d2063b90dea",
+    "/tmp/plane-work-item-core/ui-verified-issue.png": "1dc4564b0b1d7872a7f9e142179d1bedff635a2d8359f055f82299bba02f75a3"
+  },
+  "post_lint_followup": {
+    "start": "2026-10-10T21:40:47Z",
+    "flows": [
+      "Six project tickets after Vite restart",
+      "Ticket peek opens from project list",
+      "Both sub-items remain visible after Enter/Space collapse and expansion",
+      "Assignee menu Escape restores trigger focus",
+      "Zero nested native buttons"
+    ],
+    "warning_error_records": 0,
+    "failed_requests": [],
+    "span_count": 37,
+    "frontend_tests_passed": 92,
+    "ui_types_exit_code": 0,
+    "web_types_exit_code": 0,
+    "typecheck_note": "React Router typegen passed before tsc found missing ComboDropDown role prop. Added typed prop with real-member-component assertion; both final typechecks pass.",
+    "dependency_recovery": "Restored 50 shared workspace dependency links after a worktree pnpm call relinked them to unbuilt packages. Added AGENTS.md rule. Vite restarted and browser recovered.",
+    "artifacts": {
+      "/tmp/plane-work-item-core/ui-final-followup-warnings.json": "1d39afbd8be5f62661ddebd56bd60a1b19cf1c87279e7bf667795cb43b6ebf80",
+      "/tmp/plane-work-item-core/ui-final-followup-spans.json": "b43b1dfe50d4e3cc805a9e1caff6cf770f4c5a52ec05a2d70a877aa5c208fa92"
+    }
+  },
+  "final_backend_restart": {
+    "start": "2026-10-10T21:56:41Z",
+    "flows": [
+      "Reloaded six project work items",
+      "Opened saved ticket and both children, relation, assignee and priority"
+    ],
+    "warning_error_records": 8,
+    "unclassified_application_warnings": 0,
+    "span_count": 100,
+    "completed_application_requests": 97,
+    "failed_application_responses": [],
+    "classified_non_success_spans": [
+      "One browser-aborted development remount request records Go context_canceled/500; replacement XHR returns 200.",
+      "Two POST /mcp requests from codex-mcp-client/0.162.1 return Django resolver 404."
+    ],
+    "known_browser_limitation": "Fresh hydration warning names a div directly under html. DOM inspection again confirms div#codex-browser-sidebar-comments-root outside body; raw HTTP response for this exact path has no such node. All eight records are this hydration fallback; retained without suppression.",
+    "artifacts": {
+      "/tmp/plane-work-item-core/ui-final-backend-warnings.json": "46727638c400fe6ccd32140222bceaf250564aba7c06da23efbe3bdff47c3bda",
+      "/tmp/plane-work-item-core/ui-final-backend-spans.json": "ee710bbc7f4c4bb16d9b00550fd483ee9af10d1e5d4f59540915e5b5fc8266fe",
+      "/tmp/plane-work-item-core/ui-final-backend-cancellation.json": "acc53465a1d4ab8c1670eec55e03229b69624121a3ce4c211b90977a2dce30d6",
+      "/tmp/plane-work-item-core/local-go-final-backend.log": "c4d5b1c5fc85e0e66a99edc5c88b5ea7fd182a14d315413ad2759b0cccbd6fca"
+    }
+  },
+  "final_runtime_followup": {
+    "started_at": "2026-10-10T23:03:34Z",
+    "runtime": "Final alpha.8 backend including generic HEAD audit and rejected OPTIONS repair",
+    "ui": "Reload displays all six tickets; saved parent title, In Progress, High, and both child rows remain visible. No new test data.",
+    "logs": "/tmp/plane-work-item-core/logal-final-runtime-logs.json",
+    "spans": "/tmp/plane-work-item-core/logal-final-runtime-spans.json",
+    "span_counts": {
+      "django_200": 27,
+      "go_200": 44,
+      "go_500_browser_canceled": 1
+    },
+    "hydration": {
+      "record_ids": [17, 18, 19, 20, 21, 22],
+      "evidence": "First warning names extra div under html; actual DOM direct children are HEAD, BODY, DIV#codex-browser-sidebar-comments-root. Fresh server HTML lacks that ID. Remaining five records are the hydration recovery cascade."
+    },
+    "cancellation": {
+      "cdp_request": "13312.95667",
+      "error": "net::ERR_ABORTED",
+      "canceled": true,
+      "backend_request_id": "01a1280e-d3a3-7d44-bc67-90d7bf619f1f",
+      "backend_status": 500,
+      "replacement_cdp_request": "13312.95668",
+      "replacement_request_id": "01a1280e-d3ac-7043-81ae-32fb20690d8a",
+      "replacement_status": 200,
+      "evidence": "Identical list URLs initiated 1.2 ms apart; browser canceled first before receiving a response, replacement returned 200. Backend start/end records match paths, timing and successful response ID.",
+      "backend_log": "/tmp/plane-work-item-core/ui-final-runtime-backend.txt"
+    },
+    "unclassified_application_failures": 0
+  }
+}

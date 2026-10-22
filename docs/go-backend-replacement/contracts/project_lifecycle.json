@@ -1,0 +1,824 @@
+{
+  "version": 1,
+  "family": "project_lifecycle",
+  "source_revision": "c289aaaf8980274b409bf665e914bdc205700e6f",
+  "characterization_status": "Retired and pushed in 5831a036bd6b6c4aad346a5442eb6df9280e0bb7. Current corpus: 177 pristine cases, 66 approved sparse corrected overlays, and 177 effective cases across 13 operations. Loom alpha.15 is the implementation baseline. JSON request bodies are UTF-8 bytes regardless of charset labels; labels do not select a decoder, and no transcoding occurs. Malformed standard JSON MIME parameters return 415 before nil/empty-body success. Invalid UTF-8 bytes and incomplete trailing UTF-8 return 400 before domain effects. Historical: the earlier 164-case tree passed full proof and 241 proxy comparisons before review found the malformed-byte activity gap. Final R7 proof passed all ten stages in 392 seconds, the production-proxy differential passed 241/241, and four fresh runtime review scopes were CLEAN. Authenticated UI flows passed; final Logal had 0 logs and 0 failed HTTP spans, and dev:check-logs passed. Native hover display is unverified. See project-lifecycle-proof-ledger.md for release evidence and diagnostic limitations.",
+  "operation_count": 13,
+  "source_files": [
+    "apps/api/plane/api/urls/project.py",
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/api/views/project.py",
+    "apps/api/plane/app/views/project/base.py",
+    "apps/api/plane/app/serializers/project.py",
+    "apps/api/plane/api/serializers/project.py",
+    "apps/api/plane/api/serializers/base.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/state.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/utils/order_queryset.py"
+  ],
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_lite": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects-lite/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["cursor", "include_archived", "order_by", "per_page"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`api/views/project.py::ProjectListLiteAPIEndpoint.get`; active workspace member, then active project membership OR public network. Workspace Admin alone does not reveal private projects.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "200 paginated lite rows; archived excluded unless `include_archived` case-insensitively equals `true` or `1`. Ordering default `-created_at`. No domain writes; API audit only.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-cursor-backward-mismatched-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-cursor-next-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-empty-accessible-projects.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-fields-expand-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-head-not-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-inactive-workspace-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-include-archived-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-include-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-options-not-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-order-network-ascending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-order-network-descending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-sort-order-ascending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-sort-order-descending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-sort-order-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-lite-workspace-admin-visibility.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-lite-cursor-backward-mismatched-limit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-lite-sort-order-ascending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-lite-sort-order-descending.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-lite-sort-order-source-error.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens: last_used authentication bookkeeping"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_lite",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects-lite/",
+      "documented_query_parameters": ["cursor", "include_archived", "order_by", "per_page"],
+      "recorded_source_statuses": [200, 400, 401, 403, 405, 500],
+      "recorded_corrected_statuses": [200],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "post_api_v1_workspaces_by_slug_projects": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectListCreateAPIEndpoint.post`; active workspace Admin or Member. `ProjectCreateSerializer`.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "201 project; creator and distinct lead become project Admins; membership save creates user-property rows; six persisted default states. Transactional creation; `model_activity` on commit, plus audit. Pristine v1 omits initial identifier reservation; corrected source adds it atomically.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Unicode identifiers, JSON numeric precision, primitive reference errors and signed-zero booleans",
+          "observable": "Use full Unicode uppercase for persisted identifiers; preserve old reservations on rename. JSONField decimals follow Python binary64 while integer tokens retain precision. Boolean references, malformed UUIDs and missing valid keys retain distinct original-input errors. Numeric signed zero is false; the string -0.0 is rejected. Reuse source-backed shared validation cases across write callers.",
+          "source": "apps/api/plane/db/models/project.py; apps/api/plane/app/serializers/project.py; apps/api/plane/api/serializers/project.py; pinned Django and DRF field contracts"
+        },
+        {
+          "when": "JSON request encoding",
+          "observable": "Product decision dated 2026-10-20: application/json request bodies are UTF-8 bytes regardless of charset labels; labels do not select a decoder and no transcoding occurs. Malformed standard JSON Content-Type parameters return 415 with `Invalid Content-Type for application/json.` before nil/empty-body success. Invalid UTF-8 bytes and incomplete trailing UTF-8 return 400 before domain effects.",
+          "source": "apps/api/plane/api/views/project.py; accepted corrected-source patch and dated product decision"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-icon-prop-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-icon-prop-valid-unicode-duplicate-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-invalid-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-self-lead.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-create-unknown-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-icon-prop-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-icon-prop-valid-unicode-duplicate-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-self-lead.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-create-unknown-lone-surrogate.json"
+      ],
+      "effects": ["api-key", "api-key-model-activity"],
+      "database_effects": [
+        "api_tokens: last_used authentication bookkeeping",
+        "project lifecycle writes and model save audit fields; see source branch and corrected-source matrix",
+        "initial project_identifiers reservation; creator/distinct-lead memberships and user properties; six default states in the project transaction"
+      ],
+      "operation_id": "post_api_v1_workspaces_by_slug_projects",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [201, 400, 401, 403, 500],
+      "recorded_corrected_statuses": [201, 400],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs", "plane.bgtasks.webhook_task.model_activity"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_pk": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectDetailAPIEndpoint.delete`; active project Admin OR workspace Admin with active project membership. Corrected contract additionally requires active workspace membership.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "204; soft-delete project; remove project-entity favorites; enqueue recursive deletion and `webhook_activity` plus audit. Source does not synchronously remove DeployBoards as session DELETE does.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-delete-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-delete-missing-target-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-delete-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-delete-stale-project-admin.json"
+      ],
+      "effects": ["api-key", "api-key-project-delete", "api-key-webhook-delete"],
+      "database_effects": [
+        "api_tokens: last_used authentication bookkeeping",
+        "projects.deleted_at; project favorites; session delete also soft-deletes DeployBoards"
+      ],
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_pk",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_corrected_statuses": [403],
+      "queued_jobs": [
+        "plane.bgtasks.logger_task.process_logs",
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.webhook_task.webhook_activity"
+      ],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_pk": {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{pk}/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectDetailAPIEndpoint.patch`; same write role rule as #4 plus corrected active-workspace prerequisite; `ProjectUpdateSerializer`.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "200 full API project; archived 400 with singular \u201cArchived project\u201d; partial update, optional default Intake creation, `model_activity` with before-image plus audit. Identifier rename leaves original reservation unchanged.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Unicode identifiers, JSON numeric precision, primitive reference errors and signed-zero booleans",
+          "observable": "Use full Unicode uppercase for persisted identifiers; preserve old reservations on rename. JSONField decimals follow Python binary64 while integer tokens retain precision. Boolean references, malformed UUIDs and missing valid keys retain distinct original-input errors. Numeric signed zero is false; the string -0.0 is rejected. Reuse source-backed shared validation cases across write callers.",
+          "source": "apps/api/plane/db/models/project.py; apps/api/plane/app/serializers/project.py; apps/api/plane/api/serializers/project.py; pinned Django and DRF field contracts"
+        },
+        {
+          "when": "JSON request encoding",
+          "observable": "Product decision dated 2026-10-20: application/json request bodies are UTF-8 bytes regardless of charset labels; labels do not select a decoder and no transcoding occurs. Malformed standard JSON Content-Type parameters return 415 with `Invalid Content-Type for application/json.` before nil/empty-body success. Invalid UTF-8 bytes and incomplete trailing UTF-8 return 400 before domain effects.",
+          "source": "apps/api/plane/api/views/project.py; accepted corrected-source patch and dated product decision"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-assignee-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-assignee-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-assignee-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-state-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-state-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-default-state-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-estimate-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-estimate-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-estimate-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-icon-prop-lone-surrogate-form.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-icon-prop-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-icon-prop-nested-overwritten-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-jsonfield-binary64.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-jsonfield-form-binary64.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-malformed-relations.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-missing-target-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-invalid-continuation.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-invalid-start.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-latin1-charset-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-malformed-charset-parameter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-trailing-incomplete-tail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-unexpected-eof.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-raw-utf8-valid-u00ff-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-unicode-identifier.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-patch-unknown-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-default-assignee-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-default-state-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-default-state-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-estimate-foreign.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-icon-prop-lone-surrogate-form.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-icon-prop-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-icon-prop-nested-overwritten-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-jsonfield-form-binary64.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-raw-utf8-latin1-charset-control.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-raw-utf8-malformed-charset-parameter.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-raw-utf8-trailing-incomplete-tail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-patch-stale-project-admin.json"
+      ],
+      "effects": ["api-key", "api-key-model-activity"],
+      "database_effects": [
+        "api_tokens: last_used authentication bookkeeping",
+        "project lifecycle writes and model save audit fields; see source branch and corrected-source matrix"
+      ],
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_pk",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [200, 400, 401, 403, 409, 500],
+      "recorded_corrected_statuses": [200, 400, 403],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs", "plane.bgtasks.webhook_task.model_activity"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_archive": {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archive/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectArchiveUnarchiveAPIEndpoint.delete`; same write role rule as #4 plus corrected active-workspace prerequisite.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "204; clear archive timestamp, save project; do not restore favorites. Only API audit task.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-restore-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-restore-missing-target-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-restore-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-restore-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-restore-workspace-admin-without-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/v1-restore-stale-project-admin.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": [
+        "api_tokens: last_used authentication bookkeeping",
+        "projects.archived_at and save audit fields; archive removes matching favorites, restore does not recreate them"
+      ],
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_archive",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/archive/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_corrected_statuses": [403],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_archive": {
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/archive/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectArchiveUnarchiveAPIEndpoint.post`; **POST** branch of `ProjectBasePermission`: active workspace Admin or Member, even without project membership. Do not substitute #7 authorization.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "204 empty body; set archive timestamp and remove all matching project favorites. Only API audit task. Missing authorized target 404.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-archive-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-archive-options-not-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-archive-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-archive-workspace-admin-without-project-member.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": [
+        "api_tokens: last_used authentication bookkeeping",
+        "projects.archived_at and save audit fields; archive removes matching favorites, restore does not recreate them"
+      ],
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_archive",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/archive/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [204, 401, 404, 405],
+      "recorded_corrected_statuses": [],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_summary": {
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/summary/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["fields"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectSummaryAPIEndpoint`; `WorkSpaceAdminPermission` admits active workspace Admin **and Member**, denies Guest. Does not use detail visibility filter.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "200 requested supported counts; missing project 404. `fields` strips whitespace, ignores unknown entries, and absent/empty/unknown-only means all eight counts. No domain writes; API audit only.",
+          "source": "apps/api/plane/api/views/project.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-fields-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-fields-unknown-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-head-not-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-options-not-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-populated-count-filters.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-private-without-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-selected.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-soft-deleted-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/v1-summary-workspace-member-no-project.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": ["api_tokens: last_used authentication bookkeeping"],
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_summary",
+      "source": "apps/api/plane/api/views/project.py",
+      "sample_path": "/api/v1/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/summary/",
+      "documented_query_parameters": ["fields"],
+      "recorded_source_statuses": [200, 401, 403, 404, 405],
+      "recorded_corrected_statuses": [],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "post_api_workspaces_by_slug_projects": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`app/views/project/base.py::ProjectViewSet.create`; workspace-level Admin/Member decorator; session `ProjectSerializer`.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "201 `ProjectListSerializer`; project and initial identifier reservation; creator/distinct-lead memberships, user properties, six states; direct `model_activity`. Corrected creation validates active same-workspace lead/assignee and makes all writes atomic.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Unicode identifiers, JSON numeric precision, primitive reference errors and signed-zero booleans",
+          "observable": "Use full Unicode uppercase for persisted identifiers; preserve old reservations on rename. JSONField decimals follow Python binary64 while integer tokens retain precision. Boolean references, malformed UUIDs and missing valid keys retain distinct original-input errors. Numeric signed zero is false; the string -0.0 is rejected. Reuse source-backed shared validation cases across write callers.",
+          "source": "apps/api/plane/db/models/project.py; apps/api/plane/app/serializers/project.py; apps/api/plane/api/serializers/project.py; pinned Django and DRF field contracts"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-cover-asset-other-project-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-foreign-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-foreign-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-foreign-state-estimate-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-inactive-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-inactive-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-logo-props-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-mutable-projection.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-server-owned-fields-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-create-unicode-identifier.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-cover-asset-other-project-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-foreign-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-foreign-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-foreign-state-estimate-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-inactive-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-inactive-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-logo-props-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-create-server-owned-fields-write.json"
+      ],
+      "effects": ["django-session-model-activity"],
+      "database_effects": [
+        "project lifecycle writes and model save audit fields; see source branch and corrected-source matrix",
+        "initial project_identifiers reservation; creator/distinct-lead memberships and user properties; six default states in the project transaction"
+      ],
+      "operation_id": "post_api_workspaces_by_slug_projects",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [200, 201, 401, 403, 500],
+      "recorded_corrected_statuses": [400],
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "delete_api_workspaces_by_slug_projects_by_pk": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectViewSet.destroy`; active workspace Admin OR active project Admin; corrected active-workspace prerequisite.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "204; project soft-delete/cascade task and deleted webhook; synchronously soft-delete matching DeployBoards and **all** project favorites.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-delete-workspace-admin-without-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-delete-stale-project-admin.json"
+      ],
+      "effects": ["django-session-project-delete", "django-session-webhook-delete"],
+      "database_effects": ["projects.deleted_at; project favorites; session delete also soft-deletes DeployBoards"],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_pk",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [204, 401, 403, 404],
+      "recorded_corrected_statuses": [403],
+      "queued_jobs": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.webhook_task.webhook_activity"
+      ],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "patch_api_workspaces_by_slug_projects_by_pk": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectViewSet.partial_update`; active workspace Admin OR active project Admin; corrected active-workspace prerequisite.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "200 `ProjectListSerializer`; archived 400 with plural \u201cArchived projects\u201d; `inbox_view` drives `intake_view` override, creates default Intake if enabled/absent; direct `model_activity`. Session serializer does not validate lead/assignee membership in pristine source. Corrected refs require active tenant membership/project ownership.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Unicode identifiers, JSON numeric precision, primitive reference errors and signed-zero booleans",
+          "observable": "Use full Unicode uppercase for persisted identifiers; preserve old reservations on rename. JSONField decimals follow Python binary64 while integer tokens retain precision. Boolean references, malformed UUIDs and missing valid keys retain distinct original-input errors. Numeric signed zero is false; the string -0.0 is rejected. Reuse source-backed shared validation cases across write callers.",
+          "source": "apps/api/plane/db/models/project.py; apps/api/plane/app/serializers/project.py; apps/api/plane/api/serializers/project.py; pinned Django and DRF field contracts"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-archived.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-cover-asset-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-cover-asset-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-cover-asset-other-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-cover-asset-same-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-cover-asset-wrong-entity.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-description-jsonfields-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-foreign-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-foreign-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-form-inbox-string-false.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-html-empty-json-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-html-list.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-html-object.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-html-string-and-json.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-inactive-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-malformed-cover-asset.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-malformed-relations.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-missing-cover-asset.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-negative-zero-booleans.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-negative-zero-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-server-owned-fields-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-server-owned-fields-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-unicode-identifier.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-patch-workspace-admin-without-project-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-cover-asset-foreign-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-cover-asset-other-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-cover-asset-wrong-entity.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-description-jsonfields-lone-surrogate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-foreign-assignee-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-foreign-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-form-inbox-string-false.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-form-repeated-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-inactive-lead-accepted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-server-owned-fields-null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-server-owned-fields-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-patch-stale-project-admin.json"
+      ],
+      "effects": ["django-session-model-activity"],
+      "database_effects": [
+        "project lifecycle writes and model save audit fields; see source branch and corrected-source matrix"
+      ],
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_pk",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [200, 400, 401, 403, 404, 500],
+      "recorded_corrected_statuses": [200, 400, 403],
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "put_api_workspaces_by_slug_projects_by_pk": {
+      "method": "PUT",
+      "path": "/api/workspaces/{slug}/projects/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "Inherited DRF `ModelViewSet.update`, `ProjectViewSet.get_queryset`, `ProjectListSerializer`. Pristine requires authentication only and full serializer fields.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "Pristine outsider full PUT succeeds and can mass-assign writable model fields; no custom PATCH intake/activity/archived guard. Corrected PUT uses #12 pipeline/authorization and explicit writable boundary, requires name/identifier, takes workspace identity only from the URL/loaded project, forbids foreign refs.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Unicode identifiers, JSON numeric precision, primitive reference errors and signed-zero booleans",
+          "observable": "Use full Unicode uppercase for persisted identifiers; preserve old reservations on rename. JSONField decimals follow Python binary64 while integer tokens retain precision. Boolean references, malformed UUIDs and missing valid keys retain distinct original-input errors. Numeric signed zero is false; the string -0.0 is rejected. Reuse source-backed shared validation cases across write callers.",
+          "source": "apps/api/plane/db/models/project.py; apps/api/plane/app/serializers/project.py; apps/api/plane/api/serializers/project.py; pinned Django and DRF field contracts"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-admin-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-archived-at-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-archived-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-cross-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-deleted-at-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-foreign-assignee-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-foreign-lead-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-form-repeated-name-and-omitted-booleans.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-member-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-outsider-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-sparse-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-unicode-identifier.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-put-workspace-reassignment.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-admin-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-archived-at-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-archived-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-cross-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-deleted-at-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-foreign-assignee-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-foreign-lead-write.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-form-repeated-name-and-omitted-booleans.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-member-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-outsider-full-update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-sparse-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-unicode-identifier.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-put-workspace-reassignment.json"
+      ],
+      "effects": ["django-session-model-activity"],
+      "database_effects": [
+        "project lifecycle writes and model save audit fields; see source branch and corrected-source matrix"
+      ],
+      "operation_id": "put_api_workspaces_by_slug_projects_by_pk",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [200, 400, 401, 404],
+      "recorded_corrected_statuses": [200, 400, 403, 404],
+      "queued_jobs": ["plane.bgtasks.webhook_task.model_activity"],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_archive": {
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectArchiveUnarchiveEndpoint.delete`; project Admin/Member OR workspace Admin with active project membership; corrected active-workspace prerequisite.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "204; clear archived timestamp, save project; no restored favorites and no task.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-restore-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-restore-missing-target-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-restore-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-restore-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-restore-workspace-admin-without-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-restore-stale-project-admin.json"
+      ],
+      "effects": [],
+      "database_effects": [
+        "projects.archived_at and save audit fields; archive removes matching favorites, restore does not recreate them"
+      ],
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_archive",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/archive/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [204, 401, 403],
+      "recorded_corrected_statuses": [403],
+      "queued_jobs": [],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_archive": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/archive/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "protocol_methods": ["OPTIONS"],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission and lookup precedence",
+          "observable": "`ProjectArchiveUnarchiveEndpoint.post`; same session decorator as #14 (unlike v1 #8).",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/app/permissions/base.py; apps/api/plane/app/permissions/project.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Response, state changes and request effects",
+          "observable": "200 object with string `archived_at`; update timestamp and remove project favorites; no task.",
+          "source": "apps/api/plane/app/views/project/base.py; apps/api/plane/db/models/project.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-missing-target-forbidden.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-options-invalid-user-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-stale-project-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/app-archive-workspace-admin-without-project-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/app-archive-stale-project-admin.json"
+      ],
+      "effects": [],
+      "database_effects": [
+        "projects.archived_at and save audit fields; archive removes matching favorites, restore does not recreate them"
+      ],
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_archive",
+      "source": "apps/api/plane/app/views/project/base.py",
+      "sample_path": "/api/workspaces/project-lifecycle-fixture/projects/00000000-0000-4000-8000-000000021020/archive/",
+      "documented_query_parameters": [],
+      "recorded_source_statuses": [200, 400, 401, 403],
+      "recorded_corrected_statuses": [403],
+      "queued_jobs": [],
+      "evidence_status": "Historical first review: 138-case parity and 241-probe differential passed. Final repaired-tree release evidence is summarized in the top-level characterization status."
+    }
+  },
+  "selected_inventory_state": "Django removed",
+  "shared_domain": "apps/go-api/internal/workspaceprojectreads",
+  "source_patch": "docs/go-backend-replacement/evidence/project-lifecycle/corrected-patches/source-corrections.patch",
+  "scope_decisions": "docs/go-backend-replacement/contracts/project_lifecycle-matrix.md",
+  "projection_policy": "Preserve pristine source; select corrected expectations by exact case ID from correction-index.json. Verify patch, module, recorder and fixture hashes. No Go response can update source fixtures.",
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "api-key-model-activity": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.webhook_task.model_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    },
+    "api-key-project-delete": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    },
+    "api-key-webhook-delete": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.webhook_task.webhook_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    },
+    "django-session-model-activity": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.webhook_task.model_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "django-session-project-delete": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "django-session-webhook-delete": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.webhook_task.webhook_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["fields", "order_by", "cursor", "per_page", "include_archived"],
+    "evidence_status": "Historical first live comparison passed 227/241 probes; the final repaired-tree production-proxy differential passed 241/241. The canonical Git review-wave receipt is authoritative.",
+    "volatile_response_fields": {
+      "delete_api_v1_workspaces_by_slug_projects_by_pk:canonical:PATCH": ["updated_at"]
+    },
+    "auth_probes": {
+      "django-session": "/api/workspaces/project-lifecycle-fixture/projects/",
+      "api-key": "/api/v1/workspaces/project-lifecycle-fixture/projects-lite/"
+    },
+    "evidence": "apps/api/plane/tests/parity/test_project_lifecycle_recorder.py"
+  },
+  "remaining_evidence": [],
+  "split_boundary": {
+    "deferred_family": "project_dynamic_reads",
+    "operation_ids": ["get_api_v1_workspaces_by_slug_projects", "get_api_v1_workspaces_by_slug_projects_by_pk"],
+    "reason": "Typed full-project relation expansion requires scalar/object untagged union support tracked in Loom issue1014. Writes remain together; lite and summary use supported schemas.",
+    "preserved_worktree": "[local migration artifact omitted]"
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/project_lifecycle_middleware_test.go::TestProjectLifecycleProductionMiddlewareOrderRequestSizeSessionAPIThrottleDispatchAudit"
+}

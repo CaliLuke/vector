@@ -1,0 +1,190 @@
+{
+  "version": 1,
+  "family": "custom_view_creation",
+  "source_files": [
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/app/urls/workspace.py",
+    "apps/api/plane/app/views/project/base.py",
+    "apps/api/plane/app/views/workspace/member.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/workspace.py"
+  ],
+  "operations": {
+    "post_api_workspaces_by_slug_projects_by_project_id_project_views": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-views/",
+      "sample_path": "/api/workspaces/custom-view-contract/projects/00000000-0000-4000-8000-00000000c101/project-views/",
+      "statuses": [204, 400, 401, 403, 404],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-guest-role-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-missing-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-no-project-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-non-object-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-options-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation_corrected/project-non-object-body.json"
+      ],
+      "database_effects": [
+        "project_members.view_props",
+        "project_members.default_props",
+        "project_members.preferences",
+        "project_members.sort_order"
+      ],
+      "effects": [],
+      "permission_contract": "Authenticated user must have an active ProjectMember row for the route project; a guest-role row is sufficient, and workspace membership alone does not grant access. The view updates only fields present in the request and returns an empty 204.",
+      "source": "apps/api/plane/app/views/project/base.py::ProjectUserViewsEndpoint.post",
+      "source_branches": [
+        {
+          "when": "anonymous",
+          "observable": "DRF authentication rejection before project lookup",
+          "source": "apps/api/plane/app/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "project member missing or inactive",
+          "observable": "403 {error: Forbidden}; no membership update",
+          "source": "apps/api/plane/app/views/project/base.py::ProjectUserViewsEndpoint.post"
+        },
+        {
+          "when": "active project member",
+          "observable": "present view fields are saved and response is empty 204",
+          "source": "apps/api/plane/app/views/project/base.py::ProjectUserViewsEndpoint.post"
+        },
+        {
+          "when": "OPTIONS with invalid user timezone",
+          "observable": "400 before method dispatch; no domain writes",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/project-options-invalid-timezone.json"
+        },
+        {
+          "when": "top-level non-object JSON",
+          "observable": "pristine source 500; corrected validation returns 400 after authorization, with no writes or effects",
+          "decision": "docs/go-backend-replacement/decisions/CUSTOM-001-object-body-validation.md",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation_corrected/project-non-object-body.json"
+        }
+      ]
+    },
+    "post_api_workspaces_by_slug_workspace_views": {
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/workspace-views/",
+      "sample_path": "/api/workspaces/custom-view-contract/workspace-views/",
+      "statuses": [204, 400, 401, 404],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-guest-role-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-no-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-non-object-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-options-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-scalar-view-props.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation_corrected/workspace-non-object-body.json"
+      ],
+      "database_effects": ["workspace_members.view_props"],
+      "effects": [],
+      "permission_contract": "Any authenticated active WorkspaceMember can update view_props; guest role is sufficient. Missing or inactive membership is handled as a model lookup 404. JSON scalar values are accepted as view_props and persisted.",
+      "source": "apps/api/plane/app/views/workspace/member.py::WorkspaceMemberUserViewsEndpoint.post",
+      "source_branches": [
+        {
+          "when": "anonymous",
+          "observable": "DRF authentication rejection before membership lookup",
+          "source": "apps/api/plane/app/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "active workspace member",
+          "observable": "view_props replaced by the request value; empty 204",
+          "source": "apps/api/plane/app/views/workspace/member.py::WorkspaceMemberUserViewsEndpoint.post"
+        },
+        {
+          "when": "membership missing or inactive",
+          "observable": "404 from WorkspaceMember.objects.get",
+          "source": "apps/api/plane/app/views/workspace/member.py::WorkspaceMemberUserViewsEndpoint.post"
+        },
+        {
+          "when": "OPTIONS with invalid user timezone",
+          "observable": "400 before method dispatch; no domain writes",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation/workspace-options-invalid-timezone.json"
+        },
+        {
+          "when": "top-level non-object JSON",
+          "observable": "pristine source 500; corrected validation returns 400 after authorization, with no writes or effects",
+          "decision": "docs/go-backend-replacement/decisions/CUSTOM-001-object-body-validation.md",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/custom_view_creation_corrected/workspace-non-object-body.json"
+        }
+      ]
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/custom-view-creation/run-source-recorder.sh",
+    "pristine_fixture_count": 18,
+    "corrected_fixture_count": 2,
+    "source_hashes": "docs/go-backend-replacement/evidence/custom-view-creation/source-hashes.json",
+    "supporting_capture_logs": [
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T033958Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T034013Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T034105Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T034116Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T034130Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T063913Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T064047Z.log",
+      "docs/go-backend-replacement/evidence/custom-view-creation/source-20261022T064123Z.log"
+    ]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/custom_view_creation_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/CUSTOM-001-object-body-validation.md",
+        "cases": ["post_api_workspaces_by_slug_projects_by_project_id_project_views:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "0c5b450dd600e96f1628aebecabf6d604de1fc4b554876bc59cd3397bc436b83"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/CUSTOM-001-object-body-validation.md",
+        "cases": ["post_api_workspaces_by_slug_workspace_views:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "0c5b450dd600e96f1628aebecabf6d604de1fc4b554876bc59cd3397bc436b83"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "The production mount rejects oversized requests before session inspection, anonymous requests before timezone/domain calls, invalid timezones before domain calls, and validates OPTIONS timezones. Authorized requests reach the actual generated service. Session requests do not emit API-key audit logs. Domain authorization is separately covered by each family production-mount and database replay tests."
+}

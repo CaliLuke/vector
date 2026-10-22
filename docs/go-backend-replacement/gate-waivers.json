@@ -1,0 +1,590 @@
+{
+  "version": 1,
+  "purpose": "Gate findings the project has accepted as debt. A permanently red gate teaches everyone to ignore it, so accepted findings are listed here with a reason and counted separately. Anything absent from this file blocks. Never add an entry to silence a finding about work in progress: waive only what a past commit already shipped, and clear a family's waivers when you next touch that family.",
+  "waivers": [
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/users/api-tokens/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/users/api-tokens/{pk}/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/users/me/accounts/",
+      "family": "user_accounts",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/users/me/accounts/{pk}/",
+      "family": "user_accounts",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/analytic-view/{pk}/",
+      "family": "analytic_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/project-identifiers/",
+      "family": "project_identifiers",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/projects/{project_id}/favorite-pages/{page_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/projects/{project_id}/user-favorite-cycles/{cycle_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/projects/{project_id}/user-favorite-modules/{module_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/projects/{project_id}/user-favorite-views/{view_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/projects/{project_id}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/quick-links/{pk}/",
+      "family": "workspace_quick_links",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/stickies/{pk}/",
+      "family": "stickies",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/user-favorite-projects/{project_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/user-favorites/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/user-favorites/{favorite_id}/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "DELETE /api/workspaces/{slug}/workspace-themes/{pk}/",
+      "family": "workspace_themes",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/users/api-tokens/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/users/api-tokens/{pk}/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/users/me/accounts/{pk}/",
+      "family": "user_accounts",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/users/me/profile/",
+      "family": "user_identity",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspace-slug-check/",
+      "family": "workspace_slug_check",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/analytic-view/{pk}/",
+      "family": "analytic_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/home-preferences/{key}/",
+      "family": "workspace_home_preferences",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/projects/{project_id}/user-favorite-cycles/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/projects/{project_id}/user-favorite-modules/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/projects/{project_id}/user-favorite-views/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/projects/{project_id}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/quick-links/{pk}/",
+      "family": "workspace_quick_links",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/stickies/{pk}/",
+      "family": "stickies",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/user-favorites/{favorite_id}/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/user-favorites/{favorite_id}/group/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/user-properties/",
+      "family": "user_properties",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/views/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "GET /api/workspaces/{slug}/workspace-themes/{pk}/",
+      "family": "workspace_themes",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/users/api-tokens/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/users/api-tokens/{pk}/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/users/me/notification-preferences/",
+      "family": "user_notification_preferences",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/users/me/profile/",
+      "family": "user_identity",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/users/me/tour-completed/",
+      "family": "user_profile_flags",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/analytic-view/{pk}/",
+      "family": "analytic_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/home-preferences/",
+      "family": "workspace_home_preferences",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/home-preferences/{key}/",
+      "family": "workspace_home_preferences",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/user-properties/",
+      "family": "user_properties",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/user-properties/",
+      "family": "user_properties",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/projects/{project_id}/user-properties/",
+      "family": "user_properties",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/projects/{project_id}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/quick-links/{pk}/",
+      "family": "workspace_quick_links",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/sidebar-preferences/",
+      "family": "workspace_sidebar_preferences",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/user-favorites/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/user-favorites/{favorite_id}/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/user-properties/",
+      "family": "user_properties",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PATCH /api/workspaces/{slug}/workspace-themes/{pk}/",
+      "family": "workspace_themes",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/users/api-tokens/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/users/api-tokens/{pk}/",
+      "family": "user_api_tokens",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/analytic-view/",
+      "family": "analytic_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/projects/{project_id}/favorite-pages/{page_id}/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/projects/{project_id}/user-favorite-cycles/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/projects/{project_id}/user-favorite-modules/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/projects/{project_id}/user-favorite-views/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/projects/{project_id}/views/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/quick-links/",
+      "family": "workspace_quick_links",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/stickies/",
+      "family": "stickies",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/user-favorite-projects/",
+      "family": "entity_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/user-favorites/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/user-favorites/{favorite_id}/",
+      "family": "workspace_favorites",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/views/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "POST /api/workspaces/{slug}/workspace-themes/",
+      "family": "workspace_themes",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PUT /api/workspaces/{slug}/projects/{project_id}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    },
+    {
+      "code": "coverage-unauthorized",
+      "subject": "PUT /api/workspaces/{slug}/views/{pk}/",
+      "family": "standard_views",
+      "state": "Django removed",
+      "reason": "Recorded before the gate existed. The Django implementation is already removed, so closing this needs a recorder run against the pre-retirement commit. Scheduled for the next time this family is touched.",
+      "recorded": "2026-09-04"
+    }
+  ]
+}

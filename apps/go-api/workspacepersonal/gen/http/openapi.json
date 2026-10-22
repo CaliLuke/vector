@@ -1,0 +1,219 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Personal Dashboard API",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Personal Dashboard API"
+    }
+  ],
+  "paths": {
+    "/api/users/me/workspaces/{slug}/activity-graph/": {
+      "get": {
+        "tags": [
+          "personal_dashboard"
+        ],
+        "summary": "activity_graph personal_dashboard",
+        "operationId": "get_api_users_me_workspaces_by_slug_activity_graph",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesBySlugActivityGraphStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/users/me/workspaces/{slug}/dashboard/": {
+      "get": {
+        "tags": [
+          "personal_dashboard"
+        ],
+        "summary": "dashboard personal_dashboard",
+        "operationId": "get_api_users_me_workspaces_by_slug_dashboard",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryMonth"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesBySlugActivityGraphStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/users/me/workspaces/{slug}/issues-completed-graph/": {
+      "get": {
+        "tags": [
+          "personal_dashboard"
+        ],
+        "summary": "issues_completed_graph personal_dashboard",
+        "operationId": "get_api_users_me_workspaces_by_slug_issues_completed_graph",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/QueryMonth"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIUsersMeWorkspacesBySlugActivityGraphStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryMonth": {
+        "name": "month",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "ContentTypeHeader": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "GetAPIUsersMeWorkspacesBySlugActivityGraphStatus200Response": {
+        "description": "OK response.",
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/headers/ContentTypeHeader"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session cookie authentication.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "personal_dashboard",
+      "description": "Authenticated user's workspace dashboard and activity graphs."
+    }
+  ]
+}

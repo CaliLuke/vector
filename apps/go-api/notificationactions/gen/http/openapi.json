@@ -1,0 +1,1140 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Internal Django Migration API",
+    "description": "Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Internal Django Migration API"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/users/notifications/mark-all-read/": {
+      "post": {
+        "description": "Marks the current user's matching workspace notifications as read.",
+        "operationId": "post_api_workspaces_by_slug_users_notifications_mark_all_read",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationActionMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "MarkAllRead NotificationActions",
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/users/notifications/mark-all-read/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.MarkAllReadNotificationViewSet"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/users/notifications/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_users_notifications_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/users/notifications/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "patch": {
+        "description": "Updates the notification's snooze time.",
+        "operationId": "patch_api_workspaces_by_slug_users_notifications_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotificationStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "Update NotificationActions",
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/users/notifications/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/users/notifications/{pk}/archive/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_users_notifications_by_pk_archive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotificationStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/users/notifications/{pk}/archive/",
+        "x-plane-handler": "unarchive",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_users_notifications_by_pk_archive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationMarkAllReadInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationMarkAllReadInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationMarkAllReadInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotificationStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/users/notifications/{pk}/archive/",
+        "x-plane-handler": "archive",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/users/notifications/{pk}/read/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_users_notifications_by_pk_read",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotificationStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/users/notifications/{pk}/read/",
+        "x-plane-handler": "mark_unread",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_users_notifications_by_pk_read",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSnoozeUpdateInput"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSnoozeUpdateInput"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationSnoozeUpdateInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotificationStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "406": {
+            "$ref": "#/components/responses/NotAcceptableError",
+            "description": "status_406: Not Acceptable response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/users/notifications/{pk}/read/",
+        "x-plane-handler": "mark_read",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.notification.base.NotificationViewSet"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data": {},
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_identifier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "is_inbox_issue": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "is_intake_issue": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "is_mentioned_notification": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "message": {},
+          "message_html": {
+            "type": "string"
+          },
+          "message_stripped": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receiver": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "sender": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "snoozed_till": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "triggered_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "triggered_by_details": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/NotificationActor"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspace": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "created_by",
+          "updated_by",
+          "deleted_at",
+          "workspace",
+          "project",
+          "data",
+          "entity_identifier",
+          "entity_name",
+          "title",
+          "message",
+          "message_html",
+          "message_stripped",
+          "sender",
+          "triggered_by",
+          "receiver",
+          "read_at",
+          "snoozed_till",
+          "archived_at",
+          "triggered_by_details"
+        ]
+      },
+      "NotificationActionMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "NotificationActor": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "is_bot": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 255
+          }
+        },
+        "required": [
+          "id",
+          "first_name",
+          "last_name",
+          "avatar",
+          "is_bot",
+          "display_name"
+        ]
+      },
+      "NotificationHTTPError_ff189992a65120f5": {
+        "type": "object",
+        "properties": {
+          "detail": {},
+          "error": {},
+          "snoozed_till": {}
+        }
+      },
+      "NotificationMarkAllReadInput": {
+        "type": "object",
+        "properties": {
+          "archived": {},
+          "snoozed": {},
+          "type": {}
+        }
+      },
+      "NotificationRequest": {
+        "type": "object",
+        "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data": {},
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_identifier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entity_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "message": {},
+          "message_html": {
+            "type": "string"
+          },
+          "message_stripped": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "project": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receiver": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          },
+          "sender": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "snoozed_till": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "triggered_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "workspace": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "entity_name",
+          "receiver",
+          "sender",
+          "title",
+          "workspace"
+        ]
+      },
+      "NotificationSnoozeUpdateInput": {
+        "type": "object",
+        "properties": {
+          "snoozed_till": {}
+        }
+      }
+    },
+    "parameters": {
+      "PathPk": {
+        "name": "pk",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        }
+      },
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "requestBodies": {
+      "PostAPIWorkspacesBySlugUsersNotificationsMarkAllReadRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationRequest"
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationRequest"
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationRequest"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "MethodNotAllowedError": {
+        "description": "Method Not Allowed response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "NotAcceptableError": {
+        "description": "Not Acceptable response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not Found response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "NotificationStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Notification"
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      },
+      "UnsupportedMediaTypeError": {
+        "description": "Unsupported Media Type response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NotificationHTTPError_ff189992a65120f5"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session authentication without CSRF enforcement.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "users"
+    }
+  ]
+}

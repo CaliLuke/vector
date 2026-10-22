@@ -1,0 +1,12 @@
+{
+  "README.md": "8a55c303804dbe84612a7eaa75c41549e03f71885e6d42a423cc6dfd232dae09",
+  "access-001-corrected-source.patch": "777de41405b37e8b73b0dbc81f5c5ecd00d627bdeff5e87ce3da67df32449050",
+  "access001-decision-regressions.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+  "access001-decision-regressions.log": "061b88ebc54c00f3417994b8f6bb1ff2fd6f30094161be5f8b718c185c3d2c20",
+  "auth-callback-corrected.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+  "auth-callback-corrected.log": "6f5aea6b3ae65d5e12edf8ea78c48d05c49d2f1bbc7022c334f2edb08aaed25b",
+  "auth-callback-pristine.exit": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+  "auth-callback-pristine.log": "9dec711b609f4d36356373d8c35c024f59d38cb0ac16790fe3791984240cfd98",
+  "corrected-source.manifest": "22d22e62ff37bfc2df58e7ba0ae1c3e9425d758413a97ad84a9e8cd35ebab170",
+  "source-inputs.SHA256SUMS": "997640e217e950cac2092a1114c44333e852a84c9cc23236b2089d9933b7fc63"
+}

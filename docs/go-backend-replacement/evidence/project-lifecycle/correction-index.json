@@ -1,0 +1,497 @@
+{
+  "changed_fixture_cases": {
+    "project_lifecycle": [
+      "app-archive-stale-project-admin",
+      "app-create-cover-asset-other-project-accepted",
+      "app-create-foreign-assignee-accepted",
+      "app-create-foreign-lead-accepted",
+      "app-create-foreign-state-estimate-accepted",
+      "app-create-inactive-assignee-accepted",
+      "app-create-inactive-lead-accepted",
+      "app-create-logo-props-lone-surrogate",
+      "app-create-server-owned-fields-write",
+      "app-delete-stale-project-admin",
+      "app-patch-cover-asset-foreign-workspace",
+      "app-patch-cover-asset-other-project",
+      "app-patch-cover-asset-wrong-entity",
+      "app-patch-description-jsonfields-lone-surrogate",
+      "app-patch-foreign-assignee-accepted",
+      "app-patch-foreign-lead-accepted",
+      "app-patch-form-inbox-string-false",
+      "app-patch-form-repeated-name",
+      "app-patch-inactive-lead-accepted",
+      "app-patch-server-owned-fields-null",
+      "app-patch-server-owned-fields-write",
+      "app-patch-stale-project-admin",
+      "app-put-admin-full-update",
+      "app-put-archived-at-write",
+      "app-put-archived-full-update",
+      "app-put-cross-slug",
+      "app-put-deleted-at-write",
+      "app-put-foreign-assignee-write",
+      "app-put-foreign-lead-write",
+      "app-put-form-repeated-name-and-omitted-booleans",
+      "app-put-member-full-update",
+      "app-put-outsider-full-update",
+      "app-put-sparse-body",
+      "app-put-stale-project-admin",
+      "app-put-unicode-identifier",
+      "app-put-workspace-reassignment",
+      "app-restore-stale-project-admin",
+      "v1-create-form-repeated-name",
+      "v1-create-icon-prop-lone-surrogate",
+      "v1-create-icon-prop-valid-unicode-duplicate-control",
+      "v1-create-ignored-overflow-finite-sibling",
+      "v1-create-self-lead",
+      "v1-create-success",
+      "v1-create-unknown-lone-surrogate",
+      "v1-delete-stale-project-admin",
+      "v1-lite-cursor-backward-mismatched-limit",
+      "v1-lite-sort-order-ascending",
+      "v1-lite-sort-order-descending",
+      "v1-lite-sort-order-source-error",
+      "v1-patch-default-assignee-foreign",
+      "v1-patch-default-state-foreign",
+      "v1-patch-default-state-valid",
+      "v1-patch-estimate-foreign",
+      "v1-patch-form-repeated-name",
+      "v1-patch-icon-prop-lone-surrogate",
+      "v1-patch-icon-prop-lone-surrogate-form",
+      "v1-patch-icon-prop-nested-overwritten-lone-surrogate",
+      "v1-patch-jsonfield-form-binary64",
+      "v1-patch-raw-utf8-conflicting-duplicate-empty-body",
+      "v1-patch-raw-utf8-extended-charset-invalid-byte",
+      "v1-patch-raw-utf8-latin1-charset-control",
+      "v1-patch-raw-utf8-latin1-charset-valid-nonascii",
+      "v1-patch-raw-utf8-malformed-charset-parameter",
+      "v1-patch-raw-utf8-trailing-incomplete-tail",
+      "v1-patch-stale-project-admin",
+      "v1-restore-stale-project-admin"
+    ]
+  },
+  "corrected_fixture_directory": "corrected-fixtures",
+  "corrected_source_worktree": "[local migration artifact omitted]",
+  "corrections": [
+    {
+      "changed_fixture_cases": [
+        "v1-patch-stale-project-admin",
+        "v1-delete-stale-project-admin",
+        "v1-restore-stale-project-admin",
+        "app-patch-stale-project-admin",
+        "app-delete-stale-project-admin",
+        "app-archive-stale-project-admin",
+        "app-restore-stale-project-admin"
+      ],
+      "decision": "Require active membership in the named workspace for lifecycle writes while preserving each route\u2019s existing role policy.",
+      "id": "PL-PROJECT-LC-001",
+      "operations": [
+        "delete_api_v1_workspaces_by_slug_projects_by_pk",
+        "delete_api_v1_workspaces_by_slug_projects_by_project_id_archive",
+        "delete_api_workspaces_by_slug_projects_by_pk",
+        "delete_api_workspaces_by_slug_projects_by_project_id_archive",
+        "patch_api_v1_workspaces_by_slug_projects_by_pk",
+        "patch_api_workspaces_by_slug_projects_by_pk",
+        "post_api_workspaces_by_slug_projects_by_project_id_archive"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "app-create-foreign-lead-accepted",
+        "app-create-inactive-lead-accepted",
+        "app-create-foreign-assignee-accepted",
+        "app-create-inactive-assignee-accepted"
+      ],
+      "decision": "Reject lead and default assignee outside active workspace membership before session create writes; perform project, identifier, memberships, properties, and states atomically.",
+      "id": "PL-PROJECT-LC-002",
+      "operations": [
+        "post_api_workspaces_by_slug_projects"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "v1-create-ignored-overflow-finite-sibling",
+        "v1-create-self-lead",
+        "v1-create-success"
+      ],
+      "decision": "Insert the initial ProjectIdentifier reservation inside the existing v1 create transaction; preserve reservation names on later rename.",
+      "id": "PL-PROJECT-LC-003",
+      "operations": [
+        "post_api_v1_workspaces_by_slug_projects"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "app-put-admin-full-update",
+        "app-put-archived-at-write",
+        "app-put-archived-full-update",
+        "app-put-cross-slug",
+        "app-put-deleted-at-write",
+        "app-put-foreign-assignee-write",
+        "app-put-foreign-lead-write",
+        "app-put-form-repeated-name-and-omitted-booleans",
+        "app-put-member-full-update",
+        "app-put-outsider-full-update",
+        "app-put-sparse-body",
+        "app-put-stale-project-admin",
+        "app-put-unicode-identifier",
+        "app-put-workspace-reassignment"
+      ],
+      "decision": "Apply session PATCH authorization and full-shape validation to PUT, require active workspace membership, reject immutable and out-of-scope fields, and scope referenced users to the active workspace.",
+      "id": "PL-PROJECT-LC-004",
+      "operations": [
+        "put_api_workspaces_by_slug_projects_by_pk"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "app-create-foreign-state-estimate-accepted",
+        "app-patch-foreign-lead-accepted",
+        "app-patch-foreign-assignee-accepted",
+        "app-patch-inactive-lead-accepted",
+        "v1-patch-default-assignee-foreign",
+        "v1-patch-default-state-foreign",
+        "v1-patch-default-state-valid",
+        "v1-patch-estimate-foreign"
+      ],
+      "decision": "Validate project state, estimate, and default-assignee references before v1 update writes; reject cross-project or non-workspace references with field-shaped errors while preserving valid and null updates.",
+      "id": "PL-PROJECT-LC-005",
+      "operations": [
+        "patch_api_v1_workspaces_by_slug_projects_by_pk",
+        "patch_api_workspaces_by_slug_projects_by_pk",
+        "post_api_workspaces_by_slug_projects"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "app-create-cover-asset-other-project-accepted",
+        "app-create-server-owned-fields-write",
+        "app-patch-cover-asset-foreign-workspace",
+        "app-patch-cover-asset-other-project",
+        "app-patch-cover-asset-wrong-entity",
+        "app-patch-server-owned-fields-null",
+        "app-patch-server-owned-fields-write"
+      ],
+      "decision": "Reject direct writes to server-owned audit and archive fields; allow null cover removal and require non-null cover assets to belong to the same active project and workspace with PROJECT_COVER entity type.",
+      "id": "PL-PROJECT-LC-006",
+      "operations": [
+        "patch_api_workspaces_by_slug_projects_by_pk",
+        "post_api_workspaces_by_slug_projects"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "app-patch-form-inbox-string-false",
+        "app-patch-form-repeated-name",
+        "v1-create-form-repeated-name",
+        "v1-patch-form-repeated-name",
+        "v1-patch-jsonfield-form-binary64"
+      ],
+      "decision": "Preserve repeated multipart field values using QueryDict last-value semantics and use validated intake_view for Intake creation. Keep raw request data in activity effects.",
+      "id": "PL-PROJECT-LC-007",
+      "operations": [
+        "patch_api_v1_workspaces_by_slug_projects_by_pk",
+        "patch_api_workspaces_by_slug_projects_by_pk",
+        "post_api_v1_workspaces_by_slug_projects"
+      ]
+    },
+    {
+      "changed_fixture_cases": [
+        "v1-lite-sort-order-source-error",
+        "v1-lite-sort-order-ascending",
+        "v1-lite-sort-order-descending",
+        "v1-lite-cursor-backward-mismatched-limit"
+      ],
+      "decision": "Support advertised lite sort_order using active ProjectMember.sort_order and preserve offset-page behavior for backward cursors whose limit differs from the current page size.",
+      "id": "PL-PROJECT-LC-008",
+      "operations": [
+        "get_api_v1_workspaces_by_slug_projects_lite"
+      ]
+    },
+    {
+      "id": "PL-PROJECT-LC-009",
+      "decision": "Reject lone UTF-16 surrogate code points in selected persisted JSONField values before domain writes. Inspect the original selected field value, including nested duplicate members later overwritten; preserve last-value semantics for otherwise valid duplicates. Ignore unselected unknown fields.",
+      "operations": [
+        "post_api_v1_workspaces_by_slug_projects",
+        "patch_api_v1_workspaces_by_slug_projects_by_pk",
+        "post_api_workspaces_by_slug_projects",
+        "patch_api_workspaces_by_slug_projects_by_pk"
+      ],
+      "changed_fixture_cases": [
+        "app-create-logo-props-lone-surrogate",
+        "app-patch-description-jsonfields-lone-surrogate",
+        "v1-create-icon-prop-lone-surrogate",
+        "v1-create-icon-prop-valid-unicode-duplicate-control",
+        "v1-create-unknown-lone-surrogate",
+        "v1-patch-icon-prop-lone-surrogate",
+        "v1-patch-icon-prop-lone-surrogate-form",
+        "v1-patch-icon-prop-nested-overwritten-lone-surrogate"
+      ]
+    },
+    {
+      "id": "PL-PROJECT-LC-010",
+      "decision_date": "2026-10-20",
+      "decision": "Require application/json request bodies to be UTF-8 regardless of any charset parameter; charset labels do not select or transcode the JSON decoder. Reject invalid UTF-8 bytes and an incomplete UTF-8 suffix after a complete JSON document before domain writes. Reject malformed JSON Content-Type syntax and conflicting duplicate parameters with HTTP 415; accept equal duplicates, extended charset parameters, and unrelated empty parameters without changing UTF-8 decoding.",
+      "operations": [
+        "post_api_v1_workspaces_by_slug_projects",
+        "patch_api_v1_workspaces_by_slug_projects_by_pk"
+      ],
+      "changed_fixture_cases": [
+        "v1-patch-raw-utf8-conflicting-duplicate-empty-body",
+        "v1-patch-raw-utf8-extended-charset-invalid-byte",
+        "v1-patch-raw-utf8-latin1-charset-control",
+        "v1-patch-raw-utf8-latin1-charset-valid-nonascii",
+        "v1-patch-raw-utf8-malformed-charset-parameter",
+        "v1-patch-raw-utf8-trailing-incomplete-tail"
+      ]
+    }
+  ],
+  "focused_recapture": {
+    "attempted": 51,
+    "case_ids": [
+      "app-archive-stale-project-admin",
+      "app-create-cover-asset-other-project-accepted",
+      "app-create-foreign-assignee-accepted",
+      "app-create-foreign-lead-accepted",
+      "app-create-foreign-state-estimate-accepted",
+      "app-create-inactive-assignee-accepted",
+      "app-create-inactive-lead-accepted",
+      "app-create-server-owned-fields-write",
+      "app-delete-stale-project-admin",
+      "app-patch-cover-asset-foreign-workspace",
+      "app-patch-cover-asset-other-project",
+      "app-patch-cover-asset-wrong-entity",
+      "app-patch-foreign-assignee-accepted",
+      "app-patch-foreign-lead-accepted",
+      "app-patch-form-inbox-string-false",
+      "app-patch-form-repeated-name",
+      "app-patch-inactive-lead-accepted",
+      "app-patch-server-owned-fields-null",
+      "app-patch-server-owned-fields-write",
+      "app-patch-stale-project-admin",
+      "app-put-admin-full-update",
+      "app-put-archived-at-write",
+      "app-put-archived-full-update",
+      "app-put-cross-slug",
+      "app-put-deleted-at-write",
+      "app-put-foreign-assignee-write",
+      "app-put-foreign-lead-write",
+      "app-put-form-repeated-name-and-omitted-booleans",
+      "app-put-member-full-update",
+      "app-put-outsider-full-update",
+      "app-put-sparse-body",
+      "app-put-stale-project-admin",
+      "app-put-unicode-identifier",
+      "app-put-workspace-reassignment",
+      "app-restore-stale-project-admin",
+      "v1-create-form-repeated-name",
+      "v1-create-self-lead",
+      "v1-create-success",
+      "v1-delete-stale-project-admin",
+      "v1-lite-cursor-backward-mismatched-limit",
+      "v1-lite-sort-order-ascending",
+      "v1-lite-sort-order-descending",
+      "v1-lite-sort-order-source-error",
+      "v1-patch-default-assignee-foreign",
+      "v1-patch-default-state-foreign",
+      "v1-patch-default-state-valid",
+      "v1-patch-estimate-foreign",
+      "v1-patch-form-repeated-name",
+      "v1-patch-jsonfield-form-binary64",
+      "v1-patch-stale-project-admin",
+      "v1-restore-stale-project-admin"
+    ],
+    "command_log": "review-r1/corrected.log",
+    "exit_status": 0,
+    "failed": 0,
+    "passed": 51,
+    "recorder_sha256": "ec8f069ee6bd3bbfaf8c8068064cd1c4e61d345336fe02e54e30a9e147f269e2"
+  },
+  "patch": "corrected-patches/source-corrections.patch",
+  "patch_sha256": "48acd2e01af2bbc7c46e1118f744398714772fb05c8712f4353d6861a486e7f1",
+  "schema_version": 1,
+  "source_capture": {
+    "capture_groups": [
+      {
+        "failed": 0,
+        "fixture_cases": 49,
+        "log": "corrected-source-20261020T234845Z.log",
+        "passed": 49,
+        "request_attempts": 49,
+        "successful_fixture_cases": 49
+      },
+      {
+        "case_ids": [
+          "app-put-unicode-identifier",
+          "v1-patch-jsonfield-form-binary64"
+        ],
+        "failed": 0,
+        "fixture_cases": 2,
+        "log": "review-r1/corrected.log",
+        "passed": 2,
+        "request_attempts": 2,
+        "successful_fixture_cases": 2
+      },
+      {
+        "case_ids": [
+          "v1-create-unknown-lone-surrogate",
+          "v1-create-icon-prop-valid-unicode-duplicate-control",
+          "v1-create-icon-prop-lone-surrogate",
+          "v1-patch-icon-prop-lone-surrogate",
+          "v1-patch-icon-prop-lone-surrogate-form"
+        ],
+        "failed": 1,
+        "fixture_cases": 4,
+        "successful_fixture_cases": 4,
+        "request_attempts": 5,
+        "log": "unicode-r3/corrected-attempt1.log",
+        "exit_status": 1
+      },
+      {
+        "case_ids": [
+          "app-create-logo-props-lone-surrogate",
+          "app-patch-description-jsonfields-lone-surrogate",
+          "v1-patch-icon-prop-nested-overwritten-lone-surrogate"
+        ],
+        "failed": 0,
+        "fixture_cases": 3,
+        "successful_fixture_cases": 3,
+        "passed": 3,
+        "request_attempts": 3,
+        "log": "unicode-r3/corrected-attempt2.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-icon-prop-lone-surrogate-form"
+        ],
+        "failed": 0,
+        "fixture_cases": 1,
+        "successful_fixture_cases": 1,
+        "passed": 1,
+        "request_attempts": 1,
+        "log": "unicode-r3/corrected-capture.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-latin1-charset-control",
+          "v1-patch-raw-utf8-trailing-incomplete-tail"
+        ],
+        "failed": 1,
+        "fixture_cases": 0,
+        "request_attempts": 1,
+        "log": "utf8-only-contract/corrected-attempt1.log",
+        "exit_status": 1
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-latin1-charset-control",
+          "v1-patch-raw-utf8-trailing-incomplete-tail"
+        ],
+        "failed": 0,
+        "fixture_cases": 2,
+        "passed": 2,
+        "successful_fixture_cases": 2,
+        "request_attempts": 2,
+        "log": "utf8-only-contract/corrected-capture.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-malformed-charset-parameter"
+        ],
+        "failed": 0,
+        "fixture_cases": 1,
+        "passed": 1,
+        "successful_fixture_cases": 1,
+        "request_attempts": 1,
+        "log": "mime-repair/corrected-capture.log",
+        "exit_status": 0
+      }
+    ],
+    "failed_requests": 2,
+    "fixture_cases": 63,
+    "passed_requests": 63,
+    "request_attempts": 65
+  },
+  "source_commit": "c289aaaf8980274b409bf665e914bdc205700e6f",
+  "focused_unicode_recapture": {
+    "case_ids": [
+      "v1-create-unknown-lone-surrogate",
+      "v1-create-icon-prop-valid-unicode-duplicate-control",
+      "v1-create-icon-prop-lone-surrogate",
+      "v1-patch-icon-prop-lone-surrogate",
+      "v1-patch-icon-prop-lone-surrogate-form",
+      "app-create-logo-props-lone-surrogate",
+      "app-patch-description-jsonfields-lone-surrogate",
+      "v1-patch-icon-prop-nested-overwritten-lone-surrogate"
+    ],
+    "attempted": 9,
+    "fixture_cases": 8,
+    "passed": 8,
+    "failed": 1,
+    "log": "unicode-r3/corrected-capture.log",
+    "exit_status": 0,
+    "recorder_sha256": "e89b5b6c24e39adbd42f26c47bf8ddbc18f090a9ca686aa4312a2d92f1afe598",
+    "note": "The initial capture stopped at a recorder assertion for the multipart form case; the missing form fixture was then captured alone. All eight overlay names are now present and source-verified where unchanged."
+  },
+  "focused_raw_utf8_recapture": {
+    "case_ids": [
+      "v1-patch-raw-utf8-latin1-charset-control",
+      "v1-patch-raw-utf8-trailing-incomplete-tail"
+    ],
+    "attempted": 3,
+    "fixture_cases": 2,
+    "passed": 2,
+    "failed": 1,
+    "log": "utf8-only-contract/corrected-capture.log",
+    "exit_status": 0,
+    "recorder_sha256": "80e733df193468f1b814c8fb4ecdee81d55be4e12265b85a58388395604fb526",
+    "note": "The first attempt failed before writing any fixture because the charset helper compared the full Content-Type; the corrected retry captured both overlays."
+  },
+  "focused_mime_recapture": {
+    "case_ids": [
+      "v1-patch-raw-utf8-malformed-charset-parameter"
+    ],
+    "attempted": 1,
+    "fixture_cases": 1,
+    "passed": 1,
+    "failed": 0,
+    "log": "mime-repair/corrected-capture.log",
+    "exit_status": 0,
+    "recorder_sha256": "568ae4af6ba19eac5f09755c9ce5ac585548f8b34f828b066a7255615d76fab1",
+    "note": "A malformed application/json parameter is accepted by pristine Django but rejected with 415 in the corrected oracle using the standard-library MIME header parser."
+  },
+  "focused_utf8_policy_recapture": {
+    "case_ids": [
+      "v1-patch-raw-utf8-conflicting-duplicate-empty-body",
+      "v1-patch-raw-utf8-equal-duplicate-charset",
+      "v1-patch-raw-utf8-extended-charset-ascii",
+      "v1-patch-raw-utf8-extended-charset-invalid-byte",
+      "v1-patch-raw-utf8-latin1-charset-valid-nonascii",
+      "v1-patch-raw-utf8-quoted-empty-parameter"
+    ],
+    "pristine_attempt_logs": [
+      "pristine-source-20261021T072454Z.log",
+      "pristine-source-20261021T072553Z.log",
+      "pristine-source-20261021T072657Z.log"
+    ],
+    "corrected_case_ids": [
+      "v1-patch-raw-utf8-conflicting-duplicate-empty-body",
+      "v1-patch-raw-utf8-extended-charset-invalid-byte",
+      "v1-patch-raw-utf8-latin1-charset-valid-nonascii",
+      "v1-patch-raw-utf8-latin1-charset-control"
+    ],
+    "corrected_attempt_log": "corrected-source-20261021T073003Z.log",
+    "pristine_cases": 6,
+    "failed_attempt_logs": [
+      "pristine-source-20261021T072454Z.log",
+      "pristine-source-20261021T072553Z.log",
+      "corrected-source-20261021T072849Z.log"
+    ],
+    "note": "Pristine accepts all six cases with project writes and both activity/audit tasks. Corrected source changes three new cases plus the existing invalid-byte Latin-1 case; three valid controls are byte-identical and omitted from the sparse overlay.",
+    "corrected_failed_attempt_log": "corrected-source-20261021T072849Z.log",
+    "new_corrected_overlay_cases": 3,
+    "refreshed_existing_overlay_cases": 1
+  }
+}

@@ -1,0 +1,573 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Workspace User Insights API",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Workspace User Insights API"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/user-activity/{user_id}/": {
+      "get": {
+        "tags": [
+          "workspace_user_insights"
+        ],
+        "summary": "activity workspace_user_insights",
+        "operationId": "get_api_workspaces_by_slug_user_activity_by_user_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathUserID"
+          },
+          {
+            "$ref": "#/components/parameters/QueryProject"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugUserActivityByUserIDStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/user-activity/{user_id}/export/": {
+      "post": {
+        "tags": [
+          "workspace_user_insights"
+        ],
+        "summary": "export_activity workspace_user_insights",
+        "operationId": "post_api_workspaces_by_slug_user_activity_by_user_id_export",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathUserID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Disposition": {
+                "$ref": "#/components/headers/ContentTypeHeader"
+              }
+            },
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/user-profile/{user_id}/": {
+      "get": {
+        "tags": [
+          "workspace_user_insights"
+        ],
+        "summary": "profile workspace_user_insights",
+        "operationId": "get_api_workspaces_by_slug_user_profile_by_user_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathUserID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugUserActivityByUserIDStatus200Response"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/user-stats/{user_id}/": {
+      "get": {
+        "tags": [
+          "workspace_user_insights"
+        ],
+        "summary": "stats workspace_user_insights",
+        "operationId": "get_api_workspaces_by_slug_user_stats_by_user_id",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathUserID"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state_group",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "estimate_point",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parent",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "labels",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "assignees",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mentions",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_by",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "logged_by",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_at",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "updated_at",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "target_date",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "completed_at",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/QueryProject"
+          },
+          {
+            "name": "cycle",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "module",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "intake_status",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "inbox_status",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sub_issue",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "subscriber",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "start_target_date",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/GetAPIWorkspacesBySlugUserActivityByUserIDStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PathUserID": {
+        "name": "user_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "QueryProject": {
+        "name": "project",
+        "in": "query",
+        "allowEmptyValue": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "ContentTypeHeader": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "GetAPIWorkspacesBySlugUserActivityByUserIDStatus200Response": {
+        "description": "OK response.",
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/headers/ContentTypeHeader"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not Found response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session cookie authentication.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "workspace_user_insights",
+      "description": "Workspace-scoped user profile, activity, statistics, and activity CSV export."
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-1>",
+          "is_folder": true,
+          "name": "Renamed",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-3>",
+          "user_id": "<uuid-3>",
+          "workspace_id": "<uuid-2>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-4>",
+          "is_folder": true,
+          "name": "Active",
+          "parent_id": "<uuid-1>",
+          "project_id": null,
+          "sequence": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "workspace_id": "<uuid-2>"
+        }
+      ]
+    },
+    "before": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-1>",
+          "is_folder": true,
+          "name": "Projects",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "workspace_id": "<uuid-2>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-4>",
+          "is_folder": true,
+          "name": "Active",
+          "parent_id": "<uuid-1>",
+          "project_id": null,
+          "sequence": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-3>",
+          "workspace_id": "<uuid-2>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "user_favorites"
+    ],
+    "expected_changed_tables": [
+      "user_favorites"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "name": "Renamed"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/workspaces/favorite-parity/user-favorites/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "entity_data": null,
+      "entity_identifier": null,
+      "entity_type": "folder",
+      "id": "<uuid-1>",
+      "is_folder": true,
+      "name": "Renamed",
+      "parent": null,
+      "project_id": null,
+      "sequence": 65535.0,
+      "workspace_id": "<uuid-2>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "patch"
+  }
+}

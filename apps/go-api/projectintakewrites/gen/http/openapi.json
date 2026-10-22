@@ -1,0 +1,1535 @@
+{
+  "openapi": "3.2.0",
+  "info": {
+    "title": "Project Intake Writes",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "name": "Project Intake Writes",
+      "url": "http://localhost:80",
+      "description": "Default server for Project Intake Writes"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/projects/{project_id}/inboxes/": {
+      "post": {
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_inboxes",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Dolorem aut molestiae et voluptatem enim."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "d7edee40-6f2a-44ba-a0ef-50f4ca96bb2e"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "Architecto optio error qui numquam.",
+                  "is_default": false,
+                  "logo_props": "Ut hic aut.",
+                  "name": "c62",
+                  "view_props": "Similique et voluptatem et fuga."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Architecto optio error qui numquam.",
+                "is_default": false,
+                "logo_props": "Ut hic aut.",
+                "name": "c62",
+                "view_props": "Similique et voluptatem et fuga."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "Architecto optio error qui numquam.",
+                  "is_default": false,
+                  "logo_props": "Ut hic aut.",
+                  "name": "c62",
+                  "view_props": "Similique et voluptatem et fuga."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Architecto optio error qui numquam.",
+                "is_default": false,
+                "logo_props": "Ut hic aut.",
+                "name": "c62",
+                "view_props": "Similique et voluptatem et fuga."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "Architecto optio error qui numquam.",
+                  "is_default": false,
+                  "logo_props": "Ut hic aut.",
+                  "name": "c62",
+                  "view_props": "Similique et voluptatem et fuga."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Architecto optio error qui numquam.",
+                "is_default": false,
+                "logo_props": "Ut hic aut.",
+                "name": "c62",
+                "view_props": "Similique et voluptatem et fuga."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Nesciunt sint eligendi odio sunt molestiae."
+                },
+                "example": "Nesciunt sint eligendi odio sunt molestiae."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "created_at": "2001-12-07T03:54:47Z",
+                    "created_by": "c0e126bb-5686-4b02-89a1-23265b64ea26",
+                    "deleted_at": "1989-03-22T06:34:01Z",
+                    "description": "Nobis quia voluptates tempore doloribus.",
+                    "id": "fd4bc035-e56a-4fc0-b261-d60cd91e6cab",
+                    "is_default": true,
+                    "logo_props": "Quaerat et qui.",
+                    "name": "Mollitia nobis ut sed.",
+                    "pending_issue_count": 97009629289624092,
+                    "project": "e44cdc93-01be-4e25-a29d-328746e9e906",
+                    "project_detail": {
+                      "cover_image": "Dolores ea mollitia aliquam eum et.",
+                      "cover_image_url": "Labore enim inventore rerum laudantium ducimus perferendis.",
+                      "description": "Aut distinctio maxime accusantium.",
+                      "id": "88302c48-6ed5-4801-afcd-d3569d910da1",
+                      "identifier": "Illo et odit minima sequi.",
+                      "logo_props": "Et et similique eos praesentium.",
+                      "name": "Quae nostrum ratione."
+                    },
+                    "updated_at": "2014-02-07T12:40:52Z",
+                    "updated_by": "8c51ee3d-a451-43aa-a349-d97d6c2b7f16",
+                    "view_props": "Numquam laudantium tempore possimus.",
+                    "workspace": "f028f512-23db-4e01-9c33-a15b398b2629"
+                  },
+                  "$ref": "#/components/schemas/Intake"
+                },
+                "example": {
+                  "created_at": "2001-12-07T03:54:47Z",
+                  "created_by": "c0e126bb-5686-4b02-89a1-23265b64ea26",
+                  "deleted_at": "1989-03-22T06:34:01Z",
+                  "description": "Nobis quia voluptates tempore doloribus.",
+                  "id": "fd4bc035-e56a-4fc0-b261-d60cd91e6cab",
+                  "is_default": true,
+                  "logo_props": "Quaerat et qui.",
+                  "name": "Mollitia nobis ut sed.",
+                  "pending_issue_count": 97009629289624092,
+                  "project": "e44cdc93-01be-4e25-a29d-328746e9e906",
+                  "project_detail": {
+                    "cover_image": "Dolores ea mollitia aliquam eum et.",
+                    "cover_image_url": "Labore enim inventore rerum laudantium ducimus perferendis.",
+                    "description": "Aut distinctio maxime accusantium.",
+                    "id": "88302c48-6ed5-4801-afcd-d3569d910da1",
+                    "identifier": "Illo et odit minima sequi.",
+                    "logo_props": "Et et similique eos praesentium.",
+                    "name": "Quae nostrum ratione."
+                  },
+                  "updated_at": "2014-02-07T12:40:52Z",
+                  "updated_by": "8c51ee3d-a451-43aa-a349-d97d6c2b7f16",
+                  "view_props": "Numquam laudantium tempore possimus.",
+                  "workspace": "f028f512-23db-4e01-9c33-a15b398b2629"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Inventore vel labore animi."
+                },
+                "example": "Inventore vel labore animi."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptatem mollitia."
+                },
+                "example": "Voluptatem mollitia."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Et repellendus pariatur earum aut dolor amet."
+                },
+                "example": "Et repellendus pariatur earum aut dolor amet."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Beatae sit vel quo vel."
+                },
+                "example": "Beatae sit vel quo vel."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Distinctio enim cumque nam minima atque dolores."
+                },
+                "example": "Distinctio enim cumque nam minima atque dolores."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Esse consequatur velit odit recusandae et repudiandae."
+                },
+                "example": "Esse consequatur velit odit recusandae et repudiandae."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Iusto ad aperiam ullam aut."
+                },
+                "example": "Iusto ad aperiam ullam aut."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "CreateInbox ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/inboxes/"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/": {
+      "delete": {
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Numquam quisquam doloremque corporis ad ab."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "0701b5da-8e11-4d6e-a916-78e32335ee8e"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "ab50650a-a980-4eef-8d5d-f33095e24075"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse"
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Exercitationem quos."
+                },
+                "example": "Exercitationem quos."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Et cum quo repellendus."
+                },
+                "example": "Et cum quo repellendus."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Et modi ipsa consequatur."
+                },
+                "example": "Et modi ipsa consequatur."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Blanditiis saepe incidunt qui."
+                },
+                "example": "Blanditiis saepe incidunt qui."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Suscipit itaque quidem cumque et sunt quae."
+                },
+                "example": "Suscipit itaque quidem cumque et sunt quae."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Consequatur molestias et quos nostrum non."
+                },
+                "example": "Consequatur molestias et quos nostrum non."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Deserunt enim sed modi quis."
+                },
+                "example": "Deserunt enim sed modi quis."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "DeleteInbox ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/"
+      },
+      "patch": {
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Sunt quo."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "55ca0c1b-06eb-423f-b4a4-1c36a8f4a358"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "7bd8a186-56ca-4a5c-a465-f6ee924e7059"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                  "is_default": false,
+                  "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                  "name": "lfb",
+                  "view_props": "Neque ut in voluptatibus."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                "is_default": false,
+                "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                "name": "lfb",
+                "view_props": "Neque ut in voluptatibus."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                  "is_default": false,
+                  "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                  "name": "lfb",
+                  "view_props": "Neque ut in voluptatibus."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                "is_default": false,
+                "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                "name": "lfb",
+                "view_props": "Neque ut in voluptatibus."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                  "is_default": false,
+                  "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                  "name": "lfb",
+                  "view_props": "Neque ut in voluptatibus."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Fugit architecto voluptatem ea asperiores nulla magni.",
+                "is_default": false,
+                "logo_props": "Vitae sed eos cum perferendis necessitatibus suscipit.",
+                "name": "lfb",
+                "view_props": "Neque ut in voluptatibus."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Voluptatem qui."
+                },
+                "example": "Voluptatem qui."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "created_at": "2007-10-18T16:04:52Z",
+                    "created_by": "0f9ad681-8ed8-4491-8c08-0f2c49d35745",
+                    "deleted_at": "2011-04-18T14:20:10Z",
+                    "description": "Delectus pariatur eius neque libero laborum.",
+                    "id": "bf333d5b-7d64-47ea-b591-fa78b1137411",
+                    "is_default": true,
+                    "logo_props": "Qui vero in rerum.",
+                    "name": "Officiis dignissimos nulla.",
+                    "pending_issue_count": 6285402127494913668,
+                    "project": "179ab65e-fa83-4c6c-8360-479e01bed82a",
+                    "project_detail": {
+                      "cover_image": "Corporis ipsa dolores iusto nulla.",
+                      "cover_image_url": "In ea perspiciatis aut aliquam.",
+                      "description": "Nihil quia quis sit inventore.",
+                      "id": "8c2adb1d-a24d-443a-9ecb-20de549a4722",
+                      "identifier": "Est occaecati.",
+                      "logo_props": "Repellat cumque doloremque sunt minus.",
+                      "name": "Nisi rerum."
+                    },
+                    "updated_at": "2007-02-02T22:12:06Z",
+                    "updated_by": "7334ad53-db4e-4c04-9ba9-e21ccc486bfa",
+                    "view_props": "Et in exercitationem quasi qui repudiandae.",
+                    "workspace": "fe6f4a9f-2077-44af-bd09-9341e7ea63c4"
+                  },
+                  "$ref": "#/components/schemas/Intake"
+                },
+                "example": {
+                  "created_at": "2007-10-18T16:04:52Z",
+                  "created_by": "0f9ad681-8ed8-4491-8c08-0f2c49d35745",
+                  "deleted_at": "2011-04-18T14:20:10Z",
+                  "description": "Delectus pariatur eius neque libero laborum.",
+                  "id": "bf333d5b-7d64-47ea-b591-fa78b1137411",
+                  "is_default": true,
+                  "logo_props": "Qui vero in rerum.",
+                  "name": "Officiis dignissimos nulla.",
+                  "pending_issue_count": 6285402127494913668,
+                  "project": "179ab65e-fa83-4c6c-8360-479e01bed82a",
+                  "project_detail": {
+                    "cover_image": "Corporis ipsa dolores iusto nulla.",
+                    "cover_image_url": "In ea perspiciatis aut aliquam.",
+                    "description": "Nihil quia quis sit inventore.",
+                    "id": "8c2adb1d-a24d-443a-9ecb-20de549a4722",
+                    "identifier": "Est occaecati.",
+                    "logo_props": "Repellat cumque doloremque sunt minus.",
+                    "name": "Nisi rerum."
+                  },
+                  "updated_at": "2007-02-02T22:12:06Z",
+                  "updated_by": "7334ad53-db4e-4c04-9ba9-e21ccc486bfa",
+                  "view_props": "Et in exercitationem quasi qui repudiandae.",
+                  "workspace": "fe6f4a9f-2077-44af-bd09-9341e7ea63c4"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Sed iure pariatur excepturi."
+                },
+                "example": "Sed iure pariatur excepturi."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Totam nobis consequatur."
+                },
+                "example": "Totam nobis consequatur."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Unde sed."
+                },
+                "example": "Unde sed."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Amet sunt odit."
+                },
+                "example": "Amet sunt odit."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Aut impedit qui."
+                },
+                "example": "Aut impedit qui."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Eum voluptas ea repellat molestias ea praesentium."
+                },
+                "example": "Eum voluptas ea repellat molestias ea praesentium."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Et quae occaecati."
+                },
+                "example": "Et quae occaecati."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "PatchInbox ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/intakes/": {
+      "post": {
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_intakes",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ea iste excepturi vel."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "88ff5054-76c2-47c7-b55e-91728d11adc4"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "Illo accusantium sint architecto.",
+                  "is_default": false,
+                  "logo_props": "Et illum rem aut qui.",
+                  "name": "kn5",
+                  "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Illo accusantium sint architecto.",
+                "is_default": false,
+                "logo_props": "Et illum rem aut qui.",
+                "name": "kn5",
+                "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "Illo accusantium sint architecto.",
+                  "is_default": false,
+                  "logo_props": "Et illum rem aut qui.",
+                  "name": "kn5",
+                  "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Illo accusantium sint architecto.",
+                "is_default": false,
+                "logo_props": "Et illum rem aut qui.",
+                "name": "kn5",
+                "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "Illo accusantium sint architecto.",
+                  "is_default": false,
+                  "logo_props": "Et illum rem aut qui.",
+                  "name": "kn5",
+                  "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Illo accusantium sint architecto.",
+                "is_default": false,
+                "logo_props": "Et illum rem aut qui.",
+                "name": "kn5",
+                "view_props": "Saepe consequatur voluptas debitis voluptates officia."
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Consequatur iusto fuga perferendis."
+                },
+                "example": "Consequatur iusto fuga perferendis."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "created_at": "1981-05-26T22:38:23Z",
+                    "created_by": "30e249c8-16b1-4d62-8bd0-60a1a6ec291b",
+                    "deleted_at": "1972-01-20T05:26:23Z",
+                    "description": "Quia et ullam.",
+                    "id": "26089568-f9ef-47cb-b282-5d3d39e9234a",
+                    "is_default": false,
+                    "logo_props": "Quod perspiciatis.",
+                    "name": "Nostrum error delectus asperiores suscipit doloribus.",
+                    "pending_issue_count": 111868176719515456,
+                    "project": "66137885-9275-4cab-8ed2-50a8f3530436",
+                    "project_detail": {
+                      "cover_image": "Sequi facere cumque quibusdam soluta ut.",
+                      "cover_image_url": "Est et deleniti autem corrupti voluptatem.",
+                      "description": "Nihil vel omnis minima.",
+                      "id": "bd86895a-8f18-4582-ab45-749e4d8f428a",
+                      "identifier": "Minus in.",
+                      "logo_props": "Ea aut non sapiente.",
+                      "name": "Sint iusto voluptate esse cumque."
+                    },
+                    "updated_at": "1983-07-27T07:20:05Z",
+                    "updated_by": "6e225b1e-81ee-4b78-9585-530277d3726e",
+                    "view_props": "Porro voluptas sit fuga.",
+                    "workspace": "acfa9869-d73a-4f2d-8a1a-cc7a9f624fde"
+                  },
+                  "$ref": "#/components/schemas/Intake"
+                },
+                "example": {
+                  "created_at": "1981-05-26T22:38:23Z",
+                  "created_by": "30e249c8-16b1-4d62-8bd0-60a1a6ec291b",
+                  "deleted_at": "1972-01-20T05:26:23Z",
+                  "description": "Quia et ullam.",
+                  "id": "26089568-f9ef-47cb-b282-5d3d39e9234a",
+                  "is_default": false,
+                  "logo_props": "Quod perspiciatis.",
+                  "name": "Nostrum error delectus asperiores suscipit doloribus.",
+                  "pending_issue_count": 111868176719515456,
+                  "project": "66137885-9275-4cab-8ed2-50a8f3530436",
+                  "project_detail": {
+                    "cover_image": "Sequi facere cumque quibusdam soluta ut.",
+                    "cover_image_url": "Est et deleniti autem corrupti voluptatem.",
+                    "description": "Nihil vel omnis minima.",
+                    "id": "bd86895a-8f18-4582-ab45-749e4d8f428a",
+                    "identifier": "Minus in.",
+                    "logo_props": "Ea aut non sapiente.",
+                    "name": "Sint iusto voluptate esse cumque."
+                  },
+                  "updated_at": "1983-07-27T07:20:05Z",
+                  "updated_by": "6e225b1e-81ee-4b78-9585-530277d3726e",
+                  "view_props": "Porro voluptas sit fuga.",
+                  "workspace": "acfa9869-d73a-4f2d-8a1a-cc7a9f624fde"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Repudiandae mollitia."
+                },
+                "example": "Repudiandae mollitia."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Iusto et vel omnis dolores voluptatem aliquid."
+                },
+                "example": "Iusto et vel omnis dolores voluptatem aliquid."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Itaque recusandae quis."
+                },
+                "example": "Itaque recusandae quis."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Facere est cumque."
+                },
+                "example": "Facere est cumque."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptatem sunt sed libero aut autem."
+                },
+                "example": "Voluptatem sunt sed libero aut autem."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Ut dolore et."
+                },
+                "example": "Ut dolore et."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Incidunt rerum."
+                },
+                "example": "Incidunt rerum."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "CreateIntake ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/intakes/"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/": {
+      "delete": {
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Fuga est ullam et."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "a33ccfc9-f4f2-473b-809a-a40e263d0244"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "69229527-9383-44e4-b52a-9f7a02d02360"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse"
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Optio optio illo commodi a sunt."
+                },
+                "example": "Optio optio illo commodi a sunt."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Aut atque reprehenderit provident cum iste."
+                },
+                "example": "Aut atque reprehenderit provident cum iste."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Rerum id enim."
+                },
+                "example": "Rerum id enim."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Ab dolore sunt perferendis culpa."
+                },
+                "example": "Ab dolore sunt perferendis culpa."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Officia ut non dolores."
+                },
+                "example": "Officia ut non dolores."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Quaerat voluptatum cum."
+                },
+                "example": "Quaerat voluptatum cum."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Numquam delectus totam deserunt."
+                },
+                "example": "Numquam delectus totam deserunt."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "DeleteIntake ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/"
+      },
+      "patch": {
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Et enim praesentium assumenda eligendi dolorem tenetur."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "e2570de6-ca5c-40a4-ad69-adc65d5cfed6"
+          },
+          {
+            "name": "pk",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "4b3d47dc-1ab3-43cd-9dc2-596bbe601d3b"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "Voluptatem ipsam cumque dolorem id.",
+                  "is_default": false,
+                  "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                  "name": "s38",
+                  "view_props": "Eius quia omnis in."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Voluptatem ipsam cumque dolorem id.",
+                "is_default": false,
+                "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                "name": "s38",
+                "view_props": "Eius quia omnis in."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "Voluptatem ipsam cumque dolorem id.",
+                  "is_default": false,
+                  "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                  "name": "s38",
+                  "view_props": "Eius quia omnis in."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Voluptatem ipsam cumque dolorem id.",
+                "is_default": false,
+                "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                "name": "s38",
+                "view_props": "Eius quia omnis in."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "Voluptatem ipsam cumque dolorem id.",
+                  "is_default": false,
+                  "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                  "name": "s38",
+                  "view_props": "Eius quia omnis in."
+                },
+                "$ref": "#/components/schemas/IntakeWriteRequest"
+              },
+              "example": {
+                "description": "Voluptatem ipsam cumque dolorem id.",
+                "is_default": false,
+                "logo_props": "Nemo eum sunt rerum et fugit molestiae.",
+                "name": "s38",
+                "view_props": "Eius quia omnis in."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Omnis in occaecati et."
+                },
+                "example": "Omnis in occaecati et."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "created_at": "2004-03-19T06:52:00Z",
+                    "created_by": "abe3803a-c75b-4c77-b060-605050b10093",
+                    "deleted_at": "1990-06-24T05:16:33Z",
+                    "description": "Dolor sequi porro.",
+                    "id": "de51f93e-49b8-4863-a6eb-caedb8a4e739",
+                    "is_default": false,
+                    "logo_props": "A et optio beatae.",
+                    "name": "Enim et inventore.",
+                    "pending_issue_count": 1625500915752730063,
+                    "project": "dc1257f7-1ab8-42fc-ac44-e19764d2d818",
+                    "project_detail": {
+                      "cover_image": "Sit quas ipsa labore et.",
+                      "cover_image_url": "Et expedita ut architecto consequatur ut suscipit.",
+                      "description": "Ut corporis cum quis.",
+                      "id": "bce81552-592d-4be9-997a-fcc8360e6cb2",
+                      "identifier": "Aperiam eveniet facilis.",
+                      "logo_props": "Quos aut accusantium earum est dolorum eligendi.",
+                      "name": "Quo aut est."
+                    },
+                    "updated_at": "1985-01-19T17:37:36Z",
+                    "updated_by": "e7eb46f0-3e8b-444e-9e4c-8cc4f0fe3f4e",
+                    "view_props": "Temporibus amet veritatis quis quibusdam tempora.",
+                    "workspace": "87d3c531-3122-4e7a-b804-ac5edc12824e"
+                  },
+                  "$ref": "#/components/schemas/Intake"
+                },
+                "example": {
+                  "created_at": "2004-03-19T06:52:00Z",
+                  "created_by": "abe3803a-c75b-4c77-b060-605050b10093",
+                  "deleted_at": "1990-06-24T05:16:33Z",
+                  "description": "Dolor sequi porro.",
+                  "id": "de51f93e-49b8-4863-a6eb-caedb8a4e739",
+                  "is_default": false,
+                  "logo_props": "A et optio beatae.",
+                  "name": "Enim et inventore.",
+                  "pending_issue_count": 1625500915752730063,
+                  "project": "dc1257f7-1ab8-42fc-ac44-e19764d2d818",
+                  "project_detail": {
+                    "cover_image": "Sit quas ipsa labore et.",
+                    "cover_image_url": "Et expedita ut architecto consequatur ut suscipit.",
+                    "description": "Ut corporis cum quis.",
+                    "id": "bce81552-592d-4be9-997a-fcc8360e6cb2",
+                    "identifier": "Aperiam eveniet facilis.",
+                    "logo_props": "Quos aut accusantium earum est dolorum eligendi.",
+                    "name": "Quo aut est."
+                  },
+                  "updated_at": "1985-01-19T17:37:36Z",
+                  "updated_by": "e7eb46f0-3e8b-444e-9e4c-8cc4f0fe3f4e",
+                  "view_props": "Temporibus amet veritatis quis quibusdam tempora.",
+                  "workspace": "87d3c531-3122-4e7a-b804-ac5edc12824e"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Quis praesentium accusamus iste."
+                },
+                "example": "Quis praesentium accusamus iste."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Cupiditate suscipit ut nulla quibusdam."
+                },
+                "example": "Cupiditate suscipit ut nulla quibusdam."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Quos maiores adipisci fugit."
+                },
+                "example": "Quos maiores adipisci fugit."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Est porro fugit."
+                },
+                "example": "Est porro fugit."
+              }
+            }
+          },
+          "405": {
+            "description": "status_405: Method Not Allowed response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Officia quo quaerat quidem aut natus."
+                },
+                "example": "Officia quo quaerat quidem aut natus."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Eaque omnis."
+                },
+                "example": "Eaque omnis."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "In enim dolorem aut nihil sit."
+                },
+                "example": "In enim dolorem aut nihil sit."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "PatchIntake ProjectIntakeWrites",
+        "tags": [
+          "ProjectIntakeWrites"
+        ],
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Intake": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "example": "1991-08-07T07:13:52Z",
+            "format": "date-time"
+          },
+          "created_by": {
+            "example": "815cbeb9-e9c3-4fb6-9143-12b6d5ede019",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "example": "2005-06-22T10:50:04Z",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "example": "Excepturi eius et corrupti."
+          },
+          "id": {
+            "type": "string",
+            "example": "7869da2c-f51c-4ba2-98ac-00e364256c91",
+            "format": "uuid"
+          },
+          "is_default": {
+            "type": "boolean",
+            "example": true
+          },
+          "logo_props": {
+            "example": "Sunt beatae ex commodi."
+          },
+          "name": {
+            "type": "string",
+            "example": "Quae tenetur maiores et."
+          },
+          "pending_issue_count": {
+            "type": "integer",
+            "example": 4275387416344798278,
+            "format": "int64"
+          },
+          "project": {
+            "type": "string",
+            "example": "d04ad746-0030-4c16-8854-5aa21c9472f8",
+            "format": "uuid"
+          },
+          "project_detail": {
+            "$ref": "#/components/schemas/IntakeProjectDetail"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "1991-10-04T16:47:04Z",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "example": "4ccbaee4-7148-4e3f-af9b-0ac8973ea577",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {
+            "example": "Veniam voluptatem blanditiis ut eum aut dolor."
+          },
+          "workspace": {
+            "type": "string",
+            "example": "a86ec869-d0bb-4800-a49c-af98a44c48b7",
+            "format": "uuid"
+          }
+        },
+        "example": {
+          "created_at": "1987-02-11T07:32:12Z",
+          "created_by": "bcbe20fe-e401-4452-8fba-cc85bbdad94e",
+          "deleted_at": "2012-04-16T19:36:44Z",
+          "description": "Blanditiis laborum.",
+          "id": "94b07052-cbee-408c-8cc9-0c69df40dfc4",
+          "is_default": false,
+          "logo_props": "Sit est non nemo enim voluptas.",
+          "name": "Eius eum eum non.",
+          "pending_issue_count": 6246605840400099579,
+          "project": "a04a3c2b-a75b-47e6-b3bf-d7d3ab7ae875",
+          "project_detail": {
+            "cover_image": "Aut sit accusantium in.",
+            "cover_image_url": "Sed ex ut quaerat.",
+            "description": "Exercitationem omnis harum incidunt vero.",
+            "id": "a0861b7c-1daf-4b6d-8cde-87439c0c7bf9",
+            "identifier": "Nihil rerum eveniet fugit quasi consectetur illum.",
+            "logo_props": "Harum similique consequuntur.",
+            "name": "Dolorem reprehenderit impedit neque."
+          },
+          "updated_at": "1972-12-31T04:00:40Z",
+          "updated_by": "6bd8b113-a8b8-409e-be43-fc203a138086",
+          "view_props": "Totam dolorem repudiandae quod fuga quas.",
+          "workspace": "fbd5c93b-d8bd-4ed8-a31a-a5d3e1110d1e"
+        },
+        "required": [
+          "id",
+          "created_at",
+          "updated_at",
+          "deleted_at",
+          "created_by",
+          "updated_by",
+          "workspace",
+          "project",
+          "name",
+          "description",
+          "is_default",
+          "view_props",
+          "logo_props",
+          "project_detail"
+        ]
+      },
+      "IntakeProjectDetail": {
+        "type": "object",
+        "properties": {
+          "cover_image": {
+            "example": "Est maiores quas dolor voluptates officiis.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover_image_url": {
+            "example": "Sint tempore ipsum rerum quos veniam.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "example": "Cum odit."
+          },
+          "id": {
+            "type": "string",
+            "example": "b5e50bc5-7403-48b6-8a11-e8698a59de4a",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string",
+            "example": "Unde eos hic neque quos eveniet ipsa."
+          },
+          "logo_props": {
+            "example": "Perferendis et quis nam maxime a."
+          },
+          "name": {
+            "type": "string",
+            "example": "Suscipit magni quos alias."
+          }
+        },
+        "example": {
+          "cover_image": "Iure asperiores aut eos et est reiciendis.",
+          "cover_image_url": "Et perspiciatis totam.",
+          "description": "Amet placeat itaque saepe aspernatur.",
+          "id": "851ca429-f5ef-47c5-8a3f-ba316c3126f3",
+          "identifier": "In blanditiis.",
+          "logo_props": "Laboriosam modi qui enim hic possimus.",
+          "name": "Et est facilis eius neque et odio."
+        },
+        "required": [
+          "id",
+          "identifier",
+          "name",
+          "cover_image",
+          "cover_image_url",
+          "logo_props",
+          "description"
+        ]
+      },
+      "IntakeWriteRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Molestiae quis iste velit qui."
+          },
+          "is_default": {
+            "type": "boolean",
+            "example": true
+          },
+          "logo_props": {
+            "example": "Qui quidem qui hic suscipit laudantium fugit."
+          },
+          "name": {
+            "type": "string",
+            "example": "7au",
+            "maxLength": 255
+          },
+          "view_props": {
+            "example": "Perspiciatis dolores omnis aut dolorum totam."
+          }
+        },
+        "example": {
+          "description": "Mollitia tempore.",
+          "is_default": false,
+          "logo_props": "Illum placeat odio.",
+          "name": "5af",
+          "view_props": "Officia odit est."
+        }
+      }
+    },
+    "responses": {
+      "NoContentResponse": {
+        "description": "No Content response."
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "ProjectIntakeWrites"
+    }
+  ]
+}

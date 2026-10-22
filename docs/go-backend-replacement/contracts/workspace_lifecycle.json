@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "family": "workspace_lifecycle",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "Pinned Django capture covers all four manifest operations with 15 active cases plus one isolated known-source-bug fixture. Coverage includes creation membership/defaults and task effects, update validation, role authorization, deletion profile cleanup, anonymous rejection, HEAD handling, and invalid-timezone OPTIONS responses. Pristine Django-only HEAD 405 captures omit the already-deployed Go read dispatcher; external replay projects HEAD to the already-deployed authenticated 200/empty contract and includes GET/HEAD in Allow. The projection preserves authorization principals, body absence, all database snapshots and effects; OPTIONS keeps its 400 timezone rejection.",
+  "operation_count": 4,
+  "source_files": [
+    "apps/api/plane/app/urls/workspace.py",
+    "apps/api/plane/app/views/workspace/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/serializers/workspace.py",
+    "apps/api/plane/app/serializers/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/db/models/workspace.py",
+    "apps/api/plane/db/models/user.py",
+    "apps/api/plane/bgtasks/workspace_seed_task.py",
+    "apps/api/plane/bgtasks/event_tracking_task.py",
+    "apps/api/plane/utils/analytics_events.py",
+    "apps/api/plane/utils/url.py",
+    "apps/api/plane/utils/content_validator.py",
+    "apps/api/plane/utils/constants.py",
+    "apps/api/plane/license/utils/instance_value.py"
+  ],
+  "fixture_count": 16,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/workspace-lifecycle/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/workspace-lifecycle/source-hashes.json",
+  "operations": {
+    "post_api_workspaces": {
+      "operation_id": "post_api_workspaces",
+      "method": "POST",
+      "path": "/api/workspaces/",
+      "auth_profile": "django-session",
+      "source_branches": ["create-valid", "create-missing-required", "create-invalid-slug", "anonymous-create"],
+      "source_statuses": ["201", "400", "401"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/create-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/create-missing-required.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/create-invalid-slug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/anonymous-create.json"
+      ],
+      "effects": "workspace_seed and track_event durable Celery tasks on successful create",
+      "database_tables_changed": "workspaces, workspace_members",
+      "sample_path": "/api/workspaces/",
+      "protocol_methods": []
+    },
+    "patch_api_workspaces_by_slug": {
+      "operation_id": "patch_api_workspaces_by_slug",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/",
+      "auth_profile": "django-session",
+      "source_branches": ["patch-admin-valid", "patch-member-denied", "patch-invalid-name"],
+      "source_statuses": ["200", "400", "403"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/patch-admin-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/patch-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/patch-invalid-name.json"
+      ],
+      "effects": "none",
+      "database_tables_changed": "workspaces on valid patch",
+      "sample_path": "/api/workspaces/missing-workspace-live-transport/",
+      "protocol_methods": []
+    },
+    "put_api_workspaces_by_slug": {
+      "operation_id": "put_api_workspaces_by_slug",
+      "method": "PUT",
+      "path": "/api/workspaces/{slug}/",
+      "auth_profile": "django-session",
+      "source_branches": ["put-admin-valid", "anonymous-put"],
+      "source_statuses": ["200", "401"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/put-admin-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/anonymous-put.json"
+      ],
+      "effects": "none",
+      "database_tables_changed": "workspaces",
+      "sample_path": "/api/workspaces/missing-workspace-live-transport/",
+      "protocol_methods": []
+    },
+    "delete_api_workspaces_by_slug": {
+      "operation_id": "delete_api_workspaces_by_slug",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/",
+      "auth_profile": "django-session",
+      "source_branches": ["delete-admin-valid", "delete-member-denied"],
+      "source_statuses": ["204", "403"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/delete-admin-valid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/delete-member-denied.json"
+      ],
+      "effects": "track_event durable Celery task; profile last_workspace_id cleared",
+      "database_tables_changed": "profiles, workspaces on valid delete",
+      "sample_path": "/api/workspaces/missing-workspace-live-transport/",
+      "protocol_methods": []
+    }
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["format"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/workspace_lifecycle_integration_test.go::TestWorkspaceLifecycleFixturesReplayAgainstGo",
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/WORKSPACE-LIFECYCLE-001-invalid-array-body.md",
+        "cases": ["post_api_workspaces:canonical:POST"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "1519e12b65c4ff03868472912866d2c4d6c790517633174b346432f3a5cbae86"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/workspace_lifecycle_middleware_test.go::TestWorkspaceLifecycleMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationDispatchAudit",
+  "source_bug_corrections": [
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_lifecycle/create-empty-list-source-bug.json",
+      "operation_id": "post_api_workspaces",
+      "input": "JSON array []",
+      "pristine_status": 500,
+      "corrected_status": 400,
+      "database_changes": [],
+      "task_effects": [],
+      "correction": "Reject a non-object request body as invalid input instead of exposing the source handler crash as HTTP 500."
+    }
+  ]
+}

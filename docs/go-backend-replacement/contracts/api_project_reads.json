@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "family": "api_project_reads",
+  "source_revision": "d37ba7b8370d6cfec898f6aa1e0541f950d777af",
+  "characterization_status": "Pinned source capture covers both GET operations with API-key success, anonymous authentication denial, missing-detail 404, the collection query contract, and the project visibility and member-count branches. Workspace admins without project membership see public projects but cannot list or retrieve private projects; list and detail totals exclude bot members. The list query fixture sends cursor, per_page, fields, expand, and order_by together and asserts pagination, projection, expansion, and ordering. Successful API-key authentication enqueues one persistent process_logs audit task and updates token.last_used; reads leave other application tables unchanged.",
+  "operation_count": 2,
+  "source_files": [
+    "apps/api/plane/api/views/project.py",
+    "apps/api/plane/api/urls/project.py",
+    "apps/api/plane/api/serializers/project.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/workspace.py"
+  ],
+  "fixture_count": 11,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/api_project_reads",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/api-project-reads/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/api-project-reads/source-hashes.json",
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects": {
+      "operation_id": "get_api_v1_workspaces_by_slug_projects",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/",
+      "sample_path": "/api/v1/workspaces/api-project-live-contract/projects/",
+      "auth_profile": "api-key",
+      "source_branches": [
+        "workspace project visibility",
+        "workspace admin project membership requirement",
+        "public project visibility without project membership",
+        "human-only project member totals",
+        "cursor and per_page pagination",
+        "fields and expand projection",
+        "order_by ordering",
+        "anonymous authentication denial",
+        "API-key audit task enqueue"
+      ],
+      "source_statuses": ["200", "401", "403", "404"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-list-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-list-query-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-list-admin-visibility.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-list-bot-member.json"
+      ],
+      "authentication": ["api-key", "anonymous"]
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_pk": {
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_pk",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/projects/{pk}/",
+      "sample_path": "/api/v1/workspaces/api-project-live-contract/projects/441279d4-4faa-437b-b8be-8310ed690c29/",
+      "auth_profile": "api-key",
+      "source_branches": [
+        "visible project detail",
+        "workspace admin project membership requirement",
+        "public project detail without project membership",
+        "human-only project member totals",
+        "missing project",
+        "anonymous authentication denial",
+        "API-key audit task enqueue"
+      ],
+      "source_statuses": ["200", "401", "403", "404"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-admin-private-unjoined.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-admin-public-unjoined.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_project_reads/project-detail-bot-member.json"
+      ],
+      "authentication": ["api-key", "anonymous"]
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/api_project_reads_middleware_test.go::TestAPIProjectReadsMiddlewareOrderRequestSizeAuthenticationAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["cursor", "per_page", "fields", "expand", "order_by"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/api_project_reads_integration_test.go::TestAPIProjectReadsFixturesReplayAgainstGo"
+  }
+}

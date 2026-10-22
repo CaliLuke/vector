@@ -1,0 +1,70 @@
+{
+  "observed_at_commit": "b937f95fdf47597a3c06067c0bb7592bf58cf66c",
+  "status": "Historical evidence with incorrect principal metadata; not accepted project_lifecycle authentication or identity proof. Active replacement capture is pending.",
+  "source_recorder": "apps/api/plane/tests/parity/test_lite_list_recorder.py",
+  "source_recorder_sha256": "2fb3d4101a2068088d6274101771989b4150da1a72f53c3f5bd1a7e7d0e37b76",
+  "actual_authentication_source": "APIClient.credentials(HTTP_X_API_KEY=\"lite-list-fixture-token\")",
+  "metadata_defect": "Recorder default principal claims django-session with a placeholder user rather than the authenticated API-key user.",
+  "records": [
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-empty.json",
+      "sha256": "e162deb35ae126f6eccad88a73af64b19ef820c82a56c5ebcdcd71f7e97037c8",
+      "method": "GET",
+      "status": 200,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    },
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-head.json",
+      "sha256": "bb46ca59ee75961dfc749ca99c48fda21f0c8ba6c4cade375b4b5c00b5cad3b5",
+      "method": "HEAD",
+      "status": 405,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    },
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-options.json",
+      "sha256": "71888fd1e8c5355a94da779e256f5daaa1390f734fc25d47b3191a6fb022e9de",
+      "method": "OPTIONS",
+      "status": 405,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    },
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-pagination.json",
+      "sha256": "951473dbb096b743f35150838a0c6e6315a098fff1fb713a3fdeb15f822ba7b3",
+      "method": "GET",
+      "status": 200,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    },
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-success.json",
+      "sha256": "51fdf0583cb6800697ea4e894314094a8cadc2c397ee036ba896da9ce9aa6e19",
+      "method": "GET",
+      "status": 200,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    },
+    {
+      "path": "apps/go-api/internal/parity/testdata/fixtures/lite_lists/projects-unsupported.json",
+      "sha256": "d06a27efaac23949e3d6ad9b36b4b5ba7f49485f858f4432d2b46c3dfe604c12",
+      "method": "POST",
+      "status": 405,
+      "recorded_principal": {
+        "kind": "django-session",
+        "user_id": "<fixture-user>"
+      }
+    }
+  ]
+}

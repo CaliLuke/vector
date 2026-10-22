@@ -1,0 +1,234 @@
+{
+  "openapi": "3.2.0",
+  "info": {
+    "title": "Project Member Preferences",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "name": "Project Member Preferences",
+      "url": "http://localhost:80",
+      "description": "Default server for Project Member Preferences"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/projects/{project_id}/preferences/member/{member_id}/": {
+      "patch": {
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_preferences_member_by_member_id",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Illo provident."
+          },
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "d69b8e0e-fe3e-43dc-879a-5f40bb14e223"
+          },
+          {
+            "name": "member_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "3b8229c0-63db-41ea-bedd-f3b941b14f5a"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                  "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                  "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+                },
+                "additionalProperties": true
+              },
+              "example": {
+                "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                  "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                  "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+                },
+                "additionalProperties": true
+              },
+              "example": {
+                "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                  "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                  "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+                },
+                "additionalProperties": true
+              },
+              "example": {
+                "Eos voluptas officia aspernatur quam.": "Distinctio eveniet pariatur dicta quis.",
+                "Ex consectetur.": "Ut explicabo ipsum eveniet eos.",
+                "Veniam ipsa in sunt illo.": "Sint voluptates quia eum sint minus ea."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "preferences": "Consectetur vel omnis harum qui voluptas."
+                  },
+                  "$ref": "#/components/schemas/Preferences"
+                },
+                "example": {
+                  "preferences": "Consectetur vel omnis harum qui voluptas."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "status_400: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Eos odio."
+                },
+                "example": "Eos odio."
+              }
+            }
+          },
+          "401": {
+            "description": "status_401: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Sed eius sed quas quasi."
+                },
+                "example": "Sed eius sed quas quasi."
+              }
+            }
+          },
+          "403": {
+            "description": "status_403: Forbidden response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Et dolores tempora sed omnis saepe."
+                },
+                "example": "Et dolores tempora sed omnis saepe."
+              }
+            }
+          },
+          "404": {
+            "description": "status_404: Not Found response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Aut ut molestias eum neque id."
+                },
+                "example": "Aut ut molestias eum neque id."
+              }
+            }
+          },
+          "415": {
+            "description": "status_415: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Tenetur non soluta corporis perspiciatis."
+                },
+                "example": "Tenetur non soluta corporis perspiciatis."
+              }
+            }
+          },
+          "500": {
+            "description": "status_500: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Ipsa reprehenderit laborum iusto veniam."
+                },
+                "example": "Ipsa reprehenderit laborum iusto veniam."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "summary": "Patch ProjectMemberPreferences",
+        "tags": [
+          "projects"
+        ],
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/preferences/member/{member_id}/",
+        "x-plane-handler": "patch"
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Preferences": {
+        "type": "object",
+        "properties": {
+          "preferences": {
+            "example": "Nam sint."
+          }
+        },
+        "example": {
+          "preferences": "Fugit libero est et qui."
+        },
+        "required": [
+          "preferences"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "ProjectMemberPreferences"
+    }
+  ]
+}

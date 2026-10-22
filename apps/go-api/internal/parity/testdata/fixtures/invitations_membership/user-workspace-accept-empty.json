@@ -1,0 +1,64 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": [],
+    "invalidation_probes": {
+      "my-workspaces": {
+        "after": null,
+        "before": "probe:my-workspaces:exact"
+      },
+      "my-workspaces:neighbor": {
+        "after": null,
+        "before": "probe:my-workspaces::neighbor"
+      },
+      "workspace-list": {
+        "after": null,
+        "before": "probe:workspace-list:exact"
+      },
+      "workspace-list:neighbor": {
+        "after": "probe:workspace-list::neighbor",
+        "before": "probe:workspace-list::neighbor"
+      }
+    }
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "invitations": []
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/users/me/workspaces/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "user-workspace-accept-empty"
+  }
+}

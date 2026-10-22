@@ -1,0 +1,131 @@
+{
+  "database": {
+    "after": {
+      "deploy_boards": [
+        {
+          "anchor": "public-workspace-project-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-3>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": true,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": true,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "view_props": {
+            "kanban": true,
+            "list": false
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "deploy_boards": [
+        {
+          "anchor": "public-workspace-project-anchor",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "entity_identifier": "<uuid-1>",
+          "entity_name": "project",
+          "id": "<uuid-3>",
+          "intake_id": null,
+          "is_activity_enabled": true,
+          "is_comments_enabled": true,
+          "is_disabled": false,
+          "is_reactions_enabled": false,
+          "is_votes_enabled": true,
+          "project_id": "<uuid-1>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "view_props": {
+            "kanban": true,
+            "list": false
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/public/workspaces/public-project-anchor/projects/<uuid-1>/anchor/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<uuid-2>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "anchor": "public-workspace-project-anchor",
+      "created_at": "2026-07-01T20:04:05.123456-07:00",
+      "created_by": null,
+      "deleted_at": null,
+      "entity_identifier": "<uuid-1>",
+      "entity_name": "project",
+      "id": "<uuid-3>",
+      "intake": null,
+      "is_activity_enabled": true,
+      "is_comments_enabled": true,
+      "is_disabled": false,
+      "is_reactions_enabled": false,
+      "is_votes_enabled": true,
+      "project": "<uuid-1>",
+      "project_details": {
+        "cover_image": "https://example.com/project-anchor.png",
+        "cover_image_url": "https://example.com/project-anchor.png",
+        "description": "Public project anchor",
+        "id": "<uuid-1>",
+        "identifier": "PANC",
+        "logo_props": {
+          "color": "#abcdef",
+          "name": "circle"
+        },
+        "name": "Anchor Project"
+      },
+      "updated_at": "2026-07-01T20:04:05.123456-07:00",
+      "updated_by": "<uuid-2>",
+      "view_props": {
+        "kanban": true,
+        "list": false
+      },
+      "workspace": "<uuid-4>",
+      "workspace_detail": {
+        "id": "<uuid-4>",
+        "logo_url": "https://example.com/workspace-anchor.png",
+        "name": "Public Anchor",
+        "slug": "public-project-anchor"
+      }
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "anchor-authenticated-timezone"
+  }
+}

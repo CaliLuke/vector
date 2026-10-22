@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "family": "api_user_identity",
+  "source_revision": "0a15fd756abeb6746fbb168c1d92e8964a84612d",
+  "characterization_status": "complete: 31 source-recorded cases; real persistent RabbitMQ messages, PostgreSQL deltas and Redis history",
+  "operations": {
+    "get_api_v1_users_me": {
+      "method": "GET",
+      "path": "/api/v1/users/me/",
+      "sample_path": "/api/v1/users/me/",
+      "auth_profile": "api-key",
+      "authentication": ["api-key", "anonymous"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "database_effects": ["api_tokens.last_used for valid key; no domain writes"],
+      "effects": ["api-key"],
+      "query_parameters": [],
+      "ignored_query_parameters": ["fields", "expand", "cursor", "per_page", "order_by", "group_by"],
+      "source_branches": [
+        {
+          "when": "API key authentication",
+          "observable": "Missing/empty key or session-only returns401 Authentication credentials were not provided; invalid/expired/inactive key and inactive user returns403 Given API token is not valid. Active bots allowed. Valid key updates last_used before throttling.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py::APIKeyAuthentication"
+        },
+        {
+          "when": "Authorization",
+          "observable": "IsAuthenticated only; no workspace/project/profile is needed; cross-tenant and role do not apply.",
+          "source": "apps/api/plane/api/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "Serialization",
+          "observable": "Exactly id,first_name,last_name,email,avatar,avatar_url,display_name. Stored scalars unchanged. Avatar prefers asset, supports null legacy, literal None project/issue IDs; unknown asset type =>null; missing required asset workspace omits avatar_url; deleted asset remains.",
+          "source": "apps/api/plane/api/serializers/user.py::UserLiteSerializer"
+        },
+        {
+          "when": "Queries",
+          "observable": "fields,expand,ordering,filters,grouping,cursor,per_page ignored, including malformed values. Negotiation format remains shared transport.",
+          "source": "apps/api/plane/api/views/user.py::UserEndpoint"
+        },
+        {
+          "when": "Effects",
+          "observable": "No domain writes/profile creation. Valid key writes api_tokens.last_used; throttling writes api_key:<token> history. Nonempty key records exactly one durable process_logs task even rejection/negotiation failure; no worker or APIActivityLog row.",
+          "source": "apps/api/plane/middleware/logger.py::APITokenLogMiddleware"
+        },
+        {
+          "when": "Timezone and throttle",
+          "observable": "Throttle precedes timezone; exhausted =>429, valid timezone permits same identity; unknown timezone KeyError=>400 after token/cache effects.",
+          "source": "apps/api/plane/api/views/base.py::TimezoneMixin"
+        },
+        {
+          "when": "Protocol",
+          "observable": "GET only; authenticated HEAD and ordinary OPTIONS405 with Allow GET; CORS preflight200 unauthenticated/unaudited. Bad Accept406 and format404 before auth but with audit. Indented JSON audit captures exact rendered body. Slashless301 and unsupported methods405 are shared production boundary.",
+          "source": "apps/api/plane/api/urls/user.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/anonymous-bad-accept.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/attachment-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/bad-accept.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/bad-format.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/blank.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/bot.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/cors-preflight.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/deleted-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/description-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/expired.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/ignored-queries.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/inactive-token.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/inactive-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/invalid-key-bad-format.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/json-indent.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/legacy-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/missing-workspace-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/null-email.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/session-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/static-avatar.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/throttled.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/unknown-avatar.json"
+      ],
+      "statuses": [200, 400, 403, 404, 405, 406, 429, 401]
+    }
+  },
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["per_page", "cursor", "fields", "expand", "order_by"],
+    "evidence": "apps/api/plane/tests/parity/test_api_user_identity_recorder.py::test_api_user_identity_read_contract",
+    "auth_probes": {
+      "api-key": "/api/v1/users/me/"
+    }
+  },
+  "unsupported_method_fixture": "apps/go-api/internal/parity/testdata/fixtures/api_user_identity/post.json"
+}

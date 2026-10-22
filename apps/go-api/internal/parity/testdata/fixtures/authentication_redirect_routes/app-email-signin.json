@@ -1,0 +1,58 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "email": "",
+      "password": ""
+    },
+    "cookies": {},
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "HTTP_X_FORWARDED_FOR": "198.51.100.20"
+    },
+    "method": "POST",
+    "path": "/auth/sign-in/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Location": "https://app.example.test/?error_code=5000&error_message=INSTANCE_NOT_CONFIGURED",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 302
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "app-email-signin",
+    "instance_state": "unconfigured"
+  }
+}

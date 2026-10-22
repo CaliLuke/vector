@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "family": "personal_dashboard",
+  "source_files": [
+    "apps/api/plane/app/urls/user.py",
+    "apps/api/plane/app/views/workspace/base.py",
+    "apps/api/plane/app/views/workspace/user.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/state.py",
+    "apps/api/plane/db/models/workspace.py"
+  ],
+  "operations": {
+    "get_api_users_me_workspaces_by_slug_activity_graph": {
+      "method": "GET",
+      "path": "/api/users/me/workspaces/{slug}/activity-graph/",
+      "sample_path": "/api/users/me/workspaces/personal-dashboard-contract/activity-graph/",
+      "statuses": [200, 400, 401],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/activity-graph-populated-six-month-window.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/activity-graph-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/activity-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/activity-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/activity-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "permission_contract": "An authenticated user receives only their own activity rows in the workspace slug and six-month date window. Anonymous requests receive the BaseAPIView authentication envelope.",
+      "source": "apps/api/plane/app/views/workspace/user.py::UserActivityGraphEndpoint.get",
+      "source_branches": [
+        {
+          "when": "anonymous",
+          "observable": "401 authentication envelope",
+          "source": "apps/api/plane/app/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "authenticated with matching actor activity",
+          "observable": "date-grouped activity counts within six months",
+          "source": "apps/api/plane/app/views/workspace/user.py::UserActivityGraphEndpoint.get"
+        }
+      ]
+    },
+    "get_api_users_me_workspaces_by_slug_dashboard": {
+      "method": "GET",
+      "path": "/api/users/me/workspaces/{slug}/dashboard/",
+      "sample_path": "/api/users/me/workspaces/personal-dashboard-contract/dashboard/",
+      "statuses": [200, 400, 401],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": ["month"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-counts-and-date-buckets.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-month-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-manager-filters.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/dashboard-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "permission_contract": "An authenticated user's dashboard aggregates their assigned issues and activity for the workspace slug. The month query defaults to January when omitted; anonymous requests receive the BaseAPIView authentication envelope.",
+      "source": "apps/api/plane/app/views/workspace/base.py::UserWorkspaceDashboardEndpoint.get",
+      "source_branches": [
+        {
+          "when": "anonymous",
+          "observable": "401 authentication envelope",
+          "source": "apps/api/plane/app/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "month omitted",
+          "observable": "completed graph bucket query uses January default",
+          "source": "apps/api/plane/app/views/workspace/base.py::UserWorkspaceDashboardEndpoint.get"
+        },
+        {
+          "when": "authenticated with assigned issues and activities",
+          "observable": "nine populated dashboard projections and aggregate counts",
+          "source": "apps/api/plane/app/views/workspace/base.py::UserWorkspaceDashboardEndpoint.get"
+        }
+      ]
+    },
+    "get_api_users_me_workspaces_by_slug_issues_completed_graph": {
+      "method": "GET",
+      "path": "/api/users/me/workspaces/{slug}/issues-completed-graph/",
+      "sample_path": "/api/users/me/workspaces/personal-dashboard-contract/issues-completed-graph/",
+      "statuses": [200, 400, 401],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": ["month"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-requested-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-unicode-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-underscore-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-large-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-malformed-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-graph-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3_corrected/completed-graph-malformed-month.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3/completed-options-invalid-timezone.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "permission_contract": "An authenticated user receives completed issue counts grouped by the source week calculation for the requested month. Python integer syntax accepts Unicode digits and underscores, and a very large month returns an empty result. The pristine Django handler raises HTTP 500 for malformed month text; the corrected source oracle returns HTTP 400 with {error: Invalid month.}. Anonymous requests receive the BaseAPIView authentication envelope.",
+      "source": "apps/api/plane/app/views/workspace/user.py::UserIssueCompletedGraphEndpoint.get",
+      "source_branches": [
+        {
+          "when": "anonymous",
+          "observable": "401 authentication envelope",
+          "source": "apps/api/plane/app/views/base.py::BaseAPIView"
+        },
+        {
+          "when": "requested month has completed assignments",
+          "observable": "completed counts grouped by ExtractWeek modulo four",
+          "source": "apps/api/plane/app/views/workspace/user.py::UserIssueCompletedGraphEndpoint.get"
+        },
+        {
+          "when": "month cannot be converted by database",
+          "observable": "pristine source returns HTTP 500; corrected source validation returns HTTP 400 with {error: Invalid month.}",
+          "source": "apps/api/plane/app/views/workspace/user.py::UserIssueCompletedGraphEndpoint.get",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/personal_dashboard3_corrected/completed-graph-malformed-month.json"
+        }
+      ]
+    }
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/personal_dashboard_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/workspaces/personal-dashboard-contract/activity-graph/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder"
+}

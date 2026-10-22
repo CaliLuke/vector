@@ -1,0 +1,566 @@
+openapi: 3.1.1
+info:
+    title: Plane Internal Django Migration API
+    description: Internal full-server migration schema. Route inventory and behavior fixtures remain authoritative. This artifact does not change the public /api/v1 schema.
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane Internal Django Migration API
+paths:
+    /api/workspaces/{slug}/projects/{project_id}/issue-labels/:
+        options:
+            tags:
+                - ProjectLabelWrites
+            summary: CollectionOptions ProjectLabelWrites
+            operationId: project_label_writes.collection_options
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/LabelMetadataStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        post:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: post_api_workspaces_by_slug_projects_by_project_id_issue_labels
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDIssueLabelsRequestBody'
+            responses:
+                "201":
+                    description: Created response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Label'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_ec60f68c'
+                    description: 'status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: POST /api/workspaces/{slug}/projects/{project_id}/issue-labels/
+            x-plane-handler: create
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectBasePermission
+            x-plane-view: plane.app.views.issue.label.LabelViewSet
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/:
+        delete:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: delete_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    description: No response body
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: DELETE /api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/
+            x-plane-handler: destroy
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectBasePermission
+            x-plane-view: plane.app.views.issue.label.LabelViewSet
+        options:
+            tags:
+                - ProjectLabelWrites
+            summary: DetailOptions ProjectLabelWrites
+            operationId: project_label_writes.detail_options
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/LabelMetadataStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        patch:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: patch_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LabelPatchRequest'
+                    application/x-www-form-urlencoded:
+                        schema:
+                            $ref: '#/components/schemas/LabelPatchRequest'
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/LabelPatchRequest'
+            responses:
+                "200":
+                    $ref: '#/components/responses/LabelStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_ec60f68c'
+                    description: 'status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PATCH /api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/
+            x-plane-handler: partial_update
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectBasePermission
+            x-plane-view: plane.app.views.issue.label.LabelViewSet
+        put:
+            description: |-
+                This enables timezone conversion according
+                to the user set timezone
+            operationId: put_api_workspaces_by_slug_projects_by_project_id_issue_labels_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDIssueLabelsRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/LabelStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "405":
+                    $ref: '#/components/responses/MethodNotAllowedError'
+                    description: 'status_405: Method Not Allowed response.'
+                "406":
+                    $ref: '#/components/responses/NotAcceptableError'
+                    description: 'status_406: Not Acceptable response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError_ec60f68c'
+                    description: 'status_500: JSON application failure, or Django HTML server error if rendering a saved nonfinite sort_order fails.'
+            security:
+                - PlaneSessionCookie: []
+            tags:
+                - projects
+            x-plane-authentication-classes:
+                - plane.authentication.session.BaseSessionAuthentication
+            x-plane-authority: route-inventory-and-behavior-fixtures
+            x-plane-contract-id: PUT /api/workspaces/{slug}/projects/{project_id}/issue-labels/{pk}/
+            x-plane-handler: update
+            x-plane-permission-classes:
+                - plane.app.permissions.project.ProjectBasePermission
+            x-plane-view: plane.app.views.issue.label.LabelViewSet
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        Label:
+            type: object
+            properties:
+                color:
+                    type: string
+                    maxLength: 255
+                id:
+                    type: string
+                    readOnly: true
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+                name:
+                    type: string
+                    maxLength: 255
+                parent:
+                    anyOf:
+                        - type: string
+                          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+                        - type: "null"
+                project_id:
+                    readOnly: true
+                    anyOf:
+                        - type: string
+                          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+                        - type: "null"
+                sort_order:
+                    type: number
+                    format: double
+                workspace_id:
+                    type: string
+                    readOnly: true
+                    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+            required:
+                - parent
+                - name
+                - color
+                - id
+                - project_id
+                - workspace_id
+                - sort_order
+        LabelHTTPError_bd9d5644f0a89728:
+            type: object
+            properties:
+                color:
+                    type: array
+                    items:
+                        type: string
+                detail:
+                    type: string
+                error:
+                    type: string
+                name:
+                    type: array
+                    items:
+                        type: string
+                non_field_errors:
+                    type: array
+                    items:
+                        type: string
+                parent:
+                    type: array
+                    items:
+                        type: string
+                sort_order:
+                    type: array
+                    items:
+                        type: string
+        LabelMetadata:
+            type: object
+            properties:
+                actions:
+                    type: object
+                    additionalProperties:
+                        type: object
+                        additionalProperties:
+                            $ref: '#/components/schemas/LabelMetadataField'
+                description:
+                    type: string
+                name:
+                    type: string
+                parses:
+                    type: array
+                    items:
+                        type: string
+                renders:
+                    type: array
+                    items:
+                        type: string
+            required:
+                - name
+                - description
+                - renders
+                - parses
+        LabelMetadataField:
+            type: object
+            properties:
+                label:
+                    type: string
+                max_length:
+                    type: integer
+                    format: int64
+                read_only:
+                    type: boolean
+                required:
+                    type: boolean
+                type:
+                    type: string
+            required:
+                - type
+                - required
+                - read_only
+                - label
+        LabelPatchRequest:
+            type: object
+            properties:
+                color:
+                    type: string
+                    maxLength: 255
+                name:
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                parent:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                sort_order:
+                    type: number
+                    format: double
+        LabelRequest:
+            type: object
+            properties:
+                color:
+                    type: string
+                    maxLength: 255
+                name:
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                parent:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                sort_order:
+                    type: number
+                    format: double
+            required:
+                - name
+    parameters:
+        PathPk:
+            name: pk
+            in: path
+            required: true
+            schema:
+                type: string
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        PathProjectID:
+            name: project_id
+            in: path
+            required: true
+            schema:
+                type: string
+                pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+        PathSlug:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+    requestBodies:
+        PostAPIWorkspacesBySlugProjectsByProjectIDIssueLabelsRequestBody:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelRequest'
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/LabelRequest'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/LabelRequest'
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        InternalServerErrorError_ec60f68c:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+            description: Internal Server Error response.
+            x-plane-renderer-failure:
+                boundary: shared Django renderer compatibility
+                content_type: text/html; charset=utf-8
+                schema:
+                    type: string
+        LabelMetadataStatus200Response:
+            description: OK response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelMetadata'
+        LabelStatus200Response:
+            description: OK response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/Label'
+        MethodNotAllowedError:
+            description: Method Not Allowed response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        NotAcceptableError:
+            description: Not Acceptable response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/LabelHTTPError_bd9d5644f0a89728'
+    securitySchemes:
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane session authentication without CSRF enforcement.
+            name: session-id
+            in: cookie
+tags:
+    - name: projects

@@ -1,0 +1,146 @@
+{
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "description": "created",
+          "expired_at": null,
+          "id": "<uuid-3>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Fixture token",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        },
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Updated fixture token",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "description": "created",
+          "expired_at": null,
+          "id": "<uuid-3>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Fixture token",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        },
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Detail fixture token",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "label": "Updated fixture token"
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/users/api-tokens/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "allowed_rate_limit": "60/min",
+      "created_at": "<timestamp>",
+      "created_by": null,
+      "deleted_at": null,
+      "description": "",
+      "expired_at": null,
+      "id": "<uuid-1>",
+      "is_active": true,
+      "is_service": false,
+      "label": "Updated fixture token",
+      "last_used": null,
+      "token": "<secret:api-token>",
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-2>",
+      "user": "<uuid-2>",
+      "user_type": 0,
+      "workspace": null
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "detail-patch",
+    "token_id": "<fixture-token>"
+  }
+}

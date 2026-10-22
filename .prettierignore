@@ -1,0 +1,14 @@
+.next/
+.react-router/
+.turbo/
+.vite/
+build/
+dist/
+node_modules/
+out/
+pnpm-lock.yaml
+storybook-static/
+apps/go-api/internal/parity/testdata/fixtures/**/*.json
+apps/go-api/gen/**
+docs/go-backend-replacement/openapi/**/*.json
+docs/go-backend-replacement/openapi/full-server.openapi.yaml

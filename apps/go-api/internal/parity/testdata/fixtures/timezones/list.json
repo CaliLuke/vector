@@ -1,0 +1,761 @@
+{
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/timezones/",
+    "principal": {
+      "kind": "anonymous"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "timezones": [
+        {
+          "gmt_offset": "GMT-11:00",
+          "label": "American Samoa",
+          "utc_offset": "UTC-11:00",
+          "value": "Pacific/Pago_Pago"
+        },
+        {
+          "gmt_offset": "GMT-11:00",
+          "label": "Midway Island",
+          "utc_offset": "UTC-11:00",
+          "value": "Pacific/Midway"
+        },
+        {
+          "gmt_offset": "GMT-10:00",
+          "label": "Aleutian Islands",
+          "utc_offset": "UTC-10:00",
+          "value": "America/Adak"
+        },
+        {
+          "gmt_offset": "GMT-10:00",
+          "label": "Hawaii",
+          "utc_offset": "UTC-10:00",
+          "value": "Pacific/Honolulu"
+        },
+        {
+          "gmt_offset": "GMT-10:00",
+          "label": "Tahiti",
+          "utc_offset": "UTC-10:00",
+          "value": "Pacific/Tahiti"
+        },
+        {
+          "gmt_offset": "GMT-10:30",
+          "label": "Marquesas Islands",
+          "utc_offset": "UTC-10:30",
+          "value": "Pacific/Marquesas"
+        },
+        {
+          "gmt_offset": "GMT-09:00",
+          "label": "Alaska",
+          "utc_offset": "UTC-09:00",
+          "value": "America/Anchorage"
+        },
+        {
+          "gmt_offset": "GMT-09:00",
+          "label": "Gambier Islands",
+          "utc_offset": "UTC-09:00",
+          "value": "Pacific/Gambier"
+        },
+        {
+          "gmt_offset": "GMT-08:00",
+          "label": "Baja California",
+          "utc_offset": "UTC-08:00",
+          "value": "America/Tijuana"
+        },
+        {
+          "gmt_offset": "GMT-08:00",
+          "label": "Pacific Time (US and Canada)",
+          "utc_offset": "UTC-08:00",
+          "value": "America/Los_Angeles"
+        },
+        {
+          "gmt_offset": "GMT-07:00",
+          "label": "Arizona",
+          "utc_offset": "UTC-07:00",
+          "value": "America/Phoenix"
+        },
+        {
+          "gmt_offset": "GMT-07:00",
+          "label": "Mountain Time (US and Canada)",
+          "utc_offset": "UTC-07:00",
+          "value": "America/Denver"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Central Time (US and Canada)",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Chicago"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Chihuahua, Mazatlan",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Chihuahua"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Costa Rica",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Costa_Rica"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Guadalajara, Mexico City, Monterrey",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Mexico_City"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Saskatchewan",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Regina"
+        },
+        {
+          "gmt_offset": "GMT-06:00",
+          "label": "Tegucigalpa, Honduras",
+          "utc_offset": "UTC-06:00",
+          "value": "America/Tegucigalpa"
+        },
+        {
+          "gmt_offset": "GMT-05:00",
+          "label": "Bogota",
+          "utc_offset": "UTC-05:00",
+          "value": "America/Bogota"
+        },
+        {
+          "gmt_offset": "GMT-05:00",
+          "label": "Chetumal",
+          "utc_offset": "UTC-05:00",
+          "value": "America/Cancun"
+        },
+        {
+          "gmt_offset": "GMT-05:00",
+          "label": "Eastern Time (US and Canada)",
+          "utc_offset": "UTC-05:00",
+          "value": "America/New_York"
+        },
+        {
+          "gmt_offset": "GMT-05:00",
+          "label": "Lima",
+          "utc_offset": "UTC-05:00",
+          "value": "America/Lima"
+        },
+        {
+          "gmt_offset": "GMT-05:00",
+          "label": "Quito",
+          "utc_offset": "UTC-05:00",
+          "value": "America/Guayaquil"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Atlantic Time (Canada)",
+          "utc_offset": "UTC-04:00",
+          "value": "America/Halifax"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Bermuda",
+          "utc_offset": "UTC-04:00",
+          "value": "Atlantic/Bermuda"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Caracas",
+          "utc_offset": "UTC-04:00",
+          "value": "America/Caracas"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Caracas (Old Venezuela Time)",
+          "utc_offset": "UTC-04:00",
+          "value": "America/Caracas"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Georgetown",
+          "utc_offset": "UTC-04:00",
+          "value": "America/Guyana"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "La Paz",
+          "utc_offset": "UTC-04:00",
+          "value": "America/La_Paz"
+        },
+        {
+          "gmt_offset": "GMT-04:00",
+          "label": "Manaus",
+          "utc_offset": "UTC-04:00",
+          "value": "America/Manaus"
+        },
+        {
+          "gmt_offset": "GMT-04:30",
+          "label": "Newfoundland Time (Canada)",
+          "utc_offset": "UTC-04:30",
+          "value": "America/St_Johns"
+        },
+        {
+          "gmt_offset": "GMT-03:00",
+          "label": "Brasilia",
+          "utc_offset": "UTC-03:00",
+          "value": "America/Sao_Paulo"
+        },
+        {
+          "gmt_offset": "GMT-03:00",
+          "label": "Buenos Aires",
+          "utc_offset": "UTC-03:00",
+          "value": "America/Argentina/Buenos_Aires"
+        },
+        {
+          "gmt_offset": "GMT-03:00",
+          "label": "Falkland Islands",
+          "utc_offset": "UTC-03:00",
+          "value": "Atlantic/Stanley"
+        },
+        {
+          "gmt_offset": "GMT-03:00",
+          "label": "Montevideo",
+          "utc_offset": "UTC-03:00",
+          "value": "America/Montevideo"
+        },
+        {
+          "gmt_offset": "GMT-03:00",
+          "label": "Santiago",
+          "utc_offset": "UTC-03:00",
+          "value": "America/Santiago"
+        },
+        {
+          "gmt_offset": "GMT-02:00",
+          "label": "Greenland",
+          "utc_offset": "UTC-02:00",
+          "value": "America/Godthab"
+        },
+        {
+          "gmt_offset": "GMT-02:00",
+          "label": "South Georgia and the South Sandwich Islands",
+          "utc_offset": "UTC-02:00",
+          "value": "Atlantic/South_Georgia"
+        },
+        {
+          "gmt_offset": "GMT-01:00",
+          "label": "Azores",
+          "utc_offset": "UTC-01:00",
+          "value": "Atlantic/Azores"
+        },
+        {
+          "gmt_offset": "GMT-01:00",
+          "label": "Cape Verde Islands",
+          "utc_offset": "UTC-01:00",
+          "value": "Atlantic/Cape_Verde"
+        },
+        {
+          "gmt_offset": "GMT+00:00",
+          "label": "Dublin",
+          "utc_offset": "UTC+00:00",
+          "value": "Europe/Dublin"
+        },
+        {
+          "gmt_offset": "GMT+00:00",
+          "label": "Lisbon",
+          "utc_offset": "UTC+00:00",
+          "value": "Europe/Lisbon"
+        },
+        {
+          "gmt_offset": "GMT+00:00",
+          "label": "Monrovia",
+          "utc_offset": "UTC+00:00",
+          "value": "Africa/Monrovia"
+        },
+        {
+          "gmt_offset": "GMT+00:00",
+          "label": "Reykjavik",
+          "utc_offset": "UTC+00:00",
+          "value": "Atlantic/Reykjavik"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "Algiers",
+          "utc_offset": "UTC+01:00",
+          "value": "Africa/Algiers"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "Casablanca",
+          "utc_offset": "UTC+01:00",
+          "value": "Africa/Casablanca"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "Central European Time (Berlin, Rome, Paris)",
+          "utc_offset": "UTC+01:00",
+          "value": "Europe/Paris"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "Lagos",
+          "utc_offset": "UTC+01:00",
+          "value": "Africa/Lagos"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "Tunis",
+          "utc_offset": "UTC+01:00",
+          "value": "Africa/Tunis"
+        },
+        {
+          "gmt_offset": "GMT+01:00",
+          "label": "West Central Africa",
+          "utc_offset": "UTC+01:00",
+          "value": "Africa/Lagos"
+        },
+        {
+          "gmt_offset": "GMT+02:00",
+          "label": "Athens",
+          "utc_offset": "UTC+02:00",
+          "value": "Europe/Athens"
+        },
+        {
+          "gmt_offset": "GMT+02:00",
+          "label": "Eastern European Time (Cairo, Helsinki, Kyiv)",
+          "utc_offset": "UTC+02:00",
+          "value": "Europe/Kyiv"
+        },
+        {
+          "gmt_offset": "GMT+02:00",
+          "label": "Harare, Pretoria",
+          "utc_offset": "UTC+02:00",
+          "value": "Africa/Harare"
+        },
+        {
+          "gmt_offset": "GMT+02:00",
+          "label": "Jerusalem",
+          "utc_offset": "UTC+02:00",
+          "value": "Asia/Jerusalem"
+        },
+        {
+          "gmt_offset": "GMT+02:00",
+          "label": "Johannesburg",
+          "utc_offset": "UTC+02:00",
+          "value": "Africa/Johannesburg"
+        },
+        {
+          "gmt_offset": "GMT+03:00",
+          "label": "Baghdad",
+          "utc_offset": "UTC+03:00",
+          "value": "Asia/Baghdad"
+        },
+        {
+          "gmt_offset": "GMT+03:00",
+          "label": "Kuwait, Riyadh",
+          "utc_offset": "UTC+03:00",
+          "value": "Asia/Riyadh"
+        },
+        {
+          "gmt_offset": "GMT+03:00",
+          "label": "Moscow Time",
+          "utc_offset": "UTC+03:00",
+          "value": "Europe/Moscow"
+        },
+        {
+          "gmt_offset": "GMT+03:00",
+          "label": "Nairobi",
+          "utc_offset": "UTC+03:00",
+          "value": "Africa/Nairobi"
+        },
+        {
+          "gmt_offset": "GMT+03:30",
+          "label": "Tehran",
+          "utc_offset": "UTC+03:30",
+          "value": "Asia/Tehran"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Abu Dhabi",
+          "utc_offset": "UTC+04:00",
+          "value": "Asia/Dubai"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Astrakhan",
+          "utc_offset": "UTC+04:00",
+          "value": "Europe/Astrakhan"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Baku",
+          "utc_offset": "UTC+04:00",
+          "value": "Asia/Baku"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Mauritius",
+          "utc_offset": "UTC+04:00",
+          "value": "Indian/Mauritius"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Tbilisi",
+          "utc_offset": "UTC+04:00",
+          "value": "Asia/Tbilisi"
+        },
+        {
+          "gmt_offset": "GMT+04:00",
+          "label": "Yerevan",
+          "utc_offset": "UTC+04:00",
+          "value": "Asia/Yerevan"
+        },
+        {
+          "gmt_offset": "GMT+04:30",
+          "label": "Kabul",
+          "utc_offset": "UTC+04:30",
+          "value": "Asia/Kabul"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Almaty",
+          "utc_offset": "UTC+05:00",
+          "value": "Asia/Almaty"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Islamabad",
+          "utc_offset": "UTC+05:00",
+          "value": "Asia/Karachi"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Karachi",
+          "utc_offset": "UTC+05:00",
+          "value": "Asia/Karachi"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Maldives",
+          "utc_offset": "UTC+05:00",
+          "value": "Indian/Maldives"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Tashkent",
+          "utc_offset": "UTC+05:00",
+          "value": "Asia/Tashkent"
+        },
+        {
+          "gmt_offset": "GMT+05:00",
+          "label": "Yekaterinburg",
+          "utc_offset": "UTC+05:00",
+          "value": "Asia/Yekaterinburg"
+        },
+        {
+          "gmt_offset": "GMT+05:30",
+          "label": "Chennai",
+          "utc_offset": "UTC+05:30",
+          "value": "Asia/Kolkata"
+        },
+        {
+          "gmt_offset": "GMT+05:30",
+          "label": "Kolkata",
+          "utc_offset": "UTC+05:30",
+          "value": "Asia/Kolkata"
+        },
+        {
+          "gmt_offset": "GMT+05:30",
+          "label": "Mumbai",
+          "utc_offset": "UTC+05:30",
+          "value": "Asia/Kolkata"
+        },
+        {
+          "gmt_offset": "GMT+05:30",
+          "label": "New Delhi",
+          "utc_offset": "UTC+05:30",
+          "value": "Asia/Kolkata"
+        },
+        {
+          "gmt_offset": "GMT+05:30",
+          "label": "Sri Jayawardenepura",
+          "utc_offset": "UTC+05:30",
+          "value": "Asia/Colombo"
+        },
+        {
+          "gmt_offset": "GMT+05:45",
+          "label": "Kathmandu",
+          "utc_offset": "UTC+05:45",
+          "value": "Asia/Kathmandu"
+        },
+        {
+          "gmt_offset": "GMT+06:00",
+          "label": "Bishkek",
+          "utc_offset": "UTC+06:00",
+          "value": "Asia/Bishkek"
+        },
+        {
+          "gmt_offset": "GMT+06:00",
+          "label": "Chagos",
+          "utc_offset": "UTC+06:00",
+          "value": "Indian/Chagos"
+        },
+        {
+          "gmt_offset": "GMT+06:00",
+          "label": "Dhaka",
+          "utc_offset": "UTC+06:00",
+          "value": "Asia/Dhaka"
+        },
+        {
+          "gmt_offset": "GMT+06:00",
+          "label": "Thimphu",
+          "utc_offset": "UTC+06:00",
+          "value": "Asia/Thimphu"
+        },
+        {
+          "gmt_offset": "GMT+06:30",
+          "label": "Cocos Islands",
+          "utc_offset": "UTC+06:30",
+          "value": "Indian/Cocos"
+        },
+        {
+          "gmt_offset": "GMT+06:30",
+          "label": "Yangon (Rangoon)",
+          "utc_offset": "UTC+06:30",
+          "value": "Asia/Yangon"
+        },
+        {
+          "gmt_offset": "GMT+07:00",
+          "label": "Bangkok",
+          "utc_offset": "UTC+07:00",
+          "value": "Asia/Bangkok"
+        },
+        {
+          "gmt_offset": "GMT+07:00",
+          "label": "Hanoi",
+          "utc_offset": "UTC+07:00",
+          "value": "Asia/Ho_Chi_Minh"
+        },
+        {
+          "gmt_offset": "GMT+07:00",
+          "label": "Jakarta",
+          "utc_offset": "UTC+07:00",
+          "value": "Asia/Jakarta"
+        },
+        {
+          "gmt_offset": "GMT+07:00",
+          "label": "Krasnoyarsk",
+          "utc_offset": "UTC+07:00",
+          "value": "Asia/Krasnoyarsk"
+        },
+        {
+          "gmt_offset": "GMT+07:00",
+          "label": "Novosibirsk",
+          "utc_offset": "UTC+07:00",
+          "value": "Asia/Novosibirsk"
+        },
+        {
+          "gmt_offset": "GMT+08:00",
+          "label": "Beijing",
+          "utc_offset": "UTC+08:00",
+          "value": "Asia/Shanghai"
+        },
+        {
+          "gmt_offset": "GMT+08:00",
+          "label": "Hong Kong",
+          "utc_offset": "UTC+08:00",
+          "value": "Asia/Hong_Kong"
+        },
+        {
+          "gmt_offset": "GMT+08:00",
+          "label": "Perth",
+          "utc_offset": "UTC+08:00",
+          "value": "Australia/Perth"
+        },
+        {
+          "gmt_offset": "GMT+08:00",
+          "label": "Singapore",
+          "utc_offset": "UTC+08:00",
+          "value": "Asia/Singapore"
+        },
+        {
+          "gmt_offset": "GMT+08:00",
+          "label": "Ulaanbaatar",
+          "utc_offset": "UTC+08:00",
+          "value": "Asia/Ulaanbaatar"
+        },
+        {
+          "gmt_offset": "GMT+08:45",
+          "label": "Eucla",
+          "utc_offset": "UTC+08:45",
+          "value": "Australia/Eucla"
+        },
+        {
+          "gmt_offset": "GMT+09:00",
+          "label": "Palau",
+          "utc_offset": "UTC+09:00",
+          "value": "Pacific/Palau"
+        },
+        {
+          "gmt_offset": "GMT+09:00",
+          "label": "Seoul",
+          "utc_offset": "UTC+09:00",
+          "value": "Asia/Seoul"
+        },
+        {
+          "gmt_offset": "GMT+09:00",
+          "label": "Tokyo",
+          "utc_offset": "UTC+09:00",
+          "value": "Asia/Tokyo"
+        },
+        {
+          "gmt_offset": "GMT+09:00",
+          "label": "Yakutsk",
+          "utc_offset": "UTC+09:00",
+          "value": "Asia/Yakutsk"
+        },
+        {
+          "gmt_offset": "GMT+09:30",
+          "label": "Darwin",
+          "utc_offset": "UTC+09:30",
+          "value": "Australia/Darwin"
+        },
+        {
+          "gmt_offset": "GMT+10:00",
+          "label": "Brisbane",
+          "utc_offset": "UTC+10:00",
+          "value": "Australia/Brisbane"
+        },
+        {
+          "gmt_offset": "GMT+10:00",
+          "label": "Guam",
+          "utc_offset": "UTC+10:00",
+          "value": "Pacific/Guam"
+        },
+        {
+          "gmt_offset": "GMT+10:00",
+          "label": "Vladivostok",
+          "utc_offset": "UTC+10:00",
+          "value": "Asia/Vladivostok"
+        },
+        {
+          "gmt_offset": "GMT+10:30",
+          "label": "Adelaide",
+          "utc_offset": "UTC+10:30",
+          "value": "Australia/Adelaide"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Bougainville Island",
+          "utc_offset": "UTC+11:00",
+          "value": "Pacific/Bougainville"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Chokurdakh",
+          "utc_offset": "UTC+11:00",
+          "value": "Asia/Srednekolymsk"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Lord Howe Island",
+          "utc_offset": "UTC+11:00",
+          "value": "Australia/Lord_Howe"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Magadan",
+          "utc_offset": "UTC+11:00",
+          "value": "Asia/Magadan"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Solomon Islands",
+          "utc_offset": "UTC+11:00",
+          "value": "Pacific/Guadalcanal"
+        },
+        {
+          "gmt_offset": "GMT+11:00",
+          "label": "Sydney",
+          "utc_offset": "UTC+11:00",
+          "value": "Australia/Sydney"
+        },
+        {
+          "gmt_offset": "GMT+12:00",
+          "label": "Anadyr",
+          "utc_offset": "UTC+12:00",
+          "value": "Asia/Anadyr"
+        },
+        {
+          "gmt_offset": "GMT+12:00",
+          "label": "Fiji Islands",
+          "utc_offset": "UTC+12:00",
+          "value": "Pacific/Fiji"
+        },
+        {
+          "gmt_offset": "GMT+12:00",
+          "label": "Norfolk Island",
+          "utc_offset": "UTC+12:00",
+          "value": "Pacific/Norfolk"
+        },
+        {
+          "gmt_offset": "GMT+13:00",
+          "label": "Auckland",
+          "utc_offset": "UTC+13:00",
+          "value": "Pacific/Auckland"
+        },
+        {
+          "gmt_offset": "GMT+13:00",
+          "label": "Nuku'alofa",
+          "utc_offset": "UTC+13:00",
+          "value": "Pacific/Tongatapu"
+        },
+        {
+          "gmt_offset": "GMT+13:00",
+          "label": "Samoa",
+          "utc_offset": "UTC+13:00",
+          "value": "Pacific/Apia"
+        },
+        {
+          "gmt_offset": "GMT+13:00",
+          "label": "Wellington",
+          "utc_offset": "UTC+13:00",
+          "value": "Pacific/Auckland"
+        },
+        {
+          "gmt_offset": "GMT+13:45",
+          "label": "Chatham Islands",
+          "utc_offset": "UTC+13:45",
+          "value": "Pacific/Chatham"
+        },
+        {
+          "gmt_offset": "GMT+14:00",
+          "label": "Kiritimati Island",
+          "utc_offset": "UTC+14:00",
+          "value": "Pacific/Kiritimati"
+        }
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, HEAD, OPTIONS",
+      "Cache-Control": "max-age=7200",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Expires": "Thu, 15 Jan 2026 14:00:00 GMT",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {}
+}

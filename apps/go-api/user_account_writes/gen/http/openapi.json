@@ -1,0 +1,829 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane User Account Writes API",
+    "description": "Authenticated operations for the current user's account.",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane User Account Writes API"
+    }
+  ],
+  "paths": {
+    "/api/users/me/": {
+      "delete": {
+        "tags": [
+          "user_account_writes"
+        ],
+        "summary": "deactivate user_account_writes",
+        "operationId": "delete_api_users_me",
+        "responses": {
+          "204": {
+            "description": "No Content response."
+          },
+          "400": {
+            "description": "bad_request: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Deserunt dolor dolorem dignissimos aspernatur nulla aliquid."
+                },
+                "example": "Deserunt dolor dolorem dignissimos aspernatur nulla aliquid."
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Esse placeat itaque velit."
+                },
+                "example": "Esse placeat itaque velit."
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Necessitatibus pariatur."
+                },
+                "example": "Necessitatibus pariatur."
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: Too Many Requests response.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 1982253117307946867,
+                  "format": "int64"
+                },
+                "example": 1982253117307946867
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Harum sit aut quo rerum sed quia."
+                },
+                "example": "Harum sit aut quo rerum sed quia."
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Commodi culpa quod quo eaque quaerat."
+                },
+                "example": "Commodi culpa quod quo eaque quaerat."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "user_account_writes_session_cookie": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "user_account_writes"
+        ],
+        "summary": "patch_me user_account_writes",
+        "operationId": "patch_api_users_me",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Dolore officia dolor quos harum."
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "avatar": "Laudantium facilis odit commodi maxime a.",
+                  "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                  "bot_type": "Dolorum qui vero harum incidunt.",
+                  "cover_image": "Et eos.",
+                  "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                  "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                  "display_name": "Voluptas quia omnis ex aut quia illum.",
+                  "first_name": "Facere nostrum id quos voluptatem itaque.",
+                  "is_email_valid": true,
+                  "is_password_expired": true,
+                  "is_password_reset_required": true,
+                  "last_location": "Veniam id ut unde dolor.",
+                  "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                  "masked_at": "2011-08-18T17:50:31Z",
+                  "mobile_number": "Velit consequatur quam dolorem quo.",
+                  "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+                },
+                "$ref": "#/components/schemas/UserAccountPatchRequest"
+              },
+              "example": {
+                "avatar": "Laudantium facilis odit commodi maxime a.",
+                "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                "bot_type": "Dolorum qui vero harum incidunt.",
+                "cover_image": "Et eos.",
+                "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                "display_name": "Voluptas quia omnis ex aut quia illum.",
+                "first_name": "Facere nostrum id quos voluptatem itaque.",
+                "is_email_valid": true,
+                "is_password_expired": true,
+                "is_password_reset_required": true,
+                "last_location": "Veniam id ut unde dolor.",
+                "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                "masked_at": "2011-08-18T17:50:31Z",
+                "mobile_number": "Velit consequatur quam dolorem quo.",
+                "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "avatar": "Laudantium facilis odit commodi maxime a.",
+                  "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                  "bot_type": "Dolorum qui vero harum incidunt.",
+                  "cover_image": "Et eos.",
+                  "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                  "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                  "display_name": "Voluptas quia omnis ex aut quia illum.",
+                  "first_name": "Facere nostrum id quos voluptatem itaque.",
+                  "is_email_valid": true,
+                  "is_password_expired": true,
+                  "is_password_reset_required": true,
+                  "last_location": "Veniam id ut unde dolor.",
+                  "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                  "masked_at": "2011-08-18T17:50:31Z",
+                  "mobile_number": "Velit consequatur quam dolorem quo.",
+                  "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+                },
+                "$ref": "#/components/schemas/UserAccountPatchRequest"
+              },
+              "example": {
+                "avatar": "Laudantium facilis odit commodi maxime a.",
+                "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                "bot_type": "Dolorum qui vero harum incidunt.",
+                "cover_image": "Et eos.",
+                "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                "display_name": "Voluptas quia omnis ex aut quia illum.",
+                "first_name": "Facere nostrum id quos voluptatem itaque.",
+                "is_email_valid": true,
+                "is_password_expired": true,
+                "is_password_reset_required": true,
+                "last_location": "Veniam id ut unde dolor.",
+                "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                "masked_at": "2011-08-18T17:50:31Z",
+                "mobile_number": "Velit consequatur quam dolorem quo.",
+                "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "avatar": "Laudantium facilis odit commodi maxime a.",
+                  "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                  "bot_type": "Dolorum qui vero harum incidunt.",
+                  "cover_image": "Et eos.",
+                  "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                  "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                  "display_name": "Voluptas quia omnis ex aut quia illum.",
+                  "first_name": "Facere nostrum id quos voluptatem itaque.",
+                  "is_email_valid": true,
+                  "is_password_expired": true,
+                  "is_password_reset_required": true,
+                  "last_location": "Veniam id ut unde dolor.",
+                  "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                  "masked_at": "2011-08-18T17:50:31Z",
+                  "mobile_number": "Velit consequatur quam dolorem quo.",
+                  "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+                },
+                "$ref": "#/components/schemas/UserAccountPatchRequest"
+              },
+              "example": {
+                "avatar": "Laudantium facilis odit commodi maxime a.",
+                "avatar_asset": "e2bafa1a-d96a-4045-a197-2426dbbfb0fc",
+                "bot_type": "Dolorum qui vero harum incidunt.",
+                "cover_image": "Et eos.",
+                "cover_image_asset": "74ca3f9d-2291-4be2-acf3-7245533cdab2",
+                "created_location": "Tenetur doloremque officia ex iusto nisi.",
+                "display_name": "Voluptas quia omnis ex aut quia illum.",
+                "first_name": "Facere nostrum id quos voluptatem itaque.",
+                "is_email_valid": true,
+                "is_password_expired": true,
+                "is_password_reset_required": true,
+                "last_location": "Veniam id ut unde dolor.",
+                "last_name": "Temporibus atque mollitia velit dolorem aut.",
+                "masked_at": "2011-08-18T17:50:31Z",
+                "mobile_number": "Velit consequatur quam dolorem quo.",
+                "user_timezone": "Occaecati ut perferendis facilis enim est soluta."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Quia error dolor dolores et expedita itaque."
+                },
+                "example": "Quia error dolor dolores et expedita itaque."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Atque excepturi molestiae est et consectetur."
+                },
+                "example": "Atque excepturi molestiae est et consectetur."
+              }
+            }
+          },
+          "400": {
+            "description": "bad_request: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Quod nesciunt."
+                },
+                "example": "Quod nesciunt."
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Eaque sapiente cumque rem molestiae quia."
+                },
+                "example": "Eaque sapiente cumque rem molestiae quia."
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Fugiat eius."
+                },
+                "example": "Fugiat eius."
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: Too Many Requests response.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 8671749049054066151,
+                  "format": "int64"
+                },
+                "example": 8671749049054066151
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Rerum cumque."
+                },
+                "example": "Rerum cumque."
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptatem tempora accusantium reprehenderit accusamus occaecati sunt."
+                },
+                "example": "Voluptatem tempora accusantium reprehenderit accusamus occaecati sunt."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "user_account_writes_session_cookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/users/me/email/": {
+      "patch": {
+        "tags": [
+          "user_account_writes"
+        ],
+        "summary": "update_email user_account_writes",
+        "operationId": "patch_api_users_me_email",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Ut quasi laudantium voluptatibus."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "code": "Voluptate quod similique et sunt est quia.",
+                  "email": "Nobis voluptas."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailUpdateRequest"
+              },
+              "example": {
+                "code": "Voluptate quod similique et sunt est quia.",
+                "email": "Nobis voluptas."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "code": "Voluptate quod similique et sunt est quia.",
+                  "email": "Nobis voluptas."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailUpdateRequest"
+              },
+              "example": {
+                "code": "Voluptate quod similique et sunt est quia.",
+                "email": "Nobis voluptas."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "code": "Voluptate quod similique et sunt est quia.",
+                  "email": "Nobis voluptas."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailUpdateRequest"
+              },
+              "example": {
+                "code": "Voluptate quod similique et sunt est quia.",
+                "email": "Nobis voluptas."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Blanditiis facilis quisquam dolore perferendis ea."
+                },
+                "example": "Blanditiis facilis quisquam dolore perferendis ea."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Voluptas voluptas qui sit."
+                },
+                "example": "Voluptas voluptas qui sit."
+              }
+            }
+          },
+          "400": {
+            "description": "bad_request: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Autem necessitatibus facere et rerum."
+                },
+                "example": "Autem necessitatibus facere et rerum."
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Inventore dicta ut suscipit tenetur facere et."
+                },
+                "example": "Inventore dicta ut suscipit tenetur facere et."
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Sunt reiciendis fuga sequi commodi ab."
+                },
+                "example": "Sunt reiciendis fuga sequi commodi ab."
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: Too Many Requests response.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 9148780339827505089,
+                  "format": "int64"
+                },
+                "example": 9148780339827505089
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Est tenetur sapiente dolores."
+                },
+                "example": "Est tenetur sapiente dolores."
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "A voluptate reprehenderit."
+                },
+                "example": "A voluptate reprehenderit."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "user_account_writes_session_cookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/users/me/email/generate-code/": {
+      "post": {
+        "tags": [
+          "user_account_writes"
+        ],
+        "summary": "generate_email_code user_account_writes",
+        "operationId": "post_api_users_me_email_generate_code",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Possimus quaerat autem doloribus voluptatibus."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "email": "In quidem voluptate illo."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailCodeRequest"
+              },
+              "example": {
+                "email": "In quidem voluptate illo."
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "email": "In quidem voluptate illo."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailCodeRequest"
+              },
+              "example": {
+                "email": "In quidem voluptate illo."
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "email": "In quidem voluptate illo."
+                },
+                "$ref": "#/components/schemas/UserAccountEmailCodeRequest"
+              },
+              "example": {
+                "email": "In quidem voluptate illo."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "headers": {
+              "Content-Type": {
+                "schema": {
+                  "type": "string",
+                  "example": "Tempora qui debitis."
+                },
+                "example": "Tempora qui debitis."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Quam quo aut cumque reprehenderit voluptas."
+                },
+                "example": "Quam quo aut cumque reprehenderit voluptas."
+              }
+            }
+          },
+          "400": {
+            "description": "bad_request: Bad Request response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Necessitatibus esse ipsum omnis sed unde."
+                },
+                "example": "Necessitatibus esse ipsum omnis sed unde."
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated: Unauthorized response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Vel incidunt officiis quas nemo."
+                },
+                "example": "Vel incidunt officiis quas nemo."
+              }
+            }
+          },
+          "415": {
+            "description": "unsupported_media_type: Unsupported Media Type response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "In impedit."
+                },
+                "example": "In impedit."
+              }
+            }
+          },
+          "429": {
+            "description": "rate_limited: Too Many Requests response.",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer",
+                  "example": 384994056105149699,
+                  "format": "int64"
+                },
+                "example": 384994056105149699
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Nostrum quia."
+                },
+                "example": "Nostrum quia."
+              }
+            }
+          },
+          "500": {
+            "description": "internal_error: Internal Server Error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": "Ad magnam velit enim."
+                },
+                "example": "Ad magnam velit enim."
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "user_account_writes_session_cookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserAccountEmailCodeRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "Saepe porro et vel corporis sit et."
+          }
+        },
+        "example": {
+          "email": "Qui voluptatem quos quia ad unde."
+        }
+      },
+      "UserAccountEmailUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "Et quis ut aut beatae."
+          },
+          "email": {
+            "type": "string",
+            "example": "Voluptates quo sit quis alias."
+          }
+        },
+        "example": {
+          "code": "Et vel.",
+          "email": "Ut est a excepturi quia possimus reprehenderit."
+        }
+      },
+      "UserAccountPatchRequest": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string",
+            "example": "Blanditiis sed et molestiae ipsa quibusdam deserunt."
+          },
+          "avatar_asset": {
+            "example": "3ea8bdfa-a23e-423b-b6c3-430c8030bf90",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bot_type": {
+            "example": "Molestias assumenda.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover_image": {
+            "example": "Ea voluptatem consectetur accusamus error error.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cover_image_asset": {
+            "example": "9c1bc147-9a57-46a8-81e3-9ba3b528b628",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_location": {
+            "type": "string",
+            "example": "Voluptates quis dolorem earum harum ea."
+          },
+          "display_name": {
+            "type": "string",
+            "example": "Qui similique itaque sed quaerat natus."
+          },
+          "first_name": {
+            "type": "string",
+            "example": "In ipsa quo occaecati."
+          },
+          "is_email_valid": {
+            "type": "boolean",
+            "example": false
+          },
+          "is_password_expired": {
+            "type": "boolean",
+            "example": false
+          },
+          "is_password_reset_required": {
+            "type": "boolean",
+            "example": true
+          },
+          "last_location": {
+            "type": "string",
+            "example": "Aliquid magni nemo sit consequuntur et."
+          },
+          "last_name": {
+            "type": "string",
+            "example": "Nulla eveniet praesentium voluptatem dolorum."
+          },
+          "masked_at": {
+            "example": "2005-11-26T18:59:39Z",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mobile_number": {
+            "example": "Possimus non qui.",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "user_timezone": {
+            "type": "string",
+            "example": "Quo et nisi qui error quos."
+          }
+        },
+        "example": {
+          "avatar": "Deserunt commodi sed eveniet.",
+          "avatar_asset": "cd7a03f0-38f9-4b1f-8fef-0c022434063d",
+          "bot_type": "Sunt sint ea ullam architecto in.",
+          "cover_image": "Veritatis libero.",
+          "cover_image_asset": "d9758ad2-e683-4141-a1d9-b7ad73018d98",
+          "created_location": "Qui ducimus suscipit ex repudiandae totam.",
+          "display_name": "Atque rerum accusantium doloremque.",
+          "first_name": "Aut enim.",
+          "is_email_valid": true,
+          "is_password_expired": false,
+          "is_password_reset_required": false,
+          "last_location": "Ratione ut itaque deserunt.",
+          "last_name": "Perspiciatis in iste illo dolorem quia.",
+          "masked_at": "2003-04-28T00:53:40Z",
+          "mobile_number": "Vel reprehenderit sed animi.",
+          "user_timezone": "Autem molestiae non ut."
+        }
+      }
+    },
+    "securitySchemes": {
+      "user_account_writes_session_cookie": {
+        "type": "apiKey",
+        "description": "Plane app session cookie.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "user_account_writes",
+      "description": "Updates or deactivates the authenticated user's account."
+    }
+  ]
+}

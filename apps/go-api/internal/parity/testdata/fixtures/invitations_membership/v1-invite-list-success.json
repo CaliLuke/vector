@@ -1,0 +1,158 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-3>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-4>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-3>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-4>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+            "query_params": "",
+            "response_body": [
+              {
+                "accepted": false,
+                "created_at": "<timestamp>",
+                "email": "other-invitee@example.com",
+                "id": "<uuid-1>",
+                "responded_at": null,
+                "role": 5,
+                "updated_at": "<timestamp>"
+              },
+              {
+                "accepted": false,
+                "created_at": "<timestamp>",
+                "email": "invitee@example.com",
+                "id": "<uuid-2>",
+                "responded_at": null,
+                "role": 15,
+                "updated_at": "<timestamp>"
+              }
+            ],
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/invitations-membership-fixture/invitations/",
+    "principal": {
+      "kind": "api-key",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": [
+      {
+        "accepted": false,
+        "created_at": "<timestamp>",
+        "email": "other-invitee@example.com",
+        "id": "<uuid-1>",
+        "responded_at": null,
+        "role": 5,
+        "updated_at": "<timestamp>"
+      },
+      {
+        "accepted": false,
+        "created_at": "<timestamp>",
+        "email": "invitee@example.com",
+        "id": "<uuid-2>",
+        "responded_at": null,
+        "role": 15,
+        "updated_at": "<timestamp>"
+      }
+    ],
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "v1-invite-list-success"
+  }
+}

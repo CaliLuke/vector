@@ -1,0 +1,99 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-3>",
+          "is_folder": true,
+          "name": "Renamed",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "user_id": "<uuid-2>",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-1>",
+          "is_folder": true,
+          "name": "Active",
+          "parent_id": "<uuid-3>",
+          "project_id": null,
+          "sequence": 75535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "workspace_id": "<uuid-4>"
+        },
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "entity_identifier": null,
+          "entity_type": "folder",
+          "id": "<uuid-3>",
+          "is_folder": true,
+          "name": "Renamed",
+          "parent_id": null,
+          "project_id": null,
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "user_id": "<uuid-2>",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "user_favorites"
+    ],
+    "expected_changed_tables": [
+      "user_favorites"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/favorite-parity/user-favorites/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, PATCH, DELETE, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "delete"
+  }
+}

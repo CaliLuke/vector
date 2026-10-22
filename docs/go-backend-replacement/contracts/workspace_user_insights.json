@@ -1,0 +1,201 @@
+{
+  "version": 1,
+  "family": "workspace_user_insights",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "11 pristine source cases passed immutable verification; 1 corrected source oracle is preserved. Malformed activity project filters now have explicit HTTP 400 source coverage. Final current-tree replay, differential, and activation proof remain pending.",
+  "operation_count": 4,
+  "source_files": [
+    "apps/api/plane/app/urls/workspace.py",
+    "apps/api/plane/app/views/workspace/user.py",
+    "apps/api/plane/app/views/workspace/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/utils/issue_filters.py",
+    "apps/api/plane/utils/order_queryset.py"
+  ],
+  "fixture_count": 11,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/workspace-user-insights/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/workspace-user-insights/source-hashes.json",
+  "operations": {
+    "get_api_workspaces_by_slug_user_profile_by_user_id": {
+      "operation_id": "get_api_workspaces_by_slug_user_profile_by_user_id",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/user-profile/{user_id}/",
+      "sample_path": "/api/workspaces/workspace-user-insights-contract/user-profile/00000000-0000-4000-8000-000010000b04/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "profile-active-member",
+          "observable": "Pinned Django fixture records HTTP 200. Corrected source oracle records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-active-member.json"
+        },
+        {
+          "when": "profile-inactive-target",
+          "observable": "Pinned Django fixture records HTTP 404.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-inactive-target.json"
+        },
+        {
+          "when": "profile-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401 for the anonymous principal.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-active-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-inactive-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights_corrected/profile-active-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/profile-anonymous.json"
+      ],
+      "source_statuses": ["200", "404", "401"],
+      "statuses": [200, 404, 401],
+      "effects": [],
+      "status_note": "Eleven pristine cases cover member profile and activity, anonymous rejection for profile, activity, stats and CSV export, supported stats filters, manager statistics, and byte-level CSV output. The corrected profile oracle fixes duplicate count inflation; the CSV serializer behavior is covered by the byte-level fixture."
+    },
+    "get_api_workspaces_by_slug_user_activity_by_user_id": {
+      "operation_id": "get_api_workspaces_by_slug_user_activity_by_user_id",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/user-activity/{user_id}/",
+      "sample_path": "/api/workspaces/workspace-user-insights-contract/user-activity/00000000-0000-4000-8000-000010000b04/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["cursor", "order_by", "per_page", "project"],
+      "documented_query_parameters": ["cursor", "order_by", "per_page", "project"],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "activity-member-project-filter",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-member-project-filter.json"
+        },
+        {
+          "when": "activity-malformed-project-id",
+          "observable": "Pinned Django fixture rejects a malformed project query value with HTTP 400 before querying activity.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-malformed-project-id.json"
+        },
+        {
+          "when": "activity-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-malformed-project-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/activity-member-project-filter.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "statuses": [200, 400, 401],
+      "effects": [],
+      "status_note": "Eleven pristine cases cover member profile and activity, anonymous rejection for profile, activity, stats and CSV export, supported stats filters, manager statistics, and byte-level CSV output. The corrected profile oracle fixes duplicate count inflation; the CSV serializer behavior is covered by the byte-level fixture."
+    },
+    "post_api_workspaces_by_slug_user_activity_by_user_id_export": {
+      "operation_id": "post_api_workspaces_by_slug_user_activity_by_user_id_export",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/user-activity/{user_id}/export/",
+      "sample_path": "/api/workspaces/workspace-user-insights-contract/user-activity/00000000-0000-4000-8000-000010000b04/export/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "export-activity-csv",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/export-activity-csv.json"
+        },
+        {
+          "when": "export-activity-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401 for the anonymous principal.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/export-activity-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/export-activity-csv.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/export-activity-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 401],
+      "effects": [],
+      "status_note": "Eleven pristine cases cover member profile and activity, anonymous rejection for profile, activity, stats and CSV export, supported stats filters, manager statistics, and byte-level CSV output. The corrected profile oracle fixes duplicate count inflation; the CSV serializer behavior is covered by the byte-level fixture."
+    },
+    "get_api_workspaces_by_slug_user_stats_by_user_id": {
+      "operation_id": "get_api_workspaces_by_slug_user_stats_by_user_id",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/user-stats/{user_id}/",
+      "sample_path": "/api/workspaces/workspace-user-insights-contract/user-stats/00000000-0000-4000-8000-000010000b04/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["created_by", "created_at", "updated_at", "project"],
+      "documented_query_parameters": ["created_by", "created_at", "updated_at", "project"],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "stats-assigned-issue-managers",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-assigned-issue-managers.json"
+        },
+        {
+          "when": "stats-supported-filters",
+          "observable": "Pinned Django fixture records HTTP 200. Supported workspace, creator and date filters are exercised together.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-supported-filters.json"
+        },
+        {
+          "when": "stats-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401 for the anonymous principal.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-assigned-issue-managers.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-supported-filters.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights/stats-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 401],
+      "effects": [],
+      "status_note": "Eleven pristine cases cover member profile and activity, anonymous rejection for profile, activity, stats and CSV export, supported stats filters, manager statistics, and byte-level CSV output. The corrected profile oracle fixes duplicate count inflation; the CSV serializer behavior is covered by the byte-level fixture. A malformed project filter returns HTTP 400."
+    }
+  },
+  "corrected_fixture_count": 1,
+  "corrected_fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_user_insights_corrected",
+  "corrected_source_receipt": "docs/go-backend-replacement/evidence/workspace-user-insights/source-20261022T101206Z.log.exit",
+  "source_runtime_evidence": {
+    "pristine": "docs/go-backend-replacement/evidence/workspace-user-insights/source-counters.json",
+    "pristine_count": 11,
+    "corrected_count": 1,
+    "corrected": "docs/go-backend-replacement/evidence/workspace-user-insights/source-20261022T101206Z.log.exit",
+    "record_log": "docs/go-backend-replacement/evidence/workspace-user-insights/source-20261022T120026Z.log",
+    "corrected_log": "docs/go-backend-replacement/evidence/workspace-user-insights/source-20261022T101206Z.log"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/workspace_user_insights_integration_test.go::TestWorkspaceUserInsightsFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["cursor", "order_by", "per_page", "project", "created_by", "created_at", "updated_at"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "The production chain is tested on an authenticated profile read: oversized-body rejection precedes session inspection, anonymous rejection precedes timezone inspection, invalid timezone is rejected before profile dispatch, authorized requests dispatch the generated service, and session requests emit no API-key audit. Export authorization and CSV output are covered by production-mount and replay tests."
+}

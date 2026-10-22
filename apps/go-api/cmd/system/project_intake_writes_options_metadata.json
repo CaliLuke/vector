@@ -1,0 +1,145 @@
+{
+  "actions": {
+    "POST": {
+      "created_at": {
+        "label": "Created At",
+        "read_only": true,
+        "required": false,
+        "type": "datetime"
+      },
+      "created_by": {
+        "label": "Created By",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "deleted_at": {
+        "label": "Deleted At",
+        "read_only": false,
+        "required": false,
+        "type": "datetime"
+      },
+      "description": {
+        "label": "Intake Description",
+        "read_only": false,
+        "required": false,
+        "type": "string"
+      },
+      "id": {
+        "label": "Id",
+        "read_only": true,
+        "required": false,
+        "type": "field"
+      },
+      "is_default": {
+        "label": "Is default",
+        "read_only": false,
+        "required": false,
+        "type": "boolean"
+      },
+      "logo_props": {
+        "label": "Logo props",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "name": {
+        "label": "Name",
+        "max_length": 255,
+        "read_only": false,
+        "required": true,
+        "type": "string"
+      },
+      "pending_issue_count": {
+        "label": "Pending issue count",
+        "read_only": true,
+        "required": false,
+        "type": "integer"
+      },
+      "project": {
+        "label": "Project",
+        "read_only": true,
+        "required": false,
+        "type": "field"
+      },
+      "project_detail": {
+        "children": {
+          "cover_image": {
+            "label": "Cover image",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "cover_image_url": {
+            "label": "Cover image url",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "description": {
+            "label": "Project Description",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "identifier": {
+            "label": "Project Identifier",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "logo_props": {
+            "label": "Logo props",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "name": {
+            "label": "Project Name",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          }
+        },
+        "label": "Project detail",
+        "read_only": true,
+        "required": false,
+        "type": "nested object"
+      },
+      "updated_at": {
+        "label": "Last Modified At",
+        "read_only": true,
+        "required": false,
+        "type": "datetime"
+      },
+      "updated_by": {
+        "label": "Last Modified By",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "view_props": {
+        "label": "View props",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "workspace": {
+        "label": "Workspace",
+        "read_only": true,
+        "required": false,
+        "type": "field"
+      }
+    }
+  },
+  "description": "",
+  "name": "Intake",
+  "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+  "renders": ["application/json"]
+}

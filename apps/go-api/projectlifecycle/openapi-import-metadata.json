@@ -1,0 +1,79 @@
+{
+  "design_error_qualifiers": {
+    "429": "Temporary",
+    "500": "Fault"
+  },
+  "design_transform": "Active release manifest selection; ProjectLifecycle identity; raw response boundary with typed OpenAPI bodies; source-shaped status-derived Django errors; source-observed summary fields and archive 200 response",
+  "error_body_metadata_omission": "Selected source OpenAPI operations declare empty error content; Django runtime fixtures are authoritative for JSON error bodies.",
+  "family": "project_lifecycle",
+  "import_allow_lossy": true,
+  "import_command": [
+    "go",
+    "-C",
+    "apps/go-api",
+    "tool",
+    "loom",
+    "import",
+    "openapi",
+    "apps/go-api/projectlifecycle/source/import-input.openapi.json",
+    "--allow-lossy",
+    "-o",
+    "apps/go-api/projectlifecycle/design/imported.go"
+  ],
+  "import_stderr": "warning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects-lite~1/get/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects-lite~1/get/parameters/2: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects-lite~1/get/parameters/3: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects-lite~1/get/parameters/4: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1/post/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/delete/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/delete/parameters/1: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/patch/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/patch/parameters/1: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/patch/requestBody/content/application~1json/examples/ProjectUpdateSerializer/value: example value is not compatible with its schema (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/patch/requestBody/content/application~1x-www-form-urlencoded/examples/ProjectUpdateSerializer/value: example value is not compatible with its schema (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{pk}~1/patch/requestBody/content/multipart~1form-data/examples/ProjectUpdateSerializer/value: example value is not compatible with its schema (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{project_id}~1archive~1/delete/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{project_id}~1archive~1/delete/parameters/1: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{project_id}~1archive~1/post/parameters/0: parameter examples are not in the strict import subset (examples)\nwarning: #/paths/~1api~1v1~1workspaces~1{slug}~1projects~1{project_id}~1archive~1/post/parameters/1: parameter examples are not in the strict import subset (examples)\n",
+  "import_stdout": "apps/go-api/projectlifecycle/design/imported.go\n",
+  "omitted_document_metadata": {
+    "servers": [
+      {
+        "description": "Local",
+        "url": "http://localhost:8000"
+      },
+      {
+        "description": "Production",
+        "url": "https://api.plane.so"
+      }
+    ]
+  },
+  "operation_count": 13,
+  "runtime_schema_enrichments": [
+    "Summary counts have explicit optional supported integer keys",
+    "Session archive returns HTTP 200 with archived_at text, despite source OpenAPI declaring 204",
+    "Session write requests follow actual ProjectSerializer and selected server-owned-field/PUT boundaries",
+    "Project response nullable annotations, member UUID array and next sequence integer follow source runtime"
+  ],
+  "selected_operation_ids": [
+    "delete_api_v1_workspaces_by_slug_projects_by_pk",
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_archive",
+    "delete_api_workspaces_by_slug_projects_by_pk",
+    "delete_api_workspaces_by_slug_projects_by_project_id_archive",
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_summary",
+    "get_api_v1_workspaces_by_slug_projects_lite",
+    "patch_api_v1_workspaces_by_slug_projects_by_pk",
+    "patch_api_workspaces_by_slug_projects_by_pk",
+    "post_api_v1_workspaces_by_slug_projects",
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_archive",
+    "post_api_workspaces_by_slug_projects",
+    "post_api_workspaces_by_slug_projects_by_project_id_archive",
+    "put_api_workspaces_by_slug_projects_by_pk"
+  ],
+  "sha256": {
+    "canonical_openapi_at_capture": "67caa297f5de160345cdd8173ea5a0d5c9e42e6cf24f2257d8da04a9244cf419",
+    "import_input": "149ae5bfd5a92037aa813c9df4b4e95b377d77497e68f7f7e8109676d16fb5ba",
+    "manifest": "1758c29469c3d7e64b083a5fa3a854540016b821c521af20f06c7dfa9b75331f",
+    "source_openapi": "fc937e9fbc49fedf433203acd00886410bb0b5493312739383cf495b7276b423"
+  },
+  "source_capture": {
+    "canonical_openapi_sha256_at_capture": "67caa297f5de160345cdd8173ea5a0d5c9e42e6cf24f2257d8da04a9244cf419",
+    "family": "project_lifecycle",
+    "manifest_sha256_at_capture": "29c2e5d393cd4774681fae10ff49e2044ce4d504076e3c4ccdfd43cd88187a5a",
+    "selected_operation_count": 15,
+    "source_revision": "c289aaaf8980274b409bf665e914bdc205700e6f"
+  },
+  "source_files": {
+    "canonical_openapi_at_capture": "docs/go-backend-replacement/openapi/full-server.openapi.json",
+    "manifest": "docs/go-backend-replacement/contracts/project_lifecycle.json",
+    "source_openapi": "apps/go-api/projectlifecycle/source/source.openapi.json"
+  },
+  "source_revision": "c289aaaf8980274b409bf665e914bdc205700e6f",
+  "version": 1
+}

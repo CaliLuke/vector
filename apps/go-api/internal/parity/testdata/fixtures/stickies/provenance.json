@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "source_ref": "1c8a60f858d8472aa56e29994ec1c7926da2c6ce",
+  "direct_source_tests": [
+    "plane.utils.content_validator.validate_html_content",
+    "plane.utils.content_validator.validate_binary_data",
+    "plane.utils.html_processor.strip_tags"
+  ],
+  "mined_patterns": [
+    {
+      "source": "apps/api/plane/tests/conftest.py",
+      "use": "User, workspace, workspace-member, and API-client fixtures"
+    },
+    {
+      "source": "apps/api/plane/tests/contract/app/test_workspace_app.py",
+      "use": "Frontend app API request and database assertions"
+    },
+    {
+      "source": "apps/api/plane/tests/contract/app/test_workspace_file_asset_project_scope_app.py",
+      "use": "Positive and negative membership controls"
+    },
+    {
+      "source": "apps/api/plane/tests/unit/views/test_base_dispatch.py",
+      "use": "Stable error-response assertions"
+    }
+  ],
+  "recorded_cases": [
+    "external API authentication last_used write and API activity-log job",
+    "frontend create",
+    "frontend create with an invalid CSRF header",
+    "frontend list with the 30-item client page size",
+    "frontend list cursor wrapper and query filtering",
+    "frontend operation-specific response status matrix, including invalid cursor and page-size values",
+    "frontend retrieve",
+    "frontend update",
+    "frontend sort",
+    "frontend delete",
+    "GET and DELETE detail redirects without a trailing slash",
+    "unauthenticated request",
+    "inactive workspace member",
+    "non-creator update",
+    "cross-workspace object lookup",
+    "owner retrieve without active workspace membership",
+    "invalid field value",
+    "missing Sticky",
+    "fresh CSRF cookie and masked response token",
+    "repeated CSRF masks for one cookie secret",
+    "invalid CSRF length and character families",
+    "CSRF cookie-secret rotation during login",
+    "Sticky soft-delete cascade with no child work",
+    "exact HTML sanitizer tags, attributes, URL schemes, and package version",
+    "valid dl, div, mixed, and malformed HTML nesting across the upstream x/net tree-builder boundary and the Go availability limit",
+    "HTML sanitizer custom tags, attributes, protocols, scripts, and malformed markup",
+    "HTML sanitizer 10 MiB boundary and HTTP oversized rejection",
+    "binary validator decoding, size, length, suspicious-content, and valid boundaries",
+    "read-only Sticky binary input",
+    "strip_tags entities, unclosed tags, script bodies, and malformed markup"
+  ],
+  "missing_cases": ["session invalidation and malformed-session matrix", "concurrent sort-order allocation"],
+  "content_validation_contract": {
+    "html_source": "The allowlist fixture records every tag, attribute, and URL scheme. It records nh3 0.2.18.",
+    "html_depth": "Pinned nh3 accepts dl and div nesting through depth 1024, mixed safe containers through depth 600, and div nesting at depths 4096 and 4097. It also inserts tbody and repairs malformed p and div nesting at depth 512. Go accepts 4096 nested elements and rejects 4097 before recursive processing.",
+    "html_allowlist": "The sanitizer retains its custom editor tags and named data attributes. It removes unknown attributes.",
+    "html_protocols": "The sanitizer retains http, https, mailto, and tel URLs. It removes other URL values.",
+    "html_scripts": "The sanitizer removes script tags and script text. It removes iframe tags but retains their text.",
+    "html_size": "The sanitizer accepts exactly 10 MiB of UTF-8 text. It rejects a larger value.",
+    "http_size": "Django returns HTTP 413 before the Sticky serializer receives a 10 MiB-plus-one JSON request.",
+    "binary_http": "The serializer defines description_binary as read-only. A Sticky write ignores this request field and stores NULL.",
+    "binary_source": "The utility decodes base64 text, applies decoded-size limits, and requires four decoded bytes.",
+    "binary_decode": "The base64 decoder accepts trailing non-alphabet text after padding. It rejects inputs that cause a decoding error.",
+    "binary_scan": "The utility scans the first 200 decoded Unicode characters. It rejects each configured pattern without case sensitivity.",
+    "strip_tags": "The HTMLParser conversion resolves entity references and retains script bodies. It also accepts unclosed and malformed markup.",
+    "migration": "The future Loom input must omit or ignore description_binary. A later reviewed contract can change this behavior."
+  },
+  "csrf_contract": {
+    "sticky_rest": "The app REST session authenticator does not enforce CSRF. An invalid X-CSRFToken header does not block Sticky creation.",
+    "token_endpoint": "GET /auth/get-csrf-token/ sets a 32-character alphanumeric HttpOnly cookie. The JSON response contains a 64-character masked token.",
+    "repeated_request": "Each response uses a new 32-character mask. The cookie secret does not change between token requests.",
+    "invalid_token_response": "The middleware rejects incorrect lengths and invalid characters. The custom CSRF failure view returns its error page with HTTP 200.",
+    "login": "A successful login accepts the pre-login token and rotates the 32-character cookie secret.",
+    "migration": "M1 keeps the token endpoint on Django. M8 must reproduce token masking, cookie attributes, validation, and login rotation."
+  },
+  "sticky_deletion_contract": {
+    "source": "SoftDeleteModel.delete updates stickies.deleted_at and publishes soft_delete_related_objects on the default Celery queue.",
+    "cascade_proof": "Sticky has no auto-created reverse one-to-many or one-to-one relation. The queued task publishes no child task and changes no row.",
+    "replacement": "The future Go repository must update stickies.deleted_at inside the application transaction. It must not publish a replacement cascade job."
+  }
+}

@@ -1,0 +1,3621 @@
+# Code generated from apps/go-api/internal/routing/route-inventory.json. DO NOT EDIT.
+
+@go_active_001 {
+	path_regexp ^/api/assets/v2/static/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_001 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_002 {
+	path_regexp ^/api/assets/v2/user-assets/?$
+}
+reverse_proxy @go_active_002 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_003 {
+	path_regexp ^/api/assets/v2/user-assets/?$
+}
+reverse_proxy @go_active_003 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_004 {
+	path_regexp ^/api/assets/v2/user-assets/?$
+}
+reverse_proxy @go_active_004 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_005 {
+	path_regexp ^/api/assets/v2/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_005 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_006 {
+	path_regexp ^/api/assets/v2/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_006 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_007 {
+	path_regexp ^/api/assets/v2/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_007 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_008 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_008 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_009 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_009 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_010 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_010 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_011 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_011 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_012 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/check/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_012 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_013 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/download/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_013 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_014 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/duplicate-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_014 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_015 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_015 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_016 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_016 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_017 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_017 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_018 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_018 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_019 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/download/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_019 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_020 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/?$
+}
+reverse_proxy @go_active_020 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_021 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/?$
+}
+reverse_proxy @go_active_021 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_022 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/?$
+}
+reverse_proxy @go_active_022 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_023 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_023 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_024 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_024 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_025 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_025 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_026 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/bulk/?$
+}
+reverse_proxy @go_active_026 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_027 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_027 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_028 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_028 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_029 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_029 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_030 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_030 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_031 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/restore/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_031 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_032 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_032 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_033 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_033 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_034 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_034 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_035 {
+	path_regexp ^/api/assets/v2/workspaces/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_035 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_036 {
+	path_regexp ^/api/instances/?$
+}
+reverse_proxy @go_active_036 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_037 {
+	path_regexp ^/api/instances/?$
+}
+reverse_proxy @go_active_037 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_038 {
+	path_regexp ^/api/instances/admins/?$
+}
+reverse_proxy @go_active_038 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_039 {
+	path_regexp ^/api/instances/admins/?$
+}
+reverse_proxy @go_active_039 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_040 {
+	path_regexp ^/api/instances/admins/?$
+}
+reverse_proxy @go_active_040 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_041 {
+	path_regexp ^/api/instances/admins/me/?$
+}
+reverse_proxy @go_active_041 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_042 {
+	path_regexp ^/api/instances/admins/session/?$
+}
+reverse_proxy @go_active_042 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_043 {
+	path_regexp ^/api/instances/admins/sign-up-screen-visited/?$
+}
+reverse_proxy @go_active_043 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_044 {
+	path_regexp ^/api/instances/admins/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_044 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_045 {
+	path_regexp ^/api/instances/admins/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_045 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_046 {
+	path_regexp ^/api/instances/configurations/?$
+}
+reverse_proxy @go_active_046 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_047 {
+	path_regexp ^/api/instances/configurations/?$
+}
+reverse_proxy @go_active_047 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_048 {
+	path_regexp ^/api/instances/configurations/disable-email-feature/?$
+}
+reverse_proxy @go_active_048 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_049 {
+	path_regexp ^/api/instances/email-credentials-check/?$
+}
+reverse_proxy @go_active_049 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_050 {
+	path_regexp ^/api/instances/workspace-slug-check/?$
+}
+reverse_proxy @go_active_050 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_051 {
+	path_regexp ^/api/instances/workspaces/?$
+}
+reverse_proxy @go_active_051 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_052 {
+	path_regexp ^/api/instances/workspaces/?$
+}
+reverse_proxy @go_active_052 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_053 {
+	path_regexp ^/api/public/anchor/[^/]+/comments/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_053 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_054 {
+	path_regexp ^/api/public/anchor/[^/]+/comments/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_054 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_055 {
+	path_regexp ^/api/public/anchor/[^/]+/comments/[^/]+/reactions/[^/]+/?$
+}
+reverse_proxy @go_active_055 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_056 {
+	path_regexp ^/api/public/anchor/[^/]+/cycles/?$
+}
+reverse_proxy @go_active_056 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_057 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/inbox-issues/?$
+}
+reverse_proxy @go_active_057 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_058 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/inbox-issues/?$
+}
+reverse_proxy @go_active_058 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_059 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/intake-issues/?$
+}
+reverse_proxy @go_active_059 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_060 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/intake-issues/?$
+}
+reverse_proxy @go_active_060 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_061 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_061 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_062 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_062 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_063 {
+	path_regexp ^/api/public/anchor/[^/]+/intakes/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_063 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_064 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/?$
+}
+reverse_proxy @go_active_064 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_065 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_065 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_066 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_066 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_067 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_067 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_068 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_068 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_069 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_069 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_070 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_070 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_071 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_071 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_072 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_072 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_073 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/reactions/[^/]+/?$
+}
+reverse_proxy @go_active_073 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_074 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/votes/?$
+}
+reverse_proxy @go_active_074 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_075 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/votes/?$
+}
+reverse_proxy @go_active_075 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_076 {
+	path_regexp ^/api/public/anchor/[^/]+/issues/[^/]+/votes/?$
+}
+reverse_proxy @go_active_076 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_077 {
+	path_regexp ^/api/public/anchor/[^/]+/labels/?$
+}
+reverse_proxy @go_active_077 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_078 {
+	path_regexp ^/api/public/anchor/[^/]+/members/?$
+}
+reverse_proxy @go_active_078 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_079 {
+	path_regexp ^/api/public/anchor/[^/]+/meta/?$
+}
+reverse_proxy @go_active_079 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_080 {
+	path_regexp ^/api/public/anchor/[^/]+/modules/?$
+}
+reverse_proxy @go_active_080 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_081 {
+	path_regexp ^/api/public/anchor/[^/]+/settings/?$
+}
+reverse_proxy @go_active_081 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_082 {
+	path_regexp ^/api/public/anchor/[^/]+/states/?$
+}
+reverse_proxy @go_active_082 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_083 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/?$
+}
+reverse_proxy @go_active_083 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_084 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/?$
+}
+reverse_proxy @go_active_084 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_085 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/?$
+}
+reverse_proxy @go_active_085 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_086 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/?$
+}
+reverse_proxy @go_active_086 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_087 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/restore/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_087 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_088 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/bulk/?$
+}
+reverse_proxy @go_active_088 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_089 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_089 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_090 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_090 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_091 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_091 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_092 {
+	path_regexp ^/api/public/assets/v2/anchor/[^/]+/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_092 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_093 {
+	path_regexp ^/api/public/workspaces/[^/]+/project-boards/?$
+}
+reverse_proxy @go_active_093 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_094 {
+	path_regexp ^/api/public/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/anchor/?$
+}
+reverse_proxy @go_active_094 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_095 {
+	path_regexp ^/api/timezones/?$
+}
+reverse_proxy @go_active_095 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_096 {
+	path_regexp ^/api/unsplash/?$
+}
+reverse_proxy @go_active_096 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_097 {
+	path_regexp ^/api/users/api-tokens/?$
+}
+reverse_proxy @go_active_097 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_098 {
+	path_regexp ^/api/users/api-tokens/?$
+}
+reverse_proxy @go_active_098 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_099 {
+	path_regexp ^/api/users/api-tokens/?$
+}
+reverse_proxy @go_active_099 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_100 {
+	path_regexp ^/api/users/api-tokens/?$
+}
+reverse_proxy @go_active_100 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_101 {
+	path_regexp ^/api/users/api-tokens/[^/]+/?$
+}
+reverse_proxy @go_active_101 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_102 {
+	path_regexp ^/api/users/api-tokens/[^/]+/?$
+}
+reverse_proxy @go_active_102 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_103 {
+	path_regexp ^/api/users/api-tokens/[^/]+/?$
+}
+reverse_proxy @go_active_103 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_104 {
+	path_regexp ^/api/users/api-tokens/[^/]+/?$
+}
+reverse_proxy @go_active_104 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_105 {
+	path_regexp ^/api/users/file-assets/?$
+}
+reverse_proxy @go_active_105 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_106 {
+	path_regexp ^/api/users/file-assets/?$
+}
+reverse_proxy @go_active_106 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_107 {
+	path_regexp ^/api/users/file-assets/?$
+}
+reverse_proxy @go_active_107 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_108 {
+	path_regexp ^/api/users/file-assets/[^/]+/?$
+}
+reverse_proxy @go_active_108 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_109 {
+	path_regexp ^/api/users/file-assets/[^/]+/?$
+}
+reverse_proxy @go_active_109 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_110 {
+	path_regexp ^/api/users/file-assets/[^/]+/?$
+}
+reverse_proxy @go_active_110 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_111 {
+	path_regexp ^/api/users/last-visited-workspace/?$
+}
+reverse_proxy @go_active_111 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_112 {
+	path_regexp ^/api/users/me/?$
+}
+
+@go_active_allow_112 {
+	path_regexp ^/api/users/me/$
+}
+header @go_active_allow_112 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_112 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_113 {
+	path_regexp ^/api/users/me/?$
+}
+reverse_proxy @go_active_113 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_114 {
+	path_regexp ^/api/users/me/?$
+}
+reverse_proxy @go_active_114 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_115 {
+	path_regexp ^/api/users/me/accounts/?$
+}
+reverse_proxy @go_active_115 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_116 {
+	path_regexp ^/api/users/me/accounts/?$
+}
+reverse_proxy @go_active_116 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_117 {
+	path_regexp ^/api/users/me/accounts/[^/]+/?$
+}
+reverse_proxy @go_active_117 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_118 {
+	path_regexp ^/api/users/me/accounts/[^/]+/?$
+}
+reverse_proxy @go_active_118 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_119 {
+	path_regexp ^/api/users/me/activities/?$
+}
+reverse_proxy @go_active_119 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_120 {
+	path_regexp ^/api/users/me/email/?$
+}
+reverse_proxy @go_active_120 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_121 {
+	path_regexp ^/api/users/me/email/generate-code/?$
+}
+reverse_proxy @go_active_121 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_122 {
+	path_regexp ^/api/users/me/instance-admin/?$
+}
+reverse_proxy @go_active_122 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_123 {
+	path_regexp ^/api/users/me/notification-preferences/?$
+}
+reverse_proxy @go_active_123 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_124 {
+	path_regexp ^/api/users/me/notification-preferences/?$
+}
+reverse_proxy @go_active_124 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_125 {
+	path_regexp ^/api/users/me/onboard/?$
+}
+reverse_proxy @go_active_125 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_126 {
+	path_regexp ^/api/users/me/profile/?$
+}
+reverse_proxy @go_active_126 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_127 {
+	path_regexp ^/api/users/me/profile/?$
+}
+reverse_proxy @go_active_127 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_128 {
+	path_regexp ^/api/users/me/settings/?$
+}
+reverse_proxy @go_active_128 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_129 {
+	path_regexp ^/api/users/me/tour-completed/?$
+}
+reverse_proxy @go_active_129 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_130 {
+	path_regexp ^/api/users/me/workspaces/?$
+}
+reverse_proxy @go_active_130 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_131 {
+	path_regexp ^/api/users/me/workspaces/invitations/?$
+}
+reverse_proxy @go_active_131 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_132 {
+	path_regexp ^/api/users/me/workspaces/invitations/?$
+}
+reverse_proxy @go_active_132 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_133 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/activity-graph/?$
+}
+reverse_proxy @go_active_133 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_134 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/dashboard/?$
+}
+reverse_proxy @go_active_134 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_135 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/issues-completed-graph/?$
+}
+reverse_proxy @go_active_135 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_136 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/project-roles/?$
+}
+reverse_proxy @go_active_136 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_137 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/projects/invitations/?$
+}
+reverse_proxy @go_active_137 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_138 {
+	path_regexp ^/api/users/me/workspaces/[^/]+/projects/invitations/?$
+}
+reverse_proxy @go_active_138 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_139 {
+	path_regexp ^/api/users/session/?$
+}
+reverse_proxy @go_active_139 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_140 {
+	path_regexp ^/api/v1/assets/user-assets/?$
+}
+reverse_proxy @go_active_140 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_141 {
+	path_regexp ^/api/v1/assets/user-assets/server/?$
+}
+reverse_proxy @go_active_141 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_142 {
+	path_regexp ^/api/v1/assets/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_142 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_143 {
+	path_regexp ^/api/v1/assets/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_143 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_144 {
+	path_regexp ^/api/v1/assets/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/server/?$
+}
+reverse_proxy @go_active_144 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_145 {
+	path_regexp ^/api/v1/assets/user-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/server/?$
+}
+reverse_proxy @go_active_145 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_146 {
+	path_regexp ^/api/v1/users/me/?$
+}
+reverse_proxy @go_active_146 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_147 {
+	path_regexp ^/api/v1/workspaces/[^/]+/assets/?$
+}
+reverse_proxy @go_active_147 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_148 {
+	path_regexp ^/api/v1/workspaces/[^/]+/assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_148 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_149 {
+	path_regexp ^/api/v1/workspaces/[^/]+/assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_149 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_150 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/?$
+}
+reverse_proxy @go_active_150 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_151 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/?$
+}
+reverse_proxy @go_active_151 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_152 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/[^/.]+/?$
+}
+reverse_proxy @go_active_152 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_153 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/[^/.]+/?$
+}
+reverse_proxy @go_active_153 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_154 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/[^/.]+/?$
+}
+reverse_proxy @go_active_154 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_155 {
+	path_regexp ^/api/v1/workspaces/[^/]+/invitations/[^/.]+/?$
+}
+reverse_proxy @go_active_155 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_156 {
+	path_regexp ^/api/v1/workspaces/[^/]+/issues/search/?$
+}
+reverse_proxy @go_active_156 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_157 {
+	path_regexp ^/api/v1/workspaces/[^/]+/issues/[^/]+-[^/]+/?$
+}
+reverse_proxy @go_active_157 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_158 {
+	path_regexp ^/api/v1/workspaces/[^/]+/members-lite/?$
+}
+reverse_proxy @go_active_158 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_159 {
+	path_regexp ^/api/v1/workspaces/[^/]+/members/?$
+}
+reverse_proxy @go_active_159 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_160 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects-lite/?$
+}
+reverse_proxy @go_active_160 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_161 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/?$
+}
+
+@go_active_allow_161 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/$
+}
+header @go_active_allow_161 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_161 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_162 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/?$
+}
+reverse_proxy @go_active_162 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_163 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_163 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_163 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_163 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_164 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/?$
+}
+reverse_proxy @go_active_164 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_165 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_165 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_166 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_166 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_167 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_167 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_168 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/archived-cycles/?$
+}
+reverse_proxy @go_active_168 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_169 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/unarchive/?$
+}
+reverse_proxy @go_active_169 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_170 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/archived-modules/?$
+}
+reverse_proxy @go_active_170 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_171 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/unarchive/?$
+}
+reverse_proxy @go_active_171 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_172 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles-lite/?$
+}
+reverse_proxy @go_active_172 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_173 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/?$
+}
+
+@go_active_allow_173 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/$
+}
+header @go_active_allow_173 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_173 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_174 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/?$
+}
+reverse_proxy @go_active_174 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_175 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/?$
+}
+reverse_proxy @go_active_175 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_176 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/?$
+}
+
+@go_active_allow_176 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/$
+}
+header @go_active_allow_176 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_176 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_177 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/?$
+}
+reverse_proxy @go_active_177 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_178 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+
+@go_active_allow_178 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/$
+}
+header @go_active_allow_178 >Allow "GET, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_178 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_179 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+reverse_proxy @go_active_179 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_180 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/transfer-issues/?$
+}
+reverse_proxy @go_active_180 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_181 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+
+@go_active_allow_181 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/$
+}
+header @go_active_allow_181 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_181 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_182 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+reverse_proxy @go_active_182 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_183 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+reverse_proxy @go_active_183 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_184 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/intake-issues/?$
+}
+reverse_proxy @go_active_184 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_185 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/intake-issues/?$
+}
+reverse_proxy @go_active_185 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_186 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_186 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_187 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_187 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_188 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_188 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_189 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/?$
+}
+reverse_proxy @go_active_189 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_190 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/?$
+}
+reverse_proxy @go_active_190 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_191 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/activities/?$
+}
+reverse_proxy @go_active_191 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_192 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/activities/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_192 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_193 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_193 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_194 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_194 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_195 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_195 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_196 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_196 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_197 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_197 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_198 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/?$
+}
+reverse_proxy @go_active_198 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_199 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/?$
+}
+reverse_proxy @go_active_199 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_200 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_200 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_201 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_201 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_202 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_202 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_203 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/links/?$
+}
+reverse_proxy @go_active_203 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_204 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/links/?$
+}
+reverse_proxy @go_active_204 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_205 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_205 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_206 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_206 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_207 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_207 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_208 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_208 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_209 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_209 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_210 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_210 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_211 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/?$
+}
+
+@go_active_allow_211 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/$
+}
+header @go_active_allow_211 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_211 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_212 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/?$
+}
+reverse_proxy @go_active_212 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_213 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_213 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_213 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_213 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_214 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_214 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_215 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_215 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_216 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/?$
+}
+reverse_proxy @go_active_216 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_217 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/?$
+}
+reverse_proxy @go_active_217 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_218 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_218 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_219 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_219 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_220 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_220 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_221 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules-lite/?$
+}
+reverse_proxy @go_active_221 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_222 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/?$
+}
+
+@go_active_allow_222 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/$
+}
+header @go_active_allow_222 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_222 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_223 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/?$
+}
+reverse_proxy @go_active_223 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_224 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-issues/?$
+}
+
+@go_active_allow_224 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-issues/$
+}
+header @go_active_allow_224 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_224 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_225 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-issues/?$
+}
+reverse_proxy @go_active_225 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_226 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-issues/[^/]+/?$
+}
+reverse_proxy @go_active_226 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_227 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+
+@go_active_allow_227 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/$
+}
+header @go_active_allow_227 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_227 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_228 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+reverse_proxy @go_active_228 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_229 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+reverse_proxy @go_active_229 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_230 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/?$
+}
+reverse_proxy @go_active_230 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_231 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members-lite/?$
+}
+reverse_proxy @go_active_231 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_232 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/?$
+}
+reverse_proxy @go_active_232 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_233 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/?$
+}
+reverse_proxy @go_active_233 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_234 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_234 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_235 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_235 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_236 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_236 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_237 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/?$
+}
+
+@go_active_allow_237 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/$
+}
+header @go_active_allow_237 >Allow "GET, POST" {
+	match header Allow *
+}
+reverse_proxy @go_active_237 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_238 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/?$
+}
+reverse_proxy @go_active_238 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_239 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/[^/]+/?$
+}
+
+@go_active_allow_239 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/[^/]+/$
+}
+header @go_active_allow_239 >Allow "GET, PATCH, DELETE" {
+	match header Allow *
+}
+reverse_proxy @go_active_239 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_240 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/[^/]+/?$
+}
+reverse_proxy @go_active_240 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_241 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/states/[^/]+/?$
+}
+reverse_proxy @go_active_241 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_242 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/summary/?$
+}
+reverse_proxy @go_active_242 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_243 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/?$
+}
+reverse_proxy @go_active_243 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_244 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/?$
+}
+reverse_proxy @go_active_244 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_245 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/activities/?$
+}
+reverse_proxy @go_active_245 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_246 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/activities/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_246 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_247 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/?$
+}
+reverse_proxy @go_active_247 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_248 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/?$
+}
+reverse_proxy @go_active_248 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_249 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_249 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_250 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_250 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_251 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/work-items/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_251 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_252 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/comments/?$
+}
+reverse_proxy @go_active_252 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_253 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/comments/?$
+}
+reverse_proxy @go_active_253 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_254 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_254 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_255 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_255 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_256 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_256 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_257 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/links/?$
+}
+reverse_proxy @go_active_257 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_258 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/links/?$
+}
+reverse_proxy @go_active_258 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_259 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_259 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_260 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_260 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_261 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/links/[^/]+/?$
+}
+reverse_proxy @go_active_261 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_262 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/relations/?$
+}
+reverse_proxy @go_active_262 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_263 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/relations/?$
+}
+reverse_proxy @go_active_263 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_264 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/?$
+}
+reverse_proxy @go_active_264 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_265 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/?$
+}
+reverse_proxy @go_active_265 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_266 {
+	path_regexp ^/api/v1/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/?$
+}
+reverse_proxy @go_active_266 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_267 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_267 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_268 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_268 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_269 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies/[^/.]+(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_269 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_270 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies/[^/.]+(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_270 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_271 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies/[^/.]+(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_271 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_272 {
+	path_regexp ^/api/v1/workspaces/[^/]+/stickies/[^/.]+(?:/?|\.[a-z0-9]+/?)$
+}
+reverse_proxy @go_active_272 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_273 {
+	path_regexp ^/api/v1/workspaces/[^/]+/work-items/search/?$
+}
+reverse_proxy @go_active_273 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_274 {
+	path_regexp ^/api/v1/workspaces/[^/]+/work-items/[^/]+-[^/]+/?$
+}
+reverse_proxy @go_active_274 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_275 {
+	path_regexp ^/api/workspace-slug-check/?$
+}
+reverse_proxy @go_active_275 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_276 {
+	path_regexp ^/api/workspaces/?$
+}
+
+@go_active_allow_276 {
+	path_regexp ^/api/workspaces/$
+}
+header @go_active_allow_276 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_276 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_277 {
+	path_regexp ^/api/workspaces/?$
+}
+reverse_proxy @go_active_277 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_278 {
+	path_regexp ^/api/workspaces/file-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[^/]+/?$
+}
+reverse_proxy @go_active_278 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_279 {
+	path_regexp ^/api/workspaces/file-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[^/]+/?$
+}
+reverse_proxy @go_active_279 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_280 {
+	path_regexp ^/api/workspaces/file-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[^/]+/?$
+}
+reverse_proxy @go_active_280 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_281 {
+	path_regexp ^/api/workspaces/file-assets/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[^/]+/restore/?$
+}
+reverse_proxy @go_active_281 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_282 {
+	path_regexp ^/api/workspaces/[^/]+/?$
+}
+
+@go_active_allow_282 {
+	path_regexp ^/api/workspaces/[^/]+/$
+}
+header @go_active_allow_282 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_282 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_283 {
+	path_regexp ^/api/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_283 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_284 {
+	path_regexp ^/api/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_284 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_285 {
+	path_regexp ^/api/workspaces/[^/]+/?$
+}
+reverse_proxy @go_active_285 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_286 {
+	path_regexp ^/api/workspaces/[^/]+/advance-analytics-charts/?$
+}
+reverse_proxy @go_active_286 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_287 {
+	path_regexp ^/api/workspaces/[^/]+/advance-analytics-stats/?$
+}
+reverse_proxy @go_active_287 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_288 {
+	path_regexp ^/api/workspaces/[^/]+/advance-analytics/?$
+}
+reverse_proxy @go_active_288 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_289 {
+	path_regexp ^/api/workspaces/[^/]+/ai-assistant/?$
+}
+reverse_proxy @go_active_289 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_290 {
+	path_regexp ^/api/workspaces/[^/]+/analytic-view/?$
+}
+reverse_proxy @go_active_290 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_291 {
+	path_regexp ^/api/workspaces/[^/]+/analytic-view/?$
+}
+reverse_proxy @go_active_291 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_292 {
+	path_regexp ^/api/workspaces/[^/]+/analytic-view/[^/]+/?$
+}
+reverse_proxy @go_active_292 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_293 {
+	path_regexp ^/api/workspaces/[^/]+/analytic-view/[^/]+/?$
+}
+reverse_proxy @go_active_293 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_294 {
+	path_regexp ^/api/workspaces/[^/]+/analytic-view/[^/]+/?$
+}
+reverse_proxy @go_active_294 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_295 {
+	path_regexp ^/api/workspaces/[^/]+/analytics/?$
+}
+reverse_proxy @go_active_295 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_296 {
+	path_regexp ^/api/workspaces/[^/]+/cycles/?$
+}
+reverse_proxy @go_active_296 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_297 {
+	path_regexp ^/api/workspaces/[^/]+/default-analytics/?$
+}
+reverse_proxy @go_active_297 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_298 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/?$
+}
+
+@go_active_allow_298 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/$
+}
+header @go_active_allow_298 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_298 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_299 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/?$
+}
+reverse_proxy @go_active_299 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_300 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/[^/]+/?$
+}
+
+@go_active_allow_300 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/[^/]+/$
+}
+header @go_active_allow_300 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_300 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_301 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/[^/]+/?$
+}
+reverse_proxy @go_active_301 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_302 {
+	path_regexp ^/api/workspaces/[^/]+/draft-issues/[^/]+/?$
+}
+reverse_proxy @go_active_302 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_303 {
+	path_regexp ^/api/workspaces/[^/]+/draft-to-issue/[^/]+/?$
+}
+reverse_proxy @go_active_303 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_304 {
+	path_regexp ^/api/workspaces/[^/]+/entity-search/?$
+}
+reverse_proxy @go_active_304 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_305 {
+	path_regexp ^/api/workspaces/[^/]+/estimates/?$
+}
+reverse_proxy @go_active_305 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_306 {
+	path_regexp ^/api/workspaces/[^/]+/export-analytics/?$
+}
+reverse_proxy @go_active_306 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_307 {
+	path_regexp ^/api/workspaces/[^/]+/export-issues/?$
+}
+reverse_proxy @go_active_307 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_308 {
+	path_regexp ^/api/workspaces/[^/]+/export-issues/?$
+}
+reverse_proxy @go_active_308 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_309 {
+	path_regexp ^/api/workspaces/[^/]+/file-assets/?$
+}
+reverse_proxy @go_active_309 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_310 {
+	path_regexp ^/api/workspaces/[^/]+/file-assets/?$
+}
+reverse_proxy @go_active_310 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_311 {
+	path_regexp ^/api/workspaces/[^/]+/file-assets/?$
+}
+reverse_proxy @go_active_311 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_312 {
+	path_regexp ^/api/workspaces/[^/]+/home-preferences/?$
+}
+reverse_proxy @go_active_312 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_313 {
+	path_regexp ^/api/workspaces/[^/]+/home-preferences/?$
+}
+reverse_proxy @go_active_313 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_314 {
+	path_regexp ^/api/workspaces/[^/]+/home-preferences/[^/]+/?$
+}
+reverse_proxy @go_active_314 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_315 {
+	path_regexp ^/api/workspaces/[^/]+/home-preferences/[^/]+/?$
+}
+reverse_proxy @go_active_315 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_316 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/?$
+}
+reverse_proxy @go_active_316 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_317 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/?$
+}
+reverse_proxy @go_active_317 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_318 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_318 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_319 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_319 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_320 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_320 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_321 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/join/?$
+}
+reverse_proxy @go_active_321 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_322 {
+	path_regexp ^/api/workspaces/[^/]+/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/join/?$
+}
+reverse_proxy @go_active_322 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_323 {
+	path_regexp ^/api/workspaces/[^/]+/issues/?$
+}
+reverse_proxy @go_active_323 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_324 {
+	path_regexp ^/api/workspaces/[^/]+/labels/?$
+}
+reverse_proxy @go_active_324 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_325 {
+	path_regexp ^/api/workspaces/[^/]+/members/?$
+}
+reverse_proxy @go_active_325 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_326 {
+	path_regexp ^/api/workspaces/[^/]+/members/leave/?$
+}
+reverse_proxy @go_active_326 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_327 {
+	path_regexp ^/api/workspaces/[^/]+/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_327 {
+	path_regexp ^/api/workspaces/[^/]+/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_327 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_327 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_328 {
+	path_regexp ^/api/workspaces/[^/]+/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_328 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_329 {
+	path_regexp ^/api/workspaces/[^/]+/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_329 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_330 {
+	path_regexp ^/api/workspaces/[^/]+/modules/?$
+}
+reverse_proxy @go_active_330 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_331 {
+	path_regexp ^/api/workspaces/[^/]+/project-identifiers/?$
+}
+reverse_proxy @go_active_331 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_332 {
+	path_regexp ^/api/workspaces/[^/]+/project-identifiers/?$
+}
+reverse_proxy @go_active_332 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_333 {
+	path_regexp ^/api/workspaces/[^/]+/project-members/?$
+}
+reverse_proxy @go_active_333 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_334 {
+	path_regexp ^/api/workspaces/[^/]+/project-stats/?$
+}
+reverse_proxy @go_active_334 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_335 {
+	path_regexp ^/api/workspaces/[^/]+/projects/?$
+}
+
+@go_active_allow_335 {
+	path_regexp ^/api/workspaces/[^/]+/projects/$
+}
+header @go_active_allow_335 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_335 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_336 {
+	path_regexp ^/api/workspaces/[^/]+/projects/?$
+}
+reverse_proxy @go_active_336 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_337 {
+	path_regexp ^/api/workspaces/[^/]+/projects/details/?$
+}
+reverse_proxy @go_active_337 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_338 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_338 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_338 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_338 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_339 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/?$
+}
+reverse_proxy @go_active_339 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_340 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_340 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_341 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_341 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_342 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/advance-analytics-charts/?$
+}
+reverse_proxy @go_active_342 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_343 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/advance-analytics-stats/?$
+}
+reverse_proxy @go_active_343 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_344 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/advance-analytics/?$
+}
+reverse_proxy @go_active_344 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_345 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/ai-assistant/?$
+}
+reverse_proxy @go_active_345 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_346 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_346 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_347 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_347 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_348 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/?$
+}
+
+@go_active_allow_348 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/$
+}
+header @go_active_allow_348 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_348 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_349 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/?$
+}
+reverse_proxy @go_active_349 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_350 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/?$
+}
+reverse_proxy @go_active_350 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_351 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/?$
+}
+
+@go_active_allow_351 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/$
+}
+header @go_active_allow_351 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_351 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_352 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/?$
+}
+reverse_proxy @go_active_352 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_353 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-cycles/[^/]+/?$
+}
+reverse_proxy @go_active_353 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_354 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-issues/?$
+}
+reverse_proxy @go_active_354 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_355 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/?$
+}
+
+@go_active_allow_355 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/$
+}
+header @go_active_allow_355 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_355 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_356 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/?$
+}
+reverse_proxy @go_active_356 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_357 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/?$
+}
+reverse_proxy @go_active_357 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_358 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/?$
+}
+
+@go_active_allow_358 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/$
+}
+header @go_active_allow_358 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_358 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_359 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/?$
+}
+reverse_proxy @go_active_359 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_360 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/archived-modules/[^/]+/?$
+}
+reverse_proxy @go_active_360 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_361 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/bulk-archive-issues/?$
+}
+reverse_proxy @go_active_361 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_362 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/bulk-create-labels/?$
+}
+reverse_proxy @go_active_362 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_363 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/bulk-delete-issues/?$
+}
+reverse_proxy @go_active_363 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_364 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/comments/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_364 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_365 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/comments/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_365 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_366 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/comments/[^/]+/reactions/[^/]+/?$
+}
+reverse_proxy @go_active_366 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_367 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/?$
+}
+
+@go_active_allow_367 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/$
+}
+header @go_active_allow_367 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_367 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_368 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/?$
+}
+reverse_proxy @go_active_368 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_369 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/date-check/?$
+}
+reverse_proxy @go_active_369 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_370 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/analytics/?$
+}
+reverse_proxy @go_active_370 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_371 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/?$
+}
+
+@go_active_allow_371 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/$
+}
+header @go_active_allow_371 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_371 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_372 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/?$
+}
+reverse_proxy @go_active_372 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_373 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/archive/?$
+}
+reverse_proxy @go_active_373 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_374 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/?$
+}
+
+@go_active_allow_374 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/$
+}
+header @go_active_allow_374 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_374 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_375 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/?$
+}
+reverse_proxy @go_active_375 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_376 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+
+@go_active_allow_376 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/$
+}
+header @go_active_allow_376 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_376 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_377 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+reverse_proxy @go_active_377 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_378 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+reverse_proxy @go_active_378 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_379 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/cycle-issues/[^/]+/?$
+}
+reverse_proxy @go_active_379 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_380 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/progress/?$
+}
+reverse_proxy @go_active_380 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_381 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/transfer-issues/?$
+}
+reverse_proxy @go_active_381 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_382 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_382 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_383 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_383 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_384 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+
+@go_active_allow_384 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/$
+}
+header @go_active_allow_384 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_384 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_385 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+reverse_proxy @go_active_385 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_386 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+reverse_proxy @go_active_386 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_387 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/cycles/[^/]+/?$
+}
+reverse_proxy @go_active_387 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_388 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/deleted-issues/?$
+}
+reverse_proxy @go_active_388 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_389 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/?$
+}
+
+@go_active_allow_389 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/$
+}
+header @go_active_allow_389 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_389 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_390 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/?$
+}
+reverse_proxy @go_active_390 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_391 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_391 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_391 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_391 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_392 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_392 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_393 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_393 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_394 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimate-points/?$
+}
+reverse_proxy @go_active_394 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_395 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimate-points/[^/]+/?$
+}
+reverse_proxy @go_active_395 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_396 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimates/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/estimate-points/[^/]+/?$
+}
+reverse_proxy @go_active_396 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_397 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/favorite-pages/[^/]+/?$
+}
+reverse_proxy @go_active_397 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_398 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/favorite-pages/[^/]+/?$
+}
+reverse_proxy @go_active_398 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_399 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/?$
+}
+
+@go_active_allow_399 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/$
+}
+header @go_active_allow_399 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_399 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_400 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/?$
+}
+reverse_proxy @go_active_400 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_401 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/[^/]+/?$
+}
+
+@go_active_allow_401 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/[^/]+/$
+}
+header @go_active_allow_401 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_401 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_402 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/[^/]+/?$
+}
+reverse_proxy @go_active_402 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_403 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inbox-issues/[^/]+/?$
+}
+reverse_proxy @go_active_403 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_404 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/?$
+}
+
+@go_active_allow_404 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/$
+}
+header @go_active_allow_404 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_404 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_405 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/?$
+}
+reverse_proxy @go_active_405 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_406 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/[^/]+/?$
+}
+
+@go_active_allow_406 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/[^/]+/$
+}
+header @go_active_allow_406 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_406 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_407 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/[^/]+/?$
+}
+reverse_proxy @go_active_407 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_408 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/inboxes/[^/]+/?$
+}
+reverse_proxy @go_active_408 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_409 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/?$
+}
+
+@go_active_allow_409 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/$
+}
+header @go_active_allow_409 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_409 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_410 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/?$
+}
+reverse_proxy @go_active_410 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_411 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+
+@go_active_allow_411 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/$
+}
+header @go_active_allow_411 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_411 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_412 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_412 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_413 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-issues/[^/]+/?$
+}
+reverse_proxy @go_active_413 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_414 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/intake-state/?$
+}
+reverse_proxy @go_active_414 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_415 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-work-items/[^/]+/description-versions/?$
+}
+reverse_proxy @go_active_415 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_416 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intake-work-items/[^/]+/description-versions/[^/]+/?$
+}
+reverse_proxy @go_active_416 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_417 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/?$
+}
+
+@go_active_allow_417 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/$
+}
+header @go_active_allow_417 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_417 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_418 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/?$
+}
+reverse_proxy @go_active_418 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_419 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/[^/]+/?$
+}
+
+@go_active_allow_419 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/[^/]+/$
+}
+header @go_active_allow_419 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_419 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_420 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/[^/]+/?$
+}
+reverse_proxy @go_active_420 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_421 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/intakes/[^/]+/?$
+}
+reverse_proxy @go_active_421 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_422 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/invitations/?$
+}
+reverse_proxy @go_active_422 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_423 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/invitations/?$
+}
+reverse_proxy @go_active_423 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_424 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_424 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_425 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/invitations/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_425 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_426 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issue-dates/?$
+}
+reverse_proxy @go_active_426 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_427 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/?$
+}
+
+@go_active_allow_427 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/$
+}
+header @go_active_allow_427 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_427 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_428 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/?$
+}
+reverse_proxy @go_active_428 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_429 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_429 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_429 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_429 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_430 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_430 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_431 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_431 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_432 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-labels/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_432 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_433 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues-detail/?$
+}
+reverse_proxy @go_active_433 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_434 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/?$
+}
+reverse_proxy @go_active_434 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_435 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/?$
+}
+reverse_proxy @go_active_435 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_436 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/list/?$
+}
+reverse_proxy @go_active_436 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_437 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_437 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_438 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/?$
+}
+reverse_proxy @go_active_438 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_439 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_439 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_440 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_440 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_441 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_441 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_442 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/comments/[^/]+/?$
+}
+reverse_proxy @go_active_442 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_443 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/history/?$
+}
+reverse_proxy @go_active_443 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_444 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/?$
+}
+reverse_proxy @go_active_444 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_445 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/?$
+}
+reverse_proxy @go_active_445 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_446 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/?$
+}
+reverse_proxy @go_active_446 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_447 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issues/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/issue-attachments/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_447 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_448 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/?$
+}
+reverse_proxy @go_active_448 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_449 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/?$
+}
+reverse_proxy @go_active_449 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_450 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/[^/]+/?$
+}
+reverse_proxy @go_active_450 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_451 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/[^/]+/?$
+}
+reverse_proxy @go_active_451 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_452 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/[^/]+/?$
+}
+reverse_proxy @go_active_452 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_453 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-links/[^/]+/?$
+}
+reverse_proxy @go_active_453 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_454 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-relation/?$
+}
+reverse_proxy @go_active_454 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_455 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-relation/?$
+}
+reverse_proxy @go_active_455 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_456 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-subscribers/?$
+}
+reverse_proxy @go_active_456 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_457 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-subscribers/?$
+}
+reverse_proxy @go_active_457 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_458 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/issue-subscribers/[^/]+/?$
+}
+reverse_proxy @go_active_458 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_459 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/meta/?$
+}
+reverse_proxy @go_active_459 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_460 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/modules/?$
+}
+reverse_proxy @go_active_460 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_461 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_461 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_462 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/reactions/?$
+}
+reverse_proxy @go_active_462 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_463 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/reactions/[^/]+/?$
+}
+reverse_proxy @go_active_463 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_464 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/remove-relation/?$
+}
+reverse_proxy @go_active_464 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_465 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/sub-issues/?$
+}
+reverse_proxy @go_active_465 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_466 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/sub-issues/?$
+}
+reverse_proxy @go_active_466 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_467 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/subscribe/?$
+}
+reverse_proxy @go_active_467 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_468 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/subscribe/?$
+}
+reverse_proxy @go_active_468 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_469 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/subscribe/?$
+}
+reverse_proxy @go_active_469 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_470 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/versions/?$
+}
+reverse_proxy @go_active_470 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_471 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/versions/[^/]+/?$
+}
+reverse_proxy @go_active_471 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_472 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_472 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_473 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_473 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_474 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_474 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_475 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_475 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_476 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/archive/?$
+}
+reverse_proxy @go_active_476 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_477 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/archive/?$
+}
+reverse_proxy @go_active_477 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_478 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/issues/[^/]+/archive/?$
+}
+reverse_proxy @go_active_478 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_479 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/join/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_479 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_480 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/join/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_480 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_481 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/?$
+}
+
+@go_active_allow_481 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/$
+}
+header @go_active_allow_481 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_481 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_482 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/?$
+}
+reverse_proxy @go_active_482 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_483 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/leave/?$
+}
+reverse_proxy @go_active_483 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_484 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_484 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_484 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_484 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_485 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_485 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_486 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/members/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_486 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_487 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/?$
+}
+
+@go_active_allow_487 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/$
+}
+header @go_active_allow_487 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_487 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_488 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/?$
+}
+reverse_proxy @go_active_488 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_489 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/?$
+}
+
+@go_active_allow_489 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/$
+}
+header @go_active_allow_489 >Allow "GET, POST, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_489 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_490 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/?$
+}
+reverse_proxy @go_active_490 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_491 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/archive/?$
+}
+reverse_proxy @go_active_491 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_492 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/?$
+}
+
+@go_active_allow_492 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/$
+}
+header @go_active_allow_492 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_492 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_493 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/?$
+}
+reverse_proxy @go_active_493 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_494 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/?$
+}
+
+@go_active_allow_494 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/$
+}
+header @go_active_allow_494 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_494 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_495 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_495 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_496 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_496 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_497 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/issues/[^/]+/?$
+}
+reverse_proxy @go_active_497 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_498 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/?$
+}
+
+@go_active_allow_498 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/$
+}
+header @go_active_allow_498 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_498 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_499 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/?$
+}
+reverse_proxy @go_active_499 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_500 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/?$
+}
+
+@go_active_allow_500 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/$
+}
+header @go_active_allow_500 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_500 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_501 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/?$
+}
+reverse_proxy @go_active_501 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_502 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/?$
+}
+reverse_proxy @go_active_502 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_503 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/module-links/[^/]+/?$
+}
+reverse_proxy @go_active_503 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_504 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_504 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_505 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_505 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_506 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+
+@go_active_allow_506 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/$
+}
+header @go_active_allow_506 >Allow "GET, PUT, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_506 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_507 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+reverse_proxy @go_active_507 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_508 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+reverse_proxy @go_active_508 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_509 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/modules/[^/]+/?$
+}
+reverse_proxy @go_active_509 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_510 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages-summary/?$
+}
+reverse_proxy @go_active_510 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_511 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/?$
+}
+
+@go_active_allow_511 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/$
+}
+header @go_active_allow_511 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_511 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_512 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/?$
+}
+reverse_proxy @go_active_512 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_513 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/?$
+}
+
+@go_active_allow_513 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/$
+}
+header @go_active_allow_513 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_513 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_514 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/?$
+}
+reverse_proxy @go_active_514 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_515 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/?$
+}
+reverse_proxy @go_active_515 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_516 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/access/?$
+}
+reverse_proxy @go_active_516 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_517 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/archive/?$
+}
+reverse_proxy @go_active_517 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_518 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/archive/?$
+}
+reverse_proxy @go_active_518 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_519 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/description/?$
+}
+
+@go_active_allow_519 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/description/$
+}
+header @go_active_allow_519 >Allow "GET, PATCH, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_519 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_520 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/description/?$
+}
+reverse_proxy @go_active_520 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_521 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/duplicate/?$
+}
+reverse_proxy @go_active_521 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_522 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/lock/?$
+}
+reverse_proxy @go_active_522 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_523 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/lock/?$
+}
+reverse_proxy @go_active_523 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_524 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/versions/?$
+}
+reverse_proxy @go_active_524 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_525 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/pages/[^/]+/versions/[^/]+/?$
+}
+reverse_proxy @go_active_525 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_526 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/preferences/member/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_526 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/preferences/member/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_526 >Allow "GET, PATCH, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_526 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_527 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/preferences/member/[^/]+/?$
+}
+reverse_proxy @go_active_527 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_528 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/?$
+}
+
+@go_active_allow_528 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/$
+}
+header @go_active_allow_528 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_528 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_529 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/?$
+}
+reverse_proxy @go_active_529 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_530 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/[^/]+/?$
+}
+
+@go_active_allow_530 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/[^/]+/$
+}
+header @go_active_allow_530 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_530 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_531 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/[^/]+/?$
+}
+reverse_proxy @go_active_531 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_532 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-deploy-boards/[^/]+/?$
+}
+reverse_proxy @go_active_532 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_533 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-estimates/?$
+}
+reverse_proxy @go_active_533 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_534 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/project-members/me/?$
+}
+reverse_proxy @go_active_534 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_535 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/project-views/?$
+}
+reverse_proxy @go_active_535 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_536 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/search-issues/?$
+}
+reverse_proxy @go_active_536 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_537 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/states/?$
+}
+
+@go_active_allow_537 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/states/$
+}
+header @go_active_allow_537 >Allow "GET, POST, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_537 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_538 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/?$
+}
+reverse_proxy @go_active_538 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_539 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/[^/]+/?$
+}
+
+@go_active_allow_539 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/[^/]+/$
+}
+header @go_active_allow_539 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_539 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_540 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/states/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_540 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_541 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/[^/]+/?$
+}
+reverse_proxy @go_active_541 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_542 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/states/[^/]+/mark-default/?$
+}
+reverse_proxy @go_active_542 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_543 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-cycles/?$
+}
+reverse_proxy @go_active_543 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_544 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-cycles/?$
+}
+reverse_proxy @go_active_544 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_545 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-cycles/[^/]+/?$
+}
+reverse_proxy @go_active_545 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_546 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-modules/?$
+}
+reverse_proxy @go_active_546 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_547 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-modules/?$
+}
+reverse_proxy @go_active_547 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_548 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-modules/[^/]+/?$
+}
+reverse_proxy @go_active_548 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_549 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-views/?$
+}
+reverse_proxy @go_active_549 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_550 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-views/?$
+}
+reverse_proxy @go_active_550 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_551 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-favorite-views/[^/]+/?$
+}
+reverse_proxy @go_active_551 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_552 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_552 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_553 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_553 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_554 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/v2/issues/?$
+}
+reverse_proxy @go_active_554 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_555 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/?$
+}
+reverse_proxy @go_active_555 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_556 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/?$
+}
+reverse_proxy @go_active_556 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_557 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_557 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_558 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_558 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_559 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_559 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_560 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_560 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_561 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/description-versions/?$
+}
+reverse_proxy @go_active_561 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_562 {
+	path_regexp ^/api/workspaces/[^/]+/projects/[^/]+/work-items/[^/]+/description-versions/[^/]+/?$
+}
+reverse_proxy @go_active_562 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_563 {
+	path_regexp ^/api/workspaces/[^/]+/quick-links/?$
+}
+reverse_proxy @go_active_563 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_564 {
+	path_regexp ^/api/workspaces/[^/]+/quick-links/?$
+}
+reverse_proxy @go_active_564 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_565 {
+	path_regexp ^/api/workspaces/[^/]+/quick-links/[^/]+/?$
+}
+reverse_proxy @go_active_565 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_566 {
+	path_regexp ^/api/workspaces/[^/]+/quick-links/[^/]+/?$
+}
+reverse_proxy @go_active_566 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_567 {
+	path_regexp ^/api/workspaces/[^/]+/quick-links/[^/]+/?$
+}
+reverse_proxy @go_active_567 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_568 {
+	path_regexp ^/api/workspaces/[^/]+/recent-visits/?$
+}
+reverse_proxy @go_active_568 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_569 {
+	path_regexp ^/api/workspaces/[^/]+/saved-analytic-view/[^/]+/?$
+}
+reverse_proxy @go_active_569 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_570 {
+	path_regexp ^/api/workspaces/[^/]+/search/?$
+}
+reverse_proxy @go_active_570 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_571 {
+	path_regexp ^/api/workspaces/[^/]+/sidebar-preferences/?$
+}
+reverse_proxy @go_active_571 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_572 {
+	path_regexp ^/api/workspaces/[^/]+/sidebar-preferences/?$
+}
+reverse_proxy @go_active_572 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_573 {
+	path_regexp ^/api/workspaces/[^/]+/states/?$
+}
+reverse_proxy @go_active_573 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_574 {
+	path_regexp ^/api/workspaces/[^/]+/stickies/?$
+}
+reverse_proxy @go_active_574 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_575 {
+	path_regexp ^/api/workspaces/[^/]+/stickies/?$
+}
+reverse_proxy @go_active_575 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_576 {
+	path_regexp ^/api/workspaces/[^/]+/stickies/([0-9A-Fa-f]{8}[0-9A-Fa-f]{4}[0-9A-Fa-f]{4}[89ABab][0-9A-Fa-f]{3}[0-9A-Fa-f]{12}|[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}|\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\}|urn:uuid:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12})/?$
+}
+reverse_proxy @go_active_576 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_577 {
+	path_regexp ^/api/workspaces/[^/]+/stickies/([0-9A-Fa-f]{8}[0-9A-Fa-f]{4}[0-9A-Fa-f]{4}[89ABab][0-9A-Fa-f]{3}[0-9A-Fa-f]{12}|[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}|\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\}|urn:uuid:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12})/?$
+}
+reverse_proxy @go_active_577 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_578 {
+	path_regexp ^/api/workspaces/[^/]+/stickies/([0-9A-Fa-f]{8}[0-9A-Fa-f]{4}[0-9A-Fa-f]{4}[89ABab][0-9A-Fa-f]{3}[0-9A-Fa-f]{12}|[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}|\{[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}\}|urn:uuid:[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12})/?$
+}
+reverse_proxy @go_active_578 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_579 {
+	path_regexp ^/api/workspaces/[^/]+/user-activity/[^/]+/?$
+}
+reverse_proxy @go_active_579 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_580 {
+	path_regexp ^/api/workspaces/[^/]+/user-activity/[^/]+/export/?$
+}
+reverse_proxy @go_active_580 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_581 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorite-projects/?$
+}
+reverse_proxy @go_active_581 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_582 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorite-projects/?$
+}
+reverse_proxy @go_active_582 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_583 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorite-projects/[^/]+/?$
+}
+reverse_proxy @go_active_583 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_584 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/?$
+}
+reverse_proxy @go_active_584 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_585 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/?$
+}
+reverse_proxy @go_active_585 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_586 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/?$
+}
+reverse_proxy @go_active_586 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_587 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/?$
+}
+reverse_proxy @go_active_587 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_588 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/[^/]+/?$
+}
+reverse_proxy @go_active_588 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_589 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/[^/]+/?$
+}
+reverse_proxy @go_active_589 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_590 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/[^/]+/?$
+}
+reverse_proxy @go_active_590 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_591 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/[^/]+/?$
+}
+reverse_proxy @go_active_591 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_592 {
+	path_regexp ^/api/workspaces/[^/]+/user-favorites/[^/]+/group/?$
+}
+reverse_proxy @go_active_592 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_593 {
+	path_regexp ^/api/workspaces/[^/]+/user-issues/[^/]+/?$
+}
+reverse_proxy @go_active_593 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_594 {
+	path_regexp ^/api/workspaces/[^/]+/user-profile/[^/]+/?$
+}
+reverse_proxy @go_active_594 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_595 {
+	path_regexp ^/api/workspaces/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_595 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_596 {
+	path_regexp ^/api/workspaces/[^/]+/user-properties/?$
+}
+reverse_proxy @go_active_596 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_597 {
+	path_regexp ^/api/workspaces/[^/]+/user-stats/[^/]+/?$
+}
+reverse_proxy @go_active_597 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_598 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/?$
+}
+reverse_proxy @go_active_598 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_599 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/mark-all-read/?$
+}
+reverse_proxy @go_active_599 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_600 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/unread/?$
+}
+reverse_proxy @go_active_600 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_601 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+
+@go_active_allow_601 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/$
+}
+header @go_active_allow_601 >Allow "GET, PATCH, DELETE, HEAD, OPTIONS" {
+	match header Allow *
+}
+reverse_proxy @go_active_601 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_602 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_602 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_603 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[^/]+/?$
+}
+reverse_proxy @go_active_603 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_604 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_604 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_605 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/archive/?$
+}
+reverse_proxy @go_active_605 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_606 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/read/?$
+}
+reverse_proxy @go_active_606 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_607 {
+	path_regexp ^/api/workspaces/[^/]+/users/notifications/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/read/?$
+}
+reverse_proxy @go_active_607 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_608 {
+	path_regexp ^/api/workspaces/[^/]+/views/?$
+}
+reverse_proxy @go_active_608 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_609 {
+	path_regexp ^/api/workspaces/[^/]+/views/?$
+}
+reverse_proxy @go_active_609 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_610 {
+	path_regexp ^/api/workspaces/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_610 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_611 {
+	path_regexp ^/api/workspaces/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_611 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_612 {
+	path_regexp ^/api/workspaces/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_612 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_613 {
+	path_regexp ^/api/workspaces/[^/]+/views/[^/]+/?$
+}
+reverse_proxy @go_active_613 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_614 {
+	path_regexp ^/api/workspaces/[^/]+/webhook-logs/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_614 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_615 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/?$
+}
+reverse_proxy @go_active_615 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_616 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/?$
+}
+reverse_proxy @go_active_616 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_617 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/?$
+}
+reverse_proxy @go_active_617 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_618 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/?$
+}
+reverse_proxy @go_active_618 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_619 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_619 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_620 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_620 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_621 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/?$
+}
+reverse_proxy @go_active_621 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_622 {
+	path_regexp ^/api/workspaces/[^/]+/webhooks/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/regenerate/?$
+}
+reverse_proxy @go_active_622 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_623 {
+	path_regexp ^/api/workspaces/[^/]+/work-items/[^/]+-[^/]+/?$
+}
+reverse_proxy @go_active_623 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_624 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-members/me/?$
+}
+reverse_proxy @go_active_624 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_625 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-themes/?$
+}
+reverse_proxy @go_active_625 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_626 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-themes/?$
+}
+reverse_proxy @go_active_626 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_627 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-themes/[^/]+/?$
+}
+reverse_proxy @go_active_627 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_628 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-themes/[^/]+/?$
+}
+reverse_proxy @go_active_628 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_629 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-themes/[^/]+/?$
+}
+reverse_proxy @go_active_629 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_630 {
+	path_regexp ^/api/workspaces/[^/]+/workspace-views/?$
+}
+reverse_proxy @go_active_630 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_631 {
+	path_regexp ^/auth/change-password/?$
+}
+reverse_proxy @go_active_631 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_632 {
+	path_regexp ^/auth/email-check/?$
+}
+reverse_proxy @go_active_632 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_633 {
+	path_regexp ^/auth/forgot-password/?$
+}
+reverse_proxy @go_active_633 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_634 {
+	path_regexp ^/auth/get-csrf-token/?$
+}
+reverse_proxy @go_active_634 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_635 {
+	path_regexp ^/auth/magic-generate/?$
+}
+reverse_proxy @go_active_635 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_636 {
+	path_regexp ^/auth/set-password/?$
+}
+reverse_proxy @go_active_636 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_637 {
+	path_regexp ^/auth/spaces/email-check/?$
+}
+reverse_proxy @go_active_637 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_638 {
+	path_regexp ^/auth/spaces/forgot-password/?$
+}
+reverse_proxy @go_active_638 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_active_639 {
+	path_regexp ^/auth/spaces/magic-generate/?$
+}
+reverse_proxy @go_active_639 {$GO_API_UPSTREAM:go-api:8080}
+
+@go_runtime_fallback {
+	path_regexp ^/(?:api|auth)/
+}
+reverse_proxy @go_runtime_fallback {$GO_API_UPSTREAM:go-api:8080}

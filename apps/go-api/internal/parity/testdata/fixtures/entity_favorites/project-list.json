@@ -1,0 +1,81 @@
+{
+  "database": {
+    "after": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "entity_identifier": "<uuid-2>",
+          "entity_type": "project",
+          "id": "<uuid-3>",
+          "is_folder": false,
+          "name": null,
+          "parent_id": null,
+          "project_id": "<uuid-2>",
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "user_favorites": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "entity_identifier": "<uuid-2>",
+          "entity_type": "project",
+          "id": "<uuid-3>",
+          "is_folder": false,
+          "name": null,
+          "parent_id": null,
+          "project_id": "<uuid-2>",
+          "sequence": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/entity-favorite-parity/user-favorite-projects/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "Something went wrong please try again later"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 500
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "project-list"
+  }
+}

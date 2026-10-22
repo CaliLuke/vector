@@ -1,0 +1,409 @@
+{
+  "version": 1,
+  "family": "workspace_webhooks",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "73 pristine Django cases cover all nine operations, including protocol, invalid-timezone, and missing-row-before-malformed-body behavior. Three separately captured corrected source oracles reject unsupported collection PATCH/DELETE and detail POST with 405 after authentication and workspace-admin authorization. Final Go parity and live differential acceptance remain pending.",
+  "operation_count": 9,
+  "source_files": [
+    "apps/api/plane/app/urls/webhook.py",
+    "apps/api/plane/app/views/webhook/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/app/serializers/webhook.py",
+    "apps/api/plane/app/serializers/base.py",
+    "apps/api/plane/db/models/webhook.py",
+    "apps/api/plane/db/models/base.py",
+    "apps/api/plane/authentication/session.py",
+    "apps/api/plane/bgtasks/deletion_task.py"
+  ],
+  "operations": {
+    "get_api_workspaces_by_slug_webhook_logs_by_webhook_id": {
+      "operation_id": "get_api_workspaces_by_slug_webhook_logs_by_webhook_id",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/webhook-logs/{webhook_id}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Returns newest-first full webhook-log serializer array; valid unknown and cross-workspace webhook UUIDs return empty 200 arrays; search is ignored. Anonymous gets 401; authenticated non-admin gets 403; malformed UUID fails route conversion.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-cross-workspace-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-malformed-webhook-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-success-search-ignored.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/logs-unknown-webhook-empty.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhook-logs/00000000-0000-4000-8000-000000034231/",
+      "status_note": "Source-recorded behavior; no Go parity claim."
+    },
+    "delete_api_workspaces_by_slug_webhooks": {
+      "operation_id": "delete_api_workspaces_by_slug_webhooks",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/webhooks/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Shared handler requires pk absent from the collection URL, producing generic 500 with no write/effect. Target intentionally returns 405 after authentication and workspace-admin authorization. Anonymous gets 401; authenticated non-admin gets 403 before the missing-pk failure.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-delete-handler-missing-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-delete-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks_corrected/collection-delete-handler-missing-pk.json"
+      ],
+      "source_statuses": ["401", "403", "500"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/",
+      "status_note": "Pristine Django 500 is retained; target 405 correction is a routing-only bug fix."
+    },
+    "get_api_workspaces_by_slug_webhooks": {
+      "operation_id": "get_api_workspaces_by_slug_webhooks",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/webhooks/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": ["search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Returns newest-first webhook list; search is ignored; explicit view projection is ignored so the full model serializer output includes secret_key, is_internal, and version. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        },
+        {
+          "when": "collection OPTIONS, HEAD, or unsupported PUT",
+          "observable": "OPTIONS authenticates only and returns metadata with Allow GET, POST, PATCH, DELETE, HEAD, OPTIONS for admin and role-15 member; anonymous gets 401. HEAD inherits GET role permission: admin 200, role-15 member 403. Unsupported PUT authenticates only and returns 405 for admin and role-15 member.",
+          "source": "apps/api/plane/app/views/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-head-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-head-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-options-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-options-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-options-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/list-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/list-success-search-ignored.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/",
+      "status_note": "Fixture replaces secret value with a placeholder but preserves the response field."
+    },
+    "patch_api_workspaces_by_slug_webhooks": {
+      "operation_id": "patch_api_workspaces_by_slug_webhooks",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/webhooks/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Shared handler requires pk absent from the collection URL, producing generic 500 with no write. Target intentionally returns 405 after authentication and workspace-admin authorization. Anonymous gets 401; authenticated non-admin gets 403 before the missing-pk failure.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-patch-handler-missing-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/collection-patch-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks_corrected/collection-patch-handler-missing-pk.json"
+      ],
+      "source_statuses": ["401", "403", "500"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/",
+      "status_note": "Pristine Django 500 is retained; target 405 correction is a routing-only bug fix."
+    },
+    "post_api_workspaces_by_slug_webhooks": {
+      "operation_id": "post_api_workspaces_by_slug_webhooks",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/webhooks/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Creates a webhook and returns full serializer including secret_key. Invalid URL inputs produce 400; duplicate workspace URL produces 409; no Celery task is emitted. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        },
+        {
+          "when": "malformed JSON with anonymous or non-admin principal",
+          "observable": "Malformed request body does not preempt authentication or workspace-role checks: anonymous returns 401, authenticated role-15 member returns 403.",
+          "source": "apps/api/plane/app/views/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-duplicate-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-invalid-schema.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-localhost-rejected.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-malformed-body-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-malformed-body-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-missing-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/create-success.json"
+      ],
+      "source_statuses": ["201", "400", "401", "403", "409"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/",
+      "status_note": "Fixture redacts generated secret value only."
+    },
+    "delete_api_workspaces_by_slug_webhooks_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_webhooks_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/webhooks/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["POST"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Soft-deletes the scoped live webhook and returns 204; queues a persistent deletion task. Missing/deleted rows return 404. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/delete-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/delete-success-soft-delete-task.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-post-admin-source-500.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-post-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-post-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks_corrected/detail-post-admin-source-500.json"
+      ],
+      "source_statuses": ["204", "400", "401", "403", "404"],
+      "effects": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Capture consumes and records the real RabbitMQ message from the family vhost."
+    },
+    "get_api_workspaces_by_slug_webhooks_by_pk": {
+      "operation_id": "get_api_workspaces_by_slug_webhooks_by_pk",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/webhooks/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Returns full serializer for a live webhook scoped by workspace slug and UUID, including secret_key. Missing or soft-deleted object returns 404. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-deleted-row.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-get-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-delete-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-options-admin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-options-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-options-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-success.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Fixture replaces secret value with a placeholder but preserves the response field."
+    },
+    "patch_api_workspaces_by_slug_webhooks_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_webhooks_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/webhooks/{pk}/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Resolves scoped live webhook before validation; updates supported writable model fields and returns full serializer. `created_by`, `is_internal`, and `version` are writable; `workspace`, `secret_key`, and `deleted_at` are read-only. Null or duplicate URL returns 400. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        },
+        {
+          "when": "workspace admin, missing scoped webhook and malformed body",
+          "observable": "Scoped object lookup returns 404 before JSON parsing, without writes or durable effects.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-duplicate-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-mass-assignment-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-null-url.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-read-only-and-hidden-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/patch-missing-malformed-body.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Preserve the observed mass-assignment behavior pending an explicit product contract decision."
+    },
+    "post_api_workspaces_by_slug_webhooks_by_pk_regenerate": {
+      "operation_id": "post_api_workspaces_by_slug_webhooks_by_pk_regenerate",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/webhooks/{pk}/regenerate/",
+      "auth_profile": "django-session",
+      "authentication": ["django-session", "anonymous"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "workspace admin",
+          "observable": "Rotates the scoped webhook secret, updates audit metadata, returns 200 with full serializer including secret_key, and emits no task. Missing webhook returns 404. Anonymous gets 401; authenticated non-admin gets 403.",
+          "source": "apps/api/plane/app/views/webhook/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/detail-regenerate-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/regenerate-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/regenerate-nonadmin.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/regenerate-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_webhooks/regenerate-success.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "404"],
+      "effects": [],
+      "sample_path": "/api/workspaces/workspace-webhooks/webhooks/00000000-0000-4000-8000-000000099999/regenerate/",
+      "status_note": "Fixture redacts the rotated secret value but preserves its presence."
+    }
+  },
+  "effect_contracts": {
+    "plane.bgtasks.deletion_task.soft_delete_related_objects": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session",
+      "routing_key": "celery",
+      "exchange": "",
+      "delivery_mode": 2
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/administration_batch_http_test.go::TestWebhookProductionAuthenticationPrecedesParsingAndProtocolDispatch",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["search"],
+    "evidence": "apps/go-api/internal/parity/workspace_webhooks_integration_test.go::TestWorkspaceWebhooksFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/workspaces/workspace-webhooks/webhooks/"
+    },
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "request_body_note": "Transport probes reject non-object serializer input; success and durable effects are verified by source-recorded parity. Regenerate ignores its request body and uses a missing-row probe to avoid rotating secrets during transport comparison.",
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": [
+          "delete_api_workspaces_by_slug_webhooks:canonical:PATCH",
+          "get_api_workspaces_by_slug_webhooks:canonical:PATCH",
+          "patch_api_workspaces_by_slug_webhooks:canonical:PATCH",
+          "post_api_workspaces_by_slug_webhooks:canonical:PATCH"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "3e91ddbaf795bc0c4cb6c99bb1c72d70181345f64bb214ecb667076ea95a19ad"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": [
+          "delete_api_workspaces_by_slug_webhooks:canonical:DELETE",
+          "get_api_workspaces_by_slug_webhooks:canonical:DELETE",
+          "patch_api_workspaces_by_slug_webhooks:canonical:DELETE",
+          "post_api_workspaces_by_slug_webhooks:canonical:DELETE"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "e93f84a99b10c0f2863ac4a267ca519e5a57c85a9fe0b573c3e84688eb249e0b"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-001-invalid-methods.md",
+        "cases": [
+          "delete_api_workspaces_by_slug_webhooks_by_pk:canonical:POST",
+          "get_api_workspaces_by_slug_webhooks_by_pk:canonical:POST",
+          "patch_api_workspaces_by_slug_webhooks_by_pk:canonical:POST"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 405,
+          "body_sha256": "3986c0d4df30cfcf7db784ea02470c5776de9c1121b7306350b346bb695a752f"
+        }
+      }
+    ]
+  },
+  "source_runtime_evidence": {
+    "recorder": "apps/api/plane/tests/parity/test_workspace_webhooks_recorder.py",
+    "fixture_count": 73,
+    "record_log": "docs/go-backend-replacement/evidence/workspace-webhooks/source-20261021T230136Z.log",
+    "corrected_fixture_count": 3,
+    "additional_record_log": "docs/go-backend-replacement/evidence/workspace-webhooks/source-20261022T005123Z.log",
+    "additional_counter": "docs/go-backend-replacement/evidence/workspace-webhooks/source-counts-20261022T005123Z.json",
+    "corrected_counter": "docs/go-backend-replacement/evidence/workspace-webhooks/source-counts-20261022T005737Z-30329.json",
+    "corrected_log": "docs/go-backend-replacement/evidence/workspace-webhooks/source-20261022T005737Z-30329.log"
+  }
+}

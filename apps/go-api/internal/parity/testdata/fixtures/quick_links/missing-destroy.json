@@ -1,0 +1,79 @@
+{
+  "database": {
+    "after": {
+      "workspace_user_links": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "metadata": {
+            "source": "fixture"
+          },
+          "owner_id": "<uuid-2>",
+          "project_id": null,
+          "title": "Updated",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "url": "https://example.com",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_user_links": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "metadata": {
+            "source": "fixture"
+          },
+          "owner_id": "<uuid-2>",
+          "project_id": null,
+          "title": "Updated",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "url": "https://example.com",
+          "workspace_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/quick-links-fixture/quick-links/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "The required object does not exist."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 404
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "missing-destroy"
+  }
+}

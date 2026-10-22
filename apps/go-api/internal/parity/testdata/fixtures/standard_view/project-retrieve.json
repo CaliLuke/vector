@@ -1,0 +1,627 @@
+{
+  "database": {
+    "after": {
+      "issue_views": [
+        {
+          "access": 1,
+          "archived_at": null,
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "description": "Project view contract",
+          "display_filters": {
+            "layout": "list"
+          },
+          "display_properties": {
+            "priority": true
+          },
+          "filters": {
+            "priority": [
+              "high"
+            ]
+          },
+          "id": "<uuid-2>",
+          "is_locked": false,
+          "logo_props": {
+            "emoji": "view"
+          },
+          "name": "Project view",
+          "owned_by_id": "<uuid-3>",
+          "project_id": "<uuid-1>",
+          "query": {
+            "priority__in": [
+              "high"
+            ]
+          },
+          "rich_filters": {},
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "project_members": [
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "is_active": true,
+          "member_id": "<uuid-3>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 20,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-1>",
+          "identifier": "VIEW",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "View Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "user_favorites": [],
+      "user_recent_visits": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-6>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Standard View Parity",
+          "organization_size": null,
+          "owner_id": "<uuid-3>",
+          "slug": "standard-view-parity",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "before": {
+      "issue_views": [
+        {
+          "access": 1,
+          "archived_at": null,
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-3>",
+          "deleted_at": null,
+          "description": "Project view contract",
+          "display_filters": {
+            "layout": "list"
+          },
+          "display_properties": {
+            "priority": true
+          },
+          "filters": {
+            "priority": [
+              "high"
+            ]
+          },
+          "id": "<uuid-2>",
+          "is_locked": false,
+          "logo_props": {
+            "emoji": "view"
+          },
+          "name": "Project view",
+          "owned_by_id": "<uuid-3>",
+          "project_id": "<uuid-1>",
+          "query": {
+            "priority__in": [
+              "high"
+            ]
+          },
+          "rich_filters": {},
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "project_members": [
+        {
+          "comment": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "id": "<uuid-5>",
+          "is_active": true,
+          "member_id": "<uuid-3>",
+          "preferences": {
+            "navigation": {
+              "default_tab": "work_items",
+              "hide_in_more_menu": []
+            },
+            "pages": {
+              "block_display": true
+            }
+          },
+          "project_id": "<uuid-1>",
+          "role": 20,
+          "sort_order": 65535.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "projects": [
+        {
+          "archive_in": 0,
+          "archived_at": null,
+          "close_in": 0,
+          "cover_image": null,
+          "cover_image_asset_id": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "cycle_view": false,
+          "default_assignee_id": null,
+          "default_state_id": null,
+          "deleted_at": null,
+          "description": "",
+          "description_html": null,
+          "description_text": null,
+          "emoji": null,
+          "estimate_id": null,
+          "external_id": null,
+          "external_source": null,
+          "guest_view_all_features": false,
+          "icon_prop": null,
+          "id": "<uuid-1>",
+          "identifier": "VIEW",
+          "intake_view": false,
+          "is_issue_type_enabled": false,
+          "is_time_tracking_enabled": false,
+          "issue_views_view": false,
+          "logo_props": {},
+          "module_view": false,
+          "name": "View Project",
+          "network": 2,
+          "page_view": true,
+          "project_lead_id": null,
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "user_favorites": [],
+      "user_recent_visits": [],
+      "workspace_members": [
+        {
+          "company_role": null,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "default_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "deleted_at": null,
+          "explored_features": {},
+          "getting_started_checklist": {},
+          "id": "<uuid-6>",
+          "is_active": true,
+          "issue_props": {
+            "all_issues": true,
+            "assigned": true,
+            "created": true,
+            "subscribed": true
+          },
+          "member_id": "<uuid-3>",
+          "role": 20,
+          "tips": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "view_props": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            },
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            },
+            "filters": {
+              "assignees": null,
+              "created_by": null,
+              "labels": null,
+              "priority": null,
+              "start_date": null,
+              "state": null,
+              "state_group": null,
+              "subscriber": null,
+              "target_date": null
+            }
+          },
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "workspaces": [
+        {
+          "background_color": "#123456",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "logo": null,
+          "logo_asset_id": null,
+          "name": "Standard View Parity",
+          "organization_size": null,
+          "owner_id": "<uuid-3>",
+          "slug": "standard-view-parity",
+          "timezone": "UTC",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [
+    {
+      "kind": "celery-dispatch",
+      "kwargs": {
+        "entity_identifier": "<uuid-2>",
+        "entity_name": "view",
+        "project_id": "<uuid-1>",
+        "slug": "standard-view-parity",
+        "user_id": "<uuid-3>"
+      },
+      "task": "recent_visited_task"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/standard-view-parity/projects/<uuid-1>/views/<uuid-2>/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "access": 1,
+      "archived_at": null,
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-3>",
+      "deleted_at": null,
+      "description": "Project view contract",
+      "display_filters": {
+        "layout": "list"
+      },
+      "display_properties": {
+        "priority": true
+      },
+      "filters": {
+        "priority": [
+          "high"
+        ]
+      },
+      "id": "<uuid-2>",
+      "is_favorite": false,
+      "is_locked": false,
+      "logo_props": {
+        "emoji": "view"
+      },
+      "name": "Project view",
+      "owned_by": "<uuid-3>",
+      "project": "<uuid-1>",
+      "query": {
+        "priority__in": [
+          "high"
+        ]
+      },
+      "rich_filters": {},
+      "sort_order": 65535.0,
+      "updated_at": "<timestamp>",
+      "updated_by": null,
+      "workspace": "<uuid-4>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "project-retrieve",
+    "data": {}
+  }
+}

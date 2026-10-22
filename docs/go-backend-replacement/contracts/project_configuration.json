@@ -1,0 +1,564 @@
+{
+  "version": 1,
+  "family": "project_configuration",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "75 active source-recorded cases cover the eleven selected operations. Two estimate collection/detail HEAD fixtures are retained under historical retired-read evidence and excluded from this write-family replay. Nine explicit corrected-source oracles specify no partial writes on invalid estimate creation, correct point-parent/replacement scope, validation of four non-object write requests, and complete serializer-derived estimate-point OPTIONS metadata. Final acceptance remains tied to strict parity and shared batch proof.",
+  "operation_count": 11,
+  "source_files": [
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/api/serializers/issue.py",
+    "apps/api/plane/api/urls/label.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/views/issue.py",
+    "apps/api/plane/app/permissions/project.py",
+    "apps/api/plane/app/serializers/estimate.py",
+    "apps/api/plane/app/serializers/issue.py",
+    "apps/api/plane/app/urls/estimate.py",
+    "apps/api/plane/app/urls/issue.py",
+    "apps/api/plane/app/views/estimate/base.py",
+    "apps/api/plane/app/views/issue/label.py",
+    "apps/api/plane/bgtasks/deletion_task.py",
+    "apps/api/plane/bgtasks/issue_activities_task.py",
+    "apps/api/plane/bgtasks/logger_task.py",
+    "apps/api/plane/db/models/estimate.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/models/label.py",
+    "apps/api/plane/utils/cache.py"
+  ],
+  "operations": {
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_labels": {
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_labels",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/",
+      "source": "apps/api/plane/api/views/issue.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication, authorization, and write",
+          "observable": "Requires an API key and project entity permission, applies API throttling, validates the label serializer, creates a project label, records API-key usage and audit logging, and returns 201. Anonymous requests return 401; missing or invalid project access is denied before the write.",
+          "source": "apps/api/plane/api/views/issue.py; apps/api/plane/api/middleware/api_authentication.py"
+        },
+        {
+          "when": "authorized JSON array body",
+          "observable": "Serializer rejects with HTTP 400 non_field_errors before field-level validation; PATCH first resolves its scoped label. Only API-token usage and audit effects occur.",
+          "source": "apps/api/plane/api/views/issue.py"
+        },
+        {
+          "when": "label serializer fields and model defaults",
+          "observable": "DRF aggregates field errors into message arrays, validates string length, parent UUID/existence and float values, preserves nullable external fields and the empty color model default. PATCH resolves the scoped row before validation.",
+          "source": "apps/api/plane/api/serializers/issue.py; apps/api/plane/db/models/label.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_external_pair_conflict.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_post_v1_label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_name_too_long.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_name_missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_parent_missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_parent_malformed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_sort_order_invalid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_sort_order_null.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_nullable_external_fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_v1_label_model_defaults.json"
+      ],
+      "effects": ["plane.bgtasks.logger_task.process_logs:api-key"],
+      "sample_path": "/api/v1/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/labels/",
+      "status_note": "Source-recorded route behavior; OPTIONS is owned by the retired API label read route.",
+      "statuses": [201, 400, 401, 409]
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_labels_by_pk": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_labels_by_pk",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/{pk}/",
+      "source": "apps/api/plane/api/views/issue.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication, authorization, and delete",
+          "observable": "Requires an API key, project entity permission, and API throttle. Soft-deletes only the active label scoped to the workspace and project, records API-key usage and audit logging, and enqueues soft_delete_related_objects; returns 204. Anonymous requests return 401 and a missing scoped label returns 404.",
+          "source": "apps/api/plane/api/views/issue.py; apps/api/plane/bgtasks/deletion_task.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_v1_label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_delete_v1_label.json"
+      ],
+      "effects": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects:api-key",
+        "plane.bgtasks.logger_task.process_logs:api-key"
+      ],
+      "sample_path": "/api/v1/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/labels/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Source-recorded route behavior; protocol companions are owned by the retired API label read route.",
+      "statuses": [204, 401]
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_labels_by_pk": {
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_labels_by_pk",
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/labels/{pk}/",
+      "source": "apps/api/plane/api/views/issue.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication, authorization, and update",
+          "observable": "Requires an API key, project entity permission, and API throttle. Applies the partial label serializer to the active label scoped to workspace and project, records API-key usage and audit logging, and returns the serialized label. Anonymous requests return 401; an absent scoped label returns 404.",
+          "source": "apps/api/plane/api/views/issue.py; apps/api/plane/api/middleware/api_authentication.py"
+        },
+        {
+          "when": "authorized JSON array body",
+          "observable": "Serializer rejects with HTTP 400 non_field_errors before field-level validation; PATCH first resolves its scoped label. Only API-token usage and audit effects occur.",
+          "source": "apps/api/plane/api/views/issue.py"
+        },
+        {
+          "when": "label serializer fields and model defaults",
+          "observable": "DRF aggregates field errors into message arrays, validates string length, parent UUID/existence and float values, preserves nullable external fields and the empty color model default. PATCH resolves the scoped row before validation.",
+          "source": "apps/api/plane/api/serializers/issue.py; apps/api/plane/db/models/label.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_v1_label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_patch_v1_label.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_v1_label_array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_v1_label_color_too_long.json"
+      ],
+      "effects": ["plane.bgtasks.logger_task.process_logs:api-key"],
+      "sample_path": "/api/v1/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/labels/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Source-recorded route behavior; protocol companions are owned by the retired API label read route.",
+      "statuses": [200, 400, 401]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_bulk_create_labels": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_bulk_create_labels",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/bulk-create-labels/",
+      "source": "apps/api/plane/app/views/issue/label.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Session, timezone, role, and bulk create",
+          "observable": "The method decorator validates session and timezone before project-admin permission. It creates each supplied label using source ORM defaults and returns 201; generated colors are nondeterministic. Anonymous requests return 401 and non-admin members are denied.",
+          "source": "apps/api/plane/app/views/issue/label.py; apps/api/plane/app/permissions/project.py"
+        },
+        {
+          "when": "authenticated non-object request body",
+          "observable": "Pristine source 500; corrected source rejects the array with HTTP 400 before writes or durable effects.",
+          "source": "apps/api/plane/app/views/issue/label.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_bulk_labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_bulk_labels_empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_post_bulk_labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/options_bulk_labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_post_bulk_labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_options_bulk_labels.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_bulk_labels_non_object_payload.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/post_bulk_labels_non_object_payload.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/bulk-create-labels/",
+      "status_note": "Color values are normalized as generated values by the parity recorder.",
+      "statuses": [200, 201, 400, 401]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_estimates": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_estimates",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission, timezone, validation, and write order",
+          "observable": "Project entity permission runs before timezone validation. The source estimate/point workflow exposes its historical partial insert for invalid points; the corrected target validates points before inserting the estimate. Valid requests return the estimate and points. Anonymous requests return 401 and invalid timezone returns 400.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/app/serializers/estimate.py"
+        },
+        {
+          "when": "authenticated non-object request body",
+          "observable": "Pristine source 500; corrected source rejects the array with HTTP 400 before writes or durable effects.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate_invalid_point_persists_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_post_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_post_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/post_estimate_invalid_point_persists_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate_non_object_payload.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/post_estimate_non_object_payload.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/",
+      "status_note": "Intentional correction: invalid point data returns 400 without inserting an estimate; pristine and corrected-source fixtures are retained. OPTIONS/HEAD companions remain owned by the retired estimate read route.",
+      "statuses": [200, 400, 401]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Permission, timezone, and soft delete",
+          "observable": "Project entity permission precedes timezone validation. Deletes only the active estimate scoped to the project, records the acting user as updated_by, soft-deletes the row, and returns 204; anonymous and unauthorized users are rejected before lookup.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/db/models/estimate.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_delete_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_delete_estimate.json"
+      ],
+      "effects": ["plane.bgtasks.deletion_task.soft_delete_related_objects:django-session"],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Estimate detail protocol companions are owned by the retired estimate read route.",
+      "statuses": [204, 400, 401]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Permission, validation, and update",
+          "observable": "Project entity permission precedes timezone validation and estimate lookup. Empty estimate_points returns serializer validation error before target lookup; valid partial updates preserve source point replacement and response projection. Anonymous requests return 401.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/app/serializers/estimate.py"
+        },
+        {
+          "when": "authenticated non-object request body",
+          "observable": "Pristine source 500; corrected source rejects the array with HTTP 400 before writes or durable effects.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_estimate_empty_before_lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_patch_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_patch_estimate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_estimate_non_object_payload.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/patch_estimate_non_object_payload.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Estimate detail protocol companions are owned by the retired estimate read route.",
+      "statuses": [200, 400, 401]
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/estimate-points/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Timezone, role, validation, and create",
+          "observable": "Timezone validation precedes method-level project permission, and serializer validation precedes parent estimate lookup. Creation uses ORM name/type/last_used values from the parent only; point description follows model default. Anonymous requests return 401.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/app/serializers/estimate.py"
+        },
+        {
+          "when": "authenticated non-object request body",
+          "observable": "Pristine source 500; corrected source rejects the array with HTTP 400 before writes or durable effects.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        },
+        {
+          "when": "OPTIONS metadata",
+          "observable": "Pristine source 500; corrected source exposes full EstimatePointSerializer action metadata with HTTP 200.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate_point_missing_fields_before_lookup.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_post_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_post_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/options_estimate_points.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/options_estimate_points.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_options_estimate_points.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/post_estimate_point_non_object_payload.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/post_estimate_point_non_object_payload.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/options_estimate_points_valid_metadata.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/options_estimate_points_valid_metadata.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/00000000-0000-4000-8000-000000099999/estimate-points/",
+      "status_note": "",
+      "statuses": [200, 400, 401, 500]
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points_by_estimate_point_id": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points_by_estimate_point_id",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/estimate-points/{estimate_point_id}/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["OPTIONS"],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Timezone, role, lookup, and delete",
+          "observable": "Timezone validation precedes method-level permission. Pristine Django updates referencing issues and emits activity before parent-scoped lookup, then returns 404 for a wrong parent. The intentional correction resolves the scoped point first: a missing or wrong-parent point returns 404 with no issue update or activity. A matching point retains successful reassignment, activity, soft deletion, reordering, and actor attribution.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/db/models/estimate.py"
+        },
+        {
+          "when": "Replacement point tenant scope",
+          "observable": "Pristine Django accepts a replacement point from another project/workspace and writes that foreign key while publishing activity. The target intentionally rejects a missing, deleted, or foreign-project/workspace replacement before writes and effects. A valid in-scope replacement retains successful reassignment and both activity and deletion tasks.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_estimate_point_wrong_parent_after_issue_update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_delete_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_delete_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/options_estimate_point_detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_options_estimate_point_detail.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/delete_estimate_point_wrong_parent_after_issue_update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_estimate_point_same_estimate_replacement.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/delete_estimate_point_foreign_replacement_before_issue_update.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration_corrected/delete_estimate_point_foreign_replacement_before_issue_update.json"
+      ],
+      "effects": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects:django-session",
+        "plane.bgtasks.issue_activities_task.issue_activity:django-session"
+      ],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/00000000-0000-4000-8000-000000099999/estimate-points/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Intentional corrections: resolve the original point within its parent and validate replacement project/workspace scope before issue writes and activity. Pristine source records remain; corrected-source records explicitly define rejected mutations with no partial writes or effects.",
+      "statuses": [200, 400, 401, 404]
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points_by_estimate_point_id": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points_by_estimate_point_id",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/estimate-points/{estimate_point_id}/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Timezone, role, lookup, and update",
+          "observable": "Timezone validation precedes method-level project permission. The route converter treats estimate_point_id as a string; malformed IDs are not rejected as UUID conversion. Scoped lookup and serializer update follow source order.",
+          "source": "apps/api/plane/app/views/estimate/base.py; apps/api/plane/app/serializers/estimate.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/patch_estimate_point_string_id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_patch_estimate_point.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_patch_estimate_point.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/estimates/00000000-0000-4000-8000-000000099999/estimate-points/00000000-0000-4000-8000-000000099999/",
+      "status_note": "Estimate point detail OPTIONS is owned by DELETE; PATCH has no protocol companion.",
+      "statuses": [200, 400, 401]
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_project_estimates": {
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_project_estimates",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/project-estimates/",
+      "source": "apps/api/plane/app/views/estimate/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Timezone, role, and projection",
+          "observable": "Timezone validation precedes project permission. Returns project estimates and their points using source serializer projection; anonymous requests return 401 and invalid timezone returns 400.",
+          "source": "apps/api/plane/app/views/estimate/base.py"
+        },
+        {
+          "when": "Live project and active membership under a soft-deleted workspace",
+          "observable": "The source filters Project deletion but does not add a deletion filter to the joined workspace. Return the assigned estimate points with HTTP 200.",
+          "source": "apps/api/plane/app/views/estimate/base.py::ProjectEstimatePointEndpoint.get"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/get_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/get_project_estimates_unassigned.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/unauthorized_get_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_get_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/options_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/head_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/invalid_timezone_options_project_estimates.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_configuration/get_project_estimates_soft_deleted_workspace.json"
+      ],
+      "effects": [],
+      "sample_path": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/project-estimates/",
+      "status_note": "",
+      "statuses": [200, 400, 401]
+    }
+  },
+  "effect_contracts": {
+    "plane.bgtasks.logger_task.process_logs:api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    },
+    "plane.bgtasks.deletion_task.soft_delete_related_objects:api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    },
+    "plane.bgtasks.deletion_task.soft_delete_related_objects:django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.issue_activities_task.issue_activity:django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.issue_activities_task.issue_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    }
+  },
+  "middleware_order": {
+    "django-session": [
+      "request-size",
+      "authentication",
+      "permission-classes",
+      "timezone",
+      "authorization",
+      "dispatch",
+      "audit"
+    ],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/project_configuration_middleware_test.go::TestProjectConfigurationMiddlewareRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/project_configuration_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/project-estimates/",
+      "api-key": "/api/v1/workspaces/project-configuration-contract/projects/00000000-0000-4000-8000-000000008003/labels/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-002-object-request-validation.md",
+        "cases": [
+          "delete_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id:canonical:PATCH",
+          "patch_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id:canonical:PATCH",
+          "post_api_workspaces_by_slug_projects_by_project_id_bulk_create_labels:canonical:POST",
+          "post_api_workspaces_by_slug_projects_by_project_id_estimates:canonical:POST",
+          "post_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points:canonical:POST"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "69302c30f041868bdba0c9a9b5ce1a5e07c5a4b693586882b7a243041a41d5c7"
+        }
+      },
+      {
+        "decision": "docs/go-backend-replacement/decisions/ADMIN-003-estimate-point-options.md",
+        "cases": [
+          "post_api_workspaces_by_slug_projects_by_project_id_estimates_by_estimate_id_estimate_points:canonical:OPTIONS"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2",
+          "headers": {
+            "vary": "cookie, origin"
+          }
+        },
+        "target": {
+          "status": 200,
+          "body_sha256": "79a7a0bf8b66b0d34b39da6a6cd2d12489f317e31dda66ec948b49177782f6b5",
+          "headers": {
+            "vary": "accept-encoding, cookie, origin"
+          }
+        }
+      }
+    ]
+  },
+  "source_runtime_evidence": {
+    "runner": "apps/go-api/internal/parity/project_configuration_integration_test.go",
+    "recorder": "apps/api/plane/tests/parity/test_project_configuration_recorder.py",
+    "counter": "apps/api/plane/tests/parity/project_configuration_counter.py",
+    "fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/project_configuration",
+    "source_database": "plane_project_configuration",
+    "target_database": "test_plane_project_configuration",
+    "redis_database": 10,
+    "broker_vhost": "/project_configuration",
+    "source_lock": "/tmp/plane-migration-batch34-owner/project-configuration/service.lock",
+    "runtime_effect_proof": "apps/go-api/internal/parity/project_configuration_integration_test.go",
+    "fixture_count": 75,
+    "corrected_fixture_count": 9,
+    "additional_record_log": "docs/go-backend-replacement/evidence/project-configuration/source-20261022T004957Z.log",
+    "additional_corrected_logs": [
+      "docs/go-backend-replacement/evidence/project-configuration/source-20261022T005204Z.log",
+      "docs/go-backend-replacement/evidence/project-configuration/source-20261022T005232Z.log",
+      "docs/go-backend-replacement/evidence/project-configuration/source-20261022T015849Z-86588.log"
+    ],
+    "label_array_log": "docs/go-backend-replacement/evidence/project-configuration/source-20261022T011027Z-54476.log",
+    "label_array_counters": "docs/go-backend-replacement/evidence/project-configuration/source-counts-20261022T011027Z-54476.json",
+    "label_serializer_logs": [
+      "docs/go-backend-replacement/evidence/project-configuration/source-20261022T012117Z-65242.log",
+      "docs/go-backend-replacement/evidence/project-configuration/source-20261022T012332Z-66550.log"
+    ]
+  },
+  "permission_classes_before_timezone": true,
+  "middleware_notes": "BulkEstimatePointEndpoint checks ProjectEntityPermission before timezone initialization. Estimate-point, bulk-label and project-estimate methods apply their role permission after timezone initialization. Session requests do not emit API-key audit events; API-key requests are audited after dispatch or rejection."
+}

@@ -1,0 +1,311 @@
+openapi: 3.1.1
+info:
+    title: Account Authentication
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Account Authentication
+paths:
+    /auth/change-password/:
+        post:
+            tags:
+                - account_authentication
+            summary: change_password account_authentication
+            operationId: post_auth_change_password
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'unauthenticated: Unauthorized response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /auth/email-check/:
+        post:
+            tags:
+                - account_authentication
+            summary: email_check account_authentication
+            operationId: post_auth_email_check
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+    /auth/forgot-password/:
+        post:
+            tags:
+                - account_authentication
+            summary: forgot_password account_authentication
+            operationId: post_auth_forgot_password
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+    /auth/magic-generate/:
+        post:
+            tags:
+                - account_authentication
+            summary: magic_generate account_authentication
+            operationId: post_auth_magic_generate
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+    /auth/set-password/:
+        post:
+            tags:
+                - account_authentication
+            summary: set_password account_authentication
+            operationId: post_auth_set_password
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'unauthenticated: Unauthorized response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/email-check/:
+        post:
+            tags:
+                - account_authentication
+            summary: email_check_space account_authentication
+            operationId: post_auth_spaces_email_check
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/forgot-password/:
+        post:
+            tags:
+                - account_authentication
+            summary: forgot_password_space account_authentication
+            operationId: post_auth_spaces_forgot_password
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+    /auth/spaces/magic-generate/:
+        post:
+            tags:
+                - account_authentication
+            summary: magic_generate_space account_authentication
+            operationId: post_auth_spaces_magic_generate
+            parameters:
+                - $ref: '#/components/parameters/HeaderContentType'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAuthChangePasswordRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PostAuthChangePasswordStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+        x-loom-cors:
+            runtime: true
+components:
+    parameters:
+        HeaderContentType:
+            name: Content-Type
+            in: header
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+        RetryAfterHeader:
+            schema:
+                type: integer
+                format: int64
+    requestBodies:
+        PostAuthChangePasswordRequestBody:
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                application/x-www-form-urlencoded:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                multipart/form-data:
+                    schema:
+                        type: object
+                        additionalProperties: true
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        PostAuthChangePasswordStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema: {}
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            headers:
+                Retry-After:
+                    $ref: '#/components/headers/RetryAfterHeader'
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane application session cookie authentication.
+            name: session-id
+            in: cookie
+tags:
+    - name: account_authentication
+      description: Handles account email discovery, password management, and authentication-code requests.

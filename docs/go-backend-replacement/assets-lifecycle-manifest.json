@@ -1,0 +1,4359 @@
+{
+  "version": 1,
+  "family": "assets_lifecycle",
+  "characterization_status": "Frozen initial source manifest for the 81-operation assets_lifecycle family (330 fixtures as of initial freeze). The current 335-fixture corpus and exact required fixture references are maintained in contracts/assets_lifecycle.json. Go implementation and target replay remain in progress; 81 operations remain Django only.",
+  "source_revision": "a1fe07a3b91b28a9572668d0161a171d597ad598",
+  "operation_count": 81,
+  "selected_inventory_state": "Django only for all 81 selected method/path operations; route inventory is not modified by this artifact.",
+  "source_files": [
+    "apps/api/plane/api/urls/work_item.py",
+    "apps/api/plane/api/views/asset.py",
+    "apps/api/plane/api/views/issue.py",
+    "apps/api/plane/app/urls/asset.py",
+    "apps/api/plane/app/urls/issue.py",
+    "apps/api/plane/app/views/asset/base.py",
+    "apps/api/plane/app/views/asset/v2.py",
+    "apps/api/plane/app/views/issue/attachment.py",
+    "apps/api/plane/space/views/asset.py"
+  ],
+  "source_characterizations": [
+    "/tmp/plane-assets-family/v2-characterization.md",
+    "/tmp/plane-assets-family/legacy-api-public-characterization.md",
+    "/tmp/plane-assets-family/attachments-characterization.md"
+  ],
+  "shared_domain": "FileAsset lifecycle and storage behavior across existing assets, workspaces, users, projects, published-space assets and work-item attachments. Preserve the existing owning domains; do not add a cross-domain batch service.",
+  "durable_effects": [
+    "plane.bgtasks.issue_activities_task.issue_activity for attachment activity",
+    "plane.bgtasks.storage_metadata_task.get_asset_object_metadata for S3 HEAD metadata",
+    "plane.bgtasks.deletion_task.soft_delete_related_objects on legacy attachment model delete",
+    "no worker executes within request parity"
+  ],
+  "operations": {
+    "get_api_assets_v2_static_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_static_by_asset_id",
+      "path": "/api/assets/v2/static/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.AllowAny"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {},
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.StaticFileAssetEndpoint",
+      "auth_profile": "public-allow-any",
+      "authentication": [
+        "anonymous",
+        "session"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Public; soft-deleted rows are hidden by default manager. Missing or not-yet-uploaded => 404; only avatar/cover/workspace-logo/project-cover types allowed, else 400. Redirects to signed S3 URL; script-capable MIME types use attachment disposition, others inline.",
+          "source": "apps/api/plane/app/views/asset/v2.py::StaticFileAssetEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_static_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "400",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/static/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_user_assets": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Manifest path has no asset_id, but handler requires it: signature mismatch, generic 500 after auth.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_user_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_user_assets": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same missing-asset_id mismatch; generic 500 after auth.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_user_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_user_assets": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_user_assets",
+      "path": "/api/assets/v2/user-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid collection create; body/validation/effects below. Returns 200 JSON {upload_data, asset_id, asset_url}.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_user_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_user_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid owner-scoped logical delete; 204. Clears user avatar/cover reference and invalidates user /me/ and /me/settings/ caches. No S3 delete call.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_user_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_user_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid owner-scoped upload finalization; 204. Marks uploaded without checking S3, optionally queues metadata task, links avatar/cover and replaces attributes when supplied.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_user_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_user_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_user_assets_by_asset_id",
+      "path": "/api/assets/v2/user-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.UserAssetsV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Handler does not accept the extra asset_id keyword: signature mismatch, generic 500 after auth.",
+          "source": "apps/api/plane/app/views/asset/v2.py::UserAssetsV2Endpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_user_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/user-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Handler requires asset_id, absent on collection route: signature mismatch, generic 500 after workspace permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same missing-asset_id mismatch; generic 500 after permission. OpenAPI declares `search` for this GET, but source handler inspection found no consumption; ignored/accepted runtime behavior remains to be recorded.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug",
+      "required_fixtures": [],
+      "documented_query_parameters": [
+        "search"
+      ],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_workspaces_by_slug": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same missing-asset_id mismatch; generic 500 after permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_workspaces_by_slug",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug",
+      "path": "/api/assets/v2/workspaces/{slug}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid upload creation; role/entity/file checks, signed POST and 200 JSON.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_check_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_check_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/check/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.AssetCheckEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Active workspace member; returns {exists: bool} for matching workspace/id and deleted_at IS NULL. Does not test is_deleted or is_uploaded.",
+          "source": "apps/api/plane/app/views/asset/v2.py::AssetCheckEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_check_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/check/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_download_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_download_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/download/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceAssetDownloadEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Active workspace member; uploaded matching asset => 302 to attachment signed URL; missing/unuploaded => 404. Source has no project-membership check for project-bound assets.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceAssetDownloadEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_download_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/download/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/duplicate-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.DuplicateAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Active workspace member; per-asset throttle; validates entity type and optional destination project belongs to workspace; source must be uploaded and in same workspace. Copies object in S3, creates uploaded DB row, returns 200 {asset_id}.",
+          "source": "apps/api/plane/app/views/asset/v2.py::DuplicateAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "synchronous S3 CopyObject",
+        "destination FileAsset insert"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/duplicate-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Handler requires pk, absent on collection route: signature mismatch, generic 500 after project permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same missing-pk mismatch; generic 500 after permission. OpenAPI declares `search` for this GET, but source handler inspection found no consumption; ignored/accepted runtime behavior remains to be recorded.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [
+        "search"
+      ],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same missing-pk mismatch; generic 500 after permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid upload creation. No check that project_id is in slug workspace beyond request membership policy; FK/payload failures are handled by BaseAPIView.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/download/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetDownloadEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Active project member (role admin/member/guest) or active workspace admin who also belongs to that project; uploaded scoped asset => 302, otherwise 404.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetDownloadEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/download/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Mounted to V2 delete, but URL has no pk while handler requires it: delete(self, request, slug, project_id, issue_id, pk) (attachment.py:149-150). Django dispatch should fail before handler logic; app BaseAPIView catches generic exceptions and returns its generic 500 response. Reproduce if this method is retained or retired.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "149",
+        "150",
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "V2 list. Active project Admin/Member/Guest through decorator. Returns only rows scoped by issue, project, workspace slug, entity_type=ISSUE_ATTACHMENT, is_uploaded=True; full app IssueAttachmentSerializer; 200 array. Default model order is -created_at. OpenAPI declares `search` for this GET, but source handler inspection found no consumption; ignored/accepted runtime behavior remains to be recorded.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [
+        "search"
+      ],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "V2 upload initiation. Active project Admin/Member/Guest. JSON/form metadata (name, type, optional size); sanitizes name and substitutes unnamed; type must be in configured MIME allowlist or returns 400 {error:\"Invalid file type.\",status:false}. size is parsed with int, defaulting to configured size limit; it clamps only the upper bound (min(size, FILE_SIZE_LIMIT)). Inserts pending FileAsset with workspace, issue, project, type/name/size, creator, attachment entity type; creates signed S3 POST with key {workspaceUUID}/{randomhex}-{sanitizedName} and content-type / content-length policy. 200 {upload_data,asset_id,attachment,asset_url}. It does not inspect issue/project consistency before insert beyond permission check/DB FKs.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.post; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200",
+        "400"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "V2 soft delete. Decorator permits project admin or the FileAsset creator, but creator branch first requires active workspace membership. Gets FileAsset scoped to UUID, slug, project and issue; sets is_deleted=true, deleted_at=now, saves; enqueues attachment-deleted activity; 204. Does not delete the S3 object and does not enqueue metadata retrieval.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "V2 download. Active project Admin/Member/Guest. Scoped by UUID, slug, project, issue. If is_uploaded=false, 400 {error:\"The asset is not uploaded.\",status:false}. Otherwise creates signed GET URL with Content-Disposition: attachment and attributes.name, responds with 302 redirect. No body serializer response.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "400"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentV2Endpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "V2 upload confirmation. Active project Admin/Member/Guest. Gets scoped FileAsset. If not uploaded, enqueues created activity and sets is_uploaded=true; it leaves created_by as the initiator. If metadata is falsey, enqueues metadata task on every call until metadata is populated. Saves and returns 204 empty. Request body is ignored; the advertised upload-confirmation boolean is not read/validated.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentV2Endpoint.patch; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{entity_id}/bulk/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectBulkAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Project permission; JSON asset_ids required/nonempty or 400. Only caller-created assets in workspace that are unassociated or already in project are selected; first row chooses update branch; returns 404 if no row and otherwise 204. Per-entity effects below.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectBulkAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "400",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/00000000-0000-4000-8000-000000008805/bulk/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid project-scoped logical delete; 204. No S3 removal/task.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/00000000-0000-4000-8000-000000008804/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid project-scoped read; uploaded => signed attachment redirect (302), not uploaded => 404.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/00000000-0000-4000-8000-000000008804/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Valid project-scoped upload finalization; 204. Marks uploaded without S3 validation; if metadata empty, queues HEAD metadata task; optional attributes replacement.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/00000000-0000-4000-8000-000000008804/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk": {
+      "domain": "projects",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "path": "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.ProjectAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Handler does not accept extra pk: signature mismatch, generic 500 after project permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::ProjectAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/00000000-0000-4000-8000-000000008804/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_restore_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_restore_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/restore/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.AssetRestoreEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Active workspace member; all_objects scoped by workspace; clears is_deleted and deleted_at; leaves is_uploaded and other associations unchanged; 204. No project-level authorization check.",
+          "source": "apps/api/plane/app/views/asset/v2.py::AssetRestoreEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_restore_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; operation-specific S3 signing/copy, cache or metadata task as documented"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/restore/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Workspace-scoped logical delete; for project-bound assets, requires active project membership in addition to workspace permission; 204. Clears workspace logo/project cover relation where applicable. No S3 removal.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.delete; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "get_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Workspace-scoped; project-bound assets additionally require active project membership. Unuploaded => 404; otherwise 302 to attachment signed URL.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.get; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "patch_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Workspace-scoped; project-bound assets additionally require active project membership. Marks uploaded, queues metadata task if empty, applies logo/cover relation, optional attributes replacement; 204.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.patch; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "post_api_assets_v2_workspaces_by_slug_by_asset_id": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "path": "/api/assets/v2/workspaces/{slug}/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.v2.WorkspaceFileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Handler does not accept extra asset_id: signature mismatch, generic 500 after permission.",
+          "source": "apps/api/plane/app/views/asset/v2.py::WorkspaceFileAssetEndpoint.post; characterization: /tmp/plane-assets-family/v2-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_assets_v2_workspaces_by_slug_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "workspace logo/project cover relation and cache invalidation where applicable",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/assets/v2/workspaces/assets-diff/00000000-0000-4000-8000-000000008803/",
+      "source_note": "v2-characterization.md"
+    },
+    "delete_api_public_assets_v2_anchor_by_anchor": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Signature requires pk, but path has no pk; source-broken 500 (authenticated).",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_public_assets_v2_anchor_by_anchor",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_public_assets_v2_anchor_by_anchor": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "permission_classes": [
+        "rest_framework.permissions.AllowAny"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {},
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "public-allow-any",
+      "authentication": [
+        "anonymous",
+        "session"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "EntityAssetEndpoint.get(request,anchor,pk) but collection path has no pk; source-broken call returns generic 500. Method permission is AllowAny. OpenAPI declares `search` for this GET, but source handler inspection found no consumption; ignored/accepted runtime behavior remains to be recorded.",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_public_assets_v2_anchor_by_anchor",
+      "required_fixtures": [],
+      "documented_query_parameters": [
+        "search"
+      ],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "patch_api_public_assets_v2_anchor_by_anchor": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Signature requires pk, but path has no pk; source-broken 500 (authenticated).",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.patch; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_public_assets_v2_anchor_by_anchor",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_public_assets_v2_anchor_by_anchor": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor",
+      "path": "/api/public/assets/v2/anchor/{anchor}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Find DeployBoard by anchor, else 404 {\"error\":\"Project is not published\"}. Parse name/type/size/entity_type/entity_identifier; size parse errors 400, clamp to [1,FILE_SIZE_LIMIT], entity type must be any FileAsset.EntityTypeContext value and MIME one of jpeg/png/webp/jpg/gif; create workspace/project-scoped FileAsset with asset key {workspace_id}/{uuid}-{name}, created_by request user, entity_identifier copied into comment_id; return presigned S3 form policy/id/url, HTTP 200. Requires authentication although path is public.",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_public_assets_v2_anchor_by_anchor",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200",
+        "400",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_restore_by_pk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_restore_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/restore/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.AssetRestoreEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Find project board; lookup via FileAsset.all_objects (includes deleted rows), scope by id/workspace/project, clear deleted flag and timestamp; 204.",
+          "source": "apps/api/plane/space/views/asset.py::AssetRestoreEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_public_assets_v2_anchor_by_anchor_restore_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/restore/00000000-0000-4000-8000-000000008804/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_by_entity_id_bulk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_by_entity_id_bulk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{entity_id}/bulk/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityBulkAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Find project board; requires nonempty asset_ids else 400; fetch subset scoped to board workspace/project; no matching row -> 404. If first matching row entity_type is COMMENT_DESCRIPTION, update comment_id=entity_id for all matched rows. For other entity types it performs no update and still returns 204. It does not validate all requested IDs were found, uploaded state, or every asset's type.",
+          "source": "apps/api/plane/space/views/asset.py::EntityBulkAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_public_assets_v2_anchor_by_anchor_by_entity_id_bulk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "400",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/00000000-0000-4000-8000-000000008805/bulk/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Find board constrained to entity_name=\"project\", asset scoped by id+workspace+project; soft-delete and timestamp; 204.",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/00000000-0000-4000-8000-000000008804/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.AllowAny"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {},
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "public-allow-any",
+      "authentication": [
+        "anonymous",
+        "session"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "AllowAny. Requires DeployBoard by anchor, then FileAsset matching board workspace/project/id and entity type ISSUE_DESCRIPTION or COMMENT_DESCRIPTION; uploaded required; else 404. Returns 302 redirect to signed S3 URL; script-capable MIME gets attachment disposition, others inline. Does not check board is_published field; presence of anchor/DeployBoard is the effective published access condition in this code.",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/00000000-0000-4000-8000-000000008804/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "patch_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Find board or 404; asset lookup scoped by id+workspace+project; set uploaded, queue metadata task if absent, optionally replace attributes; 204. Does not explicitly require not deleted or check asset entity type.",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.patch; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/00000000-0000-4000-8000-000000008804/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_public_assets_v2_anchor_by_anchor_by_pk": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "path": "/api/public/assets/v2/anchor/{anchor}/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.space.views.asset.EntityAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Signature accepts only anchor, so path’s pk causes 500 (authenticated).",
+          "source": "apps/api/plane/space/views/asset.py::EntityAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_public_assets_v2_anchor_by_anchor_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/public/assets/v2/anchor/assets-anchor/00000000-0000-4000-8000-000000008804/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_users_file_assets": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: no asset_key route kwarg; 500",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_users_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_users_file_assets": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: URL has no asset_key argument; uncaught invocation TypeError becomes generic 500",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_users_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_users_file_assets": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_users_file_assets",
+      "path": "/api/users/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works for valid serializer input; no owner assignment in handler beyond serializer/BaseSerializer behavior",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_users_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_users_file_assets_by_asset_key": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works; no deleted_at timestamp set",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_users_file_assets_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_users_file_assets_by_asset_key": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works; key lookup scoped to created_by",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_users_file_assets_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_users_file_assets_by_asset_key": {
+      "domain": "users",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_users_file_assets_by_asset_key",
+      "path": "/api/users/file-assets/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.UserAssetsEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: URL contributes an unexpected asset_key kwarg; 500",
+          "source": "apps/api/plane/app/views/asset/base.py::UserAssetsEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_users_file_assets_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/users/file-assets/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_v1_assets_user_assets": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_v1_assets_user_assets",
+      "path": "/api/v1/assets/user-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "UserAssetEndpoint.post; takes name/type/size/entity_type, sanitizes name (fallback unnamed), caps reported size at FILE_SIZE_LIMIT, permits USER_AVATAR/USER_COVER and MIME jpeg/png/webp/jpg/gif; creates user-owned FileAsset and returns {upload_data,asset_id,asset_url} HTTP 200. S3 presigned POST uses request credentials (S3Storage(request=request)).",
+          "source": "apps/api/plane/api/views/asset.py::UserAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_v1_assets_user_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_v1_assets_user_assets_server": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_v1_assets_user_assets_server",
+      "path": "/api/v1/assets/user-assets/server/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserServerAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same input/row/response shape as user upload. The unsupported is_server argument was removed in the deliberate storage repair; signing uses the configured public endpoint and the same configured credentials.",
+          "source": "apps/api/plane/api/views/asset.py::UserServerAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_v1_assets_user_assets_server",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/server/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_v1_assets_user_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_assets_user_assets_by_asset_id",
+      "path": "/api/v1/assets/user-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "owner-scoped lookup, soft delete + deleted_at=now; clears User.avatar_asset_id or cover_image_asset_id according to stored entity_type; 204.",
+          "source": "apps/api/plane/api/views/asset.py::UserAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_v1_assets_user_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "patch_api_v1_assets_user_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_assets_user_assets_by_asset_id",
+      "path": "/api/v1/assets/user-assets/{asset_id}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "owner-scoped row lookup; sets is_uploaded=True, schedules get_asset_object_metadata if storage_metadata empty, updates attributes from request or retains existing; 204. It does not validate entity_type against stored value or use AssetUpdateSerializer at runtime.",
+          "source": "apps/api/plane/api/views/asset.py::UserAssetEndpoint.patch; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_v1_assets_user_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_v1_assets_user_assets_by_asset_id_server": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_assets_user_assets_by_asset_id_server",
+      "path": "/api/v1/assets/user-assets/{asset_id}/server/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserServerAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same owner-scoped soft-delete and avatar/cover unlink as user DELETE.",
+          "source": "apps/api/plane/api/views/asset.py::UserServerAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_v1_assets_user_assets_by_asset_id_server",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/00000000-0000-4000-8000-000000008803/server/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "patch_api_v1_assets_user_assets_by_asset_id_server": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_assets_user_assets_by_asset_id_server",
+      "path": "/api/v1/assets/user-assets/{asset_id}/server/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.UserServerAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Same owner-scoped uploaded/metadata/attribute mutation as user PATCH.",
+          "source": "apps/api/plane/api/views/asset.py::UserServerAssetEndpoint.patch; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_v1_assets_user_assets_by_asset_id_server",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "user avatar/cover relation and profile cache invalidation where handler attaches/replaces/deletes",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/assets/user-assets/00000000-0000-4000-8000-000000008803/server/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_v1_workspaces_by_slug_assets": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_assets",
+      "path": "/api/v1/workspaces/{slug}/assets/",
+      "permission_classes": [
+        "plane.app.permissions.workspace.WorkspaceUserPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.GenericAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "GenericAssetEndpoint.post; active workspace member required. Sanitizes name, requires name and size, clamps size to max only, requires type in settings.ATTACHMENT_MIME_TYPES; optional project_id/external id/source; rejects duplicate nondeleted (workspace,external_source,external_id) with 409; creates workspace-associated FileAsset with entity_type ISSUE_ATTACHMENT; returns presigned POST, asset id/url HTTP 200. Uses server S3 credentials.",
+          "source": "apps/api/plane/api/views/asset.py::GenericAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_v1_workspaces_by_slug_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200",
+        "409"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "presigned S3 POST on create",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_v1_workspaces_by_slug_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "path": "/api/v1/workspaces/{slug}/assets/{asset_id}/",
+      "permission_classes": [
+        "plane.app.permissions.workspace.WorkspaceUserPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.GenericAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "active workspace member required; requires asset in slug workspace and is_deleted=False, uploaded else 400; returns {asset_id, asset_url: signed URL, asset_name, asset_type} HTTP 200, signs with configured S3 credentials and inline disposition except script-capable MIME types, which force attachment. Workspace/asset missing map to 404; unexpected exception logs and returns generic 500.",
+          "source": "apps/api/plane/api/views/asset.py::GenericAssetEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200",
+        "400",
+        "404",
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "presigned S3 POST on create",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "patch_api_v1_workspaces_by_slug_assets_by_asset_id": {
+      "domain": "assets",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "path": "/api/v1/workspaces/{slug}/assets/{asset_id}/",
+      "permission_classes": [
+        "plane.app.permissions.workspace.WorkspaceUserPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.asset.GenericAssetEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "active workspace member required; scopes by workspace + id + nondeleted; is_uploaded takes raw request value/default existing, metadata task if empty, updates flag only, 204. Missing asset returns {error:\"Asset not found\"} 404.",
+          "source": "apps/api/plane/api/views/asset.py::GenericAssetEndpoint.patch; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_v1_workspaces_by_slug_assets_by_asset_id",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "presigned S3 POST on create",
+        "storage metadata task on applicable PATCH"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/assets/00000000-0000-4000-8000-000000008803/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentListCreateAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "API-key alias (deprecated “issues” URL) for IssueAttachmentListCreateAPIEndpoint.get. Despite API-key authentication, it has no explicit user_has_issue_permission call. Returns uploaded attachment-entity rows scoped to issue, project and slug as full API serializer; 200 array. Query contract: no supported query parameters are read (filters, ordering, pagination, field selection and expansion are not implemented); projection is the full API IssueAttachmentSerializer; model default order is descending created_at; no pagination is applied. This is source-only and the exact successful response remains unresolved until runtime recording.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentListCreateAPIEndpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/",
+      "source_note": "attachments-characterization.md",
+      "projection": "Full API IssueAttachmentSerializer row (model fields; read-only id/workspace/project/issue/update audit fields).",
+      "ordering": "FileAsset model default -created_at; handler specifies no order_by.",
+      "pagination": "None in handler; returns serialized queryset as a JSON array.",
+      "filters": [
+        "issue_id from path",
+        "project_id from path",
+        "workspace slug",
+        "entity_type=ISSUE_ATTACHMENT",
+        "is_uploaded=True"
+      ]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentListCreateAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "API-key alias for presigned upload initiation. Requires an existing issue scoped by slug+project. Permission predicate allows issue creator or any active project membership at Admin/Member/Guest roles. Body is documented as JSON {name,size,type?,external_id?,external_source?}. Missing/falsy name or size → 400 {error:\"Invalid request.\",status:false}; absent/disallowed type → 400 {error:\"Invalid file type.\",status:false}. Clamps upper size to FILE_SIZE_LIMIT, checks duplicate external pair only when both external values are truthy, scoped to issue/project/workspace/entity; duplicate → 409 with existing asset ID. Creates pending FileAsset, generates signed POST, returns 200 object. Unlike app V2, it does not int()-convert size, and it does not invoke IssueAttachmentUploadSerializer.is_valid().",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentListCreateAPIEndpoint.post; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200",
+        "400",
+        "409"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "API-key alias for detail delete. Loads issue scoped by slug/project, then allows issue creator or active project Admin/Member/Guest. Attachment lookup filters UUID, slug, project but omits issue_id; a UUID from another issue in the same project can be deleted through this path. Soft-deletes (is_deleted, deleted_at), emits deleted activity, queues metadata task when storage_metadata is falsey, saves again; 204. Despite OpenAPI description saying “permanently remove,” it does not remove the storage object.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "API-key alias for detail GET. Requires active project membership (any role; user_has_issue_permission with allowed_roles=None); does not verify issue path UUID exists. Attachment lookup filters UUID, slug and project, but omits issue_id. Not uploaded → 400 error/status object; else signed S3 GET URL with attachment disposition and filename, 302.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302",
+        "400"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "API-key alias for detail PATCH upload confirmation. Loads issue by slug/project/path UUID; issue creator or active project Admin/Member/Guest can confirm. Attachment query filters UUID, slug, project but omits issue_id. If pending, emits created activity, sets is_uploaded=true, and reassigns created_by to the confirming user. If metadata falsey, queues metadata task. Saves and returns 204. Request body, including advertised is_uploaded, is ignored.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.patch; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentListCreateAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "New “work-items” API-key alias for operation #7; same handler/query/response/authorization gap. Query contract: no supported query parameters are read (filters, ordering, pagination, field selection and expansion are not implemented); projection is the full API IssueAttachmentSerializer; model default order is descending created_at; no pagination is applied. This is source-only and the exact successful response remains unresolved until runtime recording.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentListCreateAPIEndpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/work-items/00000000-0000-4000-8000-000000008802/attachments/",
+      "source_note": "attachments-characterization.md",
+      "projection": "Full API IssueAttachmentSerializer row (model fields; read-only id/workspace/project/issue/update audit fields).",
+      "ordering": "FileAsset model default -created_at; handler specifies no order_by.",
+      "pagination": "None in handler; returns serialized queryset as a JSON array.",
+      "filters": [
+        "issue_id from path",
+        "project_id from path",
+        "workspace slug",
+        "entity_type=ISSUE_ATTACHMENT",
+        "is_uploaded=True"
+      ]
+    },
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentListCreateAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "New “work-items” API-key alias for operation #8; same metadata validation, duplicate check, pending row and presigned POST behavior.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentListCreateAPIEndpoint.post; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/work-items/00000000-0000-4000-8000-000000008802/attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "New “work-items” API-key alias for operation #9; same authorization, issue-scope omission, soft-delete/audit/metadata effects.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/work-items/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "New “work-items” API-key alias for operation #10; same project-membership check, issue-scope omission, upload-state response, and signed 302.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "302"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/work-items/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "patch",
+      "method": "PATCH",
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "view": "plane.api.views.issue.IssueAttachmentDetailAPIEndpoint",
+      "auth_profile": "api-key",
+      "authentication": [
+        "api-key",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "New “work-items” API-key alias for operation #11; same confirmation behavior, including created_by overwrite and metadata task.",
+          "source": "apps/api/plane/api/views/issue.py::IssueAttachmentDetailAPIEndpoint.patch; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/v1/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/work-items/00000000-0000-4000-8000-000000008802/attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    },
+    "delete_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works; lookup is by key only after membership auth",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/file-assets/00000000-0000-4000-8000-000000008806/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works; membership permission scopes workspace id, but lookup does not filter workspace_id separately",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/file-assets/00000000-0000-4000-8000-000000008806/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_workspaces_file_assets_by_workspace_id_by_asset_key": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: unexpected workspace_id/asset_key kwargs and no slug; 500",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_workspaces_file_assets_by_workspace_id_by_asset_key",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/file-assets/00000000-0000-4000-8000-000000008806/assets-key/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_workspaces_file_assets_by_workspace_id_by_asset_key_restore": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "restore",
+      "method": "POST",
+      "operation_id": "post_api_workspaces_file_assets_by_workspace_id_by_asset_key_restore",
+      "path": "/api/workspaces/file-assets/{workspace_id}/{asset_key}/restore/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetViewSet",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works when active workspace member; no deleted_at field touched",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetViewSet.restore; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_workspaces_file_assets_by_workspace_id_by_asset_key_restore",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/file-assets/00000000-0000-4000-8000-000000008806/assets-key/restore/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_workspaces_by_slug_file_assets": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: missing route kwargs; 500",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.delete; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_workspaces_by_slug_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "get_api_workspaces_by_slug_file_assets": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Broken mapping: URL provides slug only, no workspace_id/asset_key; 500",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.get; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_workspaces_by_slug_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "post_api_workspaces_by_slug_file_assets": {
+      "domain": "workspaces",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_workspaces_by_slug_file_assets",
+      "path": "/api/workspaces/{slug}/file-assets/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated",
+        "plane.app.permissions.workspace.WorkspaceMemberPermission"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.asset.base.FileAssetEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Works for valid serializer input",
+          "source": "apps/api/plane/app/views/asset/base.py::FileAssetEndpoint.post; characterization: /tmp/plane-assets-family/legacy-api-public-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_workspaces_by_slug_file_assets",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle; direct FileField storage for multipart handlers, otherwise operation-specific; see source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/file-assets/",
+      "source_note": "legacy-api-public-characterization.md"
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Legacy session path, list URL, mounted to IssueAttachmentEndpoint.delete, but handler requires pk; signature/path mismatch should produce dispatch TypeError, caught by app BaseAPIView as its generic 500 response. No normal 204 contract can be assumed.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentEndpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "500"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "get",
+      "method": "GET",
+      "operation_id": "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Legacy multipart protocol list. Active project Admin/Member/Guest. Query filters only issue UUID, slug and project UUID; unlike V2/API it has no entity_type or is_uploaded condition, so it can return pending or other FileAsset entities associated with the same issue. Full app serializer, 200 array.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentEndpoint.get; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "200"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "post",
+      "method": "POST",
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Legacy direct multipart upload. Parser classes are MultiPartParser and FormParser; payload must contain a file in serializer field asset (FileField). Active project Admin/Member/Guest. Gets workspace by slug, validates serializer; invalid serializer returns 400 field errors. Saves FileAsset with path IDs and entity type, then queues attachment.activity.created; 201 full app serializer. Actual FileField save writes bytes to configured Django storage. Handler does not set is_uploaded; the full serializer leaves that model field writable, so capture omitted/default and client-supplied values. No metadata task.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentEndpoint.post; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "201",
+        "400"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/",
+      "source_note": "attachments-characterization.md"
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk": {
+      "domain": "work-item-attachments",
+      "fallback_directions": [],
+      "handler": "delete",
+      "method": "DELETE",
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/issue-attachments/{pk}/",
+      "permission_classes": [
+        "rest_framework.permissions.IsAuthenticated"
+      ],
+      "response_review": "pending-domain-review",
+      "schema_status": "source-serializer",
+      "security": [
+        {
+          "PlaneSessionCookie": []
+        }
+      ],
+      "view": "plane.app.views.issue.attachment.IssueAttachmentEndpoint",
+      "auth_profile": "session",
+      "authentication": [
+        "session",
+        "anonymous"
+      ],
+      "protocol_methods": [
+        "HEAD",
+        "OPTIONS"
+      ],
+      "query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "route dispatch and source handler behavior",
+          "observable": "Legacy detail delete. Decorator permits project Admin or FileAsset creator after requiring active workspace membership for creator route. Gets row scoped by UUID, slug, project, issue; missing → explicit 404 {error:\"Issue attachment not found.\"}. Calls asset.delete(save=False) to remove the underlying storage object, then model .delete() soft-deletes DB row and queues plane.bgtasks.deletion_task.soft_delete_related_objects; queues attachment-deleted activity and returns 204.",
+          "source": "apps/api/plane/app/views/issue/attachment.py::IssueAttachmentEndpoint.delete; characterization: /tmp/plane-assets-family/attachments-characterization.md"
+        }
+      ],
+      "fixture_prefix": "assets-delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+      "required_fixtures": [],
+      "documented_query_parameters": [],
+      "source_statuses": [
+        "204",
+        "404"
+      ],
+      "status_note": "Source-only characterization. This operation remains Django only. Runtime fixture outcomes are not recorded; see the source branch and fixture plan in assets-lifecycle-contract.md.",
+      "effects": [
+        "FileAsset lifecycle",
+        "route-specific attachment activity and/or storage metadata task as described in source branch"
+      ],
+      "database_effects": [
+        "FileAsset and related-row effects are operation-specific; see source_branches and shared effect contract."
+      ],
+      "sample_path": "/api/workspaces/assets-diff/projects/00000000-0000-4000-8000-000000008801/issues/00000000-0000-4000-8000-000000008802/issue-attachments/00000000-0000-4000-8000-000000008804/",
+      "source_note": "attachments-characterization.md"
+    }
+  },
+  "fixture_policy": "required_fixtures is empty because no executable parity fixtures have been recorded for this candidate. Fixture checklists are plans, not evidence.",
+  "reuse_boundary": "Existing Go asset URL projection and auth/Celery primitives may be reused. No Go presigned-upload/storage lifecycle endpoint or attachment lifecycle service was found. Keep behavior inside existing owning domains; do not introduce a cross-domain service.",
+  "original_source_revision": "74daebbf862734638130196f185f7b82bcfaf629",
+  "intentional_source_repairs": [
+    {
+      "commit": "a1fe07a3b91b28a9572668d0161a171d597ad598",
+      "change": "Initialize django-storages parent so legacy FileField multipart uploads save successfully."
+    },
+    {
+      "commit": "a1fe07a3b91b28a9572668d0161a171d597ad598",
+      "change": "Remove unsupported is_server argument from API signed upload/download calls; preserve configured public/internal endpoint behavior."
+    }
+  ]
+}

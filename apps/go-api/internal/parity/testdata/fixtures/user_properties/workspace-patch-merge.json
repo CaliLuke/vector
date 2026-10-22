@@ -1,0 +1,198 @@
+{
+  "database": {
+    "after": {
+      "cycle_user_properties": [],
+      "module_user_properties": [],
+      "project_user_properties": [],
+      "workspace_user_properties": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "display_filters": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            }
+          },
+          "display_properties": {
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            }
+          },
+          "filters": {
+            "state": "started"
+          },
+          "id": "<uuid-2>",
+          "navigation_control_preference": "ACCORDION",
+          "navigation_project_limit": 10,
+          "rich_filters": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-1>",
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "cycle_user_properties": [],
+      "module_user_properties": [],
+      "project_user_properties": [],
+      "workspace_user_properties": [
+        {
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-1>",
+          "deleted_at": null,
+          "display_filters": {
+            "display_filters": {
+              "calendar_date_range": "",
+              "group_by": null,
+              "layout": "list",
+              "order_by": "-created_at",
+              "show_empty_groups": true,
+              "sub_issue": true,
+              "type": null
+            }
+          },
+          "display_properties": {
+            "display_properties": {
+              "assignee": true,
+              "attachment_count": true,
+              "created_on": true,
+              "due_date": true,
+              "estimate": true,
+              "key": true,
+              "labels": true,
+              "link": true,
+              "priority": true,
+              "start_date": true,
+              "state": true,
+              "sub_issue_count": true,
+              "updated_on": true
+            }
+          },
+          "filters": {
+            "assignees": null,
+            "created_by": null,
+            "labels": null,
+            "priority": null,
+            "start_date": null,
+            "state": null,
+            "state_group": null,
+            "subscriber": null,
+            "target_date": null
+          },
+          "id": "<uuid-2>",
+          "navigation_control_preference": "ACCORDION",
+          "navigation_project_limit": 10,
+          "rich_filters": {},
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-1>",
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "workspace_user_properties"
+    ],
+    "expected_changed_tables": [
+      "workspace_user_properties"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "filters": {
+        "state": "started"
+      }
+    },
+    "cookies": {},
+    "headers": {},
+    "method": "PATCH",
+    "path": "/api/workspaces/user-properties-parity/user-properties/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "created_at": "<timestamp>",
+      "created_by": "<uuid-1>",
+      "deleted_at": null,
+      "display_filters": {
+        "display_filters": {
+          "calendar_date_range": "",
+          "group_by": null,
+          "layout": "list",
+          "order_by": "-created_at",
+          "show_empty_groups": true,
+          "sub_issue": true,
+          "type": null
+        }
+      },
+      "display_properties": {
+        "display_properties": {
+          "assignee": true,
+          "attachment_count": true,
+          "created_on": true,
+          "due_date": true,
+          "estimate": true,
+          "key": true,
+          "labels": true,
+          "link": true,
+          "priority": true,
+          "start_date": true,
+          "state": true,
+          "sub_issue_count": true,
+          "updated_on": true
+        }
+      },
+      "filters": {
+        "state": "started"
+      },
+      "id": "<uuid-2>",
+      "navigation_control_preference": "ACCORDION",
+      "navigation_project_limit": 10,
+      "rich_filters": {},
+      "updated_at": "<timestamp>",
+      "updated_by": "<uuid-1>",
+      "user": "<uuid-1>",
+      "workspace": "<uuid-3>"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PATCH, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-patch-merge"
+  }
+}

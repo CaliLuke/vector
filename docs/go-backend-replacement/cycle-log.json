@@ -1,0 +1,834 @@
+{
+  "cycles": [
+    {
+      "cost": {
+        "failed_turns": 21,
+        "steps": 2625,
+        "turns": 49,
+        "wall_minutes": 928
+      },
+      "family": "activity_reads",
+      "gate_blocking": 0,
+      "gate_waived": 73,
+      "recorded": "2026-09-04",
+      "retired": 180,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 14,
+        "steps": 3305,
+        "turns": 54,
+        "wall_minutes": 1104.9
+      },
+      "family": "activity_reads",
+      "gate_blocking": 89,
+      "gate_waived": 73,
+      "recorded": "2026-09-05",
+      "retired": 180,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 23
+    },
+    {
+      "cost": {
+        "failed_turns": 14,
+        "steps": 3305,
+        "turns": 54,
+        "wall_minutes": 1104.9
+      },
+      "family": "user_activity_reads",
+      "gate_blocking": 89,
+      "gate_waived": 73,
+      "recorded": "2026-09-05",
+      "retired": 180,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 7
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "notification_reads",
+      "gate_blocking": 96,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 183,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "notification_actions",
+      "gate_blocking": 96,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 188,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_cycle_reads",
+      "gate_blocking": 96,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 194,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 3
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_user_identity",
+      "gate_blocking": 97,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 195,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_module_reads",
+      "gate_blocking": 97,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 200,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_label_reads",
+      "gate_blocking": 98,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 202,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_label_writes",
+      "gate_blocking": 99,
+      "gate_waived": 73,
+      "recorded": "2026-10-09",
+      "retired": 206,
+      "total": 639,
+      "unguarded_repeat_classes": [
+        "PAG-001",
+        "PAG-003",
+        "QRY-002",
+        "ENC-003",
+        "AUT-001",
+        "DAT-002",
+        "TRN-004",
+        "SCH-001"
+      ],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "cost_status": "unavailable: no captured session telemetry; zero cost fields are placeholders",
+      "family": "work_item_core",
+      "family_gate_blocking": 0,
+      "gate_blocking": 87,
+      "gate_waived": 73,
+      "historical_debt": "ENC-003, TRN-004, and SCH-001 concern previously retired, unrelated families; no new replay is required.",
+      "recorded": "2026-10-10",
+      "retired": 278,
+      "total": 639,
+      "unguarded_repeat_classes": ["ENC-003", "TRN-004", "SCH-001"],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "cost_status": "unavailable: no linked session telemetry; zero cost fields are placeholders",
+      "family": "ticket_collaboration",
+      "family_gate_blocking": 0,
+      "gate_blocking": 87,
+      "gate_waived": 73,
+      "historical_debt": "ENC-003, TRN-004 and SCH-001 remain unrelated historical debt; no new occurrence in this family.",
+      "proof_wall_seconds": 458,
+      "recorded": "2026-10-11",
+      "recurrence_guard": "apps/go-api/internal/djangoinput/url_test.go::TestURLValidatorMatchesDjangoSource",
+      "retired": 333,
+      "total": 639,
+      "unguarded_repeat_classes": ["ENC-003", "TRN-004", "SCH-001"],
+      "wave_cause": "Contract repairs required wave 2; its remaining shared URL parser defect was split into independently reviewed/pushed prerequisite 1b584933e8 before recomposition and wave 3. Commit formatting preserved the final reviewed tree.",
+      "wave_records": 3
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "cost_status": "unavailable: no linked session telemetry; zero cost fields are placeholders",
+      "family": "api_state_reads",
+      "family_gate_blocking": 0,
+      "gate_blocking": 87,
+      "gate_waived": 73,
+      "historical_debt": "ENC-003, TRN-004, and SCH-001 remain historical debt; no new occurrence in this family.",
+      "proof_wall_seconds": 928,
+      "recorded": "2026-10-18",
+      "recurrence_guards": [
+        "apps/api/plane/tests/parity/test_recorder_response_extraction.py",
+        "apps/go-api/internal/djangoapi/serializer_test.go",
+        "apps/go-api/internal/endpointretirement/design_proof_coverage_test.go"
+      ],
+      "retired": 335,
+      "retirement_commit": "a1ad06dc6c",
+      "total": 639,
+      "unguarded_repeat_classes": ["ENC-003", "TRN-004", "SCH-001"],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "cost_status": "unavailable: no linked session telemetry; zero cost fields are placeholders",
+      "family": "project_membership_lifecycle",
+      "family_gate_blocking": 0,
+      "gate_blocking": 85,
+      "gate_waived": 73,
+      "historical_debt": "ENC-003, TRN-004 and SCH-001 remain unrelated historical debt; no new unguarded occurrence in this family.",
+      "proof_wall_seconds": 267,
+      "recorded": "2026-10-18",
+      "recurrence_guards": [
+        "apps/go-api/internal/projectmembershipreads/lifecycle_bulk_identity_test.go",
+        "apps/go-api/internal/projectmembershipreads/lifecycle_review_regression_test.go",
+        "apps/go-api/projectmembershiplifecycle/design/response_contract_test.go",
+        "apps/api/plane/tests/parity/test_recorder_canonicalization.py",
+        "apps/api/plane/tests/parity/test_project_membership_lifecycle_recorder_adapter.py"
+      ],
+      "retired": 350,
+      "retirement_commit": "e47935d00f95aa138cb9b959713e7f8a914a0f0c",
+      "total": 639,
+      "unguarded_repeat_classes": ["ENC-003", "TRN-004", "SCH-001"],
+      "wave_cause": "Two contract repair waves. After the second wave found bulk identity precedence errors, the user explicitly required bulk creation remain in the release instead of the proposed14+1split. The third fresh wave accepted the complete15-operation repair; formatters ran before the frozen proof tree.",
+      "wave_count_source": "Three preserved membership-lifecycle-final-{1,2,3} records. The automatic name-based scan reported zero for the abbreviated wave names; this record uses the verified artifacts.",
+      "wave_records": 3
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "cost_status": "unavailable: no linked session telemetry; zero cost fields are placeholders",
+      "family": "assets_lifecycle",
+      "family_gate_blocking": 0,
+      "gate_blocking": 85,
+      "gate_waived": 73,
+      "proof_wall_seconds": 311,
+      "recorded": "2026-10-19",
+      "recurrence_guards": [
+        "apps/go-api/internal/endpointretirement/assets_workspace_lookup_coverage_test.go::TestWorkspaceLookupCoverageManifest",
+        "apps/api/plane/tests/parity/test_assets_lifecycle_recorder.py::assert_previous_cover_raw_unchanged",
+        "apps/go-api/cmd/system/assets_lifecycle_transport_test.go",
+        "apps/go-api/internal/proxy/assets_lifecycle_control_fixtures_test.go::TestAssetsLifecycleControlFixtureRefs",
+        "apps/go-api/internal/proxy/assets_lifecycle_proxy_policy_integration_test.go::TestAssetsLifecycleProductionProxyPolicy",
+        "apps/go-api/internal/assets/lifecycle_review_regressions_test.go::TestUserAssetConfirmationPreservesJSONArrayAndScalarAttributes"
+      ],
+      "retired": 431,
+      "retirement_commit": "5f5f5c91ca4314a061fe0beb124f129d38a9f09f",
+      "retrospective_followup": {
+        "ENC-003": "Added permanent Go guard for source-backed absent/null/empty/scalar asset attributes; focused test and full assets package pass.",
+        "SCH-001": "Retained unrelated historical schema debt; assets OpenAPI has no format: byte fields.",
+        "TRN-004": "Retained unrelated historical negotiation-order debt; this repair changes no Accept negotiation behavior."
+      },
+      "total": 639,
+      "unguarded_repeat_classes": ["ENC-003", "TRN-004", "SCH-001"],
+      "wave_cause": "Seven waves exposed missing source branches across shared workspace and project hook callers, then stale proxy-test assumptions. Repairs were deliberate after rejecting each obsolete tree; the accepted tree remained unchanged through proof, review, commit formatting, and commit.",
+      "wave_records": 7
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "invitations_membership",
+      "gate_blocking": 84,
+      "gate_waived": 73,
+      "recorded": "2026-10-19",
+      "retired": 459,
+      "total": 639,
+      "unguarded_repeat_classes": ["TRN-004", "SCH-001"],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "cycle_lifecycle",
+      "gate_blocking": 81,
+      "gate_waived": 73,
+      "recorded": "2026-10-19",
+      "retired": 475,
+      "total": 639,
+      "unguarded_repeat_classes": ["SCH-001"],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "module_lifecycle",
+      "gate_blocking": 81,
+      "gate_waived": 73,
+      "recorded": "2026-10-20",
+      "retired": 494,
+      "total": 639,
+      "unguarded_repeat_classes": ["SCH-001"],
+      "wave_records": 4
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "public_feedback",
+      "gate_blocking": 81,
+      "gate_waived": 73,
+      "recorded": "2026-10-20",
+      "retired": 506,
+      "total": 639,
+      "unguarded_repeat_classes": ["SCH-001"],
+      "wave_records": 3
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "public_issue_collection",
+      "gate_blocking": 81,
+      "gate_waived": 73,
+      "recorded": "2026-10-20",
+      "retired": 507,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_lifecycle",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 520,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 8
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "page_lifecycle",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 530,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_state_writes",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 537,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_v1_stickies",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 543,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "instance_management",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 577,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_configuration",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 577,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_webhooks",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-21",
+      "retired": 577,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 5
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_project_analytics",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 597,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "work_item_history",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 597,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "custom_view_creation",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 597,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "personal_dashboard",
+      "gate_blocking": 80,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 597,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "account_authentication",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 2
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "user_account_writes",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_lifecycle",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "api_project_reads",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "external_integrations",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "notification_remaining_writes",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_member_preferences",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_publication",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_exports",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_search",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "failed_turns": 0,
+        "steps": 0,
+        "turns": 0,
+        "wall_minutes": 0
+      },
+      "family": "project_intake_writes",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    },
+    {
+      "cost": {
+        "turns": 0,
+        "failed_turns": 0,
+        "steps": 0,
+        "wall_minutes": 0
+      },
+      "family": "workspace_user_insights",
+      "gate_blocking": 76,
+      "gate_waived": 73,
+      "recorded": "2026-10-22",
+      "retired": 639,
+      "total": 639,
+      "unguarded_repeat_classes": [],
+      "wave_records": 1
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "family": "project_intake_writes",
+  "source_revision": "a08553ccd1961c46c7ea25cc3bb7fc1fdd71a56a",
+  "characterization_status": "18 pristine source cases and 6 corrected source oracles are verified. The corrected oracles include 404 responses for missing DELETE targets where pinned Django raises a nil-object 500; focused transport and repository regressions are recorded. Final current-tree replay, differential, and activation proof remain pending.",
+  "operation_count": 6,
+  "source_files": [
+    "apps/api/plane/app/urls/intake.py",
+    "apps/api/plane/app/views/intake/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/serializers/intake.py",
+    "apps/api/plane/db/models/intake.py",
+    "apps/api/plane/db/models/issue.py"
+  ],
+  "fixture_count": 18,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/project-intake-writes/source-counts-20261022T1200-aggregate.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/project-intake-writes/source-hashes.json",
+  "operations": {
+    "post_api_workspaces_by_slug_projects_by_project_id_inboxes": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_inboxes",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/inboxes/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "create-inbox",
+          "observable": "Pinned Django fixture records HTTP 500. Corrected source oracle records HTTP 201.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox.json"
+        },
+        {
+          "when": "create-inbox-missing-name",
+          "observable": "Pinned Django fixture records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-missing-name.json"
+        },
+        {
+          "when": "create-inbox-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-anonymous.json"
+        },
+        {
+          "when": "create-inbox-guest-source-error",
+          "observable": "Pinned Django fixture records HTTP 500. Corrected source oracle records HTTP 403.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-guest-source-error.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/create-inbox-guest-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/create-inbox.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-guest-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox-missing-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-inbox.json"
+      ],
+      "source_statuses": ["400", "401", "500"],
+      "statuses": [201, 400, 401, 403, 500],
+      "effects": [],
+      "status_note": "Eighteen pristine fixtures cover inbox and intake create, update and delete behavior, required-field/default protection, guest-role source behavior, anonymous rejection, and missing-target deletes. Six corrected source oracles document create authorization/data-integrity fixes, guest update authorization, and missing-target DELETE behavior."
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/inboxes/00000000-0000-4000-8000-000000099999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "patch-inbox",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-inbox.json"
+        },
+        {
+          "when": "patch-inbox-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-inbox-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-inbox.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-inbox-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 401],
+      "effects": [],
+      "status_note": "Eighteen pristine fixtures cover inbox and intake create, update and delete behavior, required-field/default protection, guest-role source behavior, anonymous rejection, and missing-target deletes. Six corrected source oracles document create authorization/data-integrity fixes, guest update authorization, and missing-target DELETE behavior."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/inboxes/00000000-0000-4000-8000-000000099999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "delete-inbox",
+          "observable": "Pinned Django fixture records HTTP 204.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox.json"
+        },
+        {
+          "when": "delete-inbox-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox-anonymous.json"
+        },
+        {
+          "when": "delete-inbox-missing",
+          "observable": "Pinned Django source raises HTTP 500 when destroy dereferences a missing object. The corrected source oracle returns 404 with the standard model detail and performs no mutation.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox-missing.json",
+          "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/delete-inbox-missing.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-inbox-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/delete-inbox-missing.json"
+      ],
+      "source_statuses": ["204", "401", "500"],
+      "statuses": [204, 401, 404],
+      "effects": [],
+      "status_note": "Pinned Django source returns HTTP500 for a missing DELETE target because destroy dereferences None. The corrected source oracle returns HTTP404 with `No Intake matches the given query.` and leaves all tables unchanged."
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_intakes": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_intakes",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/intakes/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "create-intake",
+          "observable": "Pinned Django fixture records HTTP 500. Corrected source oracle records HTTP 201.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-intake.json"
+        },
+        {
+          "when": "create-intake-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-intake-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/create-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/create-intake-anonymous.json"
+      ],
+      "source_statuses": ["500", "401"],
+      "statuses": [201, 500, 401],
+      "effects": [],
+      "status_note": "Eighteen pristine fixtures cover inbox and intake create, update and delete behavior, required-field/default protection, guest-role source behavior, anonymous rejection, and missing-target deletes. Six corrected source oracles document create authorization/data-integrity fixes, guest update authorization, and missing-target DELETE behavior."
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/intakes/00000000-0000-4000-8000-000000099999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "patch-intake",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake.json"
+        },
+        {
+          "when": "patch-intake-guest-source-allows",
+          "observable": "Pinned Django fixture records HTTP 200. Corrected source oracle records HTTP 403.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake-guest-source-allows.json"
+        },
+        {
+          "when": "patch-intake-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake-anonymous.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/patch-intake-guest-source-allows.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake-guest-source-allows.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/patch-intake-anonymous.json"
+      ],
+      "source_statuses": ["200", "401"],
+      "statuses": [200, 403, 401],
+      "effects": [],
+      "status_note": "Eighteen pristine fixtures cover inbox and intake create, update and delete behavior, required-field/default protection, guest-role source behavior, anonymous rejection, and missing-target deletes. Six corrected source oracles document create authorization/data-integrity fixes, guest update authorization, and missing-target DELETE behavior."
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/",
+      "sample_path": "/api/workspaces/project-intake-writes-contract/projects/00000000-0000-4000-8000-000010002102/intakes/00000000-0000-4000-8000-000000099999/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "delete-intake",
+          "observable": "Pinned Django fixture records HTTP 204.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake.json"
+        },
+        {
+          "when": "delete-default-intake",
+          "observable": "Pinned Django fixture records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-default-intake.json"
+        },
+        {
+          "when": "delete-intake-anonymous",
+          "observable": "Pinned Django fixture records anonymous HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake-anonymous.json"
+        },
+        {
+          "when": "delete-intake-missing",
+          "observable": "Pinned Django source raises HTTP 500 when destroy dereferences a missing object. The corrected source oracle returns 404 with the standard model detail and performs no mutation.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake-missing.json",
+          "corrected_fixture": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/delete-intake-missing.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-default-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/delete-intake-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected/delete-intake-missing.json"
+      ],
+      "source_statuses": ["204", "400", "401", "500"],
+      "statuses": [204, 400, 401, 404],
+      "effects": [],
+      "status_note": "Pinned Django source returns HTTP500 for a missing DELETE target because destroy dereferences None. The corrected source oracle returns HTTP404 with `No Intake matches the given query.` and leaves all tables unchanged."
+    }
+  },
+  "corrected_fixture_count": 6,
+  "corrected_fixture_root": "apps/go-api/internal/parity/testdata/fixtures/project_intake_writes/corrected",
+  "corrected_source_receipt": "docs/go-backend-replacement/evidence/project-intake-writes/source-counts-20261022T1200-aggregate.json",
+  "source_runtime_evidence": {
+    "pristine": "docs/go-backend-replacement/evidence/project-intake-writes/source-counts-20261022T1200-aggregate.json",
+    "pristine_count": 18,
+    "corrected_count": 6,
+    "record_log": "docs/go-backend-replacement/evidence/project-intake-writes/source-20261022T120038Z.log",
+    "aggregate_receipts": [
+      "source-counts-20261022T110315Z-47755.json",
+      "source-counts-20261022T120006Z-76603.json",
+      "source-counts-20261022T120016Z-76704.json",
+      "source-counts-20261022T083841Z-12486.json",
+      "source-counts-20261022T120027Z-76815.json",
+      "source-counts-20261022T120038Z-76944.json"
+    ]
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/project_intake_writes_integration_test.go::TestProjectIntakeWritesFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": [],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/PROJECT-INTAKE-001-missing-delete.md",
+        "cases": [
+          "delete_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk:canonical:DELETE",
+          "delete_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk:canonical:DELETE",
+          "patch_api_workspaces_by_slug_projects_by_project_id_inboxes_by_pk:canonical:DELETE",
+          "patch_api_workspaces_by_slug_projects_by_project_id_intakes_by_pk:canonical:DELETE"
+        ],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 404,
+          "body_sha256": "599023287912d84c0dece4bfd4d828055718a2c8b5bf145f1a8f9ad69c974705"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "The retained write-only intake mount returns HTTP 204 for OPTIONS before session/timezone processing. For writes, oversized-body rejection precedes session inspection, anonymous rejection precedes timezone inspection, invalid timezone is rejected before write dispatch, and authorized requests dispatch the generated service. Session requests emit no API-key audit."
+}

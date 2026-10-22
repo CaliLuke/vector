@@ -1,0 +1,182 @@
+x-local-environment: &local-environment
+  AWS_S3_ENDPOINT_URL: http://plane-rustfs:9000
+  AWS_S3_PUBLIC_ENDPOINT_URL: http://localhost:19000
+  AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+  WEB_URL: http://localhost:8000
+  APP_BASE_URL: http://localhost:8000
+  ADMIN_BASE_URL: http://localhost:8000
+  SPACE_BASE_URL: http://localhost:8000
+  LIVE_BASE_URL: http://localhost:8000
+  CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:3000,http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
+
+x-local-logging: &local-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  logal:
+    logging: *local-logging
+    build: ./scripts/logal
+    restart: unless-stopped
+    networks: [dev_env]
+    command: [serve, --config=/etc/logal.yaml]
+    environment:
+      LOGAL_DB_PATH: /data/otel.debug.sqlite
+      LOGAL_RETENTION_HOURS: "48"
+      LOGAL_HEALTH_ENDPOINT: 0.0.0.0:13133
+      LOGAL_OTLP_GRPC_ENDPOINT: 0.0.0.0:4317
+      LOGAL_OTLP_HTTP_ENDPOINT: 0.0.0.0:4318
+      LOGAL_MAX_IN_FLIGHT_REQUESTS: "8"
+    volumes:
+      - logaldata:/data
+      - ./apps/go-api/config/logal.yaml:/etc/logal.yaml:ro
+    ports:
+      - "127.0.0.1:54318:4318"
+      - "127.0.0.1:54133:13133"
+    healthcheck:
+      test: [CMD, curl, -fsS, http://localhost:13133/readyz]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  plane-redis:
+    logging: *local-logging
+    image: valkey/valkey:7.2.11-alpine
+    restart: unless-stopped
+    networks:
+      - dev_env
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+
+  plane-rustfs:
+    logging: *local-logging
+    image: rustfs/rustfs:1.0.3@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b
+    restart: unless-stopped
+    networks:
+      - dev_env
+    command: [/data]
+    env_file:
+      - ./apps/go-api/.env
+    environment:
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CORS_ALLOWED_ORIGINS: http://localhost:8000,http://localhost:3000,http://localhost:${PLANE_ADMIN_PORT:-3001},http://localhost:${PLANE_SPACE_PORT:-3002},http://localhost:3100
+    entrypoint: [/bin/sh, /scripts/start-rustfs.sh]
+    volumes:
+      - rustfs_uploads:/data
+      - ./scripts/rustfs/start.sh:/scripts/start-rustfs.sh:ro
+    ports:
+      - "19000:9000"
+      - "9090:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  plane-db:
+    logging: *local-logging
+    image: postgres:15.7-alpine
+    restart: unless-stopped
+    networks:
+      - dev_env
+    command: postgres -c 'max_connections=1000'
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  go-migrator:
+    logging: *local-logging
+    image: plane-go-api:local
+    build:
+      context: ./apps/go-api
+    restart: "no"
+    networks: [dev_env]
+    env_file:
+      - ./apps/go-api/.env
+    environment:
+      <<: *local-environment
+      MACHINE_SIGNATURE: ${MACHINE_SIGNATURE:-plane-local}
+    entrypoint: [/go-bootstrap]
+    command: [install]
+    depends_on:
+      plane-db:
+        condition: service_healthy
+      plane-redis:
+        condition: service_started
+      plane-rustfs:
+        condition: service_healthy
+
+  go-api:
+    logging: *local-logging
+    image: plane-go-api:local
+    command: [--go-background-tasks]
+    build:
+      context: ./apps/go-api
+    restart: unless-stopped
+    networks:
+      - dev_env
+    env_file:
+      - ./apps/go-api/.env
+    environment:
+      <<: *local-environment
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://logal:4318
+      OTEL_SERVICE_NAME: plane-go-api
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      logal:
+        condition: service_healthy
+      go-migrator:
+        condition: service_completed_successfully
+      plane-redis:
+        condition: service_started
+
+  proxy:
+    logging: *local-logging
+    image: caddy:2.11.3-alpine
+    restart: unless-stopped
+    networks:
+      - dev_env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8000:80"
+    environment:
+      FILE_SIZE_LIMIT: ${FILE_SIZE_LIMIT:-5242880}
+      BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+      PLANE_ADMIN_PORT: ${PLANE_ADMIN_PORT:-3001}
+      PLANE_SPACE_PORT: ${PLANE_SPACE_PORT:-3002}
+    volumes:
+      - ./apps/proxy/Caddyfile.local:/etc/caddy/Caddyfile:ro
+      - ./apps/proxy/go-active-routes.caddy:/etc/caddy/go-active-routes.caddy:ro
+    depends_on:
+      go-api:
+        condition: service_started
+
+volumes:
+  logaldata:
+  go_module_cache:
+  go_build_cache:
+  redisdata:
+  rustfs_uploads:
+  pgdata:
+
+networks:
+  dev_env:
+    driver: bridge

@@ -1,0 +1,209 @@
+{
+  "actions": {
+    "POST": {
+      "archived_at": {
+        "label": "Archived at",
+        "read_only": false,
+        "required": false,
+        "type": "datetime"
+      },
+      "created_at": {
+        "label": "Created At",
+        "read_only": true,
+        "required": false,
+        "type": "datetime"
+      },
+      "created_by": {
+        "label": "Created By",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "data": {
+        "label": "Data",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "deleted_at": {
+        "label": "Deleted At",
+        "read_only": false,
+        "required": false,
+        "type": "datetime"
+      },
+      "entity_identifier": {
+        "label": "Entity identifier",
+        "read_only": false,
+        "required": false,
+        "type": "string"
+      },
+      "entity_name": {
+        "label": "Entity name",
+        "max_length": 255,
+        "read_only": false,
+        "required": true,
+        "type": "string"
+      },
+      "id": {
+        "label": "Id",
+        "read_only": true,
+        "required": false,
+        "type": "field"
+      },
+      "is_inbox_issue": {
+        "label": "Is inbox issue",
+        "read_only": true,
+        "required": false,
+        "type": "boolean"
+      },
+      "is_intake_issue": {
+        "label": "Is intake issue",
+        "read_only": true,
+        "required": false,
+        "type": "boolean"
+      },
+      "is_mentioned_notification": {
+        "label": "Is mentioned notification",
+        "read_only": true,
+        "required": false,
+        "type": "boolean"
+      },
+      "message": {
+        "label": "Message",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "message_html": {
+        "label": "Message html",
+        "read_only": false,
+        "required": false,
+        "type": "string"
+      },
+      "message_stripped": {
+        "label": "Message stripped",
+        "read_only": false,
+        "required": false,
+        "type": "string"
+      },
+      "project": {
+        "label": "Project",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "read_at": {
+        "label": "Read at",
+        "read_only": false,
+        "required": false,
+        "type": "datetime"
+      },
+      "receiver": {
+        "label": "Receiver",
+        "read_only": false,
+        "required": true,
+        "type": "field"
+      },
+      "sender": {
+        "label": "Sender",
+        "max_length": 255,
+        "read_only": false,
+        "required": true,
+        "type": "string"
+      },
+      "snoozed_till": {
+        "label": "Snoozed till",
+        "read_only": false,
+        "required": false,
+        "type": "datetime"
+      },
+      "title": {
+        "label": "Title",
+        "read_only": false,
+        "required": true,
+        "type": "string"
+      },
+      "triggered_by": {
+        "label": "Triggered by",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "triggered_by_details": {
+        "children": {
+          "avatar": {
+            "label": "Avatar",
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "avatar_url": {
+            "label": "Avatar url",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "display_name": {
+            "label": "Display name",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "first_name": {
+            "label": "First name",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "is_bot": {
+            "label": "Is bot",
+            "read_only": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "last_name": {
+            "label": "Last name",
+            "max_length": 255,
+            "read_only": false,
+            "required": false,
+            "type": "string"
+          }
+        },
+        "label": "Triggered by details",
+        "read_only": true,
+        "required": false,
+        "type": "nested object"
+      },
+      "updated_at": {
+        "label": "Last Modified At",
+        "read_only": true,
+        "required": false,
+        "type": "datetime"
+      },
+      "updated_by": {
+        "label": "Last Modified By",
+        "read_only": false,
+        "required": false,
+        "type": "field"
+      },
+      "workspace": {
+        "label": "Workspace",
+        "read_only": false,
+        "required": true,
+        "type": "field"
+      }
+    }
+  },
+  "description": "",
+  "name": "Notification",
+  "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+  "renders": ["application/json"]
+}

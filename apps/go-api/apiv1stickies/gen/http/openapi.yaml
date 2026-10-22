@@ -1,0 +1,1177 @@
+openapi: 3.1.1
+info:
+    title: API v1 Stickies
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for API v1 Stickies
+paths:
+    /api/v1/workspaces/{slug}/stickies.json:
+        get:
+            tags:
+                - api_v1_stickies
+            summary: list api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryPerPage'
+                - $ref: '#/components/parameters/QueryQuery'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyListResponseStatus200Response'
+                    description: List of stickies
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: list_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky list metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        post:
+            tags:
+                - api_v1_stickies
+            summary: create api_v1_stickies
+            operationId: post_api_v1_workspaces_by_slug_stickies.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "201":
+                    $ref: '#/components/responses/StickyResponseStatus201Response'
+                    description: Sticky created
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/stickies.json/:
+        get:
+            tags:
+                - api_v1_stickies
+            summary: list api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryPerPage'
+                - $ref: '#/components/parameters/QueryQuery'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyListResponseStatus200Response'
+                    description: List of stickies
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: list_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky list metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        post:
+            tags:
+                - api_v1_stickies
+            summary: create api_v1_stickies
+            operationId: post_api_v1_workspaces_by_slug_stickies.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "201":
+                    $ref: '#/components/responses/StickyResponseStatus201Response'
+                    description: Sticky created
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/stickies/:
+        get:
+            tags:
+                - api_v1_stickies
+            summary: list api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/QueryCursor'
+                - $ref: '#/components/parameters/QueryPerPage'
+                - $ref: '#/components/parameters/QueryQuery'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyListResponseStatus200Response'
+                    description: List of stickies
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: list_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky list metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        post:
+            tags:
+                - api_v1_stickies
+            summary: create api_v1_stickies
+            operationId: post_api_v1_workspaces_by_slug_stickies
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "201":
+                    $ref: '#/components/responses/StickyResponseStatus201Response'
+                    description: Sticky created
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/stickies/{pk}.json:
+        delete:
+            tags:
+                - api_v1_stickies
+            summary: delete api_v1_stickies
+            operationId: delete_api_v1_workspaces_by_slug_stickies_by_pk.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource deleted successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        get:
+            tags:
+                - api_v1_stickies
+            summary: retrieve api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies_by_pk.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: detail_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies_by_pk.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky detail metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        patch:
+            tags:
+                - api_v1_stickies
+            summary: patch api_v1_stickies
+            operationId: patch_api_v1_workspaces_by_slug_stickies_by_pk.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        put:
+            tags:
+                - api_v1_stickies
+            summary: update api_v1_stickies
+            operationId: put_api_v1_workspaces_by_slug_stickies_by_pk.1
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/stickies/{pk}.json/:
+        delete:
+            tags:
+                - api_v1_stickies
+            summary: delete api_v1_stickies
+            operationId: delete_api_v1_workspaces_by_slug_stickies_by_pk.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource deleted successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        get:
+            tags:
+                - api_v1_stickies
+            summary: retrieve api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies_by_pk.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: detail_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies_by_pk.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky detail metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        patch:
+            tags:
+                - api_v1_stickies
+            summary: patch api_v1_stickies
+            operationId: patch_api_v1_workspaces_by_slug_stickies_by_pk.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        put:
+            tags:
+                - api_v1_stickies
+            summary: update api_v1_stickies
+            operationId: put_api_v1_workspaces_by_slug_stickies_by_pk.2
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+    /api/v1/workspaces/{slug}/stickies/{pk}/:
+        delete:
+            tags:
+                - api_v1_stickies
+            summary: delete api_v1_stickies
+            operationId: delete_api_v1_workspaces_by_slug_stickies_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                    description: Resource deleted successfully
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        get:
+            tags:
+                - api_v1_stickies
+            summary: retrieve api_v1_stickies
+            operationId: get_api_v1_workspaces_by_slug_stickies_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        options:
+            tags:
+                - api_v1_stickies
+            summary: detail_options api_v1_stickies
+            operationId: options_api_v1_workspaces_by_slug_stickies_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/OptionsAPIV1WorkspacesBySlugStickies1Status200Response'
+                    description: Sticky detail metadata
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        patch:
+            tags:
+                - api_v1_stickies
+            summary: patch api_v1_stickies
+            operationId: patch_api_v1_workspaces_by_slug_stickies_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        put:
+            tags:
+                - api_v1_stickies
+            summary: update api_v1_stickies
+            operationId: put_api_v1_workspaces_by_slug_stickies_by_pk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathPk'
+            requestBody:
+                $ref: '#/components/requestBodies/PostAPIV1WorkspacesBySlugStickies1RequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/StickyResponseStatus200Response'
+                    description: Sticky
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "429":
+                    $ref: '#/components/responses/TooManyRequestsError'
+                    description: 'status_429: Too Many Requests response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - ApiKeyAuth: []
+        x-loom-cors:
+            runtime: true
+components:
+    schemas:
+        StickyListResponse:
+            type: object
+            properties:
+                count:
+                    type: integer
+                    format: int64
+                extra_stats:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                next_cursor:
+                    type: string
+                next_page_results:
+                    type: boolean
+                prev_cursor:
+                    type: string
+                prev_page_results:
+                    type: boolean
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StickyResponse'
+                sub_grouped_by:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                total_count:
+                    type: integer
+                    format: int64
+                total_pages:
+                    type: integer
+                    format: int64
+                total_results:
+                    type: integer
+                    format: int64
+            required:
+                - count
+                - extra_stats
+                - grouped_by
+                - next_cursor
+                - next_page_results
+                - prev_cursor
+                - prev_page_results
+                - results
+                - sub_grouped_by
+                - total_count
+                - total_pages
+                - total_results
+        StickyResponse:
+            type: object
+            properties:
+                background_color:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                color:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                created_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description: {}
+                description_binary:
+                    anyOf:
+                        - type: string
+                          format: byte
+                        - type: "null"
+                description_html:
+                    type: string
+                description_stripped:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                id:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                logo_props: {}
+                name:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                owner:
+                    type: string
+                    readOnly: true
+                    format: uuid
+                sort_order:
+                    type: number
+                    format: double
+                updated_at:
+                    type: string
+                    readOnly: true
+                    format: date-time
+                updated_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                workspace:
+                    type: string
+                    readOnly: true
+                    format: uuid
+        StickyWriteRequest:
+            type: object
+            properties:
+                background_color:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                color:
+                    anyOf:
+                        - type: string
+                          maxLength: 255
+                        - type: "null"
+                created_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+                deleted_at:
+                    anyOf:
+                        - type: string
+                          format: date-time
+                        - type: "null"
+                description: {}
+                description_html:
+                    type: string
+                description_stripped:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                logo_props: {}
+                name:
+                    anyOf:
+                        - type: string
+                        - type: "null"
+                sort_order:
+                    type: number
+                    format: double
+                updated_by:
+                    anyOf:
+                        - type: string
+                          format: uuid
+                        - type: "null"
+    parameters:
+        PathPk:
+            name: pk
+            in: path
+            required: true
+            schema:
+                type: string
+        PathSlug:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+        QueryCursor:
+            name: cursor
+            in: query
+            allowEmptyValue: true
+            schema:
+                type: string
+        QueryPerPage:
+            name: per_page
+            in: query
+            allowEmptyValue: true
+            schema:
+                type: string
+        QueryQuery:
+            name: query
+            in: query
+            allowEmptyValue: true
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PostAPIV1WorkspacesBySlugStickies1RequestBody:
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StickyWriteRequest'
+                application/x-www-form-urlencoded:
+                    schema:
+                        $ref: '#/components/schemas/StickyWriteRequest'
+                multipart/form-data:
+                    schema:
+                        $ref: '#/components/schemas/StickyWriteRequest'
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        NoContentResponse:
+            description: No Content response.
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema: {}
+        OptionsAPIV1WorkspacesBySlugStickies1Status200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema: {}
+        StickyListResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StickyListResponse'
+        StickyResponseStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StickyResponse'
+        StickyResponseStatus201Response:
+            description: Created response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/StickyResponse'
+        TooManyRequestsError:
+            description: Too Many Requests response.
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        ApiKeyAuth:
+            type: apiKey
+            description: Plane API token authentication.
+            name: X-Api-Key
+            in: header
+tags:
+    - name: api_v1_stickies
+      description: Serves the Django API v1 Sticky contract.

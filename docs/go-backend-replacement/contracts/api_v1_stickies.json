@@ -1,0 +1,496 @@
+{
+  "version": 1,
+  "family": "api_v1_stickies",
+  "source_revision": "057800d1db2add49ddc0326be0cb4233784fccaa",
+  "characterization_status": "Pinned Django source, 76 deterministic pristine cases, and twelve runtime-captured corrected overlays are recorded.",
+  "operation_count": 6,
+  "source_files": [
+    "apps/api/plane/api/urls/sticky.py",
+    "apps/api/plane/api/views/sticky.py",
+    "apps/api/plane/api/serializers/sticky.py",
+    "apps/api/plane/api/views/base.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/db/models/sticky.py"
+  ],
+  "operations": {
+    "get_api_v1_workspaces_by_slug_stickies": {
+      "operation_id": "get_api_v1_workspaces_by_slug_stickies",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/stickies/",
+      "source": "apps/api/plane/api/views/sticky.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": ["cursor", "per_page", "query"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-active-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-default-order.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-deleted-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-missing-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-pagination-beyond-end.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-pagination-per-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-pagination-second-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-per-page-negative-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-per-page-negative-overflow.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-per-page-zero-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-per-page-zero-overflow-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-per-page-zero.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-query-case-insensitive.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-session-cookie-only.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-unsupported-format-suffix.json"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "recorded_source_statuses": [200, 400, 401, 403, 404, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-per-page-negative-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-per-page-negative-overflow.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-per-page-zero-invalid-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-per-page-zero-overflow-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/list-per-page-zero.json"
+      ],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; seven format-suffix and five pagination corrected-runtime overlays are separately captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20). Source validates cursor syntax before page size: per_page=0 with cursor=bad returns 400 Invalid cursor parameter.; per_page=0 with an overflowing cursor and a negative value below signed 64-bit range return generic 500. The corrected runtime rejects per_page <= 0 before cursor handling with 400 {\"detail\":\"Error in parsing\"}.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping"]
+    },
+    "post_api_v1_workspaces_by_slug_stickies": {
+      "operation_id": "post_api_v1_workspaces_by_slug_stickies",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/stickies/",
+      "source": "apps/api/plane/api/views/sticky.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-blank-colors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-deleted-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-description-json-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-empty-array-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-invalid-audit-user-ids.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-invalid-html.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-minimal-defaults.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-missing-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-null-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-success.json"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "recorded_source_statuses": [201, 400, 401, 403, 404, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/create-json-format-suffix.json"
+      ],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; corrected format-suffix and pagination oracles are separately runtime-captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20).",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping", "stickies: create or update"]
+    },
+    "delete_api_v1_workspaces_by_slug_stickies_by_pk": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_stickies_by_pk",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "source": "apps/api/plane/api/views/sticky.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-other-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-soft-delete-task.json"
+      ],
+      "effects": ["api-key", "sticky-soft-delete-api-key"],
+      "queued_jobs": [
+        "plane.bgtasks.logger_task.process_logs",
+        "plane.bgtasks.deletion_task.soft_delete_related_objects"
+      ],
+      "recorded_source_statuses": [204, 401, 404, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/delete-json-format-suffix.json"
+      ],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; corrected format-suffix and pagination oracles are separately runtime-captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/00000000-0000-4000-8000-000000000701/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20).",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping", "stickies: soft delete"]
+    },
+    "get_api_v1_workspaces_by_slug_stickies_by_pk": {
+      "operation_id": "get_api_v1_workspaces_by_slug_stickies_by_pk",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "source": "apps/api/plane/api/views/sticky.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-malformed-pk-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-malformed-pk.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-non-utc-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-options-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-other-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-owner.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-unsupported-format-suffix.json"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "recorded_source_statuses": [200, 401, 404, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/retrieve-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/retrieve-json-format-suffix.json"
+      ],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; corrected format-suffix and pagination oracles are separately runtime-captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/00000000-0000-4000-8000-000000000701/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20).",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping"]
+    },
+    "patch_api_v1_workspaces_by_slug_stickies_by_pk": {
+      "operation_id": "patch_api_v1_workspaces_by_slug_stickies_by_pk",
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "source": "apps/api/plane/api/views/sticky.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-blank-colors.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-deleted-at-minute-compact-offset.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-deleted-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-empty-array-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-invalid-deleted-at.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-naive-deleted-at-actor-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-name-preserves-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-nullable-and-stripped.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-owner-created-by-other.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-sanitizes-html.json"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "recorded_source_statuses": [200, 400, 401, 404, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/patch-json-format-suffix.json"
+      ],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; corrected format-suffix and pagination oracles are separately runtime-captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/00000000-0000-4000-8000-000000000701/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20).",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping", "stickies: create or update"]
+    },
+    "put_api_v1_workspaces_by_slug_stickies_by_pk": {
+      "operation_id": "put_api_v1_workspaces_by_slug_stickies_by_pk",
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "source": "apps/api/plane/api/views/base.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/put-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/put-common-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/put-empty-body.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/put-json-description-string.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/put-missing.json"
+      ],
+      "effects": ["api-key"],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "recorded_source_statuses": [200, 401, 404],
+      "corrected_fixtures": [],
+      "evidence_status": "Pinned Django source and deterministic fixtures captured; corrected format-suffix and pagination oracles are separately runtime-captured. Candidate replay and final acceptance are tracked in the proof ledger.",
+      "sample_path": "/api/v1/workspaces/sticky-v1-parity/stickies/00000000-0000-4000-8000-000000000701/",
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "APIKeyAuthentication accepts X-Api-Key only; session cookie alone remains 401. WorkspaceUserPermission requires an active workspace membership and has no role threshold; inactive/nonmember is 403. Invalid API key is 403.",
+          "source": "apps/api/plane/api/middleware/api_authentication.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Target scope",
+          "observable": "Collection queries and detail lookups are scoped by workspace slug and sticky owner; deleted Sticky rows are excluded. Detail get/patch/delete for absent, deleted, or another owner returns 404. Create explicitly resolves Workspace through its default manager and rejects a soft-deleted workspace; other methods join by workspace slug without applying that ancestor predicate. Unknown workspace slug fails membership permission with 403.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/models/sticky.py; apps/api/plane/app/permissions/workspace.py"
+        },
+        {
+          "when": "Request and serialization",
+          "observable": "StickySerializer exposes model fields but required=false; id, workspace, owner, created_at, updated_at, description_binary are read-only. Nullable fields include background_color, color, created_by, deleted_at, description_stripped, name, updated_by. Empty PUT succeeds; descriptions accept object or JSON string; blank/null colors are accepted; HTML is sanitized. API response datetimes use the actor timezone. A top-level JSON array is rejected as non_field_errors with status 400 before mutation; update lookup precedes this validation. JSON null returns non_field_errors: No data provided.",
+          "source": "apps/api/plane/api/serializers/sticky.py; apps/api/plane/api/views/sticky.py"
+        },
+        {
+          "when": "Collection selection",
+          "observable": "List filters to current owner and active rows, orders by -created_at (not sort_order), supports case-insensitive description_stripped query and cursor/per_page pagination (default 20).",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/utils/paginator.py; apps/api/plane/db/models/sticky.py"
+        },
+        {
+          "when": "Response and effects",
+          "observable": "Create 201; list/retrieve/patch/put 200; delete 204 empty and soft-deletes the row. API-key use updates token last_used and queues process_logs; successful create/patch/put writes Sticky rows; successful delete also queues soft_delete_related_objects. Detail OPTIONS returns 200 and omits actions when its PUT object lookup raises a handled not-found error.",
+          "source": "apps/api/plane/api/views/sticky.py; apps/api/plane/db/mixins.py"
+        },
+        {
+          "when": "Router format suffix",
+          "observable": "DRF DefaultRouter .json routes reach five custom handlers whose signatures omit format and produce 500; corrected-runtime overlays add optional format=None and capture successful route behavior. Unsupported .xml suffixes resolve 404 before auth. Inherited PUT accepts format.",
+          "source": "apps/api/plane/api/urls/sticky.py; apps/api/plane/api/views/sticky.py"
+        }
+      ],
+      "database_effects": ["api_tokens: API-key last_used bookkeeping", "stickies: create or update"]
+    }
+  },
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "sticky-soft-delete-api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    }
+  },
+  "middleware_order": {
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/api_v1_stickies_middleware_test.go::TestAPIV1StickyProtocolCompatibilityHeadersAndMethodDispatch",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["per_page", "cursor", "query"],
+    "evidence": "apps/api/plane/tests/parity/test_api_v1_stickies_recorder.py",
+    "auth_probes": {
+      "api-key": "/api/v1/workspaces/sticky-v1-parity/stickies/"
+    },
+    "sample_note": "Detail probes use a seeded Sticky target; source fixtures cover per-operation authorization and missing/deleted/foreign-owner branches. Format aliases are recorded separately in the family corpus and proxy tests.",
+    "additional_protocol_evidence": {
+      "format_suffix_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/create-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/delete-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/list-unsupported-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/patch-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-json-format-suffix-trailing-slash.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-json-format-suffix.json",
+        "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/retrieve-unsupported-format-suffix.json"
+      ],
+      "corrected_oracle_index": "docs/go-backend-replacement/evidence/api-v1-stickies/api_v1_stickies_corrected_index.json",
+      "note": "DRF format suffixes are recorded in executable family parity and mount/proxy coverage; endpoint-retirement differential supports canonical and slashless forms."
+    },
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "request_body_note": "The transport matrix sends explicit JSON arrays on POST/PATCH/PUT to compare deterministic serializer rejection. Successful writes, persisted fields, generated identities and durable effects are compared by the complete source/Go parity corpus; no response identity or creation timestamp is masked."
+  },
+  "corrected_fixture_index": "docs/go-backend-replacement/evidence/api-v1-stickies/api_v1_stickies_corrected_index.json",
+  "corrected_fixture_count": 12,
+  "source_manifest": "docs/go-backend-replacement/evidence/api-v1-stickies/source-manifest.json",
+  "source_fixture_count": 76,
+  "protocol_rejection_fixtures": [
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/collection-put-method-not-allowed.json",
+      "method": "PUT",
+      "path": "/api/v1/workspaces/{slug}/stickies/",
+      "status": 405
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/detail-post-method-not-allowed.json",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "status": 405
+    },
+    {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/detail-trace-method-not-allowed.json",
+      "method": "TRACE",
+      "path": "/api/v1/workspaces/{slug}/stickies/{pk}/",
+      "status": 405
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "family": "work_item_core",
+  "purpose": "source characterization delta; Django recorder only",
+  "command": "UPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py -q plane/tests/parity/test_work_item_core_issue_recorder.py plane/tests/parity/test_work_item_core_lifecycle_recorder.py -k \"entry-app-create-deleted-at-refetch-failure or entry-v1-create-deleted-at-refetch-failure or entry-app-create-draft-refetch-failure or closure-draft-patch-malformed-module-partial\"",
+  "result": "4 passed, 760 deselected in 1.93s after correcting malformed UUID expected status to observed 400",
+  "preservation": "802 pre-existing fixture SHA256 entries in /tmp/plane-work-item-core/core-closeout-fixture-hashes-before.txt all remain byte-identical; four new receipts added",
+  "fixtures": [
+    {
+      "fixture": "issue-core-entry-app-create-deleted-at-refetch-failure.json",
+      "sha256": "5659dd0031a678d5d92ab82dcd061cdf499154007a45813d788e753b74651109",
+      "method": "POST",
+      "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+      "status": 500,
+      "response_body": {
+        "error": "Something went wrong please try again later"
+      },
+      "changed_tables": ["issue_sequences", "issues"],
+      "field_changes": [
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "deleted",
+            "id",
+            "issue_id",
+            "project_id",
+            "sequence",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issue_sequences"
+        },
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "deleted_at",
+            "description_html",
+            "description_json",
+            "description_stripped",
+            "id",
+            "is_draft",
+            "name",
+            "priority",
+            "project_id",
+            "sequence_id",
+            "sort_order",
+            "state_id",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issues"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "plane.bgtasks.issue_activities_task.issue_activity",
+          "type": "issue.activity.created"
+        }
+      ]
+    },
+    {
+      "fixture": "issue-core-entry-v1-create-deleted-at-refetch-failure.json",
+      "sha256": "6a3adea834ef6698fd3ed653064ebec1d26c67e6cbbf27f1ff84f8dd44b2f091",
+      "method": "POST",
+      "path": "/api/v1/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+      "status": 500,
+      "response_body": {
+        "error": "Something went wrong please try again later"
+      },
+      "changed_tables": ["api_tokens", "issue_sequences", "issues"],
+      "field_changes": [
+        {
+          "fields": ["last_used"],
+          "record": "existing",
+          "table": "api_tokens"
+        },
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "deleted",
+            "id",
+            "issue_id",
+            "project_id",
+            "sequence",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issue_sequences"
+        },
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "deleted_at",
+            "description_html",
+            "description_json",
+            "description_stripped",
+            "id",
+            "is_draft",
+            "name",
+            "priority",
+            "project_id",
+            "sequence_id",
+            "sort_order",
+            "state_id",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issues"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "plane.bgtasks.logger_task.process_logs",
+          "type": null
+        }
+      ]
+    },
+    {
+      "fixture": "issue-core-entry-app-create-draft-refetch-failure.json",
+      "sha256": "cdfe71543efcb1c855aa02676661d704d0e1457aaf8809bda71e63b646154da8",
+      "method": "POST",
+      "path": "/api/workspaces/issue-core-contract/projects/<uuid-1>/issues/",
+      "status": 500,
+      "response_body": {
+        "error": "Something went wrong please try again later"
+      },
+      "changed_tables": ["issue_sequences", "issues"],
+      "field_changes": [
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "deleted",
+            "id",
+            "issue_id",
+            "project_id",
+            "sequence",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issue_sequences"
+        },
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "description_html",
+            "description_json",
+            "description_stripped",
+            "id",
+            "is_draft",
+            "name",
+            "priority",
+            "project_id",
+            "sequence_id",
+            "sort_order",
+            "state_id",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "issues"
+        }
+      ],
+      "tasks": [
+        {
+          "name": "plane.bgtasks.issue_activities_task.issue_activity",
+          "type": "issue.activity.created"
+        }
+      ]
+    },
+    {
+      "fixture": "lifecycle-closure-draft-patch-malformed-module-partial.json",
+      "sha256": "5133a1f962fac8673419584b10fce3f2562acab79af00d844279a7cda4677713",
+      "method": "PATCH",
+      "path": "/api/workspaces/work-item-lifecycle-contract/draft-issues/<uuid-2>/",
+      "status": 400,
+      "response_body": {
+        "error": "Please provide valid detail"
+      },
+      "changed_tables": ["draft_issue_assignees", "draft_issue_cycles", "draft_issue_labels", "draft_issue_modules"],
+      "field_changes": [
+        {
+          "fields": ["deleted_at"],
+          "record": "existing",
+          "table": "draft_issue_assignees"
+        },
+        {
+          "fields": ["deleted_at"],
+          "record": "existing",
+          "table": "draft_issue_cycles"
+        },
+        {
+          "fields": [
+            "created_at",
+            "created_by_id",
+            "cycle_id",
+            "draft_issue_id",
+            "id",
+            "project_id",
+            "updated_at",
+            "workspace_id"
+          ],
+          "record": "new",
+          "table": "draft_issue_cycles"
+        },
+        {
+          "fields": ["deleted_at"],
+          "record": "existing",
+          "table": "draft_issue_labels"
+        },
+        {
+          "fields": ["deleted_at"],
+          "record": "existing",
+          "table": "draft_issue_modules"
+        }
+      ],
+      "tasks": []
+    }
+  ],
+  "limitations": "Go immutable replay for these four cases has not been run by this receipt.",
+  "immutable_source_replay": {
+    "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py -q plane/tests/parity/test_work_item_core_issue_recorder.py plane/tests/parity/test_work_item_core_lifecycle_recorder.py -k \"entry-app-create-deleted-at-refetch-failure or entry-v1-create-deleted-at-refetch-failure or entry-app-create-draft-refetch-failure or closure-draft-patch-malformed-module-partial\"",
+    "result": "4 passed, 760 deselected in 6.01s",
+    "fixtures_unchanged": true
+  }
+}

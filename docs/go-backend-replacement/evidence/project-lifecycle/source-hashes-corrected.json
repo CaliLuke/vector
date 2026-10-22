@@ -1,0 +1,348 @@
+{
+  "corrected_source_worktree": "[local migration artifact omitted]",
+  "correction_index_sha256": "f8d3338a7a8d5eb264cb7ec9ef0b0034b79ac92bc4ddcbd9f7a68033d9e5ab2e",
+  "correction_patch": "corrected-patches/source-corrections.patch",
+  "correction_patch_sha256": "48acd2e01af2bbc7c46e1118f744398714772fb05c8712f4353d6861a486e7f1",
+  "fixture_count": 66,
+  "fixture_recorder_sha256": "bf8b32a2dac2056420a8ea620b746f4a43272f1b6e5267f7f66eebec6e247fed",
+  "fixture_sha256": {
+    "app-archive-stale-project-admin.json": "c6f5e770519cbc067d4965202aa3d3fbcdf6f85ed007d0253aa218fa59728ce7",
+    "app-create-cover-asset-other-project-accepted.json": "35f302e7d358812dff8dd313fce6d7696f851b30bb7c0fbccd3f3d1a1e599986",
+    "app-create-foreign-assignee-accepted.json": "1476a3f20700f39d42487c22284277c6c3dcb3af63d155355f7873541517b33d",
+    "app-create-foreign-lead-accepted.json": "f71e0366b152e55e532fd1dd264e4d2910e48c4e3c7997373027b45ba3516b57",
+    "app-create-foreign-state-estimate-accepted.json": "1449630e45199bc2fcab180330a55978526f043c7334436558c77cef61ca3b7c",
+    "app-create-inactive-assignee-accepted.json": "4942804d309cd072f76e281a8da993d57f4c7af59c8d7b989d240cf70b1c746a",
+    "app-create-inactive-lead-accepted.json": "a0e2f013438a451ae1bc0d1306e1c42a121a2e58f72c15194fc1874e7d171b5c",
+    "app-create-logo-props-lone-surrogate.json": "c3bf54583cd57197c92fa1032ae733d71d320834b130caba81184840d6e275c5",
+    "app-create-server-owned-fields-write.json": "0a55f45fe8de791f537cc1422ee76b8a5b73e250e86608c8fa21e833450a4ef9",
+    "app-delete-stale-project-admin.json": "f4068cd1a12788d3c9e33f526f41cd952b65c60c04f5f57c3ad5096bb0a91c80",
+    "app-patch-cover-asset-foreign-workspace.json": "c6e5faf0d5b61836597958961749fdfb49b03f788412607d6a2dc5fdc996e6f8",
+    "app-patch-cover-asset-other-project.json": "3cc38b73ca3c5afd88f557e035c758dbbfd3db20a17e4f47858cdd190813663b",
+    "app-patch-cover-asset-wrong-entity.json": "0db8a320d1aa2f93face7dfa7f8b267bb3b54eea6326cc1c3973e0f5a38fc611",
+    "app-patch-description-jsonfields-lone-surrogate.json": "8f8ead26de651962d5acbedcf502db4d306d0d175fd8829c4909d30d9334afc4",
+    "app-patch-foreign-assignee-accepted.json": "6ad88559bcf52cae3f22a9018a9aa24e92546b4b5f84a6c52c84c3853d18752a",
+    "app-patch-foreign-lead-accepted.json": "5212830265c8b5eec4db906c09dac1a29cb885f045ecd131227f1f106b43af1c",
+    "app-patch-form-inbox-string-false.json": "b210ce035280d4792bc4c70b1c816b42c9e7fe5011971ae93e14fe2cb069051e",
+    "app-patch-form-repeated-name.json": "53a13067af50095db4be9653619a3930261c7f9a71c79bc3ac65495dd2300cc3",
+    "app-patch-inactive-lead-accepted.json": "830fac1cb6168b5286a5112ec876dcbfd1e9f0ffc5e74366f65c809e1d5286e8",
+    "app-patch-server-owned-fields-null.json": "fadad294645d7a11b5cf9fec1271857b08463bcd5b960b8085f29f36e8b48c30",
+    "app-patch-server-owned-fields-write.json": "395011e7272e532a59837eb628706a91ea6190eff6735ebb75d87f06389ddbb7",
+    "app-patch-stale-project-admin.json": "6e38717f60db12fc2623885b22ac0e6db8b6421391e3afbd32e14932e06b3963",
+    "app-put-admin-full-update.json": "fd97c4c27d180102fca043dfd09bcb4beb1c47b94e21fe3b6f936a49664c8358",
+    "app-put-archived-at-write.json": "0b44945413ee62aafdecc65d39cf9fdb04f278324d4422dc3a7a96064aed166d",
+    "app-put-archived-full-update.json": "36eda0f7cbea8f9924849bbd53f343d48482e4d52efad137ebfd151f0813f8c1",
+    "app-put-cross-slug.json": "7958eb0f9e3f922da9d3bf00d7d4a66fc174fe609c6894f58831b330d60253f3",
+    "app-put-deleted-at-write.json": "2a9740cb91db387f4dbb0ec79e03fac38582458fe4e8a39e6933dcfccbba8276",
+    "app-put-foreign-assignee-write.json": "ac104d21821f69c114f825ec2543e93410a83455eb782bb2fab5d5409911174b",
+    "app-put-foreign-lead-write.json": "9fb5eee270509ae43431e1626249d6c15ac6737b8ee59bc83ab1377fa6593e24",
+    "app-put-form-repeated-name-and-omitted-booleans.json": "af088a0dd6fcbeeb809197508ef6b37558832aa2b3d226fb6dc23035bd176241",
+    "app-put-member-full-update.json": "c5bbb301f2420b0502b883d72a7e0c14d5a3cb849d03596136b3280c498a0b74",
+    "app-put-outsider-full-update.json": "1849287b15ce84089f7921c467b1e20db6e8b363db55acd1da1f210cc6fec6da",
+    "app-put-sparse-body.json": "a6ebc8a81abda524e105fdda9997a9f58cdc662618b653a9806a37307e788f8c",
+    "app-put-stale-project-admin.json": "0b096d75ff9953a29a8bdccf65e415c53a03570d974e96ee6a20d8314613592c",
+    "app-put-unicode-identifier.json": "4015ec673291b23a2340bd2b7a82c64d1fc8cadff707a5a27ec7743e9ba8821f",
+    "app-put-workspace-reassignment.json": "1e852e352f5e46355fc3da87c8ba74c09b7017a6c5263d99ffb8e042cd5ec420",
+    "app-restore-stale-project-admin.json": "10ad8c45735bb9ab46be90516f96c44e41eb31c31a3299d08772cb9cf5c00769",
+    "v1-create-form-repeated-name.json": "260df5438cd8d3984d01e36b81bf34846a3619a27e8af2cf3cbac94baa5ca098",
+    "v1-create-icon-prop-lone-surrogate.json": "4f52f01ff7235ec98bf767dfa835dbcef55eb256d3e092080f38692a9d4794be",
+    "v1-create-icon-prop-valid-unicode-duplicate-control.json": "88dda00c62e09335c651cf3412f2be83893fc830e30b64477a5108881a8a5279",
+    "v1-create-ignored-overflow-finite-sibling.json": "ce0b8e414d9dc1465f1fca8e837f484fc98480d5546053ad666e13bc72e5bd8d",
+    "v1-create-self-lead.json": "8e3510c35689592565c3dfb91fe5d7ff0ae1c354262e0946762d2d5e44e4b454",
+    "v1-create-success.json": "6f79e278f83b52082bf1caffeb7eab627577287407c92650f0e433970a6bbf28",
+    "v1-create-unknown-lone-surrogate.json": "5d7983f93dc8a7efbf2c499efa9819ab325daf116f1e619ad9e5ae6925e293be",
+    "v1-delete-stale-project-admin.json": "110a51713f97cc008127fb0d2fd5f1cca827c4a08f103909c62fee7b2aa0dce5",
+    "v1-lite-cursor-backward-mismatched-limit.json": "b66f3f3dec0951e81c0d57114ab91df868e47846a635a430c258307042b907de",
+    "v1-lite-sort-order-ascending.json": "67c1d60cccc55e547842d4eb981162e932e8b96421b4d554899840f7ee11586b",
+    "v1-lite-sort-order-descending.json": "b3bf657a6174a0038e2bc4825294a1c1a87f17895036f7351b44519240968cfc",
+    "v1-lite-sort-order-source-error.json": "727bcfce769acaaa39f1d9abafa2ed416fa2e682ab1376fa04770e8b26f33a96",
+    "v1-patch-default-assignee-foreign.json": "ed9452de325af97f18a10862fc939b75bb0d5a45315989737e7de81ecbbf35ca",
+    "v1-patch-default-state-foreign.json": "a599b048b424208feafb4ff9f002ab68cd7869fd33f0bf943f10c814ba1771ee",
+    "v1-patch-default-state-valid.json": "788bdc60db7bb4603c71144dc8d795bae6584be3c8d6105fbcb23712bee9fdd5",
+    "v1-patch-estimate-foreign.json": "52d08f8d469fedee30cad85ab7fb0d787a4e0fa631a9cb3031ce2d7088cdbdca",
+    "v1-patch-form-repeated-name.json": "c267d5e88ad614112b88481b990bcd62ec713d3ef7432f45e2ba9f092b2eeb33",
+    "v1-patch-icon-prop-lone-surrogate-form.json": "649812218cc369e45562d1e0cf83c78682ac0ce411803b96a82cc5542494b948",
+    "v1-patch-icon-prop-lone-surrogate.json": "72fa41e32d2c2da9956960fea9c4d215d0a65c90857ca6566cd72450bb887077",
+    "v1-patch-icon-prop-nested-overwritten-lone-surrogate.json": "1899f7b8485a24a171fceca09a6c8a4989fb3d6cfab16153c7019e8e816089c1",
+    "v1-patch-jsonfield-form-binary64.json": "afef7adff248ba98633fd1a0cfee89d63376b1c9af69123fbc486d794a8e6529",
+    "v1-patch-raw-utf8-conflicting-duplicate-empty-body.json": "6ec015caa32c380acab3aae88148d8bb3da0fa39cce9f4a463bb226e0c47a075",
+    "v1-patch-raw-utf8-extended-charset-invalid-byte.json": "4f8fc6f22b495440018933aacbefc1393d43b8e706cf6e0d0317951c1ba04eb9",
+    "v1-patch-raw-utf8-latin1-charset-control.json": "cb433f35a07ba2059994cd3ddcafe55e4c24723305d7d95cae06d55eb3848eec",
+    "v1-patch-raw-utf8-latin1-charset-valid-nonascii.json": "33c29463f6ee929a43f56c57bd9339e5b85cb83d5cd7a29301f58328961a5ebc",
+    "v1-patch-raw-utf8-malformed-charset-parameter.json": "16fb64dad3bd69b9ff451816c7c6d5c281eac9a3e9218be56fc343b730c739b4",
+    "v1-patch-raw-utf8-trailing-incomplete-tail.json": "ea27a673e73c1baa6d771d0da2735d7aea854d940c8b2fd190e2b0c796e575fb",
+    "v1-patch-stale-project-admin.json": "e8e3eaf2d6f8111a0ca1477570b455ce90e17b03c52ce37c0383f380339452a9",
+    "v1-restore-stale-project-admin.json": "b4c1acae32afcf782839b4f98e4cb03a7e3e1e8e1f4c4f5958332dfab091ef9b"
+  },
+  "modules": {
+    "plane/api/middleware/api_authentication.py": "76fedb6884da101b622b507cd59ff696de3d8b56405d45eda691a3c851709aca",
+    "plane/api/serializers/project.py": "236032b131350686d2a4c76da40186ff3c15500c9e00a53f7db6bb9733328e20",
+    "plane/api/urls/project.py": "b48c6ad7eef633f3d128817e9f3cf95426bd05899d87bca7b5d936d15e9e5213",
+    "plane/api/views/base.py": "108264d7b0920264dbde410592b31adaea6be2426928e55d38723ffb3cd36554",
+    "plane/api/views/project.py": "a94ccd3ef0327bd3c96dd6b6015b060e6d39e6b2bf67aab325d92a4582b481e5",
+    "plane/app/permissions/base.py": "43594a4e66a72ef3859ef0b1de82b46d6cc0824b7fcefecb7e99b326f08a64e2",
+    "plane/app/permissions/project.py": "a9b5940a95ed47110035ebf7264601d0f24ab5e2fe9e427a311ce018484df588",
+    "plane/app/serializers/project.py": "c7caa7e19961c3a7d09e31257291bdf6e1f50818d873e36cb23da450118cd02d",
+    "plane/app/urls/project.py": "0687a6f1c5d5894f14ee8e2b8a0a005fb995c9b9f5cdad7326f0058c660f175d",
+    "plane/app/views/project/base.py": "095adc159df0613624562d4e4a831a445d5d0cff819a1a017f9288ba34290e56",
+    "plane/db/models/project.py": "38c57a3857f8ef7d0013ecc24887c47248e010cc82115f805829b6d99f5a6c41",
+    "plane/db/models/state.py": "dee256b42615705f66ce3f0daa639a965d7c55316d656481580e440d63118951",
+    "plane/utils/order_queryset.py": "bc1fa6a5babc968e1b973e48921df589fc08e5bbbea743ddd0be6c61e02900e7",
+    "plane/utils/paginator.py": "9e40f7d22f88555caa17d20e590181aa0c8a894b786cb2a9819a64086f3e4455"
+  },
+  "recorder_sha256": "bf8b32a2dac2056420a8ea620b746f4a43272f1b6e5267f7f66eebec6e247fed",
+  "source_capture": {
+    "capture_groups": [
+      {
+        "failed": 0,
+        "fixture_cases": 49,
+        "log": "corrected-source-20261020T234845Z.log",
+        "passed": 49,
+        "request_attempts": 49,
+        "successful_fixture_cases": 49
+      },
+      {
+        "case_ids": [
+          "app-put-unicode-identifier",
+          "v1-patch-jsonfield-form-binary64"
+        ],
+        "failed": 0,
+        "fixture_cases": 2,
+        "log": "review-r1/corrected.log",
+        "passed": 2,
+        "request_attempts": 2,
+        "successful_fixture_cases": 2
+      },
+      {
+        "case_ids": [
+          "v1-create-ignored-overflow-finite-sibling"
+        ],
+        "failed": 0,
+        "fixture_cases": 1,
+        "log": "corrected-source-20261021T020636Z.log",
+        "passed": 1,
+        "request_attempts": 1,
+        "successful_fixture_cases": 1
+      },
+      {
+        "fixture_cases": 48,
+        "passed": 48,
+        "failed": 0,
+        "request_attempts": 48,
+        "log": "corrected-source-20261021T024254Z.log",
+        "recorder_sha256": "0656e1e2ee42633dd37e900560a69b51fcf295ff298b4901a7328b3df235954b"
+      },
+      {
+        "fixture_cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "request_attempts": 4,
+        "log": "corrected-source-20261021T024317Z.log",
+        "recorder_sha256": "0656e1e2ee42633dd37e900560a69b51fcf295ff298b4901a7328b3df235954b"
+      },
+      {
+        "case_ids": [
+          "v1-create-unknown-lone-surrogate",
+          "v1-create-icon-prop-valid-unicode-duplicate-control",
+          "v1-create-icon-prop-lone-surrogate",
+          "v1-patch-icon-prop-lone-surrogate",
+          "v1-patch-icon-prop-lone-surrogate-form"
+        ],
+        "failed": 1,
+        "fixture_cases": 4,
+        "successful_fixture_cases": 4,
+        "request_attempts": 5,
+        "log": "unicode-r3/corrected-attempt1.log",
+        "exit_status": 1,
+        "note": "The form case returned 400, then a recorder field-presence assertion failed before fixture write."
+      },
+      {
+        "case_ids": [
+          "app-create-logo-props-lone-surrogate",
+          "app-patch-description-jsonfields-lone-surrogate",
+          "v1-patch-icon-prop-nested-overwritten-lone-surrogate"
+        ],
+        "failed": 0,
+        "fixture_cases": 3,
+        "successful_fixture_cases": 3,
+        "passed": 3,
+        "request_attempts": 3,
+        "log": "unicode-r3/corrected-attempt2.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-icon-prop-lone-surrogate-form"
+        ],
+        "failed": 0,
+        "fixture_cases": 1,
+        "successful_fixture_cases": 1,
+        "passed": 1,
+        "request_attempts": 1,
+        "log": "unicode-r3/corrected-capture.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-latin1-charset-control",
+          "v1-patch-raw-utf8-trailing-incomplete-tail"
+        ],
+        "failed": 1,
+        "fixture_cases": 0,
+        "successful_fixture_cases": 0,
+        "request_attempts": 1,
+        "log": "utf8-only-contract/corrected-attempt1.log",
+        "exit_status": 1,
+        "note": "First corrected capture compared the full Content-Type value and failed before writing a fixture."
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-latin1-charset-control",
+          "v1-patch-raw-utf8-trailing-incomplete-tail"
+        ],
+        "failed": 0,
+        "fixture_cases": 2,
+        "successful_fixture_cases": 2,
+        "passed": 2,
+        "request_attempts": 2,
+        "log": "utf8-only-contract/corrected-capture.log",
+        "recorder_sha256": "80e733df193468f1b814c8fb4ecdee81d55be4e12265b85a58388395604fb526",
+        "fixture_recorder_sha256": "6aad96597b473d6f1d20c33e5a469eba255d63ebf944af3079bafa6cfe6d9e2c"
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-malformed-charset-parameter"
+        ],
+        "failed": 0,
+        "fixture_cases": 1,
+        "passed": 1,
+        "successful_fixture_cases": 1,
+        "request_attempts": 1,
+        "log": "mime-repair/corrected-capture.log",
+        "exit_status": 0
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-latin1-charset-control"
+        ],
+        "failed": 1,
+        "fixture_cases": 0,
+        "successful_fixture_cases": 0,
+        "request_attempts": 1,
+        "exit_status": 1,
+        "log": "corrected-source-20261021T072849Z.log",
+        "note": "Corrected oracle view had a missing helper import; no fixture was retained from this failed run."
+      },
+      {
+        "case_ids": [
+          "v1-patch-raw-utf8-conflicting-duplicate-empty-body",
+          "v1-patch-raw-utf8-extended-charset-invalid-byte",
+          "v1-patch-raw-utf8-latin1-charset-valid-nonascii",
+          "v1-patch-raw-utf8-latin1-charset-control",
+          "v1-patch-raw-utf8-equal-duplicate-charset",
+          "v1-patch-raw-utf8-extended-charset-ascii",
+          "v1-patch-raw-utf8-quoted-empty-parameter"
+        ],
+        "failed": 0,
+        "fixture_cases": 3,
+        "successful_fixture_cases": 7,
+        "passed": 7,
+        "request_attempts": 7,
+        "exit_status": 0,
+        "log": "corrected-source-20261021T073003Z.log",
+        "note": "Seven source requests verified; four changed overlays retained, and three byte-identical controls omitted from the sparse overlay."
+      }
+    ],
+    "failed_requests": 3,
+    "fixture_cases": 66,
+    "passed_requests": 70,
+    "request_attempts": 73,
+    "latest_capture": {
+      "fixture_cases": 3,
+      "passed": 7,
+      "failed": 0,
+      "request_attempts": 7,
+      "logs": [
+        "corrected-source-20261021T073003Z.log"
+      ],
+      "note": "Three new changed overlays and the updated existing Latin-1 invalid-byte overlay; three valid control captures were byte-identical to pristine."
+    }
+  },
+  "source_commit": "c289aaaf8980274b409bf665e914bdc205700e6f",
+  "source_verification_addenda": [
+    {
+      "case_ids": [
+        "v1-create-ignored-overflow-finite-sibling"
+      ],
+      "exit_status": 0,
+      "failed": 0,
+      "fixture_cases": 1,
+      "log": "corrected-source-20261021T020820Z.log",
+      "mode": "PROJECT_LIFECYCLE_SOURCE_VERIFY=1; UPDATE_PARITY_FIXTURES=0; committed autocommit callback capture",
+      "passed": 1
+    },
+    {
+      "case_ids": [
+        "app-archive-stale-project-admin",
+        "app-create-cover-asset-other-project-accepted",
+        "app-create-foreign-assignee-accepted",
+        "app-create-foreign-lead-accepted",
+        "app-create-foreign-state-estimate-accepted",
+        "app-create-inactive-assignee-accepted",
+        "app-create-inactive-lead-accepted",
+        "app-create-server-owned-fields-write",
+        "app-delete-stale-project-admin",
+        "app-patch-cover-asset-foreign-workspace",
+        "app-patch-cover-asset-other-project",
+        "app-patch-cover-asset-wrong-entity",
+        "app-patch-foreign-assignee-accepted",
+        "app-patch-foreign-lead-accepted",
+        "app-patch-form-inbox-string-false",
+        "app-patch-form-repeated-name",
+        "app-patch-inactive-lead-accepted",
+        "app-patch-server-owned-fields-null",
+        "app-patch-server-owned-fields-write",
+        "app-patch-stale-project-admin",
+        "app-put-admin-full-update",
+        "app-put-archived-at-write",
+        "app-put-archived-full-update",
+        "app-put-cross-slug",
+        "app-put-deleted-at-write",
+        "app-put-foreign-assignee-write",
+        "app-put-foreign-lead-write",
+        "app-put-form-repeated-name-and-omitted-booleans",
+        "app-put-member-full-update",
+        "app-put-outsider-full-update",
+        "app-put-sparse-body",
+        "app-put-stale-project-admin",
+        "app-put-unicode-identifier",
+        "app-put-workspace-reassignment",
+        "app-restore-stale-project-admin",
+        "v1-create-form-repeated-name",
+        "v1-create-ignored-overflow-finite-sibling",
+        "v1-create-self-lead",
+        "v1-create-success",
+        "v1-delete-stale-project-admin",
+        "v1-lite-cursor-backward-mismatched-limit",
+        "v1-lite-sort-order-ascending",
+        "v1-lite-sort-order-descending",
+        "v1-lite-sort-order-source-error",
+        "v1-patch-default-assignee-foreign",
+        "v1-patch-default-state-foreign",
+        "v1-patch-default-state-valid",
+        "v1-patch-estimate-foreign",
+        "v1-patch-form-repeated-name",
+        "v1-patch-jsonfield-form-binary64",
+        "v1-patch-stale-project-admin",
+        "v1-restore-stale-project-admin"
+      ],
+      "exit_status": 0,
+      "failed": 0,
+      "fixture_cases": 52,
+      "passed": 52,
+      "pytest_items": 49,
+      "log": "unicode-r3/verify-existing52.log",
+      "mode": "PROJECT_LIFECYCLE_SOURCE_VERIFY=1; UPDATE_PARITY_FIXTURES=0; read-only corrected fixture mount",
+      "recorder_sha256": "e89b5b6c24e39adbd42f26c47bf8ddbc18f090a9ca686aa4312a2d92f1afe598"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "database": {
+    "after": {
+      "labels": [
+        {
+          "color": "#00FF00",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-4>",
+          "name": "Child",
+          "parent_id": "<uuid-2>",
+          "project_id": "<uuid-1>",
+          "sort_order": 100.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#FF0000",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 200.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "labels": [
+        {
+          "color": "#00FF00",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-4>",
+          "name": "Child",
+          "parent_id": "<uuid-2>",
+          "project_id": "<uuid-1>",
+          "sort_order": 100.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "color": "#FF0000",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-2>",
+          "name": "Parent",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": 200.0,
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/project-label-reads/projects/<uuid-1>/issue-labels/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "detail": "You do not have permission to perform this action."
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 403
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-workspace-inactive"
+  }
+}

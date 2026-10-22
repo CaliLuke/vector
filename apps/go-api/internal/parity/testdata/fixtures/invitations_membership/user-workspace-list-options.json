@@ -1,0 +1,184 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "OPTIONS",
+    "path": "/api/users/me/workspaces/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "actions": {
+        "POST": {
+          "accepted": {
+            "label": "Accepted",
+            "read_only": false,
+            "required": false,
+            "type": "boolean"
+          },
+          "created_at": {
+            "label": "Created At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "created_by": {
+            "label": "Created By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "deleted_at": {
+            "label": "Deleted At",
+            "read_only": false,
+            "required": false,
+            "type": "datetime"
+          },
+          "email": {
+            "label": "Email",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "id": {
+            "label": "Id",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "invite_link": {
+            "label": "Invite link",
+            "read_only": true,
+            "required": false,
+            "type": "field"
+          },
+          "message": {
+            "label": "Message",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "responded_at": {
+            "label": "Responded at",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "role": {
+            "choices": [
+              {
+                "display_name": "Admin",
+                "value": 20
+              },
+              {
+                "display_name": "Member",
+                "value": 15
+              },
+              {
+                "display_name": "Guest",
+                "value": 5
+              }
+            ],
+            "label": "Role",
+            "read_only": false,
+            "required": false,
+            "type": "choice"
+          },
+          "token": {
+            "label": "Token",
+            "read_only": true,
+            "required": false,
+            "type": "string"
+          },
+          "updated_at": {
+            "label": "Last Modified At",
+            "read_only": true,
+            "required": false,
+            "type": "datetime"
+          },
+          "updated_by": {
+            "label": "Last Modified By",
+            "read_only": false,
+            "required": false,
+            "type": "field"
+          },
+          "workspace": {
+            "children": {
+              "id": {
+                "label": "Id",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "logo_url": {
+                "label": "Logo url",
+                "read_only": true,
+                "required": false,
+                "type": "field"
+              },
+              "name": {
+                "label": "Workspace Name",
+                "read_only": true,
+                "required": false,
+                "type": "string"
+              },
+              "slug": {
+                "label": "Slug",
+                "read_only": true,
+                "required": false,
+                "type": "slug"
+              }
+            },
+            "label": "Workspace",
+            "read_only": true,
+            "required": false,
+            "type": "nested object"
+          }
+        }
+      },
+      "description": "",
+      "name": "User Workspace Invitations",
+      "parses": [
+        "application/json",
+        "application/x-www-form-urlencoded",
+        "multipart/form-data"
+      ],
+      "renders": [
+        "application/json"
+      ]
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "user-workspace-list-options"
+  }
+}

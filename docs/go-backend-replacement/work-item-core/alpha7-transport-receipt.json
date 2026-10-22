@@ -1,0 +1,57 @@
+{
+  "family": "work_item_core",
+  "loom_version": "v1.10.0-alpha.7",
+  "upgrade_commit": "d33f048451109a1f868e88a0bd8e649c1487d90d",
+  "generation": {
+    "command": "go -C apps/go-api generate ./work_item_core/design",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/alpha7-generation.log"
+  },
+  "transport": {
+    "command": "go -C apps/go-api test ./work_item_core/design -count=1 -v",
+    "exit_code": 0,
+    "log": "/tmp/plane-work-item-core/alpha7-transport-tests-final.log",
+    "operations": 72,
+    "identifier_routes": 3,
+    "identifier_client_server_cases": 21,
+    "source_error_bodies_at_run": 321,
+    "selected_target_error_bodies": 11,
+    "source_fixture_count_at_run": 802,
+    "log_sha256": "a9d574db9f2be5b367876fbf1e6bfb061256f1c1d5d7d53ef61b1f6b94691d33"
+  },
+  "checks": [
+    {
+      "command": "go -C apps/go-api vet ./work_item_core/design",
+      "exit_code": 0
+    },
+    {
+      "command": "gofmt -l apps/go-api/work_item_core/design",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "go test work_item_core_methods_test.go -run '^TestWorkItemCoreMethodAdaptersMatchContract$' -count=1",
+      "workdir": "apps/go-api",
+      "exit_code": 0,
+      "scope": "All72 authored adapters, generated operations and canonical contract IDs, including exactly three native identifier path mappings. Failed on all three mappings before test repair.",
+      "limitation": "Standalone AST test because unfinished family service root does not compile yet."
+    }
+  ],
+  "contracts": [
+    "Composite URLs use a single required string path parameter; the public URL spelling and source operation IDs are retained. Generated clients and servers preserve Unicode digits, spaces, hyphens, large integer spellings, percent signs and fragments without ad hoc escaping.",
+    "Errors use native Body(\"body\") with Any, preserving complete source/selected JSON bodies and large integer precision. Client round trips cover nested field errors, arrays, null, empty objects and previously unmodeled fields."
+  ],
+  "input_sha256": {
+    "apps/go-api/work_item_core/design/design.go": "e68d72d2243a183178d49c96fe56d4ed2ed61e5d2fe9efcbd316b9b1ad63d02d",
+    "apps/go-api/work_item_core/design/identifier_test.go": "24929ffb2d286bf78e5483fde43335580bcdd0302ac6b1c6bf0be48264f514b1",
+    "apps/go-api/work_item_core/design/transport_test.go": "08efbbee1f9fa2d9d8841831069e4ce2421530bef90fcf388a026612f4a24f67",
+    "apps/go-api/work_item_core/design/target_errors_test.go": "ec4ad4dbb723784fc3eaac61b5e2fb013262410815ce4213a0fe850f6dccdd95",
+    "apps/go-api/work_item_core/gen/http/openapi.json": "787e4c24cc7165c9dab017c5d47f6aafdb11b8c91df773268d4a7d4f4d0bbf40",
+    "apps/go-api/work_item_core_methods_test.go": "a5ee37bdd510ff96102ad6afcc37b91fac3acbdb1e52590c36245fe69020dc30"
+  },
+  "limits": [
+    "The service used in these tests is a transport stub. Numeric coercion, authorization precedence, lookups, writes and durable effects are not implemented or proved by this receipt.",
+    "Malformed composite and encoded-slash behavior must be verified through the production mount and proxy against source fixtures; a native string capture alone is not that proof.",
+    "All72 operations remain Django only. Full family Go HTTP replay, UI/Logal smoke, final proof and release review remain pending."
+  ]
+}

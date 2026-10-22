@@ -1,0 +1,104 @@
+{
+  "database": {
+    "after": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-2>",
+          "colors": {
+            "primary": "#222222"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": "<timestamp>",
+          "id": "<uuid-1>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "actor_id": "<uuid-2>",
+          "colors": {
+            "primary": "#ffffff"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Light",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_themes": [
+        {
+          "actor_id": "<uuid-2>",
+          "colors": {
+            "primary": "#222222"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "id": "<uuid-1>",
+          "name": "Dark",
+          "updated_at": "<timestamp>",
+          "updated_by_id": "<uuid-2>",
+          "workspace_id": "<uuid-3>"
+        },
+        {
+          "actor_id": "<uuid-2>",
+          "colors": {
+            "primary": "#ffffff"
+          },
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "id": "<uuid-4>",
+          "name": "Light",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "workspace_themes"
+    ],
+    "expected_changed_tables": [
+      "workspace_themes"
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/workspaces/parity-theme/workspace-themes/<uuid-1>/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, PATCH, DELETE, HEAD, OPTIONS",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 204
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "delete"
+  }
+}

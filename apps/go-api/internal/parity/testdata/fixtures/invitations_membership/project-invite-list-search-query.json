@@ -1,0 +1,77 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {},
+    "before": {},
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "GET",
+    "path": "/api/workspaces/invitations-membership-fixture/projects/<uuid-1>/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {
+      "search": "not-present"
+    }
+  },
+  "response": {
+    "body": [
+      {
+        "accepted": false,
+        "created_at": "<timestamp>",
+        "created_by": null,
+        "deleted_at": null,
+        "email": "invitee@example.com",
+        "id": "<uuid-2>",
+        "message": null,
+        "project": {
+          "cover_image": null,
+          "cover_image_url": null,
+          "description": "",
+          "id": "<uuid-1>",
+          "identifier": "INVM",
+          "logo_props": {},
+          "name": "Invitation Project"
+        },
+        "responded_at": null,
+        "role": 15,
+        "token": "<secret:invite.token>",
+        "updated_at": "<timestamp>",
+        "updated_by": null,
+        "workspace": {
+          "id": "<uuid-3>",
+          "logo_url": null,
+          "name": "Invitation Membership",
+          "slug": "invitations-membership-fixture"
+        }
+      }
+    ],
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "project-invite-list-search-query"
+  }
+}

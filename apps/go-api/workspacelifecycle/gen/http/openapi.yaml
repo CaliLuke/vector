@@ -1,0 +1,250 @@
+openapi: 3.1.1
+info:
+    title: Plane Workspace Lifecycle API
+    version: 1.0.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+servers:
+    - url: http://localhost:80
+      description: Default server for Plane Workspace Lifecycle API
+paths:
+    /api/workspaces/:
+        post:
+            tags:
+                - workspace_lifecycle
+            summary: create_workspace workspace_lifecycle
+            operationId: post_api_workspaces
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: true
+                    application/x-www-form-urlencoded:
+                        schema:
+                            type: object
+                            additionalProperties: true
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            additionalProperties: true
+            responses:
+                "201":
+                    description: Created response.
+                    headers:
+                        Content-Type:
+                            $ref: '#/components/headers/ContentTypeHeader'
+                    content:
+                        application/json:
+                            schema: {}
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/:
+        delete:
+            tags:
+                - workspace_lifecycle
+            summary: delete_workspace workspace_lifecycle
+            operationId: delete_api_workspaces_by_slug
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            responses:
+                "204":
+                    description: No Content response.
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        patch:
+            tags:
+                - workspace_lifecycle
+            summary: patch_workspace workspace_lifecycle
+            operationId: patch_api_workspaces_by_slug
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PatchAPIWorkspacesBySlugRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PatchAPIWorkspacesBySlugStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        put:
+            tags:
+                - workspace_lifecycle
+            summary: put_workspace workspace_lifecycle
+            operationId: put_api_workspaces_by_slug
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+            requestBody:
+                $ref: '#/components/requestBodies/PatchAPIWorkspacesBySlugRequestBody'
+            responses:
+                "200":
+                    $ref: '#/components/responses/PatchAPIWorkspacesBySlugStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'status_409: Conflict response.'
+                "415":
+                    $ref: '#/components/responses/UnsupportedMediaTypeError'
+                    description: 'status_415: Unsupported Media Type response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+components:
+    parameters:
+        PathSlug:
+            name: slug
+            in: path
+            required: true
+            schema:
+                type: string
+    headers:
+        ContentTypeHeader:
+            schema:
+                type: string
+    requestBodies:
+        PatchAPIWorkspacesBySlugRequestBody:
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                application/x-www-form-urlencoded:
+                    schema:
+                        type: object
+                        additionalProperties: true
+                multipart/form-data:
+                    schema:
+                        type: object
+                        additionalProperties: true
+    responses:
+        BadRequestError:
+            description: Bad Request response.
+            content:
+                application/json:
+                    schema: {}
+        ConflictError:
+            description: Conflict response.
+            content:
+                application/json:
+                    schema: {}
+        ForbiddenError:
+            description: Forbidden response.
+            content:
+                application/json:
+                    schema: {}
+        InternalServerErrorError:
+            description: Internal Server Error response.
+            content:
+                application/json:
+                    schema: {}
+        NotFoundError:
+            description: Not Found response.
+            content:
+                application/json:
+                    schema: {}
+        PatchAPIWorkspacesBySlugStatus200Response:
+            description: OK response.
+            headers:
+                Content-Type:
+                    $ref: '#/components/headers/ContentTypeHeader'
+            content:
+                application/json:
+                    schema: {}
+        UnauthorizedError:
+            description: Unauthorized response.
+            content:
+                application/json:
+                    schema: {}
+        UnsupportedMediaTypeError:
+            description: Unsupported Media Type response.
+            content:
+                application/json:
+                    schema: {}
+    securitySchemes:
+        PlaneSessionCookie:
+            type: apiKey
+            description: Plane Django session cookie authentication.
+            name: session-id
+            in: cookie
+tags:
+    - name: workspace_lifecycle
+      description: Create, update, and delete workspaces through the authenticated session API.

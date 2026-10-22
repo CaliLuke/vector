@@ -1,0 +1,322 @@
+{
+  "family": "work_item_core",
+  "phase": "source characterization and selected target contract",
+  "selected_by": "implementation owner under the user-authorized bug-fixing scope",
+  "status": "Selected target contract implemented with executable response, database, and durable-effect regressions in the full fixture replay; final release proof and review tracked in work-item-core-proof.json.",
+  "purpose": "Repair source-proven tenant-boundary defects without changing unrelated role policy or recorded partial-write behavior.",
+  "source_baseline": "Immutable Django fixture responses and effects remain unchanged. These decisions are explicit expected differences for future Go regressions, never a source-parity success claim.",
+  "precedence": [
+    "Keep source authentication, role, CSRF and request-body decoding ahead of these reference checks.",
+    "Keep ordinary serializer field conversion and alias precedence. Check existing foreign references before the first domain mutation or durable domain task.",
+    "Only the listed isolation/project fixes change semantics. Do not globally prevalidate missing FKs or make source partial writes atomic.",
+    "API request audit, throttling and token usage remain normal on rejected requests. Domain activity must not address foreign resources.",
+    "All boundaries use actual database ownership, not only caller-supplied workspace/project fields on a join.",
+    "A soft-deleted referenced row is still foreign when its stored workspace differs. Same-workspace deleted behavior remains the source baseline unless separately decided."
+  ],
+  "unchanged_product_policy": [
+    "Workspace-admin/project-guest precedence",
+    "Role15 noncreator draft publication",
+    "Accepted intake deletion by role15",
+    "Existing creator-field disagreements and writable/null intake creator",
+    "Local soft-deleted Issue handling",
+    "Global User references",
+    "Self/duplicate relations and self-parenting"
+  ],
+  "decisions": [
+    {
+      "id": "tenant-subissue-anchor",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": ["lifecycle-subissue-foreign-parent-accepted.json"],
+      "scope": "App subissue assignment parent lookup",
+      "target_result": {
+        "status": 404,
+        "body": {
+          "error": "The required object does not exist."
+        }
+      },
+      "required_regressions": [
+        "Resolve the parent inside the routed workspace before mutating children.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": ["Same-workspace cross-project parents and children; existing authentication and role precedence."]
+    },
+    {
+      "id": "tenant-subissue-children",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "lifecycle-subissue-foreign-child-response-task-without-write.json",
+        "lifecycle-subissue-missing-child-queued.json",
+        "lifecycle-entry-subissue-mixed-local-foreign-missing.json"
+      ],
+      "scope": "App subissue assignment child mutation, response and activity",
+      "target_result": {
+        "foreign_only": {
+          "status": 200,
+          "body": {
+            "sub_issues": [],
+            "state_distribution": {}
+          }
+        },
+        "missing_only": {
+          "status": 200,
+          "body": {
+            "sub_issues": [],
+            "state_distribution": {}
+          }
+        },
+        "mixed_local_missing_foreign": {
+          "status": 200,
+          "body": {
+            "state_distribution": {
+              "started": ["<uuid-1>"]
+            },
+            "sub_issues": [
+              {
+                "archived_at": null,
+                "completed_at": null,
+                "created_at": "<timestamp>",
+                "created_by": "<uuid-6>",
+                "estimate_point": null,
+                "id": "<uuid-1>",
+                "is_draft": false,
+                "name": "Child",
+                "parent_id": "<uuid-5>",
+                "priority": "none",
+                "project_id": "<uuid-4>",
+                "sequence_id": 3,
+                "sort_order": 75535.0,
+                "start_date": null,
+                "state_id": "<uuid-9>",
+                "target_date": null,
+                "updated_at": "<timestamp>",
+                "updated_by": null
+              }
+            ]
+          },
+          "allowed_domain_changes": [
+            {
+              "table": "issues",
+              "fields": ["parent_id", "updated_at"]
+            }
+          ],
+          "allowed_domain_effects": ["plane.bgtasks.issue_activities_task.issue_activity"]
+        }
+      },
+      "required_regressions": [
+        "Use the same workspace-scoped eligible child set for mutation, response and domain activity; missing child IDs are not eligible task targets.",
+        "Mixed local, foreign and missing children affect and return only eligible children; no foreign names, IDs or task targets."
+      ],
+      "preserve": ["Same-workspace cross-project child support; local child ordering and state distribution."]
+    },
+    {
+      "id": "tenant-relation-anchor",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "lifecycle-relation-foreign-anchor-not-scoped.json",
+        "lifecycle-api-relation-foreign-anchor-not-scoped.json"
+      ],
+      "scope": "App and API relation creation, including aliases",
+      "target_result": {
+        "status": 404,
+        "body": {
+          "error": "The required object does not exist."
+        }
+      },
+      "required_regressions": [
+        "Resolve relation anchor within the routed workspace before relation writes or activities.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": [
+        "Same-workspace cross-project anchors and targets; all source relation directions; local duplicate/self behavior; existing role and validation precedence."
+      ]
+    },
+    {
+      "id": "tenant-intake-duplicate",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": ["lifecycle-intake-status-foreign-duplicate-reference.json"],
+      "scope": "App/API intake metadata duplicate_to writes and inbox aliases",
+      "target_result": {
+        "status": 400,
+        "body": {
+          "duplicate_to": ["Invalid duplicate issue."]
+        }
+      },
+      "required_regressions": [
+        "Existing foreign duplicate reference fails before metadata or nested Issue mutations.",
+        "No foreign duplicate detail in the response.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": ["Same-workspace cross-project duplicate targets; creator/role precedence; null duplicate behavior."]
+    },
+    {
+      "id": "tenant-draft-project",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": ["lifecycle-draft-patch-moves-foreign-workspace.json"],
+      "scope": "Draft creation, patch and publication effective project/workspace selection",
+      "target_result": {
+        "status": 400,
+        "body": {
+          "project": ["Invalid project."]
+        }
+      },
+      "required_regressions": [
+        "Validate the effective destination project from supported project/project_id inputs against the routed workspace.",
+        "Run before association replacement, scalar save, asset moves and publication.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": [
+        "Projectless drafts and same-workspace project changes; source input alias precedence; no new target-project membership restriction."
+      ]
+    },
+    {
+      "id": "tenant-draft-planning",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "lifecycle-closure-draft-create-foreign-planning.json",
+        "lifecycle-closure2-draft-patch-foreign-planning.json",
+        "lifecycle-closure-draft-publish-foreign-planning-noncreator.json"
+      ],
+      "scope": "Draft create/patch/publish raw cycle_id and module_ids, including persisted planning references consumed by publication",
+      "target_result": {
+        "status": 400,
+        "body_by_invalid_field": {
+          "cycle_id": ["Invalid cycle."],
+          "module_ids": ["Invalid module."]
+        },
+        "multiple_foreign_fields": "Return both field errors."
+      },
+      "required_regressions": [
+        "Preflight existing foreign cycle/module references before any draft/issue creation, join deletion, asset moves or tasks.",
+        "Keep validation based on the actual routed workspace.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": [
+        "Same-workspace cross-project planning references where source accepts them; missing-FK and late-malformed partial effects are unchanged when no foreign reference is present."
+      ]
+    },
+    {
+      "id": "tenant-issue-type",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "issue-core-entry-app-detail-foreign-workspace-type.json",
+        "issue-core-entry-v1-issues-detail-foreign-workspace-type.json",
+        "lifecycle-closure-draft-patch-foreign-type.json",
+        "lifecycle-closure-api-intake-foreign-type-accepted.json",
+        "lifecycle-entry-intake-create-foreign-type-without-triage.json",
+        "lifecycle-entry-api-intake-metadata-foreign-type.json",
+        "issue-core-entry-v1-patch-type-alias-local-ignored-foreign-effective.json",
+        "issue-core-entry-v1-patch-type-alias-foreign-ignored-local-effective.json"
+      ],
+      "scope": "Every selected core, draft and intake writer that accepts IssueType, including API aliases and both type_id/type fields",
+      "target_result": {
+        "status": 400,
+        "body_by_effective_input": {
+          "type": ["Invalid type."],
+          "type_id": ["Invalid type."]
+        },
+        "nested_issue": "Keep the endpoint source error wrapper for nested issue serializer failures.",
+        "same_as_source_fixtures": ["issue-core-entry-v1-patch-type-alias-foreign-ignored-local-effective.json"]
+      },
+      "required_regressions": [
+        "Validate the effective type after source alias precedence against the actual instance/routed workspace.",
+        "Reject before any scalar, association or intake metadata mutation and domain effects.",
+        "Exercise each supported alias, a conflicting-alias request, and mixed metadata/type failures.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": [
+        "Source alias precedence; null type; permitted local-workspace types without a ProjectIssueType row; global User reference policy."
+      ]
+    },
+    {
+      "id": "tenant-issue-modules",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "membership-entry-app-module-issue-add-remote-issue.json",
+        "membership-entry-app-module-issue-add-remote-module.json",
+        "membership-entry-app-module-issue-add-remove-remote-module.json",
+        "membership-entry-app-module-issue-remove-remote-module-no-link.json"
+      ],
+      "scope": "App POST issues/{issue_id}/modules raw issue anchor and modules/removed_modules",
+      "target_result": {
+        "foreign_anchor": {
+          "status": 404,
+          "body": {
+            "error": "The required object does not exist."
+          }
+        },
+        "foreign_module": {
+          "status": 400,
+          "body_by_input": {
+            "modules": ["Invalid module."],
+            "removed_modules": ["Invalid module."]
+          }
+        },
+        "both_foreign_module_inputs": "Return both field errors; a foreign anchor takes precedence."
+      },
+      "required_regressions": [
+        "After existing authentication, role and request-shape checks, detect an existing foreign-workspace issue anchor before writes or tasks.",
+        "Preflight all parseable existing foreign module references in additions and removals before any insertion, deletion or task.",
+        "Do not use module global lookup to expose a foreign module name in a deletion activity.",
+        "No issue, draft, join, asset or intake metadata changes before rejection.",
+        "No domain activity, planning or deletion task; ordinary API audit and token-use effects remain."
+      ],
+      "preserve": [
+        "Same-workspace cross-project issue and module cases remain 201.",
+        "Missing issue FK keeps recorded 400/rollback behavior, rather than changing to missing-anchor 404.",
+        "When no foreign reference exists, preserve bulk-create rollback for later missing modules and partial effects for later malformed removals."
+      ]
+    },
+    {
+      "id": "project-cycle-existing-link",
+      "state": "implemented; source counterexamples retained and target expectations exercised by full fixture replay",
+      "source_fixtures": [
+        "membership-v1-cycle-add-foreign-existing-link.json",
+        "membership-v1-cycle-add-mixed-existing-links.json"
+      ],
+      "scope": "API cycle-issue add existing-link selection",
+      "target_result": {
+        "status": 200,
+        "body": [],
+        "mixed_local_foreign": {
+          "status": 200,
+          "body": [
+            {
+              "created_at": "<timestamp>",
+              "created_by": null,
+              "cycle": "<uuid-4>",
+              "deleted_at": null,
+              "id": "<uuid-6>",
+              "issue": "<uuid-1>",
+              "project": "<uuid-3>",
+              "sub_issues_count": 0,
+              "updated_at": "<timestamp>",
+              "updated_by": null,
+              "workspace": "<uuid-7>"
+            }
+          ]
+        }
+      },
+      "required_regressions": [
+        "Apply the new-link workspace/project eligibility to existing links too; validate both association ownership and referenced issue ownership.",
+        "The other-project existing cycle link remains unchanged.",
+        "The existing batch activity may retain requested IDs, but updated_cycle_issues and created_cycle_issues must exclude ineligible issue IDs; retained worker uses these lists for mutation.",
+        "Verify normal API audit/token effects and a mixed eligible/ineligible batch."
+      ],
+      "preserve": [
+        "New-link filtering; ordinary local cycle movement; source batch response and ordinary batch activity shape. This fixture is same-workspace cross-project evidence, not a cross-workspace mutation claim."
+      ]
+    }
+  ],
+  "release_requirements": [
+    "Add executable target regressions alongside every immutable source counterexample; include local/cross-project success contrasts and early failure with mixed inputs.",
+    "Compare exact responses, database deltas, audit and domain messages through the real Go server and production middleware.",
+    "For batching, verify retained workers derive mutation targets only from the scoped payload; request fixtures do not claim worker-induced mutations.",
+    "Do not activate or retire routes until these regressions and the complete family proof/review pass."
+  ]
+}

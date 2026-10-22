@@ -1,0 +1,157 @@
+{
+  "source": {
+    "serializer": "apps/api/plane/api/serializers/issue.py:83-99 IssueSerializer.validate",
+    "sanitizer": "apps/api/plane/utils/content_validator.py:212-244 validate_html_content",
+    "lxml": "6.1.0",
+    "nh3": "0.2.18",
+    "source_image": "plane-notification-parity:3e312f0317845e2c808773dc",
+    "recording": "/tmp/plane-work-item-core/api-html-source.json"
+  },
+  "cases": [
+    {
+      "name": "plain_text",
+      "input": "hello world",
+      "stored": "<span>hello world</span>"
+    },
+    {
+      "name": "plain_text_entity",
+      "input": "A &amp; B",
+      "stored": "<span>A &amp; B</span>"
+    },
+    {
+      "name": "inline_single",
+      "input": "<strong>A</strong>",
+      "stored": "<strong>A</strong>"
+    },
+    {
+      "name": "inline_siblings",
+      "input": "<strong>A</strong><em>B</em>",
+      "stored": "<span><strong>A</strong><em>B</em></span>"
+    },
+    {
+      "name": "inline_siblings_spaced",
+      "input": "<strong>A</strong> <em>B</em>",
+      "stored": "<span><strong>A</strong> <em>B</em></span>"
+    },
+    {
+      "name": "block_siblings",
+      "input": "<p>One</p><p>Two</p>",
+      "stored": "<div><p>One</p><p>Two</p></div>"
+    },
+    {
+      "name": "leading_tail_text",
+      "input": "before <b>bold</b> after",
+      "stored": "<span>before <b>bold</b> after</span>"
+    },
+    {
+      "name": "nested_tails",
+      "input": "<p>before <b>bold</b> after <i>italic</i> end</p>",
+      "stored": "<p>before <b>bold</b> after <i>italic</i> end</p>"
+    },
+    {
+      "name": "leading_newline",
+      "input": "\n <p>One</p>\n<p>Two</p>\n",
+      "stored": "<div><p>One</p>\n<p>Two</p>\n</div>"
+    },
+    {
+      "name": "malformed_nesting",
+      "input": "<p>A<div>B</p>C</div>",
+      "stored": "<div><p>A</p><div>BC</div></div>"
+    },
+    {
+      "name": "unclosed_inline",
+      "input": "<p>Hello <b>world",
+      "stored": "<p>Hello <b>world</b></p>"
+    },
+    {
+      "name": "table_cells",
+      "input": "<td>A</td><td>B</td>",
+      "stored": "<div>AB</div>"
+    },
+    {
+      "name": "table_rows",
+      "input": "<tr><td>A</td></tr><tr><td>B</td></tr>",
+      "stored": "<div>AB</div>"
+    },
+    {
+      "name": "table_full",
+      "input": "<table><tr><td>A</td></tr></table>",
+      "stored": "<table><tbody><tr><td>A</td></tr></tbody></table>"
+    },
+    {
+      "name": "html_body",
+      "input": "<html><head><title>T</title></head><body><p>A</p><p>B</p></body></html>",
+      "stored": "T<p>A</p><p>B</p>"
+    },
+    {
+      "name": "body_fragment",
+      "input": "<body><p>A</p><p>B</p></body>",
+      "stored": "<div><p>A</p><p>B</p></div>"
+    },
+    {
+      "name": "entities",
+      "input": "<p>&nbsp;&amp;&lt;&#x1F600;</p>",
+      "stored": "<p>&nbsp;&amp;&lt;😀</p>"
+    },
+    {
+      "name": "comments",
+      "input": "<!-- before --><p>A<!-- inside -->B</p><!-- after -->",
+      "stored": "<div><p>AB</p></div>"
+    },
+    {
+      "name": "empty",
+      "input": "",
+      "parse_error": true
+    },
+    {
+      "name": "spaces_only",
+      "input": "   ",
+      "parse_error": true
+    },
+    {
+      "name": "doctype_only",
+      "input": "<!doctype html>",
+      "parse_error": true
+    },
+    {
+      "name": "doctype_document",
+      "input": "<!doctype html><html><body><p>A</p></body></html>",
+      "stored": "<p>A</p>"
+    },
+    {
+      "name": "script_between",
+      "input": "<p>A</p><script>alert(1)</script><p>B</p>",
+      "stored": "<div><p>A</p><p>B</p></div>"
+    },
+    {
+      "name": "trailing_text",
+      "input": "<p>A</p> tail",
+      "stored": "<div><p>A</p> tail</div>"
+    },
+    {
+      "name": "leading_and_trailing_text",
+      "input": "lead <p>A</p> tail",
+      "stored": "<div>lead <p>A</p> tail</div>"
+    },
+    {
+      "name": "inline_tail_siblings",
+      "input": "<b>A</b> tail <i>B</i>",
+      "stored": "<span><b>A</b> tail <i>B</i></span>"
+    },
+    {
+      "name": "comment_text_comment",
+      "input": "<!-- before -->text<!-- after -->",
+      "stored": "<span>text</span>"
+    },
+    {
+      "name": "comment_between_blocks",
+      "input": "<p>A</p><!-- middle --><p>B</p>",
+      "stored": "<div><p>A</p><p>B</p></div>"
+    },
+    {
+      "name": "malformed_multiple_roots",
+      "input": "<div><p>A</div><p>B",
+      "stored": "<div><div><p>A</p></div><p>B</p></div>"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_FORWARDED_FOR": "198.51.100.36"
+    },
+    "method": "GET",
+    "path": "/auth/spaces/github/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {
+      "next_path": "/workspace/home"
+    }
+  },
+  "response": {
+    "body": null,
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Location": "https://space.example.test/spaces/?next_path=/workspace/home&error_code=5000&error_message=INSTANCE_NOT_CONFIGURED",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 302
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "space-github-initiate",
+    "instance_state": "unconfigured"
+  }
+}

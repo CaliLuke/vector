@@ -1,0 +1,51 @@
+{
+  "printWidth": 120,
+  "tabWidth": 2,
+  "trailingComma": "es5",
+  "ignorePatterns": [
+    "apps/go-api/**/gen/**",
+    "apps/go-api/assetslifecycle/source/**",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle/**",
+    "apps/go-api/internal/parity/testdata/fixtures/assets_lifecycle_decisions/**",
+    "docs/go-backend-replacement/assets-lifecycle-manifest.json",
+    "docs/go-backend-replacement/decisions/evidence/**",
+    "docs/go-backend-replacement/evidence/assets-lifecycle/**",
+    "apps/go-api/cmd/system/assets_protocol_metadata.json",
+    "apps/go-api/projectlifecycle/source/**",
+    "apps/go-api/projectlifecycle/openapi-import-metadata.json",
+    "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle/**",
+    "apps/go-api/internal/parity/testdata/fixtures/project_lifecycle_corrected/**",
+    "docs/go-backend-replacement/evidence/project-lifecycle/**",
+    "apps/go-api/page_lifecycle/source/**",
+    "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle/**",
+    "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected/**",
+    "apps/go-api/internal/parity/testdata/fixtures/page_lifecycle_corrected_index.json",
+    "docs/go-backend-replacement/evidence/page-lifecycle/**",
+    "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/**",
+    "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/**",
+    "docs/go-backend-replacement/evidence/project-state-writes/**",
+    "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies/**",
+    "apps/go-api/internal/parity/testdata/fixtures/api_v1_stickies_corrected/**",
+    "docs/go-backend-replacement/evidence/api-v1-stickies/**",
+    "docs/go-backend-replacement/evidence/administration-batch/**",
+    "apps/go-api/internal/parity/testdata/fixtures/**",
+    "apps/go-api/**/source/**",
+    "docs/go-backend-replacement/evidence/**/*.json",
+    "docs/go-backend-replacement/evidence/go-only-completion/final-acceptance/**",
+    "docs/go-backend-replacement/evidence/post-retirement-review/**",
+    "apps/go-api/cmd/system/user_email_code_options.json",
+    "apps/go-api/cmd/system/workspace_collection_options.json"
+  ],
+  "sortTailwindcss": {
+    "stylesheet": "packages/tailwind-config/index.css",
+    "functions": ["cn", "clsx", "cva"]
+  },
+  "overrides": [
+    {
+      "files": ["packages/codemods/**/*"],
+      "options": {
+        "printWidth": 80
+      }
+    }
+  ]
+}

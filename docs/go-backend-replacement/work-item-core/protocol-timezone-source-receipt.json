@@ -1,0 +1,55 @@
+{
+  "family": "work_item_core",
+  "purpose": "source characterization; authenticated app OPTIONS with invalid user timezone",
+  "cases": 31,
+  "route_owners": 20,
+  "capture": {
+    "command": "UPDATE_PARITY_FIXTURES=1 python3 /tmp/plane-work-item-core/run-source.py -q plane/tests/parity/test_work_item_core_protocol_recorder.py -k 'invalid and timezone'",
+    "result": "31 passed, 40 deselected in 13.24s"
+  },
+  "immutable_replay": {
+    "command": "UPDATE_PARITY_FIXTURES=0 python3 /tmp/plane-work-item-core/run-source.py -q plane/tests/parity/test_work_item_core_protocol_recorder.py -k 'invalid and timezone'",
+    "result": "31 passed, 40 deselected in 16.07s"
+  },
+  "pre_existing_fixture_hashes": {
+    "count": 872,
+    "changed": 0,
+    "baseline": "/tmp/plane-work-item-core/protocol-timezone-existing-hashes-before.txt"
+  },
+  "all_new_responses_are_400": true,
+  "wrong_status_fixtures": [],
+  "receipts": [
+    "work-item-core-protocol-app-options-archived-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-bulk-archive-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-bulk-delete-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-cycle-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-cycle-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-cycle-transfer-invalid-timezone.json",
+    "work-item-core-protocol-app-options-deleted-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-draft-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-draft-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-draft-to-issue-invalid-timezone.json",
+    "work-item-core-protocol-app-options-inbox-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-inbox-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-intake-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-intake-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-archive-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-dates-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-detail-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-id-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-modules-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-relation-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-remove-relation-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-search-invalid-timezone.json",
+    "work-item-core-protocol-app-options-issue-v2-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-module-issue-detail-invalid-timezone.json",
+    "work-item-core-protocol-app-options-module-issue-list-invalid-timezone.json",
+    "work-item-core-protocol-app-options-sub-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-workspace-issue-identifier-invalid-timezone.json",
+    "work-item-core-protocol-app-options-workspace-issues-invalid-timezone.json",
+    "work-item-core-protocol-app-options-workspace-user-issues-invalid-timezone.json"
+  ],
+  "database_lease": "released when immutable runner exited"
+}

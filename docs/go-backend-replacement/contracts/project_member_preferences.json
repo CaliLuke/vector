@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "family": "project_member_preferences",
+  "source_files": [
+    "apps/api/plane/app/views/project/member.py",
+    "apps/api/plane/app/urls/project.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/app/serializers/project.py"
+  ],
+  "operations": {
+    "patch_api_workspaces_by_slug_projects_by_project_id_preferences_member_by_member_id": {
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/preferences/member/{member_id}/",
+      "sample_path": "/api/workspaces/remaining-auxiliary-contract/projects/00000000-0000-4000-8000-000000000004/preferences/member/00000000-0000-4000-8000-000000000004/",
+      "statuses": [200, 400, 401, 403, 404, 500],
+      "authentication": ["anonymous", "django-session"],
+      "auth_profile": "django-session",
+      "query_parameters": [],
+      "protocol_methods": [],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/corrected/preferences-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-array-source-error.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-deleted.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-empty-preserves.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-inactive-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-member.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-missing-array.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-nonmember.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-other-member.json"
+      ],
+      "database_effects": ["project_members"],
+      "effects": [],
+      "permission_contract": "Active project members including guests may merge JSON preferences into the selected project member row. Authorization precedes target lookup and body validation. Missing member is 404; shallow JSON merge preserves omitted keys.",
+      "source": "apps/api/plane/app/views/project/member.py::ProjectMemberPreferenceEndpoint",
+      "source_branches": [
+        {
+          "when": "preferences-array-source-error (corrected)",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/corrected/preferences-array-source-error.json",
+          "decision": "docs/go-backend-replacement/decisions/REMAINING-009-corrected-contracts.md"
+        },
+        {
+          "when": "preferences-anonymous",
+          "observable": "HTTP 401; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-anonymous.json"
+        },
+        {
+          "when": "preferences-array-source-error",
+          "observable": "HTTP 500; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-array-source-error.json"
+        },
+        {
+          "when": "preferences-deleted",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-deleted.json"
+        },
+        {
+          "when": "preferences-empty-preserves",
+          "observable": "HTTP 200; changed tables: project_members; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-empty-preserves.json"
+        },
+        {
+          "when": "preferences-guest",
+          "observable": "HTTP 200; changed tables: project_members; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-guest.json"
+        },
+        {
+          "when": "preferences-inactive-member",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-inactive-member.json"
+        },
+        {
+          "when": "preferences-member",
+          "observable": "HTTP 200; changed tables: project_members; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-member.json"
+        },
+        {
+          "when": "preferences-missing",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-missing.json"
+        },
+        {
+          "when": "preferences-nonmember",
+          "observable": "HTTP 403; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-nonmember.json"
+        },
+        {
+          "when": "preferences-options-invalid-timezone",
+          "observable": "HTTP 400; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-options-invalid-timezone.json"
+        },
+        {
+          "when": "preferences-options",
+          "observable": "HTTP 200; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-options.json"
+        },
+        {
+          "when": "preferences-other-member",
+          "observable": "HTTP 200; changed tables: project_members; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-other-member.json"
+        },
+        {
+          "when": "preferences-missing-array",
+          "observable": "HTTP 404; changed tables: none; outbound effects: 0",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/project_member_preferences/preferences-missing-array.json"
+        }
+      ]
+    }
+  },
+  "source_capture": {
+    "runner": "docs/go-backend-replacement/evidence/remaining-auxiliary/run-source-recorder.sh",
+    "pristine_fixture_count": 13,
+    "corrected_fixture_count": 1,
+    "source_hashes": "docs/go-backend-replacement/evidence/remaining-auxiliary/project_member_preferences-source-hashes.json"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/project_member_preferences_integration_test.go",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["search", "per_page", "cursor"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "Active project members including guests may merge JSON preferences into the selected project member row. Authorization precedes target lookup and body validation. Missing member is 404; shallow JSON merge preserves omitted keys."
+}

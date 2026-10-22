@@ -1,0 +1,171 @@
+{
+  "family": "invitations_membership",
+  "import_limitations": [
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/invitations//get/parameters/0/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/invitations//post/parameters/0/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/invitations/{pk}//delete/parameters/1/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/invitations/{pk}//get/parameters/1/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/invitations/{pk}//patch/parameters/1/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/members-lite//get/parameters/0/examples",
+      "value": {
+        "NextPageCursor": {
+          "description": "Cursor format: 'page_size:page_number:offset'",
+          "summary": "Next page cursor",
+          "value": "20:1:0"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/members-lite//get/parameters/1/examples",
+      "value": {
+        "Default": {
+          "value": 20
+        },
+        "Maximum": {
+          "value": 100
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/members-lite//get/parameters/2/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "parameter-examples-not-imported",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/members//get/parameters/0/examples",
+      "value": {
+        "ExampleWorkspace": {
+          "description": "A typical workspace slug",
+          "summary": "Example workspace",
+          "value": "my-workspace"
+        }
+      }
+    },
+    {
+      "kind": "source-example-rejected-as-schema-incompatible",
+      "pointer": "#/paths//api/v1/workspaces/{slug}/members//get/responses/200/content/application/json/examples/WorkspaceMembers",
+      "value": {
+        "value": [
+          [
+            {
+              "avatar": "https://example.com/avatar.jpg",
+              "display_name": "John Doe",
+              "email": "john.doe@example.com",
+              "first_name": "John",
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "last_name": "Doe",
+              "role": 20
+            },
+            {
+              "avatar": "https://example.com/avatar2.jpg",
+              "display_name": "Jane Smith",
+              "email": "jane.smith@example.com",
+              "first_name": "Jane",
+              "id": "550e8400-e29b-41d4-a716-446655440001",
+              "last_name": "Smith",
+              "role": 15
+            }
+          ]
+        ]
+      }
+    }
+  ],
+  "loom_version": "v1.10.0-alpha.8",
+  "note": "The frozen source OpenAPI retains all selected source operations and metadata. Import-only omissions are recorded here; fixture-backed contracts remain authoritative for runtime behavior.",
+  "omitted_document_metadata": {
+    "servers": {
+      "reason": "Deployment-specific server URLs are not part of route behavior and are not accepted by Loom OpenAPI import.",
+      "value": [
+        {
+          "description": "Local",
+          "url": "http://localhost:8000"
+        },
+        {
+          "description": "Production",
+          "url": "https://api.plane.so"
+        }
+      ]
+    }
+  },
+  "operation_count": 28,
+  "sha256": {
+    "canonical_openapi": "5b06bf9fdbbee272c38b35d0898bdcb70462368c4dd9bc24881947363dce9a51",
+    "frozen_openapi": "440275fb9d93ad6245bf281537f25e1fa8be6c0bccaf0b5ab7480b0188629c5b",
+    "inventory": "8eea9573a662f69f08c3accbc3cd5abf7056dce1ed437f6b1839332daf342d46",
+    "source_metadata": "07421121f1235775652b846bdd9d616c82dbd684eb5716468569044901d337fe"
+  },
+  "source_capture": {
+    "canonical_openapi_sha256_at_capture": "5b06bf9fdbbee272c38b35d0898bdcb70462368c4dd9bc24881947363dce9a51",
+    "manifest_sha256_at_capture": "8eea9573a662f69f08c3accbc3cd5abf7056dce1ed437f6b1839332daf342d46",
+    "reachable_component_count": 24,
+    "selected_operation_count": 28,
+    "selected_path_count": 14,
+    "source_revision": "884590b2a2c325ffeb51ce3c58af6e315b841be4"
+  },
+  "source_files": {
+    "canonical_openapi": "docs/go-backend-replacement/openapi/full-server.openapi.json",
+    "frozen_openapi": "apps/go-api/invitationsmembership/source/source.openapi.json",
+    "inventory": "apps/go-api/internal/routing/route-inventory.json"
+  },
+  "version": 1
+}

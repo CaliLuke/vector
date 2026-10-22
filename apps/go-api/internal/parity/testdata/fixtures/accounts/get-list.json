@@ -1,0 +1,178 @@
+{
+  "database": {
+    "after": {
+      "accounts": [
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-1>",
+          "id_token": "id-second",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 2
+          },
+          "provider": "google",
+          "provider_account_id": "second",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "id_token": "id-first",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 1
+          },
+          "provider": "github",
+          "provider_account_id": "first",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-4>",
+          "id_token": "",
+          "last_connected_at": "<timestamp>",
+          "metadata": {},
+          "provider": "gitlab",
+          "provider_account_id": "other",
+          "refresh_token": null,
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-3>"
+        }
+      ]
+    },
+    "before": {
+      "accounts": [
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-1>",
+          "id_token": "id-second",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 2
+          },
+          "provider": "google",
+          "provider_account_id": "second",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "id_token": "id-first",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 1
+          },
+          "provider": "github",
+          "provider_account_id": "first",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-4>",
+          "id_token": "",
+          "last_connected_at": "<timestamp>",
+          "metadata": {},
+          "provider": "gitlab",
+          "provider_account_id": "other",
+          "refresh_token": null,
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-3>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "GET",
+    "path": "/api/users/me/accounts/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": [
+      {
+        "access_token": "<secret:accounts.access_token>",
+        "access_token_expired_at": "<timestamp>",
+        "created_at": "<timestamp>",
+        "id": "<uuid-1>",
+        "id_token": "<secret:accounts.id_token>",
+        "last_connected_at": "<timestamp>",
+        "metadata": {
+          "rank": 2
+        },
+        "provider": "google",
+        "provider_account_id": "second",
+        "refresh_token": "<secret:accounts.refresh_token>",
+        "refresh_token_expired_at": "<timestamp>",
+        "updated_at": "<timestamp>",
+        "user": "<uuid-2>"
+      },
+      {
+        "access_token": "<secret:accounts.access_token>",
+        "access_token_expired_at": "<timestamp>",
+        "created_at": "<timestamp>",
+        "id": "<uuid-3>",
+        "id_token": "<secret:accounts.id_token>",
+        "last_connected_at": "<timestamp>",
+        "metadata": {
+          "rank": 1
+        },
+        "provider": "github",
+        "provider_account_id": "first",
+        "refresh_token": "<secret:accounts.refresh_token>",
+        "refresh_token_expired_at": "<timestamp>",
+        "updated_at": "<timestamp>",
+        "user": "<uuid-2>"
+      }
+    ],
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "list-order-and-fields"
+  }
+}

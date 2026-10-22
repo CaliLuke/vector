@@ -1,0 +1,273 @@
+{
+  "result": {
+    "cases": [
+      {
+        "body": {
+          "detail": "Invalid cursor parameter."
+        },
+        "method": "GET",
+        "name": "list invalid cursor",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 400
+      },
+      {
+        "body": {
+          "detail": "Invalid per_page parameter."
+        },
+        "method": "GET",
+        "name": "list non-integer per_page",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 400
+      },
+      {
+        "body": {
+          "detail": "Invalid per_page value. Cannot exceed 1000."
+        },
+        "method": "GET",
+        "name": "list over-limit per_page",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 400
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "method": "GET",
+        "name": "list unauthenticated",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 401
+      },
+      {
+        "body": {
+          "error": "You don't have the required permissions."
+        },
+        "method": "GET",
+        "name": "list inactive member",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 403
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "method": "POST",
+        "name": "create unauthenticated",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 401
+      },
+      {
+        "body": {
+          "error": "You don't have the required permissions."
+        },
+        "method": "POST",
+        "name": "create inactive member",
+        "path": "/api/workspaces/{slug}/stickies/",
+        "status": 403
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "method": "GET",
+        "name": "retrieve unauthenticated",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 401
+      },
+      {
+        "body": {
+          "detail": "No Sticky matches the given query."
+        },
+        "method": "GET",
+        "name": "retrieve cross-workspace",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 404
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "method": "PATCH",
+        "name": "update unauthenticated",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 401
+      },
+      {
+        "body": {
+          "error": "You don't have the required permissions."
+        },
+        "method": "PATCH",
+        "name": "update non-creator",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 403
+      },
+      {
+        "body": {
+          "sort_order": [
+            "A valid number is required."
+          ]
+        },
+        "method": "PATCH",
+        "name": "update invalid field",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 400
+      },
+      {
+        "body": {
+          "detail": "No Sticky matches the given query."
+        },
+        "method": "PATCH",
+        "name": "update cross-workspace",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 404
+      },
+      {
+        "body": {
+          "detail": "Authentication credentials were not provided."
+        },
+        "method": "DELETE",
+        "name": "delete unauthenticated",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 401
+      },
+      {
+        "body": {
+          "error": "You don't have the required permissions."
+        },
+        "method": "DELETE",
+        "name": "delete non-creator",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 403
+      },
+      {
+        "body": {
+          "detail": "No Sticky matches the given query."
+        },
+        "method": "DELETE",
+        "name": "delete cross-workspace",
+        "path": "/api/workspaces/{slug}/stickies/{pk}/",
+        "status": 404
+      }
+    ],
+    "intentional_difference": {
+      "decision": "docs/go-backend-replacement/decisions/M1-001-sticky-membership.md",
+      "go_status": 404,
+      "source_fixture": "retrieve-owner-without-membership.json",
+      "source_status": 200
+    },
+    "request_error_fixtures": [
+      "validation.json",
+      "html-oversized.json"
+    ],
+    "success_fixtures": [
+      "list.json",
+      "create.json",
+      "retrieve.json",
+      "update.json",
+      "delete.json"
+    ]
+  },
+  "schema_version": 1,
+  "seed": {
+    "stickies": [
+      {
+        "created_by_id": "<uuid-1>",
+        "id": "<uuid-2>",
+        "name": "Owner status fixture",
+        "owner_id": "<uuid-1>",
+        "sort_order": 65535,
+        "workspace_id": "<uuid-3>"
+      },
+      {
+        "created_by_id": "<uuid-4>",
+        "id": "<uuid-5>",
+        "name": "Other status fixture",
+        "owner_id": "<uuid-4>",
+        "sort_order": 75535.0,
+        "workspace_id": "<uuid-3>"
+      },
+      {
+        "created_by_id": "<uuid-1>",
+        "id": "<uuid-6>",
+        "name": "Cross-workspace status fixture",
+        "owner_id": "<uuid-1>",
+        "sort_order": 65535,
+        "workspace_id": "<uuid-7>"
+      }
+    ],
+    "user_notification_preferences": [
+      {
+        "id": "<uuid-8>",
+        "user_id": "<uuid-1>"
+      },
+      {
+        "id": "<uuid-9>",
+        "user_id": "<uuid-4>"
+      },
+      {
+        "id": "<uuid-10>",
+        "user_id": "<uuid-11>"
+      }
+    ],
+    "users": [
+      {
+        "email": "test@plane.so",
+        "id": "<uuid-1>"
+      },
+      {
+        "email": "other-status@plane.so",
+        "id": "<uuid-4>"
+      },
+      {
+        "email": "inactive-status@plane.so",
+        "id": "<uuid-11>"
+      }
+    ],
+    "workspace_members": [
+      {
+        "id": "<uuid-12>",
+        "is_active": true,
+        "role": 20,
+        "user_id": "<uuid-1>",
+        "workspace_id": "<uuid-3>"
+      },
+      {
+        "id": "<uuid-13>",
+        "is_active": true,
+        "role": 20,
+        "user_id": "<uuid-4>",
+        "workspace_id": "<uuid-3>"
+      },
+      {
+        "id": "<uuid-14>",
+        "is_active": false,
+        "role": 20,
+        "user_id": "<uuid-11>",
+        "workspace_id": "<uuid-3>"
+      }
+    ],
+    "workspaces": [
+      {
+        "id": "<uuid-3>",
+        "owner_id": "<uuid-1>",
+        "slug": "test-workspace"
+      },
+      {
+        "id": "<uuid-7>",
+        "owner_id": "<uuid-1>",
+        "slug": "status-other"
+      }
+    ]
+  },
+  "source_call": {
+    "callable": "Django Sticky frontend HTTP status matrix",
+    "input": {
+      "operations": [
+        "list",
+        "create",
+        "retrieve",
+        "partial_update",
+        "destroy"
+      ]
+    }
+  }
+}

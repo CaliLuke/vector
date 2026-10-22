@@ -1,0 +1,98 @@
+{
+  "source_base": "79001fb3e5914648ba20a30f7079fe3da060a8bf",
+  "operations": 30,
+  "cases": 254,
+  "source_record_status": "all 254 source-backed fixtures present; 55 new distinct closure branches",
+  "source_repeat_status": "254 cases have passing immutable source evidence: prior 198 complete + 1 focused repair, 44 closure + 11 closure2 focused repeats; no full 254-case run claimed",
+  "source_repeat_coverage": {
+    "complete_run": {
+      "passed": 198,
+      "failed": 1,
+      "seconds": 21.59,
+      "log": "/tmp/plane-work-item-core/lifecycle-entry-source-repeat.log",
+      "failure": "App conflicting relation returned fresh timestamps on an unsaved transient object; only these fields now asserted within request window and normalized."
+    },
+    "focused_repair_repeat": {
+      "passed": 1,
+      "deselected": 198,
+      "seconds": 1.83,
+      "log": "/tmp/plane-work-item-core/lifecycle-conflict-clock-repeat.log"
+    },
+    "closure_repeat": {
+      "passed": 44,
+      "deselected": 199,
+      "seconds": 11.07,
+      "exit_code": 0,
+      "log": "/tmp/plane-work-item-core/lifecycle-closure-repeat.log"
+    },
+    "closure2_repeat": {
+      "passed": 11,
+      "deselected": 243,
+      "seconds": 2.14,
+      "exit_code": 0,
+      "log": "/tmp/plane-work-item-core/lifecycle-closure2-repeat.log"
+    }
+  },
+  "go_replay": "not run by this agent; entry framework blockers remain with owner",
+  "test_file": "apps/api/plane/tests/parity/test_work_item_core_lifecycle_recorder.py",
+  "test_sha256": "9ba9348f64dc38e8d3ae6e621bf54ea564e73e5b8598341010c947b261a48a69",
+  "harness_sha256": "43989f3a9cea91ef382c5128f145cd28556e6d42b50dd8aeea08a88f9ecaab4b",
+  "fixtures_sha256": "05f8fc1bf2c4ae309f6a81feec04a0a0c8dffdc18dea833dfe9be46499676e7f",
+  "fixtures_digest_method": "SHA256 of sorted fixture basename + NUL + fixture bytes",
+  "matrix": "/tmp/plane-work-item-core/lifecycle-matrix.json",
+  "matrix_sha256": "ef5cdc93a42d98998cf674788491a4ae1f63a90eb839e5ecf324ed12497dcaf5",
+  "logs": [
+    "/tmp/plane-work-item-core/lifecycle-source-record.log",
+    "/tmp/plane-work-item-core/lifecycle-api-isolation-record.log",
+    "/tmp/plane-work-item-core/lifecycle-source-repeat.log",
+    "/tmp/plane-work-item-core/lifecycle-query-source-record.log",
+    "/tmp/plane-work-item-core/lifecycle-query-source-repeat.log",
+    "/tmp/plane-work-item-core/lifecycle-entry-source-record.log",
+    "/tmp/plane-work-item-core/lifecycle-entry-focused-record.log",
+    "/tmp/plane-work-item-core/lifecycle-entry-final-record.log",
+    "/tmp/plane-work-item-core/lifecycle-entry-source-repeat.log",
+    "/tmp/plane-work-item-core/lifecycle-conflict-clock-record.log",
+    "/tmp/plane-work-item-core/lifecycle-conflict-clock-repeat.log",
+    "/tmp/plane-work-item-core/lifecycle-closure-record.log",
+    "/tmp/plane-work-item-core/lifecycle-closure-dates-record.log",
+    "/tmp/plane-work-item-core/lifecycle-closure-repeat.log",
+    "/tmp/plane-work-item-core/lifecycle-closure2-record.log",
+    "/tmp/plane-work-item-core/lifecycle-closure2-repeat.log"
+  ],
+  "query_gap_cases": 4,
+  "query_gap_proof": "Each ignored-query fixture body equals its populated no-query source baseline. API malformed cursor/per_page/order_by and fields/expand remain ignored.",
+  "static_gate": {
+    "operations": 72,
+    "blocks": 0,
+    "warnings": 0,
+    "waived": 0,
+    "log": "/tmp/plane-work-item-core/lifecycle-closure-gate.json"
+  },
+  "database_modes": "Ordinary source cases roll back; late draft/publication FK and bulk-date DB preparation failures use autocommit with scoped workspace/user/session cleanup. Target seeds commit and clean owned rows without schema flush.",
+  "owned_throttle_seed": "api_key:<recorder API key> deleted per authenticated API case; remaining header retained",
+  "v2_subissues": "No v2 sub-issues operation in current frozen 72-operation manifest or current gate query gaps; no out-of-manifest fixture added.",
+  "remaining_gaps": "Operation-specific untested_branches in lifecycle-matrix.json and lifecycle-contract-decisions.md; no Go parity or framework entry clearance claimed. Fixtures frozen for this checkpoint.",
+  "updated_at": "2026-10-10T06:03:54.650307+00:00",
+  "reused_evidence": "Prior 199 case bodies/options remain unchanged; new seed branches are conditional and defaults are unchanged. Existing fixture bytes remain unchanged. Prior receipt retained at lifecycle-source-receipt-199.json. Current full-file hash differs from the historical test hash; no full current-tree source run is claimed.",
+  "closure_source_record_coverage": {
+    "initial": {
+      "passed": 42,
+      "failed": 2,
+      "log": "/tmp/plane-work-item-core/lifecycle-closure-record.log",
+      "reason": "Natural bulk_update DateField TypeError broke pytest outer transaction; following test drained leftover task and failed empty-queue assertion."
+    },
+    "affected_dates": {
+      "passed": 3,
+      "failed": 0,
+      "seconds": 2.96,
+      "log": "/tmp/plane-work-item-core/lifecycle-closure-dates-record.log",
+      "repair": "Use source_autocommit with owned cleanup for real HTTP transaction semantics; no source implementation or fixture normalizer changed."
+    },
+    "closure2": {
+      "passed": 11,
+      "failed": 0,
+      "seconds": 3.84,
+      "log": "/tmp/plane-work-item-core/lifecycle-closure2-record.log"
+    }
+  }
+}

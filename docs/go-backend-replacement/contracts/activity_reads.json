@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "family": "activity_reads",
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/activity_reads_http_test.go::TestActivityMiddlewareOrderRequestSizeAuthenticationTimezoneAuthorizationThrottlingDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "malformed_queries": ["cursor", "expand", "fields", "order_by", "per_page"],
+    "evidence": "apps/go-api/internal/parity/activity_reads_integration_test.go::TestActivityReadFixturesReplayAgainstGo",
+    "options_variants": ["ordinary", "preflight"]
+  },
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["api_key", "method", "path", "writes_table"]
+    }
+  },
+  "operations": {
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities": {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/",
+      "authentication": ["anonymous", "api-key", "api-key-not-reached", "invalid-api-key"],
+      "statuses": [200, 400, 401, 403, 404, 405],
+      "query_parameters": ["cursor", "expand", "fields", "order_by", "per_page"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-cross-tenant.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-expand-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-expired-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-inactive-api-user.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-inactive-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-invalid-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-invalid-order-fallback.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-invalid-per-page.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-malformed-cursor.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-malformed-project-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-non-rfc-uuid.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-missing-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-missing-issue-empty.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-pagination-page-one.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-pagination-page-two.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-soft-deleted-membership-duplicates-source-bug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-soft-deleted-membership.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activities-success.json"
+      ],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/activity-read-recorder/projects/00000000-0000-4000-8000-000000008504/issues/00000000-0000-4000-8000-000000008510/activities/",
+      "auth_profile": "api-key"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities_by_pk": {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/activities/{pk}/",
+      "authentication": ["anonymous", "api-key"],
+      "statuses": [200, 401, 404, 405],
+      "query_parameters": ["cursor", "expand", "fields", "order_by", "per_page"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-archived-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-fields-expand.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-missing-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-missing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-soft-deleted-project-source-bug.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/issue-activity-detail-unknown-fields.json"
+      ],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/activity-read-recorder/projects/00000000-0000-4000-8000-000000008504/issues/00000000-0000-4000-8000-000000008510/activities/00000000-0000-4000-8000-000000008520/",
+      "auth_profile": "api-key"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities": {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/",
+      "alias_of": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-cross-tenant-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-expand-collision-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-fields-expand-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-head-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-invalid-api-key-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-invalid-order-fallback-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-invalid-per-page-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-malformed-cursor-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-malformed-project-uuid-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-missing-api-key-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-options-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activities-success.json"
+      ],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/activity-read-recorder/projects/00000000-0000-4000-8000-000000008504/work-items/00000000-0000-4000-8000-000000008510/activities/",
+      "auth_profile": "api-key"
+    },
+    "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_activities_by_pk": {
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/work-items/{issue_id}/activities/{pk}/",
+      "alias_of": "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_activities_by_pk",
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-fields-expand-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-head-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-missing-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-missing-api-key.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-options-alias.json",
+        "apps/go-api/internal/parity/testdata/fixtures/work_item_activity_reads/work-item-activity-detail-success.json"
+      ],
+      "effects": ["api-key"],
+      "sample_path": "/api/v1/workspaces/activity-read-recorder/projects/00000000-0000-4000-8000-000000008504/work-items/00000000-0000-4000-8000-000000008510/activities/00000000-0000-4000-8000-000000008520/",
+      "auth_profile": "api-key"
+    }
+  }
+}

@@ -1,0 +1,3266 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Module Lifecycle API",
+    "description": "Django and API v1 module lifecycle operations.",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Module Lifecycle API"
+    }
+  ],
+  "paths": {
+    "/api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/unarchive/": {
+      "delete": {
+        "description": "Restore an archived module to active status, making it available for regular use.",
+        "operationId": "delete_api_v1_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk_unarchive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Unarchive module",
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/v1/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/unarchive/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.api.views.module.ModuleArchiveUnarchiveAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/": {
+      "post": {
+        "description": "Create a new project module with specified name, description, and timeline.",
+        "operationId": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "New module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "New Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "New module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "New Module",
+                "start_date": "2021-01-01"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "New module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "New Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "New module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "New Module",
+                "start_date": "2021-01-01"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "New module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "New Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PlaneApiSerializersModuleModulecreateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "New module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "New Module",
+                "start_date": "2021-01-01"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Module created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneApiSerializersModuleModuleserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Create module",
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/v1/workspaces/{slug}/projects/{project_id}/modules/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.api.views.module.ModuleListCreateAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/": {
+      "delete": {
+        "description": "Permanently remove a module and all its associated issue relationships.",
+        "operationId": "delete_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "Resource deleted successfully"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Delete module",
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.api.views.module.ModuleDetailAPIEndpoint"
+      },
+      "patch": {
+        "description": "Modify an existing module's properties like name, description, status, or timeline.",
+        "operationId": "patch_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "description": "Updated module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "Updated Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "Updated module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "Updated Module",
+                "start_date": "2021-01-01"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "example": {
+                  "description": "Updated module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "Updated Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "Updated module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "Updated Module",
+                "start_date": "2021-01-01"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "example": {
+                  "description": "Updated module description",
+                  "external_id": "1234567890",
+                  "external_source": "github",
+                  "name": "Updated Module",
+                  "start_date": "2021-01-01"
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest"
+                  }
+                ]
+              },
+              "example": {
+                "description": "Updated module description",
+                "external_id": "1234567890",
+                "external_source": "github",
+                "name": "Updated Module",
+                "start_date": "2021-01-01"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Module updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModuleUpdateSerializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Update module",
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "patch",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.api.views.module.ModuleDetailAPIEndpoint"
+      }
+    },
+    "/api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/": {
+      "post": {
+        "description": "Move a module to archived status for historical tracking.",
+        "operationId": "post_api_v1_workspaces_by_slug_projects_by_project_id_modules_by_pk_archive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "summary": "Archive module",
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.api.middleware.api_authentication.APIKeyAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/v1/workspaces/{slug}/projects/{project_id}/modules/{pk}/archive/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.api.views.module.ModuleArchiveUnarchiveAPIEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/archived-modules/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/archived-modules/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_archived_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "projects"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDModulesRequestBody"
+        },
+        "responses": {
+          "201": {
+            "description": "Created response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppModuleComputedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+        "x-plane-handler": "delete",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      },
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_archive",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RestFrameworkSerializersArchiveresponseResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/",
+        "x-plane-handler": "post",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.archive.ModuleArchiveUnarchiveEndpoint"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/": {
+      "post": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "post_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksRequestBody"
+        },
+        "responses": {
+          "201": {
+            "description": "Created response.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppModuleLinkCreateResponse_ec771a2d110b5b39"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "POST /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/",
+        "x-plane-handler": "create",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneAppSerializersModuleModulelinkserializerResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      },
+      "put": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_module_id_module_links_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathModuleID"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PlaneAppSerializersModuleModulelinkserializerResponseStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PUT /api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/",
+        "x-plane-handler": "update",
+        "x-plane-permission-classes": [
+          "plane.app.permissions.project.ProjectEntityPermission"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleLinkViewSet"
+      }
+    },
+    "/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/": {
+      "delete": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "delete_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/NoContentResponse",
+            "description": "No response body"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "DELETE /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "destroy",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      },
+      "patch": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "patch_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppModuleComputedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PATCH /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "partial_update",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      },
+      "put": {
+        "description": "This enables timezone conversion according\nto the user set timezone",
+        "operationId": "put_api_workspaces_by_slug_projects_by_project_id_modules_by_pk",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug_20b7c853"
+          },
+          {
+            "$ref": "#/components/parameters/PathProjectID_28ef2be3"
+          },
+          {
+            "$ref": "#/components/parameters/PathPk_ec714d84"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugProjectsByProjectIDModulesRequestBody"
+        },
+        "responses": {
+          "200": {
+            "description": "OK response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError",
+            "description": "status_404: Not Found response."
+          },
+          "405": {
+            "$ref": "#/components/responses/MethodNotAllowedError",
+            "description": "status_405: Method Not Allowed response."
+          },
+          "409": {
+            "$ref": "#/components/responses/ConflictError",
+            "description": "status_409: Conflict response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequestsError",
+            "description": "status_429: Too Many Requests response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ],
+        "tags": [
+          "modules"
+        ],
+        "x-plane-authentication-classes": [
+          "plane.authentication.session.BaseSessionAuthentication"
+        ],
+        "x-plane-authority": "route-inventory-and-behavior-fixtures",
+        "x-plane-contract-id": "PUT /api/workspaces/{slug}/projects/{project_id}/modules/{pk}/",
+        "x-plane-handler": "update",
+        "x-plane-permission-classes": [
+          "rest_framework.permissions.IsAuthenticated"
+        ],
+        "x-plane-view": "plane.app.views.module.base.ModuleViewSet"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AppModuleComputedResponse": {
+        "type": "object",
+        "properties": {
+          "backlog_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cancelled_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "completed_estimate_points": {
+            "type": "number",
+            "format": "double"
+          },
+          "completed_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "is_favorite": {
+            "type": "boolean"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sort_order": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "started_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "total_estimate_points": {
+            "type": "number",
+            "format": "double"
+          },
+          "total_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "unstarted_issues": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "view_props": {},
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "description": "Legacy app create and PATCH projection returned from the module queryset, with actor-local timestamps and computed issue/member values.",
+        "required": [
+          "backlog_issues",
+          "cancelled_issues",
+          "completed_estimate_points",
+          "completed_issues",
+          "created_at",
+          "description",
+          "description_html",
+          "description_text",
+          "external_id",
+          "external_source",
+          "id",
+          "is_favorite",
+          "lead_id",
+          "logo_props",
+          "member_ids",
+          "name",
+          "project_id",
+          "sort_order",
+          "start_date",
+          "started_issues",
+          "status",
+          "target_date",
+          "total_estimate_points",
+          "total_issues",
+          "unstarted_issues",
+          "updated_at",
+          "view_props",
+          "workspace_id"
+        ]
+      },
+      "AppModuleLinkCreateResponse_ec771a2d110b5b39": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "metadata": {},
+          "module": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 200
+          },
+          "workspace": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "created_at",
+          "created_by",
+          "deleted_at",
+          "id",
+          "metadata",
+          "module",
+          "project",
+          "title",
+          "updated_at",
+          "updated_by",
+          "url",
+          "workspace"
+        ]
+      },
+      "ModuleStatusEnum": {
+        "type": "string",
+        "description": "* `backlog` - Backlog\n* `planned` - Planned\n* `in-progress` - In Progress\n* `paused` - Paused\n* `completed` - Completed\n* `cancelled` - Cancelled",
+        "enum": [
+          "backlog",
+          "planned",
+          "in-progress",
+          "paused",
+          "completed",
+          "cancelled"
+        ]
+      },
+      "ModuleUpdateSerializerResponse": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "API v1 PATCH response from ModuleUpdateSerializer; this intentionally omits the broader ModuleSerializer projection.",
+        "required": [
+          "description",
+          "external_id",
+          "external_source",
+          "lead",
+          "name",
+          "start_date",
+          "status",
+          "target_date"
+        ]
+      },
+      "PatchedPlaneApiSerializersModuleModuleupdateserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "writeOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Serializer for updating modules with enhanced validation and member management.\n\nExtends module creation with update-specific validations including\nmember reassignment, name conflict checking,\nand relationship management for module modifications."
+      },
+      "PatchedPlaneAppSerializersModuleModulelinkserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "metadata": {},
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "PatchedPlaneAppSerializersModuleModulewriteserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "writeOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "sort_order": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {}
+        }
+      },
+      "PlaneApiSerializersModuleModulecreateserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "writeOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "description": "Serializer for creating modules with member validation and date checking.\n\nHandles module creation including member assignment validation, date range\nverification, and duplicate name prevention for feature-based\nproject organization setup.",
+        "required": [
+          "name"
+        ]
+      },
+      "PlaneApiSerializersModuleModuleserializerResponse": {
+        "type": "object",
+        "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_props": {},
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "readOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "maxLength": 255
+          },
+          "project": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "sort_order": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          }
+        },
+        "description": "The API v1 create response serialized by ModuleSerializer.",
+        "required": [
+          "archived_at",
+          "created_at",
+          "created_by",
+          "deleted_at",
+          "description",
+          "description_html",
+          "description_text",
+          "external_id",
+          "external_source",
+          "id",
+          "lead",
+          "logo_props",
+          "members",
+          "name",
+          "project",
+          "sort_order",
+          "start_date",
+          "status",
+          "target_date",
+          "updated_at",
+          "updated_by",
+          "view_props",
+          "workspace"
+        ]
+      },
+      "PlaneAppSerializersModuleModulelinkserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "metadata": {},
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "PlaneAppSerializersModuleModulelinkserializerResponse": {
+        "type": "object",
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "metadata": {},
+          "module": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "project": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 200
+          },
+          "workspace": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "PlaneAppSerializersModuleModulewriteserializerRequestRequest": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {},
+          "description_text": {},
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "writeOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "sort_order": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {}
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "PlaneAppSerializersModuleModulewriteserializerResponse": {
+        "type": "object",
+        "properties": {
+          "archived_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "created_by": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "title": "Module Description",
+            "type": "string"
+          },
+          "description_html": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description_text": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_source": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_props": {},
+          "member_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "readOnly": true
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "readOnly": true
+          },
+          "name": {
+            "title": "Module Name",
+            "type": "string",
+            "maxLength": 255
+          },
+          "project": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          },
+          "sort_order": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatusEnum"
+          },
+          "target_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "title": "Last Modified At",
+            "type": "string",
+            "readOnly": true,
+            "format": "date-time"
+          },
+          "updated_by": {
+            "title": "Last Modified By",
+            "readOnly": true,
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "view_props": {},
+          "workspace": {
+            "type": "string",
+            "readOnly": true,
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "archived_at",
+          "created_at",
+          "created_by",
+          "deleted_at",
+          "description",
+          "description_html",
+          "description_text",
+          "external_id",
+          "external_source",
+          "id",
+          "lead",
+          "lead_id",
+          "logo_props",
+          "member_ids",
+          "members",
+          "name",
+          "project",
+          "sort_order",
+          "start_date",
+          "status",
+          "target_date",
+          "updated_at",
+          "updated_by",
+          "view_props",
+          "workspace"
+        ]
+      },
+      "RestFrameworkSerializersArchiveresponseResponse": {
+        "type": "object",
+        "properties": {
+          "archived_at": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]{1,6})?\\+00:00$"
+          }
+        },
+        "required": [
+          "archived_at"
+        ]
+      }
+    },
+    "parameters": {
+      "PathModuleID": {
+        "name": "module_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathPk": {
+        "name": "pk",
+        "in": "path",
+        "description": "Module ID",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathPk_ec714d84": {
+        "name": "pk",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathProjectID": {
+        "name": "project_id",
+        "in": "path",
+        "description": "Project ID",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathProjectID_28ef2be3": {
+        "name": "project_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "description": "Workspace slug",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PathSlug_20b7c853": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "requestBodies": {
+      "PostAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDModuleLinksRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerRequestRequest"
+            }
+          }
+        }
+      },
+      "PostAPIWorkspacesBySlugProjectsByProjectIDModulesRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulewriteserializerRequestRequest"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "ConflictError": {
+        "description": "Conflict response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "MethodNotAllowedError": {
+        "description": "Method Not Allowed response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "NoContentResponse": {
+        "description": "No Content response."
+      },
+      "NotFoundError": {
+        "description": "Not Found response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "PlaneAppSerializersModuleModulelinkserializerResponseStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlaneAppSerializersModuleModulelinkserializerResponse"
+            }
+          }
+        }
+      },
+      "RestFrameworkSerializersArchiveresponseResponseStatus200Response": {
+        "description": "OK response.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RestFrameworkSerializersArchiveresponseResponse"
+            }
+          }
+        }
+      },
+      "TooManyRequestsError": {
+        "description": "Too Many Requests response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnsupportedMediaTypeError": {
+        "description": "Unsupported Media Type response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "description": "Plane API token authentication.",
+        "name": "X-Api-Key",
+        "in": "header"
+      },
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session authentication without CSRF enforcement.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "modules"
+    },
+    {
+      "name": "projects"
+    }
+  ]
+}

@@ -1,0 +1,1577 @@
+{
+  "version": 1,
+  "family": "public_feedback",
+  "source_revision": "9cb3baebc1baa06d4f6ae9d271a54c74acf1e065",
+  "characterization_status": "119 active pristine source fixtures are assigned to the 12 public_feedback operations. The 49 public issue collection fixtures and their six corrected-source overrides are preserved in the public_issue_collection follow-up contract. Fifty sparse corrected-source overrides were recorded across the original 13-operation candidate from the pinned Django revision plus the accepted patch. Malformed and non-object vote data and invalid intake object shapes are corrected to return 400 before writes; unsupported vote media remains 415 with no writes. The vote array 500 fixture records its committed partial vote and project-member writes under request autocommit.",
+  "source_files": [
+    "apps/api/plane/space/views/issue.py",
+    "apps/api/plane/space/views/intake.py",
+    "apps/api/plane/space/views/project.py",
+    "apps/api/plane/space/urls/issue.py",
+    "apps/api/plane/space/urls/intake.py",
+    "apps/api/plane/space/urls/project.py",
+    "apps/api/plane/utils/issue_filters.py",
+    "apps/api/plane/utils/paginator.py",
+    "apps/api/plane/space/utils/grouper.py"
+  ],
+  "operation_count": 12,
+  "selected_inventory_state": "active",
+  "operations": {
+    "get_api_public_anchor_by_anchor_issues_by_issue_id": {
+      "operation_id": "get_api_public_anchor_by_anchor_issues_by_issue_id",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/issues/{issue_id}/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/issues/00000000-0000-4000-8000-000000000109/",
+      "source": "apps/api/plane/space/views/issue.py",
+      "auth_profile": "optional-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-issues-by-issue-id-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-by-issue-id-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-by-issue-id-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-options-protocol-pristine.json"
+        },
+        {
+          "when": "issue-detail-anonymous-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-anonymous-pristine.json"
+        },
+        {
+          "when": "issue-detail-missing-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-missing-pristine.json"
+        },
+        {
+          "when": "issue-detail-reaction-only-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-reaction-only-pristine.json"
+        },
+        {
+          "when": "corrected source: issue-detail-reaction-only-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-reaction-only-pristine.json"
+        },
+        {
+          "when": "issue-detail-vote-and-reaction-distinct-actors-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-vote-and-reaction-distinct-actors-pristine.json"
+        },
+        {
+          "when": "corrected source: issue-detail-vote-and-reaction-distinct-actors-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-vote-and-reaction-distinct-actors-pristine.json"
+        },
+        {
+          "when": "issues-detail-wrong-board-kind-source-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-detail-wrong-board-kind-source-pristine.json"
+        },
+        {
+          "when": "corrected source: issues-detail-wrong-board-kind-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-detail-wrong-board-kind-source-pristine.json"
+        },
+        {
+          "when": "issue-detail-blank-vote-avatar-reaction-projection-pristine",
+          "observable": "HTTP 200; vote_items[0].actor_details.avatar_url is an empty string; reaction_items[0].actor_details.avatar_url is an empty string despite the distinct reaction actor having a populated avatar; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-blank-vote-avatar-reaction-projection-pristine.json"
+        },
+        {
+          "when": "corrected source: issue-detail-blank-vote-avatar-reaction-projection-pristine",
+          "observable": "HTTP 200; vote_items[0].actor_details.avatar_url is an empty string; reaction_items[0].actor_details.avatar_url is the reaction actor avatar URL; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-blank-vote-avatar-reaction-projection-pristine.json"
+        },
+        {
+          "when": "detail-assignee-foreign-project-membership-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/detail-assignee-foreign-project-membership-pristine.json"
+        },
+        {
+          "when": "corrected source: detail-assignee-foreign-project-membership-pristine",
+          "observable": "HTTP 200; object keys: assignee_ids, created_by, cycle_id, description_binary, description_html, description_json, description_stripped, estimate_point, id, label_ids, module_ids, name, parent_id, priority, project_id, reaction_items, sequence_id, sort_order, start_date, state__group, state_id, target_date, vote_items; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/detail-assignee-foreign-project-membership-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/detail-assignee-foreign-project-membership-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-blank-vote-avatar-reaction-projection-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-missing-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-reaction-only-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issue-detail-vote-and-reaction-distinct-actors-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/issues-detail-wrong-board-kind-source-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/detail-assignee-foreign-project-membership-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-blank-vote-avatar-reaction-projection-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-reaction-only-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issue-detail-vote-and-reaction-distinct-actors-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/issues-detail-wrong-board-kind-source-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 404],
+      "recorded_source_statuses": [200, 400],
+      "recorded_target_statuses": [200, 404]
+    },
+    "get_api_public_anchor_by_anchor_issues_by_issue_id_votes": {
+      "operation_id": "get_api_public_anchor_by_anchor_issues_by_issue_id_votes",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/issues/{issue_id}/votes/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/issues/00000000-0000-4000-8000-000000000109/votes/",
+      "source": "apps/api/plane/space/views/issue.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": ["search"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-issues-by-issue-id-votes-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-by-issue-id-votes-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-issues-by-issue-id-votes-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: actions, description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-options-protocol-pristine.json"
+        },
+        {
+          "when": "vote-get-disabled-source-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-get-disabled-source-pristine.json"
+        },
+        {
+          "when": "vote-list-anchor-as-slug-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-anchor-as-slug-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-list-anchor-as-slug-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-anchor-as-slug-pristine.json"
+        },
+        {
+          "when": "vote-list-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-anonymous-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: vote-options-anonymous-required-session-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-options-anonymous-required-session-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: vote-options-cors-preflight-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-options-cors-preflight-pristine.json"
+        },
+        {
+          "when": "vote-list-search-ignored-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-public-feedback-vote\"}.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-search-ignored-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-list-search-ignored-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-public-feedback-vote\"}.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-search-ignored-pristine.json"
+        },
+        {
+          "when": "vote-list-empty-avatar-pristine",
+          "observable": "HTTP 200; array length 0 because the pristine anchor lookup misses; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-empty-avatar-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-list-empty-avatar-pristine",
+          "observable": "HTTP 200; array length 1; actor_detail.avatar is an empty string and actor_detail.avatar_url is null; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-empty-avatar-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-issues-by-issue-id-votes-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-get-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-anchor-as-slug-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-empty-avatar-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-list-search-ignored-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-options-anonymous-required-session-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-options-cors-preflight-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-anchor-as-slug-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-empty-avatar-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-list-search-ignored-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401],
+      "recorded_source_statuses": [200, 400, 401],
+      "recorded_target_statuses": [200]
+    },
+    "post_api_public_anchor_by_anchor_issues_by_issue_id_votes": {
+      "operation_id": "post_api_public_anchor_by_anchor_issues_by_issue_id_votes",
+      "method": "POST",
+      "path": "/api/public/anchor/{anchor}/issues/{issue_id}/votes/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/issues/00000000-0000-4000-8000-000000000109/votes/",
+      "source": "apps/api/plane/space/views/issue.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "vote-post-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-anonymous-pristine.json"
+        },
+        {
+          "when": "vote-post-array-transaction-failure-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_votes, project_public_members; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-array-transaction-failure-pristine.json"
+        },
+        {
+          "when": "vote-post-cross-project-target-source-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-cross-project-target-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-cross-project-target-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-cross-project-target-source-pristine.json"
+        },
+        {
+          "when": "vote-post-default-value-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-default-value-pristine.json"
+        },
+        {
+          "when": "vote-post-disabled-source-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-disabled-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-disabled-source-pristine",
+          "observable": "HTTP 403; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-disabled-source-pristine.json"
+        },
+        {
+          "when": "vote-post-disabled-zero-source-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-disabled-zero-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-disabled-zero-source-pristine",
+          "observable": "HTTP 403; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-disabled-zero-source-pristine.json"
+        },
+        {
+          "when": "vote-post-existing-vote-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-existing-vote-pristine.json"
+        },
+        {
+          "when": "vote-post-integer-coercion-boolean-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-boolean-pristine.json"
+        },
+        {
+          "when": "vote-post-integer-coercion-float-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-float-pristine.json"
+        },
+        {
+          "when": "vote-post-integer-coercion-unicode-digit-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-unicode-digit-pristine.json"
+        },
+        {
+          "when": "vote-post-integer-coercion-whitespace-string-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-whitespace-string-pristine.json"
+        },
+        {
+          "when": "vote-post-member-insert-failure-after-vote-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_votes; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-member-insert-failure-after-vote-pristine.json"
+        },
+        {
+          "when": "vote-post-missing-board-invalid-body-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-missing-board-invalid-body-pristine.json"
+        },
+        {
+          "when": "vote-post-nonmember-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonmember-pristine.json"
+        },
+        {
+          "when": "vote-post-zero-source-pristine",
+          "observable": "HTTP 201; object keys: actor, actor_detail, issue, project, vote, workspace; changed tables: issue_votes, project_public_members; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-zero-source-pristine.json"
+        },
+        {
+          "when": "vote-post-empty-avatar-pristine",
+          "observable": "HTTP 201; actor_detail.avatar is an empty string and actor_detail.avatar_url is null; changed tables: issue_votes, project_public_members; durable task: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-empty-avatar-pristine.json"
+        },
+        {
+          "when": "vote-post-malformed-json-effect-order-pristine",
+          "observable": "HTTP 400; object keys: detail; changed tables: issue_votes, project_public_members; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-malformed-json-effect-order-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-malformed-json-effect-order-pristine",
+          "observable": "HTTP 400; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-malformed-json-effect-order-pristine.json"
+        },
+        {
+          "when": "vote-post-nonobject-array-effect-order-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_votes, project_public_members; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonobject-array-effect-order-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-nonobject-array-effect-order-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-nonobject-array-effect-order-pristine.json"
+        },
+        {
+          "when": "vote-post-nonobject-null-effect-order-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_votes, project_public_members; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonobject-null-effect-order-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-nonobject-null-effect-order-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-nonobject-null-effect-order-pristine.json"
+        },
+        {
+          "when": "vote-post-unsupported-media-no-effects-pristine",
+          "observable": "HTTP 415; object keys: detail; changed tables: issue_votes, project_public_members; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-unsupported-media-no-effects-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-post-unsupported-media-no-effects-pristine",
+          "observable": "HTTP 415; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-unsupported-media-no-effects-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-array-transaction-failure-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-cross-project-target-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-default-value-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-disabled-zero-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-empty-avatar-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-existing-vote-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-boolean-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-float-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-unicode-digit-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-integer-coercion-whitespace-string-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-malformed-json-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-member-insert-failure-after-vote-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-missing-board-invalid-body-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonmember-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonobject-array-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-nonobject-null-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-unsupported-media-no-effects-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-zero-source-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-cross-project-target-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-disabled-zero-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-malformed-json-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-nonobject-array-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-nonobject-null-effect-order-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-post-unsupported-media-no-effects-pristine.json"
+      ],
+      "database_effects": ["issue_votes", "project_public_members"],
+      "effects": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "queued_jobs": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "target_statuses": [201, 400, 401, 403, 404, 415, 500],
+      "recorded_source_statuses": [201, 400, 401, 404, 415, 500],
+      "recorded_target_statuses": [400, 403, 404, 415]
+    },
+    "delete_api_public_anchor_by_anchor_issues_by_issue_id_votes": {
+      "operation_id": "delete_api_public_anchor_by_anchor_issues_by_issue_id_votes",
+      "method": "DELETE",
+      "path": "/api/public/anchor/{anchor}/issues/{issue_id}/votes/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/issues/00000000-0000-4000-8000-000000000109/votes/",
+      "source": "apps/api/plane/space/views/issue.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "vote-delete-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-anonymous-pristine.json"
+        },
+        {
+          "when": "vote-delete-archived-issue-source-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: issue_votes; durable tasks: plane.bgtasks.issue_activities_task.issue_activity, plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-archived-issue-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-delete-archived-issue-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-archived-issue-source-pristine.json"
+        },
+        {
+          "when": "vote-delete-cross-project-target-source-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: issue_votes; durable tasks: plane.bgtasks.issue_activities_task.issue_activity, plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-cross-project-target-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-delete-cross-project-target-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-cross-project-target-source-pristine.json"
+        },
+        {
+          "when": "vote-delete-disabled-source-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: issue_votes; durable tasks: plane.bgtasks.issue_activities_task.issue_activity, plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-disabled-source-pristine.json"
+        },
+        {
+          "when": "corrected source: vote-delete-disabled-source-pristine",
+          "observable": "HTTP 403; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-disabled-source-pristine.json"
+        },
+        {
+          "when": "vote-delete-own-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: issue_votes; durable tasks: plane.bgtasks.issue_activities_task.issue_activity, plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/issue.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-own-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-archived-issue-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-cross-project-target-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-disabled-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-delete-own-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-archived-issue-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-cross-project-target-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/vote-delete-disabled-source-pristine.json"
+      ],
+      "database_effects": ["issue_votes"],
+      "effects": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.issue_activities_task.issue_activity"
+      ],
+      "queued_jobs": [
+        "plane.bgtasks.deletion_task.soft_delete_related_objects",
+        "plane.bgtasks.issue_activities_task.issue_activity"
+      ],
+      "target_statuses": [204, 401, 403, 404],
+      "recorded_source_statuses": [204, 401],
+      "recorded_target_statuses": [403, 404]
+    },
+    "get_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues": {
+      "operation_id": "get_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/intake-issues/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["filters", "search", "status"],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": ["search", "status"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: actions, description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-options-protocol-pristine.json"
+        },
+        {
+          "when": "intake-list-alternate-id-source-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-alternate-id-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-list-alternate-id-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-list-alternate-id-source-pristine.json"
+        },
+        {
+          "when": "intake-list-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-list-disabled-intake-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-disabled-intake-pristine.json"
+        },
+        {
+          "when": "intake-list-duplicate-rows-pristine",
+          "observable": "HTTP 200; array length 2; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-duplicate-rows-pristine.json"
+        },
+        {
+          "when": "intake-list-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-pristine.json"
+        },
+        {
+          "when": "intake-list-search-status-ignored-pristine",
+          "observable": "HTTP 200; array length 2; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-intake\", \"status\": \"0\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-search-status-ignored-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: intake-options-anonymous-required-session-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-options-anonymous-required-session-pristine.json"
+        },
+        {
+          "when": "intake-list-empty-assignee-avatar-pristine",
+          "observable": "HTTP 200; one assignee_detail has an empty avatar and null avatar_url; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-empty-assignee-avatar-pristine.json"
+        },
+        {
+          "when": "intake-list-empty-project-cover-pristine",
+          "observable": "HTTP 200; project_detail.cover_image is an empty string and cover_image_url is null; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/serializer/project.py and apps/api/plane/db/models/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-empty-project-cover-pristine.json"
+        },
+        {
+          "when": "intake-list-assignee-asset-missing-workspace-pristine",
+          "observable": "HTTP 200; the assignee detail retains avatar as an empty string and omits avatar_url when the scoped asset has no workspace; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/serializer/user.py and apps/api/plane/db/models/user.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-assignee-asset-missing-workspace-pristine.json"
+        },
+        {
+          "when": "intake-configured-deleted-source-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-configured-deleted-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-configured-deleted-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-configured-deleted-source-pristine.json"
+        },
+        {
+          "when": "intake-configured-foreign-source-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-configured-foreign-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-configured-foreign-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-configured-foreign-source-pristine.json"
+        },
+        {
+          "when": "intake-list-ignored-status-filters-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none; query: {\"filters\": \"invalid\", \"status\": \"no-such-status\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-ignored-status-filters-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-configured-deleted-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-configured-foreign-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-alternate-id-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-assignee-asset-missing-workspace-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-disabled-intake-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-duplicate-rows-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-empty-assignee-avatar-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-empty-project-cover-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-ignored-status-filters-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-search-status-ignored-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-options-anonymous-required-session-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-configured-deleted-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-configured-foreign-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-list-alternate-id-source-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 404],
+      "recorded_source_statuses": [200, 400, 401],
+      "recorded_target_statuses": [404]
+    },
+    "post_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues": {
+      "operation_id": "post_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues",
+      "method": "POST",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/intake-issues/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "intake-create-alternate-intake-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: intake_issues, issue_sequences, issues, states; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-alternate-intake-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-alternate-intake-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-alternate-intake-pristine.json"
+        },
+        {
+          "when": "intake-create-alternate-malformed-source-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-alternate-malformed-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-alternate-malformed-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-alternate-malformed-source-pristine.json"
+        },
+        {
+          "when": "intake-create-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-create-deleted-board-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-deleted-board-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-deleted-board-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-deleted-board-pristine.json"
+        },
+        {
+          "when": "intake-create-disabled-board-source-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: intake_issues, issue_sequences, issues, states; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-disabled-board-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-disabled-board-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-disabled-board-source-pristine.json"
+        },
+        {
+          "when": "intake-create-disabled-malformed-source-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-disabled-malformed-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-disabled-malformed-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-disabled-malformed-source-pristine.json"
+        },
+        {
+          "when": "intake-create-empty-name-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-empty-name-pristine.json"
+        },
+        {
+          "when": "intake-create-insert-failure-after-task-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_sequences, issues, states; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-insert-failure-after-task-pristine.json"
+        },
+        {
+          "when": "intake-create-missing-board-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-missing-board-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-create-missing-board-malformed-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-missing-board-malformed-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-missing-board-malformed-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-missing-board-malformed-pristine.json"
+        },
+        {
+          "when": "intake-create-no-config-malformed-source-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-no-config-malformed-source-pristine.json"
+        },
+        {
+          "when": "intake-create-null-priority-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-null-priority-pristine.json"
+        },
+        {
+          "when": "intake-create-publish-failure-after-issue-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: issue_sequences, issues, states; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-publish-failure-after-issue-pristine.json"
+        },
+        {
+          "when": "intake-create-nonobject-issue-array-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-issue-array-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-nonobject-issue-array-source-pristine",
+          "observable": "HTTP 400; object keys: issue; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-issue-array-source-pristine.json"
+        },
+        {
+          "when": "intake-create-nonobject-root-array-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-root-array-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-nonobject-root-array-source-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-root-array-source-pristine.json"
+        },
+        {
+          "when": "intake-create-nonobject-root-null-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-root-null-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-create-nonobject-root-null-source-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-root-null-source-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-alternate-intake-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-alternate-malformed-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-deleted-board-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-disabled-board-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-disabled-malformed-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-empty-name-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-insert-failure-after-task-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-missing-board-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-missing-board-malformed-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-no-config-malformed-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-issue-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-root-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-nonobject-root-null-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-null-priority-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-publish-failure-after-issue-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-alternate-intake-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-alternate-malformed-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-deleted-board-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-disabled-board-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-disabled-malformed-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-missing-board-malformed-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-issue-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-root-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-create-nonobject-root-null-source-pristine.json"
+      ],
+      "database_effects": ["intake_issues", "issue_sequences", "issues", "states"],
+      "effects": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "queued_jobs": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "target_statuses": [200, 400, 401, 404, 500],
+      "recorded_source_statuses": [200, 400, 401, 404, 500],
+      "recorded_target_statuses": [400, 404]
+    },
+    "get_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk": {
+      "operation_id": "get_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/{pk}/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/intake-issues/00000000-0000-4000-8000-000000000112/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["search", "status"],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": ["search", "status"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-protocol-pristine.json"
+        },
+        {
+          "when": "intake-detail-get-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-detail-no-config-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-no-config-pristine.json"
+        },
+        {
+          "when": "intake-detail-retrieve-alternate-source-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-retrieve-alternate-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-retrieve-alternate-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-retrieve-alternate-source-pristine.json"
+        },
+        {
+          "when": "intake-detail-retrieve-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-retrieve-pristine.json"
+        },
+        {
+          "when": "intake-detail-search-status-ignored-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-intake\", \"status\": \"0\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-search-status-ignored-pristine.json"
+        },
+        {
+          "when": "intake-detail-get-foreign-linked-issue-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-foreign-linked-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-get-soft-deleted-issue-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-soft-deleted-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-get-soft-deleted-row-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-soft-deleted-row-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-intake-issues-by-pk-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-foreign-linked-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-soft-deleted-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-get-soft-deleted-row-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-no-config-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-retrieve-alternate-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-retrieve-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-search-status-ignored-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-retrieve-alternate-source-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 401, 404],
+      "recorded_source_statuses": [200, 400, 401, 404],
+      "recorded_target_statuses": [404]
+    },
+    "patch_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk": {
+      "operation_id": "patch_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk",
+      "method": "PATCH",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/{pk}/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/intake-issues/00000000-0000-4000-8000-000000000112/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "intake-detail-patch-alternate-source-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_ids, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, label_ids, labels, name, parent, parent_id, point, priority, project, project_id, sequence_id, sort_order, start_date, state, state_id, target_date, type, updated_at, updated_by, workspace, workspace_id; changed tables: issues; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-alternate-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-alternate-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-alternate-source-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-creator-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_ids, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, label_ids, labels, name, parent, parent_id, point, priority, project, project_id, sequence_id, sort_order, start_date, state, state_id, target_date, type, updated_at, updated_by, workspace, workspace_id; changed tables: issues; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-creator-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-noncreator-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-noncreator-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-list-issue-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-list-issue-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-list-issue-pristine",
+          "observable": "HTTP 400; object keys: issue; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-list-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-missing-issue-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-missing-issue-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-missing-issue-pristine",
+          "observable": "HTTP 400; object keys: issue; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-missing-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-nonobject-root-array-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-nonobject-root-array-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-nonobject-root-array-source-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-nonobject-root-array-source-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-nonobject-root-null-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-nonobject-root-null-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-nonobject-root-null-source-pristine",
+          "observable": "HTTP 400; object keys: non_field_errors; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-nonobject-root-null-source-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-null-issue-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-null-issue-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-null-issue-pristine",
+          "observable": "HTTP 400; object keys: issue; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-null-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-scalar-issue-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-scalar-issue-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-patch-scalar-issue-pristine",
+          "observable": "HTTP 400; object keys: issue; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-scalar-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-soft-deleted-issue-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-soft-deleted-issue-pristine.json"
+        },
+        {
+          "when": "intake-detail-patch-soft-deleted-row-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-soft-deleted-row-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-alternate-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-creator-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-list-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-missing-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-noncreator-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-nonobject-root-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-nonobject-root-null-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-null-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-scalar-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-soft-deleted-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-patch-soft-deleted-row-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-alternate-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-list-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-missing-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-nonobject-root-array-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-nonobject-root-null-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-null-issue-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-patch-scalar-issue-pristine.json"
+      ],
+      "database_effects": ["issues"],
+      "effects": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "queued_jobs": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "target_statuses": [200, 400, 401, 404, 500],
+      "recorded_source_statuses": [200, 400, 401, 404, 500],
+      "recorded_target_statuses": [400, 404]
+    },
+    "delete_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk": {
+      "operation_id": "delete_api_public_anchor_by_anchor_intakes_by_intake_id_intake_issues_by_pk",
+      "method": "DELETE",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/{pk}/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/intake-issues/00000000-0000-4000-8000-000000000112/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "intake-detail-delete-alternate-source-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: intake_issues; durable tasks: plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-alternate-source-pristine.json"
+        },
+        {
+          "when": "corrected source: intake-detail-delete-alternate-source-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-delete-alternate-source-pristine.json"
+        },
+        {
+          "when": "intake-detail-delete-anonymous-pristine",
+          "observable": "HTTP 401; object keys: detail; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-anonymous-pristine.json"
+        },
+        {
+          "when": "intake-detail-delete-creator-pristine",
+          "observable": "HTTP 204; null/empty body; changed tables: intake_issues; durable tasks: plane.bgtasks.deletion_task.soft_delete_related_objects.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-creator-pristine.json"
+        },
+        {
+          "when": "intake-detail-delete-noncreator-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-noncreator-pristine.json"
+        },
+        {
+          "when": "intake-detail-delete-soft-deleted-row-pristine",
+          "observable": "HTTP 404; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-soft-deleted-row-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-alternate-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-anonymous-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-creator-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-noncreator-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-detail-delete-soft-deleted-row-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/intake-detail-delete-alternate-source-pristine.json"
+      ],
+      "database_effects": ["intake_issues"],
+      "effects": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "queued_jobs": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "target_statuses": [204, 400, 401, 404],
+      "recorded_source_statuses": [204, 400, 401, 404],
+      "recorded_target_statuses": [404]
+    },
+    "get_api_public_anchor_by_anchor_intakes_by_intake_id_inbox_issues": {
+      "operation_id": "get_api_public_anchor_by_anchor_intakes_by_intake_id_inbox_issues",
+      "method": "GET",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/inbox-issues/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/inbox-issues/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["filters", "search", "status"],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": ["search", "status"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "HEAD protocol branch: anchor-by-anchor-intakes-by-intake-id-inbox-issues-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: actions, description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-protocol-pristine.json"
+        },
+        {
+          "when": "inbox-list-search-status-ignored-pristine",
+          "observable": "HTTP 200; array length 2; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-intake\", \"status\": \"0\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/inbox-list-search-status-ignored-pristine.json"
+        },
+        {
+          "when": "intake-list-status-pending-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none; query: {\"status\": \"-2\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-status-pending-pristine.json"
+        },
+        {
+          "when": "inbox-list-ignored-status-filters-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none; query: {\"filters\": \"invalid\", \"status\": \"no-such-status\"}.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/inbox-list-ignored-status-filters-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/anchor-by-anchor-intakes-by-intake-id-inbox-issues-options-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/inbox-list-ignored-status-filters-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/inbox-list-search-status-ignored-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-list-status-pending-pristine.json"
+      ],
+      "corrected_fixtures": [],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400],
+      "recorded_source_statuses": [200, 400],
+      "recorded_target_statuses": [200, 400]
+    },
+    "post_api_public_anchor_by_anchor_intakes_by_intake_id_inbox_issues": {
+      "operation_id": "post_api_public_anchor_by_anchor_intakes_by_intake_id_inbox_issues",
+      "method": "POST",
+      "path": "/api/public/anchor/{anchor}/intakes/{intake_id}/inbox-issues/",
+      "sample_path": "/api/public/anchor/public-feedback-fixture-anchor/intakes/00000000-0000-4000-8000-000000000104/inbox-issues/",
+      "source": "apps/api/plane/space/views/intake.py",
+      "auth_profile": "session-required",
+      "authentication": ["django-session"],
+      "protocol_methods": [],
+      "query_parameters": [],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "intake-create-inbox-pristine",
+          "observable": "HTTP 200; object keys: archived_at, assignee_details, assignees, completed_at, created_at, created_by, deleted_at, description_binary, description_html, description_json, description_stripped, estimate_point, external_id, external_source, id, is_draft, issue_intake, label_details, labels, name, parent, point, priority, project, project_detail, sequence_id, sort_order, start_date, state, state_detail, target_date, type, updated_at, updated_by, workspace; changed tables: intake_issues, issue_sequences, issues, states; durable tasks: plane.bgtasks.issue_activities_task.issue_activity.",
+          "source": "apps/api/plane/space/views/intake.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-inbox-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/intake-create-inbox-pristine.json"
+      ],
+      "corrected_fixtures": [],
+      "database_effects": ["intake_issues", "issue_sequences", "issues", "states"],
+      "effects": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "queued_jobs": ["plane.bgtasks.issue_activities_task.issue_activity"],
+      "target_statuses": [200],
+      "recorded_source_statuses": [200],
+      "recorded_target_statuses": [200]
+    },
+    "get_api_public_workspaces_by_slug_project_boards": {
+      "operation_id": "get_api_public_workspaces_by_slug_project_boards",
+      "method": "GET",
+      "path": "/api/public/workspaces/{slug}/project-boards/",
+      "sample_path": "/api/public/workspaces/public-feedback-fixture/project-boards/",
+      "source": "apps/api/plane/space/views/project.py",
+      "auth_profile": "optional-session",
+      "authentication": ["anonymous", "django-session"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "query_parameters": ["search"],
+      "documented_query_parameters": [],
+      "supported_query_parameters": [],
+      "ignored_query_parameters": ["search"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "board-directory-anonymous-source-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-anonymous-source-pristine.json"
+        },
+        {
+          "when": "corrected source: board-directory-anonymous-source-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-anonymous-source-pristine.json"
+        },
+        {
+          "when": "board-directory-missing-workspace-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-missing-workspace-pristine.json"
+        },
+        {
+          "when": "corrected source: board-directory-missing-workspace-pristine",
+          "observable": "HTTP 200; array length 0; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-missing-workspace-pristine.json"
+        },
+        {
+          "when": "board-directory-success-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-success-pristine.json"
+        },
+        {
+          "when": "corrected source: board-directory-success-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-success-pristine.json"
+        },
+        {
+          "when": "HEAD protocol branch: workspaces-by-slug-project-boards-head-protocol-pristine",
+          "observable": "HTTP 500; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-head-protocol-pristine.json"
+        },
+        {
+          "when": "corrected source: workspaces-by-slug-project-boards-head-protocol-pristine",
+          "observable": "HTTP 200; null/empty body; changed tables: none; durable tasks: none.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/workspaces-by-slug-project-boards-head-protocol-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: workspaces-by-slug-project-boards-options-protocol-pristine",
+          "observable": "HTTP 200; object keys: description, name, parses, renders; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-options-protocol-pristine.json"
+        },
+        {
+          "when": "board-directory-search-ignored-pristine",
+          "observable": "HTTP 500; object keys: error; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-public-feedback-board\"}.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-search-ignored-pristine.json"
+        },
+        {
+          "when": "workspaces-by-slug-project-boards-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-options-invalid-timezone-pristine.json"
+        },
+        {
+          "when": "corrected source: board-directory-search-ignored-pristine",
+          "observable": "HTTP 200; array length 1; changed tables: none; durable tasks: none; query: {\"search\": \"no-matching-public-feedback-board\"}.",
+          "source": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-search-ignored-pristine.json"
+        },
+        {
+          "when": "OPTIONS protocol branch: workspaces-by-slug-project-boards-options-invalid-timezone-pristine",
+          "observable": "HTTP 400; object keys: error; changed tables: none; durable tasks: none.",
+          "source": "apps/api/plane/space/views/project.py",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-options-invalid-timezone-pristine.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-anonymous-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-missing-workspace-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-search-ignored-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/board-directory-success-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-head-protocol-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-options-invalid-timezone-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback/workspaces-by-slug-project-boards-options-protocol-pristine.json"
+      ],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-anonymous-source-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-missing-workspace-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-search-ignored-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/board-directory-success-pristine.json",
+        "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected/workspaces-by-slug-project-boards-head-protocol-pristine.json"
+      ],
+      "database_effects": [],
+      "effects": [],
+      "queued_jobs": [],
+      "target_statuses": [200, 400, 500],
+      "recorded_source_statuses": [200, 400, 500],
+      "recorded_target_statuses": [200, 400, 500]
+    }
+  },
+  "effect_contracts": {
+    "plane.bgtasks.issue_activities_task.issue_activity": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.issue_activities_task.issue_activity",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "plane.bgtasks.deletion_task.soft_delete_related_objects": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    }
+  },
+  "source_fixtures": {
+    "directory": "apps/go-api/internal/parity/testdata/fixtures/public_feedback",
+    "count": 119
+  },
+  "corrected_fixture_directory": "apps/go-api/internal/parity/testdata/fixtures/public_feedback_corrected",
+  "corrected_fixture_count": 44,
+  "corrections_manifest": "docs/go-backend-replacement/evidence/public-feedback/corrections.json",
+  "source_patch": "docs/go-backend-replacement/evidence/public-feedback/django-corrections.patch",
+  "source_hashes_pristine": "docs/go-backend-replacement/evidence/public-feedback/source-hashes-pristine.json",
+  "source_hashes_corrected": "docs/go-backend-replacement/evidence/public-feedback/source-hashes-corrected.json",
+  "fixture_format": "DjangoFixtureRecorder schema_version 1; each record includes request, response, database before/after/changed_tables, and captured durable Celery effects.",
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/public_feedback_middleware_test.go::TestPublicFeedbackProductionMiddlewareOrdersSessionTimezoneAndEffects",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/api/plane/tests/parity/test_public_feedback_recorder.py",
+    "operation_count": 12,
+    "source_fixture_count": 119,
+    "corrected_fixture_count": 44,
+    "auth_profiles": ["optional-session", "session-required"],
+    "auth_profile_semantics": {
+      "optional-session": {
+        "method": "GET",
+        "headers": {
+          "Accept": "application/json"
+        },
+        "cookie": null
+      },
+      "session-required": {
+        "method": "GET",
+        "headers": {},
+        "cookie": "session-id=<seeded-django-session>"
+      }
+    },
+    "auth_probes": {
+      "optional-session": "/api/public/workspaces/public-feedback-fixture/project-boards/",
+      "session-required": "/api/public/anchor/public-feedback-fixture-anchor/issues/00000000-0000-4000-8000-000000000109/votes/"
+    },
+    "comparison_scope": ["status", "headers", "body"],
+    "protocol_methods": ["HEAD", "OPTIONS"],
+    "effects": "Durable RabbitMQ effects are covered by source fixture replay with workers stopped; the production-proxy differential compares HTTP status, headers and body only."
+  },
+  "scope_decisions": [
+    "The contract covers exactly the 13 public feedback, intake, vote and workspace board directory operations in the selected endpoint inventory.",
+    "Ordinary OPTIONS follows each source route’s session requirement; CORS preflight is captured separately.",
+    "Intake and inbox list search/status inputs are recorded with discriminating duplicate/mixed-status rows; the source returns the unfiltered projection.",
+    "Vote JSON parse errors and non-object roots are explicit corrections: reject with 400 before vote/member writes; unsupported media keeps 415 and accepted object vote coercions/response scalars remain unchanged.",
+    "Intake PATCH requires an object-valued nested issue after board, intake row, creator and live issue scope checks; invalid shapes return 400 without effects.",
+    "Creator and date grouping uses the filtered issue queryset; detail assignee IDs are scoped to active membership in the issue project.",
+    "Vote serializer coercion preserves valid submitted scalar response values; POST schema is permissive while GET vote values remain integer.",
+    "Public intake CREATE validates null/non-object root bodies and nested issue shapes before effects; PATCH checks creator before root shape, then resolves the scoped live issue before validating nested issue shape."
+  ],
+  "recorder_evidence": {
+    "autocommit_partial_write_case": {
+      "fixture": "apps/go-api/internal/parity/testdata/fixtures/public_feedback/vote-post-array-transaction-failure-pristine.json",
+      "previous_sha256": "a4abebcd1f80d94dabb19cc732f1136593aad24089981be400e8fbb9b9b8a9b7",
+      "current_sha256": "5bc9dee850d976e5aadfbeb5b6a3e10335f4593b8618a122702dd009fd2aeaa2",
+      "previous_changed_tables": ["issue_votes"],
+      "current_changed_tables": ["issue_votes", "project_public_members"],
+      "reason": "The previous recorder wrapped the request and snapshot in transaction.atomic(); that failure path marked the transaction for rollback and hid the committed public-member insert. The external target request uses normal autocommit. The source case now seeds committed rows, executes the request in autocommit, and snapshots its real partial writes."
+    }
+  },
+  "remaining_evidence": []
+}

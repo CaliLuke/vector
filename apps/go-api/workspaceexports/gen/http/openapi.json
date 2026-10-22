@@ -1,0 +1,291 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Plane Workspace Exports API",
+    "version": "1.0.0"
+  },
+  "jsonSchemaDialect": "https://spec.openapis.org/oas/3.1/dialect/base",
+  "servers": [
+    {
+      "url": "http://localhost:80",
+      "description": "Default server for Plane Workspace Exports API"
+    }
+  ],
+  "paths": {
+    "/api/workspaces/{slug}/export-analytics/": {
+      "post": {
+        "tags": [
+          "workspace_exports"
+        ],
+        "summary": "export_analytics workspace_exports",
+        "operationId": "post_api_workspaces_by_slug_export_analytics",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugExportAnalyticsRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostAPIWorkspacesBySlugExportAnalyticsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    },
+    "/api/workspaces/{slug}/export-issues/": {
+      "get": {
+        "tags": [
+          "workspace_exports"
+        ],
+        "summary": "get_issue_exports workspace_exports",
+        "operationId": "get_api_workspaces_by_slug_export_issues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostAPIWorkspacesBySlugExportAnalyticsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "workspace_exports"
+        ],
+        "summary": "create_issue_export workspace_exports",
+        "operationId": "post_api_workspaces_by_slug_export_issues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PathSlug"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PostAPIWorkspacesBySlugExportAnalyticsRequestBody"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PostAPIWorkspacesBySlugExportAnalyticsStatus200Response"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequestError",
+            "description": "status_400: Bad Request response."
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError",
+            "description": "status_401: Unauthorized response."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenError",
+            "description": "status_403: Forbidden response."
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaTypeError",
+            "description": "status_415: Unsupported Media Type response."
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorError",
+            "description": "status_500: Internal Server Error response."
+          }
+        },
+        "security": [
+          {
+            "PlaneSessionCookie": []
+          }
+        ]
+      },
+      "x-loom-cors": {
+        "runtime": true
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PathSlug": {
+        "name": "slug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "headers": {
+      "ContentTypeHeader": {
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "requestBodies": {
+      "PostAPIWorkspacesBySlugExportAnalyticsRequestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "application/x-www-form-urlencoded": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "multipart/form-data": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequestError": {
+        "description": "Bad Request response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "InternalServerErrorError": {
+        "description": "Internal Server Error response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "PostAPIWorkspacesBySlugExportAnalyticsStatus200Response": {
+        "description": "OK response.",
+        "headers": {
+          "Content-Type": {
+            "$ref": "#/components/headers/ContentTypeHeader"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      },
+      "UnsupportedMediaTypeError": {
+        "description": "Unsupported Media Type response.",
+        "content": {
+          "application/json": {
+            "schema": {}
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "PlaneSessionCookie": {
+        "type": "apiKey",
+        "description": "Plane session cookie authentication.",
+        "name": "session-id",
+        "in": "cookie"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "workspace_exports",
+      "description": "Workspace issue and analytics exports."
+    }
+  ]
+}

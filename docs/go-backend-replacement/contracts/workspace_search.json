@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "family": "workspace_search",
+  "source_revision": "d37ba7b8370d6cfec898f6aa1e0541f950d777af",
+  "characterization_status": "16 pristine source cases passed immutable verification; 1 corrected source oracle is preserved. Malformed project IDs now have explicit HTTP 400 source fixtures for both routes. Final current-tree replay, differential, and activation proof remain pending.",
+  "operation_count": 2,
+  "source_files": [
+    "apps/api/plane/app/urls/search.py",
+    "apps/api/plane/app/views/search/base.py",
+    "apps/api/plane/app/views/base.py",
+    "apps/api/plane/app/permissions/workspace.py",
+    "apps/api/plane/db/models/issue.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/models/page.py",
+    "apps/api/plane/db/models/module.py",
+    "apps/api/plane/db/models/cycle.py"
+  ],
+  "fixture_count": 16,
+  "fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_search",
+  "case_count_receipt": "docs/go-backend-replacement/evidence/workspace-search/source-counters.json",
+  "source_hash_manifest": "docs/go-backend-replacement/evidence/workspace-search/source-hashes.json",
+  "operations": {
+    "get_api_workspaces_by_slug_search": {
+      "operation_id": "get_api_workspaces_by_slug_search",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/search/",
+      "sample_path": "/api/workspaces/workspace-search-contract/search/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["entities", "project_id", "search", "workspace_search"],
+      "documented_query_parameters": ["entities", "project_id", "search", "workspace_search"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "global-search-selected-entities",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-selected-entities.json"
+        },
+        {
+          "when": "global-search-invalid-project-id",
+          "observable": "Pinned Django fixture rejects a malformed project_id with HTTP 400 before querying search data.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-invalid-project-id.json"
+        },
+        {
+          "when": "global-search-default-entities",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-default-entities.json"
+        },
+        {
+          "when": "global-search-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-anonymous.json"
+        },
+        {
+          "when": "global-search-options",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-options.json"
+        },
+        {
+          "when": "global-search-head",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-head.json"
+        },
+        {
+          "when": "global-search-options-invalid-timezone",
+          "observable": "Pinned Django fixture records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-default-entities.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-invalid-project-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/global-search-selected-entities.json"
+      ],
+      "source_statuses": ["200", "400", "401"],
+      "statuses": [200, 400, 401],
+      "effects": [],
+      "status_note": "Global search has authenticated selected/default entity cases, an anonymous 401, and HEAD/OPTIONS protocol coverage including invalid-timezone preflight. A malformed project_id returns HTTP 400."
+    },
+    "get_api_workspaces_by_slug_entity_search": {
+      "operation_id": "get_api_workspaces_by_slug_entity_search",
+      "method": "GET",
+      "path": "/api/workspaces/{slug}/entity-search/",
+      "sample_path": "/api/workspaces/workspace-search-contract/entity-search/",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": ["count", "project_id", "query", "query_type"],
+      "documented_query_parameters": ["count", "project_id", "query", "query_type"],
+      "protocol_methods": ["HEAD", "OPTIONS"],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "entity-search-mentions-by-project",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-mentions-by-project.json"
+        },
+        {
+          "when": "entity-search-mentions-by-workspace",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-mentions-by-workspace.json"
+        },
+        {
+          "when": "entity-search-invalid-count",
+          "observable": "Pinned Django fixture records HTTP 500. Corrected source oracle records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-invalid-count.json"
+        },
+        {
+          "when": "entity-search-invalid-project-id",
+          "observable": "Pinned Django fixture rejects a malformed project_id with HTTP 400 before querying search data.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-invalid-project-id.json"
+        },
+        {
+          "when": "entity-search-anonymous",
+          "observable": "Pinned Django fixture records HTTP 401.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-anonymous.json"
+        },
+        {
+          "when": "entity-search-denied-options",
+          "observable": "Pinned Django fixture records HTTP 403.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-denied-options.json"
+        },
+        {
+          "when": "entity-search-options",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-options.json"
+        },
+        {
+          "when": "entity-search-head",
+          "observable": "Pinned Django fixture records HTTP 200.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-head.json"
+        },
+        {
+          "when": "entity-search-options-invalid-timezone",
+          "observable": "Pinned Django fixture records HTTP 400.",
+          "fixture": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-options-invalid-timezone.json"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/corrected/entity-search-invalid-count.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-anonymous.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-denied-options.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-head.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-invalid-count.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-invalid-project-id.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-mentions-by-project.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-mentions-by-workspace.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-options-invalid-timezone.json",
+        "apps/go-api/internal/parity/testdata/fixtures/workspace_search/entity-search-options.json"
+      ],
+      "source_statuses": ["200", "400", "401", "403", "500"],
+      "statuses": [200, 400, 401, 403, 500],
+      "effects": [],
+      "status_note": "Entity search preserves the pristine malformed-count 500 fixture and a separately recorded corrected-source validation 400. It also covers project/workspace mention scopes, anonymous 401, denied OPTIONS 403, HEAD, OPTIONS, and invalid-timezone preflight. A malformed project_id returns HTTP 400. The pristine malformed-count 500 and corrected 400 remain separate records."
+    }
+  },
+  "corrected_fixture_count": 1,
+  "corrected_fixture_root": "apps/go-api/internal/parity/testdata/fixtures/workspace_search/corrected",
+  "corrected_source_receipt": "docs/go-backend-replacement/evidence/workspace-search/source-counters-corrected.json",
+  "source_runtime_evidence": {
+    "pristine": "docs/go-backend-replacement/evidence/workspace-search/source-counters.json",
+    "pristine_count": 16,
+    "corrected_count": 1,
+    "corrected": "docs/go-backend-replacement/evidence/workspace-search/source-counters-corrected.json",
+    "record_log": "docs/go-backend-replacement/evidence/workspace-search/source-20261022T120014Z.log",
+    "corrected_log": "docs/go-backend-replacement/evidence/workspace-search/source-20261022T103031Z.log"
+  },
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "evidence": "apps/go-api/internal/parity/workspace_search_integration_test.go::TestWorkspaceSearchFixturesReplayAgainstGo",
+    "auth_probes": {
+      "django-session": "/api/users/me/"
+    },
+    "malformed_queries": ["entities", "project_id", "search", "workspace_search", "count", "query", "query_type"],
+    "request_bodies": {
+      "POST": [],
+      "PATCH": [],
+      "PUT": []
+    },
+    "intentional_differences": [
+      {
+        "decision": "docs/go-backend-replacement/decisions/WORKSPACE-SEARCH-001-invalid-count.md",
+        "cases": ["get_api_workspaces_by_slug_entity_search:malformed:count"],
+        "source": {
+          "status": 500,
+          "body_sha256": "d06853a8ad551a5a3795f75fc78bcac6c8606bb49f6fe78a4e39573259c241e2"
+        },
+        "target": {
+          "status": 400,
+          "body_sha256": "ad04adee6bf5958ece48c6b192079d21f610c43cbdfbf4a6beb98b7807633a28"
+        }
+      }
+    ]
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/remaining_read_middleware_test.go::TestRemainingReadFamiliesMiddlewareOrder",
+  "middleware_notes": "The production chain is tested on authenticated global search: oversized-body rejection precedes session inspection, anonymous rejection precedes timezone inspection, invalid timezone is rejected before search dispatch, authorized requests dispatch the generated service, and session requests emit no API-key audit. Entity-search permission checks are separately covered by production-mount tests."
+}

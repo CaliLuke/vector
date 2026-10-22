@@ -1,0 +1,153 @@
+{
+  "cache": {
+    "api_key_history_after": [
+      "<timestamp>"
+    ],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": "<timestamp>",
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "before": {
+      "api_tokens": [
+        {
+          "allowed_rate_limit": "60/min",
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "description": "",
+          "expired_at": null,
+          "id": "<uuid-1>",
+          "is_active": true,
+          "is_service": false,
+          "label": "Invitations membership fixture",
+          "last_used": null,
+          "token": "<secret:api_tokens.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "user_id": "<uuid-2>",
+          "user_type": 0,
+          "workspace_id": null
+        }
+      ]
+    },
+    "changed_tables": [
+      "api_tokens"
+    ],
+    "expected_changed_tables": [
+      "api_tokens"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "log_data": {
+            "body": null,
+            "headers": {
+              "X-Api-Key": "[REDACTED]"
+            },
+            "ip_address": "<request-peer>",
+            "method": "GET",
+            "path": "/api/v1/workspaces/invitations-membership-fixture/members-lite/",
+            "query_params": "cursor=1%3A99%3A0&per_page=1",
+            "response_body": {
+              "count": 0,
+              "extra_stats": null,
+              "grouped_by": null,
+              "next_cursor": "1:100:0",
+              "next_page_results": false,
+              "prev_cursor": "1:98:1",
+              "prev_page_results": true,
+              "results": [],
+              "sub_grouped_by": null,
+              "total_count": 5,
+              "total_pages": 5,
+              "total_results": 5
+            },
+            "response_code": 200,
+            "token_identifier": "<hmac-sha256-api-key>",
+            "user_agent": "<request-agent>"
+          }
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "HTTP_X_API_KEY": "<secret:x-api-key>"
+    },
+    "method": "GET",
+    "path": "/api/v1/workspaces/invitations-membership-fixture/members-lite/",
+    "principal": {
+      "kind": "api-key",
+      "user_id": "<fixture-user>"
+    },
+    "query": {
+      "cursor": "1:99:0",
+      "per_page": "1"
+    }
+  },
+  "response": {
+    "body": {
+      "count": 0,
+      "extra_stats": null,
+      "grouped_by": null,
+      "next_cursor": "1:100:0",
+      "next_page_results": false,
+      "prev_cursor": "1:98:1",
+      "prev_page_results": true,
+      "results": [],
+      "sub_grouped_by": null,
+      "total_count": 5,
+      "total_pages": 5,
+      "total_results": 5
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-RateLimit-Remaining": "59",
+      "X-RateLimit-Reset": "<timestamp>"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-member-lite-beyond-last-page"
+  }
+}

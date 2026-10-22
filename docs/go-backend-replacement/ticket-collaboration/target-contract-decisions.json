@@ -1,0 +1,175 @@
+{
+  "family": "ticket_collaboration",
+  "phase": "source characterization and selected target contract",
+  "status": "Selected target differences are represented by case-specific executable expectations; immutable source fixtures remain unchanged.",
+  "source_baseline": "Django recorder fixtures are evidence. Target expectations explicitly transform only the listed target cases and preserve listed source behaviors.",
+  "decisions": [
+    {
+      "id": "tenant-reference-scope",
+      "scope": "Existing foreign workspace or project issue, comment, parent, or description reference, including denormalized reaction rows referencing a foreign comment",
+      "source_fixtures": [
+        "app-comment-create-foreign-project-issue.json",
+        "app-comment-create-remote-issue.json",
+        "app-comment-patch-description-foreign-project.json",
+        "app-comment-patch-description-remote-workspace.json",
+        "app-comment-patch-parent-foreign-project.json",
+        "app-comment-patch-parent-remote-workspace.json",
+        "app-comment-reaction-create-foreign-project-comment.json",
+        "app-comment-reaction-create-remote-comment.json",
+        "app-issue-reaction-create-foreign-project-issue.json",
+        "app-issue-reaction-create-remote-issue.json",
+        "app-link-create-foreign-project-issue.json",
+        "app-link-create-remote-issue.json",
+        "app-subscribe-foreign-issue.json",
+        "public-issue-reaction-cross-project-issue.json",
+        "public-issue-reaction-cross-workspace-issue.json",
+        "public-comments-cross-project-issue.json",
+        "public-comments-cross-workspace-issue.json",
+        "app-comment-patch-existing-foreign-description-content.json",
+        "api-issues-comments-update-existing-foreign-description-content.json",
+        "app-comment-reaction-delete-cross-scope-inserted.json"
+      ],
+      "target_result": {
+        "kind": "reject-existing-foreign-reference",
+        "status": 404,
+        "public_and_app_body": {
+          "error": "The required object does not exist."
+        },
+        "api_v1_body": {
+          "error": "The requested resource does not exist."
+        },
+        "before_domain_write_or_effect": true,
+        "preserve_api_audit_and_token_last_used": true,
+        "effective_reference_policy": "Validate the effective description reference for updates, including an existing attached description when the request omits its ID. Ignored create aliases remain ignored.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length.",
+        "response_headers_by_fixture": {
+          "app-comment-reaction-delete-cross-scope-inserted.json": {
+            "Content-Type": "application/json"
+          }
+        }
+      }
+    },
+    {
+      "id": "public-comment-route-scope",
+      "scope": "Public board comment lookup and comment-reaction reference eligibility",
+      "source_fixtures": [
+        "public-comment-reaction-cross-board-comment.json",
+        "public-comment-reaction-cross-project-comment.json",
+        "public-comment-reaction-cross-workspace-comment.json",
+        "public-comments-detail-success.json",
+        "public-comments-detail-update.json",
+        "public-comments-detail-delete.json",
+        "public-comments-detail-internal-read.json",
+        "public-comments-detail-internal-update.json",
+        "public-comments-detail-internal-delete.json",
+        "public-comments-detail-reassign-actor-access.json"
+      ],
+      "target_result": {
+        "kind": "scope-public-comment-and-reaction-references",
+        "comment_lookup": "Scope by the actual board project, route issue, and EXTERNAL access before detail GET/PATCH/DELETE.",
+        "comment_reaction_lookup": "Require the referenced comment to be EXTERNAL and belong to the actual board project.",
+        "foreign_reference_status": 404,
+        "foreign_reference_body": {
+          "error": "The required object does not exist."
+        },
+        "internal_rejection_body": {
+          "error": "The required object does not exist."
+        },
+        "internal_comment_policy": "GET remains the source 404; PATCH and DELETE intentionally reject with 404 and no writes/effects.",
+        "preserve": "For an initially EXTERNAL comment selected by the board and route, actor and access remain writable, including reassignment to another global user and changing access to INTERNAL.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length.",
+        "response_headers_by_fixture": {
+          "public-comments-detail-internal-delete.json": {
+            "Content-Type": "application/json"
+          }
+        }
+      }
+    },
+    {
+      "id": "public-issue-reaction-list",
+      "scope": "Public issue-reaction list queryset",
+      "source_fixtures": [
+        "public-issue-reactions-list-query.json",
+        "public-issue-reactions-list-success.json",
+        "public-issue-reactions-list-head.json",
+        "public-issue-reactions-list-reactions-disabled.json"
+      ],
+      "target_result": {
+        "kind": "return-actual-board-scoped-issue-reactions",
+        "status": 200,
+        "scope": "Board anchor, board workspace/project, and route issue.",
+        "seeded_rows": "Return the exact matching active reaction rows represented by the fixture's before snapshot.",
+        "head": "Return no response body while retaining GET representation headers, including Accept-Encoding in Vary when the changed representation is at least 200 bytes.",
+        "feature_disabled": "Preserve the source empty list when the board has reactions disabled.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length."
+      }
+    },
+    {
+      "id": "comment-html-sanitization",
+      "scope": "Comment HTML accepted by app, API v1, and public board routes",
+      "source_fixtures": [
+        "app-comment-patch-html-sanitized.json",
+        "api-issues-comments-list-html-sanitization-create.json",
+        "api-issues-comments-detail-html-sanitization-update.json",
+        "api-work-items-comments-list-html-sanitization-create.json",
+        "api-work-items-comments-detail-html-sanitization-update.json",
+        "public-comments-list-html-sanitization-create.json",
+        "public-comments-detail-html-sanitization-update.json"
+      ],
+      "target_result": {
+        "kind": "sanitize-api-v1-comment-html",
+        "api_v1": "Sanitize HTML before persistence and response serialization. Persist the sanitized comment and Description values; serialize sanitized HTML into POST issue_activity requested_data. Keep the raw model_activity webhook payload and raw PATCH issue_activity requested_data.",
+        "app_and_public": "Preserve their source sanitizer results.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length."
+      }
+    },
+    {
+      "id": "public-comment-reaction-activity-noop",
+      "scope": "Public comment-reaction creation task payload",
+      "source_fixtures": ["public-comment-reactions-list-create.json"],
+      "target_result": {
+        "kind": "preserve-source-effect-exactly",
+        "behavior": "Keep the queued issue_activity payload project_id string \"None\" and issue_id null; do not add Python worker behavior or repair this effect in the target contract.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length."
+      }
+    },
+    {
+      "id": "api-route-permission-precedence",
+      "scope": "API v1 comment list authorization precedes foreign project reference lookup",
+      "source_fixtures": [
+        "api-issues-comments-list-cross-tenant-project.json",
+        "api-work-items-comments-list-cross-tenant-project.json"
+      ],
+      "target_result": {
+        "kind": "preserve-source-permission-precedence",
+        "status": 403,
+        "preserve": "Keep the route workspace/project permission check ahead of resource lookup, including normal API audit enqueue and APIToken.last_used tracking.",
+        "compression_vary": "For any selected target response whose status or body differs from the source, derive only the Accept-Encoding token in Vary from the expected rendered target JSON representation: retain/add it at 200 or more UTF-8 bytes, remove it below 200 bytes. Keep all other source headers and cookies exact. HEAD uses the corresponding GET representation length."
+      }
+    },
+    {
+      "id": "link-input-validation",
+      "scope": "Malformed API link PATCH URLs, app link whitespace normalization, and malformed app link bodies or URL types",
+      "source_fixtures": [
+        "api-issues-links-detail-update-invalid-string-url.json",
+        "api-work-items-links-detail-update-invalid-string-url.json",
+        "app-link-patch-leading-whitespace-url.json",
+        "app-links-create-array-body.json",
+        "api-issues-links-detail-update-url-length-2049.json",
+        "api-work-items-links-detail-update-url-length-2049.json",
+        "app-links-create-raw-string-body.json",
+        "app-links-create-numeric-url.json",
+        "app-links-create-object-url.json"
+      ],
+      "target_result": {
+        "kind": "validate-link-input-consistently",
+        "api_patch": "Reject malformed URLs with HTTP400 url=[Enter a valid URL.] before domain writes and crawl/activity tasks; preserve normal API token use and audit. Valid URLs retain URLValidator length2048 and no model200-character cap.",
+        "app_whitespace": "Trim surrounding whitespace before adding a missing http scheme; an existing link PATCH succeeds with the normalized URL and ordinary persistence/crawl/activity effects. Preserve the original request data in the activity payload.",
+        "app_non_object": "Return HTTP400 with the ordinary dictionary validation error for array or string bodies before any domain write or task, instead of the source AttributeError500. Raw null keeps the source HTTP400 No data provided response.",
+        "normalization_success_fixture": "app-link-patch-url-over-model-limit.json",
+        "compression_vary": "Derive only the Accept-Encoding Vary token from the target response representation; keep all other source headers and cookies exact.",
+        "app_url_type": "Return HTTP400 with the ordinary invalid-URL error for a numeric URL and invalid-string error for an object URL before any domain write or task, instead of the source AttributeError500."
+      }
+    }
+  ]
+}

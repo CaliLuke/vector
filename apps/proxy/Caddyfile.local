@@ -1,0 +1,41 @@
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	request_body {
+		max_size {$FILE_SIZE_LIMIT:5242880}
+	}
+
+	# Local-only OTLP ingestion. Never expose Logal's administration endpoints.
+	handle_path /__local_telemetry/* {
+		@logs {
+			method POST
+			path /v1/logs
+		}
+		route {
+			reverse_proxy @logs logal:4318
+			respond 404
+		}
+	}
+
+	redir /god-mode /god-mode/ permanent
+	reverse_proxy /god-mode/* host.docker.internal:{$PLANE_ADMIN_PORT:3001}
+	redir /spaces /spaces/ permanent
+	reverse_proxy /spaces/* host.docker.internal:{$PLANE_SPACE_PORT:3002}
+	reverse_proxy /live/* host.docker.internal:3100
+
+	@sticky_detail_without_slash {
+		method GET DELETE
+		path_regexp ^/api/workspaces/[^/]+/stickies/[^/]+$
+	}
+	rewrite @sticky_detail_without_slash {path}/
+	import /etc/caddy/go-active-routes.caddy
+	reverse_proxy /api/* go-api:8080
+	reverse_proxy /auth/* go-api:8080
+	respond /static/* 404
+	reverse_proxy /{$BUCKET_NAME:uploads}/* plane-rustfs:9000
+	reverse_proxy /{$BUCKET_NAME:uploads} plane-rustfs:9000
+	reverse_proxy /* host.docker.internal:3000
+}

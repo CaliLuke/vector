@@ -1,0 +1,379 @@
+{
+  "/api/public/anchor/{anchor}/intakes/{intake_id}/inbox-issues/": {
+    "actions": {
+      "POST": {
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "duplicate_to": {
+          "label": "Duplicate to",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "issue": {
+          "children": {
+            "created_at": {
+              "label": "Created At",
+              "read_only": true,
+              "required": false,
+              "type": "datetime"
+            },
+            "created_by": {
+              "label": "Created By",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "id": {
+              "label": "Id",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "label_ids": {
+              "child": {
+                "read_only": false,
+                "required": true,
+                "type": "string"
+              },
+              "label": "Label ids",
+              "read_only": false,
+              "required": false,
+              "type": "list"
+            },
+            "name": {
+              "label": "Issue Name",
+              "read_only": true,
+              "required": false,
+              "type": "string"
+            },
+            "priority": {
+              "label": "Issue Priority",
+              "read_only": true,
+              "required": false,
+              "type": "choice"
+            },
+            "project_id": {
+              "label": "Project id",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "sequence_id": {
+              "label": "Issue Sequence ID",
+              "read_only": true,
+              "required": false,
+              "type": "integer"
+            }
+          },
+          "label": "Issue",
+          "read_only": true,
+          "required": false,
+          "type": "nested object"
+        },
+        "snoozed_till": {
+          "label": "Snoozed till",
+          "read_only": false,
+          "required": false,
+          "type": "datetime"
+        },
+        "source": {
+          "label": "Source",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "status": {
+          "choices": [
+            {
+              "display_name": "Pending",
+              "value": -2
+            },
+            {
+              "display_name": "Rejected",
+              "value": -1
+            },
+            {
+              "display_name": "Snoozed",
+              "value": 0
+            },
+            {
+              "display_name": "Accepted",
+              "value": 1
+            },
+            {
+              "display_name": "Duplicate",
+              "value": 2
+            }
+          ],
+          "label": "Status",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        }
+      }
+    },
+    "description": "",
+    "name": "Intake Issue Public",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/": {
+    "actions": {
+      "POST": {
+        "created_by": {
+          "label": "Created By",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "duplicate_to": {
+          "label": "Duplicate to",
+          "read_only": false,
+          "required": false,
+          "type": "field"
+        },
+        "id": {
+          "label": "Id",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "issue": {
+          "children": {
+            "created_at": {
+              "label": "Created At",
+              "read_only": true,
+              "required": false,
+              "type": "datetime"
+            },
+            "created_by": {
+              "label": "Created By",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "id": {
+              "label": "Id",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "label_ids": {
+              "child": {
+                "read_only": false,
+                "required": true,
+                "type": "string"
+              },
+              "label": "Label ids",
+              "read_only": false,
+              "required": false,
+              "type": "list"
+            },
+            "name": {
+              "label": "Issue Name",
+              "read_only": true,
+              "required": false,
+              "type": "string"
+            },
+            "priority": {
+              "label": "Issue Priority",
+              "read_only": true,
+              "required": false,
+              "type": "choice"
+            },
+            "project_id": {
+              "label": "Project id",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "sequence_id": {
+              "label": "Issue Sequence ID",
+              "read_only": true,
+              "required": false,
+              "type": "integer"
+            }
+          },
+          "label": "Issue",
+          "read_only": true,
+          "required": false,
+          "type": "nested object"
+        },
+        "snoozed_till": {
+          "label": "Snoozed till",
+          "read_only": false,
+          "required": false,
+          "type": "datetime"
+        },
+        "source": {
+          "label": "Source",
+          "max_length": 255,
+          "read_only": false,
+          "required": false,
+          "type": "string"
+        },
+        "status": {
+          "choices": [
+            {
+              "display_name": "Pending",
+              "value": -2
+            },
+            {
+              "display_name": "Rejected",
+              "value": -1
+            },
+            {
+              "display_name": "Snoozed",
+              "value": 0
+            },
+            {
+              "display_name": "Accepted",
+              "value": 1
+            },
+            {
+              "display_name": "Duplicate",
+              "value": 2
+            }
+          ],
+          "label": "Status",
+          "read_only": false,
+          "required": false,
+          "type": "choice"
+        }
+      }
+    },
+    "description": "",
+    "name": "Intake Issue Public",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/anchor/{anchor}/intakes/{intake_id}/intake-issues/{pk}/": {
+    "description": "",
+    "name": "Intake Issue Public",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/anchor/{anchor}/issues/": {
+    "description": "",
+    "name": "Project Issues Public Endpoint",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/anchor/{anchor}/issues/{issue_id}/": {
+    "description": "",
+    "name": "Issue Retrieve Public Endpoint",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/anchor/{anchor}/issues/{issue_id}/votes/": {
+    "actions": {
+      "POST": {
+        "actor": {
+          "label": "Actor",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "actor_detail": {
+          "children": {
+            "avatar": {
+              "label": "Avatar",
+              "read_only": false,
+              "required": false,
+              "type": "string"
+            },
+            "avatar_url": {
+              "label": "Avatar url",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "display_name": {
+              "label": "Display name",
+              "max_length": 255,
+              "read_only": false,
+              "required": false,
+              "type": "string"
+            },
+            "first_name": {
+              "label": "First name",
+              "max_length": 255,
+              "read_only": false,
+              "required": false,
+              "type": "string"
+            },
+            "id": {
+              "label": "Id",
+              "read_only": true,
+              "required": false,
+              "type": "field"
+            },
+            "is_bot": {
+              "label": "Is bot",
+              "read_only": true,
+              "required": false,
+              "type": "boolean"
+            },
+            "last_name": {
+              "label": "Last name",
+              "max_length": 255,
+              "read_only": false,
+              "required": false,
+              "type": "string"
+            }
+          },
+          "label": "Actor detail",
+          "read_only": true,
+          "required": false,
+          "type": "nested object"
+        },
+        "issue": {
+          "label": "Issue",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "project": {
+          "label": "Project",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        },
+        "vote": {
+          "label": "Vote",
+          "read_only": true,
+          "required": false,
+          "type": "choice"
+        },
+        "workspace": {
+          "label": "Workspace",
+          "read_only": true,
+          "required": false,
+          "type": "field"
+        }
+      }
+    },
+    "description": "",
+    "name": "Issue Vote Public",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  },
+  "/api/public/workspaces/{slug}/project-boards/": {
+    "description": "",
+    "name": "Workspace Project Deploy Board Endpoint",
+    "parses": ["application/json", "application/x-www-form-urlencoded", "multipart/form-data"],
+    "renders": ["application/json"]
+  }
+}

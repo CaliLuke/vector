@@ -1,0 +1,180 @@
+{
+  "cache": {
+    "api_key_history_after": [],
+    "api_key_history_before": []
+  },
+  "database": {
+    "after": {
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "email": "\"quoted\"@example.com",
+          "id": "<uuid-24>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "before": {
+      "workspace_member_invites": [
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "invitee@example.com",
+          "id": "<uuid-22>",
+          "message": null,
+          "responded_at": null,
+          "role": 15,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        },
+        {
+          "accepted": false,
+          "created_at": "<timestamp>",
+          "created_by_id": null,
+          "deleted_at": null,
+          "email": "other-invitee@example.com",
+          "id": "<uuid-23>",
+          "message": null,
+          "responded_at": null,
+          "role": 5,
+          "token": "<secret:workspace_member_invites.token>",
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-5>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "workspace_member_invites"
+    ],
+    "expected_changed_tables": [
+      "workspace_member_invites"
+    ]
+  },
+  "effects": [
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.workspace_invitation_task.workspace_invitation",
+      "payload": {
+        "args": [
+          "\"quoted\"@example.com",
+          "<uuid-5>",
+          "<secret:invite.token>",
+          "http://localhost:8000",
+          "invite-owner@example.com"
+        ],
+        "kwargs": {}
+      },
+      "routing_key": "celery"
+    },
+    {
+      "delivery_mode": 2,
+      "exchange": "",
+      "kind": "celery-task",
+      "name": "plane.bgtasks.event_tracking_task.track_event",
+      "payload": {
+        "args": [],
+        "kwargs": {
+          "event_name": "user_invited_to_workspace",
+          "event_properties": {
+            "invited_at": "<timestamp>",
+            "invitee_email": "\"quoted\"@example.com",
+            "invitee_role": 5,
+            "user_id": "<uuid-2>",
+            "workspace_id": "<uuid-5>",
+            "workspace_slug": "invitations-membership-fixture"
+          },
+          "slug": "invitations-membership-fixture",
+          "user_id": "<uuid-2>"
+        }
+      },
+      "routing_key": "celery"
+    }
+  ],
+  "request": {
+    "body": {
+      "emails": [
+        {
+          "email": "\"quoted\"@example.com",
+          "role": 5
+        }
+      ]
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/invitations-membership-fixture/invitations/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "message": "Emails sent successfully"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, POST, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "workspace-invite-create-quoted-local"
+  }
+}

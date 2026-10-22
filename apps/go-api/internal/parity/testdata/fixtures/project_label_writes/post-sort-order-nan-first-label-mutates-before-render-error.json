@@ -1,0 +1,140 @@
+{
+  "audit": {
+    "created_label_count": 1,
+    "created_label_has_actor": true,
+    "created_label_has_null_updater": true,
+    "created_label_sort_orders": [
+      {
+        "nonfinite_float": "NaN"
+      }
+    ],
+    "target_created_at_preserved": false,
+    "target_created_by_preserved": false,
+    "target_soft_deleted": false,
+    "target_sort_order_is_nan": false,
+    "target_updated_at_advanced": false,
+    "target_updated_by_is_actor": false
+  },
+  "cache": {
+    "after": {
+      "/api/workspaces/labels-contract/labels/": null,
+      "/api/workspaces/labels-contract/labels/:secondary": null
+    },
+    "before": {
+      "/api/workspaces/labels-contract/labels/": {
+        "marker": "exact"
+      },
+      "/api/workspaces/labels-contract/labels/:secondary": {
+        "marker": "secondary"
+      }
+    }
+  },
+  "database": {
+    "after": {
+      "issue_labels": [],
+      "labels": [
+        {
+          "color": "",
+          "created_at": "<timestamp>",
+          "created_by_id": "<uuid-2>",
+          "deleted_at": null,
+          "description": "",
+          "external_id": null,
+          "external_source": null,
+          "id": "<uuid-3>",
+          "name": "First NaN label",
+          "parent_id": null,
+          "project_id": "<uuid-1>",
+          "sort_order": {
+            "nonfinite_float": "NaN"
+          },
+          "updated_at": "<timestamp>",
+          "updated_by_id": null,
+          "workspace_id": "<uuid-4>"
+        }
+      ],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "before": {
+      "issue_labels": [],
+      "labels": [],
+      "sessions": [
+        {
+          "device_info": null,
+          "expire_date": "<timestamp>",
+          "session_data": "<secret:sessions.session_data>",
+          "session_key": "<secret:session-key>",
+          "user_id": "<uuid-2>"
+        }
+      ]
+    },
+    "changed_tables": [
+      "labels"
+    ],
+    "expected_changed_tables": [
+      "labels"
+    ],
+    "field_changes": [
+      {
+        "fields": [
+          "color",
+          "created_at",
+          "created_by_id",
+          "description",
+          "id",
+          "name",
+          "project_id",
+          "sort_order",
+          "updated_at",
+          "workspace_id"
+        ],
+        "record": "new",
+        "table": "labels"
+      }
+    ]
+  },
+  "effects": [],
+  "request": {
+    "body": {
+      "name": "First NaN label",
+      "sort_order": "NaN"
+    },
+    "cookies": {
+      "session-id": "<secret:cookie:session-id>"
+    },
+    "headers": {},
+    "method": "POST",
+    "path": "/api/workspaces/labels-contract/projects/<uuid-1>/issue-labels/",
+    "principal": {
+      "kind": "django-session",
+      "user_id": "<uuid-2>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": null,
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "raw_text_body": "\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <title>Server Error (500)</title>\n</head>\n<body>\n  <h1>Server Error (500)</h1><p></p>\n</body>\n</html>\n",
+    "status": 500
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "post-sort-order-nan-first-label-mutates-before-render-error"
+  }
+}

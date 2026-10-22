@@ -1,0 +1,54 @@
+{
+  "database": {
+    "after": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "before": {
+      "django_session": [],
+      "instance_admins": [],
+      "instances": [],
+      "profiles": [],
+      "users": []
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": {},
+    "cookies": {},
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "HTTP_X_FORWARDED_FOR": "198.51.100.93"
+    },
+    "method": "PUT",
+    "path": "/auth/sign-in/",
+    "principal": {
+      "kind": "anonymous",
+      "public": true
+    },
+    "query": {}
+  },
+  "response": {
+    "body": "<!-- templates/csrf_failure.html -->\n<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <title>CSRF Verification Failed</title>\n    <style>\n      body {\n        font-family: Arial, sans-serif;\n        background-color: #f8f9fa;\n        padding: 50px;\n        display: flex;\n        justify-content: center;\n        align-items: center;\n        height: 100vh;\n        margin: 0;\n      }\n      .card {\n        max-width: 400px;\n        padding: 30px;\n        background-color: #ffffff;\n        border-radius: 8px;\n        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);\n      }\n      .card-header {\n        text-align: center;\n        margin-bottom: 20px;\n      }\n      .btn-primary {\n        display: block;\n        width: 100%;\n        padding: 10px;\n        background-color: #007bff;\n        color: #fff;\n        text-align: center;\n        text-decoration: none;\n        border: none;\n        border-radius: 4px;\n        cursor: pointer;\n      }\n      .btn-primary:hover {\n        background-color: #0056b3;\n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"card\">\n      <div class=\"card-header\">\n        <h3>CSRF Verification Failed</h3>\n      </div>\n      <div class=\"card-body\">\n        <p>\n          It looks like your form submission has expired or there was a problem\n          with your request.\n        </p>\n        <p>Please try the following:</p>\n        <ul>\n          <li>Refresh the page and try submitting the form again.</li>\n          <li>Ensure that cookies are enabled in your browser.</li>\n        </ul>\n        <a href=\"https://web.example.test\" class=\"btn-primary\">Go to Home Page</a>\n      </div>\n    </div>\n  </body>\n</html>\n",
+    "cookies": {},
+    "headers": {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "Accept-Encoding, Cookie, origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 200
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "csrf-auth-put-missing",
+    "csrf_checks": "enforced"
+  }
+}

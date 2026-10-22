@@ -1,0 +1,194 @@
+{
+  "lookup_methods": ["WorkspaceIDBySlug", "APIWorkspaceIDBySlug", "RelatedWorkspaceIDBySlug", "IssueAttachmentsBySlug"],
+  "groups": [
+    {
+      "name": "api_attachment_collection",
+      "fixtures": [
+        "review4-api-attachment-list-missing-workspace.json",
+        "review4-api-attachment-list-soft-deleted-workspace.json"
+      ],
+      "operation_ids": [
+        "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+        "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments"
+      ],
+      "entry_points": [
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments",
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments"
+      ],
+      "aliases": {
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments": "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments"
+      }
+    },
+    {
+      "name": "workspace_related_rows",
+      "fixtures": [
+        "review4-v2-workspace-check-tombstone-live-row.json",
+        "review4-v2-workspace-asset-patch-tombstone-project-row.json",
+        "review4-v2-workspace-asset-delete-tombstone-project-row.json",
+        "review4-v2-workspace-asset-restore-tombstone-workspace.json",
+        "review4-v2-workspace-asset-redirect-tombstone-project-row.json",
+        "review4-v2-workspace-download-tombstone-row.json",
+        "review4-v2-workspace-asset-pending-redirect-tombstone-workspace.json",
+        "review4-v2-workspace-download-pending-tombstone-workspace.json"
+      ],
+      "operation_ids": [
+        "get_api_assets_v2_workspaces_by_slug_check_by_asset_id",
+        "patch_api_assets_v2_workspaces_by_slug_by_asset_id",
+        "delete_api_assets_v2_workspaces_by_slug_by_asset_id",
+        "post_api_assets_v2_workspaces_by_slug_restore_by_asset_id",
+        "get_api_assets_v2_workspaces_by_slug_by_asset_id",
+        "get_api_assets_v2_workspaces_by_slug_download_by_asset_id"
+      ],
+      "entry_points": [
+        "GetAPIAssetsV2WorkspacesBySlugCheckByAssetID",
+        "PatchAPIAssetsV2WorkspacesBySlugByAssetID",
+        "DeleteAPIAssetsV2WorkspacesBySlugByAssetID",
+        "PostAPIAssetsV2WorkspacesBySlugRestoreByAssetID",
+        "GetAPIAssetsV2WorkspacesBySlugByAssetID",
+        "GetAPIAssetsV2WorkspacesBySlugDownloadByAssetID"
+      ]
+    },
+    {
+      "name": "workspace_entity_hooks",
+      "fixtures": [
+        "review4-v2-workspace-logo-patch-tombstone-hook-skipped.json",
+        "review4-v2-workspace-logo-delete-tombstone-hook-fails.json"
+      ],
+      "operation_ids": [
+        "patch_api_assets_v2_workspaces_by_slug_by_asset_id",
+        "delete_api_assets_v2_workspaces_by_slug_by_asset_id"
+      ],
+      "entry_points": ["PatchAPIAssetsV2WorkspacesBySlugByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugByAssetID"]
+    },
+    {
+      "name": "project_related_rows",
+      "fixtures": [
+        "review4-v2-project-asset-patch-tombstone-workspace.json",
+        "review4-v2-project-asset-delete-tombstone-workspace.json",
+        "review4-v2-project-asset-redirect-tombstone-workspace.json",
+        "review4-v2-project-download-tombstone-workspace.json",
+        "review4-v2-project-asset-pending-redirect-tombstone-workspace.json",
+        "review4-v2-project-download-pending-tombstone-workspace.json"
+      ],
+      "operation_ids": [
+        "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+        "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+        "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_pk",
+        "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_download_by_asset_id"
+      ],
+      "entry_points": [
+        "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk",
+        "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk",
+        "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk",
+        "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetID"
+      ]
+    },
+    {
+      "name": "project_bulk_related_rows",
+      "fixtures": [
+        "review4-v2-project-bulk-empty-tombstone-workspace.json",
+        "review4-v2-project-bulk-associate-tombstone-workspace.json"
+      ],
+      "operation_ids": ["post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk"],
+      "entry_points": ["PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk"]
+    },
+    {
+      "name": "attachment_scope",
+      "fixtures": [
+        "review4-legacy-attachment-list-tombstone-workspace.json",
+        "review4-legacy-attachment-create-invalid-body-tombstone-workspace.json",
+        "review4-legacy-attachment-delete-tombstone-workspace.json",
+        "review4-v2-attachment-list-tombstone-workspace.json",
+        "review4-v2-attachment-detail-download-tombstone-workspace.json",
+        "review4-v2-attachment-confirm-tombstone-workspace.json",
+        "review4-v2-attachment-delete-tombstone-workspace.json",
+        "review4-v2-attachment-upload-invalid-mime-tombstone-workspace.json",
+        "review4-v2-attachment-upload-valid-tombstone-workspace.json",
+        "review4-v2-attachment-pending-detail-tombstone-workspace.json"
+      ],
+      "operation_ids": [
+        "get_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+        "post_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+        "delete_api_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+        "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments",
+        "get_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+        "patch_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+        "delete_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments_by_pk",
+        "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_attachments"
+      ],
+      "entry_points": [
+        "GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments",
+        "PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments",
+        "DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments",
+        "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk",
+        "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk",
+        "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk",
+        "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments"
+      ]
+    },
+    {
+      "name": "validation_before_active_lookup",
+      "fixtures": [
+        "review4-v2-workspace-upload-invalid-entity-tombstone-workspace.json",
+        "review4-v2-workspace-upload-valid-tombstone-workspace.json",
+        "review4-v2-workspace-logo-upload-member-role-tombstone-workspace.json",
+        "review4-v2-project-upload-invalid-entity-tombstone-workspace.json",
+        "review4-v2-project-upload-valid-tombstone-workspace.json",
+        "review4-v2-duplicate-invalid-entity-tombstone-workspace.json",
+        "review4-v2-duplicate-valid-entity-tombstone-workspace.json"
+      ],
+      "operation_ids": [
+        "post_api_assets_v2_workspaces_by_slug",
+        "post_api_assets_v2_workspaces_by_slug_projects_by_project_id",
+        "post_api_assets_v2_workspaces_by_slug_duplicate_assets_by_asset_id"
+      ],
+      "entry_points": [
+        "PostAPIAssetsV2WorkspacesBySlug",
+        "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectID",
+        "PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID"
+      ]
+    },
+    {
+      "name": "workspace_405_permission_precedence",
+      "operation_ids": ["delete_api_assets_v2_workspaces_by_slug"],
+      "fixtures": ["review4-v2-workspace-collection-delete-tombstone-asset001-source500.json"],
+      "entry_points": ["@invalidMethod"]
+    },
+    {
+      "name": "api_attachment_items",
+      "entry_points": [
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments",
+        "PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk",
+        "PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments",
+        "PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk",
+        "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk"
+      ],
+      "operation_ids": [
+        "get_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+        "post_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments",
+        "patch_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+        "delete_api_v1_workspaces_by_slug_projects_by_project_id_issues_by_issue_id_issue_attachments_by_pk",
+        "get_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+        "post_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments",
+        "patch_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk",
+        "delete_api_v1_workspaces_by_slug_projects_by_project_id_work_items_by_issue_id_attachments_by_pk"
+      ],
+      "fixtures": [
+        "review3-api-attachment-download-soft-deleted-workspace.json",
+        "review3-api-attachment-create-soft-deleted-workspace.json",
+        "review3-api-attachment-confirm-soft-deleted-workspace.json",
+        "review3-api-attachment-delete-soft-deleted-workspace.json"
+      ],
+      "aliases": {
+        "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk": "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments": "PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments",
+        "PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk": "PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk",
+        "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk": "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk"
+      }
+    }
+  ]
+}

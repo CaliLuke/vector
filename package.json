@@ -1,0 +1,56 @@
+{
+  "name": "vector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted project management with a Go backend",
+  "license": "AGPL-3.0-only",
+  "repository": "https://github.com/CaliLuke/vector.git",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "bash scripts/dev.sh",
+    "dev:stop": "bash scripts/dev.sh stop",
+    "dev:check-login": "go -C apps/go-api run ./cmd/devtools check-login",
+    "dev:logs": "bash scripts/logal-query.sh logs",
+    "dev:errors": "bash scripts/logal-query.sh logs --level error",
+    "dev:traces": "bash scripts/logal-query.sh spans",
+    "dev:check-logs": "go -C apps/go-api run ./cmd/devtools check-logs",
+    "test:local-stack": "go -C apps/go-api test ./internal/devtools",
+    "test:local-logs": "go -C apps/go-api test ./internal/devtools && node --test tests/frontend/local-logging.test.mjs",
+    "test:issue-loading": "node --test tests/frontend/project-issues-loading.test.mjs",
+    "test:frontend": "node --test tests/frontend/*.test.mjs",
+    "start": "turbo run start",
+    "clean": "turbo run clean && rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
+    "fix": "turbo run fix",
+    "fix:format": "turbo run fix:format",
+    "fix:lint": "turbo run fix:lint",
+    "check": "turbo run check",
+    "check:lint": "turbo run check:lint",
+    "check:format": "turbo run check:format",
+    "check:types": "turbo run check:types",
+    "test:hydration": "node tests/frontend/hydration-console.mjs",
+    "test:setup": "bash tests/setup/test-setup.sh",
+    "prepare": "husky",
+    "doctor": "npx react-doctor@latest"
+  },
+  "devDependencies": {
+    "husky": "catalog:",
+    "jsdom": "catalog:",
+    "lint-staged": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "react-doctor": "^0.4.2",
+    "turbo": "catalog:"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,cjs,mjs,cts,mts,json,css,md}": [
+      "pnpm exec oxfmt --no-error-on-unmatched-pattern"
+    ],
+    "*.{js,jsx,ts,tsx,cjs,mjs,cts,mts}": [
+      "pnpm exec oxlint --fix --deny-warnings"
+    ]
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "packageManager": "pnpm@11.3.0+sha512.2c403d6594527287672b1f7056343a1f7c3634036a67ffabfcc2b3d7595d843768f8787148d1b57cf7956c90606bbd192857c363af19e96d2d0ec9ec5741d215"
+}

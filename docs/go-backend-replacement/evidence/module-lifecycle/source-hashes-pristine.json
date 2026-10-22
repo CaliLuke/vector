@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_revision": "b1e50b13f199023e2aae92de08033e737b3fa831",
+  "source_snapshot": "plane-cycle-lifecycle-source:/code",
+  "files": {
+    "plane.app.views.module.base": {
+      "path": "/code/plane/app/views/module/base.py",
+      "sha256": "fbe4bcec4096ae162ea9fb11e0789866734b584c525555b2df6d0375f546542d"
+    },
+    "plane.app.views.module.archive": {
+      "path": "/code/plane/app/views/module/archive.py",
+      "sha256": "8773ec0ec1911049014dd43cb2abf7f49f9d5a72a8f5fdfdfa027461e1ebeb5b"
+    },
+    "plane.app.serializers.module": {
+      "path": "/code/plane/app/serializers/module.py",
+      "sha256": "a9a1d53ed6439359e924b847f1f2204bd4f8cd55615158a148dc7926b852e5f9"
+    },
+    "plane.app.urls.module": {
+      "path": "/code/plane/app/urls/module.py",
+      "sha256": "1fece549a70b320de53a4a81beb74d39801abf7a8d10655fb4ba4953b08450d9"
+    },
+    "plane.app.permissions.base": {
+      "path": "/code/plane/app/permissions/base.py",
+      "sha256": "43594a4e66a72ef3859ef0b1de82b46d6cc0824b7fcefecb7e99b326f08a64e2"
+    },
+    "plane.api.views.module": {
+      "path": "/code/plane/api/views/module.py",
+      "sha256": "4113b1214cd0226723155b5c2a8476ffee13d7e7eebb85cac86ec697c7fdc698"
+    },
+    "plane.api.serializers.module": {
+      "path": "/code/plane/api/serializers/module.py",
+      "sha256": "257db1b04837b7f8b5943accbf26b2a292a34f4ac7c789607982c649c1f897cf"
+    },
+    "plane.api.urls.module": {
+      "path": "/code/plane/api/urls/module.py",
+      "sha256": "887f4789776d02d98724ca8fdd1ef656df02d9123007ecac48dfd7f9502a4482"
+    },
+    "plane.db.models.module": {
+      "path": "/code/plane/db/models/module.py",
+      "sha256": "b82d53ef77a5110d22fa4fcdc37258f4c4c4fd061a64b75c36a8dc5909af0777"
+    },
+    "plane.db.models.project": {
+      "path": "/code/plane/db/models/project.py",
+      "sha256": "38c57a3857f8ef7d0013ecc24887c47248e010cc82115f805829b6d99f5a6c41"
+    },
+    "plane.db.mixins": {
+      "path": "/code/plane/db/mixins.py",
+      "sha256": "92c52aa5b1ed827e1612313b4b616a49e66a7d1cb827813c66dbdbe2f76bb2d8"
+    }
+  }
+}

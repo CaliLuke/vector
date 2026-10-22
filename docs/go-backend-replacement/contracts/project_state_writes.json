@@ -1,0 +1,509 @@
+{
+  "version": 1,
+  "family": "project_state_writes",
+  "source_revision": "d847fa9a14d16004e4d395ff02bcfb5da1e440e9",
+  "characterization_status": "60 pristine Django cases and seven corrected source overlays captured. Candidate implementation and atomic retirement are prepared; final acceptance is determined by the tree-bound proof and review receipts.",
+  "operation_count": 7,
+  "source_files": [
+    "apps/api/plane/app/views/state/base.py",
+    "apps/api/plane/api/views/state.py",
+    "apps/api/plane/app/serializers/state.py",
+    "apps/api/plane/api/serializers/state.py",
+    "apps/api/plane/api/serializers/base.py",
+    "apps/api/plane/app/permissions/base.py",
+    "apps/api/plane/db/models/state.py",
+    "apps/api/plane/db/models/project.py",
+    "apps/api/plane/db/mixins.py",
+    "apps/api/plane/utils/cache.py",
+    "apps/api/plane/api/middleware/api_authentication.py",
+    "apps/api/plane/app/urls/state.py",
+    "apps/api/plane/api/urls/state.py",
+    "apps/api/plane/app/permissions/project.py"
+  ],
+  "operations": {
+    "post_api_v1_workspaces_by_slug_projects_by_project_id_states": {
+      "operation_id": "post_api_v1_workspaces_by_slug_projects_by_project_id_states",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/",
+      "source": "apps/api/plane/api/views/state.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": ["fields", "expand"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin/member via ProjectEntityPermission; guest denied and no workspace-admin override.",
+          "source": "apps/api/plane/app/permissions/project.py; apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "POST/PATCH use route-specific serializers. State name/color max255 characters; group choice excludes triage. Preserve required/null/blank/coercion behavior through shared DRF compatibility helpers. Read-only and unknown fields follow the source serializer. State.save computes initial sequence as maximum ordinary live state sequence+15000, or65535 when none; it ignores caller sequence on creation. Slug follows Django ASCII slugify via Unicode normalization library. Explicit empty external_id/external_source values remain empty strings; explicit null remains null on create and PATCH.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/api/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "200 full API StateSerializer projection; audit IDs, timestamps, slug, is_triage and external fields included. fields/expand query parameters are ignored because the write handlers do not pass those serializer kwargs. External create collision returns409 with existing state ID; PATCH checks changed truthy external_id with supplied/current source and reports current target ID. Duplicate create name returns409.",
+          "source": "apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "No workspace-state cache invalidation. Preserve API-key authentication bookkeeping and audit tasks.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-anonymous-create-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-api-key-audit.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-default-clears-existing.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-default-false.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-duplicate-name-default-true.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-empty-external-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-external-id-duplicate.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-invalid-default-clears-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-null-external-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-guest-create-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-workspace-admin-active-project-member-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-workspace-admin-without-project-membership-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-wrong-workspace-slug-denied.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": [
+        "states: request mutation and explicit default transition",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [200, 400, 401, 403, 409],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/v1-create-duplicate-name-default-true.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/v1-create-invalid-default-clears-default.json"
+      ],
+      "sample_path": "/api/v1/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/"
+    },
+    "delete_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id": {
+      "operation_id": "delete_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id",
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/",
+      "source": "apps/api/plane/api/views/state.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin/member via ProjectEntityPermission; guest denied and no workspace-admin override.",
+          "source": "apps/api/plane/app/permissions/project.py; apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection. Delete additionally excludes is_triage=true.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "Request body is not used by this operation.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/api/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "Default state ->400; active issue reference ->400. Soft-deleted issues do not block. Successful soft delete ->204; enqueue recursive cleanup, do not run worker in request.",
+          "source": "apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "No workspace-state cache invalidation. Deletion records request-time FK state; Project.default_state_id is not cleared until deferred cleanup. API-key requests retain authentication bookkeeping and audit tasks.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-active-issue-blocked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-default-blocked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-soft-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-delete-triage-hidden.json"
+      ],
+      "effects": ["api-key", "state-soft-delete-api-key"],
+      "database_effects": [
+        "states: request mutation and explicit default transition",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "queued_jobs": [
+        "plane.bgtasks.logger_task.process_logs",
+        "plane.bgtasks.deletion_task.soft_delete_related_objects"
+      ],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [204, 400, 401, 403, 404],
+      "corrected_fixtures": [],
+      "sample_path": "/api/v1/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/00000000-0000-4000-8000-000000000710/"
+    },
+    "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id": {
+      "operation_id": "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id",
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/{slug}/projects/{project_id}/states/{state_id}/",
+      "source": "apps/api/plane/api/views/state.py",
+      "auth_profile": "api-key",
+      "authentication": ["anonymous", "api-key"],
+      "query_parameters": ["fields", "expand"],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin/member via ProjectEntityPermission; guest denied and no workspace-admin override.",
+          "source": "apps/api/plane/app/permissions/project.py; apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "POST/PATCH use route-specific serializers. State name/color max255 characters; group choice excludes triage. Preserve required/null/blank/coercion behavior through shared DRF compatibility helpers. Read-only and unknown fields follow the source serializer. Resolve target before serializer validation; model save recalculates slug. Updating default=false does not choose another default. Explicit empty external_id/external_source values remain empty strings; explicit null remains null on create and PATCH.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/api/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "200 full API StateSerializer projection; audit IDs, timestamps, slug, is_triage and external fields included. fields/expand query parameters are ignored because the write handlers do not pass those serializer kwargs. External create collision returns409 with existing state ID; PATCH checks changed truthy external_id with supplied/current source and reports current target ID. Duplicate create name returns409.",
+          "source": "apps/api/plane/api/views/state.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "No workspace-state cache invalidation. Preserve API-key authentication bookkeeping and audit tasks.",
+          "source": "apps/api/plane/api/views/state.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-cross-project-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-default-false-no-repair.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-default-missing-context.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-empty-external-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-external-id-collision.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-guest-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-is-triage-flag-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-null-external-fields.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/v1-patch-triage-group-hidden.json"
+      ],
+      "effects": ["api-key"],
+      "database_effects": [
+        "states: request mutation and explicit default transition",
+        "api_tokens: authentication bookkeeping"
+      ],
+      "queued_jobs": ["plane.bgtasks.logger_task.process_logs"],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [200, 401, 403, 404, 409],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/v1-patch-default-missing-context.json"
+      ],
+      "sample_path": "/api/v1/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/00000000-0000-4000-8000-000000000710/"
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_states": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_states",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/",
+      "source": "apps/api/plane/app/views/state/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin, or workspace admin who is an active project member.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "POST/PATCH use route-specific serializers. State name/color max255 characters; group choice excludes triage. Preserve required/null/blank/coercion behavior through shared DRF compatibility helpers. Read-only and unknown fields follow the source serializer. State.save computes initial sequence as maximum ordinary live state sequence+15000, or65535 when none; it ignores caller sequence on creation. Slug follows Django ASCII slugify via Unicode normalization library.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "200 compact app StateSerializer projection. Preserve serializer-specific field errors. Duplicate live name returns400 with the name error. The writable app order field is not a State model field: pristine create with order reaches a TypeError/500 before persistence; corrected behavior returns the accepted order transiently and does not persist it. Order remains distinct from model sequence.",
+          "source": "apps/api/plane/app/views/state/base.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "Invalidate the exact workspace-state cache entry before decorator-level permission/body checks, after DRF authentication; unrelated cache keys remain.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-default-false.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-default-true-single-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-duplicate-name-default-true.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-order-transient.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-overlong-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-success.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-triage-rejected.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-unicode-name.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-unsupported-media-type.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-create-workspace-admin-without-project-membership.json"
+      ],
+      "effects": [],
+      "database_effects": ["states: request mutation and explicit default transition"],
+      "queued_jobs": [],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [200, 400, 401, 403, 415, 500],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/app-create-default-true-single-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/app-create-order-transient.json"
+      ],
+      "sample_path": "/api/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/"
+    },
+    "delete_api_workspaces_by_slug_projects_by_project_id_states_by_pk": {
+      "operation_id": "delete_api_workspaces_by_slug_projects_by_project_id_states_by_pk",
+      "method": "DELETE",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/{pk}/",
+      "source": "apps/api/plane/app/views/state/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin, or workspace admin who is an active project member.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection. Delete additionally excludes is_triage=true.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "Request body is not used by this operation.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "Default state ->400; active issue reference ->400. Soft-deleted issues do not block. Successful soft delete ->204; enqueue recursive cleanup, do not run worker in request.",
+          "source": "apps/api/plane/app/views/state/base.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "Invalidate the exact workspace-state cache entry before decorator-level permission/body checks, after DRF authentication; unrelated cache keys remain. Deletion records request-time FK state; Project.default_state_id is not cleared until deferred cleanup. API-key requests retain authentication bookkeeping and audit tasks.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-active-issue-blocked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-default-blocked.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-soft-delete.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-soft-deleted-issue-allowed.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-delete-triage-hidden.json"
+      ],
+      "effects": ["state-soft-delete-django-session"],
+      "database_effects": ["states: request mutation and explicit default transition"],
+      "queued_jobs": ["plane.bgtasks.deletion_task.soft_delete_related_objects"],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [204, 400, 401, 403, 404],
+      "corrected_fixtures": [],
+      "sample_path": "/api/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/00000000-0000-4000-8000-000000000710/"
+    },
+    "patch_api_workspaces_by_slug_projects_by_project_id_states_by_pk": {
+      "operation_id": "patch_api_workspaces_by_slug_projects_by_project_id_states_by_pk",
+      "method": "PATCH",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/{pk}/",
+      "source": "apps/api/plane/app/views/state/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": true,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin/member/guest; workspace admin override still requires active project membership.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope all target lookups by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. No additional archived-project rejection.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "POST/PATCH use route-specific serializers. State name/color max255 characters; group choice excludes triage. Preserve required/null/blank/coercion behavior through shared DRF compatibility helpers. Read-only and unknown fields follow the source serializer. Resolve target before serializer validation; model save recalculates slug. Updating default=false does not choose another default.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "200 compact app StateSerializer projection. Preserve serializer-specific field errors. Duplicate live name returns400 with the name error. The app order serializer field is distinct from model sequence and must follow source behavior.",
+          "source": "apps/api/plane/app/views/state/base.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "No workspace-state cache invalidation.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-cross-project-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-default-false.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-default-true-single-default.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-invalid-default-triage.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-is-triage-flag-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-success-guest.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-patch-triage-rejected.json"
+      ],
+      "effects": [],
+      "database_effects": ["states: request mutation and explicit default transition"],
+      "queued_jobs": [],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [200, 400, 401, 403, 404],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/app-patch-default-true-single-default.json"
+      ],
+      "sample_path": "/api/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/00000000-0000-4000-8000-000000000710/"
+    },
+    "post_api_workspaces_by_slug_projects_by_project_id_states_by_pk_mark_default": {
+      "operation_id": "post_api_workspaces_by_slug_projects_by_project_id_states_by_pk_mark_default",
+      "method": "POST",
+      "path": "/api/workspaces/{slug}/projects/{project_id}/states/{pk}/mark-default/",
+      "source": "apps/api/plane/app/views/state/base.py",
+      "auth_profile": "django-session",
+      "authentication": ["anonymous", "django-session"],
+      "query_parameters": [],
+      "protocol_methods": [],
+      "request_body": false,
+      "source_branches": [
+        {
+          "when": "Authentication and authorization",
+          "observable": "Active project admin, or workspace admin who is an active project member.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/permissions/base.py"
+        },
+        {
+          "when": "Target lookup",
+          "observable": "Scope target lookup by workspace slug, project, and state ID. State.objects excludes soft-deleted and group=triage rows; is_triage is a separate flag. A live ordinary-group row with is_triage=true is a valid target. Corrected mark-default resolves target before changing peer defaults; absent/foreign/deleted/group-triage target returns404 without writes.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/db/models/state.py"
+        },
+        {
+          "when": "Request validation and persistence",
+          "observable": "Request body is not used by this operation.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/app/serializers/state.py"
+        },
+        {
+          "when": "Response and conflicts",
+          "observable": "204 empty. Explicit successful transition makes the resolved ordinary live state the sole default in that project.",
+          "source": "apps/api/plane/app/views/state/base.py"
+        },
+        {
+          "when": "Cache and durable effects",
+          "observable": "Invalidate the exact workspace-state cache entry before decorator-level permission/body checks, after DRF authentication; unrelated cache keys remain.",
+          "source": "apps/api/plane/app/views/state/base.py; apps/api/plane/utils/cache.py; apps/api/plane/db/mixins.py"
+        }
+      ],
+      "required_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-anonymous-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-cross-project-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-is-triage-flag-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-member-denied.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-missing-target.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes/app-mark-default-success.json"
+      ],
+      "effects": [],
+      "database_effects": ["states: request mutation and explicit default transition"],
+      "queued_jobs": [],
+      "evidence_status": "Pristine and corrected source fixtures captured; focused Go repairs pass. Full strict corpus acceptance is enforced by the tree-bound proof receipt.",
+      "recorded_source_statuses": [204, 401, 403],
+      "corrected_fixtures": [
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/app-mark-default-cross-project-state.json",
+        "apps/go-api/internal/parity/testdata/fixtures/project_state_writes_corrected/app-mark-default-missing-target.json"
+      ],
+      "sample_path": "/api/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/00000000-0000-4000-8000-000000000710/mark-default/"
+    }
+  },
+  "decisions": [
+    {
+      "name": "Atomic explicit default transitions",
+      "contract": "On successful app/v1 create or PATCH with default=true, or app mark-default, persist/resolve target and clear other ordinary live defaults atomically under the project lock. Failed validation, duplicate names, or missing/foreign/deleted/triage mark-default targets leave prior defaults unchanged. Missing mark-default target returns 404. default=false may leave zero defaults. Unrelated writes do not repair legacy duplicates. State.default and Project.default_state_id remain distinct.",
+      "oracle": "Retain pristine Django records and separately execute patched Django; never rewrite expected records by hand.",
+      "index": "docs/go-backend-replacement/evidence/project-state-writes/project_state_writes_corrected_index.json"
+    },
+    {
+      "name": "UTF-8 JSON",
+      "contract": "Use the existing shared djangoinput parser and established UTF-8-only JSON contract. Invalid bytes are rejected before persistence; declared charset labels do not select another decoder."
+    },
+    {
+      "name": "App create transient order field",
+      "contract": "The pristine Django create path accepts order validation then fails with TypeError because State has no order model field. The accepted corrected contract removes order from model creation, attaches it to the returned instance, and returns it in the compact response; order remains distinct from persisted sequence.",
+      "oracle": "Preserve the source-observed 500 as the pristine fixture and separately capture the corrected 200 response and unchanged schema through the pinned corrected Django serializer.",
+      "index": "docs/go-backend-replacement/evidence/project-state-writes/project_state_writes_corrected_index.json"
+    }
+  ],
+  "effect_contracts": {
+    "api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.logger_task.process_logs",
+      "payload_fields": ["args", "kwargs"]
+    },
+    "state-soft-delete-django-session": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "django-session"
+    },
+    "state-soft-delete-api-key": {
+      "kind": "celery-task",
+      "name": "plane.bgtasks.deletion_task.soft_delete_related_objects",
+      "payload_fields": ["args", "kwargs"],
+      "auth_profile": "api-key"
+    }
+  },
+  "middleware_order": {
+    "django-session": ["request-size", "authentication", "timezone", "authorization", "dispatch", "audit"],
+    "api-key": ["request-size", "authentication", "authorization", "throttling", "dispatch", "audit"]
+  },
+  "middleware_evidence": "apps/go-api/cmd/system/project_state_writes_middleware_test.go::TestProjectStateWritesProductionMiddlewareOrderRequestSizeSessionAPIThrottleDispatchAudit",
+  "differential_replay": {
+    "methods": ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE"],
+    "path_forms": ["canonical", "slashless"],
+    "options_variants": ["ordinary", "preflight"],
+    "malformed_queries": ["fields", "expand"],
+    "evidence": "apps/api/plane/tests/parity/test_project_state_writes_recorder.py",
+    "auth_probes": {
+      "django-session": "/api/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/",
+      "api-key": "/api/v1/workspaces/project-state-writes-fixture/projects/00000000-0000-4000-8000-000000000701/states/"
+    },
+    "volatile_response_fields": {
+      "delete_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id:canonical:PATCH": ["updated_at"],
+      "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id:canonical:GET": ["updated_at"],
+      "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id:canonical:PATCH": ["updated_at"],
+      "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id:malformed:fields": ["updated_at"],
+      "patch_api_v1_workspaces_by_slug_projects_by_project_id_states_by_state_id:malformed:expand": ["updated_at"],
+      "post_api_v1_workspaces_by_slug_projects_by_project_id_states:canonical:GET": ["results[].updated_at"]
+    },
+    "sample_note": "Detail probes use the seeded default Backlog state. Bodyless DELETE is rejected by the default-state invariant, preserving the sample target throughout the method matrix; successful deletion is covered by strict source fixture replay."
+  },
+  "corrected_fixture_index": "docs/go-backend-replacement/evidence/project-state-writes/project_state_writes_corrected_index.json",
+  "corrected_fixture_count": 8
+}

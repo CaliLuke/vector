@@ -1,0 +1,111 @@
+{
+  "database": {
+    "after": {
+      "accounts": [
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-1>",
+          "id_token": "id-second",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 2
+          },
+          "provider": "google",
+          "provider_account_id": "second",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "id_token": "",
+          "last_connected_at": "<timestamp>",
+          "metadata": {},
+          "provider": "gitlab",
+          "provider_account_id": "other",
+          "refresh_token": null,
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-4>"
+        }
+      ]
+    },
+    "before": {
+      "accounts": [
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-1>",
+          "id_token": "id-second",
+          "last_connected_at": "<timestamp>",
+          "metadata": {
+            "rank": 2
+          },
+          "provider": "google",
+          "provider_account_id": "second",
+          "refresh_token": "<secret:accounts.refresh_token>",
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-2>"
+        },
+        {
+          "access_token": "<secret:accounts.access_token>",
+          "access_token_expired_at": null,
+          "created_at": "<timestamp>",
+          "id": "<uuid-3>",
+          "id_token": "",
+          "last_connected_at": "<timestamp>",
+          "metadata": {},
+          "provider": "gitlab",
+          "provider_account_id": "other",
+          "refresh_token": null,
+          "refresh_token_expired_at": null,
+          "updated_at": "<timestamp>",
+          "user_id": "<uuid-4>"
+        }
+      ]
+    },
+    "changed_tables": [],
+    "expected_changed_tables": []
+  },
+  "effects": [],
+  "request": {
+    "body": null,
+    "cookies": {},
+    "headers": {},
+    "method": "DELETE",
+    "path": "/api/users/me/accounts/",
+    "principal": {
+      "kind": "authenticated",
+      "user_id": "<fixture-user>"
+    },
+    "query": {}
+  },
+  "response": {
+    "body": {
+      "error": "Something went wrong please try again later"
+    },
+    "cookies": {},
+    "headers": {
+      "Allow": "GET, DELETE, HEAD, OPTIONS",
+      "Content-Type": "application/json",
+      "Cross-Origin-Opener-Policy": "same-origin",
+      "Referrer-Policy": "same-origin",
+      "Vary": "origin",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY"
+    },
+    "status": 500
+  },
+  "schema_version": 1,
+  "seed": {
+    "case": "delete-collection-handler-mismatch"
+  }
+}
