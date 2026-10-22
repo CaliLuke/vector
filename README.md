@@ -6,7 +6,6 @@ Vector brings work items, projects, cycles, modules, pages, and team collaborati
 
 Vector is an independent derivative of [Plane](https://github.com/makeplane/plane). It is not an official Plane release or service.
 The application API, authentication, database bootstrap, and background jobs run in Go. The current React frontend derives from Plane.
-A frontend rewrite is planned. It is not part of this release.
 
 ## Run locally
 
