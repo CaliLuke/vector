@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
 import { observer } from "mobx-react";
-import { useParams, usePathname } from "next/navigation";
+
 import { Ellipsis } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
@@ -50,8 +51,8 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
 
   const { loader, getPartialProjectById, joinedProjectIds: joinedProjects, updateProjectView } = useProject();
   // router params
-  const { workspaceSlug } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   // auth
   const isAuthorizedUser = allowPermissions(

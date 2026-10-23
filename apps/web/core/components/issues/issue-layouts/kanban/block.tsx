@@ -4,12 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane helpers
 import { MoreHorizontal } from "lucide-react";
 import { useOutsideClickDetector } from "@plane/hooks";
@@ -158,8 +159,7 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
 
   const cardRef = useRef<HTMLAnchorElement | null>(null);
   // router
-  const { workspaceSlug: routerWorkspaceSlug } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
+  const { workspaceSlug } = useParams({ strict: false });
   // hooks
   const { getProjectIdentifierById } = useProject();
   const { getIsIssuePeeked } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);

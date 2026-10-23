@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Controller, useForm } from "react-hook-form";
 import { Info, SquareUser } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -58,7 +59,7 @@ export const ModuleAnalyticsSidebar = observer(function ModuleAnalyticsSidebar(p
   const [moduleLinkModal, setModuleLinkModal] = useState(false);
   const [selectedLinkToUpdate, setSelectedLinkToUpdate] = useState<ILinkDetails | null>(null);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   // store hooks
   const { t } = useTranslation();

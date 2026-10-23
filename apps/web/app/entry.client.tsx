@@ -4,9 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { startTransition, StrictMode } from "react";
-import { hydrateRoot } from "react-dom/client";
-import { HydratedRouter } from "react-router/dom";
+import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "next-themes";
+import { routeTree } from "./routeTree.gen";
 import { installLocalLogging } from "@plane/utils";
 
 import polyfills from "@/lib/polyfills";
@@ -36,11 +38,40 @@ if (import.meta.env.DEV && import.meta.env.VITE_LOCAL_LOGGING === "1") {
   import.meta.hot?.dispose(stopLogging);
 }
 
+// Optional session recording starts once with the application.
+if (Number(process.env.VITE_ENABLE_SESSION_RECORDER) && process.env.VITE_SESSION_RECORDER_KEY) {
+  const script = document.createElement("script");
+  script.id = "clarity-tracking";
+  script.textContent = `(function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];if(y){y.parentNode.insertBefore(t,y);}
+  })(window,document,"clarity","script",${JSON.stringify(process.env.VITE_SESSION_RECORDER_KEY)});`;
+  document.head.appendChild(script);
+}
+
+const router = createRouter({
+  routeTree,
+  trailingSlash: "preserve",
+  scrollRestoration: true,
+  defaultPreload: "intent",
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
+const root = document.getElementById("root");
+if (!root) throw new Error("Missing application root");
+
 startTransition(() => {
-  hydrateRoot(
-    document,
+  createRoot(root).render(
     <StrictMode>
-      <HydratedRouter />
+      <ThemeProvider themes={["light", "dark", "light-contrast", "dark-contrast", "custom"]} defaultTheme="system">
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </StrictMode>
   );
 });

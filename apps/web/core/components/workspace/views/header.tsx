@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
 
 // plane imports
 import { DEFAULT_GLOBAL_VIEWS_LIST, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -26,7 +26,7 @@ const ViewTab = observer(function ViewTab(props: { viewId: string }) {
   // refs
   const parentRef = useRef<HTMLDivElement>(null);
   // router
-  const { workspaceSlug, globalViewId } = useParams();
+  const { workspaceSlug, globalViewId } = useParams({ strict: false });
   // store hooks
   const { getViewDetailsById } = useGlobalView();
 
@@ -51,7 +51,7 @@ function DefaultViewTab(props: {
   // refs
   const parentRef = useRef<HTMLDivElement>(null);
   // router
-  const { workspaceSlug, globalViewId } = useParams();
+  const { workspaceSlug, globalViewId } = useParams({ strict: false });
 
   if (!workspaceSlug || !globalViewId) return null;
   return (
@@ -66,7 +66,7 @@ export const GlobalViewsHeader = observer(function GlobalViewsHeader() {
   const [createViewModal, setCreateViewModal] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // router
-  const { globalViewId } = useParams();
+  const { globalViewId } = useParams({ strict: false });
   // store hooks
   const { currentWorkspaceViews } = useGlobalView();
   const { allowPermissions } = useUserPermissions();

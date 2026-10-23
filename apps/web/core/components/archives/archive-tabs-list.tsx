@@ -4,16 +4,16 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+
 // types
 import type { IProject } from "@plane/types";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 
 const ARCHIVES_TAB_LIST: {
-  key: string;
+  key: "issues" | "cycles" | "modules";
   label: string;
   shouldRender: (projectDetails: IProject) => boolean;
 }[] = [
@@ -36,8 +36,9 @@ const ARCHIVES_TAB_LIST: {
 
 export const ArchiveTabsList = observer(function ArchiveTabsList() {
   // router
-  const { workspaceSlug, projectId } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { projectId } = useParams({ strict: false });
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { getProjectById } = useProject();
 
@@ -51,7 +52,17 @@ export const ArchiveTabsList = observer(function ArchiveTabsList() {
       {ARCHIVES_TAB_LIST.map(
         (tab) =>
           tab.shouldRender(projectDetails) && (
-            <Link key={tab.key} href={`/${workspaceSlug}/projects/${projectId}/archives/${tab.key}`}>
+            <Link
+              key={tab.key}
+              to={
+                tab.key === "issues"
+                  ? "/$workspaceSlug/projects/$projectId/archives/issues"
+                  : tab.key === "cycles"
+                    ? "/$workspaceSlug/projects/$projectId/archives/cycles"
+                    : "/$workspaceSlug/projects/$projectId/archives/modules"
+              }
+              params={{ workspaceSlug, projectId }}
+            >
               <span
                 className={`flex min-w-min flex-shrink-0 border-b-2 px-4 py-4 text-13 font-medium whitespace-nowrap outline-none ${
                   pathname.includes(tab.key)

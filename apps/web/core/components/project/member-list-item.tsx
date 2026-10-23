@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -11,7 +12,7 @@ import { Table } from "@plane/ui";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
 import { useUser, useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web imports
 import { useProjectColumns } from "@/components/projects/settings/useProjectColumns";
 // store
@@ -28,7 +29,7 @@ type Props = {
 export const ProjectMemberListItem = observer(function ProjectMemberListItem(props: Props) {
   const { memberDetails, projectId, workspaceSlug } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { leaveProject } = useUserPermissions();
   const { data: currentUser } = useUser();
@@ -48,7 +49,7 @@ export const ProjectMemberListItem = observer(function ProjectMemberListItem(pro
       await leaveProject(workspaceSlug.toString(), projectId.toString())
         // oxlint-disable-next-line promise/always-return
         .then(async () => {
-          router.push(`/${workspaceSlug}/projects`);
+          void router.navigate({ href: `/${workspaceSlug}/projects` });
         })
         .catch((err) => {
           setToast({

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+
 import { useTheme } from "next-themes";
 import { Combobox } from "@headlessui/react";
 // plane imports
@@ -39,7 +40,7 @@ const projectService = new ProjectService();
 export function SelectDuplicateInboxIssueModal(props: Props) {
   const { isOpen, onClose, onSubmit, value } = props;
   // router
-  const { workspaceSlug, projectId, issueId } = useParams();
+  const { workspaceSlug, projectId, issueId } = useParams({ strict: false });
   // states
   const [query, setQuery] = useState("");
   const [issues, setIssues] = useState<ISearchIssueResponse[]>([]);

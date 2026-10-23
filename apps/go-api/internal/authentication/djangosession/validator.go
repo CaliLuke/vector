@@ -186,7 +186,7 @@ func (validator *Validator) Inspect(ctx context.Context, sessionKey string) (Pri
 	}
 	prepared := validator.prepareSessionValues(sessionKey, values, serialized)
 	if err == nil {
-		prepared = validator.PrepareRefresh(principal)
+		prepared = principal.PrepareRefresh()
 	}
 	return principal, prepared, err
 }
@@ -345,7 +345,7 @@ func (validator *Validator) RefreshPrincipal(ctx context.Context, principal Prin
 
 // PrepareRefresh retains the request-local session snapshot without writing
 // it. SessionMiddleware saves this snapshot after the response is produced.
-func (validator *Validator) PrepareRefresh(principal Principal) SessionRefresh {
+func (principal Principal) PrepareRefresh() SessionRefresh {
 	prepared := principal
 	prepared.values = cloneSessionValues(principal.values)
 	prepared.serialized = append([]byte(nil), principal.serialized...)

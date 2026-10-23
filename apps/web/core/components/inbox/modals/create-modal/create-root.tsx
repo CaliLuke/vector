@@ -6,6 +6,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
@@ -21,7 +22,7 @@ import { renderFormattedPayloadDate, getTabIndex } from "@plane/utils";
 // hooks
 import { useProjectInbox } from "@/hooks/store/use-project-inbox";
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import useKeypress from "@/hooks/use-keypress";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // services
@@ -58,7 +59,7 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
   // states
   const [uploadedAssetIds, setUploadedAssetIds] = useState<string[]>([]);
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // refs
   const descriptionEditorRef = useRef<EditorRefApi>(null);
   const submitBtnRef = useRef<HTMLButtonElement | null>(null);
@@ -151,7 +152,9 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
           setUploadedAssetIds([]);
         }
         if (!createMore) {
-          router.push(`/${workspaceSlug}/projects/${projectId}/intake/?currentTab=open&inboxIssueId=${res?.issue?.id}`);
+          void router.navigate({
+            href: `/${workspaceSlug}/projects/${projectId}/intake/?currentTab=open&inboxIssueId=${res?.issue?.id}`,
+          });
           handleModalClose();
         } else {
           descriptionEditorRef?.current?.clearEditor();

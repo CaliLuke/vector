@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 import { StickyNote as StickyIcon } from "lucide-react";
 // plane hooks
@@ -30,7 +31,7 @@ export const StickyActionBar = observer(function StickyActionBar() {
   const [newSticky, setNewSticky] = useState(false);
   const [showRecentSticky, setShowRecentSticky] = useState(false);
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // refs
   const ref = useRef(null);
   // store hooks

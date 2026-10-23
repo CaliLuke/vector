@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { ArchiveIcon, CycleIcon, ModuleIcon, WorkItemsIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import { EIssuesStoreType } from "@plane/types";
@@ -16,7 +17,7 @@ import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 // hooks
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
@@ -52,8 +53,10 @@ const PROJECT_ARCHIVES_BREADCRUMB_LIST: {
 export const ProjectArchivesHeader = observer(function ProjectArchivesHeader(props: TProps) {
   const { activeTab } = props;
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
   // store hooks
   const {
     issues: { getGroupIssueCount },
@@ -71,7 +74,7 @@ export const ProjectArchivesHeader = observer(function ProjectArchivesHeader(pro
     <Header>
       <Header.LeftItem>
         <div className="flex items-center gap-2.5">
-          <Breadcrumbs onBack={router.back} isLoading={loader === "init-loader"}>
+          <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={

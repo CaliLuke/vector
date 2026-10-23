@@ -176,7 +176,7 @@
   },
   "sentry_integration": {
     "name": "Sentry",
-    "description": "將您的Sentry工作空間連接到Plane。",
+    "description": "將您的Sentry工作空間連接到Vector。",
     "connected_sentry_workspaces": "已連接的Sentry工作空間",
     "connected_on": "連接於{date}",
     "disconnect_workspace": "斷開{name}工作空間",

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -20,7 +21,7 @@ import { useUserPermissions } from "@/hooks/store/user";
 // local imports
 import { ExportsWorkspaceSettingsHeader } from "./header";
 
-function ExportsPage() {
+function ExportsPage(): React.JSX.Element | null {
   // store hooks
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
   const { currentWorkspace } = useWorkspace();
@@ -58,4 +59,6 @@ function ExportsPage() {
   );
 }
 
-export default observer(ExportsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/exports")({
+  component: observer(ExportsPage),
+});

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import React, { useMemo } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { Breadcrumbs } from "@plane/ui";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
@@ -76,7 +77,7 @@ export const BreadcrumbLink = observer(function BreadcrumbLink(props: Props) {
 
   if (href) {
     return (
-      <Link href={href}>
+      <Link to={href}>
         <ItemWrapper {...itemWrapperProps}>{content}</ItemWrapper>
       </Link>
     );

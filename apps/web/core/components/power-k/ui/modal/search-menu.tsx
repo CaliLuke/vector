@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { WORKSPACE_DEFAULT_SEARCH_RESULT } from "@plane/constants";
 import type { IWorkspaceSearchResults } from "@plane/types";
@@ -38,7 +39,7 @@ export function PowerKModalSearchMenu(props: Props) {
   const [results, setResults] = useState<IWorkspaceSearchResults>(WORKSPACE_DEFAULT_SEARCH_RESULT);
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   // navigation
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { togglePowerKModal } = usePowerK();
 

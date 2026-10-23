@@ -5,8 +5,9 @@
  */
 
 // ui
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams, useRouter } from "next/navigation";
+
 import { PanelRight } from "lucide-react";
 import { PROFILE_VIEWER_TAB, PROFILE_ADMINS_TAB, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -30,7 +31,7 @@ type TUserProfileHeader = {
 export const UserProfileHeader = observer(function UserProfileHeader(props: TUserProfileHeader) {
   const { userProjectsData, type = undefined, showProfileIssuesFilter } = props;
   // router
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug, userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
   const router = useRouter();
   // store hooks
   const { toggleProfileSidebar, profileSidebarCollapsed } = useAppTheme();
@@ -89,7 +90,7 @@ export const UserProfileHeader = observer(function UserProfileHeader(props: TUse
               <CustomMenu.MenuItem
                 className="flex items-center gap-2"
                 key={tab.route}
-                onClick={() => router.push(`/${workspaceSlug}/profile/${userId}/${tab.route}`)}
+                onClick={() => void router.navigate({ href: `/${workspaceSlug}/profile/${userId}/${tab.route}` })}
               >
                 <span className="w-full text-tertiary">{t(tab.i18n_label)}</span>
               </CustomMenu.MenuItem>

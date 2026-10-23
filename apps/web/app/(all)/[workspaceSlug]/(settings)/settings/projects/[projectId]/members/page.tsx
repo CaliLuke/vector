@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -19,12 +20,11 @@ import { SettingsHeading } from "@/components/settings/heading";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { MembersProjectSettingsHeader } from "./header";
 
-function MembersSettingsPage({ params }: Route.ComponentProps) {
+function MembersSettingsPage(): React.JSX.Element | null {
   // router
-  const { workspaceSlug, projectId } = params;
+  const { workspaceSlug, projectId } = Route.useParams();
   // plane hooks
   const { t } = useTranslation();
   // store hooks
@@ -53,4 +53,6 @@ function MembersSettingsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(MembersSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/members")({
+  component: observer(MembersSettingsPage),
+});

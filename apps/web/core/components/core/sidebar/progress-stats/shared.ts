@@ -20,7 +20,7 @@ export const PROGRESS_STATS = [
     key: "stat-labels",
     i18n_title: "common.labels",
   },
-];
+] as const;
 
 type TSelectedFilterProgressStatsType = TFilterConditionNodeForDisplay<TWorkItemFilterProperty, TFilterValue>;
 

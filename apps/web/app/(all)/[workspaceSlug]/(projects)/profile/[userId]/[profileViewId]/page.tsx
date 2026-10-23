@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import React from "react";
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ProfileIssuesPage } from "@/components/profile/profile-issues";
-import type { Route } from "./+types/page";
 
 const ProfilePageHeader = {
   assigned: "Profile - Assigned",
@@ -20,8 +20,8 @@ function isValidProfileViewId(viewId: string): viewId is keyof typeof ProfilePag
   return viewId in ProfilePageHeader;
 }
 
-function ProfileIssuesTypePage({ params }: Route.ComponentProps) {
-  const { profileViewId } = params;
+function ProfileIssuesTypePage(): React.JSX.Element | null {
+  const { profileViewId } = Route.useParams();
 
   if (!isValidProfileViewId(profileViewId)) return null;
 
@@ -35,4 +35,6 @@ function ProfileIssuesTypePage({ params }: Route.ComponentProps) {
   );
 }
 
-export default ProfileIssuesTypePage;
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/profile/$userId/$profileViewId")({
+  component: ProfileIssuesTypePage,
+});

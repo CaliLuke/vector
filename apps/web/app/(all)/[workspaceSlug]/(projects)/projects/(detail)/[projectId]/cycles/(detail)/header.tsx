@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { ChartNoAxesColumn, PanelRight, SlidersHorizontal } from "lucide-react";
 // plane imports
@@ -45,7 +46,7 @@ import { useCycle } from "@/hooks/store/use-cycle";
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import useLocalStorage from "@/hooks/use-local-storage";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
@@ -56,8 +57,10 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
   // states
   const [analyticsModal, setAnalyticsModal] = useState(false);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, cycleId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId, cycleId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/$cycleId",
+  });
   // i18n
   const { t } = useTranslation();
   // store hooks
@@ -137,7 +140,7 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
       <Header>
         <Header.LeftItem>
           <div className="flex items-center gap-2">
-            <Breadcrumbs onBack={router.back} isLoading={loader === "init-loader"}>
+            <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
               <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
               <Breadcrumbs.Item
                 component={
@@ -154,7 +157,7 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
                     selectedItem={cycleId}
                     navigationItems={switcherOptions}
                     onChange={(value: string) => {
-                      router.push(`/${workspaceSlug}/projects/${projectId}/cycles/${value}`);
+                      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles/${value}` });
                     }}
                     title={cycleDetails?.name}
                     icon={

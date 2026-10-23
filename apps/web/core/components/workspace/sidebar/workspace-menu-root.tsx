@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { Fragment } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 // icons
 import { CirclePlus, LogOut, Mails } from "lucide-react";
 // ui
@@ -177,7 +178,7 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
                   </div>
                   <div className="flex w-full flex-col items-start justify-start gap-2 px-4 py-2 text-13">
                     {!isWorkspaceCreationDisabled && (
-                      <Link href="/create-workspace" className="w-full">
+                      <Link to="/create-workspace/" className="w-full">
                         <Menu.Item
                           as="div"
                           className="flex items-center gap-2 rounded-sm px-2 py-1 text-13 font-medium text-secondary hover:bg-layer-transparent-hover"
@@ -188,7 +189,7 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
                       </Link>
                     )}
 
-                    <Link href="/invitations" className="w-full" onClick={handleItemClick}>
+                    <Link to="/invitations/" className="w-full" onClick={handleItemClick}>
                       <Menu.Item
                         as="div"
                         className="flex items-center gap-2 rounded-sm px-2 py-1 text-13 font-medium text-secondary hover:bg-layer-transparent-hover"

@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -8,7 +9,6 @@ registerWebModuleHooks();
 
 const modules = new Map(
   Object.entries({
-    "next/navigation": `export const useParams = () => ({ workspaceSlug: "review" });`,
     "@/hooks/store/use-instance": `export const useInstance = () => ({ config: { has_unsplash_configured: true } });`,
     "@/helpers/cover-image.helper": `export const STATIC_COVER_IMAGES = []; export const getCoverImageDisplayURL = value => value;`,
     "@/services/file.service": `
@@ -29,10 +29,12 @@ registerHooks({
 
 test("cover image search retains typed text and searches without a parent form control", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/review/");
   t.after(() => environment.unmount());
   const { ImagePickerPopover } = await import("../../apps/web/core/components/core/image-picker-popover.tsx");
   const { searches } = await import("@/services/file.service");
-  await environment.render(
+  await routerFixture.render(
+    environment,
     React.createElement(ImagePickerPopover, {
       label: "Choose cover",
       value: null,

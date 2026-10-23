@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import useSWR from "swr";
 // plane types
 import { getButtonStyling } from "@plane/propel/button";
@@ -25,23 +26,23 @@ import { PageRoot } from "@/components/pages/editor/page-root";
 import { useEditorConfig } from "@/hooks/editor";
 import { useEditorAsset } from "@/hooks/store/use-editor-asset";
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web hooks
 import { EPageStoreType, usePage, usePageStore } from "@/hooks/store";
 // plane web services
 import { WorkspaceService } from "@/services/workspace.service";
 // services
 import { ProjectPageService, ProjectPageVersionService } from "@/services/page";
-import type { Route } from "./+types/page";
 const workspaceService = new WorkspaceService();
 const projectPageService = new ProjectPageService();
 const projectPageVersionService = new ProjectPageVersionService();
 
 const storeType = EPageStoreType.PROJECT;
 
-function PageDetailsPage({ params }: Route.ComponentProps) {
+function PageDetailsPage(): React.JSX.Element | null {
+  const params = Route.useParams();
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   const { workspaceSlug, projectId, pageId } = params;
   // store hooks
   const { createPage, fetchPageDetails } = usePageStore(storeType);
@@ -147,7 +148,7 @@ function PageDetailsPage({ params }: Route.ComponentProps) {
 
   useEffect(() => {
     if (page?.deleted_at && page?.id) {
-      router.push(pageRootHandlers.getRedirectionLink());
+      void router.navigate({ href: pageRootHandlers.getRedirectionLink() });
     }
   }, [page?.deleted_at, page?.id, router, pageRootHandlers]);
 
@@ -166,7 +167,8 @@ function PageDetailsPage({ params }: Route.ComponentProps) {
           The page you are trying to access doesn{"'"}t exist or you don{"'"}t have permission to view it.
         </p>
         <Link
-          href={`/${workspaceSlug}/projects/${projectId}/pages`}
+          to="/$workspaceSlug/projects/$projectId/pages/"
+          params={{ workspaceSlug: workspaceSlug, projectId: projectId }}
           className={cn(getButtonStyling("secondary", "base"), "mt-5")}
         >
           View other Pages
@@ -197,4 +199,6 @@ function PageDetailsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(PageDetailsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/$pageId/")({
+  component: observer(PageDetailsPage),
+});

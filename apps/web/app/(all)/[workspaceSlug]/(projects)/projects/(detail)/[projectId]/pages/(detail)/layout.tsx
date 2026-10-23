@@ -5,18 +5,17 @@
  */
 
 // component
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import useSWR from "swr";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 // plane web hooks
 import { EPageStoreType, usePageStore } from "@/hooks/store";
 // local components
-import type { Route } from "./+types/layout";
 import { PageDetailsHeader } from "./header";
 
-export default function ProjectPageDetailsLayout({ params }: Route.ComponentProps) {
-  const { workspaceSlug, projectId } = params;
+function ProjectPageDetailsLayout(): React.JSX.Element | null {
+  const { workspaceSlug, projectId } = Route.useParams();
   const { fetchPagesList } = usePageStore(EPageStoreType.PROJECT);
   // fetching pages list
   useSWR(`PROJECT_PAGES_${projectId}`, () => fetchPagesList(workspaceSlug, projectId));
@@ -29,3 +28,7 @@ export default function ProjectPageDetailsLayout({ params }: Route.ComponentProp
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/$pageId")({
+  component: ProjectPageDetailsLayout,
+});

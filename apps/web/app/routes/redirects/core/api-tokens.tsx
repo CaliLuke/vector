@@ -3,13 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { redirect } from "react-router";
-
-export const clientLoader = () => {
-  throw redirect(`/settings/profile/api-tokens/`);
-};
-
-export default function ApiTokens() {
-  return null;
-}
+export const Route = createFileRoute("/$workspaceSlug/settings/api-tokens")({
+  beforeLoad: () => {
+    throw redirect({ to: "/settings/profile/$profileTabId/", params: { profileTabId: "api-tokens" }, replace: true });
+  },
+});

@@ -4,30 +4,33 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useParams, Outlet, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { observer } from "mobx-react";
-import { Outlet } from "react-router";
+
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
-// types
-import type { Route } from "./+types/layout";
 
-function ProjectSettingsLayout({ params }: Route.ComponentProps) {
+// types
+
+function ProjectSettingsLayout(): React.JSX.Element | null {
+  const params = useParams({ strict: false });
   const { workspaceSlug, projectId } = params;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { joinedProjectIds } = useProject();
 
   useEffect(() => {
     if (projectId) return;
     if (joinedProjectIds.length > 0) {
-      router.push(`/${workspaceSlug}/settings/projects/${joinedProjectIds[0]}`);
+      void router.navigate({ href: `/${workspaceSlug}/settings/projects/${joinedProjectIds[0]}` });
     }
   }, [joinedProjectIds, router, workspaceSlug, projectId]);
 
   return <Outlet />;
 }
 
-export default observer(ProjectSettingsLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects")({
+  component: observer(ProjectSettingsLayout),
+});

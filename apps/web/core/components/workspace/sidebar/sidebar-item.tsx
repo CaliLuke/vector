@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+
 // plane imports
 import type { IWorkspaceSidebarNavigationItem } from "@plane/constants";
 import { EUserPermissionsLevel } from "@plane/constants";
@@ -34,8 +34,8 @@ export const SidebarItemBase = observer(function SidebarItemBase({
   additionalStaticItems,
 }: Props) {
   const { t } = useTranslation();
-  const pathname = usePathname();
-  const { workspaceSlug } = useParams();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { allowPermissions } = useUserPermissions();
   const { isWorkspaceItemPinned } = useWorkspaceNavigationPreferences();
   const { data } = useUser();
@@ -68,7 +68,7 @@ export const SidebarItemBase = observer(function SidebarItemBase({
   const icon = getSidebarNavigationItemIcon(item.key);
 
   return (
-    <Link href={itemHref} onClick={handleLinkClick}>
+    <Link to={itemHref} onClick={handleLinkClick}>
       <SidebarNavItem isActive={item.highlight(pathname, itemHref)}>
         <div className="flex items-center gap-1.5 py-[1px]">
           {icon}

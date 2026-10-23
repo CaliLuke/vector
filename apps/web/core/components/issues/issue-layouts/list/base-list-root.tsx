@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { FC } from "react";
 import { useCallback, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane constants
 import { EIssueFilterType, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 // types
@@ -81,7 +82,7 @@ export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot)
   const group_by = (displayFilters?.group_by || null) as GroupByColumnTypes | null;
   const showEmptyGroup = displayFilters?.show_empty_groups ?? false;
 
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   const { updateFilters } = useIssuesActions(storeType);
   const collapsedGroups =
     issuesFilter?.issueFilters?.kanbanFilters || ({ group_by: [], sub_group_by: [] } as TIssueKanbanFilters);

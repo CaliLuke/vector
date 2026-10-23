@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Controller, useForm } from "react-hook-form";
 
 // types
@@ -52,7 +53,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
   // states
   const [isUnPublishing, setIsUnPublishing] = useState(false);
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const {
     fetchPublishSettings,

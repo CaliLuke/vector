@@ -4,11 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import type { PageProps } from "@react-pdf/renderer";
 import { pdf } from "@react-pdf/renderer";
 import { Controller, useForm } from "react-hook-form";
-import { useParams } from "react-router";
+
 // plane editor
 import type { EditorRefApi } from "@plane/editor";
 // plane ui
@@ -106,7 +107,7 @@ export function ExportPageModal(props: Props) {
   // states
   const [isExporting, setIsExporting] = useState(false);
   // params
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // form info
   const { control, reset, watch } = useForm<TFormValues>({
     defaultValues,

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams, useSearchParams } from "next/navigation";
+
 // components
 import { EUserPermissionsLevel, MODULE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -26,8 +27,8 @@ import { useUserPermissions } from "@/hooks/store/user";
 
 export const ModulesListView = observer(function ModulesListView() {
   // router
-  const { workspaceSlug, projectId } = useParams();
-  const searchParams = useSearchParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const peekModule = searchParams.get("peekModule");
   // plane hooks
   const { t } = useTranslation();

@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Outlet } from "react-router";
-import type { Route } from "./+types/layout";
-
-export default function ResetPasswordLayout() {
+function ResetPasswordLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
 
-export const meta: Route.MetaFunction = () => [{ title: "Reset Password - Vector" }];
+const meta = () => [{ title: "Reset Password - Vector" }];
+
+export const Route = createFileRoute("/accounts/reset-password")({
+  component: ResetPasswordLayout,
+  head: () => ({ meta: meta() }),
+});

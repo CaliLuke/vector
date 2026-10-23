@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
 // components
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { NotificationsSidebarRoot } from "@/components/workspace-notifications/sidebar";
 
-export default function ProjectInboxIssuesLayout() {
+function ProjectInboxIssuesLayout(): React.JSX.Element | null {
   return (
     <div className="relative flex h-full w-full items-center overflow-hidden">
       <NotificationsSidebarRoot />
@@ -18,3 +18,7 @@ export default function ProjectInboxIssuesLayout() {
     </div>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/notifications")({
+  component: ProjectInboxIssuesLayout,
+});

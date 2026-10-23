@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // components
 import type { TPowerKPageType } from "@/components/power-k/core/types";
 import { PowerKMembersMenu } from "@/components/power-k/menus/members";
@@ -23,7 +24,7 @@ type Props = {
 export const PowerKModuleContextBasedPages = observer(function PowerKModuleContextBasedPages(props: Props) {
   const { activePage, handleSelection } = props;
   // navigation
-  const { moduleId } = useParams();
+  const { moduleId } = useParams({ strict: false });
   // store hooks
   const { getModuleById } = useModule();
   const {

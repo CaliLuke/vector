@@ -40,7 +40,7 @@ export const BlockRow = observer(function BlockRow(props: Props) {
   const block = getBlockById(blockId);
 
   useEffect(() => {
-    const intersectionRoot = document.querySelector("#gantt-container") as HTMLDivElement;
+    const intersectionRoot = document.querySelector("#gantt-container");
     const timelineBlock = document.getElementById(`gantt-block-${block?.id}`);
     if (!timelineBlock || !intersectionRoot) return;
 

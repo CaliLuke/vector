@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
 import { AnalyticsIcon, ProjectIcon, ViewsIcon } from "@plane/propel/icons";
@@ -19,7 +20,7 @@ import { SidebarWorkspaceMenuItem } from "./workspace-menu-item";
 
 export const SidebarWorkspaceMenu = observer(function SidebarWorkspaceMenu() {
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // local storage
   const { setValue: toggleWorkspaceMenu, storedValue } = useLocalStorage<boolean>("is_workspace_menu_open", true);
   // derived values

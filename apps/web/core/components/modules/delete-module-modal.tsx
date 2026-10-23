@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import { PROJECT_ERROR_MESSAGES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -30,7 +31,7 @@ export const DeleteModuleModal = observer(function DeleteModuleModal(props: Prop
   // states
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { deleteModule } = useModule();
   const { t } = useTranslation();

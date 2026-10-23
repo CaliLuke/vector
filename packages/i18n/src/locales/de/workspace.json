@@ -289,8 +289,8 @@
   "workspace_pages": {
     "empty_state": {
       "general": {
-        "title": "Schreiben Sie eine Notiz, ein Dokument oder eine vollständige Wissensdatenbank. Holen Sie sich Galileo, Planes KI-Assistent, um Ihnen den Einstieg zu erleichtern",
-        "description": "Seiten sind Gedankenspeicher in Vector. Notieren Sie Meeting-Notizen, formatieren Sie sie einfach, betten Sie Arbeitsaufgaben ein, gestalten Sie sie mit einer Bibliothek von Komponenten und behalten Sie sie alle im Kontext Ihres Projekts. Um die Arbeit an einem Dokument zu verkürzen, rufen Sie Galileo, Planes KI, mit einer Tastenkombination oder einem Knopfdruck auf.",
+        "title": "Schreiben Sie eine Notiz, ein Dokument oder eine vollständige Wissensdatenbank. Holen Sie sich Galileo, Vectors KI-Assistent, um Ihnen den Einstieg zu erleichtern",
+        "description": "Seiten sind Gedankenspeicher in Vector. Notieren Sie Meeting-Notizen, formatieren Sie sie einfach, betten Sie Arbeitsaufgaben ein, gestalten Sie sie mit einer Bibliothek von Komponenten und behalten Sie sie alle im Kontext Ihres Projekts. Um die Arbeit an einem Dokument zu verkürzen, rufen Sie Galileo, Vectors KI, mit einer Tastenkombination oder einem Knopfdruck auf.",
         "primary_button": {
           "text": "Erstellen Sie Ihre erste Seite"
         }

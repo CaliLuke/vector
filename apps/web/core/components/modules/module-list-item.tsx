@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation, useRouter } from "@tanstack/react-router";
 import React, { useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
+
 // icons
 import { Info } from "lucide-react";
 import { CheckIcon } from "@plane/propel/icons";
@@ -19,7 +20,7 @@ import { ModuleListItemAction, ModuleQuickActions } from "@/components/modules";
 // helpers
 // hooks
 import { useModule } from "@/hooks/store/use-module";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type Props = {
@@ -31,10 +32,12 @@ export const ModuleListItem = observer(function ModuleListItem(props: Props) {
   // refs
   const parentRef = useRef(null);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { getModuleById } = useModule();
   const { isMobile } = usePlatformOS();
@@ -58,9 +61,9 @@ export const ModuleListItem = observer(function ModuleListItem(props: Props) {
 
     const query = generateQueryParams(searchParams, ["peekModule"]);
     if (searchParams.has("peekModule") && searchParams.get("peekModule") === moduleId) {
-      router.push(`${pathname}?${query}`);
+      void router.navigate({ href: `${pathname}?${query}` });
     } else {
-      router.push(`${pathname}?${query && `${query}&`}peekModule=${moduleId}`);
+      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekModule=${moduleId}` });
     }
   };
 

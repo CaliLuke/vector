@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 // icons
 import { Eye, EyeOff, Info, XCircle } from "lucide-react";
 // plane imports
@@ -87,7 +88,8 @@ export const AuthPasswordForm = observer(function AuthPasswordForm(props: Props)
         {isSMTPConfigured ? (
           <Link
             data-ph-element={AUTH_TRACKER_ELEMENTS.FORGOT_PASSWORD_FROM_SIGNIN}
-            href={`/accounts/forgot-password?email=${encodeURIComponent(email)}`}
+            to="/accounts/forgot-password"
+            search={{ email }}
             className="text-11 font-medium text-accent-primary"
           >
             {t("auth.common.forgot_password")}

@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Outlet } from "react-router";
-import type { Route } from "./+types/layout";
-
-export default function InvitationsLayout() {
+function InvitationsLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
 
-export const meta: Route.MetaFunction = () => [{ title: "Invitations" }];
+const meta = () => [{ title: "Invitations" }];
+
+export const Route = createFileRoute("/invitations")({
+  component: InvitationsLayout,
+  head: () => ({ meta: meta() }),
+});

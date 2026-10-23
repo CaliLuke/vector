@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS, EUserPermissionsLevel } from "@plane/constants";
 import type { EUserWorkspaceRoles } from "@plane/types";
@@ -22,7 +23,7 @@ export const ExtendedAppSidebar = observer(function ExtendedAppSidebar() {
   // refs
   const extendedSidebarRef = useRef<HTMLDivElement | null>(null);
   // routers
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects" });
   // store hooks
   const { isExtendedSidebarOpened, toggleExtendedSidebar } = useAppTheme();
   const { allowPermissions } = useUserPermissions();

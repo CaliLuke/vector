@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Download } from "lucide-react";
 // plane imports
 import { CORE_EXTENSIONS } from "@plane/editor";
@@ -30,7 +31,7 @@ type AssetItemProps = {
 const AssetItem = observer(function AssetItem(props: AssetItemProps) {
   const { asset, page } = props;
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // derived values
   const { project_ids } = page;
   // translation

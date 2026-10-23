@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
@@ -33,7 +34,7 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
     isPeekView,
     isEpic,
   } = useAnalytics();
-  const params = useParams();
+  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { t } = useTranslation();
   const workspaceSlug = params.workspaceSlug.toString();
   const { data: createdVsResolvedData, isLoading: isCreatedVsResolvedLoading } = useSWR(

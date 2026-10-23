@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import useSWR from "swr";
 // plane imports
@@ -18,14 +19,13 @@ import { ModuleAnalyticsSidebar } from "@/components/modules";
 // hooks
 import { useModule } from "@/hooks/store/use-module";
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
-import useLocalStorage from "@/hooks/use-local-storage";
-import type { Route } from "./+types/page";
 
-function ModuleIssuesPage({ params }: Route.ComponentProps) {
+import useLocalStorage from "@/hooks/use-local-storage";
+
+function ModuleIssuesPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, moduleId } = params;
+  const router = useRouter();
+  const { workspaceSlug, projectId, moduleId } = Route.useParams();
   // store hooks
   const { fetchModuleDetails, getModuleById } = useModule();
   const { getProjectById } = useProject();
@@ -57,7 +57,7 @@ function ModuleIssuesPage({ params }: Route.ComponentProps) {
           description="The module you are looking for does not exist or has been deleted."
           primaryButton={{
             text: "View other modules",
-            onClick: () => router.push(`/${workspaceSlug}/projects/${projectId}/modules`),
+            onClick: () => void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/modules` }),
           }}
         />
       ) : (
@@ -80,4 +80,8 @@ function ModuleIssuesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ModuleIssuesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/modules/$moduleId/")(
+  {
+    component: observer(ModuleIssuesPage),
+  }
+);

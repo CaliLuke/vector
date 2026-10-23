@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { isTreeDropTargetData, getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
@@ -21,8 +22,7 @@ import { DropIndicator } from "@plane/ui";
 // components
 import { useUserPermissions } from "@/hooks/store/user";
 import { LabelName } from "./label-block/label-name";
-import type { TargetData } from "./label-utils";
-import { getCanDrop, getInstructionFromPayload } from "./label-utils";
+import { getCanDrop } from "./label-utils";
 
 type LabelDragPreviewProps = {
   label: IIssueLabel;
@@ -141,9 +141,9 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
           let parentId: string | null = null,
             dropAtEndOfList = false;
 
-          const dropTargetData = dropTarget?.data as TargetData;
+          const dropTargetData = dropTarget?.data;
 
-          if (!dropTarget || !dropTargetData) return;
+          if (!dropTarget || !isTreeDropTargetData(dropTargetData)) return;
 
           // get possible instructions for the dropTarget
           const instruction = getInstructionFromPayload(dropTarget, source, location);
@@ -155,8 +155,8 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
           // if instruction is to reorder-below that is enabled only for end of the last items in the list then dropAtEndOfList as true
           if (instruction === "reorder-below") dropAtEndOfList = true;
 
-          const sourceData = source.data as TargetData;
-          if (sourceData.id) onDrop(sourceData.id, parentId, droppedLabelId, dropAtEndOfList);
+          const sourceData = source.data;
+          if (isTreeDropTargetData(sourceData)) onDrop(sourceData.id, parentId, droppedLabelId, dropAtEndOfList);
         },
       })
     );

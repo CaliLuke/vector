@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams, useSearchParams } from "next/navigation";
+
 import { mutate } from "swr";
 // constants
 import { EXPORT_SERVICES_LIST } from "@plane/constants";
@@ -16,8 +17,8 @@ import { PrevExports } from "./prev-exports";
 
 export const ExportGuide = observer(function ExportGuide() {
   // router
-  const { workspaceSlug } = useParams();
-  const searchParams = useSearchParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const provider = searchParams.get("provider");
   // state
   const per_page = 10;

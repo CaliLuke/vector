@@ -399,6 +399,7 @@ type publicProjectMetadataThrottleStub struct {
 	timezoneErr           error
 	inspectedCookie       string
 	userTimezone          string
+	sessionKey            string
 }
 
 type publicProjectMetadataActivityStub struct {
@@ -458,6 +459,7 @@ func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSession(_ conte
 	}
 	return stub.expire, stub.refresh, stub.rotated, djangosession.Principal{
 		UserID:       stub.userID,
+		SessionKey:   stub.sessionKey,
 		UserTimezone: stub.userTimezone,
 	}, stub.err
 }
@@ -470,6 +472,7 @@ func (stub *publicProjectMetadataThrottleStub) InspectReadServiceSessionWithoutT
 	}
 	return stub.expire, stub.refresh, stub.rotated, djangosession.Principal{
 		UserID:       stub.userID,
+		SessionKey:   stub.sessionKey,
 		UserTimezone: stub.userTimezone,
 	}, stub.err
 }

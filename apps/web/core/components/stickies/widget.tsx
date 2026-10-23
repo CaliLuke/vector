@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -19,7 +19,7 @@ import { useStickyOperations } from "./sticky/use-operations";
 
 export const StickiesWidget = observer(function StickiesWidget() {
   // params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { creatingSticky, toggleShowNewSticky } = useSticky();
   const { t } = useTranslation();

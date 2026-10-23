@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { cn } from "@plane/utils";
@@ -18,14 +19,13 @@ import { CycleLayoutRoot } from "@/components/issues/issue-layouts/roots/cycle-l
 // hooks
 import { useCycle } from "@/hooks/store/use-cycle";
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
-import useLocalStorage from "@/hooks/use-local-storage";
-import type { Route } from "./+types/page";
 
-function CycleDetailPage({ params }: Route.ComponentProps) {
+import useLocalStorage from "@/hooks/use-local-storage";
+
+function CycleDetailPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, cycleId } = params;
+  const router = useRouter();
+  const { workspaceSlug, projectId, cycleId } = Route.useParams();
   // store hooks
   const { getCycleById, loader } = useCycle();
   const { getProjectById } = useProject();
@@ -60,7 +60,7 @@ function CycleDetailPage({ params }: Route.ComponentProps) {
           description="The cycle you are looking for does not exist or has been deleted."
           primaryButton={{
             text: "View other cycles",
-            onClick: () => router.push(`/${workspaceSlug}/projects/${projectId}/cycles`),
+            onClick: () => void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles` }),
           }}
         />
       ) : (
@@ -90,4 +90,6 @@ function CycleDetailPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(CycleDetailPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/$cycleId/")({
+  component: observer(CycleDetailPage),
+});

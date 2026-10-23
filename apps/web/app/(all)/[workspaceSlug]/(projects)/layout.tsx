@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { Outlet } from "react-router";
 import { ProjectsAppPowerKProvider } from "@/components/power-k/projects-app-provider";
 // plane web components
 import { ProjectAppSidebar } from "./_sidebar";
 import { ExtendedProjectSidebar } from "./extended-project-sidebar";
 
-function WorkspaceLayout() {
+function WorkspaceLayout(): React.JSX.Element | null {
   return (
     <>
       <ProjectsAppPowerKProvider />
@@ -29,4 +29,6 @@ function WorkspaceLayout() {
   );
 }
 
-export default observer(WorkspaceLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects")({
+  component: observer(WorkspaceLayout),
+});

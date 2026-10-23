@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import { Controller, useForm } from "react-hook-form";
 import { AlertTriangle } from "lucide-react";
@@ -17,7 +18,6 @@ import { cn } from "@plane/utils";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUserSettings } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   data: IWorkspace | null;
@@ -32,7 +32,7 @@ const defaultValues = {
 export const DeleteWorkspaceForm = observer(function DeleteWorkspaceForm(props: Props) {
   const { data, onClose } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { deleteWorkspace } = useWorkspace();
   const { t } = useTranslation();
@@ -65,7 +65,7 @@ export const DeleteWorkspaceForm = observer(function DeleteWorkspaceForm(props: 
       await deleteWorkspace(data.slug);
       await fetchCurrentUserSettings();
       handleClose();
-      router.push(getWorkspaceRedirectionUrl());
+      void router.navigate({ href: getWorkspaceRedirectionUrl() });
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t("workspace_settings.settings.general.delete_modal.success_title"),

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useCallback, useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useLocalStorage from "@/hooks/use-local-storage";
 import { AppRailVisibilityContext } from "./context";
 import type { IAppRailVisibilityContext } from "./types";
@@ -24,7 +25,7 @@ export const AppRailVisibilityProvider = observer(function AppRailVisibilityProv
   children,
   isEnabled = false,
 }: AppRailVisibilityProviderProps) {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
 
   // User preference from localStorage
   const { storedValue: isCollapsed, setValue: setIsCollapsed } = useLocalStorage<boolean>(

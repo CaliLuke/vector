@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EIssueFilterType, ISSUE_LAYOUTS, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -31,7 +32,9 @@ const SUPPORTED_LAYOUTS = [
 
 export const CycleIssuesMobileHeader = observer(function CycleIssuesMobileHeader() {
   // router
-  const { workspaceSlug, projectId, cycleId } = useParams();
+  const { workspaceSlug, projectId, cycleId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/$cycleId",
+  });
   // states
   const [analyticsModal, setAnalyticsModal] = useState(false);
   // plane hooks

@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "next/navigation";
 // types
+import { useRouter } from "@tanstack/react-router";
 import type { TIssue } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // helpers
@@ -44,7 +44,7 @@ const useIssuePeekOverviewRedirection = (isEpic: boolean = false) => {
     });
     if (workspaceSlug && project_id && id && !getIsIssuePeeked(id) && !tempId) {
       if (isMobile) {
-        router.push(workItemLink);
+        void router.navigate({ href: workItemLink });
       } else {
         setPeekIssue({ workspaceSlug, projectId: project_id, issueId: id, nestingLevel, isArchived: !!archived_at });
       }

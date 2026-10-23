@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EIssueFilterType, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -22,9 +23,7 @@ import { useProject } from "@/hooks/store/use-project";
 
 export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { currentProjectDetails } = useProject();
   const {

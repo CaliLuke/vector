@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { ListFilter } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -25,7 +26,7 @@ export const ProjectsListMobileHeader = observer(function ProjectsListMobileHead
   // i18n
   const { t } = useTranslation();
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const {
     currentWorkspaceDisplayFilters: displayFilters,
     currentWorkspaceFilters: filters,

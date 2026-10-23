@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // store hooks
 // icons
 import {
@@ -43,7 +44,7 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 
 export function IssueLink({ activity }: { activity: IIssueActivity }) {
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { isMobile } = usePlatformOS();
 
   const workItemLink = generateWorkItemLink({
@@ -81,7 +82,7 @@ export function IssueLink({ activity }: { activity: IIssueActivity }) {
 
 function UserLink({ activity }: { activity: IIssueActivity }) {
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
   return (
     <a
@@ -760,7 +761,7 @@ type ActivityMessageProps = {
 
 export function ActivityMessage({ activity, showIssue = false }: ActivityMessageProps) {
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const activityField = activity.field ?? "issue";
 
   return (

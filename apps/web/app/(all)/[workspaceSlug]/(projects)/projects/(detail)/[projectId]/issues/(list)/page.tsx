@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // i18n
 import { useTranslation } from "@plane/i18n";
@@ -12,10 +13,9 @@ import { PageHead } from "@/components/core/page-title";
 import { ProjectLayoutRoot } from "@/components/issues/issue-layouts/roots/project-layout-root";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import type { Route } from "./+types/page";
 
-function ProjectIssuesPage({ params }: Route.ComponentProps) {
-  const { projectId } = params;
+function ProjectIssuesPage(): React.JSX.Element | null {
+  const { projectId } = Route.useParams();
   // i18n
   const { t } = useTranslation();
   // store
@@ -35,4 +35,6 @@ function ProjectIssuesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectIssuesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues/")({
+  component: observer(ProjectIssuesPage),
+});

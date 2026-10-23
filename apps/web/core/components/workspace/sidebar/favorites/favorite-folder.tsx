@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
+import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DragLocationHistory, DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -14,7 +16,7 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 
 import { orderBy } from "lodash-es";
-import { useParams } from "next/navigation";
+
 import { createRoot } from "react-dom/client";
 import { Star, MoreHorizontal, GripVertical } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -32,7 +34,7 @@ import { useFavorite } from "@/hooks/store/use-favorite";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { FavoriteRoot } from "./favorite-items";
-import { getCanDrop, getInstructionFromPayload } from "./favorites.helpers";
+import { getCanDrop } from "./favorites.helpers";
 import { NewFavoriteFolder } from "./new-fav-folder";
 
 type Props = {
@@ -48,7 +50,7 @@ export function FavoriteFolder(props: Props) {
   // store hooks
   const { fetchGroupedFavorites } = useFavorite();
   const { isMobile } = usePlatformOS();
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -70,7 +72,7 @@ export function FavoriteFolder(props: Props) {
     const element = elementRef.current;
 
     if (!element) return;
-    const initialData = { id: favorite.id, isGroup: true, isChild: false };
+    const initialData = { id: favorite.id, parentId: null, isGroup: true, isChild: false };
 
     return combine(
       draggable({

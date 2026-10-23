@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR, { mutate } from "swr";
 import { CheckCircle } from "lucide-react";
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -53,7 +54,7 @@ export const SingleIntegrationCard = observer(function SingleIntegrationCard({ i
   // states
   const [deletingIntegration, setDeletingIntegration] = useState(false);
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { config } = useInstance();
   const { allowPermissions } = useUserPermissions();

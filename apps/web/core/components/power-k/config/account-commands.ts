@@ -13,14 +13,15 @@ import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
+import { useRouter } from "@tanstack/react-router";
 
 /**
  * Account commands - Account related commands
  */
 export const usePowerKAccountCommands = (): TPowerKCommandConfig[] => {
   // navigation
-  const router = useAppRouter();
+  const router = useRouter();
   // store
   const { signOut } = useUser();
   // translation
@@ -44,7 +45,7 @@ export const usePowerKAccountCommands = (): TPowerKCommandConfig[] => {
       group: "account",
       i18n_title: "power_k.account_actions.workspace_invites",
       icon: Mails,
-      action: () => router.push("/invitations"),
+      action: () => void router.navigate({ href: "/invitations" }),
       isEnabled: () => true,
       isVisible: () => true,
       closeOnSelect: true,

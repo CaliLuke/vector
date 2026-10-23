@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 // plane imports
 import type { EventToPayloadMap } from "@plane/editor";
@@ -14,7 +15,7 @@ import type { IUserLite } from "@plane/types";
 import type { TEditorBodyHandlers } from "@/components/pages/editor/editor-body";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import type { EPageStoreType } from "@/hooks/store";
 import { usePageStore } from "@/hooks/store";
 // store
@@ -47,7 +48,7 @@ export const useRealtimePageEvents = ({
   customRealtimeEventHandlers,
   handlers,
 }: UsePageEventsProps) => {
-  const router = useAppRouter();
+  const router = useRouter();
   const { removePage, getPageById } = usePageStore(storeType);
 
   const { data: currentUser } = useUser();
@@ -122,9 +123,9 @@ export const useRealtimePageEvents = ({
                   title: "Page deleted",
                   message: `Page deleted${getUserDisplayText(data.user_id)}`,
                 });
-                router.push(handlers.getRedirectionLink());
+                void router.navigate({ href: handlers.getRedirectionLink() });
               } else if (page.id === pageId) {
-                router.push(handlers.getRedirectionLink());
+                void router.navigate({ href: handlers.getRedirectionLink() });
               }
             }
           });

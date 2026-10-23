@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+
 // icons
 import { Rocket } from "lucide-react";
 // headless ui
@@ -59,7 +60,7 @@ export function ParentIssuesListModal({
   const { isMobile } = usePlatformOS();
   const debouncedSearchTerm: string = useDebounce(searchTerm, 500);
 
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
   const { baseTabIndex } = getTabIndex(undefined, isMobile);
 

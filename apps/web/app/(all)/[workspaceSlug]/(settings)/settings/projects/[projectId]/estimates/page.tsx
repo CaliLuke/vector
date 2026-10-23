@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -15,11 +16,10 @@ import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { EstimatesProjectSettingsHeader } from "./header";
 
-function EstimatesSettingsPage({ params }: Route.ComponentProps) {
-  const { workspaceSlug, projectId } = params;
+function EstimatesSettingsPage(): React.JSX.Element | null {
+  const { workspaceSlug, projectId } = Route.useParams();
   // store
   const { currentProjectDetails } = useProject();
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
@@ -42,4 +42,6 @@ function EstimatesSettingsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(EstimatesSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/estimates")({
+  component: observer(EstimatesSettingsPage),
+});

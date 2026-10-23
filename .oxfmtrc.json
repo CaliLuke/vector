@@ -35,7 +35,8 @@
     "docs/go-backend-replacement/evidence/post-retirement-review/**",
     "apps/go-api/cmd/system/user_email_code_options.json",
     "apps/go-api/cmd/system/workspace_collection_options.json",
-    "apps/go-api/internal/htmlcompat/testdata/**"
+    "apps/go-api/internal/htmlcompat/testdata/**",
+    "apps/web/app/routeTree.gen.ts"
   ],
   "sortTailwindcss": {
     "stylesheet": "packages/tailwind-config/index.css",

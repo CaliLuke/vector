@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { TDisplayConfig } from "@plane/editor";
 import type { JSONContent, TPageVersion } from "@plane/types";
@@ -28,7 +29,7 @@ export type TVersionEditorProps = {
 export const PagesVersionEditor = observer(function PagesVersionEditor(props: TVersionEditorProps) {
   const { activeVersion, versionDetails } = props;
   // params
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { getWorkspaceBySlug } = useWorkspace();
   // derived values

@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
 // types
+import { Link } from "@tanstack/react-router";
 import type { TPageNavigationTabs } from "@plane/types";
 // helpers
 import { cn } from "@plane/utils";
@@ -44,7 +44,9 @@ export function PageTabNavigation(props: TPageTabNavigation) {
       {pageTabs.map((tab) => (
         <Link
           key={tab.key}
-          href={`/${workspaceSlug}/projects/${projectId}/pages?type=${tab.key}`}
+          to="/$workspaceSlug/projects/$projectId/pages"
+          params={{ workspaceSlug, projectId }}
+          search={{ type: tab.key }}
           onClick={(e) => handleTabClick(e, tab.key)}
           className="flex h-full flex-col"
         >

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
@@ -27,7 +28,8 @@ type Props = {
 
 export const ProfileIssuesPage = observer(function ProfileIssuesPage(props: Props) {
   const { type } = props;
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
   // store hooks
   const {
     issues: { setViewId },

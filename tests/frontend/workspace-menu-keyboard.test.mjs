@@ -1,17 +1,14 @@
+import { createRouterFixture, routerApi } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { act, createReactDomTestEnvironment, React, webRequire } from "./helpers/react-dom.mjs";
+import { act, createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 const primitives = new URL("./helpers/workspace-ui-test-primitives.mjs", import.meta.url).href;
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === "next/link" || specifier === "next/navigation") {
-      const file = specifier === "next/link" ? "link.tsx" : "navigation.ts";
-      return nextResolve(new URL(`../../apps/web/app/compat/next/${file}`, import.meta.url).href, context);
-    }
     if (
       ["mobx-react", "@plane/constants", "@plane/i18n", "@plane/propel/icons", "@plane/utils", "lucide-react"].includes(
         specifier
@@ -23,7 +20,7 @@ registerHooks({
   },
 });
 
-const { MemoryRouter, useLocation } = webRequire("react-router");
+const { useLocation } = routerApi;
 
 function CurrentLocation() {
   const { pathname } = useLocation();
@@ -38,10 +35,12 @@ test("workspace menu keyboard selection navigates through the real link", async 
     await import("../../apps/web/core/components/workspace/sidebar/dropdown-item.tsx");
   let selectedWorkspace;
   const workspace = { id: "other", slug: "other", name: "Other", role: "MEMBER" };
-  await environment.render(
+  const fixture = createRouterFixture("/default/");
+  await fixture.render(
+    environment,
     React.createElement(
-      MemoryRouter,
-      { initialEntries: ["/default/"] },
+      React.Fragment,
+      null,
       React.createElement(CurrentLocation),
       React.createElement(
         Menu,

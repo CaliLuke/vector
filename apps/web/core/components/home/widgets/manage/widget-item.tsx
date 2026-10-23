@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
+import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import React, { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -13,7 +15,7 @@ import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { createRoot } from "react-dom/client";
 // plane types
 import { useTranslation } from "@plane/i18n";
@@ -26,7 +28,7 @@ import { cn } from "@plane/utils";
 import { useHome } from "@/hooks/store/use-home";
 import { HOME_WIDGETS_LIST } from "../../home-dashboard-widgets";
 import { WidgetItemDragHandle } from "./widget-item-drag-handle";
-import { getCanDrop, getInstructionFromPayload } from "./widget.helpers";
+import { getCanDrop } from "./widget.helpers";
 
 type Props = {
   widgetId: string;
@@ -38,7 +40,7 @@ type Props = {
 export const WidgetItem = observer(function WidgetItem(props: Props) {
   // props
   const { widgetId, isLastChild, handleDrop, handleToggle } = props;
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   //state
   const [isDragging, setIsDragging] = useState(false);
   const [instruction, setInstruction] = useState<InstructionType | undefined>(undefined);
@@ -56,7 +58,7 @@ export const WidgetItem = observer(function WidgetItem(props: Props) {
     const element = elementRef.current;
 
     if (!element) return;
-    const initialData = { id: widget.key, isGroup: false };
+    const initialData = { id: widget.key, parentId: null, isGroup: false, isChild: false };
     return combine(
       draggable({
         element,

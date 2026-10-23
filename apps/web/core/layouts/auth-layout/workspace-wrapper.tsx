@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // ui
 import { LogOut } from "lucide-react";
@@ -49,7 +49,7 @@ interface IWorkspaceAuthWrapper {
 export const WorkspaceAuthWrapper = observer(function WorkspaceAuthWrapper(props: IWorkspaceAuthWrapper) {
   const { children, isLoading: isParentLoading = false } = props;
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
   // store hooks
   const { signOut, data: currentUser } = useUser();
   const { fetchPartialProjects } = useProject();
@@ -179,17 +179,21 @@ export const WorkspaceAuthWrapper = observer(function WorkspaceAuthWrapper(props
             </p>
             <div className="flex items-center justify-center gap-2 pt-4">
               {allWorkspaces && allWorkspaces.length > 0 && (
-                <Link href="/" className={cn(getButtonStyling("primary", "base"))}>
+                <Link to="/" className={cn(getButtonStyling("primary", "base"))}>
                   Go Home
                 </Link>
               )}
               {allWorkspaces?.length > 0 && (
-                <Link href="/settings/profile/general/" className={cn(getButtonStyling("secondary", "base"))}>
+                <Link
+                  to="/settings/profile/$profileTabId/"
+                  params={{ profileTabId: "general" }}
+                  className={cn(getButtonStyling("secondary", "base"))}
+                >
                   Visit Profile
                 </Link>
               )}
               {allWorkspaces && allWorkspaces.length === 0 && (
-                <Link href="/create-workspace/" className={cn(getButtonStyling("secondary", "base"))}>
+                <Link to="/create-workspace/" className={cn(getButtonStyling("secondary", "base"))}>
                   Create new workspace
                 </Link>
               )}
@@ -216,12 +220,12 @@ export const WorkspaceAuthWrapper = observer(function WorkspaceAuthWrapper(props
               </p>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <Link href="/invitations">
+              <Link to="/invitations/">
                 <span>
                   <Button variant="secondary">Check pending invites</Button>
                 </span>
               </Link>
-              <Link href="/create-workspace">
+              <Link to="/create-workspace/">
                 <span>
                   <Button variant="primary">Create new workspace</Button>
                 </span>

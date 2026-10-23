@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 // hooks
@@ -16,7 +17,8 @@ import { BaseKanBanRoot } from "../base-kanban-root";
 
 export const ProfileIssuesKanBanLayout = observer(function ProfileIssuesKanBanLayout() {
   // router
-  const { workspaceSlug, profileViewId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { profileViewId } = useParams({ strict: false });
   const { allowPermissions } = useUserPermissions();
 
   const canEditPropertiesBasedOnProject = (projectId: string) =>

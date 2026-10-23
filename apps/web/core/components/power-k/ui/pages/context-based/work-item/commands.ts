@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from "react";
-import { useParams } from "next/navigation";
+
 import {
   Bell,
   BellOff,
@@ -34,10 +34,11 @@ import { useCommandPalette } from "@/hooks/store/use-command-palette";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useProject } from "@/hooks/store/use-project";
 import { useUser } from "@/hooks/store/user";
+import { useParams } from "@tanstack/react-router";
 
 export const usePowerKWorkItemContextBasedCommands = (): TPowerKCommandConfig[] => {
   // params
-  const { workspaceSlug, workItem: entityIdentifier } = useParams();
+  const { workspaceSlug, workItem: entityIdentifier } = useParams({ strict: false });
   // store
   const {
     data: currentUser,

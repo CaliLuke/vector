@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // components
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { EIssuesStoreType } from "@plane/types";
@@ -19,7 +20,7 @@ import { CycleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseKanBanRoot } from "../base-kanban-root";
 
 export const CycleKanBanLayout = observer(function CycleKanBanLayout() {
-  const { workspaceSlug, projectId, cycleId } = useParams();
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
 
   // store
   const { issues } = useIssues(EIssuesStoreType.CYCLE);

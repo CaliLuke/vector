@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import React from "react";
-import { Link } from "react-router";
+
 import { MoreHorizontal, Pin } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";

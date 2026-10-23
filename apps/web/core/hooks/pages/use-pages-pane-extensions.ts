@@ -6,18 +6,19 @@
 
 import { useCallback, useMemo } from "react";
 import type { RefObject } from "react";
-import { useSearchParams } from "next/navigation";
+
 import type { EditorRefApi } from "@plane/editor";
 import {
   PAGE_NAVIGATION_PANE_TAB_KEYS,
   PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM,
   PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM,
 } from "@/components/pages/navigation-pane";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useQueryParams } from "@/hooks/use-query-params";
 import type { TPageNavigationPaneTab } from "@/components/pages/navigation-pane/tab-panels";
 import type { INavigationPaneExtension } from "@/components/pages/navigation-pane";
 import type { TPageInstance } from "@/store/pages/base-page";
+import { useLocation, useRouter } from "@tanstack/react-router";
 
 export type TPageExtensionHookParams = {
   page: TPageInstance;
@@ -25,9 +26,9 @@ export type TPageExtensionHookParams = {
 };
 
 export const usePagesPaneExtensions = (_params: TPageExtensionHookParams) => {
-  const router = useAppRouter();
+  const router = useRouter();
   const { updateQueryParams } = useQueryParams();
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
 
   // Generic navigation pane logic - hook manages feature-specific routing
   const navigationPaneQueryParam = searchParams.get(
@@ -41,7 +42,7 @@ export const usePagesPaneExtensions = (_params: TPageExtensionHookParams) => {
     const updatedRoute = updateQueryParams({
       paramsToAdd: { [PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM]: "outline" },
     });
-    router.push(updatedRoute);
+    void router.navigate({ href: updatedRoute });
   }, [router, updateQueryParams]);
 
   const editorExtensionHandlers: Map<string, unknown> = useMemo(() => {
@@ -55,7 +56,7 @@ export const usePagesPaneExtensions = (_params: TPageExtensionHookParams) => {
     const updatedRoute = updateQueryParams({
       paramsToRemove: [PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM, PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM],
     });
-    router.push(updatedRoute);
+    void router.navigate({ href: updatedRoute });
   }, [router, updateQueryParams]);
 
   return {

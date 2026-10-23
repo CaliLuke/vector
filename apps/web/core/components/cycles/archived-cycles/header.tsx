@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { ListFilter } from "lucide-react";
 import { useOutsideClickDetector } from "@plane/hooks";
@@ -25,7 +26,7 @@ import { CycleFiltersSelection } from "../dropdowns";
 
 export const ArchivedCyclesHeader = observer(function ArchivedCyclesHeader() {
   // router
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   // refs
   const inputRef = useRef<HTMLInputElement>(null);
   // hooks

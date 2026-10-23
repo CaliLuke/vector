@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 import { MoreHorizontal } from "lucide-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { IconButton } from "@plane/propel/icon-button";
@@ -21,7 +22,6 @@ import { ArchiveModuleModal, CreateUpdateModuleModal, DeleteModuleModal } from "
 // hooks
 import { useModule } from "@/hooks/store/use-module";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   parentRef: React.RefObject<HTMLDivElement | null>;
@@ -34,8 +34,9 @@ type Props = {
 export const ModuleQuickActions = observer(function ModuleQuickActions(props: Props) {
   const { parentRef, moduleId, projectId, workspaceSlug, customClassName } = props;
   // router
-  const router = useAppRouter();
-  const { moduleId: routeModuleId, peekModule } = useParams();
+  const router = useRouter();
+  const { moduleId: routeModuleId } = useParams({ strict: false });
+  const peekModule = new URLSearchParams(useLocation({ select: (location) => location.searchStr })).get("peekModule");
   // states
   const [editModal, setEditModal] = useState(false);
   const [archiveModuleModal, setArchiveModuleModal] = useState(false);
@@ -75,7 +76,7 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
         title: "Restore success",
         message: "Your module can be found in project modules.",
       });
-      router.push(`/${workspaceSlug}/projects/${projectId}/archives/modules`);
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/archives/modules` });
     } catch (_error) {
       setToast({
         type: TOAST_TYPE.ERROR,
@@ -138,7 +139,7 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
             onClose={() => setDeleteModal(false)}
             onDeleteSuccess={(deletedModule) => {
               if (routeModuleId || peekModule) {
-                router.push(`/${workspaceSlug}/projects/${deletedModule.project_id}/modules`);
+                void router.navigate({ href: `/${workspaceSlug}/projects/${deletedModule.project_id}/modules` });
               }
             }}
           />

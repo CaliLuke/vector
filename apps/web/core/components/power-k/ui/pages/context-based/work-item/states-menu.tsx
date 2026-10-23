@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { Command } from "cmdk";
 import { observer } from "mobx-react";
 // plane types
-import { useParams } from "next/navigation";
+
 import type { TIssue } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // hooks
@@ -23,7 +24,7 @@ type Props = {
 export const PowerKProjectStatesMenu = observer(function PowerKProjectStatesMenu(props: Props) {
   const { workItemDetails } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getProjectStateIds, getStateById } = useProjectState();
   // derived values

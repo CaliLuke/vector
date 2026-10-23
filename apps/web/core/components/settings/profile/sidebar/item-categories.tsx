@@ -4,11 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Bell, CircleUser, KeyRound, LockIcon, Settings2 } from "lucide-react";
 import { observer } from "mobx-react";
-import { useParams } from "react-router";
+
 // plane imports
 import {
   GROUPED_PROFILE_SETTINGS,
@@ -40,7 +41,7 @@ export const ProfileSettingsSidebarItemCategories = observer(function ProfileSet
 ) {
   const { activeTab, updateActiveTab } = props;
   // params
-  const { profileTabId } = useParams();
+  const { profileTabId } = useParams({ strict: false });
   // translation
   const { t } = useTranslation();
 

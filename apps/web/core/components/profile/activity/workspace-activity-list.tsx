@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // services
 import { USER_PROFILE_ACTIVITY } from "@plane/constants";
@@ -27,7 +28,7 @@ type Props = {
 export function WorkspaceActivityListPage(props: Props) {
   const { cursor, perPage, updateResultsCount, updateTotalPages } = props;
   // router
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug, userId } = useParams({ strict: false });
 
   const { data: userProfileActivity } = useSWR(
     workspaceSlug && userId

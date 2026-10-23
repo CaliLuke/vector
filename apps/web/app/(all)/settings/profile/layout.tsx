@@ -4,13 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
 // components
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ProjectsAppPowerKProvider } from "@/components/power-k/projects-app-provider";
 // lib
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-export default function ProfileSettingsLayout() {
+function ProfileSettingsLayout(): React.JSX.Element | null {
   return (
     <>
       <ProjectsAppPowerKProvider />
@@ -26,3 +26,7 @@ export default function ProfileSettingsLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/settings/profile/$profileTabId")({
+  component: ProfileSettingsLayout,
+});

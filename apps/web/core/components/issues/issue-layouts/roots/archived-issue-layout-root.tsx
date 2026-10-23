@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
@@ -23,9 +24,7 @@ import { ArchivedIssueListLayout } from "../list/roots/archived-issue-root";
 
 export const ArchivedIssueLayoutRoot = observer(function ArchivedIssueLayoutRoot() {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // hooks
   const { issuesFilter } = useIssues(EIssuesStoreType.ARCHIVED);
   // derived values

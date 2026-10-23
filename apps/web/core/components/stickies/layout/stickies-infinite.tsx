@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 import { STICKIES_PER_PAGE } from "@plane/constants";
 import { ContentWrapper, Loader } from "@plane/ui";
@@ -16,7 +17,7 @@ import { useSticky } from "@/hooks/use-stickies";
 import { StickiesLayout } from "./stickies-list";
 
 export const StickiesInfinite = observer(function StickiesInfinite() {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { fetchWorkspaceStickies, fetchNextWorkspaceStickies, getWorkspaceStickyIds, loader, paginationInfo } =
     useSticky();

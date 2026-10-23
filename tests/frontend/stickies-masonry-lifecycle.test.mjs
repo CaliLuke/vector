@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -30,7 +31,7 @@ const modules = {
     destroy() { this.calls.destroy++; }
   }`,
   "mobx-react": "export const observer = component => component;",
-  "next/navigation": 'export const usePathname = () => "/workspace/stickies";',
+
   "next-themes": 'export const useTheme = () => ({ resolvedTheme: "light" });',
   "@plane/constants": "export const EUserPermissionsLevel = { WORKSPACE: 'workspace' };",
   "@plane/i18n": "export const useTranslation = () => ({ t: key => key });",
@@ -85,7 +86,10 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
   lifecycle.instances.length = 0;
   const cancelledEnvironment = await createReactDomTestEnvironment();
   t.after(() => cancelledEnvironment.unmount());
-  await cancelledEnvironment.render(React.createElement(StickiesList, props(["pending"])));
+  await createRouterFixture("/workspace/stickies/").render(
+    cancelledEnvironment,
+    React.createElement(StickiesList, props(["pending"]))
+  );
   await lifecycle.importReady;
   await cancelledEnvironment.unmount();
   lifecycle.resolveImport();
@@ -93,9 +97,10 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
   assert.equal(lifecycle.instances.length, 0);
 
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/stickies/");
   t.after(() => environment.unmount());
 
-  await environment.render(React.createElement(StickiesList, props(["one", "two"])));
+  await routerFixture.render(environment, React.createElement(StickiesList, props(["one", "two"])));
   await settleEffects();
   const [masonry] = lifecycle.instances;
   assert.ok(masonry);
@@ -106,13 +111,13 @@ test("sticky masonry cancels pending imports and reloads changed cards until rem
   await environment.resize(firstItem);
   assert.equal(masonry.calls.layout, 1);
 
-  await environment.render(React.createElement(StickiesList, props(["one", "two", "three"], 700)));
+  await routerFixture.render(environment, React.createElement(StickiesList, props(["one", "two", "three"], 700)));
   assert.equal(environment.container.querySelectorAll(".sticky-masonry-item").length, 3);
   assert.ok(masonry.calls.reloadItems >= 1);
   assert.ok(masonry.calls.layout >= 2);
 
   const layoutCallsBeforeRemoval = masonry.calls.layout;
-  await environment.render(React.createElement(StickiesList, props([], 700)));
+  await routerFixture.render(environment, React.createElement(StickiesList, props([], 700)));
   assert.equal(masonry.calls.destroy, 1);
   await environment.resize(firstItem);
   assert.equal(masonry.calls.layout, layoutCallsBeforeRemoval);

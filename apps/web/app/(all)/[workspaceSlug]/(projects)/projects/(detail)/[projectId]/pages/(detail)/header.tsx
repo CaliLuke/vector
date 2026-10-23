@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { PageIcon } from "@plane/propel/icons";
 import type { ICustomSearchSelectOption } from "@plane/types";
@@ -20,7 +21,7 @@ import { PageSyncingBadge } from "@/components/pages/header/syncing-badge";
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { EPageStoreType, usePage, usePageStore } from "@/hooks/store";
 
 export interface IPagesHeaderProps {
@@ -31,8 +32,10 @@ const storeType = EPageStoreType.PROJECT;
 
 export const PageDetailsHeader = observer(function PageDetailsHeader() {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, pageId, projectId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, pageId, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/$pageId",
+  });
   // store hooks
   const { loader } = useProject();
   const { getPageById, getCurrentProjectPageIds } = usePageStore(storeType);
@@ -84,7 +87,7 @@ export const PageDetailsHeader = observer(function PageDetailsHeader() {
                   selectedItem={pageId?.toString() ?? ""}
                   navigationItems={switcherOptions}
                   onChange={(value: string) => {
-                    router.push(`/${workspaceSlug}/projects/${projectId}/pages/${value}`);
+                    void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${value}` });
                   }}
                   title={getPageName(page?.name)}
                   icon={

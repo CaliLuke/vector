@@ -3,16 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { redirect } from "react-router";
-import type { Route } from "./+types/profile-settings";
-
-export const clientLoader = ({ params, request }: Route.ClientLoaderArgs) => {
-  const searchParams = new URL(request.url).searchParams;
-  const splat = params["*"] || "";
-  throw redirect(`/settings/profile/${splat || "general"}?${searchParams.toString()}`);
-};
-
-export default function ProfileSettings() {
-  return null;
-}
+export const Route = createFileRoute("/profile/$")({
+  beforeLoad: ({ params, location }) => {
+    const { _splat: splat } = params;
+    throw redirect({
+      href: `/settings/profile/${splat || "general"}${location.searchStr}${location.hash ? `#${location.hash}` : ""}`,
+      replace: true,
+    });
+  },
+});

@@ -4,11 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { Outlet } from "react-router";
 
-function AutomationsListLayout() {
+function AutomationsListLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
 
-export default observer(AutomationsListLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/automations")({
+  component: observer(AutomationsListLayout),
+});

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { observer } from "mobx-react";
 // plane imports
@@ -14,12 +15,12 @@ import { IconButton } from "@plane/propel/icon-button";
 import { WorkspaceLogo } from "@/components/workspace/logo";
 // hooks
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useWorkspace } from "@/hooks/store/use-workspace";
 
 export const WorkspaceSettingsSidebarHeader = observer(function WorkspaceSettingsSidebarHeader() {
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { getWorkspaceRoleByWorkspaceSlug } = useUserPermissions();
   const { currentWorkspace } = useWorkspace();
@@ -39,7 +40,7 @@ export const WorkspaceSettingsSidebarHeader = observer(function WorkspaceSetting
           variant="ghost"
           size="base"
           icon={ArrowLeft}
-          onClick={() => router.push(`/${currentWorkspace?.slug}/`)}
+          onClick={() => void router.navigate({ href: `/${currentWorkspace?.slug}/` })}
         />
         <p>Workspace settings</p>
       </div>

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -18,7 +19,7 @@ import { GlobalViewsList } from "@/components/workspace/views/views-list";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
 
-function WorkspaceViewsPage() {
+function WorkspaceViewsPage(): React.JSX.Element | null {
   const [query, setQuery] = useState("");
   // store
   const { currentWorkspace } = useWorkspace();
@@ -53,4 +54,6 @@ function WorkspaceViewsPage() {
   );
 }
 
-export default observer(WorkspaceViewsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/workspace-views/")({
+  component: observer(WorkspaceViewsPage),
+});

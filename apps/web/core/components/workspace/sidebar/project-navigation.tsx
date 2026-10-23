@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation } from "@tanstack/react-router";
 import React, { useCallback, useMemo } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+
 import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
@@ -40,7 +40,7 @@ type TProjectItemsProps = {
 
 export const ProjectNavigation = observer(function ProjectNavigation(props: TProjectItemsProps) {
   const { workspaceSlug, projectId, additionalNavigationItems } = props;
-  const { workItem: workItemIdentifierFromRoute } = useParams();
+  const { workItem: workItemIdentifierFromRoute } = useParams({ strict: false });
   // store hooks
   const { t } = useTranslation();
   const { isExtendedProjectSidebarOpened, toggleExtendedProjectSidebar, toggleSidebar } = useAppTheme();
@@ -50,7 +50,7 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
     issue: { getIssueIdByIdentifier, getIssueById },
   } = useIssueDetail();
   // pathname
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // derived values
   const workItemId = workItemIdentifierFromRoute
     ? getIssueIdByIdentifier(workItemIdentifierFromRoute?.toString())
@@ -184,7 +184,7 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
         const shouldShowCount = item.key === "intake" && (project.intake_count ?? 0) > 0;
 
         return (
-          <Link key={item.key} href={item.href} onClick={handleProjectClick}>
+          <Link key={item.key} to={item.href} onClick={handleProjectClick}>
             <SidebarNavItem isActive={!!isActive(item)}>
               <div className="flex w-full items-center justify-between gap-1.5 py-[1px]">
                 <div className="flex items-center gap-1.5">

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { PageHead } from "@/components/core/page-title";
@@ -11,11 +12,10 @@ import { ArchivedCycleLayoutRoot } from "@/components/cycles/archived-cycles";
 import { ArchivedCyclesHeader } from "@/components/cycles/archived-cycles/header";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import type { Route } from "./+types/page";
 
-function ProjectArchivedCyclesPage({ params }: Route.ComponentProps) {
+function ProjectArchivedCyclesPage(): React.JSX.Element | null {
   // router
-  const { projectId } = params;
+  const { projectId } = Route.useParams();
   // store hooks
   const { getProjectById } = useProject();
   // derived values
@@ -33,4 +33,6 @@ function ProjectArchivedCyclesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectArchivedCyclesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/cycles/")({
+  component: observer(ProjectArchivedCyclesPage),
+});

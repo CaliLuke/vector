@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import {
   StatePropertyIcon,
@@ -27,7 +28,6 @@ import type { TIssueOperations } from "@/components/issues/issue-detail";
 import { IssueLabel } from "@/components/issues/issue-detail/label";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   workspaceSlug: string;
@@ -43,7 +43,7 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
   const { workspaceSlug, projectId, issue, issueOperations, isEditable, duplicateIssueDetails, isIntakeAccepted } =
     props;
 
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { currentProjectDetails } = useProject();
 
@@ -195,7 +195,7 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 <ControlLink
                   href={duplicateWorkItemLink}
                   onClick={() => {
-                    router.push(duplicateWorkItemLink);
+                    void router.navigate({ href: duplicateWorkItemLink });
                   }}
                   target="_self"
                 >

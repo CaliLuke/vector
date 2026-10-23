@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // hooks
 import { useModule } from "@/hooks/store/use-module";
 // types
@@ -39,7 +40,7 @@ type TModuleDropdownProps = TDropdownProps & {
 export const ModuleDropdown = observer(function ModuleDropdown(props: TModuleDropdownProps) {
   const { projectId } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getModuleById, getProjectModuleIds, fetchModules } = useModule();
   // derived values

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { useTheme } from "next-themes";
 // plane imports
 import { PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
@@ -17,7 +18,7 @@ import ProjectLightEmptyState from "@/app/assets/empty-state/project-settings/no
 // hooks
 import { useCommandPalette } from "@/hooks/store/use-command-palette";
 
-function ProjectSettingsPage() {
+function ProjectSettingsPage(): React.JSX.Element | null {
   // store hooks
   const { resolvedTheme } = useTheme();
   const { toggleCreateProjectModal } = useCommandPalette();
@@ -32,13 +33,13 @@ function ProjectSettingsPage() {
         need to get things done.
       </div>
       <div className="flex gap-2">
-        <Link
+        <a
           href="https://github.com/CaliLuke/vector"
           target="_blank"
           className={cn(getButtonStyling("secondary", "base"))}
         >
           Learn more about projects
-        </Link>
+        </a>
         <Button
           onClick={() => toggleCreateProjectModal(true)}
           data-ph-element={PROJECT_TRACKER_ELEMENTS.EMPTY_STATE_CREATE_PROJECT_BUTTON}
@@ -50,4 +51,6 @@ function ProjectSettingsPage() {
   );
 }
 
-export default observer(ProjectSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/")({
+  component: observer(ProjectSettingsPage),
+});

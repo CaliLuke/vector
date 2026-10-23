@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
-import { useParams, useRouter } from "next/navigation";
+
 import { EUserPermissionsLevel, EPageAccess } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
@@ -41,7 +42,7 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   // router
   const router = useRouter();
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // derived values
   const pageIds = getCurrentProjectPageIdsByTab(pageType);
   const filteredPageIds = getCurrentProjectFilteredPageIdsByTab(pageType);
@@ -61,7 +62,7 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
     await createPage(payload)
       .then((res) => {
         const pageId = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${res?.id}`;
-        router.push(pageId);
+        void router.navigate({ href: pageId });
       })
       .catch((err) => {
         setToast({

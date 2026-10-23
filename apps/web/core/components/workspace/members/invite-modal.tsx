@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { IWorkspaceBulkInviteFormData } from "@plane/types";
@@ -31,7 +32,7 @@ export const SendWorkspaceInvitationModal = observer(function SendWorkspaceInvit
   // store hooks
   const { t } = useTranslation();
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // derived values
   const { control, fields, formState, remove, onFormSubmit, handleClose, appendField } = useWorkspaceInvitationActions({
     onSubmit,

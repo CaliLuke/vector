@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { useRouter } from "next/navigation";
+import type { RegisteredRouter } from "@tanstack/react-router";
 
 export type TPowerKContextType = "work-item" | "page" | "cycle" | "module";
 
@@ -19,7 +19,7 @@ export type TPowerKContext = {
   shouldShowContextBasedActions: boolean;
   setShouldShowContextBasedActions: (shouldShowContextBasedActions: boolean) => void;
   // Router for navigation
-  router: ReturnType<typeof useRouter>;
+  router: RegisteredRouter;
   // UI control
   closePalette: () => void;
   setActiveCommand: (command: TPowerKCommandConfig | null) => void;

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 // constants
 import type { EPageAccess } from "@plane/constants";
@@ -11,7 +12,7 @@ import type { TPage } from "@plane/types";
 // ui
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web hooks
 import type { EPageStoreType } from "@/hooks/store";
 import { usePageStore } from "@/hooks/store";
@@ -45,7 +46,7 @@ export function CreatePageModal(props: Props) {
     logo_props: undefined,
   });
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { createPage } = usePageStore(storeType);
   const handlePageFormData = <T extends keyof TPage>(key: T, value: TPage[T]) =>
@@ -68,7 +69,8 @@ export function CreatePageModal(props: Props) {
       const pageData = await createPage(pageFormData);
       if (pageData) {
         handleStateClear();
-        if (redirectionEnabled) router.push(`/${workspaceSlug}/projects/${projectId}/pages/${pageData.id}`);
+        if (redirectionEnabled)
+          void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${pageData.id}` });
       }
     } catch (error) {
       console.error(error);

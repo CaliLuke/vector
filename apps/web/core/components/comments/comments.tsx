@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { E_SORT_ORDER } from "@plane/constants";
 import type { TCommentsOperations, TIssueComment } from "@plane/types";
@@ -40,8 +41,7 @@ export const CommentsWrapper = observer(function CommentsWrapper(props: TComment
     enableReplies = false,
   } = props;
   // router
-  const { workspaceSlug: routerWorkspaceSlug } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const renderCommentCreate = useMemo(
     () =>
       isEditingAllowed && (

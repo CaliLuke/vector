@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Placement } from "@popperjs/core";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { createPortal } from "react-dom";
 import { usePopper } from "react-popper";
 import { Combobox } from "@headlessui/react";
@@ -47,7 +48,7 @@ export const MemberOptions = observer(function MemberOptions(props: Props) {
     value,
   } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // refs
   const inputRef = useRef<HTMLInputElement | null>(null);
   // states

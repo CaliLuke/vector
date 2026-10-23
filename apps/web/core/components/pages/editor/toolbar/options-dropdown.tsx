@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { ArrowUpToLine, Clipboard, History } from "lucide-react";
 // plane imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePageFilters } from "@/hooks/use-page-filters";
 import { useQueryParams } from "@/hooks/use-query-params";
 // plane web imports
@@ -33,7 +34,7 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
   // states
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   // navigation
-  const router = useAppRouter();
+  const router = useRouter();
   // store values
   const {
     name,
@@ -119,7 +120,7 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
                 [PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM]: "info" satisfies TPageNavigationPaneTab,
               },
             });
-            router.push(updatedRoute);
+            void router.navigate({ href: updatedRoute });
           },
           title: "Version history",
           icon: History,

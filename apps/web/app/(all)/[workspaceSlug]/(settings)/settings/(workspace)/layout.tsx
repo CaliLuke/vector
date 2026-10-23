@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
-import { Outlet } from "react-router";
+
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { getWorkspaceActivePath, pathnameToAccessKey } from "@/components/settings/helper";
@@ -19,15 +19,13 @@ import { WorkspaceSettingsSidebarRoot } from "@/components/settings/workspace/si
 // hooks
 import { useUserPermissions } from "@/hooks/store/user";
 
-import type { Route } from "./+types/layout";
-
-const WorkspaceSettingLayout = observer(function WorkspaceSettingLayout({ params }: Route.ComponentProps) {
+const WorkspaceSettingLayout = observer(function WorkspaceSettingLayout(): React.JSX.Element | null {
   // router
-  const { workspaceSlug } = params;
+  const { workspaceSlug } = Route.useParams();
   // store hooks
   const { workspaceUserInfo, getWorkspaceRoleByWorkspaceSlug } = useUserPermissions();
   // next hooks
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // derived values
   const { accessKey } = pathnameToAccessKey(pathname);
   const userWorkspaceRole = getWorkspaceRoleByWorkspaceSlug(workspaceSlug);
@@ -59,4 +57,6 @@ const WorkspaceSettingLayout = observer(function WorkspaceSettingLayout({ params
   );
 });
 
-export default WorkspaceSettingLayout;
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace")({
+  component: WorkspaceSettingLayout,
+});

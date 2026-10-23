@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
 
 // plane ui
 import { RecentStickyIcon, PlusIcon, CloseIcon } from "@plane/propel/icons";
@@ -23,7 +23,7 @@ type TProps = {
 export const Stickies = observer(function Stickies(props: TProps) {
   const { handleClose } = props;
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { creatingSticky, toggleShowNewSticky } = useSticky();
   // sticky operations

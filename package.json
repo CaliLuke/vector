@@ -34,6 +34,7 @@
     "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo run dev --concurrency=18"
   },
   "devDependencies": {
+    "@tanstack/react-router": "catalog:",
     "@typescript/native": "catalog:",
     "husky": "catalog:",
     "jscpd": "catalog:",
@@ -43,6 +44,7 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "react-doctor": "0.9.18",
+    "swr": "catalog:",
     "turbo": "catalog:"
   },
   "engines": {

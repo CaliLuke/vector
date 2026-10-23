@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { ChartNoAxesColumn, PanelRight, SlidersHorizontal } from "lucide-react";
 // plane imports
@@ -42,7 +43,7 @@ import { useIssues } from "@/hooks/store/use-issues";
 import { useModule } from "@/hooks/store/use-module";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 import useLocalStorage from "@/hooks/use-local-storage";
 import { usePlatformOS } from "@/hooks/use-platform-os";
@@ -56,9 +57,10 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
   // states
   const [analyticsModal, setAnalyticsModal] = useState(false);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, moduleId: routerModuleId } = useParams();
-  const moduleId = routerModuleId ? routerModuleId.toString() : undefined;
+  const router = useRouter();
+  const { workspaceSlug, projectId, moduleId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/modules/$moduleId",
+  });
   // hooks
   const { isMobile } = usePlatformOS();
   // store hooks
@@ -134,7 +136,7 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
       <Header>
         <Header.LeftItem>
           <div className="flex items-center gap-2">
-            <Breadcrumbs onBack={router.back} isLoading={loader === "init-loader"}>
+            <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
               <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
               <Breadcrumbs.Item
                 component={
@@ -153,7 +155,7 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
                     selectedItem={moduleId?.toString() ?? ""}
                     navigationItems={switcherOptions}
                     onChange={(value: string) => {
-                      router.push(`/${workspaceSlug}/projects/${projectId}/modules/${value}`);
+                      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/modules/${value}` });
                     }}
                     title={moduleDetails?.name}
                     icon={<ModuleIcon className="size-3.5 flex-shrink-0 text-tertiary" />}

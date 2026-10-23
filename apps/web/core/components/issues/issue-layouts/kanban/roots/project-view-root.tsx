@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // hooks
 // constant
 // types
@@ -15,7 +16,7 @@ import { ProjectIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseKanBanRoot } from "../base-kanban-root";
 
 export const ProjectViewKanBanLayout = observer(function ProjectViewKanBanLayout() {
-  const { viewId } = useParams();
+  const { viewId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId" });
 
   return <BaseKanBanRoot QuickActions={ProjectIssueQuickActions} viewId={viewId.toString()} />;
 });

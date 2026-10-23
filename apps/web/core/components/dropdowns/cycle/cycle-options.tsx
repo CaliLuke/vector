@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { Placement } from "@popperjs/core";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { usePopper } from "react-popper";
 // components
 import { Combobox } from "@headlessui/react";
@@ -48,7 +49,7 @@ export const CycleOptions = observer(function CycleOptions(props: CycleOptionsPr
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   // store hooks
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { getProjectCycleIds, fetchAllCycles, getCycleById } = useCycle();
   const { isMobile } = usePlatformOS();
 

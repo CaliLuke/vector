@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { EIssuesStoreType } from "@plane/types";
 // hooks
 import { useCycle } from "@/hooks/store/use-cycle";
@@ -17,7 +18,7 @@ import { BaseCalendarRoot } from "../base-calendar-root";
 
 export const CycleCalendarLayout = observer(function CycleCalendarLayout() {
   const { currentProjectCompletedCycleIds } = useCycle();
-  const { workspaceSlug, projectId, cycleId } = useParams();
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
 
   const {
     issues: { addIssueToCycle },

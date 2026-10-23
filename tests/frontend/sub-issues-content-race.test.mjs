@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { createRequire, registerHooks } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,8 +20,6 @@ const reactModuleUrls = new Map(
 registerWebModuleHooks({ stubStoreContext: true });
 
 const packageStubs = {
-  "next/navigation":
-    "export const useParams = () => ({ workspaceSlug: 'default' }); export const useRouter = () => ({ push() {}, replace() {} });",
   "mobx-react": "export const observer = globalThis.__subIssuesContentObserver;",
   mobx: "export const action = globalThis.__subIssuesContentMobx.action; export const computed = globalThis.__subIssuesContentMobx.computed; export const makeObservable = globalThis.__subIssuesContentMobx.makeObservable; export const observable = globalThis.__subIssuesContentMobx.observable; export const runInAction = globalThis.__subIssuesContentMobx.runInAction;",
   "mobx-utils": "export const computedFn = globalThis.__subIssuesContentMobxUtils.computedFn;",
@@ -102,10 +101,12 @@ const { IssueSubIssuesStore } = await import("../../apps/web/core/store/issue/is
 
 test("spreadsheet header icons keep selection props off SVG elements", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/default/");
   t.after(() => environment.unmount());
   const { SpreadSheetPropertyIcon, SpreadSheetPropertyIconMap } =
     await import("../../apps/web/core/components/issues/issue-layouts/utils.tsx");
   const iconKeys = Object.keys(SpreadSheetPropertyIconMap);
+  await routerFixture.router.load();
   await environment.render(
     React.createElement(
       React.Fragment,
@@ -182,6 +183,7 @@ function makeIssueDetail() {
 
 test("duplicate StrictMode sub-item fetch completions keep the rendered child list visible", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/default/");
   t.after(() => environment.unmount());
   const { issueSubIssuesStore, storeValue } = makeIssueDetail();
   globalThis.__subIssuesContentStore = storeValue;
@@ -192,19 +194,24 @@ test("duplicate StrictMode sub-item fetch completions keep the rendered child li
   issueSubIssuesStore.issueService = {
     subIssues: () => requests[requestIndex++].promise,
   };
+  await routerFixture.router.load();
   await environment.render(
     React.createElement(
       React.StrictMode,
       null,
       React.createElement(
-        StoreContext.Provider,
-        { value: storeValue },
-        React.createElement(SubIssuesCollapsibleContent, {
-          workspaceSlug: "default",
-          projectId: "project-id",
-          parentIssueId: "parent-id",
-          disabled: false,
-        })
+        routerFixture.Provider,
+        null,
+        React.createElement(
+          StoreContext.Provider,
+          { value: storeValue },
+          React.createElement(SubIssuesCollapsibleContent, {
+            workspaceSlug: "default",
+            projectId: "project-id",
+            parentIssueId: "parent-id",
+            disabled: false,
+          })
+        )
       )
     )
   );

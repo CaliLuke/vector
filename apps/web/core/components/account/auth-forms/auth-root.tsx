@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 // plane imports
 import { OAuthOptions } from "@plane/ui";
 // helpers
@@ -33,7 +34,7 @@ type TAuthRoot = {
 
 export const AuthRoot = observer(function AuthRoot(props: TAuthRoot) {
   //router
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   // query params
   const emailParam = searchParams.get("email");
   const invitation_id = searchParams.get("invitation_id");

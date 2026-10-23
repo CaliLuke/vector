@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
@@ -29,7 +30,7 @@ const RadarChart = lazy(function RadarChart() {
 const analyticsService = new AnalyticsService();
 
 const ProjectInsights = observer(function ProjectInsights() {
-  const params = useParams();
+  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { t } = useTranslation();
   const workspaceSlug = params.workspaceSlug.toString();
   const { selectedDuration, selectedDurationLabel, selectedProjects, selectedCycle, selectedModule, isPeekView } =

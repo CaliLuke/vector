@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import { ArrowRightCircle } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -46,7 +47,7 @@ export const PageNavigationPaneRoot = observer(function PageNavigationPaneRoot(p
 
   // navigation
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   // query params
   const { updateQueryParams } = useQueryParams();
   // derived values
@@ -80,7 +81,7 @@ export const PageNavigationPaneRoot = observer(function PageNavigationPaneRoot(p
         paramsToAdd: { [PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM]: updatedTab },
         paramsToRemove: !isUpdatedTabInfo ? [PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM] : undefined,
       });
-      router.push(updatedRoute);
+      void router.navigate({ href: updatedRoute });
     },
     [router, updateQueryParams]
   );

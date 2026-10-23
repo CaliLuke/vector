@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -19,12 +20,11 @@ import { SettingsHeading } from "@/components/settings/heading";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { AutomationsProjectSettingsHeader } from "./header";
 
-function AutomationSettingsPage({ params }: Route.ComponentProps) {
+function AutomationSettingsPage(): React.JSX.Element | null {
   // router
-  const { workspaceSlug, projectId } = params;
+  const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
   const { currentProjectDetails: projectDetails, updateProject } = useProject();
@@ -72,4 +72,6 @@ function AutomationSettingsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(AutomationSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/automations/")({
+  component: observer(AutomationSettingsPage),
+});

@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from "react";
-import { useParams } from "next/navigation";
+
 import { ArchiveIcon, ArchiveRestoreIcon, LockKeyhole, LockKeyholeOpen, Star, StarOff } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 // plane imports
@@ -17,10 +17,11 @@ import { copyTextToClipboard } from "@plane/utils";
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // plane web imports
 import { EPageStoreType, usePageStore } from "@/hooks/store";
+import { useParams } from "@tanstack/react-router";
 
 export const usePowerKPageContextBasedActions = (): TPowerKCommandConfig[] => {
   // navigation
-  const { pageId } = useParams();
+  const { pageId } = useParams({ strict: false });
   // store hooks
   const { getPageById } = usePageStore(EPageStoreType.PROJECT);
   // derived values

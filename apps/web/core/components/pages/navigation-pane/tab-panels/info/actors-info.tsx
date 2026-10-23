@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Avatar } from "@plane/ui";
@@ -23,7 +23,7 @@ type Props = {
 export const PageNavigationPaneInfoTabActorsInfo = observer(function PageNavigationPaneInfoTabActorsInfo(props: Props) {
   const { page } = props;
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getUserDetails } = useMember();
   // derived values
@@ -38,7 +38,12 @@ export const PageNavigationPaneInfoTabActorsInfo = observer(function PageNavigat
       <div>
         <p className="text-11 font-medium text-tertiary">{t("page_navigation_pane.tabs.info.actors_info.edited_by")}</p>
         <div className="mt-2 flex items-center justify-between gap-2 text-13 font-medium">
-          <Link href={`/${workspaceSlug?.toString()}/profile/${page.updated_by}`} className="flex items-center gap-1">
+          <Link
+            to="/$workspaceSlug/profile/$userId/"
+            params={{ workspaceSlug: workspaceSlug, userId: page.updated_by ?? "" }}
+            disabled={!page.updated_by}
+            className="flex items-center gap-1"
+          >
             <Avatar
               src={getFileURL(editorInformation?.avatar_url ?? "")}
               name={editorInformation?.display_name}
@@ -55,7 +60,12 @@ export const PageNavigationPaneInfoTabActorsInfo = observer(function PageNavigat
           {t("page_navigation_pane.tabs.info.actors_info.created_by")}
         </p>
         <div className="mt-2 flex items-center justify-between gap-2 text-13 font-medium">
-          <Link href={`/${workspaceSlug?.toString()}/profile/${page.created_by}`} className="flex items-center gap-1">
+          <Link
+            to="/$workspaceSlug/profile/$userId/"
+            params={{ workspaceSlug: workspaceSlug, userId: page.created_by ?? "" }}
+            disabled={!page.created_by}
+            className="flex items-center gap-1"
+          >
             <Avatar
               src={getFileURL(creatorInformation?.avatar_url ?? "")}
               name={creatorInformation?.display_name}

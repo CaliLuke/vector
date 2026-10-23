@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "next/navigation";
+import { useParams } from "@tanstack/react-router";
 import useSWR, { mutate } from "swr";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspaceIntegration } from "@plane/types";
@@ -38,7 +38,7 @@ const integrationDetails: { [key: string]: any } = {
 const projectService = new ProjectService();
 
 export function IntegrationCard({ integration }: Props) {
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   const { data: syncedGithubRepository } = useSWR(projectId ? PROJECT_GITHUB_REPOSITORY(projectId) : null, () =>
     workspaceSlug && projectId && integration

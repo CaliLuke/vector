@@ -392,9 +392,8 @@ func (s *oauthRedirectService) safeOAuthRedirect(ctx context.Context, baseURL, n
 	base := strings.TrimRight(baseURL, "/")
 	ordered := make([]string, 0, len(params)+1)
 	if path != "" {
-		// Django's get_safe_redirect_url appends the already-validated path
-		// directly. Keep its path delimiters unescaped in the redirect query.
-		ordered = append(ordered, "next_path="+path)
+		// Keep nested query parameters and fragments inside the destination value.
+		ordered = append(ordered, "next_path="+url.QueryEscape(path))
 	}
 	for _, key := range []string{"error_code", "error_message", "email"} {
 		if value, ok := params[key]; ok {

@@ -13,7 +13,7 @@ func TestSaveValuesPreservesOtherDjangoSessionValues(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	prepared = validator.PrepareRefresh(principal)
+	prepared = principal.PrepareRefresh()
 
 	updated, err := validator.SaveValues(context.Background(), &prepared, map[string]any{"state": "oauth-state", "host": "app.example.test"}, 3600, time.Now())
 	if err != nil {

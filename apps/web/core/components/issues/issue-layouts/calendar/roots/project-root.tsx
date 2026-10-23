@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 // hooks
@@ -16,7 +17,7 @@ import { BaseCalendarRoot } from "../base-calendar-root";
 
 export const CalendarLayout = observer(function CalendarLayout() {
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { allowPermissions } = useUserPermissions();
   // derived values

@@ -4,13 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
 // components
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { ProjectArchivedIssueDetailsHeader } from "./header";
 
-export default function ProjectArchivedIssueDetailLayout() {
+function ProjectArchivedIssueDetailLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<ProjectArchivedIssueDetailsHeader />} />
@@ -20,3 +20,9 @@ export default function ProjectArchivedIssueDetailLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute(
+  "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/$archivedIssueId"
+)({
+  component: ProjectArchivedIssueDetailLayout,
+});

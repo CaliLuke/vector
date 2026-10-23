@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
-import { Outlet } from "react-router";
+
 import useSWR from "swr";
 // components
 import { PROFILE_VIEWER_TAB, PROFILE_ADMINS_TAB, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -21,17 +21,16 @@ import { useUserPermissions } from "@/hooks/store/user";
 import useSize from "@/hooks/use-window-size";
 // local components
 import { UserService } from "@/services/user.service";
-import type { Route } from "./+types/layout";
 import { UserProfileHeader } from "./header";
 import { ProfileIssuesMobileHeader } from "./mobile-header";
 import { ProfileNavbar } from "./navbar";
 
 const userService = new UserService();
 
-function UseProfileLayout({ params }: Route.ComponentProps) {
+function UseProfileLayout(): React.JSX.Element | null {
   // router
-  const { workspaceSlug, userId } = params;
-  const pathname = usePathname();
+  const { workspaceSlug, userId } = Route.useParams();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { allowPermissions } = useUserPermissions();
   const { t } = useTranslation();
@@ -95,4 +94,6 @@ function UseProfileLayout({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(UseProfileLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/profile/$userId")({
+  component: observer(UseProfileLayout),
+});

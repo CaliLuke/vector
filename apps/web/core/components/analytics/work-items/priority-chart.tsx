@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { useTheme } from "next-themes";
 import useSWR from "swr";
 // plane package imports
@@ -46,7 +47,7 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
   const { workspaceStates } = useProjectState();
   const { resolvedTheme } = useTheme();
   // router
-  const params = useParams();
+  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
   const workspaceSlug = params.workspaceSlug.toString();
 
   const { data: priorityChartData, isLoading: priorityChartLoading } = useSWR(

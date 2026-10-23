@@ -5,8 +5,9 @@
  */
 
 "use client";
+import { useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams, usePathname } from "next/navigation";
+
 import { SettingsIcon } from "lucide-react";
 import { ContextMenu } from "@plane/propel/context-menu";
 import { CheckIcon } from "@plane/propel/icons";
@@ -21,8 +22,8 @@ import { AppSidebarItemsRoot } from "./items-root";
 
 export const AppRailRoot = observer(() => {
   // router
-  const { workspaceSlug, projectId } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const pathname = useLocation({ select: (location) => location.pathname });
   // preferences
   const { preferences, updateDisplayMode } = useAppRailPreferences();
   const { isCollapsed, toggleAppRail } = useAppRailVisibility();

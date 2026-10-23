@@ -5,8 +5,9 @@
  */
 
 // plane package imports
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 import type { IInsightField } from "@plane/constants";
 import { ANALYTICS_INSIGHTS_FIELDS } from "@plane/constants";
@@ -57,7 +58,7 @@ const TotalInsights = observer(function TotalInsights({
   analyticsType: TAnalyticsTabsBase;
   peekView?: boolean;
 }) {
-  const params = useParams();
+  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
   const workspaceSlug = params.workspaceSlug.toString();
   const { t } = useTranslation();
   const { selectedDuration, selectedProjects, selectedCycle, selectedModule, isPeekView, isEpic } = useAnalytics();

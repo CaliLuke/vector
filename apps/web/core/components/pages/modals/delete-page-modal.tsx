@@ -4,16 +4,17 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // ui
-import { useParams } from "next/navigation";
+
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore } from "@plane/ui";
 import { getPageName } from "@plane/utils";
 // constants
 // plane web hooks
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import type { EPageStoreType } from "@/hooks/store";
 import { usePageStore } from "@/hooks/store";
 // store
@@ -41,8 +42,8 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
     onClose();
   };
 
-  const router = useAppRouter();
-  const { pageId: routePageId } = useParams();
+  const router = useRouter();
+  const { pageId: routePageId } = useParams({ strict: false });
 
   const handleDelete = async () => {
     if (!pageId) return;
@@ -57,7 +58,7 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
         });
 
         if (routePageId) {
-          router.back();
+          router.history.back();
         }
       })
       .catch(() => {

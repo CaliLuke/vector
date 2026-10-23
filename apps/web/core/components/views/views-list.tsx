@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -22,7 +23,7 @@ import { useUserPermissions } from "@/hooks/store/user";
 import { ProjectViewListItem } from "./view-list-item";
 
 export const ProjectViewsList = observer(function ProjectViewsList() {
-  const { projectId } = useParams();
+  const { projectId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId" });
   // plane hooks
   const { t } = useTranslation();
   // store hooks

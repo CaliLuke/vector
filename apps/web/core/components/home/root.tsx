@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import { ContentWrapper } from "@plane/ui";
@@ -16,12 +17,12 @@ import { useUserProfile, useUser } from "@/hooks/store/user";
 import { TourRoot } from "@/components/onboarding/tour/root";
 // local imports
 import { DashboardWidgets } from "./home-dashboard-widgets";
-import { UserGreetingsView } from "./user-greetings";
+import { UserGreetingsView } from "../user/user-greetings";
 import { HomePeekOverviewsRoot } from "../issues/peek-overview/peek-overviews";
 
 export const WorkspaceHomeView = observer(function WorkspaceHomeView() {
   // store hooks
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { data: currentUser } = useUser();
   const { data: currentUserProfile, updateTourCompleted } = useUserProfile();
   const { fetchWidgets } = useHome();

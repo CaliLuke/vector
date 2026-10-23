@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import type { Params } from "react-router";
 // local imports
 import type { TPowerKContextType } from "./types";
 
-export const detectContextFromURL = (params: Params): TPowerKContextType | null => {
+export const detectContextFromURL = (params: Record<string, string | undefined>): TPowerKContextType | null => {
   if (params.workItem) return "work-item";
   if (params.cycleId) return "cycle";
   if (params.moduleId) return "module";

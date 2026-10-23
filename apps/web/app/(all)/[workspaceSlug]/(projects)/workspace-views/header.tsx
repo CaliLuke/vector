@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import {
   EIssueFilterType,
@@ -31,15 +32,14 @@ import { WorkspaceViewQuickActions } from "@/components/workspace/views/quick-ac
 // hooks
 import { useGlobalView } from "@/hooks/store/use-global-view";
 import { useIssues } from "@/hooks/store/use-issues";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 export const GlobalIssuesHeader = observer(function GlobalIssuesHeader() {
   // states
   const [createViewModal, setCreateViewModal] = useState(false);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, globalViewId: routerGlobalViewId } = useParams();
-  const globalViewId = routerGlobalViewId ? routerGlobalViewId.toString() : undefined;
+  const router = useRouter();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { globalViewId } = useParams({ strict: false });
   // store hooks
   const {
     issuesFilter: { filters, updateFilters },
@@ -119,7 +119,7 @@ export const GlobalIssuesHeader = observer(function GlobalIssuesHeader() {
                   selectedItem={globalViewId?.toString() || ""}
                   navigationItems={switcherOptions}
                   onChange={(value: string) => {
-                    router.push(`/${workspaceSlug}/workspace-views/${value}`);
+                    void router.navigate({ href: `/${workspaceSlug}/workspace-views/${value}` });
                   }}
                   title={viewDetails?.name ?? t(defaultViewDetails?.i18n_label ?? "")}
                   icon={

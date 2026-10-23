@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { isEmpty } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane constants
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE, PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
@@ -51,10 +52,7 @@ function CycleIssueLayout(props: {
 }
 
 export const CycleLayoutRoot = observer(function CycleLayoutRoot() {
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, cycleId: routerCycleId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
-  const cycleId = routerCycleId ? routerCycleId.toString() : undefined;
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
   // store hooks
   const { issuesFilter } = useIssues(EIssuesStoreType.CYCLE);
   const { getCycleById } = useCycle();

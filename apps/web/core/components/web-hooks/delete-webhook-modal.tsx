@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+
 // ui
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore } from "@plane/ui";
 // hooks
 import { useWebhook } from "@/hooks/store/use-webhook";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 interface IDeleteWebhook {
   isOpen: boolean;
@@ -23,11 +23,11 @@ export function DeleteWebhookModal(props: IDeleteWebhook) {
   // states
   const [isDeleting, setIsDeleting] = useState(false);
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { removeWebhook } = useWebhook();
 
-  const { workspaceSlug, webhookId } = useParams();
+  const { workspaceSlug, webhookId } = useParams({ strict: false });
 
   const handleClose = () => {
     onClose();
@@ -38,7 +38,7 @@ export function DeleteWebhookModal(props: IDeleteWebhook) {
     setIsDeleting(true);
     try {
       await removeWebhook(workspaceSlug.toString(), webhookId.toString());
-      router.replace(`/${workspaceSlug}/settings/webhooks/`);
+      void router.navigate({ href: `/${workspaceSlug}/settings/webhooks/`, replace: true });
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success!",

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { ViewsIcon } from "@plane/propel/icons";
 // types
@@ -28,7 +29,9 @@ export const ProjectViewListItem = observer(function ProjectViewListItem(props: 
   // refs
   const parentRef = useRef(null);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
   // store hooks
   const { isMobile } = usePlatformOS();
 

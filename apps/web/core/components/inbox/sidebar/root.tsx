@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
@@ -18,7 +19,7 @@ import { InboxSidebarLoader } from "@/components/ui/loader/layouts/project-inbox
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectInbox } from "@/hooks/store/use-project-inbox";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 // local imports
 import { FiltersRoot } from "../inbox-filter";
@@ -46,7 +47,7 @@ const tabNavigationOptions: { key: TInboxIssueCurrentTab; i18n_label: string }[]
 export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarProps) {
   const { workspaceSlug, projectId, inboxIssueId, setIsMobileSidebar } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // ref
   const containerRef = useRef<HTMLDivElement>(null);
   const [elementRef, setElementRef] = useState<HTMLDivElement | null>(null);
@@ -75,9 +76,9 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
   useEffect(() => {
     if (workspaceSlug && projectId && currentTab && filteredInboxIssueIds.length > 0) {
       if (inboxIssueId === undefined) {
-        router.push(
-          `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${filteredInboxIssueIds[0]}`
-        );
+        void router.navigate({
+          href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${filteredInboxIssueIds[0]}`,
+        });
       }
     }
   }, [currentTab, filteredInboxIssueIds, inboxIssueId, projectId, router, workspaceSlug]);
@@ -96,7 +97,9 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
               onClick={() => {
                 if (currentTab != option?.key) {
                   handleCurrentTab(workspaceSlug, projectId, option?.key);
-                  router.push(`/${workspaceSlug}/projects/${projectId}/intake?currentTab=${option?.key}`);
+                  void router.navigate({
+                    href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${option?.key}`,
+                  });
                 }
               }}
             >
@@ -154,7 +157,7 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
                     actions={[
                       {
                         label: t("project_empty_state.intake_sidebar.cta_primary"),
-                        onClick: () => router.push(`/${workspaceSlug}/projects/${projectId}/intake`),
+                        onClick: () => void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/intake` }),
                         variant: "primary",
                       },
                     ]}

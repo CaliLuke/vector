@@ -4,9 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
 // Vector imports
+import { Link, useParams } from "@tanstack/react-router";
 import type { IWebhook } from "@plane/types";
 import { ToggleSwitch } from "@plane/ui";
 // hooks
@@ -19,7 +18,7 @@ interface IWebhookListItem {
 export function WebhooksListItem(props: IWebhookListItem) {
   const { webhook } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { updateWebhook } = useWebhook();
 
@@ -31,7 +30,8 @@ export function WebhooksListItem(props: IWebhookListItem) {
   return (
     <div className="rounded-lg border border-subtle bg-layer-2 px-4 py-3">
       <Link
-        href={`/${workspaceSlug}/settings/webhooks/${webhook?.id}`}
+        to="/$workspaceSlug/settings/webhooks/$webhookId/"
+        params={{ workspaceSlug: workspaceSlug, webhookId: webhook?.id }}
         className="flex items-center justify-between gap-4"
       >
         <h5 className="truncate text-body-sm-medium">{webhook.url}</h5>

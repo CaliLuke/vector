@@ -5,10 +5,11 @@
  */
 
 // components
+import { createFileRoute } from "@tanstack/react-router";
 import { PageHead } from "@/components/core/page-title";
 import { StickiesInfinite } from "@/components/stickies/layout/stickies-infinite";
 
-export default function WorkspaceStickiesPage() {
+function WorkspaceStickiesPage(): React.JSX.Element | null {
   return (
     <>
       <PageHead title="Your stickies" />
@@ -18,3 +19,7 @@ export default function WorkspaceStickiesPage() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/stickies/")({
+  component: WorkspaceStickiesPage,
+});

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+
 // types
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -41,7 +42,7 @@ export function CreateWebhookModal(props: ICreateWebhookModal) {
   // states
   const [generatedWebhook, setGeneratedKey] = useState<IWebhook | null>(null);
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { t } = useTranslation();
 
   const handleCreateWebhook = async (formData: IWebhook, webhookEventType: TWebhookEventTypes) => {

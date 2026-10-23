@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { EIssuesStoreType, TIssue } from "@plane/types";
 // local imports
@@ -37,7 +38,7 @@ export interface IssuesModalProps {
 
 export const CreateUpdateIssueModal = observer(function CreateUpdateIssueModal(props: IssuesModalProps) {
   // router params
-  const { cycleId, moduleId } = useParams();
+  const { cycleId, moduleId } = useParams({ strict: false });
   // derived values
   const dataForPreload = {
     ...props.data,

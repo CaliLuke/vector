@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { useTranslation } from "@plane/i18n";
@@ -16,7 +17,7 @@ import { useWorkspace } from "@/hooks/store/use-workspace";
 // local components
 import { WorkspaceDashboardHeader } from "./header";
 
-function WorkspaceDashboardPage() {
+function WorkspaceDashboardPage(): React.JSX.Element | null {
   const { currentWorkspace } = useWorkspace();
   const { t } = useTranslation();
   // derived values
@@ -33,4 +34,6 @@ function WorkspaceDashboardPage() {
   );
 }
 
-export default observer(WorkspaceDashboardPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/")({
+  component: observer(WorkspaceDashboardPage),
+});

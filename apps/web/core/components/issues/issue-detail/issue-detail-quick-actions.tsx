@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -19,7 +20,7 @@ import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { WorkItemDetailQuickActions } from "../issue-layouts/quick-action-dropdowns";
@@ -39,7 +40,7 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
   const parentRef = useRef<HTMLDivElement>(null);
 
   // router
-  const router = useAppRouter();
+  const router = useRouter();
 
   // hooks
   const { data: currentUser } = useUser();
@@ -97,7 +98,7 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
         : `/${workspaceSlug}/projects/${projectId}/issues`;
 
       await deleteIssue(workspaceSlug, projectId, issueId);
-      router.push(redirectionPath);
+      void router.navigate({ href: redirectionPath });
     } catch (_error) {
       setToast({
         title: t("toast.error"),
@@ -110,7 +111,7 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
   const handleArchiveIssue = async () => {
     try {
       await archiveIssue(workspaceSlug, projectId, issueId);
-      router.push(`/${workspaceSlug}/projects/${projectId}/issues`);
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/issues` });
     } catch (_error) {
       setToast({
         title: t("toast.error"),
@@ -129,7 +130,7 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
         title: t("issue.restore.success.title"),
         message: t("issue.restore.success.message"),
       });
-      router.push(workItemLink);
+      void router.navigate({ href: workItemLink });
     } catch (_error) {
       setToast({
         title: t("toast.error"),

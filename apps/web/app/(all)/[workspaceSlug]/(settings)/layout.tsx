@@ -4,12 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
 // components
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { ProjectsAppPowerKProvider } from "@/components/power-k/projects-app-provider";
 
-export default function SettingsLayout() {
+function SettingsLayout(): React.JSX.Element | null {
   return (
     <>
       <ProjectsAppPowerKProvider />
@@ -26,3 +26,7 @@ export default function SettingsLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings")({
+  component: SettingsLayout,
+});

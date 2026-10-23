@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { useParams } from "next/navigation";
+
 import useSWRInfinite from "swr/infinite";
 import type { IWorkspaceIntegration } from "@plane/types";
 // services
@@ -29,7 +30,7 @@ const projectService = new ProjectService();
 export function SelectRepository(props: Props) {
   const { integration, value, label, onChange, characterLimit = 25 } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
   const getKey = (pageIndex: number) => {
     if (!workspaceSlug || !integration) return;

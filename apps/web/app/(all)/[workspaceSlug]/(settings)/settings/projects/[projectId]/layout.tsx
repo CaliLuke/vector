@@ -4,22 +4,21 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
-import { Outlet } from "react-router";
+
 // components
 import { getProjectActivePath } from "@/components/settings/helper";
 import { SettingsMobileNav } from "@/components/settings/mobile/nav";
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 // types
-import type { Route } from "./+types/layout";
 import { ProjectSettingsSidebarRoot } from "@/components/settings/project/sidebar";
 
-function ProjectDetailSettingsLayout({ params }: Route.ComponentProps) {
-  const { workspaceSlug, projectId } = params;
+function ProjectDetailSettingsLayout(): React.JSX.Element | null {
+  const { workspaceSlug, projectId } = Route.useParams();
   // router
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <>
@@ -41,4 +40,6 @@ function ProjectDetailSettingsLayout({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectDetailSettingsLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId")({
+  component: observer(ProjectDetailSettingsLayout),
+});

@@ -29,7 +29,8 @@
     "coverage/**",
     "dist/**",
     "**/public/**",
-    "storybook-static/**"
+    "storybook-static/**",
+    "apps/web/app/routeTree.gen.ts"
   ],
   "rules": {
     "react/react-in-jsx-scope": "off",
@@ -48,9 +49,31 @@
     "typescript/no-explicit-any": "warn",
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
-    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
-    "eslint/complexity": ["warn", { "max": 15 }],
-    "eslint/max-lines": ["warn", { "max": 700, "skipBlankLines": true, "skipComments": true }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ],
+    "eslint/complexity": [
+      "warn",
+      {
+        "max": 15
+      }
+    ],
+    "eslint/max-lines": [
+      "warn",
+      {
+        "max": 700,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ]
   }
 }

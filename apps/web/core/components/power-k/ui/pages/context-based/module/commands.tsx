@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { useParams } from "next/navigation";
+
 import { Star, StarOff, Users } from "lucide-react";
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
@@ -23,7 +24,7 @@ import { useUser } from "@/hooks/store/user";
 
 export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => {
   // navigation
-  const { workspaceSlug, projectId, moduleId } = useParams();
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // store
   const {
     permission: { allowPermissions },

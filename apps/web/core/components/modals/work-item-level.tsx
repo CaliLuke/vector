@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { TIssue } from "@plane/types";
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
@@ -17,7 +18,7 @@ import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 import { useCommandPalette } from "@/hooks/store/use-command-palette";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 
 export type TWorkItemLevelModalsProps = {
@@ -27,8 +28,8 @@ export type TWorkItemLevelModalsProps = {
 export const WorkItemLevelModals = observer(function WorkItemLevelModals(props: TWorkItemLevelModalsProps) {
   const { workItemIdentifier } = props;
   // router
-  const { workspaceSlug, cycleId, moduleId } = useParams();
-  const router = useAppRouter();
+  const { workspaceSlug, cycleId, moduleId } = useParams({ strict: false });
+  const router = useRouter();
   // store hooks
   const { data: currentUser } = useUser();
   const {
@@ -62,7 +63,7 @@ export const WorkItemLevelModals = observer(function WorkItemLevelModals(props: 
       const redirectPath = `/${workspaceSlug}/projects/${projectId}/${isEpic ? "epics" : "issues"}`;
 
       await deleteAction(projectId, issueId);
-      router.push(redirectPath);
+      void router.navigate({ href: redirectPath });
     } catch (error) {
       console.error("Failed to delete issue:", error);
     }

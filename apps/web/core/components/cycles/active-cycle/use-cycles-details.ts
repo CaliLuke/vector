@@ -5,7 +5,7 @@
  */
 
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
@@ -16,6 +16,7 @@ import { CYCLE_ISSUES_WITH_PARAMS } from "@plane/constants";
 import { useCycle } from "@/hooks/store/use-cycle";
 import { useIssues } from "@/hooks/store/use-issues";
 import { useWorkItemFilters } from "@/hooks/store/work-item-filters/use-work-item-filters";
+import { useRouter } from "@tanstack/react-router";
 
 interface IActiveCycleDetails {
   workspaceSlug: string;
@@ -82,7 +83,7 @@ const useCyclesDetails = (props: IActiveCycleDetails) => {
         updateFilterExpression.bind(updateFilterExpression, workspaceSlug, projectId, cycleId)
       );
 
-      router.push(`/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}`);
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}` });
     },
     [workspaceSlug, projectId, cycleId, updateFilterExpressionFromConditions, updateFilterExpression, router]
   );

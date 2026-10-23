@@ -23,7 +23,13 @@ Static response fixtures remain for contract regression tests. No Python code or
 | `packages`                             | Shared frontend code                          |
 | `apps/go-api/internal/parity/testdata` | Historical contract fixtures                  |
 
-The browser applications retain substantial Plane-derived code. A future frontend rewrite is planned.
+The main web application uses React, Vite, and TanStack Router. `apps/web/routes.ts` defines the
+virtual route tree; route modules own their components, redirects, metadata, and route parameters.
+TanStack generates `apps/web/app/routeTree.gen.ts` and splits route components during builds.
+Components use TanStack navigation APIs directly. Admin and public project pages retain React Router.
+MobX owns client state, with SWR and Axios handling existing data access.
+
+The browser applications retain substantial Plane-derived code.
 Existing API paths, database names, internal `@plane/*` imports, and configuration keys remain compatible.
 The backend Go module retains its existing import path to preserve generated code.
 These identifiers do not identify the product as an official Plane distribution.

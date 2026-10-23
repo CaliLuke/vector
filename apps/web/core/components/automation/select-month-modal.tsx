@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "next/navigation";
 // react-hook-form
+import { useParams } from "@tanstack/react-router";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@plane/propel/button";
 import type { IProject } from "@plane/types";
@@ -22,7 +22,7 @@ type Props = {
 };
 
 export function SelectMonthModal({ type, initialValues, isOpen, handleClose, handleChange }: Props) {
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   const {
     formState: { errors, isSubmitting },

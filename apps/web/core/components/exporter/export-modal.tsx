@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { intersection } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -18,7 +19,7 @@ import { Checkbox, CustomSearchSelect, EModalPosition, EModalWidth, ModalCore } 
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // services
 import { ProjectExportService } from "@/services/project";
 type Props = {
@@ -38,8 +39,8 @@ export const Exporter = observer(function Exporter(props: Props) {
   const [exportLoading, setExportLoading] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug } = useParams();
+  const router = useRouter();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { workspaceProjectIds, getProjectById } = useProject();
   const { projectsWithCreatePermissions } = useUser();
@@ -82,7 +83,7 @@ export const Exporter = observer(function Exporter(props: Props) {
         .csvExport(workspaceSlug, payload)
         .then(() => {
           mutateServices();
-          router.push(`/${workspaceSlug}/settings/exports`);
+          void router.navigate({ href: `/${workspaceSlug}/settings/exports` });
           setExportLoading(false);
           setToast({
             type: TOAST_TYPE.SUCCESS,

@@ -10,7 +10,7 @@
       "entry": ["postcss.config.js"]
     },
     "apps/web": {
-      "react-router": true
+      "entry": ["routes.ts"]
     }
   },
   "rules": {

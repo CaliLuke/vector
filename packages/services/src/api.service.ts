@@ -18,13 +18,15 @@ export abstract class APIService {
   /**
    * Creates an instance of APIService
    * @param {string} baseURL - The base URL for all HTTP requests
+   * @param {function} configureAxiosInstance - Optional client-specific response handling
    */
-  constructor(baseURL: string) {
+  constructor(baseURL: string, configureAxiosInstance?: (axiosInstance: AxiosInstance) => void) {
     this.baseURL = baseURL;
     this.axiosInstance = create({
       baseURL,
       withCredentials: true,
     });
+    configureAxiosInstance?.(this.axiosInstance);
   }
 
   /**

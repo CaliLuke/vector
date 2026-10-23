@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { useState, useMemo, useCallback } from "react";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+
 // Vector imports
 import useSWR from "swr";
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -33,7 +34,7 @@ export const IssuePeekOverview = observer(function IssuePeekOverview(props: IWor
   } = props;
   const { t } = useTranslation();
   // router
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hook
   const { allowPermissions } = useUserPermissions();
 

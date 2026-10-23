@@ -5,8 +5,9 @@
  */
 
 // components
+import { useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams, usePathname } from "next/navigation";
+
 import { cn } from "@plane/utils";
 import { TopNavPowerK } from "@/components/navigation";
 import { HelpMenuRoot } from "@/components/workspace/sidebar/help-section/root";
@@ -21,8 +22,8 @@ import { useWorkspaceNotifications } from "@/hooks/store/notifications";
 
 export const TopNavigationRoot = observer(function TopNavigationRoot() {
   // router
-  const { workspaceSlug } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   // store hooks
   const { unreadNotificationsCount, getUnreadNotificationsCount } = useWorkspaceNotifications();

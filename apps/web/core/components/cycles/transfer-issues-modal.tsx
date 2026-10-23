@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { AlertCircle } from "lucide-react";
 import { SearchIcon, CycleIcon, TransferIcon, CloseIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -32,7 +33,9 @@ export const TransferIssuesModal = observer(function TransferIssuesModal(props: 
     issues: { transferIssuesFromCycle },
   } = useIssues(EIssuesStoreType.CYCLE);
 
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
 
   const transferIssue = async (payload: { new_cycle_id: string }) => {
     if (!workspaceSlug || !projectId || !cycleId) return;

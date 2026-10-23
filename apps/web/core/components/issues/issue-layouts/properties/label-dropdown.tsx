@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Placement } from "@popperjs/core";
-import { useParams } from "next/navigation";
+
 import { usePopper } from "react-popper";
 import { Loader } from "lucide-react";
 import { Combobox } from "@headlessui/react";
@@ -68,8 +69,7 @@ export function LabelDropdown(props: ILabelDropdownProps) {
   const { t } = useTranslation();
 
   //router
-  const { workspaceSlug: routerWorkspaceSlug } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
   //states
   const [isOpen, setIsOpen] = useState(false);

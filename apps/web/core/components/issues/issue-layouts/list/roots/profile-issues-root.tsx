@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 // hooks
 import { useUserPermissions } from "@/hooks/store/user";
@@ -15,7 +16,8 @@ import { BaseListRoot } from "../base-list-root";
 
 export const ProfileIssuesListLayout = observer(function ProfileIssuesListLayout() {
   // router
-  const { workspaceSlug, profileViewId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { profileViewId } = useParams({ strict: false });
   // store
   const { allowPermissions } = useUserPermissions();
 

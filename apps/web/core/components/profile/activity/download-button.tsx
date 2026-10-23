@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+
 // services
 // ui
 import { useTranslation } from "@plane/i18n";
@@ -20,7 +21,7 @@ export function DownloadActivityButton() {
   // states
   const [isDownloading, setIsDownloading] = useState(false);
   // router
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug, userId } = useParams({ strict: false });
   //hooks
   const { t } = useTranslation();
 

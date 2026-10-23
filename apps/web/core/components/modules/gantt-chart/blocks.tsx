@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 // ui
 import { MODULE_STATUS } from "@plane/constants";
 import { ModuleStatusIcon } from "@plane/propel/icons";
@@ -17,7 +17,7 @@ import { getBlockViewDetails } from "@/components/issues/issue-layouts/utils";
 // constants
 // hooks
 import { useModule } from "@/hooks/store/use-module";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type Props = {
@@ -27,8 +27,8 @@ type Props = {
 export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props) {
   const { moduleId } = props;
   // router
-  const router = useAppRouter();
-  const { workspaceSlug } = useParams();
+  const router = useRouter();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getModuleById } = useModule();
   // derived values
@@ -40,6 +40,8 @@ export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props)
     moduleDetails,
     MODULE_STATUS.find((s) => s.value === moduleDetails?.status)?.color ?? ""
   );
+
+  if (!moduleDetails) return null;
 
   return (
     <Tooltip
@@ -56,9 +58,9 @@ export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props)
         className="relative flex h-full w-full cursor-pointer items-center rounded-sm"
         style={blockStyle}
         onClick={() =>
-          router.push(
-            `/${workspaceSlug?.toString()}/projects/${moduleDetails?.project_id}/modules/${moduleDetails?.id}`
-          )
+          void router.navigate({
+            href: `/${workspaceSlug?.toString()}/projects/${moduleDetails?.project_id}/modules/${moduleDetails?.id}`,
+          })
         }
       >
         <div className="absolute top-0 left-0 h-full w-full bg-surface-1/50" />
@@ -75,16 +77,22 @@ export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props)
 
 export const ModuleGanttSidebarBlock = observer(function ModuleGanttSidebarBlock(props: Props) {
   const { moduleId } = props;
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getModuleById } = useModule();
   // derived values
   const moduleDetails = getModuleById(moduleId);
+  if (!moduleDetails) return null;
 
   return (
     <Link
       className="relative flex h-full w-full items-center gap-2"
-      href={`/${workspaceSlug?.toString()}/projects/${moduleDetails?.project_id}/modules/${moduleDetails?.id}`}
+      to="/$workspaceSlug/projects/$projectId/modules/$moduleId/"
+      params={{
+        workspaceSlug: workspaceSlug?.toString(),
+        projectId: moduleDetails.project_id,
+        moduleId: moduleDetails.id,
+      }}
       draggable={false}
     >
       <ModuleStatusIcon status={moduleDetails?.status ?? "backlog"} height="16px" width="16px" />

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // component
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -17,7 +18,7 @@ import { useUserPermissions } from "@/hooks/store/user";
 import { BillingWorkspaceSettingsHeader } from "./header";
 import { BillingRoot } from "@/components/workspace/billing";
 
-function BillingSettingsPage() {
+function BillingSettingsPage(): React.JSX.Element | null {
   // store hooks
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
   const { currentWorkspace } = useWorkspace();
@@ -37,4 +38,6 @@ function BillingSettingsPage() {
   );
 }
 
-export default observer(BillingSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/billing")({
+  component: observer(BillingSettingsPage),
+});

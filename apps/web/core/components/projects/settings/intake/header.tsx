@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { RefreshCcw } from "lucide-react";
 // ui
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -28,7 +29,9 @@ export const ProjectInboxHeader = observer(function ProjectInboxHeader() {
   // states
   const [createIssueModal, setCreateIssueModal] = useState(false);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/settings/projects/$projectId",
+  });
   // store hooks
   const { allowPermissions } = useUserPermissions();
   const { t } = useTranslation();

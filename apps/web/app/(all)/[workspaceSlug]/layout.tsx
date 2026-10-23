@@ -4,16 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 import { WorkspaceContentWrapper } from "@/components/workspace/content-wrapper";
 import { AppRailVisibilityProvider } from "@/lib/app-rail";
 import { GlobalModals } from "@/components/common/modal/global";
 import { WorkspaceAuthWrapper } from "@/layouts/auth-layout/workspace-wrapper";
-import type { Route } from "./+types/layout";
 
-export default function WorkspaceLayout(props: Route.ComponentProps) {
-  const { workspaceSlug } = props.params;
+function WorkspaceLayout(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
 
   return (
     <AuthenticationWrapper>
@@ -28,3 +27,7 @@ export default function WorkspaceLayout(props: Route.ComponentProps) {
     </AuthenticationWrapper>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug")({
+  component: WorkspaceLayout,
+});

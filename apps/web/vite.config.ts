@@ -1,6 +1,7 @@
 import path from "node:path";
 import * as dotenv from "dotenv";
-import { reactRouter } from "@react-router/dev/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 dotenv.config({ path: path.resolve(import.meta.dirname, ".env") });
@@ -19,20 +20,14 @@ export default defineConfig(() => ({
   },
   build: {
     assetsInlineLimit: 0,
+    outDir: "build/client",
   },
-  plugins: [reactRouter()],
+  plugins: [tanstackRouter(), react()],
   resolve: {
     tsconfigPaths: true,
-    alias: {
-      // Next.js compatibility shims used within web
-      "next/link": path.resolve(import.meta.dirname, "app/compat/next/link.tsx"),
-      "next/navigation": path.resolve(import.meta.dirname, "app/compat/next/navigation.ts"),
-      "next/script": path.resolve(import.meta.dirname, "app/compat/next/script.tsx"),
-    },
     dedupe: ["react", "react-dom", "@headlessui/react"],
   },
   server: {
     host: process.env.PLANE_DEV_HOST || "127.0.0.1",
   },
-  // No SSR-specific overrides needed; alias resolves to ESM build
 }));

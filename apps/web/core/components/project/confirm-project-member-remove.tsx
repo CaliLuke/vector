@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { AlertTriangle } from "lucide-react";
 // types
 import { Button } from "@plane/propel/button";
@@ -27,7 +28,7 @@ type Props = {
 export const ConfirmProjectMemberRemove = observer(function ConfirmProjectMemberRemove(props: Props) {
   const { data, onSubmit, isOpen, onClose } = props;
   // router
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   // states
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // store hooks

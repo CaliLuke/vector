@@ -5,9 +5,10 @@
  */
 
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 // types
-import { useParams } from "next/navigation";
+
 import type { TSupportedFilterTypeForUpdate } from "@plane/constants";
 import { EDraftIssuePaginationType } from "@plane/constants";
 import type {
@@ -81,9 +82,7 @@ export const useIssuesActions = (storeType: EIssuesStoreType): IssueActions => {
 
 const useProjectIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.PROJECT);
 
@@ -163,9 +162,7 @@ const useProjectIssueActions = () => {
 
 const useProjectEpicsActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.EPIC);
 
@@ -245,10 +242,7 @@ const useProjectEpicsActions = () => {
 
 const useCycleIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, cycleId: routerCycleId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
-  const cycleId = routerCycleId?.toString();
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.CYCLE);
 
@@ -352,10 +346,7 @@ const useCycleIssueActions = () => {
 
 const useModuleIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, moduleId: routerModuleId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
-  const moduleId = routerModuleId?.toString();
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.MODULE);
 
@@ -449,9 +440,7 @@ const useModuleIssueActions = () => {
 
 const useProfileIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, userId: routerUserId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const userId = routerUserId?.toString();
+  const { workspaceSlug, userId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.PROFILE);
 
@@ -529,10 +518,7 @@ const useProfileIssueActions = () => {
 
 const useProjectViewIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, viewId: routerViewId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
-  const viewId = routerViewId?.toString();
+  const { workspaceSlug, projectId, viewId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.PROJECT_VIEW);
 
@@ -612,9 +598,7 @@ const useProjectViewIssueActions = () => {
 
 const useArchivedIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const projectId = routerProjectId?.toString();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.ARCHIVED);
 
@@ -670,9 +654,7 @@ const useArchivedIssueActions = () => {
 
 const useGlobalIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, globalViewId: routerGlobalViewId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const globalViewId = routerGlobalViewId?.toString();
+  const { workspaceSlug, globalViewId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.GLOBAL);
 
@@ -736,9 +718,7 @@ const useGlobalIssueActions = () => {
 
 const useWorkspaceDraftIssueActions = () => {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, globalViewId: routerGlobalViewId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug?.toString();
-  const globalViewId = routerGlobalViewId?.toString();
+  const { workspaceSlug, globalViewId } = useParams({ strict: false });
   // store hooks
   const { issues, issuesFilter } = useIssues(EIssuesStoreType.WORKSPACE_DRAFT);
   const fetchIssues = useCallback(

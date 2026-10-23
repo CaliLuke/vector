@@ -138,14 +138,39 @@ dropdown keyboard handler, frontend test module-stub helpers, read-only hydratio
 test assertions, repeated page-persistence test setup, and the project-issues
 test resolver.
 
+The subsequent service/onboarding consolidation reduces the TypeScript baseline
+to 974 pairs. One retained onboarding row-prop fingerprint replaces its longer
+pre-existing version after removing an unused prop; eight old fingerprints were
+retired. Go still reports 525 directed pairs, but seven fingerprints now identify
+shorter adapter shells around a shared read pipeline (112 fewer reported duplicate
+lines, counting overlapping reports). Four Go shadowing findings were also retired.
+No duplicate thresholds or source exclusions changed.
+
+The TanStack Router migration tightens four existing Oxlint identities in both
+ratchets: authentication complexity falls from 54 to 36, issue-modal complexity
+from 31 to 30 and 48 to 43, and issue-action file length from 724 to 703 lines.
+Nine more complexity identities decrease after removing redundant route-parameter
+conversions (one to six branches per function).
+Only generated `routeTree.gen.ts` is excluded from lint, formatting, and duplication checks;
+owned route modules remain checked. No new debt allowance was added.
+
+The router migration and frontend consolidation reduce TypeScript clone pairs from
+974 to 922 (981 at the original baseline). All 63 changed fingerprints were reviewed:
+47 match pre-existing clone ranges, nine follow extracted filter/menu code or
+shorter callers, four cover unchanged JSX/imports beside native route declarations,
+and three cover unchanged service code or shorter issue-menu callers. The review
+also removed redundant parameter aliases and string conversions. Stale fingerprints
+were retired; no clone threshold or owned-source exclusion changed.
+
 The Go service consolidation lowers the duplicate baseline from 525 to 505
 directed reports, with 590 fewer reported duplicate lines than the original
 baseline (overlapping reports counted separately). Shared session handling,
 user-property conversion, attachment listing, throttle serialization, cookie
 parsing, public metadata decoding, and background-task admission preserve each
-service's authorization and effect ordering. Eight changed report identities replace
+service's
+authorization and effect ordering. Eight changed report identities replace
 pre-existing fragments in smaller helpers' callers; no file-pair allowance
-increased. Six shadowing findings and an unused conversion helper were
+increased. Two more shadowing findings and an unused conversion helper were
 retired from the lint baseline; the conversion helper was also retired from the
 dead-code baseline. Generated contracts and workflow-specific durable identities
 remain explicit.

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 // types
 import { Button } from "@plane/propel/button";
@@ -12,7 +13,6 @@ import type { IProject } from "@plane/types";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 // type
 type TJoinProjectModalProps = {
@@ -29,14 +29,14 @@ export function JoinProjectModal(props: TJoinProjectModalProps) {
   // store hooks
   const { joinProject } = useUserPermissions();
   // router
-  const router = useAppRouter();
+  const router = useRouter();
 
   const handleJoin = async () => {
     setIsJoiningLoading(true);
 
     await joinProject(workspaceSlug, project.id)
       .then(() => {
-        router.push(`/${workspaceSlug}/projects/${project.id}/issues`);
+        void router.navigate({ href: `/${workspaceSlug}/projects/${project.id}/issues` });
         handleClose();
         return;
       })

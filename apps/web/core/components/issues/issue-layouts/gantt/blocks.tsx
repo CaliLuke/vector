@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { Popover } from "@plane/propel/popover";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -35,7 +36,7 @@ type Props = {
 export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
   const { issueId, isEpic } = props;
   // router
-  const { workspaceSlug: routerWorkspaceSlug } = useParams();
+  const { workspaceSlug: routerWorkspaceSlug } = useParams({ strict: false });
   const workspaceSlug = routerWorkspaceSlug?.toString();
   // store hooks
   const { getProjectStates } = useProjectState();
@@ -102,7 +103,7 @@ export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
 export const IssueGanttSidebarBlock = observer(function IssueGanttSidebarBlock(props: Props) {
   const { issueId, isEpic = false } = props;
   // router
-  const { workspaceSlug: routerWorkspaceSlug } = useParams();
+  const { workspaceSlug: routerWorkspaceSlug } = useParams({ strict: false });
   const workspaceSlug = routerWorkspaceSlug?.toString();
   // store hooks
   const {

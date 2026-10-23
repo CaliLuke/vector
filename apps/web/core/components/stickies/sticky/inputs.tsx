@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
+
 import { Controller, useForm } from "react-hook-form";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
@@ -34,7 +35,7 @@ export function StickyInput(props: TProps) {
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   // navigation
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { getWorkspaceBySlug } = useWorkspace();
   // derived values

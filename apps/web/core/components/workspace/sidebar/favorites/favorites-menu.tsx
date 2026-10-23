@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
+import { isTreeDropTargetData, getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DragLocationHistory, DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -11,7 +13,7 @@ import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapt
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { orderBy } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { FolderPlus } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
 import { IS_FAVORITE_MENU_OPEN } from "@plane/constants";
@@ -29,8 +31,6 @@ import useLocalStorage from "@/hooks/use-local-storage";
 // plane web components
 import { FavoriteFolder } from "./favorite-folder";
 import { FavoriteRoot } from "./favorite-items";
-import type { TargetData } from "./favorites.helpers";
-import { getInstructionFromPayload } from "./favorites.helpers";
 import { NewFavoriteFolder } from "./new-fav-folder";
 import { IconButton } from "@plane/propel/icon-button";
 
@@ -39,7 +39,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
   const [createNewFolder, setCreateNewFolder] = useState<boolean | string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { groupedFavorites, deleteFavorite, removeFromFavoriteFolder, reOrderFavorite, moveFavoriteToFolder } =
     useFavorite();
@@ -72,15 +72,15 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
     const dropTarget =
       dropTargets.length > 1 ? dropTargets.find((target: DropTargetRecord) => target?.data?.isChild) : dropTargets[0];
 
-    const dropTargetData = dropTarget?.data as TargetData;
+    const dropTargetData = dropTarget?.data;
 
-    if (!dropTarget || !dropTargetData) return;
+    if (!dropTarget || !isTreeDropTargetData(dropTargetData)) return;
     const instruction = getInstructionFromPayload(dropTarget, source, location);
     const parentId = instruction === "make-child" ? dropTargetData.id : dropTargetData.parentId;
     const droppedFavId = instruction !== "make-child" ? dropTargetData.id : undefined;
-    const sourceData = source.data as TargetData;
+    const sourceData = source.data;
 
-    if (!sourceData.id) return;
+    if (!isTreeDropTargetData(sourceData)) return;
     if (isFolder) {
       // handle move to a new parent folder if dropped on a folder
       if (parentId && parentId !== sourceData.parentId) {

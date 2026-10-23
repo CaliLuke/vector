@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useState, useCallback, useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { useDropzone } from "react-dropzone";
 import useSWR from "swr";
 import { Popover } from "@headlessui/react";
@@ -53,7 +54,7 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
     search: "",
   });
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { config } = useInstance();
   // derived values

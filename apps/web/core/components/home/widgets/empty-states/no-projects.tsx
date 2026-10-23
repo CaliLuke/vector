@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
 // mobx
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 import { Hotel } from "lucide-react";
 // plane ui
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
@@ -25,7 +25,7 @@ import { useUser, useUserPermissions } from "@/hooks/store/user";
 
 export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { allowPermissions } = useUserPermissions();
   const { toggleCreateProjectModal } = useCommandPalette();
@@ -46,6 +46,8 @@ export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
     EUserPermissionsLevel.WORKSPACE
   );
   const isWorkspaceAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+
+  if (!currentUser) return null;
 
   const EMPTY_STATE_DATA = [
     {
@@ -94,20 +96,20 @@ export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
       title: "home.empty.personalize_account.title",
       description: "home.empty.personalize_account.description",
       icon:
-        currentUser?.avatar_url && currentUser?.avatar_url.trim() !== "" ? (
-          <Link href={`/${workspaceSlug}/profile/${currentUser?.id}`}>
+        currentUser.avatar_url && currentUser.avatar_url.trim() !== "" ? (
+          <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: currentUser.id }}>
             <span className="relative flex size-4 items-center justify-center rounded-full p-4 text-on-color capitalize">
               <img
-                src={getFileURL(currentUser?.avatar_url)}
+                src={getFileURL(currentUser.avatar_url)}
                 className="absolute top-0 left-0 h-full w-full rounded-full object-cover"
-                alt={currentUser?.display_name || currentUser?.email}
+                alt={currentUser.display_name || currentUser.email}
               />
             </span>
           </Link>
         ) : (
-          <Link href={`/${workspaceSlug}/profile/${currentUser?.id}`}>
+          <Link to="/$workspaceSlug/profile/$userId/" params={{ workspaceSlug: workspaceSlug, userId: currentUser.id }}>
             <span className="relative flex size-4 items-center justify-center rounded-full bg-[#028375] p-4 text-13 text-on-color capitalize">
-              {(currentUser?.email ?? currentUser?.display_name ?? "?")[0]}
+              {(currentUser.email ?? currentUser.display_name ?? "?")[0]}
             </span>
           </Link>
         ),
@@ -171,7 +173,7 @@ export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
                 !item.cta.disabled &&
                 (item.cta.link ? (
                   <Link
-                    href={item.cta.link}
+                    to={item.cta.link}
                     onClick={(e) => {
                       if (!storedValue) {
                         e.stopPropagation();

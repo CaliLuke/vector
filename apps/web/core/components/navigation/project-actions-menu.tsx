@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import { useNavigate } from "react-router";
+
 import { LogOut, MoreHorizontal, Settings, Share2, ArchiveIcon } from "lucide-react";
 // plane imports
 import { MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
@@ -82,7 +83,7 @@ export function ProjectActionsMenu({
       {isAuthorized && (
         <CustomMenu.MenuItem
           onClick={() => {
-            navigate(`/${workspaceSlug}/projects/${project?.id}/archives/issues`);
+            void navigate({ to: `/${workspaceSlug}/projects/${project?.id}/archives/issues` });
           }}
         >
           <div className="flex cursor-pointer items-center justify-start gap-2">
@@ -93,7 +94,7 @@ export function ProjectActionsMenu({
       )}
       <CustomMenu.MenuItem
         onClick={() => {
-          navigate(`/${workspaceSlug}/settings/projects/${project?.id}`);
+          void navigate({ to: `/${workspaceSlug}/settings/projects/${project?.id}` });
         }}
       >
         <div className="flex cursor-pointer items-center justify-start gap-2">

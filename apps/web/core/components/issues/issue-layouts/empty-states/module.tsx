@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -24,10 +25,7 @@ import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-w
 
 export const ModuleEmptyState = observer(function ModuleEmptyState() {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, moduleId: routerModuleId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
-  const moduleId = routerModuleId ? routerModuleId.toString() : undefined;
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // states
   const [moduleIssuesListModal, setModuleIssuesListModal] = useState(false);
   // plane hooks

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+
 import { EditIcon, CloseIcon } from "@plane/propel/icons";
 // types
 import type { IIssueLabel } from "@plane/types";
@@ -51,7 +52,7 @@ export function ProjectSettingLabelItem(props: Props) {
   // states
   const [isEditLabelForm, setEditLabelForm] = useState(false);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
   const { updateLabel } = useLabel();
 

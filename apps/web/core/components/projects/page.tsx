@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // components
 import { ProjectRoot } from "@/components/project/root";
@@ -15,7 +16,7 @@ import { useWorkspace } from "@/hooks/store/use-workspace";
 
 export const ProjectPageRoot = observer(function ProjectPageRoot() {
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store
   const { currentWorkspace } = useWorkspace();
   const { fetchProjects } = useProject();

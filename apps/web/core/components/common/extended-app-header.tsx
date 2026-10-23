@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "react-router";
+
 // components
 import { AppSidebarToggleButton } from "@/components/sidebar/sidebar-toggle-button";
 // hooks
@@ -16,7 +17,7 @@ import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferen
 export const ExtendedAppHeader = observer(function ExtendedAppHeader(props: { header: ReactNode }) {
   const { header } = props;
   // params
-  const { projectId, workItem } = useParams();
+  const { projectId, workItem } = useParams({ strict: false });
   // preferences
   const { preferences: projectPreferences } = useProjectNavigationPreferences();
   // store hooks

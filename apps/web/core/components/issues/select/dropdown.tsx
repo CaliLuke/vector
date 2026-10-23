@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { EUserPermissionsLevel } from "@plane/constants";
 import type { IIssueLabel } from "@plane/types";
 import { EUserPermissions } from "@plane/types";
@@ -24,7 +25,7 @@ type TWorkItemLabelSelectProps = Omit<TWorkItemLabelSelectBaseProps, "labelIds" 
 export const IssueLabelSelect = observer(function IssueLabelSelect(props: TWorkItemLabelSelectProps) {
   const { projectId } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { allowPermissions } = useUserPermissions();
   const { getProjectLabelIds, getLabelById, fetchProjectLabels, createLabel } = useLabel();

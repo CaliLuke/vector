@@ -148,7 +148,7 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
       group: "create",
       i18n_title: "power_k.creation_actions.create_workspace",
       icon: SquarePlus,
-      action: (ctx) => ctx.router.push("/create-workspace"),
+      action: (ctx) => void ctx.router.navigate({ to: "/create-workspace" }),
       isEnabled: () => Boolean(!isWorkspaceCreationDisabled),
       isVisible: () => Boolean(!isWorkspaceCreationDisabled),
       closeOnSelect: true,

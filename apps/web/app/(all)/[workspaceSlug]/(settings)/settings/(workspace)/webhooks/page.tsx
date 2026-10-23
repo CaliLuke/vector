@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
@@ -24,14 +25,13 @@ import { useWebhook } from "@/hooks/store/use-webhook";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { WebhooksWorkspaceSettingsHeader } from "./header";
 
-function WebhooksListPage({ params }: Route.ComponentProps) {
+function WebhooksListPage(): React.JSX.Element | null {
   // states
   const [showCreateWebhookModal, setShowCreateWebhookModal] = useState(false);
   // router
-  const { workspaceSlug } = params;
+  const { workspaceSlug } = Route.useParams();
   // plane hooks
   const { t } = useTranslation();
   // mobx store
@@ -113,4 +113,6 @@ function WebhooksListPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(WebhooksListPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/webhooks")({
+  component: observer(WebhooksListPage),
+});

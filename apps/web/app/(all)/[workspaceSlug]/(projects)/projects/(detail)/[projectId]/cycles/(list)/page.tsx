@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -31,18 +32,16 @@ import { useCycle } from "@/hooks/store/use-cycle";
 import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
-import type { Route } from "./+types/page";
 
-function ProjectCyclesPage({ params }: Route.ComponentProps) {
+function ProjectCyclesPage(): React.JSX.Element | null {
   // states
   const [createModal, setCreateModal] = useState(false);
   // store hooks
   const { currentProjectCycleIds, loader } = useCycle();
   const { getProjectById, currentProjectDetails } = useProject();
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = params;
+  const router = useRouter();
+  const { workspaceSlug, projectId } = Route.useParams();
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks
@@ -81,7 +80,7 @@ function ProjectCyclesPage({ params }: Route.ComponentProps) {
           primaryButton={{
             text: t("disabled_project.empty_state.cycle.primary_button.text"),
             onClick: () => {
-              router.push(`/${workspaceSlug}/settings/projects/${projectId}/features`);
+              void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/features` });
             },
             disabled: !hasAdminLevelPermission,
           }}
@@ -138,4 +137,6 @@ function ProjectCyclesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectCyclesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/")({
+  component: observer(ProjectCyclesPage),
+});

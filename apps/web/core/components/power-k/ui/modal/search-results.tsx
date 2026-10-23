@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { Command } from "cmdk";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { IWorkspaceSearchResults } from "@plane/types";
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // helpers
 import { PowerKModalCommandItem } from "./command-item";
 import { POWER_K_SEARCH_RESULTS_GROUPS_MAP } from "./search-results-map";
@@ -23,10 +24,9 @@ type Props = {
 export const PowerKModalSearchResults = observer(function PowerKModalSearchResults(props: Props) {
   const { closePalette, results } = props;
   // router
-  const router = useAppRouter();
-  const { projectId: routerProjectId } = useParams();
+  const router = useRouter();
+  const { projectId } = useParams({ strict: false });
   // derived values
-  const projectId = routerProjectId?.toString();
 
   return (
     <>
@@ -57,7 +57,7 @@ export const PowerKModalSearchResults = observer(function PowerKModalSearchResul
                   icon={currentSection.icon}
                   onSelect={() => {
                     closePalette();
-                    router.push(currentSection.path(item, projectId));
+                    void router.navigate({ href: currentSection.path(item, projectId) });
                     // const itemProjectId =
                     //   item?.project_id ||
                     //   (Array.isArray(item?.project_ids) && item?.project_ids?.length > 0

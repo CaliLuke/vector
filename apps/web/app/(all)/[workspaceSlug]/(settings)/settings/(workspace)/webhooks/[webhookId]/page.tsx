@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
@@ -21,14 +22,13 @@ import { useWebhook } from "@/hooks/store/use-webhook";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { WebhookDetailsWorkspaceSettingsHeader } from "./header";
 
-function WebhookDetailsPage({ params }: Route.ComponentProps) {
+function WebhookDetailsPage(): React.JSX.Element | null {
   // states
   const [deleteWebhookModal, setDeleteWebhookModal] = useState(false);
   // router
-  const { workspaceSlug, webhookId } = params;
+  const { workspaceSlug, webhookId } = Route.useParams();
   // mobx store
   const { currentWebhook, fetchWebhookById, updateWebhook } = useWebhook();
   const { currentWorkspace } = useWorkspace();
@@ -108,4 +108,6 @@ function WebhookDetailsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(WebhookDetailsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/webhooks/$webhookId")({
+  component: observer(WebhookDetailsPage),
+});

@@ -3,17 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { redirect } from "react-router";
-import type { Route } from "./+types/project-settings";
-
-export const clientLoader = ({ params }: Route.ClientLoaderArgs) => {
-  const { workspaceSlug, projectId } = params;
-  const splat = params["*"] || "";
-  const destination = `/${workspaceSlug}/settings/projects/${projectId}${splat ? `/${splat}` : ""}/`;
-  throw redirect(destination);
-};
-
-export default function ProjectSettings() {
-  return null;
-}
+export const Route = createFileRoute("/$workspaceSlug/projects/$projectId/settings/$")({
+  beforeLoad: ({ params, location }) => {
+    const { _splat: splat } = params;
+    throw redirect({
+      href: `/${params.workspaceSlug}/settings/projects/${params.projectId}/${splat || ""}${location.searchStr}${location.hash ? `#${location.hash}` : ""}`,
+      replace: true,
+    });
+  },
+});

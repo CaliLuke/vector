@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams, useLocation, Link, useNavigate } from "react-router";
+
 import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TabNavigationList, TabNavigationItem } from "@plane/propel/tab-navigation";
@@ -48,7 +49,7 @@ type TTabNavigationRootProps = {
 
 export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTabNavigationRootProps) {
   const { workspaceSlug, projectId } = props;
-  const { workItem: workItemIdentifierFromRoute } = useParams();
+  const { workItem: workItemIdentifierFromRoute } = useParams({ strict: false });
   const location = useLocation();
   const pathname = location.pathname;
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTab
         defaultTabItem || allNavigationItems.find((item: TNavigationItem) => item.key === DEFAULT_TAB_KEY);
 
       if (targetItem) {
-        navigate(targetItem.href, { replace: true });
+        void navigate({ to: targetItem.href, replace: true });
       }
     }
   }, [pathname, workspaceSlug, projectId, tabPreferences.defaultTab, allNavigationItems, navigate]);

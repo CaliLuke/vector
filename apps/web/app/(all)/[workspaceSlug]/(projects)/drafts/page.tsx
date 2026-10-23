@@ -5,12 +5,12 @@
  */
 
 // components
+import { createFileRoute } from "@tanstack/react-router";
 import { PageHead } from "@/components/core/page-title";
 import { WorkspaceDraftIssuesRoot } from "@/components/issues/workspace-draft";
-import type { Route } from "./+types/page";
 
-function WorkspaceDraftPage({ params }: Route.ComponentProps) {
-  const { workspaceSlug } = params;
+function WorkspaceDraftPage(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
   const pageTitle = "Workspace Draft";
 
   return (
@@ -23,4 +23,6 @@ function WorkspaceDraftPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default WorkspaceDraftPage;
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/drafts/")({
+  component: WorkspaceDraftPage,
+});

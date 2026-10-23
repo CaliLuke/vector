@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane constants
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE, PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
@@ -44,10 +45,7 @@ function ProjectViewIssueLayout(props: { activeLayout: EIssueLayoutTypes | undef
 
 export const ProjectViewLayoutRoot = observer(function ProjectViewLayoutRoot() {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, viewId: routerViewId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug?.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId?.toString() : undefined;
-  const viewId = routerViewId ? routerViewId?.toString() : undefined;
+  const { workspaceSlug, projectId, viewId } = useParams({ strict: false });
   // hooks
   const { issuesFilter } = useIssues(EIssuesStoreType.PROJECT_VIEW);
   const { getViewById } = useProjectView();

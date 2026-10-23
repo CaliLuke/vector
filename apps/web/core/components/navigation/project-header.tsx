@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -13,7 +14,7 @@ import { CustomSearchSelect } from "@plane/ui";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // local imports
 import { SwitcherLabel } from "../common/switcher-label";
 import { ProjectHeaderButton } from "./project-header-button";
@@ -29,7 +30,7 @@ type TProjectHeaderProps = {
 export const ProjectHeader = observer(function ProjectHeader(props: TProjectHeaderProps) {
   const { workspaceSlug, projectId } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { joinedProjectIds, getPartialProjectById } = useProject();
   const { allowPermissions } = useUserPermissions();
@@ -89,7 +90,7 @@ export const ProjectHeader = observer(function ProjectHeader(props: TProjectHead
   const handleProjectChange = useCallback(
     (value: string) => {
       if (value !== currentProjectDetails?.id) {
-        router.push(getTabUrl(workspaceSlug, value, validatedDefaultTabKey));
+        void router.navigate({ href: getTabUrl(workspaceSlug, value, validatedDefaultTabKey) });
       }
     },
     [currentProjectDetails?.id, router, workspaceSlug, validatedDefaultTabKey]

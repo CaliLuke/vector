@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EditIcon, TrashIcon } from "@plane/propel/icons";
 import { CustomMenu } from "@plane/ui";
@@ -26,7 +26,7 @@ export const GlobalViewListItem = observer(function GlobalViewListItem(props: Pr
   const [updateViewModal, setUpdateViewModal] = useState(false);
   const [deleteViewModal, setDeleteViewModal] = useState(false);
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getViewDetailsById } = useGlobalView();
   // derived data
@@ -39,7 +39,10 @@ export const GlobalViewListItem = observer(function GlobalViewListItem(props: Pr
       <CreateUpdateWorkspaceViewModal data={view} isOpen={updateViewModal} onClose={() => setUpdateViewModal(false)} />
       <DeleteGlobalViewModal data={view} isOpen={deleteViewModal} onClose={() => setDeleteViewModal(false)} />
       <div className="group border-b border-subtle hover:bg-surface-2">
-        <Link href={`/${workspaceSlug}/workspace-views/${view.id}`}>
+        <Link
+          to="/$workspaceSlug/workspace-views/$globalViewId/"
+          params={{ workspaceSlug: workspaceSlug, globalViewId: view.id }}
+        >
           <div className="relative flex h-[52px] w-full items-center justify-between rounded-sm p-4">
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-4">

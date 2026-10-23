@@ -1,3 +1,5 @@
+import { resolvePackageStub } from "./helpers/module-stubs.mjs";
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -9,7 +11,6 @@ globalThis.__moduleProgressDates = state;
 globalThis.__moduleProgressDatesReact = React;
 const react = "const React = globalThis.__moduleProgressDatesReact;";
 const stubs = {
-  "next/navigation": "export const useSearchParams = () => new URLSearchParams();",
   "@plane/i18n": `export const useTranslation = () => ({t: key => ({
     'project_cycles.add_date': 'Add date',
     'project_module.empty_state.sidebar.in_active': "This module isn't active yet.",
@@ -48,10 +49,7 @@ const stubs = {
 registerWebModuleHooks();
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (Object.hasOwn(stubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(stubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
+    return resolvePackageStub(specifier, stubs, context, nextResolve);
   },
 });
 
@@ -61,8 +59,10 @@ const { ModuleAnalyticsProgress } =
 async function renderModuleProgress(moduleDetails, t) {
   state.moduleDetails = moduleDetails;
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   t.after(() => environment.unmount());
-  await environment.render(
+  await routerFixture.render(
+    environment,
     React.createElement(ModuleAnalyticsProgress, {
       workspaceSlug: "default",
       projectId: "project-id",

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import { PROJECT_ERROR_MESSAGES, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -34,7 +35,7 @@ export const DeleteIssueModal = observer(function DeleteIssueModal(props: Props)
   // states
   const [isDeleting, setIsDeleting] = useState(false);
   // store hooks
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { issueMap } = useIssues();
   const { getProjectById } = useProject();
   const { allowPermissions } = useUserPermissions();

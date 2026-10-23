@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import type { TNotificationTab } from "@plane/constants";
 import { NOTIFICATION_TABS } from "@plane/constants";
@@ -26,7 +27,7 @@ import { NotificationsLoader } from "./loader";
 import { NotificationCardListRoot } from "../notification-card/root";
 
 export const NotificationsSidebarRoot = observer(function NotificationsSidebarRoot() {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { getWorkspaceBySlug } = useWorkspace();
   const {

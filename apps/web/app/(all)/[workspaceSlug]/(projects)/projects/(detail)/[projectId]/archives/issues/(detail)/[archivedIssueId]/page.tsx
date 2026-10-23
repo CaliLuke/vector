@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
+
 import useSWR from "swr";
 // ui
 import { Banner } from "@plane/propel/banner";
@@ -19,11 +20,10 @@ import { IssueDetailRoot } from "@/components/issues/issue-detail";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useProject } from "@/hooks/store/use-project";
-import type { Route } from "./+types/page";
 
-function ArchivedIssueDetailsPage({ params }: Route.ComponentProps) {
+function ArchivedIssueDetailsPage(): React.JSX.Element | null {
   // router
-  const { workspaceSlug, projectId, archivedIssueId } = params;
+  const { workspaceSlug, projectId, archivedIssueId } = Route.useParams();
   const router = useRouter();
   // states
   // hooks
@@ -74,7 +74,9 @@ function ArchivedIssueDetailsPage({ params }: Route.ComponentProps) {
             action={
               <Button
                 variant="secondary"
-                onClick={() => router.push(`/${workspaceSlug}/projects/${projectId}/archives/issues/`)}
+                onClick={() =>
+                  void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/archives/issues/` })
+                }
               >
                 Go to archives
               </Button>
@@ -97,4 +99,8 @@ function ArchivedIssueDetailsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ArchivedIssueDetailsPage);
+export const Route = createFileRoute(
+  "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/$archivedIssueId/"
+)({
+  component: observer(ArchivedIssueDetailsPage),
+});

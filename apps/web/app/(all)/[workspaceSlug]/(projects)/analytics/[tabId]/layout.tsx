@@ -5,12 +5,12 @@
  */
 
 // components
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { WorkspaceAnalyticsHeader } from "./header";
 
-export default function WorkspaceAnalyticsTabLayout() {
+function WorkspaceAnalyticsTabLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<WorkspaceAnalyticsHeader />} />
@@ -20,3 +20,7 @@ export default function WorkspaceAnalyticsTabLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/analytics/$tabId")({
+  component: WorkspaceAnalyticsTabLayout,
+});

@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
 
 // plane imports
 import {
@@ -34,7 +34,7 @@ import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectView } from "@/hooks/store/use-project-view";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
@@ -42,9 +42,10 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
   // refs
   const parentRef = useRef(null);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, viewId: routerViewId } = useParams();
-  const viewId = routerViewId ? routerViewId.toString() : undefined;
+  const router = useRouter();
+  const { workspaceSlug, projectId, viewId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId",
+  });
   // store hooks
   const {
     issuesFilter: { issueFilters, updateFilters },
@@ -140,7 +141,7 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
                 selectedItem={viewId?.toString() ?? ""}
                 navigationItems={switcherOptions}
                 onChange={(value: string) => {
-                  router.push(`/${workspaceSlug}/projects/${projectId}/views/${value}`);
+                  void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views/${value}` });
                 }}
                 title={viewDetails?.name}
                 icon={

@@ -5,13 +5,13 @@
  */
 
 // components
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 // local imports
 import { WorkspaceDraftHeader } from "./header";
 
-export default function WorkspaceDraftLayout() {
+function WorkspaceDraftLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<WorkspaceDraftHeader />} />
@@ -21,3 +21,7 @@ export default function WorkspaceDraftLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/drafts")({
+  component: WorkspaceDraftLayout,
+});

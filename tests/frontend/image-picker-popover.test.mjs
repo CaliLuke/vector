@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import path from "node:path";
@@ -34,7 +35,7 @@ const packageStubs = {
     uploadWorkspaceAsset() { return Promise.reject(new Error("upload not configured in this test")); }
   }`,
   "mobx-react": "export const observer = (component) => component;",
-  "next/navigation": 'export const useParams = () => ({ workspaceSlug: "workspace" });',
+
   "react-dropzone": `export const useDropzone = () => ({
     getRootProps: () => ({}),
     getInputProps: () => ({ type: "file" }),
@@ -78,8 +79,9 @@ function PickerHarness({ disabled = false, value = null, onChange = () => {} } =
 }
 
 async function renderPicker(environment, props) {
+  const routerFixture = createRouterFixture("/workspace/");
   ImagePickerComponent = await loadImagePicker();
-  await environment.render(React.createElement(PickerHarness, props));
+  await routerFixture.render(environment, React.createElement(PickerHarness, props));
   return environment.container.querySelector("button");
 }
 

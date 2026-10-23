@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
 
 import { useTranslation } from "@plane/i18n";
 // plane imports
@@ -37,7 +37,7 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
   const { prePopulatedData, quickAddCallback, addIssuesToView, onOpen, isEpic = false } = props;
   const { t } = useTranslation();
   // router
-  const { workspaceSlug, projectId, moduleId } = useParams();
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // states
   const [isOpen, setIsOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);

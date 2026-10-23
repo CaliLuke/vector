@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { Circle } from "lucide-react";
 // plane imports
@@ -33,15 +34,17 @@ import { useCommandPalette } from "@/hooks/store/use-command-palette";
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
 export const IssuesHeader = observer(function IssuesHeader() {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
   // store hooks
   const {
     issues: { getGroupIssueCount },
@@ -70,7 +73,11 @@ export const IssuesHeader = observer(function IssuesHeader() {
     <Header>
       <Header.LeftItem>
         <div className="flex items-center gap-2.5">
-          <Breadcrumbs onBack={() => router.back()} isLoading={loader === "init-loader"} className="flex-grow-0">
+          <Breadcrumbs
+            onBack={() => router.history.back()}
+            isLoading={loader === "init-loader"}
+            className="flex-grow-0"
+          >
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={

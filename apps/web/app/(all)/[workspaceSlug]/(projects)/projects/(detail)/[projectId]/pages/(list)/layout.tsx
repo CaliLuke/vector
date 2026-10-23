@@ -5,13 +5,13 @@
  */
 
 // components
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 // local components
 import { PagesListHeader } from "./header";
 
-export default function ProjectPagesListLayout() {
+function ProjectPagesListLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<PagesListHeader />} />
@@ -21,3 +21,7 @@ export default function ProjectPagesListLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages")({
+  component: ProjectPagesListLayout,
+});

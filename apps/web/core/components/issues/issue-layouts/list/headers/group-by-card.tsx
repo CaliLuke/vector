@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { CircleDashed } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
 // types
@@ -57,7 +58,7 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
   const [isOpen, setIsOpen] = useState(false);
   const [openExistingIssueListModal, setOpenExistingIssueListModal] = useState(false);
   // router
-  const { workspaceSlug, projectId, moduleId, cycleId } = useParams();
+  const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
   const storeType = useIssueStoreType();
   // derived values
   const renderExistingIssueModal = moduleId || cycleId;

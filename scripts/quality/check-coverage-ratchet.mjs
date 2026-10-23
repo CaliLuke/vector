@@ -93,6 +93,7 @@ function validateScope(files, options) {
   const expected = new Set(
     tracked
       .filter((file) => {
+        if (!existsSync(resolve(repositoryRoot, file))) return false;
         const local = relative(repositoryRoot, resolve(repositoryRoot, file))
           .split(sep)
           .join("/")

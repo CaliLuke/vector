@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -7,7 +8,6 @@ import { createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
 registerWebModuleHooks();
 const emojiPickerSource = new URL("../../packages/propel/src/emoji-icon-picker/index.ts", import.meta.url).href;
 const pageMenuStubs = {
-  "@/hooks/use-app-router": `export const useAppRouter = () => ({ push() {} });`,
   "@/hooks/use-page-filters": `export const usePageFilters = () => ({
     isFullWidth: globalThis.__pageActionsTest.fullWidth,
     handleFullWidth: value => globalThis.__pageActionsTest.fullWidthChanges.push(value),
@@ -22,7 +22,6 @@ const pageMenuStubs = {
   "@/hooks/use-page-flag": `export const usePageFlag = () => ({ isMovePageEnabled: false });`,
   "@/components/pages/modals/delete-page-modal": `export function DeletePageModal() { return null; }`,
   "@/components/pages/modals/export-page-modal": `export function ExportPageModal() { return null; }`,
-  "next/navigation": `export const useParams = () => ({ workspaceSlug: "workspace" });`,
 };
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -63,8 +62,10 @@ let TooltipComponent;
 let PageEditorHeaderRootComponent;
 
 async function renderPageIconPicker(environment, disabled = false) {
+  const routerFixture = createRouterFixture("/workspace/");
   const { PageEditorHeaderRoot } = await import("../../apps/web/core/components/pages/editor/header/root.tsx");
-  await environment.render(
+  await routerFixture.render(
+    environment,
     React.createElement(PageEditorHeaderRoot, {
       page: { isContentEditable: !disabled, logo_props: undefined, name: "", updatePageLogo() {} },
     })
@@ -73,6 +74,7 @@ async function renderPageIconPicker(environment, disabled = false) {
 
 test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   t.after(() => environment.unmount());
   [{ Avatar: AvatarComponent }, { Tooltip: TooltipComponent }] = await Promise.all([
     import("../../packages/ui/src/avatar/avatar.tsx"),
@@ -88,7 +90,8 @@ test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t
 
   const ref = React.createRef();
   let clickCount = 0;
-  await environment.render(
+  await routerFixture.render(
+    environment,
     React.createElement(
       TooltipComponent,
       { tooltipContent: "A tooltip", openDelay: 0 },
@@ -137,6 +140,7 @@ test("page editor icon picker opens, closes with Escape, and returns focus from 
 
 test("page editor icon picker has one button trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   t.after(() => environment.unmount());
   ({ PageEditorHeaderRoot: PageEditorHeaderRootComponent } =
     await import("../../apps/web/core/components/pages/editor/header/root.tsx"));
@@ -152,7 +156,7 @@ test("page editor icon picker has one button trigger", async (t) => {
     name: "",
     updatePageLogo() {},
   };
-  await environment.render(React.createElement(PageEditorHeaderRootComponent, { page }));
+  await routerFixture.render(environment, React.createElement(PageEditorHeaderRootComponent, { page }));
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
   assert.equal(trigger.querySelector("button"), null, "the label must not nest a button in Popover.Button");
@@ -175,6 +179,7 @@ test("page editor icon picker keeps a disabled trigger closed", async (t) => {
 
 test("page options menu uses one selectable button per toggle item", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   t.after(() => environment.unmount());
   globalThis.__pageActionsTest = {
     fullWidth: false,
@@ -207,7 +212,7 @@ test("page options menu uses one selectable button per toggle item", async (t) =
     canCurrentUserMovePage: false,
     editor: { editorRef: null },
   };
-  await environment.render(React.createElement(PageOptionsDropdown, { page, storeType: "project" }));
+  await routerFixture.render(environment, React.createElement(PageOptionsDropdown, { page, storeType: "project" }));
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger, "the page actions menu has a button trigger");
 

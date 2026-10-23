@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -11,15 +12,6 @@ globalThis.__projectCardTest = state;
 const element = "const React = globalThis.__projectCardTest.React;";
 const empty = "() => null";
 const substitutes = {
-  "next/navigation": 'export const useParams = () => ({ workspaceSlug: "default" });',
-  "next/link": `${element} export default function Link({href, onClick, children, ...props}) {
-    delete props['data-prevent-progress'];
-    return React.createElement('a', {...props, href, onClick(event) {
-      onClick?.(event);
-      if (!event.defaultPrevented) globalThis.__projectCardTest.navigations.push(href);
-      event.preventDefault();
-    }}, children);
-  }`,
   "@plane/hooks": "export const useLocalStorage = () => ({setValue() {}, storedValue:false});",
   "@plane/propel/emoji-icon-picker": `export const Logo = ${empty};`,
   "@plane/propel/icons": `export const LinkIcon = ${empty}, LockIcon = ${empty}, NewTabIcon = ${empty}, TrashIcon = ${empty}, CheckIcon = ${empty};`,
@@ -36,8 +28,7 @@ const substitutes = {
   "@/hooks/store/use-project":
     "export const useProject = () => ({addProjectToFavorites: async () => {}, removeProjectFromFavorites: async () => {}});",
   "@/hooks/store/user": "export const useUserPermissions = () => ({allowPermissions: () => true});",
-  "@/hooks/use-app-router":
-    "export const useAppRouter = () => ({push: href => globalThis.__projectCardTest.navigations.push(href)});",
+
   "@/hooks/use-platform-os": "export const usePlatformOS = () => ({isMobile:false});",
   "@/components/common/cover-image": `export const CoverImage = ${empty};`,
 };
@@ -69,7 +60,13 @@ async function setup(t, overrides = {}) {
   t.after(() => assert.deepEqual(errors, []));
   state.navigations = [];
   const { ProjectCard } = await import("../../apps/web/core/components/project/card.tsx");
-  await environment.render(React.createElement(ProjectCard, { project: { ...project, ...overrides } }));
+  const fixture = createRouterFixture("/default/projects/");
+  await fixture.render(environment, React.createElement(ProjectCard, { project: { ...project, ...overrides } }));
+  t.after(
+    fixture.router.subscribe("onResolved", () => {
+      state.navigations.push(fixture.router.state.location.pathname.replace(/\/$/, ""));
+    })
+  );
   return environment.container;
 }
 
@@ -82,7 +79,7 @@ test("project navigation and settings are independently accessible sibling links
   assert.ok(settingsLink);
   await act(async () => settingsLink.click());
   assert.deepEqual(state.navigations, ["/default/settings/projects/project-id"]);
-  await act(async () => projectLink.click());
+  await act(async () => container.querySelector('[aria-label="Open project Go Plane"]').click());
   assert.deepEqual(state.navigations, ["/default/settings/projects/project-id", "/default/projects/project-id/issues"]);
   const memberArea = [...container.querySelectorAll("a")].find((link) => link.textContent.includes("No Member Yet"));
   assert.ok(memberArea, "informational member area retains card navigation");

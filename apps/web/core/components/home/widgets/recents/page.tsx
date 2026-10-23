@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@tanstack/react-router";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { PageIcon } from "@plane/propel/icons";
 // plane import
@@ -75,7 +75,7 @@ export function RecentPage(props: BlockProps) {
       onItemClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        router.push(pageLink);
+        void router.navigate({ href: pageLink });
       }}
     />
   );

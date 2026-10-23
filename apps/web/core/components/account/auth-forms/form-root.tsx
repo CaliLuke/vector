@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useRouter } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import { EAuthModes, EAuthSteps } from "@plane/constants";
 import type { IEmailCheckData } from "@plane/types";
 // helpers
@@ -14,7 +15,7 @@ import type { TAuthErrorInfo } from "@/helpers/authentication.helper";
 import { authErrorHandler } from "@/helpers/authentication.helper";
 // hooks
 import { useInstance } from "@/hooks/store/use-instance";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // services
 import { AuthService } from "@/services/auth.service";
 // local components
@@ -38,9 +39,9 @@ const authService = new AuthService();
 export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot) {
   const { authStep, authMode, email, setEmail, setAuthMode, setAuthStep, setErrorInfo, currentAuthMode } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // query params
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const nextPath = searchParams.get("next_path");
   // states
   const [isExistingEmail, setIsExistingEmail] = useState(false);
@@ -86,7 +87,7 @@ export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot)
     setErrorInfo(undefined);
     setEmail("");
     setAuthStep(EAuthSteps.EMAIL);
-    router.push(currentAuthMode === EAuthModes.SIGN_IN ? `/` : "/sign-up");
+    void router.navigate({ href: currentAuthMode === EAuthModes.SIGN_IN ? `/` : "/sign-up" });
   };
 
   // generating the unique code

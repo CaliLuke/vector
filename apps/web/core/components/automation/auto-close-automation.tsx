@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { ArchiveX } from "lucide-react";
 // plane imports
 import { PROJECT_AUTOMATION_MONTHS, EUserPermissions, EUserPermissionsLevel, EIconSize } from "@plane/constants";
@@ -28,7 +29,7 @@ type Props = {
 export const AutoCloseAutomation = observer(function AutoCloseAutomation(props: Props) {
   const { handleChange } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [monthModal, setmonthModal] = useState(false);
   // store hooks

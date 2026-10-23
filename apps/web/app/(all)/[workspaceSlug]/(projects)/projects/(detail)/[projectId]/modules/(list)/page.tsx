@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
@@ -24,13 +25,11 @@ import { ModuleAppliedFiltersList, ModulesListView } from "@/components/modules"
 import { useModuleFilter } from "@/hooks/store/use-module-filter";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
-import type { Route } from "./+types/page";
 
-function ProjectModulesPage({ params }: Route.ComponentProps) {
+function ProjectModulesPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = params;
+  const router = useRouter();
+  const { workspaceSlug, projectId } = Route.useParams();
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks
@@ -74,7 +73,7 @@ function ProjectModulesPage({ params }: Route.ComponentProps) {
           primaryButton={{
             text: t("disabled_project.empty_state.module.primary_button.text"),
             onClick: () => {
-              router.push(`/${workspaceSlug}/settings/projects/${projectId}/features`);
+              void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/features` });
             },
             disabled: !canPerformEmptyStateActions,
           }}
@@ -102,4 +101,6 @@ function ProjectModulesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectModulesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/modules/")({
+  component: observer(ProjectModulesPage),
+});

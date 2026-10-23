@@ -5,15 +5,16 @@
  */
 
 import { createContext, useContext } from "react";
-import { useParams } from "next/navigation";
+
 import { EIssuesStoreType } from "@plane/types";
 import { useIssues } from "./store/use-issues";
+import { useParams } from "@tanstack/react-router";
 
 export const IssuesStoreContext = createContext<EIssuesStoreType | undefined>(undefined);
 
 export const useIssueStoreType = () => {
   const storeType = useContext(IssuesStoreContext);
-  const { globalViewId, viewId, projectId, cycleId, moduleId, userId, epicId, teamspaceId } = useParams();
+  const { globalViewId, viewId, projectId, cycleId, moduleId, userId } = useParams({ strict: false });
 
   // If store type exists in context, use that store type
   if (storeType) return storeType;
@@ -23,21 +24,13 @@ export const useIssueStoreType = () => {
 
   if (userId) return EIssuesStoreType.PROFILE;
 
-  if (teamspaceId && viewId) return EIssuesStoreType.TEAM_VIEW;
-
-  if (teamspaceId && projectId) return EIssuesStoreType.TEAM_PROJECT_WORK_ITEMS;
-
   if (viewId) return EIssuesStoreType.PROJECT_VIEW;
 
   if (cycleId) return EIssuesStoreType.CYCLE;
 
   if (moduleId) return EIssuesStoreType.MODULE;
 
-  if (epicId) return EIssuesStoreType.EPIC;
-
   if (projectId) return EIssuesStoreType.PROJECT;
-
-  if (teamspaceId) return EIssuesStoreType.TEAM;
 
   return EIssuesStoreType.PROJECT;
 };

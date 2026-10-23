@@ -7,9 +7,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useState, useRef, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { FormProvider, useForm } from "react-hook-form";
 // editor
 import { ETabIndices, DEFAULT_WORK_ITEM_FORM_VALUES } from "@plane/constants";
@@ -106,7 +107,8 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
   const modalContainerRef = useRef<HTMLDivElement | null>(null);
 
   // router
-  const { workspaceSlug, projectId: routeProjectId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { projectId: routeProjectId } = useParams({ strict: false });
 
   // store hooks
   const { getProjectById } = useProject();

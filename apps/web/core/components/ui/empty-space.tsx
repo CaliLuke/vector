@@ -5,8 +5,9 @@
  */
 
 // next
+import { Link } from "@tanstack/react-router";
 import React from "react";
-import Link from "next/link";
+
 import { ChevronRightIcon } from "@plane/propel/icons";
 
 type EmptySpaceProps = {
@@ -34,7 +35,7 @@ function EmptySpace({ title, description, children, Icon, link }: EmptySpaceProp
         </ul>
         {link ? (
           <div className="mt-6 flex">
-            <Link href={link.href}>
+            <Link to={link.href}>
               <span className="text-13 font-medium text-accent-primary hover:text-accent-primary">
                 {link.text}
                 <span aria-hidden="true"> &rarr;</span>
@@ -74,7 +75,7 @@ function EmptySpaceItem({ title, description, Icon, action, href }: EmptySpaceIt
   );
 
   if (href) {
-    spaceItem = <Link href={href}>{spaceItem}</Link>;
+    spaceItem = <Link to={href}>{spaceItem}</Link>;
   }
 
   return (

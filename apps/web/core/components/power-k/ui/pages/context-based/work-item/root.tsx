@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EIssueServiceType } from "@plane/types";
 // components
@@ -30,7 +31,7 @@ type Props = {
 export const PowerKWorkItemContextBasedPages = observer(function PowerKWorkItemContextBasedPages(props: Props) {
   const { activePage, handleSelection } = props;
   // navigation
-  const { workItem: entityIdentifier } = useParams();
+  const { workItem: entityIdentifier } = useParams({ strict: false });
   // store hooks
   const {
     issue: { getIssueById, getIssueIdByIdentifier },

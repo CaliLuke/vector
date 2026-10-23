@@ -4,11 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import type { SyntheticEvent } from "react";
 import { useCallback, useMemo } from "react";
 import { xor } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { Paperclip } from "lucide-react";
 // i18n
@@ -39,7 +40,7 @@ import { useIssues } from "@/hooks/store/use-issues";
 import { useLabel } from "@/hooks/store/use-label";
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectState } from "@/hooks/store/use-project-state";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
@@ -76,8 +77,8 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
   const projectDetails = getProjectById(issue.project_id);
 
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   // derived values
   const stateDetails = getStateById(issue.state_id);
@@ -170,7 +171,7 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
     isEpic,
   });
 
-  const redirectToIssueDetail = () => router.push(`${workItemLink}#sub-issues`);
+  const redirectToIssueDetail = () => void router.navigate({ href: `${workItemLink}#sub-issues` });
 
   if (!displayProperties || !issue.project_id) return null;
 

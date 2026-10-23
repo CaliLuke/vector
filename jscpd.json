@@ -10,7 +10,8 @@
     "**/public/**",
     "**/generated/**",
     "**/*.snap",
-    "**/fixtures/**"
+    "**/fixtures/**",
+    "apps/web/app/routeTree.gen.ts"
   ],
   "gitignore": true,
   "absolute": false,

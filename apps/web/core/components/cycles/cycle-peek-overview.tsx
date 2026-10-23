@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useRouter } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { usePathname, useSearchParams } from "next/navigation";
+
 // hooks
 import { generateQueryParams } from "@plane/utils";
 import { useCycle } from "@/hooks/store/use-cycle";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // components
 import { CycleDetailsSidebar } from "./analytics-sidebar";
 
@@ -23,9 +24,9 @@ type Props = {
 export const CyclePeekOverview = observer(function CyclePeekOverview(props: Props) {
   const { projectId: propsProjectId, workspaceSlug, isArchived } = props;
   // router
-  const router = useAppRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const peekCycle = searchParams.get("peekCycle");
   // refs
   const ref = React.useRef(null);
@@ -37,7 +38,7 @@ export const CyclePeekOverview = observer(function CyclePeekOverview(props: Prop
 
   const handleClose = () => {
     const query = generateQueryParams(searchParams, ["peekCycle"]);
-    router.push(`${pathname}?${query}`);
+    void router.navigate({ href: `${pathname}?${query}` });
   };
 
   useEffect(() => {

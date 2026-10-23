@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { useTranslation } from "@plane/i18n";
 // ui
 import { Button, getButtonStyling } from "@plane/propel/button";
@@ -50,7 +51,8 @@ export const ProjectFeatureUpdate = observer(function ProjectFeatureUpdate(props
             {t("close")}
           </Button>
           <Link
-            href={`/${workspaceSlug}/projects/${projectId}/issues`}
+            to="/$workspaceSlug/projects/$projectId/issues/"
+            params={{ workspaceSlug: workspaceSlug, projectId: projectId }}
             onClick={onClose}
             className={getButtonStyling("primary", "lg")}
             // oxlint-disable-next-line jsx-a11y/tabindex-no-positive

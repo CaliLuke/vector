@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -13,11 +14,10 @@ import { PageHead } from "@/components/core/page-title";
 import { AllIssueLayoutRoot } from "@/components/issues/issue-layouts/roots/all-issue-layout-root";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import type { Route } from "./+types/page";
 
-function GlobalViewIssuesPage({ params }: Route.ComponentProps) {
+function GlobalViewIssuesPage(): React.JSX.Element | null {
   // router
-  const { globalViewId } = params;
+  const { globalViewId } = Route.useParams();
   // store hooks
   const { currentWorkspace } = useWorkspace();
   // states
@@ -37,4 +37,6 @@ function GlobalViewIssuesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(GlobalViewIssuesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/workspace-views/$globalViewId")({
+  component: observer(GlobalViewIssuesPage),
+});

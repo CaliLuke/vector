@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { PROFILE_SETTINGS_TABS } from "@plane/constants";
@@ -16,14 +17,13 @@ import { ProfileSettingsContent } from "@/components/settings/profile/content";
 import { ProfileSettingsSidebarRoot } from "@/components/settings/profile/sidebar";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
-// local imports
-import type { Route } from "../+types/layout";
 
-function ProfileSettingsPage(props: Route.ComponentProps) {
-  const { profileTabId } = props.params;
+// local imports
+
+function ProfileSettingsPage(): React.JSX.Element | null {
+  const { profileTabId } = Route.useParams();
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { data: currentUser } = useUser();
   // translation
@@ -46,7 +46,7 @@ function ProfileSettingsPage(props: Route.ComponentProps) {
           <ProfileSettingsSidebarRoot
             activeTab={profileTabId as TProfileSettingsTabs}
             className="w-[250px]"
-            updateActiveTab={(tab) => router.push(`/settings/profile/${tab}`)}
+            updateActiveTab={(tab) => void router.navigate({ href: `/settings/profile/${tab}` })}
           />
           <ProfileSettingsContent
             activeTab={profileTabId as TProfileSettingsTabs}
@@ -58,4 +58,6 @@ function ProfileSettingsPage(props: Route.ComponentProps) {
   );
 }
 
-export default observer(ProfileSettingsPage);
+export const Route = createFileRoute("/_authenticated/settings/profile/$profileTabId/")({
+  component: observer(ProfileSettingsPage),
+});

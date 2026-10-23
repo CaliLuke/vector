@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation, useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import React, { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
+
 import { useForm } from "react-hook-form";
 import { Eye, ArrowRight, CalendarDays } from "lucide-react";
 // plane imports
@@ -28,7 +29,7 @@ import { MergedDateDisplay } from "@/components/dropdowns/merged-date";
 import { useCycle } from "@/hooks/store/use-cycle";
 import { useMember } from "@/hooks/store/use-member";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { useTimeZoneConverter } from "@/hooks/use-timezone-converter";
 // local imports
@@ -52,7 +53,7 @@ const defaultValues: Partial<ICycle> = {
 export const CycleListItemAction = observer(function CycleListItemAction(props: Props) {
   const { workspaceSlug, projectId, cycleId, cycleDetails, parentRef, isActive = false } = props;
   // router
-  const { projectId: routerProjectId } = useParams();
+  const { projectId: routerProjectId } = useParams({ strict: false });
   //states
   const [transferIssuesModal, setTransferIssuesModal] = useState(false);
   // hooks
@@ -61,9 +62,9 @@ export const CycleListItemAction = observer(function CycleListItemAction(props: 
   const { isProjectTimeZoneDifferent, getProjectUTCOffset, renderFormattedDateInUserTimezone } =
     useTimeZoneConverter(projectId);
   // router
-  const router = useAppRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { addCycleToFavorites, removeCycleFromFavorites } = useCycle();
   const { allowPermissions } = useUserPermissions();
@@ -165,9 +166,9 @@ export const CycleListItemAction = observer(function CycleListItemAction(props: 
 
     const query = generateQueryParams(searchParams, ["peekCycle"]);
     if (searchParams.has("peekCycle") && searchParams.get("peekCycle") === cycleId) {
-      router.push(`${pathname}?${query}`);
+      void router.navigate({ href: `${pathname}?${query}` });
     } else {
-      router.push(`${pathname}?${query && `${query}&`}peekCycle=${cycleId}`);
+      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekCycle=${cycleId}` });
     }
   };
 

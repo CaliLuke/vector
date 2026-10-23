@@ -290,6 +290,8 @@ esac
 
   const suiteRoot = path.join(fixtureRoot, "packages", "app");
   mkdirSync(path.join(suiteRoot, "coverage"), { recursive: true });
+  mkdirSync(path.join(suiteRoot, "src"), { recursive: true });
+  writeFileSync(path.join(suiteRoot, "src", "a.ts"), "export const value = 1;\n");
   const scopedSummary = path.join(suiteRoot, "coverage", "coverage-summary.json");
   const scopedBaseline = path.join(suiteRoot, ".quality", "coverage-baseline.json");
   const scopeFile = path.join(fixtureRoot, "coverage-scope.json");
@@ -322,7 +324,7 @@ esac
   ];
   const scopeEnvironment = {
     GIT_SCOPE_FILES:
-      "packages/app/src/a.ts\npackages/app/src/a.test.ts\npackages/app/src/types.ts\npackages/app/src/a.stories.tsx",
+      "packages/app/src/a.ts\npackages/app/src/a.test.ts\npackages/app/src/types.ts\npackages/app/src/a.stories.tsx\npackages/app/src/deleted.ts",
   };
   assert.equal(runScript("check-coverage-ratchet.mjs", scopeArgs, scopeEnvironment).status, 0);
   writeJson(scopedSummary, { total: coverageMetrics(90) });

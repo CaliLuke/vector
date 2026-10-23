@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+
 // constants
 import { EPageAccess } from "@plane/constants";
 // plane types
@@ -29,8 +30,10 @@ export const PagesListHeader = observer(function PagesListHeader() {
   const [isCreatingPage, setIsCreatingPage] = useState(false);
   // router
   const router = useRouter();
-  const { workspaceSlug, projectId } = useParams();
-  const searchParams = useSearchParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages",
+  });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const pageType = searchParams.get("type");
   // store hooks
   const { currentProjectDetails, loader } = useProject();
@@ -47,7 +50,7 @@ export const PagesListHeader = observer(function PagesListHeader() {
       // oxlint-disable-next-line promise/always-return
       .then((res) => {
         const pageId = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${res?.id}`;
-        router.push(pageId);
+        void router.navigate({ href: pageId });
       })
       .catch((err) => {
         setToast({

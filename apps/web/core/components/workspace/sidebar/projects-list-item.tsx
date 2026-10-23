@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
@@ -11,7 +12,7 @@ import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { attachInstruction, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { observer } from "mobx-react";
-import { useParams, useRouter } from "next/navigation";
+
 import { createRoot } from "react-dom/client";
 import scrollIntoView from "smooth-scroll-into-view-if-needed";
 import { Settings, Share2, LogOut, MoreHorizontal } from "lucide-react";
@@ -90,7 +91,8 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
   const projectRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLButtonElement | null>(null);
   // router
-  const { workspaceSlug, projectId: URLProjectId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { projectId: URLProjectId } = useParams({ strict: false });
   const router = useRouter();
   // derived values
   const project = getPartialProjectById(projectId);
@@ -267,7 +269,7 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
     if (projectPreferences.navigationMode === "ACCORDION") {
       setIsProjectListOpen(!isProjectListOpen);
     } else {
-      router.push(defaultTabUrl);
+      void router.navigate({ href: defaultTabUrl });
     }
     // close the extended sidebar if it is open
     if (isExtendedProjectSidebarOpened && !isAccordionMode) {
@@ -408,7 +410,7 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
                   {isAuthorized && (
                     <CustomMenu.MenuItem
                       onClick={() => {
-                        router.push(`/${workspaceSlug}/projects/${project?.id}/archives/issues`);
+                        void router.navigate({ href: `/${workspaceSlug}/projects/${project?.id}/archives/issues` });
                       }}
                     >
                       <div className="flex cursor-pointer items-center justify-start gap-2">
@@ -419,7 +421,7 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
                   )}
                   <CustomMenu.MenuItem
                     onClick={() => {
-                      router.push(`/${workspaceSlug}/settings/projects/${project?.id}`);
+                      void router.navigate({ href: `/${workspaceSlug}/settings/projects/${project?.id}` });
                     }}
                   >
                     <div className="flex cursor-pointer items-center justify-start gap-2">

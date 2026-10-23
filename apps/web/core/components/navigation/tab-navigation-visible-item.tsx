@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { Link } from "react-router";
+import { Link } from "@tanstack/react-router";
 import { PinOff } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";

@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
+import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -11,13 +13,12 @@ import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapt
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+
 // plane types
 import type { InstructionType } from "@plane/types";
 // components
 import { StickyNote } from "../sticky";
 // helpers
-import { getInstructionFromPayload } from "./sticky.helpers";
 
 type Props = {
   stickyId: string;
@@ -38,13 +39,13 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
   // refs
   const elementRef = useRef<HTMLDivElement>(null);
   // navigation
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   useEffect(() => {
     const stickyElement = elementRef.current;
     if (!stickyElement) return;
 
-    const initialData = { id: stickyId, type: "sticky" };
+    const initialData = { id: stickyId, type: "sticky", parentId: null, isGroup: false, isChild: false };
 
     if (pathname.includes("stickies"))
       return combine(

@@ -3,15 +3,14 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { redirect } from "react-router";
-import type { Route } from "./+types/analytics";
-
-export const clientLoader = ({ params }: Route.ClientLoaderArgs) => {
-  const { workspaceSlug } = params;
-  throw redirect(`/${workspaceSlug}/analytics/overview/`);
-};
-
-export default function Analytics() {
-  return null;
-}
+export const Route = createFileRoute("/$workspaceSlug/analytics")({
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: "/$workspaceSlug/analytics/$tabId/",
+      params: { workspaceSlug: params.workspaceSlug, tabId: "overview" },
+      replace: true,
+    });
+  },
+});

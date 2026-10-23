@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { ForgotPasswordForm } from "@/components/account/auth-forms/forgot-password";
@@ -14,7 +15,7 @@ import { EAuthModes, EPageTypes } from "@/helpers/authentication.helper";
 import DefaultLayout from "@/layouts/default-layout";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-function ForgotPasswordPage() {
+function ForgotPasswordPage(): React.JSX.Element | null {
   return (
     <DefaultLayout>
       <AuthenticationWrapper pageType={EPageTypes.NON_AUTHENTICATED}>
@@ -27,4 +28,6 @@ function ForgotPasswordPage() {
   );
 }
 
-export default observer(ForgotPasswordPage);
+export const Route = createFileRoute("/accounts/forgot-password/")({
+  component: observer(ForgotPasswordPage),
+});

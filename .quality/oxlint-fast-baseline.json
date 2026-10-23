@@ -1295,7 +1295,7 @@
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/modules/(detail)/header.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `ModuleIssuesHeader` has a complexity of 26. Maximum allowed is 15."
+        "message": "function `ModuleIssuesHeader` has a complexity of 25. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -1331,7 +1331,7 @@
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/views/(detail)/[viewId]/header.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `ProjectViewIssuesHeader` has a complexity of 25. Maximum allowed is 15."
+        "message": "function `ProjectViewIssuesHeader` has a complexity of 24. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -1349,7 +1349,7 @@
         "filename": "apps/web/app/(all)/[workspaceSlug]/(projects)/workspace-views/header.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `GlobalIssuesHeader` has a complexity of 25. Maximum allowed is 15."
+        "message": "function `GlobalIssuesHeader` has a complexity of 24. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5363,7 +5363,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/kanban/block.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `KanbanIssueBlock` has a complexity of 18. Maximum allowed is 15."
+        "message": "function `KanbanIssueBlock` has a complexity of 17. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5444,7 +5444,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/list/block.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `IssueBlock` has a complexity of 44. Maximum allowed is 15."
+        "message": "function `IssueBlock` has a complexity of 42. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5525,7 +5525,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/properties/label-dropdown.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `LabelDropdown` has a complexity of 23. Maximum allowed is 15."
+        "message": "function `LabelDropdown` has a complexity of 22. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5660,7 +5660,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/roots/all-issue-layout-root.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `AllIssueLayoutRoot` has a complexity of 19. Maximum allowed is 15."
+        "message": "function `AllIssueLayoutRoot` has a complexity of 17. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5669,7 +5669,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/roots/cycle-layout-root.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `CycleLayoutRoot` has a complexity of 23. Maximum allowed is 15."
+        "message": "function `CycleLayoutRoot` has a complexity of 20. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5687,7 +5687,7 @@
         "filename": "apps/web/core/components/issues/issue-layouts/roots/project-view-layout-root.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `ProjectViewLayoutRoot` has a complexity of 24. Maximum allowed is 15."
+        "message": "function `ProjectViewLayoutRoot` has a complexity of 18. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5894,7 +5894,7 @@
         "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "async function has a complexity of 48. Maximum allowed is 15."
+        "message": "async function has a complexity of 43. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -5903,7 +5903,7 @@
         "filename": "apps/web/core/components/issues/issue-modal/base.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `CreateUpdateIssueModalBase` has a complexity of 31. Maximum allowed is 15."
+        "message": "function `CreateUpdateIssueModalBase` has a complexity of 30. Maximum allowed is 15."
       },
       "count": 1
     },
@@ -9332,7 +9332,7 @@
         "filename": "apps/web/core/hooks/use-issues-actions.tsx",
         "severity": "warning",
         "code": "eslint(max-lines)",
-        "message": "File has too many lines (724)."
+        "message": "File has too many lines (703)."
       },
       "count": 1
     },
@@ -9611,7 +9611,7 @@
         "filename": "apps/web/core/lib/wrappers/authentication-wrapper.tsx",
         "severity": "warning",
         "code": "eslint(complexity)",
-        "message": "function `AuthenticationWrapper` has a complexity of 54. Maximum allowed is 15."
+        "message": "function `AuthenticationWrapper` has a complexity of 36. Maximum allowed is 15."
       },
       "count": 1
     },

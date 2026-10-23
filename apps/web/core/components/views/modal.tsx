@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // types
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -15,7 +16,7 @@ import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProjectView } from "@/hooks/store/use-project-view";
 import { useWorkItemFilters } from "@/hooks/store/work-item-filters/use-work-item-filters";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import useKeypress from "@/hooks/use-keypress";
 // local imports
 import { ProjectViewForm } from "./form";
@@ -32,7 +33,7 @@ type Props = {
 export const CreateUpdateProjectViewModal = observer(function CreateUpdateProjectViewModal(props: Props) {
   const { data, isOpen, onClose, preLoadedData, workspaceSlug, projectId } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { createView, updateView } = useProjectView();
   const {
@@ -48,7 +49,7 @@ export const CreateUpdateProjectViewModal = observer(function CreateUpdateProjec
     try {
       const res = await createView(workspaceSlug, projectId, payload);
       handleClose();
-      router.push(`/${workspaceSlug}/projects/${projectId}/views/${res.id}`);
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views/${res.id}` });
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success!",

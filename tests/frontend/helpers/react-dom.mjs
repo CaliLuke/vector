@@ -34,6 +34,7 @@ const GLOBAL_NAMES = [
   "MutationObserver",
   "ResizeObserver",
   "getComputedStyle",
+  "scrollTo",
   "requestAnimationFrame",
   "cancelAnimationFrame",
   "IS_REACT_ACT_ENVIRONMENT",
@@ -67,6 +68,8 @@ export async function createReactDomTestEnvironment() {
     }
   }
   dom.window.ResizeObserver = TestResizeObserver;
+  // jsdom has no viewport to scroll.
+  dom.window.scrollTo = () => {};
 
   for (const name of GLOBAL_NAMES) {
     const value = name === "IS_REACT_ACT_ENVIRONMENT" ? true : name === "self" ? dom.window : dom.window[name];

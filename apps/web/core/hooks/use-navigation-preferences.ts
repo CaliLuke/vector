@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { useParams } from "next/navigation";
+
 import type {
   TPersonalNavigationItemKey,
   TPersonalNavigationPreferences,
@@ -24,11 +24,12 @@ import {
 } from "@plane/types";
 import { useWorkspace } from "./store/use-workspace";
 import useLocalStorage from "./use-local-storage";
+import { useParams } from "@tanstack/react-router";
 
 const APP_RAIL_PREFERENCES_KEY = "app_rail_preferences";
 
 export const usePersonalNavigationPreferences = () => {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
   const { getNavigationPreferences, updateBulkSidebarPreferences } = useWorkspace();
 
   // Get preferences from the store
@@ -110,7 +111,7 @@ export const usePersonalNavigationPreferences = () => {
 };
 
 export const useProjectNavigationPreferences = () => {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
   const { getProjectNavigationPreferences, updateProjectNavigationPreferences } = useWorkspace();
 
   // Get preferences from the store
@@ -184,7 +185,7 @@ export const useProjectNavigationPreferences = () => {
 };
 
 export const useWorkspaceNavigationPreferences = () => {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
   const { getNavigationPreferences, updateBulkSidebarPreferences } = useWorkspace();
 
   // Get preferences from the store

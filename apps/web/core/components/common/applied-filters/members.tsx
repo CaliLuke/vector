@@ -9,18 +9,19 @@ import { CloseIcon } from "@plane/propel/icons";
 // plane ui
 import { Avatar } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils";
+import { cn, getFileURL } from "@plane/utils";
 // types
 import { useMember } from "@/hooks/store/use-member";
 
-type Props = {
+export type AppliedMembersFiltersProps = {
+  className?: string;
   handleRemove: (val: string) => void;
   values: string[];
   editable: boolean | undefined;
 };
 
-export const AppliedMembersFilters = observer(function AppliedMembersFilters(props: Props) {
-  const { handleRemove, values, editable } = props;
+export const AppliedMembersFilters = observer(function AppliedMembersFilters(props: AppliedMembersFiltersProps) {
+  const { handleRemove, values, editable, className } = props;
   // store hooks
   const {
     workspace: { getWorkspaceMemberDetails },
@@ -34,7 +35,10 @@ export const AppliedMembersFilters = observer(function AppliedMembersFilters(pro
         if (!memberDetails) return null;
 
         return (
-          <div key={memberId} className="flex items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 text-11">
+          <div
+            key={memberId}
+            className={cn("flex items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 text-11", className)}
+          >
             <Avatar
               name={memberDetails.display_name}
               src={getFileURL(memberDetails.avatar_url)}

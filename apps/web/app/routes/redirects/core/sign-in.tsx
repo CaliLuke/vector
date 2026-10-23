@@ -3,13 +3,10 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { redirect } from "react-router";
-
-export const clientLoader = () => {
-  throw redirect("/");
-};
-
-export default function SignIn() {
-  return null;
-}
+export const Route = createFileRoute("/sign-in")({
+  beforeLoad: () => {
+    throw redirect({ to: "/", replace: true });
+  },
+});

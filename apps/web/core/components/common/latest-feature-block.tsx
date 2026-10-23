@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
 import { useTheme } from "next-themes";
 // icons
 import { Lightbulb } from "lucide-react";
@@ -20,9 +19,9 @@ export function LatestFeatureBlock() {
         <Lightbulb className="mx-3 mr-2 h-7 w-7" />
         <p className="text-left text-13 text-primary">
           Pages gets a facelift! Write anything and use Galileo to help you start.{" "}
-          <Link href="https://github.com/CaliLuke/vector" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/CaliLuke/vector" target="_blank" rel="noopener noreferrer">
             <span className="text-13 font-medium underline hover:cursor-pointer">Learn more</span>
-          </Link>
+          </a>
         </p>
       </div>
       <div

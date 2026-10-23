@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
+
 // plane package imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -22,9 +23,9 @@ import { useProject } from "@/hooks/store/use-project";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUserPermissions } from "@/hooks/store/user";
 import { useAnalyticsTabs } from "@/components/analytics/use-analytics-tabs";
-import type { Route } from "./+types/page";
 
-function AnalyticsPage({ params }: Route.ComponentProps) {
+function AnalyticsPage(): React.JSX.Element | null {
+  const params = Route.useParams();
   const { tabId } = params;
 
   // hooks
@@ -63,7 +64,7 @@ function AnalyticsPage({ params }: Route.ComponentProps) {
   // Handle tab change
   const handleTabChange = (value: string) => {
     setSelectedTab(value);
-    router.push(`/${currentWorkspace?.slug}/analytics/${value}`);
+    void router.navigate({ href: `/${currentWorkspace?.slug}/analytics/${value}` });
   };
 
   return (
@@ -137,4 +138,6 @@ function AnalyticsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(AnalyticsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/analytics/$tabId/")({
+  component: observer(AnalyticsPage),
+});

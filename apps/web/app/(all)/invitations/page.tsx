@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
 
 import useSWR, { mutate } from "swr";
 import { CheckCircle2 } from "lucide-react";
@@ -28,7 +28,7 @@ import { USER_WORKSPACES_LIST } from "@plane/constants";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUser, useUserProfile } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // services
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 // plane web services
@@ -36,12 +36,12 @@ import { WorkspaceService } from "@/services/workspace.service";
 
 const workspaceService = new WorkspaceService();
 
-function UserInvitationsPage() {
+function UserInvitationsPage(): React.JSX.Element | null {
   // states
   const [invitationsRespond, setInvitationsRespond] = useState<string[]>([]);
   const [isJoiningWorkspaces, setIsJoiningWorkspaces] = useState(false);
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { t } = useTranslation();
   const { data: currentUser } = useUser();
@@ -86,7 +86,7 @@ function UserInvitationsPage() {
           .then(() => {
             setIsJoiningWorkspaces(false);
             fetchWorkspaces().then(() => {
-              router.push(`/${redirectWorkspace?.slug}`);
+              void router.navigate({ href: `/${redirectWorkspace?.slug}` });
             });
           })
           .catch(() => {
@@ -114,7 +114,7 @@ function UserInvitationsPage() {
         <div className="relative h-1/6 flex-shrink-0 sm:w-2/12 md:w-3/12 lg:w-1/5">
           <div className="absolute top-1/2 left-0 h-[0.5px] w-full -translate-y-1/2 border-b-[0.5px] border-subtle sm:top-0 sm:left-1/2 sm:h-screen sm:w-[0.5px] sm:-translate-x-1/2 sm:translate-y-0 sm:border-r-[0.5px] md:left-1/3" />
           <Link
-            href="/"
+            to="/"
             className="absolute top-1/2 left-5 z-10 grid -translate-y-1/2 place-items-center px-3 sm:top-12 sm:left-1/2 sm:-translate-x-[15px] sm:translate-y-0 sm:px-0 sm:py-5 md:left-1/3"
           >
             <PlaneLogo className="h-9 w-auto text-primary" />
@@ -170,7 +170,7 @@ function UserInvitationsPage() {
                   >
                     {t("accept_and_join")}
                   </Button>
-                  <Link href={`/${redirectWorkspaceSlug}`}>
+                  <Link to="/$workspaceSlug/" params={{ workspaceSlug: redirectWorkspaceSlug }}>
                     <span>
                       <Button variant="secondary" size="lg">
                         {t("go_home")}
@@ -188,7 +188,7 @@ function UserInvitationsPage() {
                 image={emptyInvitation}
                 primaryButton={{
                   text: t("back_to_home"),
-                  onClick: () => router.push("/"),
+                  onClick: () => void router.navigate({ href: "/" }),
                 }}
               />
             </div>
@@ -199,4 +199,6 @@ function UserInvitationsPage() {
   );
 }
 
-export default observer(UserInvitationsPage);
+export const Route = createFileRoute("/invitations/")({
+  component: observer(UserInvitationsPage),
+});

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { useRef } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { MoveDiagonal, MoveRight } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -168,7 +169,7 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
         </Tooltip>
 
         <Tooltip tooltipContent={t("issue.open_in_full_screen")} isMobile={isMobile}>
-          <Link href={workItemLink} onClick={() => removeRoutePeekId()}>
+          <Link to={workItemLink} onClick={() => removeRoutePeekId()}>
             <MoveDiagonal className="h-4 w-4 text-tertiary hover:text-secondary" />
           </Link>
         </Tooltip>

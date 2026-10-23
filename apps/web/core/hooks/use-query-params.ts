@@ -5,20 +5,21 @@
  */
 
 import { useCallback } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+
+import { useLocation } from "@tanstack/react-router";
 
 type TParamsToAdd = {
   [key: string]: string;
 };
 
 export const useQueryParams = () => {
-  // next navigation
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  // URL state
+  const search = useLocation({ select: (location) => location.searchStr });
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   const updateQueryParams = useCallback(
     ({ paramsToAdd = {}, paramsToRemove = [] }: { paramsToAdd?: TParamsToAdd; paramsToRemove?: string[] }) => {
-      const currentParams = new URLSearchParams(searchParams.toString());
+      const currentParams = new URLSearchParams(search);
 
       // add or update query parameters
       Object.keys(paramsToAdd).forEach((key) => {
@@ -35,7 +36,7 @@ export const useQueryParams = () => {
       const newRoute = query ? `${pathname}?${query}` : pathname;
       return newRoute;
     },
-    [pathname, searchParams]
+    [pathname, search]
   );
 
   return {

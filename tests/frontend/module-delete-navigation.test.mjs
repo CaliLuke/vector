@@ -1,3 +1,5 @@
+import { resolvePackageStub } from "./helpers/module-stubs.mjs";
+import { createRouterFixture, routerApi } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -6,7 +8,6 @@ import { React, act, createReactDomTestEnvironment, webRequire } from "./helpers
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
-const navigationUrl = pathToFileURL(`${repositoryRoot}/apps/web/app/compat/next/navigation.ts`).href;
 const deleteModalUrl = pathToFileURL(`${repositoryRoot}/apps/web/core/components/modules/delete-module-modal.tsx`).href;
 const alertModalUrl = pathToFileURL(`${repositoryRoot}/packages/ui/src/modals/alert-modal.tsx`).href;
 const contextMenuUrl = pathToFileURL(`${repositoryRoot}/packages/ui/src/dropdowns/context-menu/index.ts`).href;
@@ -22,7 +23,6 @@ const stubs = {
   "@plane/ui": `export { AlertModalCore } from ${JSON.stringify(alertModalUrl)};
     export { ContextMenu } from ${JSON.stringify(contextMenuUrl)};
     export { CustomMenu } from ${JSON.stringify(customMenuUrl)};`,
-  "next/navigation": `export { useParams, useRouter } from ${JSON.stringify(navigationUrl)};`,
   "@/components/modules": `export { DeleteModuleModal } from ${JSON.stringify(deleteModalUrl)};
     export const ArchiveModuleModal = () => null;
     export const CreateUpdateModuleModal = () => null;`,
@@ -47,14 +47,11 @@ const stubs = {
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (Object.hasOwn(stubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(stubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
+    return resolvePackageStub(specifier, stubs, context, nextResolve);
   },
 });
 
-const { MemoryRouter, Route, Routes, useLocation } = webRequire("react-router");
+const { useLocation } = routerApi;
 
 function LocationOutput() {
   const { pathname } = useLocation();
@@ -90,28 +87,10 @@ test("module quick actions redirect after successful deletion unmounts the modal
 
   try {
     ({ ModuleQuickActions } = await import("../../apps/web/core/components/modules/quick-actions.tsx"));
-    await environment.render(
-      React.createElement(
-        MemoryRouter,
-        { initialEntries: ["/default/projects/project-id/modules/module-id"] },
-        React.createElement(
-          React.Fragment,
-          null,
-          React.createElement(LocationOutput),
-          React.createElement(
-            Routes,
-            null,
-            React.createElement(Route, {
-              path: "/:workspaceSlug/projects/:projectId/modules/:moduleId",
-              element: React.createElement(Harness),
-            }),
-            React.createElement(Route, {
-              path: "/:workspaceSlug/projects/:projectId/modules/",
-              element: null,
-            })
-          )
-        )
-      )
+    const fixture = createRouterFixture("/default/projects/project-id/modules/module-id");
+    await fixture.render(
+      environment,
+      React.createElement(React.Fragment, null, React.createElement(LocationOutput), React.createElement(Harness))
     );
 
     const menuTrigger = environment.container.querySelector("[data-main-menu] button");
@@ -146,7 +125,7 @@ test("module quick actions redirect after successful deletion unmounts the modal
 
     assert.equal(
       environment.container.querySelector('[data-testid="pathname"]')?.textContent,
-      "/default/projects/project-id/modules/"
+      "/default/projects/project-id/modules"
     );
   } finally {
     await environment.unmount();

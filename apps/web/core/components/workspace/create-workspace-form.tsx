@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
@@ -18,7 +19,7 @@ import { CustomSelect, Input } from "@plane/ui";
 import { validateWorkspaceName, validateSlug } from "@plane/utils";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // services
 import { WorkspaceService } from "@/services/workspace.service";
 
@@ -55,7 +56,7 @@ export const CreateWorkspaceForm = observer(function CreateWorkspaceForm(props: 
   const [slugError, setSlugError] = useState(false);
   const [invalidSlug, setInvalidSlug] = useState(false);
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { createWorkspace } = useWorkspace();
   // form info
@@ -245,7 +246,7 @@ export const CreateWorkspaceForm = observer(function CreateWorkspaceForm(props: 
           {isSubmitting ? t(primaryButtonText.loading) : t(primaryButtonText.default)}
         </Button>
         {!secondaryButton && (
-          <Button variant="secondary" type="button" size="xl" onClick={() => router.back()}>
+          <Button variant="secondary" type="button" size="xl" onClick={() => router.history.back()}>
             {t("common.go_back")}
           </Button>
         )}

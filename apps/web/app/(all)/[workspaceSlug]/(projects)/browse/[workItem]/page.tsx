@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
@@ -23,19 +24,17 @@ import { PageHead } from "@/components/core/page-title";
 import { useAppTheme } from "@/hooks/store/use-app-theme";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 // plane web imports
 import { useWorkItemProperties } from "@/hooks/use-issue-properties";
 import { WorkItemDetailRoot } from "@/components/browse/workItem-detail";
 
-import type { Route } from "./+types/page";
-
-export const IssueDetailsPage = observer(function IssueDetailsPage({ params }: Route.ComponentProps) {
+const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, workItem } = params;
+  const router = useRouter();
+  const { workspaceSlug, workItem } = Route.useParams();
   // hooks
   const { resolvedTheme } = useTheme();
   // store hooks
@@ -87,7 +86,9 @@ export const IssueDetailsPage = observer(function IssueDetailsPage({ params }: R
 
   useEffect(() => {
     if (data?.is_intake) {
-      router.push(`/${workspaceSlug}/projects/${data.project_id}/intake/?currentTab=open&inboxIssueId=${data?.id}`);
+      void router.navigate({
+        href: `/${workspaceSlug}/projects/${data.project_id}/intake/?currentTab=open&inboxIssueId=${data?.id}`,
+      });
     }
   }, [workspaceSlug, data, router]);
 
@@ -99,7 +100,7 @@ export const IssueDetailsPage = observer(function IssueDetailsPage({ params }: R
         description={t("issue.empty_state.issue_detail.description")}
         primaryButton={{
           text: t("issue.empty_state.issue_detail.primary_button.text"),
-          onClick: () => router.push(`/${workspaceSlug}/workspace-views/all-issues/`),
+          onClick: () => void router.navigate({ href: `/${workspaceSlug}/workspace-views/all-issues/` }),
         }}
       />
     );
@@ -141,4 +142,6 @@ export const IssueDetailsPage = observer(function IssueDetailsPage({ params }: R
   );
 });
 
-export default IssueDetailsPage;
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/browse/$workItem/")({
+  component: IssueDetailsPage,
+});

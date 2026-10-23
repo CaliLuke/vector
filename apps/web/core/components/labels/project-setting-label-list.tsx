@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -29,7 +30,9 @@ import { SettingsHeading } from "../settings/heading";
 
 export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelList() {
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/settings/projects/$projectId",
+  });
   // refs
   const scrollToRef = useRef<HTMLDivElement>(null);
   // states

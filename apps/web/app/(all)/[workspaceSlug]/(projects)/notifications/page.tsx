@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -12,10 +13,9 @@ import { PageHead } from "@/components/core/page-title";
 import { NotificationsRoot } from "@/components/workspace-notifications";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
-import type { Route } from "./+types/page";
 
-function WorkspaceDashboardPage({ params }: Route.ComponentProps) {
-  const { workspaceSlug } = params;
+function WorkspaceDashboardPage(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
   // plane hooks
   const { t } = useTranslation();
   // hooks
@@ -33,4 +33,6 @@ function WorkspaceDashboardPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(WorkspaceDashboardPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/notifications/")({
+  component: observer(WorkspaceDashboardPage),
+});

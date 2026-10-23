@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { ROLE, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -28,7 +29,7 @@ type Props = {
 export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitationsListItem(props: Props) {
   const { invitationId } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [removeMemberModal, setRemoveMemberModal] = useState(false);
   // plane hooks

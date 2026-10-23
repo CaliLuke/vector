@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane constants
 import { EIssueFilterType, ISSUE_LAYOUTS, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 // plane i18n
@@ -33,7 +34,7 @@ export const ProfileIssuesMobileHeader = observer(function ProfileIssuesMobileHe
   // plane i18n
   const { t } = useTranslation();
   // router
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug, userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
   // store hook
   const {
     issuesFilter: { issueFilters, updateFilters },

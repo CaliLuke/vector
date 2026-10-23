@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+
 import { Controller, useForm } from "react-hook-form";
 // icons
 import { CircleCheck } from "lucide-react";
@@ -37,7 +37,7 @@ const authService = new AuthService();
 
 export const ForgotPasswordForm = observer(function ForgotPasswordForm() {
   // search params
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const email = searchParams.get("email");
   // plane hooks
   const { t } = useTranslation();
@@ -128,7 +128,7 @@ export const ForgotPasswordForm = observer(function ForgotPasswordForm() {
             ? t("auth.common.resend_in", { seconds: resendTimerCode })
             : t("auth.forgot_password.send_reset_link")}
         </Button>
-        <Link href="/" className={cn("w-full", getButtonStyling("link", "lg"))}>
+        <Link to="/" className={cn("w-full", getButtonStyling("link", "lg"))}>
           {t("auth.common.back_to_sign_in")}
         </Link>
       </form>

@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 // local components
 import { ProjectViewsHeader } from "./header";
 import { ViewMobileHeader } from "./mobile-header";
 
-export default function ProjectViewsListLayout() {
+function ProjectViewsListLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<ProjectViewsHeader />} mobileHeader={<ViewMobileHeader />} />
@@ -21,3 +21,7 @@ export default function ProjectViewsListLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/views")({
+  component: ProjectViewsListLayout,
+});

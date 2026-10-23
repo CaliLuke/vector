@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import type { TIssue } from "@plane/types";
 // components
@@ -23,7 +24,7 @@ type Props = {
 export const SpreadsheetCycleColumn = observer(function SpreadsheetCycleColumn(props: Props) {
   const { issue, disabled, onClose } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const {
     issues: { addCycleToIssue, removeCycleFromIssue },

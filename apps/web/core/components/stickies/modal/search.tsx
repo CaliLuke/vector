@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
 import { debounce } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane hooks
 import { useOutsideClickDetector } from "@plane/hooks";
 // helpers
@@ -19,7 +20,7 @@ import { IconButton } from "@plane/propel/icon-button";
 
 export const StickySearch = observer(function StickySearch() {
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { searchQuery, updateSearchQuery, fetchWorkspaceStickies } = useSticky();
   const { t } = useTranslation();

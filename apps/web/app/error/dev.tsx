@@ -5,7 +5,7 @@
  */
 
 // plane imports
-import { isRouteErrorResponse } from "react-router";
+
 import { Banner } from "@plane/propel/banner";
 import { Button } from "@plane/propel/button";
 import { Card, ECardVariant } from "@plane/propel/card";
@@ -38,7 +38,7 @@ interface DevErrorComponentProps {
 }
 
 export function DevErrorComponent({ error, onGoHome, onReload }: DevErrorComponentProps) {
-  if (isRouteErrorResponse(error)) {
+  if (error instanceof Response) {
     return (
       <div className="flex min-h-screen items-start justify-center bg-surface-2 p-6 transition-none">
         <div className="mt-12 w-full max-w-4xl space-y-4 transition-none">
@@ -61,7 +61,7 @@ export function DevErrorComponent({ error, onGoHome, onReload }: DevErrorCompone
               <div className="space-y-2">
                 <h3 className="text-13 font-medium tracking-wide text-tertiary uppercase">Error Data</h3>
                 <div className="rounded-md bg-layer-1 p-4">
-                  <p className="font-code text-13 text-secondary">{error.data}</p>
+                  <p className="font-code text-13 text-secondary">{error.statusText}</p>
                 </div>
               </div>
 

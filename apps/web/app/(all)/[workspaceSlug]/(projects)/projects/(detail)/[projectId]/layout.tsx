@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { Outlet } from "react-router";
 // plane imports
 import { Header, Row } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -18,11 +18,10 @@ import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferen
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 // local imports
-import type { Route } from "./+types/layout";
 
-function ProjectLayout({ params }: Route.ComponentProps) {
+function ProjectLayout(): React.JSX.Element | null {
   // router
-  const { workspaceSlug, projectId } = params;
+  const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
   const { sidebarCollapsed } = useAppTheme();
   // preferences
@@ -57,4 +56,6 @@ function ProjectLayout({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectLayout);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId")({
+  component: observer(ProjectLayout),
+});

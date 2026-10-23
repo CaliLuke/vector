@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // Vector imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IState } from "@plane/types";
@@ -26,7 +27,7 @@ export const StateDeleteModal = observer(function StateDeleteModal(props: TState
   // states
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { deleteState } = useProjectState();
 
   const handleClose = () => {

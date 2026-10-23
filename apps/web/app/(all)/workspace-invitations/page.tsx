@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import useSWR from "swr";
 import { Boxes, Share2, User2 } from "lucide-react";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
@@ -18,7 +19,7 @@ import { WORKSPACE_INVITATION } from "@plane/constants";
 import { EPageTypes } from "@/helpers/authentication.helper";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // wrappers
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 import { WorkspaceService } from "@/services/workspace.service";
@@ -27,11 +28,11 @@ import { WorkspaceService } from "@/services/workspace.service";
 // service initialization
 const workspaceService = new WorkspaceService();
 
-function WorkspaceInvitationPage() {
+function WorkspaceInvitationPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // query params
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const invitation_id = searchParams.get("invitation_id");
   const slug = searchParams.get("slug");
   const token = searchParams.get("token");
@@ -54,9 +55,9 @@ function WorkspaceInvitationPage() {
       })
       .then(() => {
         if (invitationDetail.email === currentUser?.email) {
-          return router.push(`/${invitationDetail.workspace.slug}`);
+          return void router.navigate({ href: `/${invitationDetail.workspace.slug}` });
         } else {
-          return router.push("/");
+          return void router.navigate({ href: "/" });
         }
       })
       .catch((err: unknown) => console.error(err));
@@ -69,7 +70,7 @@ function WorkspaceInvitationPage() {
         accepted: false,
         token: token,
       })
-      .then(() => router.push("/"))
+      .then(() => void router.navigate({ href: "/" }))
       .catch((err: unknown) => console.error(err));
   };
 
@@ -126,4 +127,6 @@ function WorkspaceInvitationPage() {
   );
 }
 
-export default observer(WorkspaceInvitationPage);
+export const Route = createFileRoute("/workspace-invitations/")({
+  component: observer(WorkspaceInvitationPage),
+});

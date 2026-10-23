@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -16,7 +17,7 @@ import { useWorkspace } from "@/hooks/store/use-workspace";
 // local imports
 import { GeneralWorkspaceSettingsHeader } from "./header";
 
-function GeneralWorkspaceSettingsPage() {
+function GeneralWorkspaceSettingsPage(): React.JSX.Element | null {
   // store hooks
   const { currentWorkspace } = useWorkspace();
   const { t } = useTranslation();
@@ -33,4 +34,6 @@ function GeneralWorkspaceSettingsPage() {
   );
 }
 
-export default observer(GeneralWorkspaceSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/")({
+  component: observer(GeneralWorkspaceSettingsPage),
+});

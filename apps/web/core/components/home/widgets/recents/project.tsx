@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "next/navigation";
 // plane types
+import { useRouter } from "@tanstack/react-router";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import type { TActivityEntityData, TProjectEntityData } from "@plane/types";
 import { calculateTimeAgo } from "@plane/utils";
@@ -80,7 +80,7 @@ export function RecentProject(props: BlockProps) {
       onItemClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        router.push(projectLink);
+        void router.navigate({ href: projectLink });
       }}
     />
   );

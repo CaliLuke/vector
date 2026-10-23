@@ -4,17 +4,17 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ArchivedModuleLayoutRoot, ArchivedModulesHeader } from "@/components/modules";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import type { Route } from "./+types/page";
 
-function ProjectArchivedModulesPage({ params }: Route.ComponentProps) {
+function ProjectArchivedModulesPage(): React.JSX.Element | null {
   // router
-  const { projectId } = params;
+  const { projectId } = Route.useParams();
   // store hooks
   const { getProjectById } = useProject();
   // derived values
@@ -32,4 +32,6 @@ function ProjectArchivedModulesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectArchivedModulesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/modules/")({
+  component: observer(ProjectArchivedModulesPage),
+});

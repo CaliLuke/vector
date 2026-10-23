@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -14,14 +15,11 @@ import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // hooks
 import { useUserPermissions } from "@/hooks/store/user";
 import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-work-item-filter-instance";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 export const ProjectArchivedEmptyState = observer(function ProjectArchivedEmptyState() {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane hooks
   const { t } = useTranslation();
   // store hooks
@@ -57,7 +55,8 @@ export const ProjectArchivedEmptyState = observer(function ProjectArchivedEmptyS
           actions={[
             {
               label: t("workspace_empty_state.archive_work_items.cta_primary"),
-              onClick: () => router.push(`/${workspaceSlug}/settings/projects/${projectId}/automations`),
+              onClick: () =>
+                void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/automations` }),
               disabled: !canPerformEmptyStateActions,
               variant: "primary",
             },

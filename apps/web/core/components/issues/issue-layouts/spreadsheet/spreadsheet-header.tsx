@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // constants
 import { SPREADSHEET_SELECT_GROUP } from "@plane/constants";
 // ui
@@ -40,7 +41,7 @@ export const SpreadsheetHeader = observer(function SpreadsheetHeader(props: Prop
     isEpic = false,
   } = props;
   // router
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   // derived values
   const isGroupSelectionEmpty = selectionHelpers.isGroupSelected(SPREADSHEET_SELECT_GROUP) === "empty";
   // auth

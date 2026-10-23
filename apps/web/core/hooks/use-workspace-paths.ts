@@ -4,15 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { useParams, usePathname } from "next/navigation";
+import { useParams, useLocation } from "@tanstack/react-router";
 
 /**
  * Custom hook to detect different workspace paths
  * @returns Object containing boolean flags for different workspace paths
  */
 export const useWorkspacePaths = () => {
-  const { workspaceSlug } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ strict: false });
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   const isSettingsPath = pathname.includes(`/${workspaceSlug}/settings`);
   const isWikiPath = pathname.includes(`/${workspaceSlug}/wiki`);

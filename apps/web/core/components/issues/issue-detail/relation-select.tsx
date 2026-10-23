@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
 
 import { EditIcon, CloseIcon } from "@plane/propel/icons";
 // Vector
@@ -121,7 +121,7 @@ export const IssueRelationSelect = observer(function IssueRelationSelect(props: 
                   >
                     <Tooltip tooltipHeading="Title" tooltipContent={currentIssue.name} isMobile={isMobile}>
                       <Link
-                        href={generateWorkItemLink({
+                        to={generateWorkItemLink({
                           workspaceSlug,
                           projectId: projectDetails?.id,
                           issueId: currentIssue.id,

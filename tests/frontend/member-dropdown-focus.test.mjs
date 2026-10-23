@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -29,7 +30,7 @@ const packageStubs = {
     export const getFileURL = (value) => value;
     export const sortByCurrentUserThenSelected = (options) => options;`,
   "mobx-react": "export const observer = (component) => component;",
-  "next/navigation": 'export const useParams = () => ({ workspaceSlug: "workspace" });',
+
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
   "@/hooks/store/use-member": `export const useMember = () => ({ workspace: { isUserSuspended: () => false } });`,
   "@/hooks/store/user": `export const useUser = () => ({ data: { id: "current-user" } });`,
@@ -62,6 +63,7 @@ async function loadMemberDropdown() {
 }
 
 async function renderMemberDropdown(environment) {
+  const routerFixture = createRouterFixture("/workspace/");
   const Component = await loadMemberDropdown();
   function Harness() {
     const [value, setValue] = React.useState([]);
@@ -75,7 +77,7 @@ async function renderMemberDropdown(environment) {
       buttonVariant: "border-with-text",
     });
   }
-  await environment.render(React.createElement(Harness));
+  await routerFixture.render(environment, React.createElement(Harness));
   return environment.container.querySelector("button");
 }
 

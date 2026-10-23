@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRouterState, Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { observer } from "mobx-react";
-import { useSearchParams, usePathname } from "next/navigation";
+
 import useSWR from "swr";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
@@ -15,7 +16,6 @@ import { EPageTypes } from "@/helpers/authentication.helper";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUser, useUserProfile, useUserSettings } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type TPageType = EPageTypes;
 
@@ -25,14 +25,14 @@ type TAuthenticationWrapper = {
 };
 
 const isValidURL = (url: string): boolean => {
-  const disallowedSchemes = /^(https?|ftp):\/\//i;
-  return !disallowedSchemes.test(url);
+  return url.startsWith("/") && !url.startsWith("//") && !url.includes("\\");
 };
 
 export const AuthenticationWrapper = observer(function AuthenticationWrapper(props: TAuthenticationWrapper) {
-  const pathname = usePathname();
-  const router = useAppRouter();
-  const searchParams = useSearchParams();
+  // Keep redirects tied to the rendered page while the next route is loading.
+  const location = useRouterState({ select: (state) => state.resolvedLocation ?? state.location });
+  const currentHref = location.href;
+  const searchParams = new URLSearchParams(location.searchStr);
   const nextPath = searchParams.get("next_path");
   // props
   const { children, pageType = EPageTypes.AUTHENTICATED } = props;
@@ -87,58 +87,22 @@ export const AuthenticationWrapper = observer(function AuthenticationWrapper(pro
 
   if (pageType === EPageTypes.PUBLIC) return <>{children}</>;
 
-  if (pageType === EPageTypes.NON_AUTHENTICATED) {
-    if (!currentUser?.id) return <>{children}</>;
-    else {
-      if (currentUserProfile?.id && isUserOnboard) {
-        const currentRedirectRoute = getWorkspaceRedirectionUrl();
-        router.push(currentRedirectRoute);
-        return <></>;
-      } else {
-        router.push("/onboarding");
-        return <></>;
-      }
-    }
+  if (!currentUser?.id) {
+    if (pageType === EPageTypes.NON_AUTHENTICATED) return <>{children}</>;
+    return <Navigate to="/" search={{ next_path: currentHref }} />;
   }
 
-  if (pageType === EPageTypes.ONBOARDING) {
-    if (!currentUser?.id) {
-      router.push(`/${pathname ? `?next_path=${pathname}` : ``}`);
-      return <></>;
-    } else {
-      if (currentUser && currentUserProfile?.id && isUserOnboard) {
-        const currentRedirectRoute = getWorkspaceRedirectionUrl();
-        router.replace(currentRedirectRoute);
-        return <></>;
-      } else return <>{children}</>;
-    }
-  }
+  const canEnterWorkspace = Boolean(currentUserProfile?.id && isUserOnboard);
+  if (pageType === EPageTypes.AUTHENTICATED) return canEnterWorkspace ? <>{children}</> : <Navigate to="/onboarding" />;
 
-  if (pageType === EPageTypes.SET_PASSWORD) {
-    if (!currentUser?.id) {
-      router.push(`/${pathname ? `?next_path=${pathname}` : ``}`);
-      return <></>;
-    } else {
-      if (currentUser && !currentUser?.is_password_autoset && currentUserProfile?.id && isUserOnboard) {
-        const currentRedirectRoute = getWorkspaceRedirectionUrl();
-        router.push(currentRedirectRoute);
-        return <></>;
-      } else return <>{children}</>;
-    }
-  }
+  if (pageType === EPageTypes.NON_AUTHENTICATED)
+    return <Navigate to={canEnterWorkspace ? getWorkspaceRedirectionUrl() : "/onboarding"} />;
 
-  if (pageType === EPageTypes.AUTHENTICATED) {
-    if (currentUser?.id) {
-      if (currentUserProfile && currentUserProfile?.id && isUserOnboard) return <>{children}</>;
-      else {
-        router.push(`/onboarding`);
-        return <></>;
-      }
-    } else {
-      router.push(`/${pathname ? `?next_path=${pathname}` : ``}`);
-      return <></>;
-    }
-  }
+  if (pageType === EPageTypes.ONBOARDING && canEnterWorkspace)
+    return <Navigate to={getWorkspaceRedirectionUrl()} replace />;
+
+  if (pageType === EPageTypes.SET_PASSWORD && !currentUser.is_password_autoset && canEnterWorkspace)
+    return <Navigate to={getWorkspaceRedirectionUrl()} />;
 
   return <>{children}</>;
 });

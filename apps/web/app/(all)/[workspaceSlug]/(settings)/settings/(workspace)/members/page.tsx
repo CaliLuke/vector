@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // types
@@ -27,15 +28,14 @@ import { useMember } from "@/hooks/store/use-member";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { MembersWorkspaceSettingsHeader } from "./header";
 
-const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsPage({ params }: Route.ComponentProps) {
+const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsPage(): React.JSX.Element | null {
   // states
   const [inviteModal, setInviteModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   // router
-  const { workspaceSlug } = params;
+  const { workspaceSlug } = Route.useParams();
   // store hooks
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
   const {
@@ -148,4 +148,6 @@ const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsP
   );
 });
 
-export default WorkspaceMembersSettingsPage;
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/members")({
+  component: WorkspaceMembersSettingsPage,
+});

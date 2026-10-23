@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { useRef } from "react";
 import { observer } from "mobx-react";
-import { usePathname, useSearchParams } from "next/navigation";
+
 import { CheckIcon } from "@plane/propel/icons";
 // plane imports
 import type { TCycleGroups } from "@plane/types";
@@ -17,7 +18,7 @@ import { generateQueryParams, calculateCycleProgress } from "@plane/utils";
 import { ListItem } from "@/components/core/list";
 // hooks
 import { useCycle } from "@/hooks/store/use-cycle";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { CycleQuickActions } from "../quick-actions";
@@ -39,9 +40,9 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
   // refs
   const parentRef = useRef(null);
   // router
-  const router = useAppRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const pathname = useLocation({ select: (location) => location.pathname });
   // hooks
   const { isMobile } = usePlatformOS();
   // store hooks
@@ -64,9 +65,9 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
 
     const query = generateQueryParams(searchParams, ["peekCycle"]);
     if (searchParams.has("peekCycle") && searchParams.get("peekCycle") === cycleId) {
-      router.push(`${pathname}?${query}`);
+      void router.navigate({ href: `${pathname}?${query}` });
     } else {
-      router.push(`${pathname}?${query && `${query}&`}peekCycle=${cycleId}`);
+      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekCycle=${cycleId}` });
     }
   };
 

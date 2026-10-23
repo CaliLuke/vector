@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import useSWR from "swr";
 // plane imports
 import { GROUP_CHOICES } from "@plane/constants";
@@ -21,11 +22,10 @@ import { ProfileWorkload } from "@/components/profile/overview/workload";
 import { USER_PROFILE_DATA } from "@plane/constants";
 // services
 import { UserService } from "@/services/user.service";
-import type { Route } from "./+types/page";
 const userService = new UserService();
 
-export default function ProfileOverviewPage({ params }: Route.ComponentProps) {
-  const { workspaceSlug, userId } = params;
+function ProfileOverviewPage(): React.JSX.Element | null {
+  const { workspaceSlug, userId } = Route.useParams();
 
   const { t } = useTranslation();
   const { data: userProfile } = useSWR(USER_PROFILE_DATA(workspaceSlug, userId), () =>
@@ -54,3 +54,7 @@ export default function ProfileOverviewPage({ params }: Route.ComponentProps) {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/profile/$userId/")({
+  component: ProfileOverviewPage,
+});

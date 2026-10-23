@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import Link from "next/link";
+
 // plane imports
 import { SUPPORT_EMAIL } from "@plane/constants";
 
@@ -167,7 +168,8 @@ const errorCodeMessages: {
         Your account is already registered.&nbsp;
         <Link
           className="font-medium underline underline-offset-4 transition-all hover:font-bold"
-          href={`/sign-in${email ? `?email=${encodeURIComponent(email)}` : ``}`}
+          to="/"
+          search={{ email: email || undefined }}
         >
           Sign In
         </Link>
@@ -203,7 +205,8 @@ const errorCodeMessages: {
         No account found.&nbsp;
         <Link
           className="font-medium underline underline-offset-4 transition-all hover:font-bold"
-          href={`/${email ? `?email=${encodeURIComponent(email)}` : ``}`}
+          to="/"
+          search={{ email: email || undefined }}
         >
           Create one
         </Link>
@@ -348,7 +351,11 @@ const errorCodeMessages: {
     message: () => (
       <div>
         Admin user already exists.&nbsp;
-        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
+        <Link
+          className="font-medium underline underline-offset-4 transition-all hover:font-bold"
+          to="/$workspaceSlug/"
+          params={{ workspaceSlug: "admin" }}
+        >
           Sign In
         </Link>
         &nbsp;now.
@@ -360,7 +367,11 @@ const errorCodeMessages: {
     message: () => (
       <div>
         Admin user does not exist.&nbsp;
-        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
+        <Link
+          className="font-medium underline underline-offset-4 transition-all hover:font-bold"
+          to="/$workspaceSlug/"
+          params={{ workspaceSlug: "admin" }}
+        >
           Sign In
         </Link>
         &nbsp;now.

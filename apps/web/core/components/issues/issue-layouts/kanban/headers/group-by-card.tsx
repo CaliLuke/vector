@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // lucide icons
 import { Minimize2, Maximize2, Circle } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
@@ -57,7 +58,7 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
   // hooks
   const storeType = useIssueStoreType();
   // router
-  const { workspaceSlug, projectId, moduleId, cycleId } = useParams();
+  const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
 
   const renderExistingIssueModal = moduleId || cycleId;
   const ExistingIssuesListModalPayload = moduleId ? { module: moduleId.toString() } : { cycle: true };

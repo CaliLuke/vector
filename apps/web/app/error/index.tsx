@@ -5,16 +5,17 @@
  */
 
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // layouts
+import { useRouter } from "@tanstack/react-router";
 import { DevErrorComponent } from "./dev";
 import { ProdErrorComponent } from "./prod";
 
 export function CustomErrorComponent({ error }: { error: unknown }) {
   // router
-  const router = useAppRouter();
+  const router = useRouter();
 
-  const handleGoHome = () => router.push("/");
+  const handleGoHome = () => void router.navigate({ href: "/" });
   const handleReload = () => window.location.reload();
 
   if (import.meta.env.DEV) {

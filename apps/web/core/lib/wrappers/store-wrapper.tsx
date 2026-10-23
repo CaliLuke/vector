@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { useTheme } from "next-themes";
 // helpers
 import { applyCustomTheme, clearCustomTheme } from "@plane/utils";
@@ -25,7 +26,7 @@ function StoreWrapper(props: TStoreWrapper) {
   // theme
   const { setTheme } = useTheme();
   // router
-  const params = useParams();
+  const params = useParams({ strict: false });
   // store hooks
   const { setQuery } = useRouterParams();
   const { sidebarCollapsed, toggleSidebar } = useAppTheme();

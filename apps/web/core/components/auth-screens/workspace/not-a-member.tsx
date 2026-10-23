@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
 // ui
+import { Link } from "@tanstack/react-router";
 import { Button } from "@plane/propel/button";
 // layouts
 import DefaultLayout from "@/layouts/default-layout";
@@ -23,12 +23,12 @@ export function NotAWorkspaceMember() {
             </p>
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Link href="/invitations">
+            <Link to="/invitations/">
               <span>
                 <Button variant="secondary">Check pending invites</Button>
               </span>
             </Link>
-            <Link href="/create-workspace">
+            <Link to="/create-workspace/">
               <span>
                 <Button variant="primary">Create new workspace</Button>
               </span>

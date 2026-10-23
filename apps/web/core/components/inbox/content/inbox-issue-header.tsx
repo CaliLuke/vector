@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import { Clock, FileStack, MoreHorizontal, MoveRight } from "lucide-react";
@@ -34,7 +35,7 @@ import { NameDescriptionUpdateStatus } from "@/components/issues/issue-update-st
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectInbox } from "@/hooks/store/use-project-inbox";
 import { useUser, useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // store
 import type { IInboxIssueStore } from "@/store/inbox/inbox-issue.store";
 // local imports
@@ -81,7 +82,7 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
   const currentProjectDetails = getPartialProjectById(projectId);
   const { t } = useTranslation();
 
-  const router = useAppRouter();
+  const router = useRouter();
   const { getProjectById } = useProject();
 
   const issue = inboxIssue?.issue;
@@ -125,10 +126,10 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
   const handleRedirection = (nextOrPreviousIssueId: string | undefined) => {
     if (!isNotificationEmbed) {
       if (nextOrPreviousIssueId)
-        router.push(
-          `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${nextOrPreviousIssueId}`
-        );
-      else router.push(`/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}`);
+        void router.navigate({
+          href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${nextOrPreviousIssueId}`,
+        });
+      else void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}` });
     }
   };
 
@@ -160,7 +161,7 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
   const handleInboxIssueDelete = async () => {
     if (!inboxIssue || !currentInboxIssueId) return;
     await deleteInboxIssue(workspaceSlug, projectId, currentInboxIssueId).then(() => {
-      if (!isNotificationEmbed) router.push(`/${workspaceSlug}/projects/${projectId}/intake`);
+      if (!isNotificationEmbed) void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/intake` });
     });
   };
 
@@ -196,7 +197,7 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
           : (currentIssueIndex - 1 + filteredInboxIssueIds.length) % filteredInboxIssueIds.length;
       const nextIssueId = filteredInboxIssueIds[nextIssueIndex];
       if (!nextIssueId) return;
-      router.push(`/${workspaceSlug}/projects/${projectId}/intake?inboxIssueId=${nextIssueId}`);
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/intake?inboxIssueId=${nextIssueId}` });
     },
     [currentInboxIssueId, currentIssueIndex, filteredInboxIssueIds, projectId, router, workspaceSlug]
   );
@@ -369,7 +370,11 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
                 >
                   {t("inbox_issue.actions.copy")}
                 </Button>
-                <ControlLink href={workItemLink} onClick={() => router.push(workItemLink)} target="_self">
+                <ControlLink
+                  href={workItemLink}
+                  onClick={() => void router.navigate({ href: workItemLink })}
+                  target="_self"
+                >
                   <Button variant="secondary" size="lg" prependIcon={<NewTabIcon className="h-2.5 w-2.5" />}>
                     {t("inbox_issue.actions.open")}
                   </Button>

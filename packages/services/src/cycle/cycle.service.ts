@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { AxiosInstance } from "axios";
 import { API_BASE_URL } from "@plane/constants";
 import type { CycleDateCheckData, ICycle, TIssuesResponse, IWorkspaceActiveCyclesResponse } from "@plane/types";
 import { APIService } from "../api.service";
@@ -14,8 +15,8 @@ import { APIService } from "../api.service";
  * @extends {APIService}
  */
 export class CycleService extends APIService {
-  constructor(BASE_URL?: string) {
-    super(BASE_URL || API_BASE_URL);
+  constructor(BASE_URL?: string, configureAxiosInstance?: (axiosInstance: AxiosInstance) => void) {
+    super(BASE_URL || API_BASE_URL, configureAxiosInstance);
   }
 
   /**

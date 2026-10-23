@@ -5,6 +5,7 @@
  */
 
 // components
+import { createFileRoute } from "@tanstack/react-router";
 import { AuthBase } from "@/components/auth-screens/auth-base";
 // helpers
 import { EAuthModes, EPageTypes } from "@/helpers/authentication.helper";
@@ -12,7 +13,7 @@ import { EAuthModes, EPageTypes } from "@/helpers/authentication.helper";
 import DefaultLayout from "@/layouts/default-layout";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-function SignUpPage() {
+function SignUpPage(): React.JSX.Element | null {
   return (
     <DefaultLayout>
       <AuthenticationWrapper pageType={EPageTypes.NON_AUTHENTICATED}>
@@ -22,4 +23,6 @@ function SignUpPage() {
   );
 }
 
-export default SignUpPage;
+export const Route = createFileRoute("/sign-up/")({
+  component: SignUpPage,
+});

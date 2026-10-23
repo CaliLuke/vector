@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -21,7 +22,7 @@ import { DropIndicator } from "@plane/ui";
 // hooks
 import { useFavoriteItemDetails } from "@/hooks/use-favorite-item-details";
 // local imports
-import { getCanDrop, getInstructionFromPayload } from "../favorites.helpers";
+import { getCanDrop } from "../favorites.helpers";
 import { FavoriteItemDragHandle, FavoriteItemQuickAction, FavoriteItemTitle, FavoriteItemWrapper } from "./common";
 
 type Props = {
@@ -54,7 +55,7 @@ export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
     const element = elementRef.current;
 
     if (!element) return;
-    const initialData = { id: favorite.id, isGroup: false, isChild: !!parentId, parentId };
+    const initialData = { id: favorite.id, isGroup: false, isChild: !!parentId, parentId: parentId ?? null };
     return combine(
       draggable({
         element,

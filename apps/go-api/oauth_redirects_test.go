@@ -119,7 +119,7 @@ func TestOAuthNextPathAndRedirectConstruction(t *testing.T) {
 	repository := &oauthRedirectTestRepository{config: map[string]string{"APP_BASE_URL": "https://app.example", "WEB_URL": "https://api.example"}}
 	service := &oauthRedirectService{repository: repository}
 	got := service.safeOAuthRedirect(context.Background(), "https://app.example", "/workspace/home", map[string]string{"error_code": "5000", "error_message": "INSTANCE_NOT_CONFIGURED"})
-	want := "https://app.example/?next_path=/workspace/home&error_code=5000&error_message=INSTANCE_NOT_CONFIGURED"
+	want := "https://app.example/?next_path=%2Fworkspace%2Fhome&error_code=5000&error_message=INSTANCE_NOT_CONFIGURED"
 	if got != want {
 		t.Fatalf("safeOAuthRedirect() = %q, want %q", got, want)
 	}

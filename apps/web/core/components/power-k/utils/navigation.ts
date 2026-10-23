@@ -22,5 +22,5 @@ export const handlePowerKNavigate = (context: TPowerKContext, routerSegments: (s
   }
 
   const route = joinUrlPath(...validRouterSegments);
-  context.router.push(route);
+  void context.router.navigate({ to: route });
 };

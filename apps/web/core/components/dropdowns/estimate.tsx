@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { usePopper } from "react-popper";
 import { Combobox } from "@headlessui/react";
 // plane imports
@@ -90,7 +91,7 @@ export const EstimateDropdown = observer(function EstimateDropdown(props: Props)
     ],
   });
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { currentActiveEstimateIdByProjectId, getProjectEstimates, getEstimateById } = useProjectEstimates();
   const { estimatePointIds, estimatePointById } = useEstimate(

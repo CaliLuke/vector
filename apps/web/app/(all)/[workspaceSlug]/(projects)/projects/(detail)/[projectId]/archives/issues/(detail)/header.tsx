@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // ui
 import { ArchiveIcon, WorkItemsIcon } from "@plane/propel/icons";
@@ -26,7 +27,9 @@ const issueService = new IssueService();
 
 export const ProjectArchivedIssueDetailsHeader = observer(function ProjectArchivedIssueDetailsHeader() {
   // router
-  const { workspaceSlug, projectId, archivedIssueId } = useParams();
+  const { workspaceSlug, projectId, archivedIssueId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/$archivedIssueId",
+  });
   // store hooks
   const { currentProjectDetails, loader } = useProject();
 

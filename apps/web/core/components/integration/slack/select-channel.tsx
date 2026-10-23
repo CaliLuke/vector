@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR, { mutate } from "swr";
 // types
 import type { IWorkspaceIntegration, ISlackIntegration } from "@plane/types";
@@ -33,7 +34,7 @@ export const SelectChannel = observer(function SelectChannel({ integration }: Pr
   const [slackChannelAvailabilityToggle, setSlackChannelAvailabilityToggle] = useState<boolean>(false);
   const [slackChannel, setSlackChannel] = useState<ISlackIntegration | null>(null);
 
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   // FIXME:
   const { startAuth } = useIntegrationPopup({

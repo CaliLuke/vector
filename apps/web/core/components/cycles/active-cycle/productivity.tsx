@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { Fragment } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { useTheme } from "next-themes";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -52,13 +53,19 @@ export const ActiveCycleProductivity = observer(function ActiveCycleProductivity
   return cycle && completionChartDistributionData ? (
     <div className="flex min-h-[17rem] flex-col gap-5 rounded-lg border border-subtle bg-surface-1 px-3.5 py-4">
       <div className="relative flex items-center justify-between gap-4">
-        <Link href={`/${workspaceSlug}/projects/${projectId}/cycles/${cycle?.id}`}>
+        <Link
+          to="/$workspaceSlug/projects/$projectId/cycles/$cycleId/"
+          params={{ workspaceSlug: workspaceSlug, projectId: projectId, cycleId: cycle?.id }}
+        >
           <h3 className="text-14 font-semibold text-tertiary">{t("project_cycles.active_cycle.issue_burndown")}</h3>
         </Link>
         <EstimateTypeDropdown value={estimateType} onChange={onChange} cycleId={cycle.id} projectId={projectId} />
       </div>
 
-      <Link href={`/${workspaceSlug}/projects/${projectId}/cycles/${cycle?.id}`}>
+      <Link
+        to="/$workspaceSlug/projects/$projectId/cycles/$cycleId/"
+        params={{ workspaceSlug: workspaceSlug, projectId: projectId, cycleId: cycle?.id }}
+      >
         {cycle.total_issues > 0 ? (
           <>
             <div className="h-full w-full px-2">

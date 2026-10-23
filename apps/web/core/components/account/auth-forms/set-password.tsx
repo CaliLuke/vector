@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useRouter } from "@tanstack/react-router";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 // icons
 import { Eye, EyeOff } from "lucide-react";
 // plane imports
@@ -20,7 +21,7 @@ import { Input, PasswordStrengthIndicator } from "@plane/ui";
 import { getPasswordStrength } from "@plane/utils";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // services
 import { AuthService } from "@/services/auth.service";
 // local components
@@ -43,9 +44,9 @@ const authService = new AuthService();
 
 export const SetPasswordForm = observer(function SetPasswordForm() {
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // search params
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const email = searchParams.get("email");
   // states
   const [showPassword, setShowPassword] = useState({
@@ -90,7 +91,7 @@ export const SetPasswordForm = observer(function SetPasswordForm() {
       e.preventDefault();
       if (!csrfToken) throw new Error("csrf token not found");
       await handleSetPassword(csrfToken, { password: passwordFormData.password });
-      router.push("/");
+      void router.navigate({ href: "/" });
     } catch (error: unknown) {
       let message = undefined;
       if (error instanceof Error) {

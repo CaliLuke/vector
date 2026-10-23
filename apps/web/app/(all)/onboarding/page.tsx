@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import useSWR from "swr";
 
@@ -24,7 +25,7 @@ import { WorkspaceService } from "@/services/workspace.service";
 
 const workspaceService = new WorkspaceService();
 
-function OnboardingPage() {
+function OnboardingPage(): React.JSX.Element | null {
   // store hooks
   const { data: user } = useUser();
   const { fetchWorkspaces } = useWorkspace();
@@ -63,4 +64,6 @@ function OnboardingPage() {
   );
 }
 
-export default observer(OnboardingPage);
+export const Route = createFileRoute("/onboarding/")({
+  component: observer(OnboardingPage),
+});

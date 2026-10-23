@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { Header, Row } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -22,7 +23,7 @@ import { WorkItemDetailsHeader } from "./work-item-header";
 
 export const ProjectWorkItemDetailsHeader = observer(function ProjectWorkItemDetailsHeader() {
   // router
-  const { workspaceSlug, workItem } = useParams();
+  const { workspaceSlug, workItem } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/browse/$workItem" });
   // store hooks
   const { sidebarCollapsed } = useAppTheme();
   const {

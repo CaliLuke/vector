@@ -39,14 +39,14 @@ func ValidateNextPath(nextPath string) string {
 	return nextPath
 }
 
-// SafeRedirectURL matches get_safe_redirect_url, including its raw next_path
-// query concatenation and ordered error parameters.
+// SafeRedirectURL preserves the destination as a single query value alongside
+// ordered error parameters.
 func SafeRedirectURL(baseURL, nextPath string, params []QueryParam, allowedHosts []string) string {
 	baseURL = strings.TrimRight(baseURL, "/")
 	validated := ValidateNextPath(nextPath)
 	queryParts := make([]string, 0, len(params)+1)
 	if validated != "" {
-		queryParts = append(queryParts, "next_path="+validated)
+		queryParts = append(queryParts, "next_path="+url.QueryEscape(validated))
 	}
 	encodedParams := encodeQuery(params)
 	if encodedParams != "" {

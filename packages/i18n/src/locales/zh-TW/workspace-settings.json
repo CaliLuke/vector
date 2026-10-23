@@ -303,7 +303,7 @@
         "install": "安裝",
         "installed": "已安裝",
         "configure": "配置",
-        "app_available": "您已使此應用可用於Plane工作空間",
+        "app_available": "您已使此應用可用於Vector工作空間",
         "app_credentials_regenrated": {
           "title": "應用程式憑證已成功重新生成",
           "description": "請在所有使用的地方替換客戶端密鑰。之前的密鑰已不再有效。"
@@ -354,7 +354,7 @@
           "description": "使用者在透過 Vector 認證後將被重新導向到此路徑。",
           "placeholder": "https://example.com https://example.com/"
         },
-        "app_available_description": "連接Plane工作空間以開始使用",
+        "app_available_description": "連接Vector工作空間以開始使用",
         "client_id_and_secret": "客戶端ID和密鑰",
         "client_id_and_secret_description": "複製並保存此密鑰。關閉後您將無法再次查看此密鑰。",
         "client_id_and_secret_download": "您可以從這裡下載包含密鑰的CSV檔案。",
@@ -403,12 +403,12 @@
         "workspace_permissions": "工作空間權限",
         "workspace_permissions_description": "工作空間權限用於授予對工作空間的存取權限。",
         "with_the_permissions": "具有權限",
-        "app_consent_title": "{app}正在請求存取您的Plane工作空間和設定檔。",
+        "app_consent_title": "{app}正在請求存取您的Vector工作空間和設定檔。",
         "choose_workspace_to_connect_app_with": "選擇要連接應用的工作空間",
         "app_consent_workspace_permissions_title": "{app}想要",
         "app_consent_user_permissions_title": "{app}還可以請求用戶對以下資源的權限。這些權限將僅由用戶請求和授權。",
         "app_consent_accept_title": "通過接受",
-        "app_consent_accept_1": "您授予應用在Plane內部或外部可以使用應用的任何地方存取您的Plane資料的權限",
+        "app_consent_accept_1": "您授予應用在Vector內部或外部可以使用應用的任何地方存取您的Vector資料的權限",
         "app_consent_accept_2": "您同意{app}的隱私政策和使用條款",
         "accepting": "接受中...",
         "accept": "接受",

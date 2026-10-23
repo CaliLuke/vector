@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { ListFilter } from "lucide-react";
 // plane helpers
 import { MODULE_VIEW_LAYOUTS } from "@plane/constants";
@@ -36,7 +37,7 @@ export const ModuleViewHeader = observer(function ModuleViewHeader() {
   // refs
   const inputRef = useRef<HTMLInputElement>(null);
   // router
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   // hooks
   const { isMobile } = usePlatformOS();
   // store hooks

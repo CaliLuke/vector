@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 import { History, MessageSquare } from "lucide-react";
 // plane imports
 import type { IUserActivityResponse } from "@plane/types";
@@ -26,12 +26,12 @@ type Props = {
 export const ActivityList = observer(function ActivityList(props: Props) {
   const { activity } = props;
   // params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { data: currentUser } = useUser();
   const { getWorkspaceBySlug } = useWorkspace();
   // derived values
-  const workspaceId = getWorkspaceBySlug(workspaceSlug?.toString() ?? "")?.id ?? "";
+  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
 
   // TODO: refactor this component
   return (
@@ -86,7 +86,7 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                           }
                           containerClassName="text-11 bg-surface-1"
                           workspaceId={workspaceId}
-                          workspaceSlug={workspaceSlug?.toString() ?? ""}
+                          workspaceSlug={workspaceSlug}
                           projectId={activityItem.project}
                         />
                       </div>
@@ -150,7 +150,12 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                               <span className="text-gray font-medium">{activityItem.actor_detail.first_name} Bot</span>
                             ) : (
                               <Link
-                                href={`/${activityItem.workspace_detail?.slug}/profile/${activityItem.actor_detail.id}`}
+                                to="/$workspaceSlug/profile/$userId/"
+                                params={{
+                                  workspaceSlug: activityItem.workspace_detail?.slug ?? "",
+                                  userId: activityItem.actor_detail.id,
+                                }}
+                                disabled={!activityItem.workspace_detail?.slug}
                                 className="inline"
                               >
                                 <span className="text-gray font-medium">

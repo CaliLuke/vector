@@ -4,16 +4,16 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import type { TIssue } from "@plane/types";
 // helpers
 import { Row } from "@plane/ui";
 import { cn } from "@plane/utils";
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   issue: TIssue;
@@ -22,17 +22,17 @@ type Props = {
 export const SpreadsheetSubIssueColumn = observer(function SpreadsheetSubIssueColumn(props: Props) {
   const { issue } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // hooks
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // derived values
   const isEpic = issue?.is_epic;
   const subIssueCount = issue?.sub_issues_count ?? 0;
 
   const redirectToIssueDetail = () => {
-    router.push(
-      `/${workspaceSlug?.toString()}/projects/${issue.project_id}/${issue.archived_at ? "archives/" : ""}${isEpic ? "epics" : "issues"}/${issue.id}#sub-issues`
-    );
+    void router.navigate({
+      href: `/${workspaceSlug?.toString()}/projects/${issue.project_id}/${issue.archived_at ? "archives/" : ""}${isEpic ? "epics" : "issues"}/${issue.id}#sub-issues`,
+    });
   };
 
   const label = `${subIssueCount} sub-work item${subIssueCount !== 1 ? "s" : ""}`;

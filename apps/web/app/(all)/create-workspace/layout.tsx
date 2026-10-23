@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Outlet } from "react-router";
-import type { Route } from "./+types/layout";
-
-export default function CreateWorkspaceLayout() {
+function CreateWorkspaceLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
 
-export const meta: Route.MetaFunction = () => [{ title: "Create Workspace" }];
+const meta = () => [{ title: "Create Workspace" }];
+
+export const Route = createFileRoute("/create-workspace")({
+  component: CreateWorkspaceLayout,
+  head: () => ({ meta: meta() }),
+});

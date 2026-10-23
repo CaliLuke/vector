@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -19,7 +20,7 @@ import { useUserPermissions } from "@/hooks/store/user";
 
 const PER_PAGE = 100;
 
-function ProfileActivityPage() {
+function ProfileActivityPage(): React.JSX.Element | null {
   // states
   const [pageCount, setPageCount] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
@@ -75,4 +76,6 @@ function ProfileActivityPage() {
   );
 }
 
-export default observer(ProfileActivityPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/profile/$userId/activity")({
+  component: observer(ProfileActivityPage),
+});

@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -52,7 +52,7 @@ const VersionHistoryItem = observer(function VersionHistoryItem(props: VersionHi
       </div>
       {/* end timeline icon */}
       <Link
-        href={getVersionLink(version.id)}
+        to={getVersionLink(version.id)}
         className={cn("block flex-1 rounded-md px-1 py-2 hover:bg-layer-transparent-hover", {
           "bg-layer-transparent-selected hover:bg-layer-transparent-selected": isVersionActive,
         })}
@@ -79,7 +79,7 @@ export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNav
 ) {
   const { page, versionHistory } = props;
   // navigation
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const activeVersion = searchParams.get(PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM);
   // derived values
   const { id } = page;
@@ -125,7 +125,7 @@ export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNav
             </div>
             {/* end timeline icon */}
             <Link
-              href={getVersionLink()}
+              to={getVersionLink()}
               className={cn("flex-1 rounded-md bg-layer-transparent px-1 py-2 hover:bg-layer-transparent-hover", {
                 "bg-layer-transparent-selected hover:bg-layer-transparent-selected": !activeVersion,
               })}

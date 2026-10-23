@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { forwardRef } from "react";
 import { cn } from "@plane/utils";
 
@@ -102,7 +102,7 @@ function AppSidebarLinkItem({ href, children, className }: AppSidebarLinkItemPro
   if (!href) return null;
 
   return (
-    <Link href={href} className={cn(styles.base, className)}>
+    <Link to={href} className={cn(styles.base, className)}>
       {children}
     </Link>
   );
@@ -146,7 +146,7 @@ const AppSidebarItem = Object.assign(
       if (!href) return null;
 
       return (
-        <Link href={href} ref={ref as React.Ref<HTMLAnchorElement>} className={styles.base}>
+        <Link to={href} ref={ref as React.Ref<HTMLAnchorElement>} className={styles.base}>
           {commonItems}
         </Link>
       );

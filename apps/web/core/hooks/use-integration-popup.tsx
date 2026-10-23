@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { useParams } from "next/navigation";
 
 const useIntegrationPopup = ({
   provider,
@@ -20,7 +20,7 @@ const useIntegrationPopup = ({
 }) => {
   const [authLoader, setAuthLoader] = useState(false);
 
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   const providerUrls: { [key: string]: string } = {
     github: `https://github.com/apps/${github_app_name}/installations/new?state=${workspaceSlug?.toString()}`,

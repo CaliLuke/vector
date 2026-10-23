@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import type { SubmitHandler } from "react-hook-form";
 import { Controller, useForm } from "react-hook-form";
 import { useOutsideClickDetector } from "@plane/hooks";
@@ -35,7 +36,7 @@ type TProps = {
 export const NewFavoriteFolder = observer(function NewFavoriteFolder(props: TProps) {
   const { setCreateNewFolder, actionType, defaultName, favoriteId } = props;
   const { t } = useTranslation();
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { addFavorite, updateFavorite, existingFolders } = useFavorite();
 
   // ref

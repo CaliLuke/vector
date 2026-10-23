@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import useSWR from "swr";
 // assets
@@ -15,13 +16,11 @@ import { ProjectViewLayoutRoot } from "@/components/issues/issue-layouts/roots/p
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useProjectView } from "@/hooks/store/use-project-view";
-import { useAppRouter } from "@/hooks/use-app-router";
-import type { Route } from "./+types/page";
 
-function ProjectViewIssuesPage({ params }: Route.ComponentProps) {
+function ProjectViewIssuesPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId, viewId } = params;
+  const router = useRouter();
+  const { workspaceSlug, projectId, viewId } = Route.useParams();
   // store hooks
   const { fetchViewDetails, getViewById } = useProjectView();
   const { getProjectById } = useProject();
@@ -40,7 +39,7 @@ function ProjectViewIssuesPage({ params }: Route.ComponentProps) {
         description="The view you are looking for does not exist or you don't have permission to view it."
         primaryButton={{
           text: "View other views",
-          onClick: () => router.push(`/${workspaceSlug}/projects/${projectId}/views`),
+          onClick: () => void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views` }),
         }}
       />
     );
@@ -54,4 +53,6 @@ function ProjectViewIssuesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectViewIssuesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId/")({
+  component: observer(ProjectViewIssuesPage),
+});

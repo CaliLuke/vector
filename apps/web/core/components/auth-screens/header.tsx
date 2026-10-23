@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 import { AUTH_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PlaneLockup } from "@plane/propel/icons";
@@ -16,13 +17,13 @@ import { useInstance } from "@/hooks/store/use-instance";
 
 const authContentMap = {
   [EAuthModes.SIGN_IN]: {
-    pageTitle: "Sign up",
+    pageTitle: "Sign in",
     text: "auth.common.new_to_plane",
     linkText: "Sign up",
     linkHref: "/sign-up",
   },
   [EAuthModes.SIGN_UP]: {
-    pageTitle: "Sign in",
+    pageTitle: "Sign up",
     text: "auth.common.already_have_an_account",
     linkText: "Sign in",
     linkHref: "/sign-in",
@@ -49,7 +50,7 @@ export const AuthHeader = observer(function AuthHeader({ type }: AuthHeaderProps
             <span className="text-body-sm-regular text-tertiary">{t(authContentMap[type].text)}</span>
             <Link
               data-ph-element={AUTH_TRACKER_ELEMENTS.NAVIGATE_TO_SIGN_UP}
-              href={authContentMap[type].linkHref}
+              to={authContentMap[type].linkHref}
               className="text-body-sm-semibold text-accent-primary hover:underline"
             >
               {t(authContentMap[type].linkText)}
@@ -72,7 +73,7 @@ export function AuthHeaderBase(props: TAuthHeaderBase) {
     <>
       <PageHead title={pageTitle + " - Vector"} />
       <div className="sticky top-0 flex w-full flex-shrink-0 items-center justify-between gap-6">
-        <Link href="/">
+        <Link to="/">
           <PlaneLockup height={20} width={95} className="text-primary" />
         </Link>
         {additionalAction}

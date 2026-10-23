@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import type { LucideIcon } from "lucide-react";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
@@ -25,7 +26,7 @@ type TMemberDropdownProps = {
 export const MemberDropdown = observer(function MemberDropdown(props: TMemberDropdownProps) {
   const { memberIds: propsMemberIds, projectId } = props;
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const {
     getUserDetails,

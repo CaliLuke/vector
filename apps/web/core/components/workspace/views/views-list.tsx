@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // components
 import { ViewListLoader } from "@/components/ui/loader/view-list-loader";
@@ -21,7 +22,7 @@ type Props = {
 export const GlobalViewsList = observer(function GlobalViewsList(props: Props) {
   const { searchQuery } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { fetchAllGlobalViews, currentWorkspaceViews, getSearchedViews } = useGlobalView();
 

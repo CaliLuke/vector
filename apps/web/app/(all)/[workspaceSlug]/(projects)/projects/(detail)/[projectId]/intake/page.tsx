@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import { useTheme } from "next-themes";
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
@@ -21,14 +22,12 @@ import { InboxIssueRoot } from "@/components/inbox";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
-import type { Route } from "./+types/page";
 
-function ProjectInboxPage({ params }: Route.ComponentProps) {
+function ProjectInboxPage(): React.JSX.Element | null {
   /// router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = params;
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = Route.useParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const navigationTab = searchParams.get("currentTab");
   const inboxIssueId = searchParams.get("inboxIssueId");
   // theme hook
@@ -53,7 +52,7 @@ function ProjectInboxPage({ params }: Route.ComponentProps) {
           primaryButton={{
             text: t("disabled_project.empty_state.inbox.primary_button.text"),
             onClick: () => {
-              router.push(`/${workspaceSlug}/settings/projects/${projectId}/features`);
+              void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/features` });
             },
             disabled: !canPerformEmptyStateActions,
           }}
@@ -92,4 +91,6 @@ function ProjectInboxPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectInboxPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/intake/")({
+  component: observer(ProjectInboxPage),
+});

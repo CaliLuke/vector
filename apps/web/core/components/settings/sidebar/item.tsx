@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import React from "react";
-import Link from "next/link";
+
 // plane imports
 import { cn } from "@plane/utils";
 import type { LucideIcon } from "lucide-react";
@@ -53,7 +54,7 @@ export function SettingsSidebarItem(props: Props) {
   }
 
   return (
-    <Link className={className} href={props.href}>
+    <Link className={className} to={props.href}>
       {content}
     </Link>
   );

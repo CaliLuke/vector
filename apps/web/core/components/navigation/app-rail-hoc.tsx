@@ -5,9 +5,10 @@
  */
 
 // hoc/withDockItems.tsx
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { PlaneNewIcon } from "@plane/propel/icons";
 import type { AppSidebarItemData } from "@/components/sidebar/sidebar-item";
 import { useWorkspacePaths } from "@/hooks/use-workspace-paths";
@@ -18,7 +19,7 @@ type WithDockItemsProps = {
 
 export function withDockItems<P extends WithDockItemsProps>(WrappedComponent: React.ComponentType<P>) {
   const ComponentWithDockItems = observer(function ComponentWithDockItems(props: Omit<P, keyof WithDockItemsProps>) {
-    const { workspaceSlug } = useParams();
+    const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
     const { isProjectsPath, isNotificationsPath } = useWorkspacePaths();
 
     const dockItems: (AppSidebarItemData & { shouldRender: boolean })[] = [

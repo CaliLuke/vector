@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import { Clock, FileStack, MoreHorizontal, PanelLeft, MoveRight } from "lucide-react";
 import { IconButton, getIconButtonStyling } from "@plane/propel/icon-button";
@@ -24,7 +25,7 @@ import { cn, findHowManyDaysLeft, generateWorkItemLink } from "@plane/utils";
 import { NameDescriptionUpdateStatus } from "@/components/issues/issue-update-status";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // store types
 import type { IInboxIssueStore } from "@/store/inbox/inbox-issue.store";
 
@@ -79,7 +80,7 @@ export const InboxIssueActionsMobileHeader = observer(function InboxIssueActions
     isProjectAdmin,
     handleActionWithPermission,
   } = props;
-  const router = useAppRouter();
+  const router = useRouter();
   const { getProjectIdentifierById } = useProject();
 
   const issue = inboxIssue?.issue;
@@ -148,7 +149,7 @@ export const InboxIssueActionsMobileHeader = observer(function InboxIssueActions
               </CustomMenu.MenuItem>
             )}
             {isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem onClick={() => router.push(workItemLink)}>
+              <CustomMenu.MenuItem onClick={() => void router.navigate({ href: workItemLink })}>
                 <div className="flex items-center gap-2">
                   <NewTabIcon width={14} height={14} strokeWidth={2} />
                   Open work item

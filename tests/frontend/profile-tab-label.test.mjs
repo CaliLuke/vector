@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -7,8 +8,6 @@ import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 globalThis.__profileTabLabelReact = React;
 const react = "const React = globalThis.__profileTabLabelReact;";
 const modules = {
-  "next/navigation": 'export const usePathname = () => "/default/profile/user/created/";',
-  "react-router": "export const Outlet = () => null;",
   swr: "export default () => ({data: undefined});",
   "@plane/i18n": 'export const useTranslation = () => ({t: key => key === "profile.tabs.created" ? "Créés" : key});',
   "@/components/core/app-header": "export const AppHeader = ({header}) => header;",
@@ -37,10 +36,12 @@ registerHooks({
 test("narrow profile navigation receives the translated active-tab label", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  const { default: ProfileLayout } =
-    await import("../../apps/web/app/(all)/[workspaceSlug]/(projects)/profile/[userId]/layout.tsx");
-  await environment.render(
-    React.createElement(ProfileLayout, { params: { workspaceSlug: "default", userId: "user" } })
-  );
+  const { Route } = await import("../../apps/web/app/(all)/[workspaceSlug]/(projects)/profile/[userId]/layout.tsx");
+  const ProfileLayout = Route.options.component;
+  const fixture = createRouterFixture("/default/profile/user/created/", {
+    modules: { "(all)/[workspaceSlug]/(projects)/profile/[userId]/layout.tsx": Route },
+  });
+  await fixture.render(environment, React.createElement(ProfileLayout));
+
   assert.equal(environment.container.querySelector("button").textContent, "Créés");
 });

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { DueDatePropertyIcon, StartDatePropertyIcon } from "@plane/propel/icons";
 // types
@@ -51,7 +52,7 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
   const projectDetails = getProjectById(issue.project_id);
 
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // derived values
   const stateDetails = getStateById(issue.state_id);
 

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { Fragment, useMemo, useState } from "react";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import { isValid, parseISO } from "date-fns";
 import { AlertCircle } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -42,7 +43,7 @@ export const ModuleAnalyticsProgress = observer(function ModuleAnalyticsProgress
   // props
   const { workspaceSlug, projectId, moduleId } = props;
   // router
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const peekModule = searchParams.get("peekModule") || undefined;
   // plane hooks
   const { t } = useTranslation();

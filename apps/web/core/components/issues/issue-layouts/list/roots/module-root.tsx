@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EIssuesStoreType } from "@plane/types";
 // hooks
@@ -16,7 +17,7 @@ import { ModuleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseListRoot } from "../base-list-root";
 
 export const ModuleListLayout = observer(function ModuleListLayout() {
-  const { workspaceSlug, projectId, moduleId } = useParams();
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
 
   const { issues } = useIssues(EIssuesStoreType.MODULE);
 

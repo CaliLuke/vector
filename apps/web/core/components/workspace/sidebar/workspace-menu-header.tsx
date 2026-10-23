@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams, useRouter } from "next/navigation";
+
 import { MoreHorizontal, ArchiveIcon, Settings } from "lucide-react";
 import { Disclosure } from "@headlessui/react";
 // plane imports
@@ -34,7 +35,7 @@ export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenu
   // refs
   const actionSectionRef = useRef<HTMLDivElement | null>(null);
   // hooks
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const router = useRouter();
   const { allowPermissions } = useUserPermissions();
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenu
         customButtonClassName="grid place-items-center"
         placement="bottom-start"
       >
-        <CustomMenu.MenuItem onClick={() => router.push(`/${workspaceSlug}/projects/archives`)}>
+        <CustomMenu.MenuItem onClick={() => void router.navigate({ href: `/${workspaceSlug}/projects/archives` })}>
           <div className="flex items-center justify-start gap-2">
             <ArchiveIcon className="h-3.5 w-3.5 stroke-[1.5]" />
             <span>{t("archives")}</span>
@@ -83,7 +84,7 @@ export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenu
         </CustomMenu.MenuItem>
 
         {isAdmin && (
-          <CustomMenu.MenuItem onClick={() => router.push(`/${workspaceSlug}/settings`)}>
+          <CustomMenu.MenuItem onClick={() => void router.navigate({ href: `/${workspaceSlug}/settings` })}>
             <div className="flex items-center justify-start gap-2">
               <Settings className="h-3.5 w-3.5 stroke-[1.5]" />
               <span>{t("settings")}</span>

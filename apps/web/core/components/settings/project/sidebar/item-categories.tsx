@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
-import { useParams } from "react-router";
+
 // plane imports
 import {
   EUserPermissionsLevel,
@@ -31,8 +31,8 @@ export const ProjectSettingsSidebarItemCategories = observer(function ProjectSet
 ) {
   const { projectId } = props;
   // params
-  const { workspaceSlug } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { allowPermissions } = useUserPermissions();
   // translation

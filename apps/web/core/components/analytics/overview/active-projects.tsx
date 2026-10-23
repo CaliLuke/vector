@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
@@ -21,7 +22,7 @@ import ActiveProjectItem from "./active-project-item";
 const ActiveProjects = observer(function ActiveProjects() {
   const { t } = useTranslation();
   const { fetchProjectAnalyticsCount } = useProject();
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { selectedDurationLabel } = useAnalytics();
   const { data: projectAnalyticsCount, isLoading: isProjectAnalyticsCountLoading } = useSWR(
     workspaceSlug ? ["projectAnalyticsCount", workspaceSlug] : null,

@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { xor } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // types
 import type { TIssue } from "@plane/types";
 // components
@@ -24,7 +25,7 @@ type Props = {
 export const SpreadsheetModuleColumn = observer(function SpreadsheetModuleColumn(props: Props) {
   const { issue, disabled, onClose } = props;
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const {
     issues: { changeModulesInIssue },

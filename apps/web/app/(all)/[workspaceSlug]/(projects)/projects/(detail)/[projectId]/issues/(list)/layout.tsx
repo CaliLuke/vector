@@ -5,13 +5,13 @@
  */
 
 // components
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { ProjectIssuesHeader } from "./header";
 import { ProjectIssuesMobileHeader } from "./mobile-header";
 
-export default function ProjectIssuesLayout() {
+function ProjectIssuesLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<ProjectIssuesHeader />} mobileHeader={<ProjectIssuesMobileHeader />} />
@@ -21,3 +21,7 @@ export default function ProjectIssuesLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues")({
+  component: ProjectIssuesLayout,
+});

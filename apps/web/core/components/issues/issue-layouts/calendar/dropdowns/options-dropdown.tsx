@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { usePopper } from "react-popper";
 import { MoreVerticalIcon } from "lucide-react";
 import { Popover, Transition } from "@headlessui/react";
@@ -43,7 +44,7 @@ export const CalendarOptionsDropdown = observer(function CalendarOptionsDropdown
 
   const { t } = useTranslation();
 
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
 
   const issueCalendarView = useCalendarView();
   const [windowWidth] = useSize();
@@ -67,7 +68,7 @@ export const CalendarOptionsDropdown = observer(function CalendarOptionsDropdown
   const showWeekends = issuesFilterStore.issueFilters?.displayFilters?.calendar?.show_weekends ?? false;
 
   const handleLayoutChange = (layout: TCalendarLayouts, closePopover: any) => {
-    if (!updateFilters) return;
+    if (!updateFilters || !projectId) return;
 
     updateFilters(projectId?.toString(), EIssueFilterType.DISPLAY_FILTERS, {
       calendar: {
@@ -87,7 +88,7 @@ export const CalendarOptionsDropdown = observer(function CalendarOptionsDropdown
   const handleToggleWeekends = () => {
     const showWeekends = issuesFilterStore.issueFilters?.displayFilters?.calendar?.show_weekends ?? false;
 
-    if (!updateFilters) return;
+    if (!updateFilters || !projectId) return;
 
     updateFilters(projectId?.toString(), EIssueFilterType.DISPLAY_FILTERS, {
       calendar: {

@@ -4,12 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
+import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import { useEffect, useRef, useState } from "react";
 import type Masonry from "masonry-layout";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+
 import { useTheme } from "next-themes";
 
 // plane imports
@@ -33,7 +35,6 @@ import { useSticky } from "@/hooks/use-stickies";
 import { useStickyOperations } from "../sticky/use-operations";
 import { StickiesLoader } from "./stickies-loader";
 import { StickyDNDWrapper } from "./sticky-dnd-wrapper";
-import { getInstructionFromPayload } from "./sticky.helpers";
 
 type TStickiesLayout = {
   workspaceSlug: string;
@@ -48,7 +49,7 @@ type TProps = TStickiesLayout & {
 export const StickiesList = observer(function StickiesList(props: TProps) {
   const { workspaceSlug, intersectionElement, columnCount, containerWidth } = props;
   // navigation
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks

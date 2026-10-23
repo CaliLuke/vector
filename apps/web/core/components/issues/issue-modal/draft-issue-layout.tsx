@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { isEmpty } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // Vector imports
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -31,7 +32,7 @@ export const DraftIssueLayout = observer(function DraftIssueLayout(props: DraftI
   // states
   const [issueDiscardModal, setIssueDiscardModal] = useState(false);
   // router params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { handleCreateUpdatePropertyValues } = useIssueModal();
   const { createIssue } = useWorkspaceDraftIssues();

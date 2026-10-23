@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane utils
 import { useTranslation } from "@plane/i18n";
@@ -24,7 +24,7 @@ type StickiesTruncatedProps = {
 export const StickiesTruncated = observer(function StickiesTruncated(props: StickiesTruncatedProps) {
   const { handleClose = () => {} } = props;
   // navigation
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { fetchWorkspaceStickies } = useSticky();
   const { t } = useTranslation();
@@ -42,7 +42,8 @@ export const StickiesTruncated = observer(function StickiesTruncated(props: Stic
       fallback={null}
       customButton={
         <Link
-          href={`/${workspaceSlug}/stickies`}
+          to="/$workspaceSlug/stickies/"
+          params={{ workspaceSlug: workspaceSlug }}
           className={cn(
             "w-full gap-1 bg-surface-2/20 text-13 font-medium text-accent-primary transition-opacity duration-300"
           )}

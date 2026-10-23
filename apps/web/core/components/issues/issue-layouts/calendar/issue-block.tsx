@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState, useRef, forwardRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { MoreHorizontal } from "lucide-react";
 // plane imports
 import { useOutsideClickDetector } from "@plane/hooks";
@@ -45,7 +46,7 @@ export const CalendarIssueBlock = observer(
     const blockRef = useRef(null);
     const menuActionRef = useRef<HTMLDivElement | null>(null);
     // hooks
-    const { workspaceSlug } = useParams();
+    const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
     const { getProjectStates } = useProjectState();
     const { getIsIssuePeeked } = useIssueDetail();
     const { handleRedirection } = useIssuePeekOverviewRedirection(isEpic);

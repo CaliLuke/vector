@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -67,6 +68,37 @@ func TestAuthSessionMiddlewareUsesExplicitCookieWithoutSavingOldSession(t *testi
 			}
 			if tc.action == "expire" && cookies[0].MaxAge != -1 {
 				t.Fatalf("logout did not expire cookie: %v", cookies[0])
+			}
+		})
+	}
+}
+
+func TestAuthSessionIsAvailableWithoutAutomaticSaving(t *testing.T) {
+	for _, expire := range []bool{false, true} {
+		t.Run(fmt.Sprintf("expire=%v", expire), func(t *testing.T) {
+			sessions := &publicProjectMetadataThrottleStub{userID: "user-id", sessionKey: "authenticated-session"}
+			handler := djangoAuthSessionMiddleware(sessions, djangoSessionCookieConfig{Name: "session-id", Configured: true}, authRedirectSessionPath)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				current, found := djangosession.CurrentSessionFromContext(r.Context())
+				if !found || current.SessionKey != sessions.sessionKey {
+					t.Fatal("authenticated session is unavailable to the sign-out handler")
+				}
+				if expire {
+					djangosession.ExpireResponseSession(r.Context())
+				}
+				w.WriteHeader(http.StatusFound)
+			}))
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/auth/sign-out/", nil))
+			if sessions.refreshCalls != 0 {
+				t.Fatal("session was saved despite automatic saving being disabled")
+			}
+			cookies := response.Result().Cookies()
+			if expire {
+				if len(cookies) != 1 || cookies[0].Name != "session-id" || cookies[0].MaxAge != -1 {
+					t.Fatalf("sign-out did not expire the session cookie: %v", cookies)
+				}
+			} else if len(cookies) != 0 {
+				t.Fatalf("unchanged session emitted cookies: %v", cookies)
 			}
 		})
 	}

@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useLocation } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+
 // plane imports
 import { PriorityIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -34,7 +34,7 @@ type InboxIssueListItemProps = {
 export const InboxIssueListItem = observer(function InboxIssueListItem(props: InboxIssueListItemProps) {
   const { workspaceSlug, projectId, inboxIssueId, projectIdentifier, setIsMobileSidebar } = props;
   // router
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const selectedInboxIssueId = searchParams.get("inboxIssueId");
   // store
   const { currentTab, getIssueInboxByIssueId } = useProjectInbox();
@@ -58,7 +58,9 @@ export const InboxIssueListItem = observer(function InboxIssueListItem(props: In
       <Link
         id={`inbox-issue-list-item-${issue.id}`}
         key={`${projectId}_${issue.id}`}
-        href={`/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${issue.id}`}
+        to="/$workspaceSlug/projects/$projectId/intake"
+        params={{ workspaceSlug, projectId }}
+        search={{ currentTab, inboxIssueId: issue.id }}
         onClick={(e) => handleIssueRedirection(e, issue.id)}
       >
         <Row

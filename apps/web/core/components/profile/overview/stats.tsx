@@ -4,10 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
-import { useParams } from "next/navigation";
-
 // ui
+import { Link, useParams } from "@tanstack/react-router";
 import { useTranslation } from "@plane/i18n";
 import { UserCirclePropertyIcon, CreateIcon, LayerStackIcon } from "@plane/propel/icons";
 import type { IUserProfileData } from "@plane/types";
@@ -19,7 +17,8 @@ type Props = {
 };
 
 export function ProfileStats({ userProfile }: Props) {
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
 
   const { t } = useTranslation();
 
@@ -50,7 +49,11 @@ export function ProfileStats({ userProfile }: Props) {
       {userProfile ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {overviewCards.map((card) => (
-            <Link key={card.route} href={`/${workspaceSlug}/profile/${userId}/${card.route}`}>
+            <Link
+              key={card.route}
+              to="/$workspaceSlug/profile/$userId/$profileViewId/"
+              params={{ workspaceSlug: workspaceSlug, userId: userId, profileViewId: card.route }}
+            >
               <Card direction={ECardDirection.ROW} spacing={ECardSpacing.SM} className="h-full">
                 <div className="grid h-11 w-11 place-items-center rounded-sm bg-surface-2">
                   <card.icon className="h-5 w-5" />

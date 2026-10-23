@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 import { PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { ChevronRightIcon } from "@plane/propel/icons";
 import { EPillVariant, Pill, EPillSize } from "@plane/propel/pill";
@@ -23,7 +23,7 @@ type Props = {
 export function ProjectFeatureToggle(props: Props) {
   const { workspaceSlug, projectId, featureItem, value, handleSubmit, disabled } = props;
   return featureItem?.href ? (
-    <Link href={joinUrlPath(workspaceSlug, "settings", "projects", projectId, "features", featureItem?.href)}>
+    <Link to={joinUrlPath(workspaceSlug, "settings", "projects", projectId, "features", featureItem?.href)}>
       <div className="flex items-center gap-2">
         <Pill
           variant={value ? EPillVariant.PRIMARY : EPillVariant.DEFAULT}

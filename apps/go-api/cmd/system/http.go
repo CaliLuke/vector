@@ -2973,6 +2973,9 @@ func djangoSessionLifecycleMiddleware(
 			ctx, _ := djangosession.WithResponseSessionAction(request.Context())
 			if prepared != nil {
 				ctx = djangosession.WithCurrentSession(ctx, *prepared)
+			} else if principal.SessionKey != "" {
+				// Auth handlers need the loaded session even when automatic saving is disabled.
+				ctx = djangosession.WithCurrentSession(ctx, principal.PrepareRefresh())
 			}
 			request = request.WithContext(systemapi.WithReadServiceSessionPrincipal(
 				ctx, principal.UserID, principal.UserTimezone,

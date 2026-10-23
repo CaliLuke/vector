@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams, usePathname } from "next/navigation";
+
 import { useTheme } from "next-themes";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -60,9 +61,9 @@ export const HOME_WIDGETS_LIST: {
 
 export const DashboardWidgets = observer(function DashboardWidgets() {
   // router
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // navigation
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // theme hook
   const { resolvedTheme } = useTheme();
   // store hooks

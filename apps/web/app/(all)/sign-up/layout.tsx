@@ -3,15 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
-import { Outlet } from "react-router";
-import type { Route } from "./+types/layout";
+const meta = () => [{ title: "Sign up - Vector" }, { name: "robots", content: "index, nofollow" }];
 
-export const meta: Route.MetaFunction = () => [
-  { title: "Sign up - Vector" },
-  { name: "robots", content: "index, nofollow" },
-];
-
-export default function SignUpLayout() {
+function SignUpLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
+
+export const Route = createFileRoute("/sign-up")({
+  component: SignUpLayout,
+  head: () => ({ meta: meta() }),
+});

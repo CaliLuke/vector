@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
+
 // types
 import type { TWorkspaceBaseActivity } from "@plane/types";
 // store hooks
@@ -28,11 +29,12 @@ export const User = observer(function User(props: TUser) {
 
   return (
     <>
-      {customUserName || actorDetail?.display_name?.includes("-intake") ? (
+      {customUserName || !actorDetail || !workspaceDetail || actorDetail.display_name?.includes("-intake") ? (
         <span className="font-medium text-primary">{customUserName || "Vector"}</span>
       ) : (
         <Link
-          href={`/${workspaceDetail?.slug}/profile/${actorDetail?.id}`}
+          to="/$workspaceSlug/profile/$userId/"
+          params={{ workspaceSlug: workspaceDetail?.slug, userId: actorDetail?.id }}
           className="font-medium text-primary hover:underline"
         >
           {actorDetail?.display_name}

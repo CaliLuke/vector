@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation, useRouter } from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { observer } from "mobx-react";
-import { usePathname, useSearchParams } from "next/navigation";
+
 // hooks
 import { generateQueryParams } from "@plane/utils";
 import { useModule } from "@/hooks/store/use-module";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // components
 import { ModuleAnalyticsSidebar } from "./";
 
@@ -26,9 +27,9 @@ export const ModulePeekOverview = observer(function ModulePeekOverview({
   isArchived = false,
 }: Props) {
   // router
-  const router = useAppRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const peekModule = searchParams.get("peekModule");
   // refs
   const ref = React.useRef(null);
@@ -37,7 +38,7 @@ export const ModulePeekOverview = observer(function ModulePeekOverview({
 
   const handleClose = () => {
     const query = generateQueryParams(searchParams, ["peekModule"]);
-    router.push(`${pathname}?${query}`);
+    void router.navigate({ href: `${pathname}?${query}` });
   };
 
   useEffect(() => {

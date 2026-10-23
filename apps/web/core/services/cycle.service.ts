@@ -9,17 +9,16 @@ import { API_BASE_URL } from "@plane/constants";
 import type {
   CycleDateCheckData,
   ICycle,
-  TIssuesResponse,
-  IWorkspaceActiveCyclesResponse,
   TCycleDistribution,
   TProgressSnapshot,
   TCycleEstimateDistribution,
 } from "@plane/types";
-import { APIService } from "@/services/api.service";
+import { CycleService as SharedCycleService } from "@plane/services";
+import { installUnauthorizedRedirectInterceptor } from "@/services/api.service";
 
-export class CycleService extends APIService {
+export class CycleService extends SharedCycleService {
   constructor() {
-    super(API_BASE_URL);
+    super(API_BASE_URL, installUnauthorizedRedirectInterceptor);
   }
 
   async workspaceActiveCyclesAnalytics(
@@ -61,101 +60,28 @@ export class CycleService extends APIService {
       });
   }
 
-  async workspaceActiveCycles(
-    workspaceSlug: string,
-    cursor: string,
-    per_page: number
-  ): Promise<IWorkspaceActiveCyclesResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/active-cycles/`, {
-      params: {
-        per_page,
-        cursor,
-      },
-    })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
-  }
-
-  async getWorkspaceCycles(workspaceSlug: string): Promise<ICycle[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/cycles/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
-  }
-
   async createCycle(workspaceSlug: string, projectId: string, data: any): Promise<ICycle> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.create(workspaceSlug, projectId, data);
   }
 
   async getCyclesWithParams(workspaceSlug: string, projectId: string, cycleType?: "current"): Promise<ICycle[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/`, {
-      params: {
-        cycle_view: cycleType,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.getWithParams(workspaceSlug, projectId, cycleType);
   }
 
   async getCycleDetails(workspaceSlug: string, projectId: string, cycleId: string): Promise<ICycle> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`)
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
-  }
-
-  async getCycleIssues(
-    workspaceSlug: string,
-    projectId: string,
-    cycleId: string,
-    queries?: any,
-    config = {}
-  ): Promise<TIssuesResponse> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/cycle-issues/`,
-      {
-        params: queries,
-      },
-      config
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.retrieve(workspaceSlug, projectId, cycleId);
   }
 
   async patchCycle(workspaceSlug: string, projectId: string, cycleId: string, data: Partial<ICycle>): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.update(workspaceSlug, projectId, cycleId, data);
   }
 
   async deleteCycle(workspaceSlug: string, projectId: string, cycleId: string): Promise<any> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.destroy(workspaceSlug, projectId, cycleId);
   }
 
   async cycleDateCheck(workspaceSlug: string, projectId: string, data: CycleDateCheckData): Promise<any> {
-    return this.post(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/date-check/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.validateDates(workspaceSlug, projectId, data);
   }
 
   async addCycleToFavorites(

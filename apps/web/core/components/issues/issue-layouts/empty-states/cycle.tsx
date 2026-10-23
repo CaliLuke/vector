@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { isEmpty } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { EUserPermissionsLevel, WORK_ITEM_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -25,10 +26,7 @@ import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-w
 
 export const CycleEmptyState = observer(function CycleEmptyState() {
   // router
-  const { workspaceSlug: routerWorkspaceSlug, projectId: routerProjectId, cycleId: routerCycleId } = useParams();
-  const workspaceSlug = routerWorkspaceSlug ? routerWorkspaceSlug.toString() : undefined;
-  const projectId = routerProjectId ? routerProjectId.toString() : undefined;
-  const cycleId = routerCycleId ? routerCycleId.toString() : undefined;
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
   // states
   const [cycleIssuesListModal, setCycleIssuesListModal] = useState(false);
   // plane hooks

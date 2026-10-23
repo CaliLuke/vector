@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import test from "node:test";
@@ -43,8 +44,7 @@ const moduleStubs = {
     export const cn = (...values) => values.flatMap(value => typeof value === "string" ? [value] : value && typeof value === "object" ? Object.entries(value).filter(([, enabled]) => enabled).map(([key]) => key) : []).join(" ");
     export const orderJoinedProjects = () => [];`,
   "mobx-react": "export const observer = component => component;",
-  "next/navigation": `export const useParams = () => ({ workspaceSlug: "workspace" });
-    export const usePathname = () => "/workspace/issues";`,
+
   "@/components/project/create-project-modal": "export const CreateProjectModal = () => null;",
   "@/components/sidebar/sidebar-navigation": `const React = globalThis.projectsListReact;
     export const SidebarNavItem = ({ children }) => React.createElement("div", null, children);`,
@@ -109,6 +109,7 @@ void test("projects sidebar transitions through initial loading and closed/open 
   globalThis.projectsListReact = React;
   globalThis.projectsListTestState = { loader: "init-loader", joinedProjectIds: ["project-1"] };
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   const warnings = [];
   const originalError = console.error;
   const originalWarn = console.warn;
@@ -126,7 +127,7 @@ void test("projects sidebar transitions through initial loading and closed/open 
   });
 
   ({ SidebarProjectsList } = await import("../../apps/web/core/components/workspace/sidebar/projects-list.tsx"));
-  await environment.render(React.createElement(TestHarness));
+  await routerFixture.render(environment, React.createElement(TestHarness));
 
   const loader = environment.container.querySelector('[data-testid="project-loader"]');
   const projectRow = environment.container.querySelector('[data-project-id="project-1"]');

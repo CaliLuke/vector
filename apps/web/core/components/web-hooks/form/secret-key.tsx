@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { range } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // icons
 import { Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
@@ -37,7 +38,7 @@ export const WebhookSecretKey = observer(function WebhookSecretKey(props: Props)
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [shouldShowKey, setShouldShowKey] = useState(false);
   // router
-  const { workspaceSlug, webhookId } = useParams();
+  const { workspaceSlug, webhookId } = useParams({ strict: false });
   // store hooks
   const { currentWorkspace } = useWorkspace();
   const { currentWebhook, regenerateSecretKey, webhookSecretKey } = useWebhook();

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import { useTheme } from "next-themes";
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
@@ -23,10 +24,9 @@ import { PagesListView } from "@/components/pages/pages-list-view";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web hooks
 import { EPageStoreType } from "@/hooks/store";
-import type { Route } from "./+types/page";
 
 const getPageType = (pageType?: string | null): TPageNavigationTabs => {
   if (pageType === "private") return "private";
@@ -34,12 +34,12 @@ const getPageType = (pageType?: string | null): TPageNavigationTabs => {
   return "public";
 };
 
-function ProjectPagesPage({ params }: Route.ComponentProps) {
+function ProjectPagesPage(): React.JSX.Element | null {
   // router
-  const router = useAppRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const type = searchParams.get("type");
-  const { workspaceSlug, projectId } = params;
+  const { workspaceSlug, projectId } = Route.useParams();
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks
@@ -65,7 +65,7 @@ function ProjectPagesPage({ params }: Route.ComponentProps) {
           primaryButton={{
             text: t("disabled_project.empty_state.page.primary_button.text"),
             onClick: () => {
-              router.push(`/${workspaceSlug}/settings/projects/${projectId}/features`);
+              void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/features` });
             },
             disabled: !canPerformEmptyStateActions,
           }}
@@ -87,4 +87,6 @@ function ProjectPagesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectPagesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/")({
+  component: observer(ProjectPagesPage),
+});

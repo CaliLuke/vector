@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { Button } from "@plane/propel/button";
 import { RecentStickyIcon } from "@plane/propel/icons";
@@ -18,7 +19,7 @@ import { useStickyOperations } from "@/components/stickies/sticky/use-operations
 import { useSticky } from "@/hooks/use-stickies";
 
 export const WorkspaceStickyHeader = observer(function WorkspaceStickyHeader() {
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/stickies" });
   // hooks
   const { creatingSticky, toggleShowNewSticky } = useSticky();
   const { stickyOperations } = useStickyOperations({ workspaceSlug: workspaceSlug?.toString() });

@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, Link } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
-import { Link } from "react-router";
+
 // plane imports
 import { ROLE } from "@plane/constants";
 import { Popover } from "@plane/propel/popover";
@@ -23,9 +23,9 @@ type Props = {
 export const EditorUserMention = observer(function EditorUserMention(props: Props) {
   const { id } = props;
   // router
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   // params
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ strict: false });
   // store hooks
   const { data: currentUser } = useUser();
   const {

@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useMemo, useState } from "react";
 import { sortBy } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // components
 import { ModuleIcon } from "@plane/propel/icons";
 import { Loader } from "@plane/ui";
@@ -24,7 +25,7 @@ type Props = {
 export const FilterModule = observer(function FilterModule(props: Props) {
   const { appliedFilters, handleUpdate, searchQuery } = props;
   // hooks
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   const { getModuleById, getProjectModuleIds } = useModule();
   // states
   const [itemsToRender, setItemsToRender] = useState(5);

@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useCallback } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // hooks
 import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useCycle } from "@/hooks/store/use-cycle";
@@ -17,7 +18,7 @@ import { BaseSpreadsheetRoot } from "../base-spreadsheet-root";
 
 export const CycleSpreadsheetLayout = observer(function CycleSpreadsheetLayout() {
   // router
-  const { cycleId } = useParams();
+  const { cycleId } = useParams({ strict: false });
   // store hooks
   const { currentProjectCompletedCycleIds } = useCycle();
   const { allowPermissions } = useUserPermissions();

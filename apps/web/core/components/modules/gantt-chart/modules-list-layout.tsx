@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // PLane
 import { GANTT_TIMELINE_TYPE } from "@plane/types";
 import type { IBlockUpdateData, IBlockUpdateDependencyData, IModule } from "@plane/types";
@@ -20,7 +21,9 @@ import { useProject } from "@/hooks/store/use-project";
 
 export const ModulesListGanttChartView = observer(function ModulesListGanttChartView() {
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
   // store
   const { currentProjectDetails } = useProject();
   const { getFilteredModuleIds, updateModuleDetails } = useModule();

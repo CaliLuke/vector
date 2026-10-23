@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // ui
 import { PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
 import { Button } from "@plane/propel/button";
@@ -21,7 +22,9 @@ import { useProject } from "@/hooks/store/use-project";
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
 export const ProjectViewsHeader = observer(function ProjectViewsHeader() {
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views",
+  });
   // store hooks
   const { toggleCreateViewModal } = useCommandPalette();
   const { loader } = useProject();

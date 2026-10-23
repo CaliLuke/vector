@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { EEstimateSystem } from "@plane/constants";
 import { ProjectIcon } from "@plane/propel/icons";
 import type { ChartYAxisMetric } from "@plane/types";
@@ -23,7 +24,7 @@ type Props = {
 
 export const SelectYAxis = observer(function SelectYAxis({ value, onChange, hiddenOptions, options }: Props) {
   // hooks
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   const { areEstimateEnabledByProjectId, currentActiveEstimateId, estimateById } = useProjectEstimates();
 
   const isEstimateEnabled = (analyticsOption: string) => {

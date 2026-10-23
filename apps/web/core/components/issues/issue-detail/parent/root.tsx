@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
+
 import { MinusCircle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import type { TIssue } from "@plane/types";
@@ -67,7 +68,7 @@ export const IssueParentDetail = observer(function IssueParentDetail(props: TIss
   });
 
   const handleParentIssueClick = () => {
-    if (isParentEpic) router.push(workItemLink);
+    if (isParentEpic) void router.navigate({ href: workItemLink });
     else handleRedirection(workspaceSlug, parentIssue, isMobile);
   };
 

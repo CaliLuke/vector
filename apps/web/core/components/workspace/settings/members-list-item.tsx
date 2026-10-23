@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { isEmpty } from "lodash-es";
 import { observer } from "mobx-react";
 // plane imports
@@ -19,7 +20,7 @@ import type { RowData } from "@/components/workspace/settings/member-columns";
 import { useMember } from "@/hooks/store/use-member";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 import { useUser, useUserPermissions, useUserSettings } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web imports
 import { useMemberColumns } from "@/components/workspace/settings/useMemberColumns";
 
@@ -31,7 +32,7 @@ export const WorkspaceMembersListItem = observer(function WorkspaceMembersListIt
   const { memberDetails } = props;
   const { columns, workspaceSlug, removeMemberModal, setRemoveMemberModal } = useMemberColumns();
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { data: currentUser } = useUser();
   const {
@@ -49,7 +50,7 @@ export const WorkspaceMembersListItem = observer(function WorkspaceMembersListIt
     try {
       await leaveWorkspace(workspaceSlug.toString());
       await fetchCurrentUserSettings();
-      router.push(getWorkspaceRedirectionUrl());
+      void router.navigate({ href: getWorkspaceRedirectionUrl() });
     } catch (err: unknown) {
       const error = err as { error?: string };
       setToast({

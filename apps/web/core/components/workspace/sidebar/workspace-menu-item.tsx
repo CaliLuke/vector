@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -35,8 +35,8 @@ export const SidebarWorkspaceMenuItem = observer(function SidebarWorkspaceMenuIt
 
   const { t } = useTranslation();
   // nextjs hooks
-  const pathname = usePathname();
-  const { workspaceSlug } = useParams();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { allowPermissions } = useUserPermissions();
   // store hooks
   const { toggleSidebar } = useAppTheme();
@@ -54,7 +54,7 @@ export const SidebarWorkspaceMenuItem = observer(function SidebarWorkspaceMenuIt
   const isActive = item.href === pathname;
 
   return (
-    <Link href={item.href} onClick={() => handleLinkClick()}>
+    <Link to={item.href} onClick={() => handleLinkClick()}>
       <SidebarNavItem isActive={isActive}>
         <div className="flex items-center gap-1.5 py-[1px]">
           <item.Icon

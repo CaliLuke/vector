@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "@tanstack/react-router";
 import { Controller, useForm } from "react-hook-form";
 import { AlertTriangle } from "lucide-react";
 // Vector imports
@@ -14,7 +14,6 @@ import type { IProject } from "@plane/types";
 import { Input, EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type DeleteProjectModal = {
   isOpen: boolean;
@@ -32,8 +31,8 @@ export function DeleteProjectModal(props: DeleteProjectModal) {
   // store hooks
   const { deleteProject } = useProject();
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // form info
   const {
     control,
@@ -59,7 +58,8 @@ export function DeleteProjectModal(props: DeleteProjectModal) {
 
     try {
       await deleteProject(workspaceSlug.toString(), project.id);
-      if (projectId && projectId.toString() === project.id) router.push(`/${workspaceSlug}/projects`);
+      if (projectId && projectId.toString() === project.id)
+        void router.navigate({ href: `/${workspaceSlug}/projects` });
       handleClose();
       setToast({
         type: TOAST_TYPE.SUCCESS,

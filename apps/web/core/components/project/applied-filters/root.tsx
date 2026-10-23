@@ -14,7 +14,7 @@ import { replaceUnderscoreIfSnakeCase } from "@plane/utils";
 // local imports
 import { AppliedAccessFilters } from "./access";
 import { AppliedDateFilters } from "./date";
-import { AppliedMembersFilters } from "./members";
+import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
 import { AppliedProjectDisplayFilters } from "./project-display-filters";
 
 type Props = {

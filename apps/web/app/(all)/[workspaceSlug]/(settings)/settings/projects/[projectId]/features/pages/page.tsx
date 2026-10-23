@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -18,11 +19,10 @@ import { ProjectSettingsFeatureControlItem } from "@/components/settings/project
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
 // local imports
-import type { Route } from "./+types/page";
 import { FeaturesPagesProjectSettingsHeader } from "./header";
 
-function FeaturesPagesSettingsPage({ params }: Route.ComponentProps) {
-  const { workspaceSlug, projectId } = params;
+function FeaturesPagesSettingsPage(): React.JSX.Element | null {
+  const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
   const { currentProjectDetails } = useProject();
@@ -61,4 +61,6 @@ function FeaturesPagesSettingsPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(FeaturesPagesSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/features/pages")({
+  component: observer(FeaturesPagesSettingsPage),
+});

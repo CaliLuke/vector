@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { ProjectIcon } from "@plane/propel/icons";
@@ -13,7 +14,7 @@ import { BreadcrumbNavigationSearchDropdown, Breadcrumbs } from "@plane/ui";
 import { SwitcherLabel } from "@/components/common/switcher-label";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import type { TProject } from "@plane/types";
 
 type TProjectBreadcrumbProps = {
@@ -25,7 +26,7 @@ type TProjectBreadcrumbProps = {
 export const ProjectBreadcrumb = observer(function ProjectBreadcrumb(props: TProjectBreadcrumbProps) {
   const { workspaceSlug, projectId, handleOnClick } = props;
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { joinedProjectIds, getPartialProjectById } = useProject();
   const currentProjectDetails = getPartialProjectById(projectId);
@@ -70,13 +71,13 @@ export const ProjectBreadcrumb = observer(function ProjectBreadcrumb(props: TPro
             selectedItem={currentProjectDetails.id}
             navigationItems={switcherOptions}
             onChange={(value: string) => {
-              router.push(`/${workspaceSlug}/projects/${value}/issues`);
+              void router.navigate({ href: `/${workspaceSlug}/projects/${value}/issues` });
             }}
             title={currentProjectDetails?.name}
             icon={renderIcon(currentProjectDetails)}
             handleOnClick={() => {
               if (handleOnClick) handleOnClick();
-              else router.push(`/${workspaceSlug}/projects/${currentProjectDetails.id}/issues/`);
+              else void router.navigate({ href: `/${workspaceSlug}/projects/${currentProjectDetails.id}/issues/` });
             }}
             shouldTruncate
           />

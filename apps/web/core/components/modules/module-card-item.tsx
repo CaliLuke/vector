@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation, useRouter } from "@tanstack/react-router";
 import type { SyntheticEvent } from "react";
 import React, { useRef } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname, useSearchParams } from "next/navigation";
+
 import { Info, SquareUser } from "lucide-react";
 // plane package imports
 import {
@@ -16,11 +16,8 @@ import {
   PROGRESS_STATE_GROUPS_DETAILS,
   EUserPermissions,
   EUserPermissionsLevel,
-  IS_FAVORITE_MENU_OPEN,
 } from "@plane/constants";
-import { useLocalStorage } from "@plane/hooks";
 import { WorkItemsIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IModule } from "@plane/types";
 import { Card, FavoriteStar, LinearProgressIndicator } from "@plane/ui";
@@ -30,11 +27,12 @@ import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 import { ButtonAvatars } from "@/components/dropdowns/member/avatar";
 import { ModuleQuickActions } from "@/components/modules";
 import { ModuleStatusDropdown } from "@/components/modules/module-status-dropdown";
+import { useModuleActions } from "@/components/modules/use-module-actions";
 // hooks
 import { useMember } from "@/hooks/store/use-member";
 import { useModule } from "@/hooks/store/use-module";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type Props = {
@@ -46,16 +44,21 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
   // refs
   const parentRef = useRef(null);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, projectId } = useParams();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
+  const router = useRouter();
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
+  });
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
   const { allowPermissions } = useUserPermissions();
-  const { getModuleById, addModuleToFavorites, removeModuleFromFavorites, updateModuleDetails } = useModule();
+  const { getModuleById } = useModule();
   const { getUserDetails } = useMember();
-  // local storage
-  const { setValue: toggleFavoriteMenu, storedValue } = useLocalStorage<boolean>(IS_FAVORITE_MENU_OPEN, false);
+  const { handleAddToFavorites, handleRemoveFromFavorites, handleModuleDetailsChange } = useModuleActions({
+    moduleId,
+    workspaceSlug,
+    projectId,
+  });
   // derived values
   const moduleDetails = getModuleById(moduleId);
   const isEditingAllowed = allowPermissions(
@@ -66,77 +69,9 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
   const renderIcon = Boolean(moduleDetails?.start_date) || Boolean(moduleDetails?.target_date);
 
   const { isMobile } = usePlatformOS();
-  const handleAddToFavorites = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!workspaceSlug || !projectId) return;
-
-    const addToFavoritePromise = addModuleToFavorites(workspaceSlug.toString(), projectId.toString(), moduleId).then(
-      () => {
-        if (!storedValue) toggleFavoriteMenu(true);
-      }
-    );
-
-    setPromiseToast(addToFavoritePromise, {
-      loading: "Adding module to favorites...",
-      success: {
-        title: "Success!",
-        message: () => "Module added to favorites.",
-      },
-      error: {
-        title: "Error!",
-        message: () => "Couldn't add the module to favorites. Please try again.",
-      },
-    });
-  };
-
-  const handleRemoveFromFavorites = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (!workspaceSlug || !projectId) return;
-
-    const removeFromFavoritePromise = removeModuleFromFavorites(
-      workspaceSlug.toString(),
-      projectId.toString(),
-      moduleId
-    );
-
-    setPromiseToast(removeFromFavoritePromise, {
-      loading: "Removing module from favorites...",
-      success: {
-        title: "Success!",
-        message: () => "Module removed from favorites.",
-      },
-      error: {
-        title: "Error!",
-        message: () => "Couldn't remove the module from favorites. Please try again.",
-      },
-    });
-  };
-
   const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
     e.stopPropagation();
     e.preventDefault();
-  };
-
-  const handleModuleDetailsChange = async (payload: Partial<IModule>) => {
-    if (!workspaceSlug || !projectId) return;
-
-    await updateModuleDetails(workspaceSlug.toString(), projectId.toString(), moduleId, payload)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "Module updated successfully.",
-        });
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err?.detail ?? "Module could not be updated. Please try again.",
-        });
-      });
   };
 
   const openModuleOverview = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -145,9 +80,9 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
 
     const query = generateQueryParams(searchParams, ["peekModule"]);
     if (searchParams.has("peekModule") && searchParams.get("peekModule") === moduleId) {
-      router.push(`${pathname}?${query}`);
+      void router.navigate({ href: `${pathname}?${query}` });
     } else {
-      router.push(`${pathname}?${query && `${query}&`}peekModule=${moduleId}`);
+      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekModule=${moduleId}` });
     }
   };
 
@@ -185,7 +120,11 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
 
   return (
     <div className="relative" data-prevent-progress>
-      <Link ref={parentRef} href={`/${workspaceSlug}/projects/${moduleDetails.project_id}/modules/${moduleDetails.id}`}>
+      <Link
+        ref={parentRef}
+        to="/$workspaceSlug/projects/$projectId/modules/$moduleId/"
+        params={{ workspaceSlug: workspaceSlug, projectId: moduleDetails.project_id, moduleId: moduleDetails.id }}
+      >
         <Card>
           <div>
             <div className="flex items-center justify-between gap-2">

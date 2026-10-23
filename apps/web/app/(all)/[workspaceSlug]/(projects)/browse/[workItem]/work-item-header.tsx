@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane ui
 import { WorkItemsIcon } from "@plane/propel/icons";
 import { Breadcrumbs, Header } from "@plane/ui";
@@ -16,14 +17,14 @@ import { IssueDetailQuickActions } from "@/components/issues/issue-detail/issue-
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useProject } from "@/hooks/store/use-project";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
 export const WorkItemDetailsHeader = observer(function WorkItemDetailsHeader() {
   // router
-  const router = useAppRouter();
-  const { workspaceSlug, workItem } = useParams();
+  const router = useRouter();
+  const { workspaceSlug, workItem } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/browse/$workItem" });
   // store hooks
   const { getProjectById, loader } = useProject();
   const {
@@ -39,7 +40,7 @@ export const WorkItemDetailsHeader = observer(function WorkItemDetailsHeader() {
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs onBack={router.back} isLoading={loader === "init-loader"}>
+        <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
           <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
           <Breadcrumbs.Item
             component={

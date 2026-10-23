@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -24,7 +25,7 @@ import { ArchivedCyclesView } from "./view";
 
 export const ArchivedCycleLayoutRoot = observer(function ArchivedCycleLayoutRoot() {
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane hooks
   const { t } = useTranslation();
   // hooks

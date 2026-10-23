@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
@@ -20,7 +21,7 @@ import { useUserPermissions } from "@/hooks/store/user";
 // local imports
 import { LabelsProjectSettingsHeader } from "./header";
 
-function LabelsSettingsPage() {
+function LabelsSettingsPage(): React.JSX.Element | null {
   // store hooks
   const { currentProjectDetails } = useProject();
   const { workspaceUserInfo, allowPermissions } = useUserPermissions();
@@ -62,4 +63,6 @@ function LabelsSettingsPage() {
   );
 }
 
-export default observer(LabelsSettingsPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/labels")({
+  component: observer(LabelsSettingsPage),
+});

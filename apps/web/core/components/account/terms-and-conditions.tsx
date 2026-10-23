@@ -9,7 +9,7 @@ import type { EAuthModes } from "@plane/constants";
 export function TermsAndConditions(_props: { authType?: EAuthModes }) {
   return (
     <p className="text-center text-13 text-tertiary">
-      Vector is independent software derived from Plane. Your instance operator manages your account and data.{" "}
+      Your instance operator manages your account and data.{" "}
       <a
         className="underline"
         href="https://github.com/CaliLuke/vector/blob/main/NOTICE.md"

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "next/navigation";
 // plane imports
 import { getPageName } from "@plane/utils";
 // hooks
@@ -13,6 +12,7 @@ import { useCycle } from "@/hooks/store/use-cycle";
 import { useModule } from "@/hooks/store/use-module";
 // local imports
 import type { TPowerKContextType } from "../core/types";
+import { useParams } from "@tanstack/react-router";
 
 type TArgs = {
   activeContext: TPowerKContextType | null;
@@ -21,7 +21,7 @@ type TArgs = {
 export const useContextIndicator = (args: TArgs): string | null => {
   const { activeContext } = args;
   // navigation
-  const { workItem: workItemIdentifier, cycleId, moduleId, pageId } = useParams();
+  const { workItem: workItemIdentifier, cycleId, moduleId, pageId } = useParams({ strict: false });
   // store hooks
   const { getCycleById } = useCycle();
   const { getModuleById } = useModule();

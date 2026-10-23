@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // hooks
 import { usePowerK } from "@/hooks/store/use-power-k";
 // local imports
@@ -27,7 +28,7 @@ type GlobalShortcutsProps = {
 export const GlobalShortcutsProvider = observer(function GlobalShortcutsProvider(props: GlobalShortcutsProps) {
   const { context, commands } = props;
   // router
-  const params = useParams();
+  const params = useParams({ strict: false });
   // store hooks
   const { commandRegistry, isShortcutsListModalOpen, setActiveContext, togglePowerKModal, toggleShortcutsListModal } =
     usePowerK();

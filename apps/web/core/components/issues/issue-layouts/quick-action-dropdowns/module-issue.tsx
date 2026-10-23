@@ -4,16 +4,16 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { omit } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // plane imports
 import { ARCHIVABLE_STATE_GROUPS, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import type { TIssue } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
-import { ContextMenu, CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { QuickActionMenu } from "./quick-action-menu";
 // hooks
 import { useIssues } from "@/hooks/store/use-issues";
 import { useProject } from "@/hooks/store/use-project";
@@ -47,7 +47,7 @@ export const ModuleIssueQuickActions = observer(function ModuleIssueQuickActions
   const [archiveIssueModal, setArchiveIssueModal] = useState(false);
   const [_, setDuplicateWorkItemModal] = useState(false);
   // router
-  const { workspaceSlug, moduleId } = useParams();
+  const { workspaceSlug, moduleId } = useParams({ strict: false });
   // store hooks
   const { issuesFilter } = useIssues(EIssuesStoreType.MODULE);
   const { allowPermissions } = useUserPermissions();
@@ -99,15 +99,6 @@ export const ModuleIssueQuickActions = observer(function ModuleIssueQuickActions
 
   const MENU_ITEMS = useModuleIssueMenuItems(menuItemProps);
 
-  const CONTEXT_MENU_ITEMS = MENU_ITEMS.map(function CONTEXT_MENU_ITEMS(item) {
-    return {
-      ...item,
-
-      onClick: () => {
-        item.action();
-      },
-    };
-  });
   return (
     <>
       {/* Modals */}
@@ -136,116 +127,20 @@ export const ModuleIssueQuickActions = observer(function ModuleIssueQuickActions
         storeType={EIssuesStoreType.MODULE}
       />
 
-      <ContextMenu parentRef={parentRef} items={CONTEXT_MENU_ITEMS} />
-      <CustomMenu
-        ellipsis
-        placement={placements}
-        customButton={customActionButton}
-        portalElement={portalElement}
-        menuItemsClassName="z-[14]"
-        maxHeight="lg"
-        useCaptureForOutsideClick
-        closeOnSelect
-      >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-
-          // Render submenu if nestedMenuItems exist
-          if (item.nestedMenuItems && item.nestedMenuItems.length > 0) {
-            return (
-              <CustomMenu.SubMenu
-                key={item.key}
-                trigger={
-                  <div className="flex items-center gap-2">
-                    {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-                    <h5>{item.title}</h5>
-                    {item.description && (
-                      <p
-                        className={cn("whitespace-pre-line text-tertiary", {
-                          "text-placeholder": item.disabled,
-                        })}
-                      >
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                }
-                disabled={item.disabled}
-                className={cn(
-                  "flex items-center gap-2",
-                  {
-                    "text-placeholder": item.disabled,
-                  },
-                  item.className
-                )}
-              >
-                {item.nestedMenuItems.map((nestedItem) => (
-                  <CustomMenu.MenuItem
-                    key={nestedItem.key}
-                    onClick={() => {
-                      nestedItem.action();
-                    }}
-                    className={cn(
-                      "flex items-center gap-2",
-                      {
-                        "text-placeholder": nestedItem.disabled,
-                      },
-                      nestedItem.className
-                    )}
-                    disabled={nestedItem.disabled}
-                  >
-                    {nestedItem.icon && <nestedItem.icon className={cn("h-3 w-3", nestedItem.iconClassName)} />}
-                    <div>
-                      <h5>{nestedItem.title}</h5>
-                      {nestedItem.description && (
-                        <p
-                          className={cn("whitespace-pre-line text-tertiary", {
-                            "text-placeholder": nestedItem.disabled,
-                          })}
-                        >
-                          {nestedItem.description}
-                        </p>
-                      )}
-                    </div>
-                  </CustomMenu.MenuItem>
-                ))}
-              </CustomMenu.SubMenu>
-            );
-          }
-
-          // Render regular menu item
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
-      </CustomMenu>
+      <QuickActionMenu
+        items={MENU_ITEMS}
+        parentRef={parentRef}
+        customMenuProps={{
+          ellipsis: true,
+          customButton: customActionButton,
+          portalElement,
+          placement: placements,
+          menuItemsClassName: "z-[14]",
+          maxHeight: "lg",
+          useCaptureForOutsideClick: true,
+          closeOnSelect: true,
+        }}
+      />
     </>
   );
 });

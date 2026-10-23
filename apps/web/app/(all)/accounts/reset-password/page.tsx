@@ -5,6 +5,7 @@
  */
 
 // plane imports
+import { createFileRoute } from "@tanstack/react-router";
 import { EAuthModes } from "@plane/constants";
 // components
 import { ResetPasswordForm } from "@/components/account/auth-forms/reset-password";
@@ -15,7 +16,7 @@ import { EPageTypes } from "@/helpers/authentication.helper";
 import DefaultLayout from "@/layouts/default-layout";
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-function ResetPasswordPage() {
+function ResetPasswordPage(): React.JSX.Element | null {
   return (
     <DefaultLayout>
       <AuthenticationWrapper pageType={EPageTypes.NON_AUTHENTICATED}>
@@ -28,4 +29,6 @@ function ResetPasswordPage() {
   );
 }
 
-export default ResetPasswordPage;
+export const Route = createFileRoute("/accounts/reset-password/")({
+  component: ResetPasswordPage,
+});

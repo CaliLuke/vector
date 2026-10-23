@@ -9,8 +9,8 @@ import * as React from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 // helpers
 import { cn } from "../utils";
-import type { TAvatarSize } from "./helper";
-import { getBorderRadius, getSizeInfo, isAValidNumber } from "./helper";
+import type { TAvatarSize } from "@plane/propel/avatar";
+import { getBorderRadius, getSizeInfo, isAValidNumber } from "@plane/propel/avatar";
 
 type Props = Omit<React.ComponentPropsWithoutRef<"div">, "color"> & {
   /**

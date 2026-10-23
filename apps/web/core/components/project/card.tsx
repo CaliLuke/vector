@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useRouter } from "@tanstack/react-router";
 import React, { useRef, useState } from "react";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+
 import { ArchiveRestoreIcon, Settings, UserPlus } from "lucide-react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
@@ -26,7 +26,7 @@ import { copyUrlToClipboard, cn, getFileURL, renderFormattedDate } from "@plane/
 import { useMember } from "@/hooks/store/use-member";
 import { useProject } from "@/hooks/store/use-project";
 import { useUserPermissions } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { CoverImage } from "@/components/common/cover-image";
@@ -47,8 +47,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
   // refs
   const projectCardRef = useRef(null);
   // router
-  const router = useAppRouter();
-  const { workspaceSlug } = useParams();
+  const router = useRouter();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { getUserDetails } = useMember();
   const { addProjectToFavorites, removeProjectFromFavorites } = useProject();
@@ -132,7 +132,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
   const MENU_ITEMS: TContextMenuItem[] = [
     {
       key: "settings",
-      action: () => router.push(`/${workspaceSlug}/settings/projects/${project.id}`),
+      action: () => void router.navigate({ href: `/${workspaceSlug}/settings/projects/${project.id}` }),
       title: "Settings",
       icon: Settings,
       shouldRender: !isArchived && (hasAdminRole || hasMemberRole),
@@ -210,7 +210,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
         <Link
           aria-label={`Open project ${project.name}`}
           className="focus-visible:outline-focus-ring absolute inset-0 z-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          href={`/${workspaceSlug}/projects/${project.id}/issues`}
+          to="/$workspaceSlug/projects/$projectId/issues/"
+          params={{ workspaceSlug: workspaceSlug, projectId: project.id }}
           onClick={handleProjectNavigation}
           data-prevent-progress={!isMemberOfProject || isArchived}
         />
@@ -290,7 +291,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
           <div className="item-center flex justify-between">
             <div className="flex items-center justify-center gap-2">
               <Link
-                href={`/${projectLink}`}
+                to="/$workspaceSlug/projects/$projectId/issues"
+                params={{ workspaceSlug, projectId: project.id }}
                 aria-label={`Open project ${project.name}`}
                 onClick={handleProjectNavigation}
                 data-prevent-progress={!isMemberOfProject || isArchived}
@@ -364,7 +366,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                       onClick={(e) => {
                         e.stopPropagation();
                       }}
-                      href={`/${workspaceSlug}/settings/projects/${project.id}`}
+                      to="/$workspaceSlug/settings/projects/$projectId/"
+                      params={{ workspaceSlug: workspaceSlug, projectId: project.id }}
                     >
                       <Settings className="h-3.5 w-3.5" />
                     </Link>

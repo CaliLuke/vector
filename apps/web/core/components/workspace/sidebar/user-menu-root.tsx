@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
+
 import { LogOut, Settings, Settings2 } from "lucide-react";
 // plane imports
 import { GOD_MODE_URL } from "@plane/constants";
@@ -141,7 +142,7 @@ export const UserMenuRoot = observer(function UserMenuRoot() {
       </CustomMenu.MenuItem>
       {isUserInstanceAdmin && (
         <CustomMenu.MenuItem
-          onClick={() => router.push(GOD_MODE_URL)}
+          onClick={() => void router.navigate({ href: GOD_MODE_URL })}
           className="bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/30 hover:text-accent-secondary"
         >
           {t("enter_god_mode")}

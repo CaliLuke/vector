@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 // ui
 import { useTranslation } from "@plane/i18n";
@@ -26,7 +27,7 @@ import { UserService } from "@/services/user.service";
 const userService = new UserService();
 
 export const ProfileActivity = observer(function ProfileActivity() {
-  const { workspaceSlug, userId } = useParams();
+  const { workspaceSlug, userId } = useParams({ strict: false });
   // store hooks
   const { data: currentUser } = useUser();
   const { t } = useTranslation();

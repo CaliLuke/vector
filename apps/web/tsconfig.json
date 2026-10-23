@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "@/*": ["./core/*"],
       "@/app/*": ["./app/*"],
@@ -16,6 +15,7 @@
     "noImplicitOverride": false,
     "types": ["vite/client", "react", "react-dom"]
   },
-  "extends": "@plane/typescript-config/react-router.json",
-  "include": ["**/*", "**/.server/**/*", "**/.client/**/*", ".react-router/types/**/*"]
+  "extends": "@plane/typescript-config/vite.json",
+  "include": ["**/*"],
+  "exclude": ["node_modules", "build"]
 }

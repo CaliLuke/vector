@@ -4,13 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import { Link, useParams, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachInstruction, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+
 import { Pin, PinOff } from "lucide-react";
 // plane imports
 import type { IWorkspaceSidebarNavigationItem } from "@plane/constants";
@@ -52,8 +52,8 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
   const dragHandleRef = useRef<HTMLButtonElement | null>(null);
 
   // nextjs hooks
-  const pathname = usePathname();
-  const { workspaceSlug } = useParams();
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
   const { toggleExtendedSidebar } = useAppTheme();
   const { data } = useUser();
@@ -188,7 +188,7 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
           />
         )}
         <SidebarNavItem isActive={isActive}>
-          <Link href={itemHref} onClick={() => handleLinkClick()} className="group flex-grow">
+          <Link to={itemHref} onClick={() => handleLinkClick()} className="group flex-grow">
             <div className="flex items-center gap-1.5 py-[1px]">
               {icon}
               <p className="text-13 leading-5 font-medium">{t(item.labelTranslationKey)}</p>

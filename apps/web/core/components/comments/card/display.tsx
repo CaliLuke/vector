@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
 import { useHashScroll } from "@plane/hooks";
@@ -71,7 +72,7 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
   const userReactions = activityOperations.userReactions(comment.id);
 
   // navigation
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // derived values
   const commentBlockId = `comment-${comment?.id}`;
   // Check if there are any reactions to determine if we should render the footer

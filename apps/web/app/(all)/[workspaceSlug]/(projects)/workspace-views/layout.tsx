@@ -4,12 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { GlobalIssuesHeader } from "./header";
 
-export default function GlobalIssuesLayout() {
+function GlobalIssuesLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<GlobalIssuesHeader />} />
@@ -19,3 +19,7 @@ export default function GlobalIssuesLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/workspace-views")({
+  component: GlobalIssuesLayout,
+});

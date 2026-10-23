@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import React from "react";
 // components
 import { AuthBase } from "@/components/auth-screens/auth-base";
@@ -14,7 +15,7 @@ import DefaultLayout from "@/layouts/default-layout";
 // wrappers
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-function HomePage() {
+function HomePage(): React.JSX.Element | null {
   return (
     <DefaultLayout>
       <AuthenticationWrapper pageType={EPageTypes.NON_AUTHENTICATED}>
@@ -24,4 +25,6 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export const Route = createFileRoute("/_home/")({
+  component: HomePage,
+});

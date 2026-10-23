@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { Earth } from "lucide-react";
 // plane imports
 import { EUserPermissions, EUserPermissionsLevel, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
@@ -39,7 +40,7 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
   const [deleteViewModal, setDeleteViewModal] = useState(false);
   const [_, setPublishModalOpen] = useState<boolean>(false);
   // router
-  const { workspaceSlug, projectId } = useParams();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store
   const { allowPermissions } = useUserPermissions();
 

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+
 // i18n
 import { EUserPermissions, EUserPermissionsLevel, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -30,7 +31,7 @@ export const ProjectsBaseHeader = observer(function ProjectsBaseHeader() {
   const { toggleCreateProjectModal } = useCommandPalette();
   const { allowPermissions } = useUserPermissions();
 
-  const pathname = usePathname();
+  const pathname = useLocation({ select: (location) => location.pathname });
   // auth
   const isAuthorizedUser = allowPermissions(
     [EUserPermissions.ADMIN, EUserPermissions.MEMBER],

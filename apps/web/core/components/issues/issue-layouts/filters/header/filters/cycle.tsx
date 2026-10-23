@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import React, { useMemo, useState } from "react";
 import { sortBy } from "lodash-es";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { CycleGroupIcon } from "@plane/propel/icons";
 import type { TCycleGroups } from "@plane/types";
 // components
@@ -27,7 +28,7 @@ export const FilterCycle = observer(function FilterCycle(props: Props) {
   const { appliedFilters, handleUpdate, searchQuery } = props;
 
   // hooks
-  const { projectId } = useParams();
+  const { projectId } = useParams({ strict: false });
   const { getCycleById, getProjectCycleIds } = useCycle();
 
   // states

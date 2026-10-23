@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useLocation } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
 import { observer } from "mobx-react";
-import { useParams, usePathname } from "next/navigation";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { TProjectAppliedDisplayFilterKeys, TProjectFilters } from "@plane/types";
@@ -23,8 +24,8 @@ import { ProjectCardList } from "./card-list";
 
 export const ProjectRoot = observer(function ProjectRoot() {
   const { currentWorkspace } = useWorkspace();
-  const { workspaceSlug } = useParams();
-  const pathname = usePathname();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const pathname = useLocation({ select: (location) => location.pathname });
   const { t } = useTranslation();
   // store
   const { totalProjectIds, filteredProjectIds } = useProject();
@@ -72,11 +73,11 @@ export const ProjectRoot = observer(function ProjectRoot() {
     clearAllFilters(workspaceSlug.toString());
     clearAllAppliedDisplayFilters(workspaceSlug.toString());
     if (isArchived) updateDisplayFilters(workspaceSlug.toString(), { archived_projects: true });
-  }, [clearAllFilters, clearAllAppliedDisplayFilters, workspaceSlug]);
+  }, [clearAllFilters, clearAllAppliedDisplayFilters, workspaceSlug, isArchived, updateDisplayFilters]);
 
   useEffect(() => {
     updateDisplayFilters(workspaceSlug.toString(), { archived_projects: isArchived });
-  }, [pathname]);
+  }, [isArchived, updateDisplayFilters, workspaceSlug]);
 
   return (
     <>

@@ -25,7 +25,7 @@ case "$MODE" in
     run_gate "Quality-ratchet fixture tests" node scripts/quality/test-ratchets.mjs
     ;;
   --full)
-    run_gate "React Router generated route types" bash scripts/quality/route-types.sh
+    run_gate "Generated route types" bash scripts/quality/route-types.sh
     run_gate "Oxlint type-aware rules and TypeScript diagnostics" env GOMEMLIMIT=1GiB GOMAXPROCS=2 node scripts/quality/check-oxlint-baseline.mjs full
     run_gate "Oxfmt check" pnpm exec oxfmt --check .
     run_gate "Process guard regression tests" node --test --test-concurrency=1 scripts/quality/run-bounded.test.mjs

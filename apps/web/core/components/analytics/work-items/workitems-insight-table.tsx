@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import useSWR from "swr";
 import { UserRound } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
@@ -30,7 +31,7 @@ const analyticsService = new AnalyticsService();
 
 const WorkItemsInsightTable = observer(function WorkItemsInsightTable() {
   // router
-  const params = useParams();
+  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
   const workspaceSlug = params.workspaceSlug.toString();
   const { t } = useTranslation();
   // store hooks

@@ -5,11 +5,11 @@
  */
 
 // components
-import { Outlet } from "react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { ProjectWorkItemDetailsHeader } from "./header";
 
-export default function ProjectIssueDetailsLayout() {
+function ProjectIssueDetailsLayout(): React.JSX.Element | null {
   return (
     <>
       <ProjectWorkItemDetailsHeader />
@@ -19,3 +19,7 @@ export default function ProjectIssueDetailsLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/browse/$workItem")({
+  component: ProjectIssueDetailsLayout,
+});

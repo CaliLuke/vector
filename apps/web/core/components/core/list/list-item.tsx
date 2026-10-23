@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import React from "react";
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
@@ -11,7 +12,6 @@ import { ControlLink, Row } from "@plane/ui";
 // helpers
 import { cn } from "@plane/utils";
 // hooks
-import { useAppRouter } from "@/hooks/use-app-router";
 
 interface IListItemProps {
   id?: string;
@@ -57,12 +57,12 @@ export function ListItem(props: IListItemProps) {
   } = props;
 
   // router
-  const router = useAppRouter();
+  const router = useRouter();
 
   // handlers
   const handleControlLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (onItemClick) onItemClick(e);
-    else router.push(itemLink);
+    else void router.navigate({ href: itemLink });
   };
 
   return (

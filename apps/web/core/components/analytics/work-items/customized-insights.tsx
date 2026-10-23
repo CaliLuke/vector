@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 import { useForm } from "react-hook-form";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
@@ -25,7 +26,7 @@ const CustomizedInsights = observer(function CustomizedInsights({
   isEpic?: boolean;
 }) {
   const { t } = useTranslation();
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { control, watch, setValue } = useForm<IAnalyticsParams>({
     defaultValues: {
       x_axis: ChartXAxisProperty.PRIORITY,

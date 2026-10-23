@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useLocation } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { isEmpty } from "lodash-es";
 import { observer } from "mobx-react";
-import { useSearchParams } from "next/navigation";
+
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -61,7 +62,7 @@ export const CycleAnalyticsProgress = observer(function CycleAnalyticsProgress(p
   // props
   const { workspaceSlug, projectId, cycleId } = props;
   // router
-  const searchParams = useSearchParams();
+  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const peekCycle = searchParams.get("peekCycle") || undefined;
   // plane hooks
   const { t } = useTranslation();

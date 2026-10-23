@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import { useParams, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Command } from "cmdk";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // hooks
 import { CloseIcon, SearchIcon } from "@plane/propel/icons";
 import { cn } from "@plane/utils";
@@ -18,13 +19,13 @@ import { PowerKModalFooter } from "@/components/power-k/ui/modal/footer";
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { usePowerK } from "@/hooks/store/use-power-k";
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
+
 import { useExpandableSearch } from "@/hooks/use-expandable-search";
 
 export const TopNavPowerK = observer(() => {
   // router
-  const router = useAppRouter();
-  const params = useParams();
+  const router = useRouter();
+  const params = useParams({ strict: false });
   const { projectId: routerProjectId, workItem: workItemIdentifier } = params;
 
   // states
@@ -63,7 +64,7 @@ export const TopNavPowerK = observer(() => {
 
   const workItemId = workItemIdentifier ? getIssueIdByIdentifier(workItemIdentifier.toString()) : undefined;
   const workItemDetails = workItemId ? getIssueById(workItemId) : undefined;
-  const projectId: string | string[] | undefined | null = routerProjectId ?? workItemDetails?.project_id;
+  const projectId = routerProjectId ?? workItemDetails?.project_id ?? undefined;
 
   // Build command context
   const context: TPowerKContext = useMemo(

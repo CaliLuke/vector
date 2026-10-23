@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import React, { useState } from "react";
 
 import { useTheme } from "next-themes";
@@ -14,7 +15,6 @@ import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export function SwitchAccountModal(props: Props) {
   // states
   const [switchingAccount, setSwitchingAccount] = useState(false);
   // router
-  const router = useAppRouter();
+  const router = useRouter();
   // store hooks
   const { data: userData, signOut } = useUser();
 
@@ -43,7 +43,7 @@ export function SwitchAccountModal(props: Props) {
     await signOut()
       .then(() => {
         setTheme("system");
-        router.push("/");
+        void router.navigate({ href: "/" });
         handleClose();
       })
       .catch(() =>

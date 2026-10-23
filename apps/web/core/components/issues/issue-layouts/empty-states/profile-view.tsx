@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+
 // components
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
@@ -15,7 +16,7 @@ export const ProfileViewEmptyState = observer(function ProfileViewEmptyState() {
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { profileViewId } = useParams();
+  const { profileViewId } = useParams({ strict: false });
 
   if (!profileViewId) return null;
 

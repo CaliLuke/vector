@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "@plane/i18n";
 // ui
@@ -13,7 +14,6 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
 import { useUser } from "@/hooks/store/user";
-import { useAppRouter } from "@/hooks/use-app-router";
 
 type Props = {
   isOpen: boolean;
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export function DeactivateAccountModal(props: Props) {
-  const router = useAppRouter();
+  const router = useRouter();
   const { isOpen, onClose } = props;
   // hooks
   const { t } = useTranslation();
@@ -46,7 +46,7 @@ export function DeactivateAccountModal(props: Props) {
           message: "Account deactivated successfully.",
         });
         signOut();
-        router.push("/");
+        void router.navigate({ href: "/" });
         handleClose();
         return;
       })

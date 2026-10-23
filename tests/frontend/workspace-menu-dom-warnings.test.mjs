@@ -1,3 +1,4 @@
+import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -11,8 +12,6 @@ registerHooks({
     if (
       [
         "mobx-react",
-        "next/link",
-        "next/navigation",
         "@headlessui/react",
         "@plane/constants",
         "@plane/i18n",
@@ -39,10 +38,12 @@ const [{ SidebarDropdownItem }, { FilterDisplayProperties }, { WorkspaceMenuStat
 
 test("workspace selector keeps its action links outside the workspace navigation link", async () => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   const workspace = { id: "workspace-id", slug: "default", name: "Default", role: "ADMIN", total_members: 2 };
 
   try {
-    await environment.render(
+    await routerFixture.render(
+      environment,
       React.createElement(SidebarDropdownItem, {
         workspace,
         activeWorkspace: workspace,
@@ -63,6 +64,7 @@ test("workspace selector keeps its action links outside the workspace navigation
 
 test("workspace menu open state syncs after commit instead of during Headless UI render", async () => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   const errors = [];
   const originalConsoleError = console.error;
   console.error = (...args) => errors.push(args.join(" "));
@@ -79,7 +81,7 @@ test("workspace menu open state syncs after commit instead of during Headless UI
   }
 
   try {
-    await environment.render(React.createElement(Harness));
+    await routerFixture.render(environment, React.createElement(Harness));
 
     assert.equal(environment.container.querySelector('[data-testid="open-state"]').textContent, "true");
     assert.equal(
@@ -94,12 +96,14 @@ test("workspace menu open state syncs after commit instead of during Headless UI
 
 test("display property buttons keep stable keys on the mapped elements", async () => {
   const environment = await createReactDomTestEnvironment();
+  const routerFixture = createRouterFixture("/workspace/");
   const errors = [];
   const originalConsoleError = console.error;
   console.error = (...args) => errors.push(args.join(" "));
 
   try {
-    await environment.render(
+    await routerFixture.render(
+      environment,
       React.createElement(FilterDisplayProperties, {
         displayProperties: { name: true, priority: false },
         displayPropertiesToRender: ["name", "priority"],

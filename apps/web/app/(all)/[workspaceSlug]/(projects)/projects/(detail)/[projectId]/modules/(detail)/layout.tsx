@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { Outlet } from "react-router";
 // components
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { ModuleIssuesHeader } from "./header";
 import { ModuleIssuesMobileHeader } from "./mobile-header";
 
-export default function ProjectModuleIssuesLayout() {
+function ProjectModuleIssuesLayout(): React.JSX.Element | null {
   return (
     <>
       <AppHeader header={<ModuleIssuesHeader />} mobileHeader={<ModuleIssuesMobileHeader />} />
@@ -21,3 +21,7 @@ export default function ProjectModuleIssuesLayout() {
     </>
   );
 }
+
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/modules/$moduleId")({
+  component: ProjectModuleIssuesLayout,
+});

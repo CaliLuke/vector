@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { createFileRoute } from "@tanstack/react-router";
 import { observer } from "mobx-react";
 // components
 import { PageHead } from "@/components/core/page-title";
@@ -11,11 +12,10 @@ import { ArchivedIssuesHeader } from "@/components/issues/archived-issues-header
 import { ArchivedIssueLayoutRoot } from "@/components/issues/issue-layouts/roots/archived-issue-layout-root";
 // hooks
 import { useProject } from "@/hooks/store/use-project";
-import type { Route } from "./+types/page";
 
-function ProjectArchivedIssuesPage({ params }: Route.ComponentProps) {
+function ProjectArchivedIssuesPage(): React.JSX.Element | null {
   // router
-  const { projectId } = params;
+  const { projectId } = Route.useParams();
   // store hooks
   const { getProjectById } = useProject();
   // derived values
@@ -33,4 +33,6 @@ function ProjectArchivedIssuesPage({ params }: Route.ComponentProps) {
   );
 }
 
-export default observer(ProjectArchivedIssuesPage);
+export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/")({
+  component: observer(ProjectArchivedIssuesPage),
+});

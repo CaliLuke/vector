@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "next/navigation";
+import { useParams } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
 // plane imports
 import { allTimeIn30MinutesInterval12HoursFormat } from "@plane/constants";
@@ -38,7 +38,7 @@ const timeStamps = allTimeIn30MinutesInterval12HoursFormat;
 export function NotificationSnoozeModal(props: TNotificationSnoozeModal) {
   const { isOpen, onClose, onSubmit: handleSubmitSnooze } = props;
 
-  const { workspaceSlug } = useParams();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
   const {
     formState: { isSubmitting },
