@@ -24,6 +24,15 @@ async function settledPanel(environment, text, expected) {
   }
   assert.equal(environment.container.textContent.includes(text), expected);
 }
+async function settledButton(environment, text, expected) {
+  const deadline = Date.now() + 1000;
+  while (Boolean(button(environment, text)) !== expected && Date.now() < deadline) {
+    // Wait for the real popover leave transition before checking its final DOM state.
+    // eslint-disable-next-line no-await-in-loop
+    await React.act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+  }
+  assert.equal(Boolean(button(environment, text)), expected);
+}
 function button(environment, text) {
   return [...environment.container.querySelectorAll("button")].find((element) => element.textContent === text);
 }
@@ -77,7 +86,7 @@ test("collapsible actions open a real filter popup without toggling the panel", 
   });
   assert.equal(selected, 1);
   await React.act(async () => pressKey(choice, "Escape"));
-  assert.equal(button(environment, "High priority"), undefined);
+  await settledButton(environment, "High priority", false);
   assert.equal(document.activeElement, filter, "Escape returns focus to the filter trigger");
 
   // Native button activation is synthesized by the browser, not jsdom.

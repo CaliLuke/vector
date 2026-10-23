@@ -11,6 +11,12 @@ Use existing libraries and shared helpers. Keep authorization, tenant isolation,
 Add focused regression tests for defects. Run affected tests, formatting, lint, and typechecks.
 Do not edit generated Go transport output. Regenerate only affected source designs.
 
+Run `prek run --all-files --group full` for the complete quality gate.
+Use `./check.sh --fast` for non-mutating fast checks and `./check.sh --fix` for formatting/lint fixes.
+Husky owns Git hooks and invokes Prek; do not install a second hook manager.
+Full checks include frontend builds: stop frontend watchers first, then restart the stack for UI checks.
+Review baseline changes explicitly. Do not increase a baseline to hide a new defect or exclude owned source to make a gate pass.
+
 Use `http://localhost:8000/` for local browser checks. Keep the proxy and application origins consistent.
 While the development stack runs, use package typecheck scripts directly. Do not clean shared package output.
 Read local logs through `pnpm dev:logs`, `pnpm dev:errors`, and `pnpm dev:traces`.

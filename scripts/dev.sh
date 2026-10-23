@@ -58,4 +58,6 @@ echo "Instance administration: http://localhost:8000/god-mode/"
 echo "Admin and space upstreams: localhost:${PLANE_ADMIN_PORT}, localhost:${PLANE_SPACE_PORT}"
 echo "Ctrl-C stops the frontend servers. pnpm dev:stop stops the containers without deleting data."
 echo "Logal: Docker volume plane_logaldata (48-hour retention). Query with pnpm dev:logs."
+# Finish shared-package builds before their watchers start writing the same outputs.
+node scripts/quality/run-bounded.mjs --seconds 600 --memory-mib 4096 --heap-mib 2048 -- pnpm exec turbo run build --concurrency=1 --filter='./packages/*'
 exec go -C apps/go-api run ./cmd/devtools start

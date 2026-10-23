@@ -1,0 +1,1349 @@
+{
+  "version": 1,
+  "files": {
+    "src/ce/components/document-editor-side-effects.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/components/link-container.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/constants/assets.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/constants/extensions.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/constants/utility.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/extensions/core/extensions.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/extensions/core/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/extensions/core/without-props.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/extensions/document-extensions.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/extensions/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/extensions/rich-text-extensions.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/extensions/slash-commands.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/helpers/asset-duplication.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/ce/helpers/parser.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/ce/types/asset.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/config.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/editor-extended.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/issue-embed.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/storage.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ce/types/utils.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/editors/document/collaborative-editor.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/document/editor.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/document/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/editors/document/loader.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/components/editors/document/page-renderer.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/editor-container.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/editor-content.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/components/editors/editor-wrapper.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/editors/link-view-container.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/lite-text/editor.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/lite-text/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/editors/rich-text/editor.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/editors/rich-text/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/links/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/links/link-edit-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/links/link-preview.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/links/link-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/ai-menu.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/block-menu-options.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/block-menu.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/bubble-menu/alignment-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/bubble-menu/color-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/bubble-menu/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/menus/bubble-menu/link-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/bubble-menu/node-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/bubble-menu/root.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/floating-menu/root.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/components/menus/floating-menu/use-floating-menu.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/components/menus/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/components/menus/menu-items.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/constants/common.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/constants/config.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/constants/document-collaborative-events.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/constants/extension.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/constants/meta.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/contexts/collaboration-context.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/contexts/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/callout/block.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/callout/color-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/callout/extension-config.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/callout/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/callout/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/callout/logo-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/callout/types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/callout/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code-inline/index.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/code/code-block-lowlight.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/code-block-node-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/code-block.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/index.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/lowlight-plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/code/utils/replace-code-block-with-text.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/code/without-props.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/core-without-props.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/custom-color.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/block.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/node-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/toolbar/alignment.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/toolbar/download.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/components/toolbar/full-screen/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/components/toolbar/full-screen/modal.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/toolbar/full-screen/root.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/components/toolbar/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/components/toolbar/root.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/upload-status.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/components/uploader.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/extension-config.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-image/types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/custom-image/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-link/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-link/helpers/autolink.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-link/helpers/clickHandler.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-link/helpers/pasteHandler.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-link/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/custom-list-keymap/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/custom-list-keymap/list-helpers.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/custom-list-keymap/list-keymap.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/emoji/components/emojis-list.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/emoji/emoji.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/emoji/extension.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/emoji/suggestion.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/enter-key.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/extensions.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/headings-list.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/horizontal-rule.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/image/extension-config.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/image/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/image/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/keymap.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/mentions/extension-config.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/mentions/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/mentions/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/mentions/mention-node-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/mentions/mentions-list-dropdown.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/mentions/types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/mentions/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/placeholder.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/quote.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/side-menu.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/slash-commands/command-items-list.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/slash-commands/command-menu-item.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/slash-commands/command-menu.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/slash-commands/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/slash-commands/root.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/starter-kit.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 50
+    },
+    "src/core/extensions/table/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/table/plugins/drag-handles/actions.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/color-selector.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/table/plugins/drag-handles/column/drag-handle.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/column/dropdown.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/column/plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/column/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/marker-utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/row/drag-handle.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/row/dropdown.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/row/plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/row/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-handles/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/drag-state.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/insert-handlers/plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/insert-handlers/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/selection-outline/plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/plugins/selection-outline/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table-cell.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table-header.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table-row.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/icons.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/table/table/index.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/table/table/table-view.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/table.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/create-cell.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/create-table.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/delete-column.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/delete-key-shortcut.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/delete-row.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/get-table-node-types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/helpers.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/insert-line-above-table-action.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/table/table/utilities/insert-line-below-table-action.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/text-align.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/title-extension.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/trailing-node.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/typography/index.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/typography/inputRules.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/unique-id/extension.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/unique-id/plugin.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/unique-id/utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/utility.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/work-item-embed/extension-config.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/extensions/work-item-embed/extension.tsx": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/extensions/work-item-embed/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/extensions/work-item-embed/types.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/helpers/assets.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/common.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/editor-commands.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/editor-ref.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/file.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/find-suggestion-match.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/floating-ui.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/get-document-server-event.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/image-helpers.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/insert-content-at-cursor-position.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/insert-empty-paragraph-at-node-boundary.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/parser.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/paste-asset.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/scroll-to-node.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/tippy.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/helpers/yjs-utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-collaborative-editor.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-editor-navigation.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-editor.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-file-upload.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-title-editor.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/hooks/use-yjs-setup.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/ai-handle.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/drag-handle.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/drop.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/file/delete.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/file/restore.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/file/root.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/highlight.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/plugins/markdown-clipboard.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/core/props.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/types/ai.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/asset.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/collaboration.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/config.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/document-collaborative-events.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/core/types/editor.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/embed.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/extensions.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/hook.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/mention.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/core/types/slash-commands-suggestion.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ee/extensions/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/ee/types/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/lib.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    }
+  }
+}

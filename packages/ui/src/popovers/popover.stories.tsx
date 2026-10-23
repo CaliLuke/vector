@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { Popover } from "./popover";
 

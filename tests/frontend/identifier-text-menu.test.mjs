@@ -29,11 +29,11 @@ registerHooks({
   },
 });
 
-const { CustomMenu } = await import("../../packages/ui/src/dropdowns/custom-menu.tsx");
-const { IdentifierText } = await import("../../apps/web/core/components/issues/issue-detail/identifier-text.tsx");
-
-test("passive identifier composes with a real CustomMenu button without nesting interactive elements", async () => {
+test("passive identifier composes with a real CustomMenu button without nesting interactive elements", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { CustomMenu } = await import("../../packages/ui/src/dropdowns/custom-menu.tsx");
+  const { IdentifierText } = await import("../../apps/web/core/components/issues/issue-detail/identifier-text.tsx");
   await environment.render(
     React.createElement(
       CustomMenu,
@@ -57,8 +57,11 @@ test("passive identifier composes with a real CustomMenu button without nesting 
   assert.ok(passiveIdentifier);
   assert.equal(passiveIdentifier.tabIndex, -1, "passive identifier text is not focusable");
 
-  await React.act(() => {
+  await React.act(async () => {
     menuTrigger.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+  });
+  await React.act(async () => {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
   });
   assert.ok([...document.querySelectorAll("button")].some((button) => button.textContent.includes("Create child")));
   await environment.unmount();
@@ -66,6 +69,7 @@ test("passive identifier composes with a real CustomMenu button without nesting 
 
 test("enabled identifier keeps its real copy tooltip and copies the identifier", async () => {
   const environment = await createReactDomTestEnvironment();
+  const { IdentifierText } = await import("../../apps/web/core/components/issues/issue-detail/identifier-text.tsx");
   const writes = [];
   Object.defineProperty(navigator, "clipboard", {
     configurable: true,

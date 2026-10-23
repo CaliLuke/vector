@@ -14,7 +14,7 @@ const envSchema = z.object({
   APP_VERSION: z.string().default("1.0.0"),
   HOSTNAME: z.string().optional(),
   PORT: z.string().default("3000"),
-  API_BASE_URL: z.string().url("API_BASE_URL must be a valid URL"),
+  API_BASE_URL: z.url({ error: "API_BASE_URL must be a valid URL" }),
   // CORS configuration
   CORS_ALLOWED_ORIGINS: z.string().default(""),
   // Live running location
@@ -33,7 +33,7 @@ const envSchema = z.object({
 const validateEnv = () => {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
-    console.error("❌ Invalid environment variables:", JSON.stringify(result.error.format(), null, 4));
+    console.error("❌ Invalid environment variables:", JSON.stringify(z.treeifyError(result.error), null, 4));
     process.exit(1);
   }
   return result.data;

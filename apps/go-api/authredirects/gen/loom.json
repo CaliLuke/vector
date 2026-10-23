@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.15",
+  "loom_version": "v1.10.0-alpha.16",
   "design_package": "github.com/CaliLuke/go-plane/authredirects/design",
   "design_digest": "2cc26e49c405ddb729c0b499e4c7b9a5c1760a508ab187f58d9185e92cf949de"
 }

@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"strings"
 
+	"uuid"
+
 	googleuuid "github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 var ErrNotFound = errors.New("user properties not found")

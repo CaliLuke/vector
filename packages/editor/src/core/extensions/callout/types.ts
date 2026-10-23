@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import type { Node as ProseMirrorNode } from "@tiptap/core";
+import type { Node as TiptapNode } from "@tiptap/core";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import type { MarkdownSerializerState } from "prosemirror-markdown";
 
 export enum ECalloutAttributeNames {
   ID = "id",
@@ -36,6 +38,10 @@ export type TCalloutBlockAttributes = {
   TCalloutBlockEmojiAttributes;
 
 export type CustomCalloutExtensionOptions = unknown;
-export type CustomCalloutExtensionStorage = unknown;
+export type CustomCalloutExtensionStorage = {
+  markdown: {
+    serialize: (state: MarkdownSerializerState, node: ProseMirrorNode) => void;
+  };
+};
 
-export type CustomCalloutExtensionType = ProseMirrorNode<CustomCalloutExtensionOptions, CustomCalloutExtensionStorage>;
+export type CustomCalloutExtensionType = TiptapNode<CustomCalloutExtensionOptions, CustomCalloutExtensionStorage>;

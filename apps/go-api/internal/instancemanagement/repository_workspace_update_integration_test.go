@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"uuid"
 )
 
 func TestUpdateWorkspacePersistsChangesAndProjectsOptionalLogo(t *testing.T) {

@@ -7,11 +7,12 @@ import (
 	"net/url"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/module_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const moduleIDFixture = "00000000-0000-4000-8000-000000000001"

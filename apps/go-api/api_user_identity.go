@@ -9,12 +9,13 @@ import (
 	"io"
 	"time"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/apiuseridentity/gen/api_user_identity"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type apiUserIdentityRepository interface {

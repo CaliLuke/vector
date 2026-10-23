@@ -2,10 +2,11 @@ package lastvisitedworkspace
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5"
 	"strings"
 	"testing"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type rowFn func(...any) error

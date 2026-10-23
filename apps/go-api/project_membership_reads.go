@@ -8,11 +8,12 @@ import (
 	"strings"
 	"unicode"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/project_membership_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const projectMembershipReadsInternalErrorDetail = "Something went wrong please try again later"

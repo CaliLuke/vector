@@ -8,9 +8,10 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 func TestRepositoryPreservesEstimateReadSemantics(t *testing.T) {
@@ -19,7 +20,11 @@ func TestRepositoryPreservesEstimateReadSemantics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {

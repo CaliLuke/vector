@@ -32,6 +32,7 @@ const GLOBAL_NAMES = [
   "SVGElement",
   "NodeFilter",
   "MutationObserver",
+  "ResizeObserver",
   "getComputedStyle",
   "requestAnimationFrame",
   "cancelAnimationFrame",
@@ -46,6 +47,26 @@ export async function createReactDomTestEnvironment() {
   const originalGlobals = new Map(
     GLOBAL_NAMES.map((name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)])
   );
+
+  // jsdom has no layout engine. Tests can deliver resize notifications explicitly.
+  const resizeObservers = new Set();
+  class TestResizeObserver {
+    targets = new Set();
+    constructor(callback) {
+      this.callback = callback;
+      resizeObservers.add(this);
+    }
+    observe(target) {
+      this.targets.add(target);
+    }
+    unobserve(target) {
+      this.targets.delete(target);
+    }
+    disconnect() {
+      this.targets.clear();
+    }
+  }
+  dom.window.ResizeObserver = TestResizeObserver;
 
   for (const name of GLOBAL_NAMES) {
     const value = name === "IS_REACT_ACT_ENVIRONMENT" ? true : name === "self" ? dom.window : dom.window[name];
@@ -62,6 +83,13 @@ export async function createReactDomTestEnvironment() {
 
   return {
     container,
+    async resize(target, contentRect = target.getBoundingClientRect()) {
+      await act(async () => {
+        for (const observer of resizeObservers) {
+          if (observer.targets.has(target)) observer.callback([{ target, contentRect }], observer);
+        }
+      });
+    },
     async render(element) {
       await act(async () => root.render(element));
     },
@@ -69,6 +97,7 @@ export async function createReactDomTestEnvironment() {
       if (disposed) return;
       disposed = true;
       await act(async () => root.unmount());
+      resizeObservers.clear();
       dom.window.close();
       for (const [name, descriptor] of originalGlobals) {
         if (descriptor) Object.defineProperty(globalThis, name, descriptor);

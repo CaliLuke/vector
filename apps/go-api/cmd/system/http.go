@@ -542,7 +542,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			pending.csrfTokenThrottle,
 			pending.csrfTokenCORS,
 			pending.csrfTokenSessionCookie,
-			pending.csrfTokenSessionCookie,
 			nil,
 			"",
 			bodySizeLimit,
@@ -870,7 +869,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			pending.publicProjectMetadataThrottle,
 			pending.publicProjectMetadataCORS,
 			pending.publicProjectMetadataCookie,
-			pending.publicProjectMetadataAdminCookie,
 			pending.publicProjectMetadataActivity,
 			pending.publicProjectMetadataSecret,
 			bodySizeLimit,
@@ -901,7 +899,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			pending.publicProjectMetadataThrottle,
 			pending.publicProjectMetadataCORS,
 			pending.publicProjectMetadataCookie,
-			pending.publicProjectMetadataAdminCookie,
 			pending.publicProjectMetadataActivity,
 			pending.publicProjectMetadataSecret,
 			bodySizeLimit,
@@ -920,7 +917,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			pending.publicProjectMetadataThrottle,
 			pending.publicProjectMetadataCORS,
 			pending.publicProjectMetadataCookie,
-			pending.publicProjectMetadataAdminCookie,
 			pending.publicProjectMetadataActivity,
 			pending.publicProjectMetadataSecret,
 			bodySizeLimit,
@@ -937,7 +933,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 				pending.publicProjectMetadataThrottle,
 				pending.publicProjectMetadataCORS,
 				pending.publicProjectMetadataCookie,
-				pending.publicProjectMetadataAdminCookie,
 				pending.publicProjectMetadataActivity,
 				pending.publicProjectMetadataSecret,
 				bodySizeLimit,
@@ -948,7 +943,6 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 				pending.publicProjectMetadataThrottle,
 				pending.publicProjectMetadataCORS,
 				pending.publicProjectMetadataCookie,
-				pending.publicProjectMetadataAdminCookie,
 				pending.publicProjectMetadataActivity,
 				pending.publicProjectMetadataSecret,
 				bodySizeLimit,
@@ -3675,7 +3669,6 @@ func publicProjectMetadataRouteCompatibilityMiddleware(
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
 	sessionCookie djangoSessionCookieConfig,
-	adminSessionCookie djangoSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -3683,10 +3676,10 @@ func publicProjectMetadataRouteCompatibilityMiddleware(
 ) func(http.Handler) http.Handler {
 	fallback := compatibility(publicProjectMetadataMethodNotAllowed())
 	slashless := publicProjectMetadataNotFoundHandler(
-		throttle, allowedCORSOrigins, sessionCookie, adminSessionCookie, activityLogger, activitySecret, bodySizeLimit, debugMode, true,
+		throttle, allowedCORSOrigins, sessionCookie, activityLogger, activitySecret, bodySizeLimit, debugMode, true,
 	)
 	malformed := publicProjectMetadataNotFoundHandler(
-		throttle, allowedCORSOrigins, sessionCookie, adminSessionCookie, activityLogger, activitySecret, bodySizeLimit, debugMode, false,
+		throttle, allowedCORSOrigins, sessionCookie, activityLogger, activitySecret, bodySizeLimit, debugMode, false,
 	)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
@@ -3723,7 +3716,6 @@ func publicProjectMetadataNotFoundHandler(
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
 	sessionCookie djangoSessionCookieConfig,
-	adminSessionCookie djangoSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -3736,7 +3728,6 @@ func publicProjectMetadataNotFoundHandler(
 			response.WriteHeader(http.StatusOK)
 			return
 		}
-		selectedSessionCookie := publicProjectMetadataSessionCookie(request, sessionCookie, adminSessionCookie)
 		headers.Set("Cross-Origin-Opener-Policy", "same-origin")
 		headers.Set("Referrer-Policy", "same-origin")
 		headers.Set("X-Content-Type-Options", "nosniff")
@@ -3744,12 +3735,12 @@ func publicProjectMetadataNotFoundHandler(
 		publicProjectMetadataReadsCORSHeaders(headers, request, allowedCORSOrigins)
 		requestBody, tooLarge, bodyErr := readPublicProjectMetadataRequestBody(request, bodySizeLimit)
 		if tooLarge {
-			writePublicProjectMetadataRequestTooLarge(response, request, selectedSessionCookie, throttle)
+			writePublicProjectMetadataRequestTooLarge(response, request, sessionCookie, throttle)
 			return
 		}
 		if bodyErr != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), bodyErr)
-			cookieErr := expireUnaccessedDjangoSessionCookie(headers, request, selectedSessionCookie)
+			cookieErr := expireUnaccessedDjangoSessionCookie(headers, request, sessionCookie)
 			if cookieErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 				headers.Del("X-Frame-Options")
@@ -3770,7 +3761,7 @@ func publicProjectMetadataNotFoundHandler(
 		expireSession, refreshSession, rotatedSession, userID, err := throttle.InspectSession(request.Context(), request)
 		var sessionCookieErr error
 		if expireSession {
-			sessionCookieErr = expireDjangoSessionCookie(headers, selectedSessionCookie)
+			sessionCookieErr = expireDjangoSessionCookie(headers, sessionCookie)
 		}
 		if err != nil {
 			logPublicProjectMetadataCompatibilityError(request.Context(), err)
@@ -3811,7 +3802,7 @@ func publicProjectMetadataNotFoundHandler(
 		if rotatedSession != nil {
 			preparedSessionRefresh = rotatedSession
 		} else if refreshSession {
-			if cookie := lastDjangoSessionCookie(request, sessionCookieName(selectedSessionCookie)); cookie != nil {
+			if cookie := lastDjangoSessionCookie(request, sessionCookieName(sessionCookie)); cookie != nil {
 				preparedSessionRefresh = &djangosession.SessionRefresh{SessionKey: cookie.Value}
 			}
 		}
@@ -3823,7 +3814,7 @@ func publicProjectMetadataNotFoundHandler(
 				writer.finish()
 				return
 			}
-			if cookieErr := refreshDjangoSessionCookie(headers, selectedSessionCookie, refresh); cookieErr != nil {
+			if cookieErr := refreshDjangoSessionCookie(headers, sessionCookie, refresh); cookieErr != nil {
 				logPublicProjectMetadataCompatibilityError(request.Context(), cookieErr)
 				replacePublicProjectMetadataSessionError(writer, cookieErr)
 				writer.finish()
@@ -5306,16 +5297,6 @@ func setCSRFTokenCompatibilityHeaders(headers http.Header, request *http.Request
 	headers.Set("X-Frame-Options", "DENY")
 }
 
-func publicProjectMetadataSessionCookie(request *http.Request, standard djangoSessionCookieConfig, admin djangoSessionCookieConfig) djangoSessionCookieConfig {
-	if !strings.Contains(request.URL.Path, "instances") {
-		return standard
-	}
-	if admin.Name == "" {
-		admin.Name = "admin-session-id"
-	}
-	return admin
-}
-
 func djangoJoinedHeader(request *http.Request, name string) string {
 	return djangoLatin1String([]byte(strings.Join(request.Header.Values(name), ",")))
 }
@@ -5324,7 +5305,6 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 	throttle publicProjectMetadataThrottle,
 	allowedCORSOrigins []string,
 	sessionCookie djangoSessionCookieConfig,
-	adminSessionCookie djangoSessionCookieConfig,
 	activityLogger publicprojectmetadatareadsstore.ActivityLogger,
 	activitySecret string,
 	bodySizeLimit int64,
@@ -5339,7 +5319,6 @@ func publicProjectMetadataReadsCompatibilityMiddleware(
 				response.WriteHeader(http.StatusOK)
 				return
 			}
-			sessionCookie := publicProjectMetadataSessionCookie(request, sessionCookie, adminSessionCookie)
 			headers.Set("Cross-Origin-Opener-Policy", "same-origin")
 			headers.Set("Referrer-Policy", "same-origin")
 			if manageCORS {

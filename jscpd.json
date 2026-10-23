@@ -1,0 +1,19 @@
+{
+  "threshold": 100,
+  "format": ["javascript", "jsx", "typescript", "tsx"],
+  "reporters": ["console"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/public/**",
+    "**/generated/**",
+    "**/*.snap",
+    "**/fixtures/**"
+  ],
+  "gitignore": true,
+  "absolute": false,
+  "minLines": 10,
+  "minTokens": 50
+}

@@ -12,8 +12,8 @@ import { cn } from "../../utils/classname";
 type Props = {
   active: boolean | undefined;
   activeKey?: string | null;
-  label: string | undefined;
-  payload: Payload<ValueType, NameType>[] | undefined;
+  label: React.ReactNode;
+  payload: readonly Payload<ValueType, NameType>[] | undefined;
   itemKeys: string[];
   itemLabels: Record<string, string>;
   itemDotColors: Record<string, string>;
@@ -22,7 +22,10 @@ type Props = {
 export const CustomTooltip = React.memo(function CustomTooltip(props: Props) {
   const { active, activeKey, label, payload, itemKeys, itemLabels, itemDotColors } = props;
   // derived values
-  const filteredPayload = payload?.filter((item) => item.dataKey && itemKeys.includes(`${item.dataKey}`));
+  const filteredPayload = payload?.filter((item) => {
+    const key = typeof item.dataKey === "string" || typeof item.dataKey === "number" ? String(item.dataKey) : null;
+    return key !== null && itemKeys.includes(key);
+  });
 
   if (!active || !filteredPayload || !filteredPayload.length) return null;
 
@@ -33,25 +36,26 @@ export const CustomTooltip = React.memo(function CustomTooltip(props: Props) {
     >
       <p className="flex-shrink-0 truncate border-b border-subtle pb-2 text-11 font-medium text-primary">{label}</p>
       {filteredPayload.map((item) => {
-        if (!item.dataKey) return null;
+        const key = typeof item.dataKey === "string" || typeof item.dataKey === "number" ? String(item.dataKey) : null;
+        if (key === null) return null;
 
         return (
           <div
-            key={item?.dataKey}
+            key={key}
             className={cn("flex items-center gap-2 text-11 transition-opacity", {
-              "opacity-20": activeKey && item.dataKey !== activeKey,
+              "opacity-20": activeKey && key !== activeKey,
             })}
           >
             <div className="flex items-center gap-2 truncate">
-              {itemDotColors[item?.dataKey] && (
+              {itemDotColors[key] && (
                 <div
                   className="size-2 flex-shrink-0 rounded-xs"
                   style={{
-                    backgroundColor: itemDotColors[item?.dataKey],
+                    backgroundColor: itemDotColors[key],
                   }}
                 />
               )}
-              <span className="truncate text-tertiary">{itemLabels[item?.dataKey]}:</span>
+              <span className="truncate text-tertiary">{itemLabels[key]}:</span>
             </div>
             <span className="flex-shrink-0 font-medium text-secondary">{item?.value}</span>
           </div>

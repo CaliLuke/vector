@@ -385,7 +385,7 @@ func TestAnonymousThrottleUnquotesCookieLikePython(t *testing.T) {
 	}
 }
 
-func TestAnonymousThrottleUsesAdminSessionForInstancesSubstring(t *testing.T) {
+func TestAnonymousThrottleUsesAdminSessionForInstanceRoute(t *testing.T) {
 	cache := &throttleCacheStub{data: map[string][]byte{}}
 	sessions := &throttleSessionsStub{valid: true, refresh: djangosession.SessionRefresh{SessionKey: "admin-session-key"}}
 	throttle, err := NewAnonymousThrottle(
@@ -397,7 +397,7 @@ func TestAnonymousThrottleUsesAdminSessionForInstancesSubstring(t *testing.T) {
 	}
 	now := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
 	throttle.now = func() time.Time { return now }
-	request := httptest.NewRequest("GET", "/api/public/anchor/contains-instances-value/labels/", nil)
+	request := httptest.NewRequest("GET", "/api/instances/configurations/", nil)
 	request.AddCookie(&http.Cookie{Name: "session-id", Value: "normal-session-key"})
 	request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-session-key"})
 	allowed, _, _, _, prepared, _, err := throttle.AllowRequest(context.Background(), request)
@@ -407,6 +407,48 @@ func TestAnonymousThrottleUsesAdminSessionForInstancesSubstring(t *testing.T) {
 	result, err := throttle.RefreshSession(context.Background(), request, *prepared)
 	if err != nil || sessions.refreshedAge != 604800 || result.MaxAgeSeconds != 3600 || !result.CookieExpiresAt.Equal(now.Add(time.Hour)) {
 		t.Fatalf("refresh=%#v database age=%v err=%v", result, sessions.refreshedAge, err)
+	}
+}
+
+func TestAnonymousThrottleUsesPublicSessionRegardlessOfAnchorText(t *testing.T) {
+	for _, route := range []string{
+		"/api/public/anchor/contains-instances-value/labels/",
+		"/api/public/anchor/instances/labels/",
+		"/api/workspaces/instances/projects/",
+		"/api/instances-example/",
+	} {
+		t.Run(route, func(t *testing.T) {
+			sessions := &throttleSessionsStub{valid: true, refresh: djangosession.SessionRefresh{SessionKey: "normal-session-key", MaxAgeSeconds: 604800}}
+			throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, "session-id", true, 604800)
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := httptest.NewRequest(http.MethodGet, route, nil)
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "normal-session-key"})
+			request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-session-key"})
+			allowed, _, _, _, prepared, _, err := throttle.AllowRequest(context.Background(), request)
+			if err != nil || !allowed || prepared == nil || sessions.validatedKey != "normal-session-key" {
+				t.Fatalf("allowed=%v prepared=%#v validated=%q err=%v", allowed, prepared, sessions.validatedKey, err)
+			}
+			result, err := throttle.RefreshSession(context.Background(), request, *prepared)
+			if err != nil || result.MaxAgeSeconds != 604800 || sessions.refreshedKey != "normal-session-key" {
+				t.Fatalf("refresh=%#v refreshed key=%q err=%v", result, sessions.refreshedKey, err)
+			}
+		})
+	}
+}
+
+func TestAnonymousThrottleDoesNotAuthenticatePublicRequestWithOnlyAdminCookie(t *testing.T) {
+	sessions := &throttleSessionsStub{valid: true}
+	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, "session-id", true, 604800)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/instances/labels/", nil)
+	request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-session-key"})
+	_, _, _, _, prepared, userID, err := throttle.AllowRequest(context.Background(), request)
+	if err != nil || prepared != nil || userID != "" || sessions.validatedKey != "" {
+		t.Fatalf("prepared=%#v user=%q inspected=%q err=%v", prepared, userID, sessions.validatedKey, err)
 	}
 }
 
@@ -427,7 +469,9 @@ func TestAnonymousThrottleFinalizesUnaccessedSessionsLikeDjango(t *testing.T) {
 		{name: "valid key retained without save every", path: "/api/public/anchor/x/labels/", cookieName: "session-id", cookieValue: "valid-session", status: 413},
 		{name: "valid key retained on 500", path: "/api/public/anchor/x/labels/", cookieName: "session-id", cookieValue: "valid-session", status: 500, saveEvery: true},
 		{name: "standard key refreshed on 413", path: "/api/public/anchor/x/labels/", cookieName: "session-id", cookieValue: "valid-session", status: 413, saveEvery: true, wantRefresh: true, wantMaxAge: 604800},
-		{name: "admin key gets admin cookie age", path: "/api/public/anchor/instances-x/labels/", cookieName: "admin-session-id", cookieValue: "valid-session", status: 413, saveEvery: true, wantRefresh: true, wantMaxAge: 3600},
+		{name: "anchor text does not select admin cookie", path: "/api/public/anchor/instances-x/labels/", cookieName: "admin-session-id", cookieValue: "valid-session", status: 413, saveEvery: true},
+		{name: "anchor text retains standard cookie age", path: "/api/public/anchor/instances-x/labels/", cookieName: "session-id", cookieValue: "valid-session", status: 413, saveEvery: true, wantRefresh: true, wantMaxAge: 604800},
+		{name: "admin key gets admin cookie age", path: "/api/instances/", cookieName: "admin-session-id", cookieValue: "valid-session", status: 413, saveEvery: true, wantRefresh: true, wantMaxAge: 3600},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			databaseExpiry := now.Add(7 * 24 * time.Hour)

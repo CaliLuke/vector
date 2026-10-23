@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"testing"
 
+	"uuid"
+
 	pagereadssvr "github.com/CaliLuke/go-plane/gen/http/page_reads/server"
 	api "github.com/CaliLuke/go-plane/gen/page_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
@@ -18,7 +20,6 @@ import (
 	store "github.com/CaliLuke/go-plane/internal/pagereads"
 	loomhttp "github.com/CaliLuke/loom/http"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const (

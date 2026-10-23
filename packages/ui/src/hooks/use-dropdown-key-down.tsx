@@ -35,3 +35,21 @@ export const useDropdownKeyDown: TUseDropdownKeyDown = (onOpen, onClose, isOpen,
 
   return handleKeyDown;
 };
+
+export function useDropdownButtonKeyDown(disabled: boolean, isOpen: boolean, onOpen: () => void, onClose: () => void) {
+  return useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (disabled) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.stopPropagation();
+      } else if (event.key === "Escape" && isOpen) {
+        event.stopPropagation();
+        onClose();
+      } else if (!isOpen && ["ArrowDown", "ArrowUp"].includes(event.key)) {
+        event.stopPropagation();
+        onOpen();
+      }
+    },
+    [disabled, isOpen, onClose, onOpen]
+  );
+}

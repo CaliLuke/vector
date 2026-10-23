@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
-	"uuid"
 )
 
 func TestPageLifecycleMetadataFieldValidationMatchesSerializerBoundaries(t *testing.T) {

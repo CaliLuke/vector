@@ -6,12 +6,13 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/user_identity"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/useridentity"
 	"github.com/CaliLuke/loom/security"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 type identitySessionValidator struct {

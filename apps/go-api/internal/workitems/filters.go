@@ -3,6 +3,7 @@ package workitems
 import (
 	"errors"
 	"fmt"
+
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 )
 

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	"github.com/jackc/pgx/v5/pgconn"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"

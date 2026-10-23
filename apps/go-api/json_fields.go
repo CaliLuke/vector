@@ -2,6 +2,7 @@ package systemapi
 
 import (
 	"encoding/json"
+
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 )
 

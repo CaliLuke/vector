@@ -6,10 +6,11 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_recent_visits"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacerecentvisits"
-	"uuid"
 )
 
 const recentVisitTestUser = "00000000-0000-4000-8000-000000000010"

@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"strings"
 
+	"uuid"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-	"uuid"
 )
 
 var (

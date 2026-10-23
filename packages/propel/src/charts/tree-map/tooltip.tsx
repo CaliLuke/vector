@@ -10,7 +10,7 @@ import { Card, ECardSpacing } from "../../card";
 
 interface TreeMapTooltipProps {
   active: boolean | undefined;
-  payload: any[] | undefined;
+  payload: readonly any[] | undefined;
 }
 
 export const TreeMapTooltip = React.memo(function TreeMapTooltip({ active, payload }: TreeMapTooltipProps) {

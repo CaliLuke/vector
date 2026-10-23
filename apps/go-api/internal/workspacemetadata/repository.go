@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Database is the subset of pgx used by this repository.

@@ -2,10 +2,9 @@ import path from "node:path";
 import * as dotenv from "dotenv";
 import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { joinUrlPath } from "@plane/utils";
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config({ path: path.resolve(import.meta.dirname, ".env") });
 
 // Expose only vars starting with VITE_
 const viteEnv = Object.keys(process.env)
@@ -25,12 +24,13 @@ export default defineConfig(() => ({
   build: {
     assetsInlineLimit: 0,
   },
-  plugins: [reactRouter(), tsconfigPaths({ projects: [path.resolve(__dirname, "tsconfig.json")] })],
+  plugins: [reactRouter()],
   resolve: {
+    tsconfigPaths: true,
     alias: {
       // Next.js compatibility shims used within admin
-      "next/link": path.resolve(__dirname, "app/compat/next/link.tsx"),
-      "next/navigation": path.resolve(__dirname, "app/compat/next/navigation.ts"),
+      "next/link": path.resolve(import.meta.dirname, "app/compat/next/link.tsx"),
+      "next/navigation": path.resolve(import.meta.dirname, "app/compat/next/navigation.ts"),
     },
     dedupe: ["react", "react-dom"],
   },

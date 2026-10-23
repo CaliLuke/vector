@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "moduleIssueGroupValues"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "notificationErrorBody"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "oauthFailureCode"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "oauthFailureName"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "raw"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane", "workspaceAnalyticsService.respond"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/cmd/system", "buildHTTPHandler"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/cmd/system", "concreteReadServicePath"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "github.com/CaliLuke/go-plane/cmd/system",
+        "djangoProtocolAuthenticatedOptionsWithoutActionsHandler"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/cmd/system", "envOrDefault"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "github.com/CaliLuke/go-plane/cmd/system",
+        "newHTTPHandlerWithWorkspaceReplacementsAndEntityFavorites"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/assets", "legacyStringField"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/authentication/djangosession", "encode"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/backgroundtasks", "NewIssueDescriptionSyncDispatcher"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/cyclereads", "WithLifecycleRequestOrigin"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "escapeCommentString"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "EscapeString"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "Node.Ancestors"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "Token.String"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "Token.tagString"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "Tokenizer.Buffered"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "Tokenizer.SetMaxBuf"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "TokenType.String"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "UnescapeString"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/issuequery", "validLegacyIntegerList"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/issuequery", "validLegacyUUIDList"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/litelists", "Repository.ListProjectMembers"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/modulereads", "mustUUID"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/pagereads", "fieldsString"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectintakewrites", "NewPoolRepository"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectintakewrites", "parseBody"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectlabelreads", "labelFloat"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectlabelreads", "pythonType"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/routing", "caddyPathPatternWithoutTrailingSlash"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/routing", "hasProtocolCompanion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.DeleteProject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.DeleteWorkspace"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.GetProject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.GetWorkspace"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.ListProject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.PatchProject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.PatchWorkspace"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.UpdateProject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.UpdateWorkspace"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.ContainerID"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.SeedSidecarURL"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.SourceSidecarURL"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.TargetSidecarURL"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/workitems", "asObject"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/workitems", "Repository.collaborationMembership"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/workitems", "Repository.publicIssueWriteProjection"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["github.com/CaliLuke/go-plane/internal/workspaceprojectreads", "insertProjectRecord"],
+      "count": 1
+    }
+  ]
+}

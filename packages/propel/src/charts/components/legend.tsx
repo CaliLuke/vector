@@ -6,6 +6,7 @@
 
 import React from "react";
 import type { LegendProps } from "recharts";
+import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
 // plane imports
 import type { TChartLegend } from "@plane/types";
 import { cn } from "../../utils/classname";
@@ -39,8 +40,8 @@ export const getLegendProps = (args: TChartLegend): LegendProps => {
 
 const CustomLegend = React.forwardRef(function CustomLegend(
   props: React.ComponentProps<"div"> &
-    Pick<LegendProps, "payload" | "formatter" | "onClick" | "onMouseEnter" | "onMouseLeave"> &
-    TChartLegend,
+    Pick<LegendProps, "formatter" | "onClick" | "onMouseEnter" | "onMouseLeave"> &
+    TChartLegend & { payload?: LegendPayload[] },
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const { formatter, layout, onClick, onMouseEnter, onMouseLeave, payload } = props;
@@ -74,8 +75,8 @@ const CustomLegend = React.forwardRef(function CustomLegend(
               backgroundColor: item.color,
             }}
           />
-          {/* @ts-expect-error recharts types are not up to date */}
-          {formatter?.(item.value, { value: item.value }, index) ?? item.payload?.name}
+          {formatter?.(item.value, item, index) ??
+            (item.payload && "name" in item.payload ? String(item.payload.name) : undefined)}
         </div>
       ))}
     </div>

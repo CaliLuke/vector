@@ -404,7 +404,8 @@ func addCookieAge(now time.Time, seconds int64) (time.Time, error) {
 }
 
 func (throttle *AnonymousThrottle) sessionConfig(request *http.Request) (string, bool) {
-	if strings.Contains(request.URL.Path, "instances") {
+	// The instance API owns the admin session; user-controlled path segments do not.
+	if request.URL.Path == "/api/instances" || strings.HasPrefix(request.URL.Path, "/api/instances/") {
 		return throttle.adminCookieName, true
 	}
 	return throttle.cookieName, false

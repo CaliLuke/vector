@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	store "github.com/CaliLuke/go-plane/internal/workspaceanalytics"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 type allowedWorkspaceAnalyticsRepository struct{ *store.Repository }

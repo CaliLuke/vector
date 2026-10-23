@@ -27,8 +27,7 @@ export const SidebarQuickActions = observer(function SidebarQuickActions() {
   const [isDraftIssueModalOpen, setIsDraftIssueModalOpen] = useState(false);
   const [_isDraftButtonOpen, setIsDraftButtonOpen] = useState(false);
   // refs
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const timeoutRef = useRef<any>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // router
   const { workspaceSlug: routerWorkspaceSlug } = useParams();
   const workspaceSlug = routerWorkspaceSlug?.toString();

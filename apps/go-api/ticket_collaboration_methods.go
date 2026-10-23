@@ -2,8 +2,9 @@ package systemapi
 
 import (
 	"context"
-	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
 	"io"
+
+	api "github.com/CaliLuke/go-plane/ticket_collaboration/gen/ticket_collaboration"
 )
 
 func (s *ticketCollaborationService) GetAPIPublicAnchorByAnchorCommentsByCommentIDReactions(ctx context.Context, p *api.GetAPIPublicAnchorByAnchorCommentsByCommentIDReactionsPayload) (*api.CollaborationResponse, io.ReadCloser, error) {

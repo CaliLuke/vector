@@ -218,6 +218,8 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
               </div>
             </div>
             <Transition
+              as="div"
+              className="flex flex-col"
               show={isAllProjectsListOpen}
               enter="transition duration-100 ease-out"
               enterFrom="transform scale-95 opacity-0"

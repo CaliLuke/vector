@@ -1,0 +1,541 @@
+{
+  "version": 1,
+  "packages": {
+    "github.com/CaliLuke/go-plane": {
+      "statements": 11497,
+      "percent": 46.36
+    },
+    "github.com/CaliLuke/go-plane/accountauthentication/design": {
+      "statements": 148,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/activityreads/design": {
+      "statements": 711,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apicyclereads/design": {
+      "statements": 672,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apilabelreads/design": {
+      "statements": 231,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apimodulereads/design": {
+      "statements": 625,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apistatereads/design": {
+      "statements": 311,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apiuseridentity/design": {
+      "statements": 118,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/apiv1stickies/design": {
+      "statements": 243,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/assetslifecycle/design": {
+      "statements": 6566,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/authredirects/design": {
+      "statements": 75,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/background-worker": {
+      "statements": 17,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/bootstrap": {
+      "statements": 90,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/devtools": {
+      "statements": 28,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/durable-metadata": {
+      "statements": 109,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/parity-diff": {
+      "statements": 139,
+      "percent": 35.25
+    },
+    "github.com/CaliLuke/go-plane/cmd/route-policy": {
+      "statements": 19,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cmd/support-migrate": {
+      "statements": 42,
+      "percent": 42.86
+    },
+    "github.com/CaliLuke/go-plane/cmd/system": {
+      "statements": 6376,
+      "percent": 73.26
+    },
+    "github.com/CaliLuke/go-plane/cmd/system-cli": {
+      "statements": 55,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/customviewcreation/design": {
+      "statements": 56,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/cyclelifecycle/design": {
+      "statements": 882,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/design": {
+      "statements": 7510,
+      "percent": 0.05
+    },
+    "github.com/CaliLuke/go-plane/externalintegrations/design": {
+      "statements": 103,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/accountauthentication": {
+      "statements": 186,
+      "percent": 25.27
+    },
+    "github.com/CaliLuke/go-plane/internal/activityreads": {
+      "statements": 113,
+      "percent": 78.76
+    },
+    "github.com/CaliLuke/go-plane/internal/analyticviews": {
+      "statements": 30,
+      "percent": 70
+    },
+    "github.com/CaliLuke/go-plane/internal/assets": {
+      "statements": 2988,
+      "percent": 37.25
+    },
+    "github.com/CaliLuke/go-plane/internal/assets/bindingsgen": {
+      "statements": 352,
+      "percent": 18.18
+    },
+    "github.com/CaliLuke/go-plane/internal/authentication/apikey": {
+      "statements": 104,
+      "percent": 83.65
+    },
+    "github.com/CaliLuke/go-plane/internal/authentication/authworkflow": {
+      "statements": 41,
+      "percent": 65.85
+    },
+    "github.com/CaliLuke/go-plane/internal/authentication/djangosession": {
+      "statements": 1015,
+      "percent": 80.49
+    },
+    "github.com/CaliLuke/go-plane/internal/authentication/password": {
+      "statements": 42,
+      "percent": 83.33
+    },
+    "github.com/CaliLuke/go-plane/internal/authentication/passwordstrength": {
+      "statements": 3,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/internal/authredirects": {
+      "statements": 459,
+      "percent": 26.36
+    },
+    "github.com/CaliLuke/go-plane/internal/backgroundtasks": {
+      "statements": 5210,
+      "percent": 11.86
+    },
+    "github.com/CaliLuke/go-plane/internal/bootstrap": {
+      "statements": 280,
+      "percent": 12.5
+    },
+    "github.com/CaliLuke/go-plane/internal/celery": {
+      "statements": 326,
+      "percent": 70.55
+    },
+    "github.com/CaliLuke/go-plane/internal/customviewcreation": {
+      "statements": 49,
+      "percent": 67.35
+    },
+    "github.com/CaliLuke/go-plane/internal/cyclereads": {
+      "statements": 1445,
+      "percent": 65.54
+    },
+    "github.com/CaliLuke/go-plane/internal/database": {
+      "statements": 34,
+      "percent": 79.41
+    },
+    "github.com/CaliLuke/go-plane/internal/deletion": {
+      "statements": 11,
+      "percent": 81.82
+    },
+    "github.com/CaliLuke/go-plane/internal/deployboardreads": {
+      "statements": 25,
+      "percent": 88
+    },
+    "github.com/CaliLuke/go-plane/internal/devtools": {
+      "statements": 366,
+      "percent": 59.56
+    },
+    "github.com/CaliLuke/go-plane/internal/djangoapi": {
+      "statements": 190,
+      "percent": 40.53
+    },
+    "github.com/CaliLuke/go-plane/internal/djangoinput": {
+      "statements": 405,
+      "percent": 66.42
+    },
+    "github.com/CaliLuke/go-plane/internal/emailvalidation": {
+      "statements": 60,
+      "percent": 73.33
+    },
+    "github.com/CaliLuke/go-plane/internal/entityfavorites": {
+      "statements": 48,
+      "percent": 58.33
+    },
+    "github.com/CaliLuke/go-plane/internal/estimatereads": {
+      "statements": 35,
+      "percent": 82.86
+    },
+    "github.com/CaliLuke/go-plane/internal/externalintegrations": {
+      "statements": 59,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/internal/htmlcompat": {
+      "statements": 2202,
+      "percent": 91.19
+    },
+    "github.com/CaliLuke/go-plane/internal/instanceadminsession": {
+      "statements": 20,
+      "percent": 80
+    },
+    "github.com/CaliLuke/go-plane/internal/instancecipher": {
+      "statements": 23,
+      "percent": 91.3
+    },
+    "github.com/CaliLuke/go-plane/internal/instancemail": {
+      "statements": 82,
+      "percent": 79.27
+    },
+    "github.com/CaliLuke/go-plane/internal/instancemanagement": {
+      "statements": 560,
+      "percent": 43.21
+    },
+    "github.com/CaliLuke/go-plane/internal/instanceworkspaceslugcheck": {
+      "statements": 13,
+      "percent": 92.31
+    },
+    "github.com/CaliLuke/go-plane/internal/intakeinboxreads": {
+      "statements": 560,
+      "percent": 88.39
+    },
+    "github.com/CaliLuke/go-plane/internal/issuequery": {
+      "statements": 778,
+      "percent": 3.73
+    },
+    "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace": {
+      "statements": 7,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/litelists": {
+      "statements": 40,
+      "percent": 80
+    },
+    "github.com/CaliLuke/go-plane/internal/modulereads": {
+      "statements": 1317,
+      "percent": 40.32
+    },
+    "github.com/CaliLuke/go-plane/internal/notifications": {
+      "statements": 200,
+      "percent": 80
+    },
+    "github.com/CaliLuke/go-plane/internal/pagereads": {
+      "statements": 851,
+      "percent": 29.96
+    },
+    "github.com/CaliLuke/go-plane/internal/parity": {
+      "statements": 352,
+      "percent": 70.45
+    },
+    "github.com/CaliLuke/go-plane/internal/personaldashboard": {
+      "statements": 12,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/internal/platform": {
+      "statements": 14,
+      "percent": 78.57
+    },
+    "github.com/CaliLuke/go-plane/internal/projectconfiguration": {
+      "statements": 462,
+      "percent": 11.9
+    },
+    "github.com/CaliLuke/go-plane/internal/projectidentifiers": {
+      "statements": 27,
+      "percent": 81.48
+    },
+    "github.com/CaliLuke/go-plane/internal/projectintakewrites": {
+      "statements": 145,
+      "percent": 11.72
+    },
+    "github.com/CaliLuke/go-plane/internal/projectlabelreads": {
+      "statements": 234,
+      "percent": 76.07
+    },
+    "github.com/CaliLuke/go-plane/internal/projectmemberpreferences": {
+      "statements": 36,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/internal/projectmembershipreads": {
+      "statements": 1436,
+      "percent": 64.07
+    },
+    "github.com/CaliLuke/go-plane/internal/projectpublication": {
+      "statements": 100,
+      "percent": 69
+    },
+    "github.com/CaliLuke/go-plane/internal/projectstatereads": {
+      "statements": 409,
+      "percent": 59.9
+    },
+    "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads": {
+      "statements": 395,
+      "percent": 84.56
+    },
+    "github.com/CaliLuke/go-plane/internal/pythoncompat": {
+      "statements": 631,
+      "percent": 62.6
+    },
+    "github.com/CaliLuke/go-plane/internal/routing": {
+      "statements": 257,
+      "percent": 89.11
+    },
+    "github.com/CaliLuke/go-plane/internal/standardviews": {
+      "statements": 322,
+      "percent": 51.55
+    },
+    "github.com/CaliLuke/go-plane/internal/stickies": {
+      "statements": 283,
+      "percent": 13.78
+    },
+    "github.com/CaliLuke/go-plane/internal/stickies/content": {
+      "statements": 218,
+      "percent": 95.87
+    },
+    "github.com/CaliLuke/go-plane/internal/telemetry": {
+      "statements": 19,
+      "percent": 84.21
+    },
+    "github.com/CaliLuke/go-plane/internal/testsupport/postgres": {
+      "statements": 79,
+      "percent": 18.99
+    },
+    "github.com/CaliLuke/go-plane/internal/useraccounts": {
+      "statements": 21,
+      "percent": 85.71
+    },
+    "github.com/CaliLuke/go-plane/internal/useraccountwrites": {
+      "statements": 169,
+      "percent": 10.65
+    },
+    "github.com/CaliLuke/go-plane/internal/userapitokens": {
+      "statements": 25,
+      "percent": 84
+    },
+    "github.com/CaliLuke/go-plane/internal/useridentity": {
+      "statements": 113,
+      "percent": 73.45
+    },
+    "github.com/CaliLuke/go-plane/internal/userinstanceadmin": {
+      "statements": 8,
+      "percent": 87.5
+    },
+    "github.com/CaliLuke/go-plane/internal/usernotificationpreferences": {
+      "statements": 90,
+      "percent": 62.22
+    },
+    "github.com/CaliLuke/go-plane/internal/userprofileflags": {
+      "statements": 11,
+      "percent": 90.91
+    },
+    "github.com/CaliLuke/go-plane/internal/userproperties": {
+      "statements": 119,
+      "percent": 87.39
+    },
+    "github.com/CaliLuke/go-plane/internal/usersettings": {
+      "statements": 8,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/workitemhistory": {
+      "statements": 160,
+      "percent": 78.13
+    },
+    "github.com/CaliLuke/go-plane/internal/workitems": {
+      "statements": 4617,
+      "percent": 18.56
+    },
+    "github.com/CaliLuke/go-plane/internal/workspaceanalytics": {
+      "statements": 51,
+      "percent": 45.1
+    },
+    "github.com/CaliLuke/go-plane/internal/workspaceexports": {
+      "statements": 69,
+      "percent": 72.46
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacefavorites": {
+      "statements": 39,
+      "percent": 87.18
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacehomepreferences": {
+      "statements": 19,
+      "percent": 31.58
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacememberme": {
+      "statements": 8,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacemetadata": {
+      "statements": 14,
+      "percent": 85.71
+    },
+    "github.com/CaliLuke/go-plane/internal/workspaceprojectreads": {
+      "statements": 858,
+      "percent": 78.44
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacequicklinks": {
+      "statements": 30,
+      "percent": 53.33
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacerecentvisits": {
+      "statements": 20,
+      "percent": 95
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacesearch": {
+      "statements": 100,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacesidebarpreferences": {
+      "statements": 51,
+      "percent": 62.75
+    },
+    "github.com/CaliLuke/go-plane/internal/workspaceslugcheck": {
+      "statements": 8,
+      "percent": 87.5
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacethemes": {
+      "statements": 26,
+      "percent": 46.15
+    },
+    "github.com/CaliLuke/go-plane/internal/workspaceuserinsights": {
+      "statements": 95,
+      "percent": 51.58
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacevalidation": {
+      "statements": 15,
+      "percent": 93.33
+    },
+    "github.com/CaliLuke/go-plane/internal/workspacewebhooks": {
+      "statements": 131,
+      "percent": 60.31
+    },
+    "github.com/CaliLuke/go-plane/invitationsmembership/design": {
+      "statements": 1460,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/loomprobe": {
+      "statements": 32,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/modulelifecycle/design": {
+      "statements": 1091,
+      "percent": 0.37
+    },
+    "github.com/CaliLuke/go-plane/notificationactions/design": {
+      "statements": 620,
+      "percent": 0.48
+    },
+    "github.com/CaliLuke/go-plane/notificationreads/design": {
+      "statements": 344,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/oauthredirects/design": {
+      "statements": 46,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/page_lifecycle": {
+      "statements": 553,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/project_label_writes/design": {
+      "statements": 244,
+      "percent": 1.23
+    },
+    "github.com/CaliLuke/go-plane/projectconfiguration/design": {
+      "statements": 196,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/projectintakewrites/design": {
+      "statements": 173,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/projectlifecycle/design": {
+      "statements": 1675,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/projectmemberpreferences/design": {
+      "statements": 55,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/projectmembershiplifecycle/design": {
+      "statements": 919,
+      "percent": 0.44
+    },
+    "github.com/CaliLuke/go-plane/projectpublication/design": {
+      "statements": 80,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/ticket_collaboration/design": {
+      "statements": 2739,
+      "percent": 0.29
+    },
+    "github.com/CaliLuke/go-plane/user_account_writes/design": {
+      "statements": 135,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/work_item_core/design": {
+      "statements": 4682,
+      "percent": 0.17
+    },
+    "github.com/CaliLuke/go-plane/workitemhistory/design": {
+      "statements": 129,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspace_webhooks/design": {
+      "statements": 333,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspaceanalytics/design": {
+      "statements": 188,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspaceexports/design": {
+      "statements": 81,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspacelifecycle/design": {
+      "statements": 77,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspacepersonal/design": {
+      "statements": 84,
+      "percent": 0
+    },
+    "github.com/CaliLuke/go-plane/workspacesearch/design": {
+      "statements": 74,
+      "percent": 100
+    },
+    "github.com/CaliLuke/go-plane/workspaceuserinsights/design": {
+      "statements": 105,
+      "percent": 0
+    }
+  }
+}

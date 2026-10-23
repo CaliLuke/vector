@@ -261,7 +261,7 @@ export const DateRangeDropdown = observer(function DateRangeDropdown(props: Prop
   );
 
   const comboOptions = (
-    <Combobox.Options data-prevent-outside-click static>
+    <Combobox.Options modal={false} data-prevent-outside-click static>
       <div
         className="z-30 my-1 overflow-hidden rounded-md border-[0.5px] border-subtle-1 bg-surface-1"
         ref={setPopperElement}
@@ -280,7 +280,8 @@ export const DateRangeDropdown = observer(function DateRangeDropdown(props: Prop
           showOutsideDays
           fixedWeeks
           weekStartsOn={startOfWeek}
-          initialFocus
+          // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
+          autoFocus
         />
       </div>
     </Combobox.Options>

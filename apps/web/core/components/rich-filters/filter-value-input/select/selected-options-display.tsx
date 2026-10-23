@@ -51,6 +51,7 @@ export function SelectedOptionsDisplay<V extends TFilterValue>(props: TSelectedO
       ))}
       {remainingCount > 0 && (
         <Transition
+          as="span"
           show
           appear
           enter="transition-opacity duration-300"

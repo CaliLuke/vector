@@ -9,9 +9,10 @@ import (
 	"errors"
 	"fmt"
 
+	"uuid"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"uuid"
 )
 
 var ErrNotFound = errors.New("entity favorite not found")

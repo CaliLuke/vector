@@ -1,0 +1,46 @@
+version: "2"
+
+run:
+  timeout: 8m
+  tests: true
+  relative-path-mode: gomod
+  build-tags:
+    - integration
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - nilerr
+    - rowserrcheck
+    - sqlclosecheck
+    - unconvert
+    - unparam
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+  exclusions:
+    generated: strict
+    paths:
+      - (^|/)gen/
+    rules:
+      - path: _test\.go
+        linters:
+          - unparam
+          - unused
+      # The DSL requires dot imports to expose its declarative API.
+      - path: (^|/)design(/.*\.go|\.go)$
+        text: ST1001
+        linters:
+          - staticcheck
+
+formatters:
+  enable:
+    - gofmt

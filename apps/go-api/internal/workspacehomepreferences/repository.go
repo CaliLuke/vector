@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrNotFound = errors.New("workspace home preference not found")

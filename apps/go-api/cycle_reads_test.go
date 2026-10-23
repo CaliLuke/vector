@@ -9,11 +9,12 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/cycle_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const cycleFixture = `{"id":"00000000-0000-4000-8000-000000000001","workspace_id":"00000000-0000-4000-8000-000000000002","project_id":"00000000-0000-4000-8000-000000000003","name":"Sprint 1","description":"","start_date":"2026-09-01T00:00:00-04:00","end_date":"2026-09-14T23:59:00-04:00","owned_by_id":"00000000-0000-4000-8000-000000000004","view_props":{},"sort_order":100,"external_source":null,"external_id":null,"progress_snapshot":{},"logo_props":{},"is_favorite":false,"total_issues":0,"completed_issues":0,"assignee_ids":[],"status":"CURRENT","version":1,"created_by":null}`

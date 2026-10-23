@@ -15,7 +15,7 @@ import {
   createRealtimeEvent,
   extractTextFromHTML,
   generateTitleProsemirrorJson,
-} from "@plane/editor";
+} from "@plane/editor/lib";
 import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
 // helpers

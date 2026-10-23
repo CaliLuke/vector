@@ -13,16 +13,24 @@ concurrency:
 jobs:
   go:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version-file: apps/go-api/go.mod
           cache-dependency-path: apps/go-api/go.sum
-      - run: go -C apps/go-api test ./...
-      - run: go -C apps/go-api vet ./...
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: bash scripts/quality/go-tools.sh --install
+      - uses: j178/prek-action@v2
+        with:
+          prek-version: "0.5.5"
+          extra-args: "--all-files --group ci --require-group go"
   frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -30,7 +38,7 @@ jobs:
           node-version: 22
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test:frontend
-      - run: pnpm check:lint
-      - run: pnpm check:types
+      - uses: j178/prek-action@v2
+        with:
+          prek-version: "0.5.5"
+          extra-args: "--all-files --group ci --require-group typescript"

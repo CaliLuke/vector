@@ -13,8 +13,9 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var (

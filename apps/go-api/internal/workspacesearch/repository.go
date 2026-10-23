@@ -8,8 +8,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrForbidden = errors.New("workspace membership required")

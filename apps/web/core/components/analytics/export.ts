@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import type { ColumnDef, Row } from "@tanstack/react-table";
 import { download, generateCsv, mkConfig } from "export-to-csv";
+import type { RowData } from "@tanstack/react-table";
+import type { AnalyticsColumnDef, AnalyticsRow } from "./insight-table/table-features";
 
 export const csvConfig = (workspaceSlug: string) =>
   mkConfig({
@@ -15,7 +16,11 @@ export const csvConfig = (workspaceSlug: string) =>
     useKeysAsHeaders: true,
   });
 
-export const exportCSV = <T>(rows: Row<T>[], columns: ColumnDef<T>[], workspaceSlug: string) => {
+export const exportCSV = <T extends RowData>(
+  rows: AnalyticsRow<T>[],
+  columns: AnalyticsColumnDef<T>[],
+  workspaceSlug: string
+) => {
   const rowData = rows.map((row) => {
     const exportColumns = columns.map((col) => col.meta?.export);
     const cells = exportColumns.reduce((acc: Record<string, string | number>, col) => {

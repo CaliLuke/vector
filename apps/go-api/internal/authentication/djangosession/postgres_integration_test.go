@@ -43,8 +43,8 @@ CREATE TABLE sessions (
 		t.Fatalf("start PostgreSQL: %v", err)
 	}
 	t.Cleanup(func() {
-		if err := pair.Close(); err != nil {
-			t.Errorf("close PostgreSQL: %v", err)
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close PostgreSQL: %v", closeErr)
 		}
 	})
 	connection, err := pgx.Connect(ctx, pair.SourceURL)
@@ -74,7 +74,11 @@ VALUES ($1, $2, CURRENT_TIMESTAMP + interval '5 minutes', $3)
 	if _, err := connection.Exec(ctx, "UPDATE sessions SET expire_date = $2 WHERE session_key = $1", fixtureSessionKey, time.Now().Add(-time.Minute)); err != nil {
 		t.Fatalf("expire session between validation and refresh: %v", err)
 	}
-	refreshNow := time.Date(2026, time.September, 1, 12, 0, 0, 0, time.UTC)
+	// Refresh and expiry validation must use the same clock as PostgreSQL.
+	var refreshNow time.Time
+	if err := connection.QueryRow(ctx, "SELECT CURRENT_TIMESTAMP").Scan(&refreshNow); err != nil {
+		t.Fatalf("read database time: %v", err)
+	}
 	refresh, err := validator.Refresh(ctx, fixtureSessionKey, 86400, refreshNow)
 	if err != nil {
 		t.Fatalf("Refresh() error = %v", err)

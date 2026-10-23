@@ -28,7 +28,9 @@ export type TAllEventTypes = TDocumentEventsClient;
 
 // Create a mapping from each client event to its payload type using key remapping.
 export type EventToPayloadMap = {
-  [K in keyof typeof DocumentCollaborativeEvents as (typeof DocumentCollaborativeEvents)[K]["client"]]: (typeof DocumentCollaborativeEvents)[K]["payloadType"];
+  [
+    K in keyof typeof DocumentCollaborativeEvents as (typeof DocumentCollaborativeEvents)[K]["client"]
+  ]: (typeof DocumentCollaborativeEvents)[K]["payloadType"];
 };
 
 // Common fields for every realtime event

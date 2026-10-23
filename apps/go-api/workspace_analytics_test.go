@@ -9,9 +9,10 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	store "github.com/CaliLuke/go-plane/internal/workspaceanalytics"
 	api "github.com/CaliLuke/go-plane/workspaceanalytics/gen/workspace_analytics"
-	"uuid"
 )
 
 type workspaceAnalyticsRepositoryStub struct {

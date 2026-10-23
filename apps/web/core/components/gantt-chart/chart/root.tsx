@@ -147,20 +147,20 @@ export const ChartViewRoot = observer(function ChartViewRoot(props: ChartViewRoo
   }, []);
 
   const updateItemsContainerWidth = (width: number) => {
-    const scrollContainer = document.querySelector("#gantt-container") as HTMLDivElement;
+    const scrollContainer = document.querySelector<HTMLDivElement>("#gantt-container");
     if (!scrollContainer) return;
     setItemsContainerWidth(width + scrollContainer?.scrollLeft);
   };
 
   const updateCurrentLeftScrollPosition = (width: number) => {
-    const scrollContainer = document.querySelector("#gantt-container") as HTMLDivElement;
+    const scrollContainer = document.querySelector<HTMLDivElement>("#gantt-container");
     if (!scrollContainer) return;
 
     scrollContainer.scrollLeft = width + scrollContainer?.scrollLeft;
   };
 
   const handleScrollToCurrentSelectedDate = (currentState: ChartDataType, date: Date) => {
-    const scrollContainer = document.querySelector("#gantt-container") as HTMLDivElement;
+    const scrollContainer = document.querySelector<HTMLDivElement>("#gantt-container");
     if (!scrollContainer) return;
 
     const clientVisibleWidth: number = scrollContainer?.clientWidth;

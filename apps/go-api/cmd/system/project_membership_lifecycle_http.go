@@ -4,11 +4,12 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	loomhttp "github.com/CaliLuke/loom/http"
-	"net/http"
-	"strings"
 )
 
 //go:embed project_membership_lifecycle_metadata.json

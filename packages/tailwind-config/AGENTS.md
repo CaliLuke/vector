@@ -31,7 +31,7 @@ This guide explains the semantic design system philosophy for building consisten
 ```tsx
 // ✅ Correct: Canvas at application root (only place it should be)
 // App.tsx or root layout
-<div className="bg-canvas min-h-screen">
+<div className="min-h-screen bg-canvas">
   {/* All application content goes here */}
   <Routes>
     <Route path="/" element={<Page />} />
@@ -49,7 +49,7 @@ function Page() {
 }
 
 // ❌ Wrong: Canvas used for a card
-<div className="bg-canvas p-4 rounded-md">{/* Card content */}</div>;
+<div className="rounded-md bg-canvas p-4">{/* Card content */}</div>;
 ```
 
 ### 2. Surface (`bg-surface-1`, `bg-surface-2`, `bg-surface-3`)
@@ -217,14 +217,14 @@ Canvas
 // ✅ Correct: Proper layer stacking
 <div className="bg-surface-1 p-4">
   {/* Layer 1: Card */}
-  <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md p-4">
+  <div className="rounded-md bg-layer-1 p-4 hover:bg-layer-1-hover">
     <h3>Card Title</h3>
 
     {/* Layer 2: Nested section */}
-    <div className="bg-layer-2 hover:bg-layer-2-hover rounded p-2 mt-2">
+    <div className="mt-2 rounded bg-layer-2 p-2 hover:bg-layer-2-hover">
       Nested content
       {/* Layer 3: Deeply nested */}
-      <div className="bg-layer-3 hover:bg-layer-3-hover rounded p-1 mt-1">Deep content</div>
+      <div className="mt-1 rounded bg-layer-3 p-1 hover:bg-layer-3-hover">Deep content</div>
     </div>
   </div>
 </div>
@@ -305,7 +305,7 @@ Use `-selected` variants only when there's actual selection logic.
 ```tsx
 // ✅ Correct: Application root (only place for canvas)
 // App.tsx or root layout
-<div className="bg-canvas min-h-screen">
+<div className="min-h-screen bg-canvas">
   <Routes>
     <Route path="/" element={<HomePage />} />
     <Route path="/dashboard" element={<DashboardPage />} />
@@ -318,12 +318,12 @@ function HomePage() {
     <div className="bg-surface-1">
       {/* Header - part of the page surface, uses layer for depth */}
       <header className="border-b border-subtle">
-        <div className="bg-layer-1 hover:bg-layer-1-hover px-4 py-2">Header content</div>
+        <div className="bg-layer-1 px-4 py-2 hover:bg-layer-1-hover">Header content</div>
       </header>
 
       {/* Main content - part of the page surface */}
       <main className="p-6">
-        <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md p-4">Content card</div>
+        <div className="rounded-md bg-layer-1 p-4 hover:bg-layer-1-hover">Content card</div>
       </main>
     </div>
   );
@@ -335,11 +335,11 @@ function HomePage() {
 ```tsx
 // ✅ Correct: Card with proper layering
 <div className="bg-surface-1 p-4">
-  <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md p-4">
-    <h3 className="text-primary font-semibold">Card Title</h3>
+  <div className="rounded-md bg-layer-1 p-4 hover:bg-layer-1-hover">
+    <h3 className="font-semibold text-primary">Card Title</h3>
 
     {/* Nested section */}
-    <div className="bg-layer-2 hover:bg-layer-2-hover rounded p-3 mt-3">
+    <div className="mt-3 rounded bg-layer-2 p-3 hover:bg-layer-2-hover">
       <p className="text-secondary">Nested content</p>
     </div>
   </div>
@@ -359,9 +359,9 @@ function PageWithModal() {
       {/* Modal - different plane, can use surface even with surface below */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50">
-          <div className="bg-backdrop fixed inset-0" />
-          <div className="bg-surface-1 rounded-lg shadow-lg p-6">
-            <div className="bg-layer-1 hover:bg-layer-1-hover rounded p-2">Modal content</div>
+          <div className="fixed inset-0 bg-backdrop" />
+          <div className="shadow-lg rounded-lg bg-surface-1 p-6">
+            <div className="rounded bg-layer-1 p-2 hover:bg-layer-1-hover">Modal content</div>
           </div>
         </div>
       )}
@@ -378,15 +378,15 @@ function PageWithModal() {
 // Sidebar menu items use transparent backgrounds with hover states
 function DashboardPage() {
   return (
-    <div className="bg-surface-1 flex">
+    <div className="flex bg-surface-1">
       {/* Sidebar - part of the page surface */}
-      <aside className="border-r border-subtle w-64">
-        <div className="hover:bg-layer-1-hover p-4">Sidebar item</div>
+      <aside className="w-64 border-r border-subtle">
+        <div className="p-4 hover:bg-layer-1-hover">Sidebar item</div>
       </aside>
 
       {/* Main content - part of the page surface */}
       <main className="flex-1 p-6">
-        <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md p-4">Main content</div>
+        <div className="rounded-md bg-layer-1 p-4 hover:bg-layer-1-hover">Main content</div>
       </main>
     </div>
   );
@@ -398,9 +398,9 @@ function DashboardPage() {
 ```tsx
 // ✅ Correct: List structure
 <div className="bg-surface-1 p-4">
-  <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md mb-2 p-3">List item 1</div>
-  <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md mb-2 p-3">List item 2</div>
-  <div className="bg-layer-1 hover:bg-layer-1-hover rounded-md p-3">List item 3</div>
+  <div className="mb-2 rounded-md bg-layer-1 p-3 hover:bg-layer-1-hover">List item 1</div>
+  <div className="mb-2 rounded-md bg-layer-1 p-3 hover:bg-layer-1-hover">List item 2</div>
+  <div className="rounded-md bg-layer-1 p-3 hover:bg-layer-1-hover">List item 3</div>
 </div>
 ```
 
@@ -475,9 +475,9 @@ Use semantic text colors that match the hierarchy:
 
 ```tsx
 <div className="bg-layer-1 p-4">
-  <h2 className="text-primary font-semibold">Title</h2>
+  <h2 className="font-semibold text-primary">Title</h2>
   <p className="text-secondary">Description text</p>
-  <span className="text-tertiary text-13">Metadata</span>
+  <span className="text-13 text-tertiary">Metadata</span>
   <input className="placeholder-(--text-color-placeholder)" placeholder="Enter text..." />
 </div>
 ```
@@ -494,8 +494,8 @@ Use semantic border colors:
 **Example**:
 
 ```tsx
-<div className="bg-layer-1 border border-subtle rounded-md p-4">
-  <div className="border-b border-subtle-1 pb-2 mb-2">Section with divider</div>
+<div className="rounded-md border border-subtle bg-layer-1 p-4">
+  <div className="mb-2 border-b border-subtle-1 pb-2">Section with divider</div>
 </div>
 ```
 
@@ -510,13 +510,13 @@ function Page() {
 }
 
 // ❌ Wrong: Canvas used for a card
-<div className="bg-canvas rounded-md p-4">Card content</div>;
+<div className="rounded-md bg-canvas p-4">Card content</div>;
 
 // ✅ Correct: Pages use surfaces
 function Page() {
   return (
     <div className="bg-surface-1">
-      <div className="bg-layer-1 rounded-md p-4">Card content</div>
+      <div className="rounded-md bg-layer-1 p-4">Card content</div>
     </div>
   );
 }

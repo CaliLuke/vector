@@ -62,12 +62,11 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@base-ui-components/react": "catalog:",
+    "@base-ui/react": "catalog:",
     "@plane/constants": "workspace:*",
     "@plane/hooks": "workspace:*",
     "@plane/types": "workspace:*",
     "@plane/utils": "workspace:*",
-    "@tanstack/react-table": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
     "cmdk": "catalog:",
@@ -77,6 +76,7 @@
     "react": "catalog:",
     "react-day-picker": "catalog:",
     "react-dom": "catalog:",
+    "react-icons": "catalog:",
     "recharts": "catalog:",
     "tailwind-merge": "catalog:",
     "use-font-face-observer": "catalog:"

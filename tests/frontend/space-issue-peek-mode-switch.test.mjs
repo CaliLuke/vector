@@ -111,6 +111,18 @@ function TestHarness() {
 function getDialog() {
   return document.querySelector('[role="dialog"]');
 }
+async function waitForDialog(expected) {
+  const deadline = Date.now() + 1000;
+  while (Boolean(getDialog()) !== expected && Date.now() < deadline) {
+    // Wait for the real dialog transition before checking its final DOM state.
+    // eslint-disable-next-line no-await-in-loop
+    await React.act(async () => new Promise((resolve) => setTimeout(resolve, 20)));
+  }
+  assert.equal(Boolean(getDialog()), expected);
+}
+async function flushAnimationFrames() {
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+}
 
 test("switching peek modes keeps one dialog, focus, Escape close, and full-screen sizing", async (t) => {
   globalThis.__spacePeekTestState = { mode: "side", open: false };
@@ -137,7 +149,10 @@ test("switching peek modes keeps one dialog, focus, Escape close, and full-scree
   await environment.render(React.createElement(TestHarness));
   const opener = environment.container.querySelector("#open-peek");
   opener.focus();
-  await React.act(() => opener.click());
+  await React.act(async () => {
+    opener.click();
+    await flushAnimationFrames();
+  });
   const hasClassPart = (part) =>
     [...(getDialog()?.querySelectorAll("[class]") ?? [])].some((element) => element.className.includes(part));
   const modeTrigger = () => getDialog()?.querySelector('button[aria-haspopup="listbox"]');
@@ -147,11 +162,16 @@ test("switching peek modes keeps one dialog, focus, Escape close, and full-scree
   async function chooseMode(label) {
     const trigger = modeTrigger();
     assert.ok(trigger, "the mode selector should remain mounted");
-    await React.act(() => trigger.click());
+    await React.act(async () => {
+      trigger.click();
+      await flushAnimationFrames();
+    });
     const option = [...document.querySelectorAll('[role="option"]')].find((item) => item.textContent.includes(label));
     assert.ok(option, `the ${label} option should be available`);
-    await React.act(() => option.click());
-    await React.act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
+    await React.act(async () => {
+      option.click();
+      await flushAnimationFrames();
+    });
     assert.equal(document.querySelectorAll('[role="dialog"]').length, 1, "mode changes should retain one dialog");
     assert.ok(
       getDialog().contains(document.activeElement),
@@ -174,6 +194,7 @@ test("switching peek modes keeps one dialog, focus, Escape close, and full-scree
   await React.act(() => {
     activeDialog.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
   });
+  await waitForDialog(false);
   assert.equal(getDialog(), null, "Escape should close the peek");
   assert.equal(document.activeElement?.id, "open-peek", "closing the peek should restore focus to its opener");
 });

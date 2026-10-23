@@ -3,7 +3,7 @@
 ## Requirements
 
 - Go 1.27.3, as pinned in `apps/go-api/go.mod`.
-- Node.js 22.18 or later and Corepack. `package.json` pins pnpm.
+- Node.js 22.22.2+, 24.15+, or 26+ and Corepack. `package.json` pins pnpm.
 - Docker with Compose and Buildx. On macOS, the helper supports the default Colima profile.
 
 ## Start
@@ -23,6 +23,11 @@ The proxy serves all browser entry points. Frontend ports 3000–3100 are intern
 
 `PLANE_ADMIN_PORT` and `PLANE_SPACE_PORT` can override the admin and Sites upstream ports.
 These compatibility names remain supported in Vector.
+
+The frontend launcher has a 6 GiB sampled process-tree RSS ceiling and a 1 GiB
+heap limit per Node process. It stops all frontend workers if the ceiling is
+exceeded or after 24 hours. Shared-package startup builds run serially under a
+4 GiB ceiling. Docker containers are outside these host-process limits.
 
 Stop frontend watchers with Ctrl-C. Stop containers without deleting data:
 
@@ -51,6 +56,99 @@ go -C apps/go-api vet ./...
 
 Development orchestration and login/log checks use `cmd/devtools`, written in Go.
 Go unit tests and focused database tests run without Python or historical Git objects.
+
+## Quality gates
+
+Install Prek 0.5.5 and the pinned Go analysis tools once per machine or checkout:
+
+```sh
+brew install prek
+bash scripts/quality/go-tools.sh --install
+```
+
+Use the shared entry point locally and in CI:
+
+```sh
+prek run --all-files --group full
+./check.sh --fast
+./check.sh --fix
+```
+
+The full gate includes frontend production builds. Stop frontend watchers before
+running it, then restart `pnpm dev` for browser checks. To work while watchers run,
+use the package typecheck scripts directly. Do not clean shared package output.
+
+Husky remains the Git hook manager. Its pre-commit hook invokes the non-mutating
+Prek `fast` group; pre-push invokes `full`. `pnpm install` installs Husky's hooks.
+Do not run `prek install` over the same hooks.
+
+CI selects the same full hooks with `--group ci`, using `--require-group go` or
+`--require-group typescript` to split the jobs. The Go tools are pinned in
+`scripts/quality/go-tools.sh`; frontend tools are pinned in the pnpm lockfile.
+
+Go checks cover build, vet, formatting/imports, module-tidy drift, lint, dead code,
+duplication, and integration-tagged tests with coverage. Docker is required for
+disposable PostgreSQL, proxy, and broker tests. Package concurrency is bounded.
+The test-result guard rejects failures, incomplete reports, and unreviewed skips.
+`.quality/go-test-skips.json` records tests that need explicitly provisioned
+fixtures; each entry states its prerequisite. Never point these tests at a database
+with valuable data.
+
+Checks run sequentially. Frontend tests use one worker, a 384 MiB JavaScript heap
+limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute
+deadline. Each TypeScript gate has a ten-minute deadline and 3 GiB RSS ceiling;
+production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
+gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
+watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They
+track descendant processes and their groups, including Turbo task groups, but
+do not measure Docker containers. A process that fully daemonizes between
+samples can escape ancestry tracking; these guards are for build/test workers,
+not an isolation boundary for untrusted programs.
+The supervisor terminates the process group on failure or deadline and kills
+leftover workers when their parent exits. See `scripts/quality/run-bounded.mjs`
+for running focused commands under the same protection.
+
+Frontend checks cover Oxlint, type diagnostics, Oxfmt, Knip, duplication, and the
+Node frontend, Live, codemod, editor, and UI suites. Full builds also compile both
+component Storybooks. Coverage reports must be freshly generated
+before their ratchets run. Existing debt is recorded as explicit baselines rather
+than hidden by excluding application source. Review and tighten those baselines
+as findings are fixed; do not regenerate them simply to accept a failing change.
+
+Initial static-analysis debt includes 2,395 syntax-lint findings and 5,681 full
+TypeScript-aware lint findings (the full count includes syntax findings), plus
+517 Knip findings. Go starts with 1,365 lint occurrences, 52 dead-code findings,
+and 525 directed duplicate pairs. These baselines identify individual findings;
+they are not global warning allowances. TypeScript compiler errors cannot be
+baselined.
+
+The TypeScript duplicate baseline was reviewed after the Vite and Recharts
+migrations. It now records 981 pairs, nine fewer than the original 990. Twenty-
+two fingerprint changes replace retired entries: 16 dropdown pairs became
+identical when ref-only empty fragments were removed, five chart pairs retain
+pre-existing Recharts scaffolding whose identities changed during the Recharts 3
+typing updates, and one Storybook pair became identical when both configurations
+moved to Vite. A drag-and-drop import-only match was later retired after the two
+import lists diverged. The later Headless UI nonmodal fix changed eight more
+fingerprints: all eight match existing file-pair fragments after removing only
+`modal={false}` and whitespace. Their retired identities were replaced; the
+baseline remains at 981 pairs. No new allowance was added for these identity changes.
+Eight real duplicates were removed by sharing Go baseline-counting logic, a UI
+dropdown keyboard handler, frontend test module-stub helpers, read-only hydration
+test assertions, repeated page-persistence test setup, and the project-issues
+test resolver.
+
+The initial measured coverage is 30.20% lines across 44 Live source files,
+79.82% across 2 codemod files, 0.05% across 224 editor files, and 2.16% across
+116 UI files. These are explicit starting floors, not coverage targets. The
+ratchet checks each file and requires 80% coverage for new files in measured
+suites. `.quality/coverage-scope.json` lists unmeasured workspaces and explains
+why the Node frontend harness cannot yet provide reliable source coverage.
+The shared UI icon registry has a 100% floor for lines, statements, functions,
+and branches.
+
+See [the test-suite review](test-suite-review.md) for legacy failure expectations
+and test-quality gaps that require separate behavior changes.
 
 ## Logs
 

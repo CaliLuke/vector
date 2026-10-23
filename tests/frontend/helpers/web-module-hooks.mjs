@@ -12,9 +12,31 @@ const i18nRoot = path.join(repositoryRoot, "packages/i18n");
 const hooksRoot = path.join(repositoryRoot, "packages/hooks");
 const requireFromWeb = createRequire(path.join(webRoot, "package.json"));
 const typescript = requireFromWeb("typescript");
+const appSourceRoots = [webRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot].map(
+  (root) => pathToFileURL(root).href
+);
+const relativeSpecifiers = new Set([".", ".."]);
+const atlaskitPublicSubpaths = new Map(
+  [
+    "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter",
+    "@atlaskit/pragmatic-drag-and-drop/combine",
+    "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview",
+    "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item",
+  ].map((specifier) => [specifier, requireFromWeb.resolve(specifier)])
+);
 
 function candidates(target) {
   return [`${target}.ts`, `${target}.tsx`, path.join(target, "index.ts"), path.join(target, "index.tsx"), target];
+}
+
+function isRelativeSpecifier(specifier) {
+  return relativeSpecifiers.has(specifier) || specifier.startsWith("./") || specifier.startsWith("../");
+}
+
+function isAppSourceUrl(url) {
+  return appSourceRoots.some((root) => url?.startsWith(root));
 }
 
 export function registerWebModuleHooks(options = {}) {
@@ -39,18 +61,11 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubStoreContext = false, 
         target = path.join(repositoryRoot, "tests/frontend/helpers/emoji-root-stub.mjs");
       } else if (specifier.startsWith("@/")) {
         target = path.resolve(appRoot, aliasRoot, specifier.slice(2));
-      } else if (
-        (specifier === "." || specifier === ".." || specifier.startsWith("./") || specifier.startsWith("../")) &&
-        (context.parentURL?.startsWith(pathToFileURL(webRoot).href) ||
-          context.parentURL?.startsWith(pathToFileURL(spaceRoot).href) ||
-          context.parentURL?.startsWith(pathToFileURL(uiRoot).href) ||
-          context.parentURL?.startsWith(pathToFileURL(propelRoot).href) ||
-          context.parentURL?.startsWith(pathToFileURL(hooksRoot).href) ||
-          context.parentURL?.startsWith(pathToFileURL(i18nRoot).href))
-      ) {
+      } else if (isRelativeSpecifier(specifier) && isAppSourceUrl(context.parentURL)) {
         target = fileURLToPath(new URL(specifier, context.parentURL));
       }
 
+      target ??= atlaskitPublicSubpaths.get(specifier);
       if (target) {
         const file = candidates(target).find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
         if (file) return nextResolve(pathToFileURL(file).href, context);
@@ -74,7 +89,10 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubStoreContext = false, 
         };
         if (url.endsWith(".tsx")) compilerOptions.jsx = typescript.JsxEmit.ReactJSX;
         const source = readFileSync(fileURLToPath(url), "utf8");
-        const output = typescript.transpileModule(source, { compilerOptions }).outputText;
+        const output = typescript.transpileModule(source, {
+          compilerOptions,
+          fileName: fileURLToPath(url),
+        }).outputText;
         return { format: "module", shortCircuit: true, source: output };
       }
 

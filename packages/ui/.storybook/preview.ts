@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import type { Preview } from "@storybook/react";
-import "../styles/output.css";
+import type { Preview } from "@storybook/react-vite";
+import "../styles/globals.css";
 const preview: Preview = {
   parameters: {
     controls: {

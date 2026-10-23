@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 
-	systemapi "github.com/CaliLuke/go-plane"
 	"strings"
 	"testing"
+
+	systemapi "github.com/CaliLuke/go-plane"
 )
 
 func TestCollaborationPathConvertersRetainStringAnchorAndReaction(t *testing.T) {

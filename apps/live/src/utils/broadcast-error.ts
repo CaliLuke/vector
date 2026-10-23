@@ -5,7 +5,7 @@
  */
 
 import type { Hocuspocus } from "@hocuspocus/server";
-import { createRealtimeEvent } from "@plane/editor";
+import { createRealtimeEvent } from "@plane/editor/lib";
 import { logger } from "@plane/logger";
 import type { HocusPocusServerContext } from "@/types";
 import { broadcastMessageToPage } from "./broadcast-message";

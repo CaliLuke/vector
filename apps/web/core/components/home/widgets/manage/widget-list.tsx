@@ -4,11 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import type {
-  DragLocationHistory,
-  DropTargetRecord,
-  ElementDragPayload,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import type { DragLocationHistory, DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";

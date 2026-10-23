@@ -10,11 +10,12 @@ import (
 	"io"
 	"time"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/intake_inbox_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/intakeinboxreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const intakeInboxReadsInternalErrorDetail = "Something went wrong please try again later"

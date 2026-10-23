@@ -20,7 +20,7 @@ export interface FetchPayloadWithContext extends fetchPayload {
 }
 
 export interface StorePayloadWithContext extends storePayload {
-  context: HocusPocusServerContext;
+  lastContext: HocusPocusServerContext;
 }
 
 export type TDocumentTypes = "project_page";

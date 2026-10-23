@@ -16,13 +16,18 @@ type taskPublisherWorker struct {
 	name   string
 	args   []any
 	kwargs map[string]any
+	app    string
+	model  string
+	id     string
 	err    error
 }
 
 func (worker *taskPublisherWorker) Log(context.Context, activitylog.APIActivityLog) error { return nil }
 func (worker *taskPublisherWorker) Close() error                                          { return nil }
-func (worker *taskPublisherWorker) SoftDelete(context.Context, string, string, string) error {
-	return nil
+func (worker *taskPublisherWorker) SoftDelete(_ context.Context, app, model, id string) error {
+	worker.calls++
+	worker.app, worker.model, worker.id = app, model, id
+	return worker.err
 }
 func (worker *taskPublisherWorker) Task(ctx context.Context, name string, args []any, kwargs map[string]any) error {
 	worker.calls++

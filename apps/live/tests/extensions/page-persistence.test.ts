@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as Y from "yjs";
-import type { Document, Hocuspocus } from "@hocuspocus/server";
+import { Document, Hocuspocus } from "@hocuspocus/server";
+import type { TPage } from "@plane/types";
 import { Database } from "@/extensions/database";
 import { TitleSyncExtension } from "@/extensions/title-sync";
 import { TitleUpdateManager } from "@/extensions/title-update/title-update-manager";
 import { getPageService } from "@/services/page/handler";
+import { ProjectPageService } from "@/services/page/project-page.service";
 import type { HocusPocusServerContext } from "@/types";
 
 vi.mock("@/services/page/handler", () => ({
@@ -20,6 +22,7 @@ vi.mock("@/extensions/force-close-handler", () => ({
 }));
 
 const pageId = "page-id";
+const createServer = () => new Hocuspocus();
 const context: HocusPocusServerContext = {
   projectId: "project-id",
   cookie: "session-cookie",
@@ -28,16 +31,40 @@ const context: HocusPocusServerContext = {
   userId: "user-id",
 };
 
-const makeService = () => ({
-  fetchDescriptionBinary: vi.fn(async () => Buffer.alloc(0)),
-  fetchDetails: vi.fn(async () => ({
-    id: pageId,
-    name: "Loaded title",
-    description_html: "<p>Readable locked-page content</p>",
-  })),
-  updateDescriptionBinary: vi.fn(async () => undefined),
-  updatePageProperties: vi.fn(async (): Promise<void> => undefined),
+const makePage = (): TPage => ({
+  id: pageId,
+  name: "Loaded title",
+  description_html: "<p>Readable locked-page content</p>",
+  access: undefined,
+  archived_at: undefined,
+  color: undefined,
+  created_at: undefined,
+  created_by: undefined,
+  description_json: undefined,
+  is_favorite: false,
+  is_locked: false,
+  label_ids: undefined,
+  owned_by: undefined,
+  updated_at: undefined,
+  updated_by: undefined,
+  workspace: undefined,
+  logo_props: undefined,
+  deleted_at: undefined,
 });
+
+const makeService = () => {
+  const instance = new ProjectPageService({
+    workspaceSlug: "workspace",
+    projectId: "project-id",
+    cookie: "session-cookie",
+  });
+  const fetchDescriptionBinary = vi.fn(async () => Buffer.alloc(0));
+  const fetchDetails = vi.fn(async () => makePage());
+  const updateDescriptionBinary = vi.fn(async () => undefined);
+  const updatePageProperties = vi.fn(async () => makePage());
+  Object.assign(instance, { fetchDescriptionBinary, fetchDetails, updateDescriptionBinary, updatePageProperties });
+  return { instance, fetchDescriptionBinary, fetchDetails, updateDescriptionBinary, updatePageProperties };
+};
 
 const titleFragment = (document: Y.Doc) => document.getXmlFragment("title");
 
@@ -49,12 +76,30 @@ const replaceTitle = (document: Y.Doc, title: string) => {
   fragment.insert(0, [text]);
 };
 
+const expectTitleSaved = (service: ReturnType<typeof makeService>, title: string) => {
+  expect(service.updatePageProperties).toHaveBeenCalledOnce();
+  expect(service.updatePageProperties).toHaveBeenCalledWith(pageId, expect.objectContaining({ data: { name: title } }));
+};
+
+const createLoadedDocument = async () => {
+  const document = new Document(pageId);
+  replaceTitle(document, "Loaded title");
+  const extension = new TitleSyncExtension();
+  await extension.afterLoadDocument({
+    document,
+    documentName: pageId,
+    context,
+    instance: createServer(),
+  });
+  return { document, extension };
+};
+
 describe("page persistence during document load and title sync", () => {
   let service: ReturnType<typeof makeService>;
 
   beforeEach(() => {
     service = makeService();
-    vi.mocked(getPageService).mockReturnValue(service as unknown as ReturnType<typeof getPageService>);
+    vi.mocked(getPageService).mockReturnValue(service.instance);
   });
 
   afterEach(() => {
@@ -67,61 +112,50 @@ describe("page persistence during document load and title sync", () => {
     const fetchPayload = {
       context,
       documentName: pageId,
-      instance: {} as Hocuspocus,
-    } as Parameters<typeof database.configuration.fetch>[0];
+      instance: createServer(),
+      document: new Document(pageId),
+      requestHeaders: new Headers(),
+      requestParameters: new URLSearchParams(),
+      socketId: "socket-id",
+      connectionConfig: { isAuthenticated: true, readOnly: false },
+    };
 
     const loadedState = await database.configuration.fetch(fetchPayload);
 
-    expect(loadedState).toBeInstanceOf(Uint8Array);
+    if (!(loadedState instanceof Uint8Array)) throw new Error("Document fetch did not return a Yjs update");
     expect(service.updateDescriptionBinary).not.toHaveBeenCalled();
 
-    const document = new Y.Doc();
-    Y.applyUpdate(document, loadedState as Uint8Array);
+    const document = new Document(pageId);
+    Y.applyUpdate(document, loadedState);
     expect(document.getXmlFragment("default").length).toBeGreaterThan(0);
 
     document.getMap("user-edits").set("edited", true);
+    vi.mocked(getPageService).mockClear();
     await database.onStoreDocument({
       clientsCount: 1,
-      context,
-      document: document as unknown as Document,
+      lastContext: context,
+      document,
       documentName: pageId,
-      instance: {} as Hocuspocus,
-      requestHeaders: {},
-      requestParameters: new URLSearchParams(),
-      socketId: "socket-id",
-    } as Parameters<typeof database.onStoreDocument>[0]);
+      instance: createServer(),
+      lastTransactionOrigin: null,
+    });
 
+    expect(getPageService).toHaveBeenCalledWith("project_page", context);
     expect(service.updateDescriptionBinary).toHaveBeenCalledOnce();
   });
 
   it("ignores an observed title equal to the loaded Yjs title", async () => {
-    const document = new Y.Doc();
-    replaceTitle(document, "Loaded title");
-    const extension = new TitleSyncExtension();
-    await extension.afterLoadDocument({
-      document: document as unknown as Document,
-      documentName: pageId,
-      context,
-      instance: {} as Hocuspocus,
-    });
+    const { document, extension } = await createLoadedDocument();
 
     replaceTitle(document, "Loaded title");
     await extension.beforeUnloadDocument({ documentName: pageId });
 
     expect(service.updatePageProperties).not.toHaveBeenCalled();
-    await extension.afterUnloadDocument({ documentName: pageId, document: document as unknown as Document });
+    await extension.afterUnloadDocument({ documentName: pageId, document });
   });
 
   it("persists a changed title after the debounce interval", async () => {
-    const document = new Y.Doc();
-    replaceTitle(document, "Loaded title");
-    const extension = new TitleSyncExtension();
-    await extension.afterLoadDocument({
-      document: document as unknown as Document,
-      documentName: pageId,
-      context,
-      instance: {} as Hocuspocus,
-    });
+    const { document, extension } = await createLoadedDocument();
 
     vi.useFakeTimers();
     replaceTitle(document, "Edited title");
@@ -133,60 +167,36 @@ describe("page persistence during document load and title sync", () => {
       abortSignal: expect.any(AbortSignal),
     });
     await extension.beforeUnloadDocument({ documentName: pageId });
-    await extension.afterUnloadDocument({ documentName: pageId, document: document as unknown as Document });
+    await extension.afterUnloadDocument({ documentName: pageId, document });
     vi.useRealTimers();
   });
 
   it("flushes a pending changed title before the document unloads", async () => {
-    const document = new Y.Doc();
-    replaceTitle(document, "Loaded title");
-    const extension = new TitleSyncExtension();
-    await extension.afterLoadDocument({
-      document: document as unknown as Document,
-      documentName: pageId,
-      context,
-      instance: {} as Hocuspocus,
-    });
+    const { document, extension } = await createLoadedDocument();
 
     replaceTitle(document, "Unloaded title");
     await extension.beforeUnloadDocument({ documentName: pageId });
 
-    expect(service.updatePageProperties).toHaveBeenCalledOnce();
-    expect(service.updatePageProperties).toHaveBeenCalledWith(
-      pageId,
-      expect.objectContaining({ data: { name: "Unloaded title" } })
-    );
-    await extension.afterUnloadDocument({ documentName: pageId, document: document as unknown as Document });
+    expectTitleSaved(service, "Unloaded title");
+    await extension.afterUnloadDocument({ documentName: pageId, document });
   });
 
   it("cancels a pending title when it returns to the loaded value", async () => {
-    const document = new Y.Doc();
-    replaceTitle(document, "Loaded title");
-    const extension = new TitleSyncExtension();
-    await extension.afterLoadDocument({
-      document: document as unknown as Document,
-      documentName: pageId,
-      context,
-      instance: {} as Hocuspocus,
-    });
+    const { document, extension } = await createLoadedDocument();
 
     replaceTitle(document, "Temporary title");
     replaceTitle(document, "Loaded title");
     replaceTitle(document, "Final title");
     await extension.beforeUnloadDocument({ documentName: pageId });
 
-    expect(service.updatePageProperties).toHaveBeenCalledOnce();
-    expect(service.updatePageProperties).toHaveBeenCalledWith(
-      pageId,
-      expect.objectContaining({ data: { name: "Final title" } })
-    );
-    await extension.afterUnloadDocument({ documentName: pageId, document: document as unknown as Document });
+    expectTitleSaved(service, "Final title");
+    await extension.afterUnloadDocument({ documentName: pageId, document });
   });
 
   it("retries a failed title save because the loaded title remains the baseline", async () => {
     service.updatePageProperties
       .mockRejectedValueOnce(new Error("temporary API failure"))
-      .mockResolvedValueOnce(undefined);
+      .mockResolvedValueOnce(makePage());
     const manager = new TitleUpdateManager(pageId, context, 60_000, "Loaded title");
     manager.scheduleUpdate("Edited title");
     await manager.forceSave();
@@ -199,22 +209,22 @@ describe("page persistence during document load and title sync", () => {
 
   it("writes a title revert after an earlier title save already started", async () => {
     vi.useFakeTimers();
-    let finishFirstSave: (() => void) | undefined;
+    let finishFirstSave: ((value: TPage) => void) | undefined;
     service.updatePageProperties
       .mockImplementationOnce(
         () =>
-          new Promise<void>((resolve) => {
+          new Promise<TPage>((resolve) => {
             finishFirstSave = resolve;
           })
       )
-      .mockResolvedValueOnce(undefined);
+      .mockResolvedValueOnce(makePage());
     const manager = new TitleUpdateManager(pageId, context, 5000, "Loaded title");
     manager.scheduleUpdate("In-flight title");
     await vi.advanceTimersByTimeAsync(5000);
     expect(service.updatePageProperties).toHaveBeenCalledOnce();
 
     manager.scheduleUpdate("Loaded title");
-    finishFirstSave?.();
+    finishFirstSave?.(makePage());
     await vi.advanceTimersByTimeAsync(0);
     await vi.advanceTimersByTimeAsync(5000);
 

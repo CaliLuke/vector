@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/public_project_metadata_reads"
 	store "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
-	"uuid"
 )
 
 type publicProjectMetadataReadsRepositoryStub struct {

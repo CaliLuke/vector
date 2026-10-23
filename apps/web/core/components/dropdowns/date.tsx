@@ -181,7 +181,7 @@ export const DateDropdown = observer(function DateDropdown(props: Props) {
     >
       {isOpen &&
         createPortal(
-          <Combobox.Options data-prevent-outside-click static>
+          <Combobox.Options modal={false} data-prevent-outside-click static>
             <div
               className={cn(
                 "z-30 my-1 overflow-hidden rounded-md border-[0.5px] border-strong bg-surface-1 shadow-raised-200",
@@ -200,7 +200,8 @@ export const DateDropdown = observer(function DateDropdown(props: Props) {
                   dropdownOnChange(date ?? null);
                 }}
                 showOutsideDays
-                initialFocus
+                // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
+                autoFocus
                 disabled={disabledDays}
                 mode="single"
                 fixedWeeks

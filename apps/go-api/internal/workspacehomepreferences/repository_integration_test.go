@@ -8,9 +8,10 @@ import (
 	"reflect"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 type listedPreference struct {

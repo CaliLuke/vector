@@ -3,9 +3,10 @@ package projectlabelreads
 import (
 	"context"
 	"errors"
-	"github.com/jackc/pgx/v5"
 	"reflect"
 	"testing"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func TestAPIV1DetailIgnoresProjectionAndPagination(t *testing.T) {

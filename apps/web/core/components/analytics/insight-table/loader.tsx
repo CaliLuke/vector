@@ -5,16 +5,17 @@
  */
 
 import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@plane/propel/table";
 import { Loader } from "@plane/ui";
+import type { AnalyticsColumnDef } from "./table-features";
 
-interface TableSkeletonProps {
-  columns: ColumnDef<any>[];
+interface TableSkeletonProps<TData extends RowData> {
+  columns: AnalyticsColumnDef<TData>[];
   rows: number;
 }
 
-export function TableLoader({ columns, rows }: TableSkeletonProps) {
+export function TableLoader<TData extends RowData>({ columns, rows }: TableSkeletonProps<TData>) {
   return (
     <Table>
       <TableHeader>

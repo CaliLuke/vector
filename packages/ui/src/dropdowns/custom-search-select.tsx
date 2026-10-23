@@ -14,9 +14,9 @@ import { CheckIcon, SearchIcon, ChevronDownIcon } from "@plane/propel/icons";
 // plane imports
 // local imports
 import { Tooltip } from "@plane/propel/tooltip";
-import { useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
+import { useDropdownButtonKeyDown, useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 import { cn } from "../utils";
-import { isCustomButtonDisabled } from "./helper";
+import { isCustomButtonDisabled, SyncComboboxOpenState } from "./helper";
 import type { ICustomSearchSelectProps, TAsChildButtonProps } from "./helper";
 
 const HeadlessComboboxButton = Combobox.Button as unknown as React.ComponentType<TAsChildButtonProps>;
@@ -48,6 +48,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
     defaultOpen = false,
   } = props;
   const [query, setQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
@@ -60,6 +61,9 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
   useEffect(() => {
     if (isOpen) onOpenRef.current?.();
   }, [isOpen]);
+  useEffect(() => {
+    if (defaultOpen) searchInputRef.current?.focus();
+  }, [defaultOpen]);
   // refs
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
@@ -72,7 +76,9 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
 
   const comboboxProps: any = {
     value,
-    onChange,
+    onChange: (nextValue: unknown) => {
+      if (nextValue !== null || value !== null) onChange(nextValue);
+    },
     disabled: customButtonDisabled,
   };
 
@@ -85,30 +91,17 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
 
   const closeDropdown = () => {
     setIsOpen(false);
-    onClose?.();
   };
 
   const handleKeyDown = useDropdownKeyDown(openDropdown, closeDropdown, isOpen);
   useOutsideClickDetector(dropdownRef, closeDropdown);
 
-  const toggleDropdown = () => {
-    if (isOpen) closeDropdown();
+  const toggleDropdown = (headlessOpen = isOpen) => {
+    if (headlessOpen) closeDropdown();
     else openDropdown();
   };
 
-  const handleCustomButtonKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (customButtonDisabled) return;
-    if (event.key === "Enter" || event.key === " ") {
-      // Let the native button click activate both this dropdown and Headless UI once.
-      event.stopPropagation();
-    } else if (event.key === "Escape" && isOpen) {
-      event.stopPropagation();
-      closeDropdown();
-    } else if (!isOpen && ["ArrowDown", "ArrowUp"].includes(event.key)) {
-      event.stopPropagation();
-      openDropdown();
-    }
-  };
+  const handleCustomButtonKeyDown = useDropdownButtonKeyDown(customButtonDisabled, isOpen, openDropdown, closeDropdown);
 
   return (
     <Combobox
@@ -116,12 +109,18 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
       role="presentation"
       ref={dropdownRef}
       tabIndex={tabIndex}
+      immediate={defaultOpen}
       className={cn("relative flex-shrink-0 text-left", className)}
       onKeyDown={handleKeyDown}
+      onClose={() => {
+        setIsOpen(false);
+        onClose?.();
+      }}
       {...comboboxProps}
     >
-      {() => (
+      {({ open }) => (
         <>
+          <SyncComboboxOpenState open={open} onOpenChange={setIsOpen} />
           {customButton ? (
             customButtonAsChild ? (
               <HeadlessComboboxButton
@@ -129,7 +128,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                 ref={setReferenceElement}
                 type="button"
                 className={customButtonClassName}
-                onClick={toggleDropdown}
+                onClick={() => toggleDropdown(open)}
                 onKeyDown={handleCustomButtonKeyDown}
                 disabled={customButtonDisabled}
               >
@@ -148,7 +147,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                     },
                     customButtonClassName
                   )}
-                  onClick={toggleDropdown}
+                  onClick={() => toggleDropdown(open)}
                 >
                   {customButton}
                 </button>
@@ -169,7 +168,7 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                   },
                   buttonClassName
                 )}
-                onClick={toggleDropdown}
+                onClick={() => toggleDropdown(open)}
               >
                 {label}
                 {!noChevron && !disabled && (
@@ -178,18 +177,9 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
               </button>
             </Combobox.Button>
           )}
-          {isOpen &&
+          {(isOpen || open) &&
             createPortal(
-              <Combobox.Options
-                data-prevent-outside-click
-                static
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    event.stopPropagation();
-                    closeDropdown();
-                  }
-                }}
-              >
+              <Combobox.Options modal={false} data-prevent-outside-click static>
                 <div
                   className={cn(
                     "z-30 my-1 min-w-48 overflow-y-scroll rounded-md border-[0.5px] border-subtle-1 bg-surface-1 py-2.5 text-11 whitespace-nowrap focus:outline-none",
@@ -203,11 +193,11 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
                     <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
                     <Combobox.Input
                       className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
+                      ref={searchInputRef}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyDown={(event) => {
                         if (event.key === "Escape") {
-                          closeDropdown();
                           referenceElement?.focus();
                         }
                       }}

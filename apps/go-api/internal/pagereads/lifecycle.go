@@ -10,13 +10,14 @@ import (
 	"strings"
 	"time"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/CaliLuke/go-plane/internal/stickies/content"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"uuid"
 )
 
 type lifecycleDatabase interface {

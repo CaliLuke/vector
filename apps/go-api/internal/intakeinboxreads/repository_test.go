@@ -8,8 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type repositoryRow func(...any) error

@@ -13,11 +13,11 @@ import { useOutsideClickDetector } from "@plane/hooks";
 import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
 // plane helpers
 // hooks
-import { useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
+import { useDropdownButtonKeyDown, useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 // helpers
 import { cn } from "../utils";
 // types
-import { isCustomButtonDisabled } from "./helper";
+import { isCustomButtonDisabled, SyncComboboxOpenState } from "./helper";
 import type { ICustomSelectItemProps, ICustomSelectProps, TAsChildButtonProps } from "./helper";
 
 const HeadlessComboboxButton = Combobox.Button as unknown as React.ComponentType<TAsChildButtonProps>;
@@ -75,26 +75,19 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
     const handleKeyDown = useDropdownKeyDown(openDropdown, closeDropdown, isOpen);
     useOutsideClickDetector(dropdownRef, closeDropdown);
 
-    const toggleDropdown = useCallback(() => {
-      if (isOpen) closeDropdown();
-      else openDropdown();
-    }, [closeDropdown, isOpen, openDropdown]);
-
-    const handleCustomButtonKeyDown = useCallback(
-      (event: React.KeyboardEvent<HTMLButtonElement>) => {
-        if (customButtonDisabled) return;
-        if (event.key === "Enter" || event.key === " ") {
-          // Let the native button click activate both this dropdown and Headless UI once.
-          event.stopPropagation();
-        } else if (event.key === "Escape" && isOpen) {
-          event.stopPropagation();
-          closeDropdown();
-        } else if (!isOpen && ["ArrowDown", "ArrowUp"].includes(event.key)) {
-          event.stopPropagation();
-          openDropdown();
-        }
+    const toggleDropdown = useCallback(
+      (headlessOpen = isOpen) => {
+        if (headlessOpen) closeDropdown();
+        else openDropdown();
       },
-      [closeDropdown, customButtonDisabled, isOpen, openDropdown]
+      [closeDropdown, isOpen, openDropdown]
+    );
+
+    const handleCustomButtonKeyDown = useDropdownButtonKeyDown(
+      customButtonDisabled,
+      isOpen,
+      openDropdown,
+      closeDropdown
     );
 
     return (
@@ -106,95 +99,102 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
           tabIndex={tabIndex}
           value={value}
           onChange={(val) => {
-            onChange?.(val);
+            if (val !== null || value !== null) onChange?.(val);
             closeDropdown();
           }}
           className={cn("relative flex-shrink-0 text-left", className)}
           onKeyDown={handleKeyDown}
           disabled={customButtonDisabled}
         >
-          <>
-            {customButton ? (
-              customButtonAsChild ? (
-                <HeadlessComboboxButton
-                  as={React.Fragment}
-                  ref={setButtonRef}
-                  type="button"
-                  className={customButtonClassName}
-                  onClick={toggleDropdown}
-                  onKeyDown={handleCustomButtonKeyDown}
-                  disabled={customButtonDisabled}
-                >
-                  {customButton}
-                </HeadlessComboboxButton>
+          {({ open }) => (
+            <>
+              <SyncComboboxOpenState open={open} onOpenChange={setIsOpen} />
+              {customButton ? (
+                customButtonAsChild ? (
+                  <HeadlessComboboxButton
+                    as={React.Fragment}
+                    ref={setButtonRef}
+                    type="button"
+                    className={customButtonClassName}
+                    onClick={() => toggleDropdown(open)}
+                    onKeyDown={handleCustomButtonKeyDown}
+                    disabled={customButtonDisabled}
+                  >
+                    {customButton}
+                  </HeadlessComboboxButton>
+                ) : (
+                  <Combobox.Button as={React.Fragment}>
+                    <button
+                      ref={setButtonRef}
+                      type="button"
+                      className={`flex items-center justify-between gap-1 rounded text-11 ${
+                        disabled
+                          ? "cursor-not-allowed text-secondary"
+                          : "cursor-pointer hover:bg-layer-transparent-hover"
+                      } ${customButtonClassName}`}
+                      onClick={() => toggleDropdown(open)}
+                    >
+                      {customButton}
+                    </button>
+                  </Combobox.Button>
+                )
               ) : (
                 <Combobox.Button as={React.Fragment}>
                   <button
                     ref={setButtonRef}
                     type="button"
-                    className={`flex items-center justify-between gap-1 rounded text-11 ${
-                      disabled ? "cursor-not-allowed text-secondary" : "cursor-pointer hover:bg-layer-transparent-hover"
-                    } ${customButtonClassName}`}
-                    onClick={toggleDropdown}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-1 rounded border border-strong",
+                      {
+                        "px-3 py-2 text-13": input,
+                        "px-2 py-1 text-11": !input,
+                        "cursor-not-allowed text-secondary": disabled,
+                        "cursor-pointer hover:bg-layer-transparent-hover": !disabled,
+                      },
+                      buttonClassName
+                    )}
+                    onClick={() => toggleDropdown(open)}
                   >
-                    {customButton}
+                    {label}
+                    {!noChevron && !disabled && <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />}
                   </button>
                 </Combobox.Button>
-              )
-            ) : (
-              <Combobox.Button as={React.Fragment}>
-                <button
-                  ref={setButtonRef}
-                  type="button"
-                  className={cn(
-                    "flex w-full items-center justify-between gap-1 rounded border border-strong",
-                    {
-                      "px-3 py-2 text-13": input,
-                      "px-2 py-1 text-11": !input,
-                      "cursor-not-allowed text-secondary": disabled,
-                      "cursor-pointer hover:bg-layer-transparent-hover": !disabled,
-                    },
-                    buttonClassName
-                  )}
-                  onClick={toggleDropdown}
-                >
-                  {label}
-                  {!noChevron && !disabled && <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />}
-                </button>
-              </Combobox.Button>
-            )}
-          </>
-          {isOpen &&
-            createPortal(
-              <Combobox.Options
-                data-prevent-outside-click
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") closeDropdown();
-                }}
-              >
-                <div
-                  className={cn(
-                    "z-30 my-1 min-w-48 overflow-y-scroll rounded-md border-[0.5px] border-subtle-1 bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap focus:outline-none",
-                    optionsClassName
-                  )}
-                  ref={setPopperElement}
-                  style={styles.popper}
-                  {...attributes.popper}
-                >
-                  <div
-                    className={cn("space-y-1 overflow-y-scroll", {
-                      "max-h-60": maxHeight === "lg",
-                      "max-h-48": maxHeight === "md",
-                      "max-h-36": maxHeight === "rg",
-                      "max-h-28": maxHeight === "sm",
-                    })}
+              )}
+              {(isOpen || open) &&
+                createPortal(
+                  <Combobox.Options
+                    modal={false}
+                    data-prevent-outside-click
+                    static
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") closeDropdown();
+                    }}
                   >
-                    {children}
-                  </div>
-                </div>
-              </Combobox.Options>,
-              document.body
-            )}
+                    <div
+                      className={cn(
+                        "z-30 my-1 min-w-48 overflow-y-scroll rounded-md border-[0.5px] border-subtle-1 bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap focus:outline-none",
+                        optionsClassName
+                      )}
+                      ref={setPopperElement}
+                      style={styles.popper}
+                      {...attributes.popper}
+                    >
+                      <div
+                        className={cn("space-y-1 overflow-y-scroll", {
+                          "max-h-60": maxHeight === "lg",
+                          "max-h-48": maxHeight === "md",
+                          "max-h-36": maxHeight === "rg",
+                          "max-h-28": maxHeight === "sm",
+                        })}
+                      >
+                        {children}
+                      </div>
+                    </div>
+                  </Combobox.Options>,
+                  document.body
+                )}
+            </>
+          )}
         </Combobox>
       </DropdownContext.Provider>
     );

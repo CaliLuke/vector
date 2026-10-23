@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "coveredSuites": {
+    "apps/live": {
+      "testCommand": "pnpm --filter live test:coverage",
+      "sourcePatterns": ["src/**/*.{ts,tsx}"],
+      "exclusions": ["src/**/*.d.ts", "src/**/types.ts", "src/**/*.test.*", "src/**/*.spec.*"]
+    },
+    "packages/codemods": {
+      "testCommand": "pnpm --filter @plane/codemods test:coverage",
+      "sourcePatterns": ["*.ts"],
+      "exclusions": ["vitest.config.ts", "**/*.d.ts", "tests/**"]
+    },
+    "packages/editor": {
+      "testCommand": "pnpm --filter @plane/editor test:coverage",
+      "sourcePatterns": ["src/**/*.{ts,tsx}"],
+      "exclusions": [
+        "src/**/*.d.ts",
+        "src/core/plugins/file/types.ts",
+        "src/**/*.test.*",
+        "src/**/*.spec.*",
+        "src/**/*.stories.*"
+      ]
+    },
+    "packages/ui": {
+      "testCommand": "pnpm --filter @plane/ui test:coverage",
+      "sourcePatterns": ["src/**/*.{ts,tsx}"],
+      "exclusions": ["src/**/*.d.ts", "src/**/types.ts", "src/**/*.test.*", "src/**/*.spec.*", "src/**/*.stories.*"]
+    }
+  },
+  "uncoveredSuites": [
+    {
+      "testCommand": "pnpm test:frontend",
+      "reason": "Node module hooks transpile TS/TSX without source maps, so V8 coverage cannot be attributed reliably to owned source files."
+    },
+    {
+      "testCommand": "pnpm --filter @plane/constants test",
+      "reason": "The endpoint URL regression suite runs in the full gate; this workspace does not yet have a measured source-coverage baseline."
+    }
+  ],
+  "notMeasured": [
+    "apps/admin",
+    "apps/space",
+    "apps/web",
+    "packages/constants",
+    "packages/decorators",
+    "packages/hooks",
+    "packages/i18n",
+    "packages/logger",
+    "packages/propel",
+    "packages/services",
+    "packages/shared-state",
+    "packages/tailwind-config",
+    "packages/types",
+    "packages/utils"
+  ]
+}

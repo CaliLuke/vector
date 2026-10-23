@@ -24,7 +24,7 @@ import { useProjectState } from "@/hooks/store/use-project-state";
 
 type BlockProps = {
   activity: TActivityEntityData;
-  parentRef: React.RefObject<HTMLDivElement>;
+  parentRef: React.RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
 };
 export const RecentIssue = observer(function RecentIssue(props: BlockProps) {

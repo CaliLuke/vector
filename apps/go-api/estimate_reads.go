@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"io"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/estimate_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/estimatereads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const estimateReadsInternalErrorDetail = "Something went wrong please try again later"

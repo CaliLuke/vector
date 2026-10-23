@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/last_visited_workspace"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/lastvisitedworkspace"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type lastVisitedWorkspaceRepository interface {

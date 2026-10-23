@@ -68,11 +68,9 @@ function RadarChart<T extends string, K extends string>(props: TRadarChartProps<
             />
           )}
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
               onMouseEnter={(payload) => {
-                // @ts-expect-error recharts types are not up to date
-                const key: string | undefined = payload.payload?.key;
+                const key = payload.payload && "key" in payload.payload ? String(payload.payload.key) : undefined;
                 if (!key) return;
                 setActiveLegend(key);
                 setActiveIndex(null);

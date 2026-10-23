@@ -7,7 +7,7 @@
 import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 // plane helpers
@@ -53,7 +53,7 @@ interface IssueBlockProps {
 }
 
 interface IssueDetailsBlockProps {
-  cardRef: React.RefObject<HTMLElement>;
+  cardRef: React.RefObject<HTMLElement | null>;
   issue: TIssue;
   displayProperties: IIssueDisplayProperties | undefined;
   updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;

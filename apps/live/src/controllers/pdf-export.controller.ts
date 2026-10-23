@@ -32,7 +32,7 @@ export class PdfExportController {
         );
       }
 
-      const body = yield* Schema.decodeUnknown(PdfExportRequestBody)(req.body).pipe(
+      const body = yield* Schema.decodeUnknownEffect(PdfExportRequestBody)(req.body).pipe(
         Effect.mapError(
           (cause) =>
             new PdfValidationError({
@@ -95,7 +95,7 @@ export class PdfExportController {
   async exportToPdf(req: Request, res: Response) {
     const requestId = crypto.randomUUID();
 
-    const effect = Effect.gen(this, function* () {
+    const effect = Effect.gen({ self: this }, function* () {
       // Parse request
       const input = yield* this.parseRequest(req, requestId);
 
@@ -105,9 +105,9 @@ export class PdfExportController {
       // Log errors before catching them
       Effect.tapError((error) => Effect.logError("PDF_EXPORT: Export failed", { requestId, error })),
       // Map all tagged errors to HTTP responses
-      Effect.catchAll((error) => Effect.succeed(this.mapErrorToHttpResponse(error))),
+      Effect.catch((error) => Effect.succeed(this.mapErrorToHttpResponse(error))),
       // Handle unexpected defects
-      Effect.catchAllDefect((defect) => {
+      Effect.catchDefect((defect) => {
         const appError = new AppError(Cause.pretty(Cause.die(defect)), {
           context: { requestId, operation: "exportToPdf" },
         });
@@ -116,7 +116,7 @@ export class PdfExportController {
       })
     );
 
-    const result = await Effect.runPromise(Effect.provide(effect, PdfExportService.Default));
+    const result = await Effect.runPromise(Effect.provide(effect, PdfExportService.layer));
 
     // Check if result is an error response
     if ("error" in result && "status" in result) {

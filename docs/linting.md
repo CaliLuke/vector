@@ -13,18 +13,20 @@ We use [OxLint](https://oxc.rs/docs/guide/usage/linter) for linting across the e
 From the root of the repo:
 
 ```bash
-# Check for lint errors
+# Check lint diagnostics and TypeScript errors against the repository ratchets
 pnpm check:lint
 
 # Auto-fix lint errors
 pnpm fix:lint
 ```
 
-To lint a specific package:
+To run the package-local Oxlint command:
 
 ```bash
 pnpm turbo run check:lint --filter=@plane/ui
 ```
+
+The repository-wide command is the canonical check. Package-local commands are useful during development; they do not replace its per-finding diagnostic baseline.
 
 ## VS Code Integration
 
@@ -47,13 +49,14 @@ The config applies to all TypeScript and JavaScript files across:
 
 OxLint uses category-based configuration:
 
-| Category        | Level | What It Catches                                    |
-| --------------- | ----- | -------------------------------------------------- |
-| **correctness** | error | Real bugs that will cause runtime errors            |
-| **suspicious**  | warn  | Code patterns that are likely mistakes              |
-| **perf**        | warn  | Performance anti-patterns                           |
+| Category        | Level | What It Catches                          |
+| --------------- | ----- | ---------------------------------------- |
+| **correctness** | error | Real bugs that will cause runtime errors |
+| **suspicious**  | warn  | Code patterns that are likely mistakes   |
+| **perf**        | warn  | Performance anti-patterns                |
 
 Additional rule overrides:
+
 - `react/prop-types` off (TypeScript handles prop validation)
 - `no-unused-vars` warns with `_` prefix pattern ignored
 - Several noisy unicorn rules disabled

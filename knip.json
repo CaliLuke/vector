@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreBinaries": ["go"],
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/quality/*.mjs", "tests/**/*.test.mjs", "tests/frontend/helpers/*.mjs"],
+      "project": ["scripts/quality/**/*.mjs", "tests/**/*.mjs"]
+    },
+    "packages/ui": {
+      "entry": ["postcss.config.js"]
+    },
+    "apps/web": {
+      "react-router": true
+    }
+  },
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "catalog": "error",
+    "catalogReferences": "error",
+    "exports": "warn",
+    "types": "warn",
+    "enumMembers": "warn",
+    "duplicates": "off",
+    "cycles": "off"
+  }
+}

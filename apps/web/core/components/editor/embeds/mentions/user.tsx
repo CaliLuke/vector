@@ -54,8 +54,8 @@ export const EditorUserMention = observer(function EditorUserMention(props: Prop
         }
       )}
     >
-      <Popover delay={100} openOnHover>
-        <Popover.Button>
+      <Popover>
+        <Popover.Button delay={100} openOnHover>
           <Link to={profileLink}>@{userDetails?.display_name}</Link>
         </Popover.Button>
         <Popover.Panel side="bottom" align="start">

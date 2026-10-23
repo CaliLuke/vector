@@ -68,7 +68,7 @@ registerHooks({
 
 const { PriorityDropdown } = await import("../../apps/web/core/components/dropdowns/priority.tsx");
 
-test("Escape closes the priority dropdown and returns focus to its trigger", async (t) => {
+void test("Escape closes the priority dropdown and returns focus to its trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   await environment.render(
@@ -86,7 +86,7 @@ test("Escape closes the priority dropdown and returns focus to its trigger", asy
   assert.ok(search);
   search.attachEvent = () => {};
   search.detachEvent = () => {};
-  search.focus();
+  await React.act(async () => search.focus());
   assert.equal(document.activeElement, search);
 
   await React.act(async () => {
@@ -95,4 +95,35 @@ test("Escape closes the priority dropdown and returns focus to its trigger", asy
 
   assert.equal(document.querySelector('input[placeholder="Search"]'), null);
   assert.equal(document.activeElement, trigger);
+});
+
+void test("priority options stay interactive and selecting one updates the value", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  let selectedPriority;
+
+  await environment.render(
+    React.createElement(PriorityDropdown, {
+      buttonVariant: "transparent-with-text",
+      onChange(value) {
+        selectedPriority = value;
+      },
+      value: "medium",
+    })
+  );
+
+  const trigger = environment.container.querySelector("button");
+  assert.ok(trigger);
+  await React.act(async () => trigger.click());
+
+  const highOption = [...document.querySelectorAll('[role="option"]')].find((option) =>
+    option.textContent.includes("High")
+  );
+  assert.ok(highOption);
+  assert.equal(highOption.closest('[aria-hidden="true"]'), null);
+
+  await React.act(async () => {
+    highOption.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 }));
+  });
+  assert.equal(selectedPriority, "high");
 });

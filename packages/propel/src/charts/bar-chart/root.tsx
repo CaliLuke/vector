@@ -62,7 +62,7 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
 
   // get bar color dynamically based on payload
   const getBarColor = useCallback(
-    (payload: Record<string, string>[], barKey: string) => {
+    (payload: readonly Record<string, string>[], barKey: string) => {
       const bar = bars.find((b) => b.key === barKey);
       if (!bar) return DEFAULT_BAR_FILL_COLOR;
 
@@ -87,7 +87,7 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
 
   // get all bar colors
   const getAllBarColors = useCallback(
-    (payload: any[]) => {
+    (payload: readonly any[]) => {
       const colors: Record<string, string> = {};
       for (const bar of bars) {
         colors[bar.key] = getBarColor(payload, bar.key);
@@ -169,9 +169,8 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
             allowDecimals={!!yAxis.allowDecimals}
           />
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
-              onMouseEnter={(payload) => setActiveLegend(payload.value)}
+              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
               onMouseLeave={() => setActiveLegend(null)}
               formatter={(value) => stackLabels[value]}
               {...getLegendProps(legend)}
@@ -187,7 +186,7 @@ export const BarChart = React.memo(function BarChart<K extends string, T extends
                 pointerEvents: "auto",
               }}
               content={({ active, label, payload }) => {
-                if (customTooltipContent) return customTooltipContent({ active, label, payload });
+                if (customTooltipContent) return customTooltipContent({ active, label: String(label ?? ""), payload });
                 return (
                   <CustomTooltip
                     active={active}

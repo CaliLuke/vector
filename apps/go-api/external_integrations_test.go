@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	loomhttp "github.com/CaliLuke/loom/http"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	loomhttp "github.com/CaliLuke/loom/http"
 
 	api "github.com/CaliLuke/go-plane/externalintegrations/gen/external_integrations"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"

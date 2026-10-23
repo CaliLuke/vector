@@ -6,9 +6,10 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_member_me"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
-	"uuid"
 )
 
 type memberMeRepoTest struct {

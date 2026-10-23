@@ -11,6 +11,19 @@ const { BreadcrumbNavigationDropdown } = await import("../../packages/ui/src/bre
 const { BreadcrumbNavigationSearchDropdown } =
   await import("../../packages/ui/src/breadcrumbs/navigation-search-dropdown.tsx");
 
+function assertNoConsoleErrors(t) {
+  const errors = [];
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  console.error = (...args) => errors.push(args);
+  console.warn = (...args) => errors.push(args);
+  t.after(() => {
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+    assert.deepEqual(errors, [], "breadcrumb interaction should not log React or browser errors");
+  });
+}
+
 afterEach(async () => {
   await environment.render(null);
 });
@@ -25,7 +38,19 @@ function assertNoNestedButtons(container) {
   }
 }
 
-test("search breadcrumb keeps navigation and menu actions on separate buttons", async () => {
+async function waitForCondition(condition, message, timeoutMs = 2_000) {
+  const deadline = performance.now() + timeoutMs;
+  await act(async () => {
+    await new Promise((resolve) => {
+      const check = () => (condition() || performance.now() >= deadline ? resolve() : setTimeout(check, 10));
+      check();
+    });
+  });
+  assert.ok(condition(), message);
+}
+
+test("search breadcrumb keeps navigation and menu actions on separate buttons", async (t) => {
+  assertNoConsoleErrors(t);
   let navigated = 0;
   let changedTo = "";
   await environment.render(
@@ -51,7 +76,11 @@ test("search breadcrumb keeps navigation and menu actions on separate buttons", 
     item.textContent.includes("Project beta")
   );
   assert.ok(option, "the chevron trigger should open the searchable project menu");
-  await act(async () => option.click());
+  await act(async () => {
+    option.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+    option.click();
+  });
+  await waitForCondition(() => changedTo === "beta", "selecting a breadcrumb should notify onChange");
   assert.equal(changedTo, "beta");
 });
 

@@ -96,8 +96,10 @@ export const CalendarIssueBlock = observer(
     });
 
     return (
-      <Popover delay={100} openOnHover>
+      <Popover>
         <Popover.Button
+          delay={100}
+          openOnHover
           className="w-full"
           render={
             <ControlLink

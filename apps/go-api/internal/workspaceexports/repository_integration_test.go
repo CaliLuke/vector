@@ -44,7 +44,11 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +113,11 @@ INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active,deleted_a
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
@@ -171,7 +179,11 @@ VALUES ('00000000-0000-4000-8000-000000000002','Test','User','Test User','',FALS
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
@@ -233,7 +245,11 @@ INSERT INTO project_members(project_id,member_id,is_active,deleted_at) VALUES
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)
@@ -279,7 +295,11 @@ INSERT INTO exporters(id,created_at,updated_at,type,workspace_id,project,provide
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer pair.Close()
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Errorf("close postgres fixture: %v", closeErr)
+		}
+	})
 	connection, err := pgx.Connect(ctx, pair.SeedURL())
 	if err != nil {
 		t.Fatal(err)

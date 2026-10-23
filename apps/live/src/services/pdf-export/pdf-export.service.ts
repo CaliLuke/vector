@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { Effect } from "effect";
+import { Context, Effect, Layer } from "effect";
 import sharp from "sharp";
 import { getAllDocumentFormatsFromDocumentEditorBinaryData } from "@plane/editor/lib";
 import type { PDFExportMetadata, TipTapDocument } from "@/lib/pdf";
@@ -35,8 +35,8 @@ type TipTapNode = {
 /**
  * PDF Export Service
  */
-export class PdfExportService extends Effect.Service<PdfExportService>()("PdfExportService", {
-  sync: () => ({
+export class PdfExportService extends Context.Service<PdfExportService>()("PdfExportService", {
+  make: Effect.sync(() => ({
     /**
      * Determines document type
      */
@@ -240,7 +240,7 @@ export class PdfExportService extends Effect.Service<PdfExportService>()("PdfExp
                 error,
               })
             ),
-            Effect.catchAll(() => Effect.succeed(null as readonly [string, string] | null))
+            Effect.catch(() => Effect.succeed(null as readonly [string, string] | null))
           );
 
         const entries = Array.from(resolvedUrlMap.entries());
@@ -296,8 +296,10 @@ export class PdfExportService extends Effect.Service<PdfExportService>()("PdfExp
 
         return pdfBuffer;
       }),
-  }),
-}) {}
+  })),
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}
 
 /**
  * Main export pipeline - orchestrates the entire PDF export process

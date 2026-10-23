@@ -9,7 +9,7 @@ import { Database as HocuspocusDatabase } from "@hocuspocus/extension-database";
 import {
   getAllDocumentFormatsFromDocumentEditorBinaryData,
   getBinaryDataFromDocumentEditorHTMLString,
-} from "@plane/editor";
+} from "@plane/editor/lib";
 import type { TDocumentPayload } from "@plane/types";
 import { logger } from "@plane/logger";
 // lib
@@ -56,7 +56,7 @@ const fetchDocument = async ({ context, documentName: pageId, instance }: FetchP
 };
 
 const storeDocument = async ({
-  context,
+  lastContext: context,
   state: pageBinaryData,
   documentName: pageId,
   instance,

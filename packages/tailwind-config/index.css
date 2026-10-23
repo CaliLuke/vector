@@ -1,4 +1,6 @@
-@import "tailwindcss";
+/* Vite 8 SSR bare CSS imports: https://github.com/vitejs/vite/issues/23096
+   Return to the package-root import when the upstream fix is released. */
+@import "tailwindcss/index.css";
 @import "./variables.css";
 @import "./animations.css";
 @source "../**/*.{ts,tsx}";
@@ -14,7 +16,7 @@
 }
 
 body {
-  @apply font-body bg-canvas text-primary;
+  @apply bg-canvas font-body text-primary;
 }
 
 /* emoji icon picker */
@@ -87,12 +89,12 @@ body {
   }
 
   &::-webkit-scrollbar-track {
-    @apply bg-layer-transparent rounded-full;
+    @apply rounded-full bg-layer-transparent;
   }
 
   &::-webkit-scrollbar-thumb {
     background-clip: padding-box;
-    @apply bg-scrollbar-thumb rounded-full;
+    @apply rounded-full bg-scrollbar-thumb;
 
     &:hover {
       @apply bg-scrollbar-thumb-hover;

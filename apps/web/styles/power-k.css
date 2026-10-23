@@ -4,11 +4,11 @@
   }
 
   [cmdk-group-heading] {
-    @apply text-tertiary text-12 font-medium mb-2 px-[0.45rem];
+    @apply mb-2 px-[0.45rem] text-12 font-medium text-tertiary;
   }
 
   [cmdk-item] {
-    @apply flex items-center justify-between cursor-pointer bg-layer-transparent text-body-xs-regular p-2 rounded-md;
+    @apply flex cursor-pointer items-center justify-between rounded-md bg-layer-transparent p-2 text-body-xs-regular;
 
     &:focus,
     &[aria-selected="true"] {
@@ -17,7 +17,7 @@
 
     &[aria-disabled="true"],
     &[data-disabled="true"] {
-      @apply bg-layer-transparent opacity-50 cursor-not-allowed;
+      @apply cursor-not-allowed bg-layer-transparent opacity-50;
 
       &:focus {
         @apply bg-layer-1/70;

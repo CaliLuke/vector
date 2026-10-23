@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Toast as BaseToast } from "@base-ui-components/react/toast";
+import { Toast as BaseToast } from "@base-ui/react/toast";
 import { AlertTriangle, CheckIcon, InfoIcon, XIcon } from "lucide-react";
 import { CloseIcon } from "../icons/actions/close-icon";
 // spinner

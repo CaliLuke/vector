@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_recent_visits"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacerecentvisits"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceRecentVisitsRepository interface {

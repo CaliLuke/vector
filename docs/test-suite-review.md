@@ -1,0 +1,167 @@
+# Test suite review
+
+Reviewed on 2026-10-22 during the Loom dependency update and quality-gate setup.
+The review sampled Go services, repositories, HTTP contracts, frontend regression tests,
+Live, and codemods. It is not a proof that every test or product behavior is correct.
+
+## Findings to address
+
+| Area                   | Evidence                                                                                                                                                                                                                           | Recommended change                                                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Restricted page reads  | `internal/pagereads/repository_test.go`, `TestRestrictedGuestNonmatchingSearchPreservesDjangoNilDereference` and `TestDetailPreservesDjangoNilDereferenceOnlyForRestrictedGuestWithoutVisibleProject`, require `ErrDjangoPageNil`. | Define the intended missing/inaccessible-page response and test that it exposes no page data. A historical nil failure should not define the repository contract.          |
+| Cycle grouping         | `internal/cyclereads/repository_test.go`, `TestDynamicGroupingFieldsPreserveDjangoSourceFailure`, requires failures for `created_by`, `start_date`, and `target_date`.                                                             | Define supported grouping fields. Test correct groups for supported fields and a stable validation response for unsupported fields.                                        |
+| Intake validation      | `internal/intakeinboxreads/repository_test.go`, `TestMalformedStatusFiltersPreserveDjangoInternalError`, expects runtime errors for malformed filters.                                                                             | Specify client validation behavior for malformed filters and cursors, while preserving valid input formats.                                                                |
+| Label write failure    | `cmd/system/project_label_writes_http_test.go`, `TestProjectLabelWritesNaNRendererFailureReturnsHTMLAfterPersistence`, checks dispatch and a 500 response using a stub. It does not prove persisted state.                         | Add a database test for rejected non-finite values and unchanged storage. Review validation before mutation; do not treat a dispatch assertion as evidence of persistence. |
+| Source-text assertions | `design/user_identity_contract_test.go`, `design/workspace_project_reads_contract_test.go`, and `cmd/system/loom_error_status_contract_test.go` inspect source fragments or AST calls.                                             | Prefer generated schema inspection or requests through the transport. Keep source checks only when the source structure itself is the required contract.                   |
+| PDF recovery logging   | `apps/live/tests/services/pdf-export/effect-utils.test.ts` claimed to verify warning logging but observed recovery.                                                                                                                | Fixed: renamed the test to describe continuation after recovery. It makes no logging assertion.                                                                            |
+
+Go paths in the table are relative to `apps/go-api`.
+
+## Coverage and execution gaps
+
+The previous CI omitted Live and codemod tests. The default Go command omitted
+tests behind the `integration` build tag. Live's coverage configuration included
+`.ts` files but omitted `.tsx` PDF renderers. The gate setup addresses test
+discovery and coverage reporting; passing those gates does not resolve the
+product-contract questions above.
+
+The final workspace inventory also found the constants endpoint URL suite outside
+the full gate. It now runs in the same TypeScript gate; its source coverage remains
+explicitly unmeasured in the coverage-scope inventory.
+
+Many repository tests capture SQL text and return canned rows. These are useful
+for query construction but do not prove that SQL executes correctly or enforces
+tenant isolation. Prefer PostgreSQL tests with two tenants, membership changes,
+soft deletion, and persisted outcomes for these requirements.
+
+Codemod output snapshots exercise real transformations and protect useful edge
+cases. Some also depend on printer whitespace. Use semantic AST assertions where
+formatting and comment preservation are not the behavior under test.
+
+## Valid compatibility coverage
+
+Keep tests for supported routes, response schemas, accepted input formats,
+session signatures, authorization, and durable effects. The presence of “Django”
+in a test name does not make it obsolete: existing clients and stored sessions
+still rely on some of these contracts. Corrected behavior must have its own
+explicit assertion rather than inheriting expected failures from old fixtures.
+
+The frontend loading/race tests, Live persistence tests, PDF byte/content tests,
+and generated-client response-contract tests exercise meaningful behavior and
+should be retained.
+
+The Tiptap 3 migration adds real-editor tests for formatting preservation through
+a JSON round trip, suppressed update events during content replacement, and a
+read-only ProseMirror view. These complement the existing stub-based no-write
+tests; they do not establish full collaborative hydration correctness.
+
+## Test repair during verification
+
+`TestPostgreSQLReaderUsesDatabaseExpiryAndDoesNotMutate` refreshed a session using
+a fixed September 2026 timestamp, then validated it against the database's live
+clock. This failed after that date. It now reads PostgreSQL's clock before
+refreshing, retaining the persistence and expiry assertions.
+
+Local UI setup also exposed an untested initial-admin signup path. Successful
+account creation returns both the new user and `SetupDone: true`; the redirect
+service treated that flag as a concurrent signup and returned an error after
+persisting the account. It now distinguishes successful creation from another
+request completing setup. Regression tests check the successful session and
+redirect, and the concurrent-signup rejection without a session.
+
+The development launcher started shared-package builds alongside watchers that
+write the same output directories. It now completes those builds first. A test
+executes the launcher with fake commands and checks that watchers start only
+after a successful build, and never after a failed build.
+
+The React Hook Form update exposed another incorrect dependency: the cover-image
+picker registered its image-search field in the parent project/profile form,
+although search belongs to the picker. The input now uses its local state. A
+mounted-component regression test types a query, submits it through the actual
+controls, and verifies the request and retained text without a parent form or a
+cover-image mutation.
+
+Headless UI 2 requires a combobox trigger to be a single element that can receive
+its ref and handlers. Eight dropdowns passed a Fragment containing their button;
+the wrappers are now removed. The priority-dropdown regression test exercises
+opening, Escape, and focus restoration with the real Headless UI components.
+
+Tooltip tests now verify keyboard access for both historical `renderByDefault`
+settings and object/callback-ref cleanup. The target handlers always mount, while
+Blueprint still lazily renders the overlay. Sticky-layout tests verify card
+reload/layout, resize notifications, cleanup, and cancellation when an async
+layout-library import completes after unmount.
+
+Headless UI tests now create the DOM before importing browser-sensitive modules
+and flush animation-frame focus/registration work inside React's `act`. Closing
+assertions wait for the actual transition to finish rather than requiring
+immediate DOM removal. The duplicate-fetch test puts StrictMode at the root, as
+required for React 19's effect replay, and retains both overlapping requests and
+all rendered-child/store assertions. These repairs preserve the behavior under
+test instead of accepting framework warnings or weakening expected outcomes.
+
+Public metadata routes previously selected the admin session whenever an anchor
+or workspace slug contained `instances`. The middleware and session inspector
+now reserve admin cookies for the `/api/instances` namespace. Public-route
+middleware no longer accepts an admin-cookie configuration. Regressions verify
+that public requests inspect and refresh only the ordinary session, leave admin
+cookies untouched on successful and slashless routes, and do not authenticate
+using an admin cookie alone. Oversized public requests retain the ordinary cookie
+and its expiry policy. Instance routes still use the admin cookie and expiry.
+The new assertions failed against the old substring rule before the fix.
+
+Read-only fallback hydration now runs the production HTML, Yjs, and document-format
+converters. The regression asserts explicit paragraph text and a bold mark after
+applying the binary update, and verifies that recovery makes no persistence call.
+The existing locked, archived, and pending-fetch no-write tests remain in place.
+
+The gate review also found two discovery exclusions: editor Vitest did not match
+`.test.tsx` files, and Oxlint ignored owned Storybook configuration. Editor test
+discovery now includes both TS and TSX files, and the Storybook configuration is
+included in the shared lint gate.
+
+The process-log publisher integration test now provisions its own disposable
+RabbitMQ broker. Its delivery, persistence, unroutable-message, reconnect, and
+cleanup assertions run in the tagged suite without a separate broker URL. Its
+skip allowance was removed. Pool tests also verify that soft-delete requests
+propagate worker failures, release workers for reuse, and reject requests after
+closure; invalid IDs must produce a UUID validation error, not a connection error.
+
+The Redis upgrade now has a disposable-Valkey integration test that executes the
+application's key operations and sends an admin command between two collaboration
+instances. It exposed JSON admin messages being passed to Hocuspocus's binary
+message decoder on the shared subscriber. Admin messages now use their own
+subscriber, with explicit listener and connection cleanup; the regression fails
+on unhandled decoder errors as well as failed delivery.
+
+The Effect 4 migration is covered through the actual PDF controller and service
+layer: unauthenticated and invalid requests return 401/400, and successful output
+preserves page settings, PDF bytes, and safe Unicode download filenames. These
+checks complement the timeout/retry tests and schema-boundary cases.
+
+The local stack restart exposed a gap between bundler-backed tests and the built
+Node application: Live imported the editor's browser entry point, which pulled
+UI drag-and-drop packages into native Node. Runtime imports now use the editor's
+server-safe entry point. The Redis integration suite also starts the built Live
+server in native Node, checks its health response, and verifies graceful shutdown.
+
+## Transition and transport regressions from browser review
+
+The sidebar regression now waits for both its rows and loading skeleton to
+unmount after a disclosure transition. Comparing a mounted React DOM node with
+null in a failing Node assertion caused runaway diagnostic formatting; DOM
+identity/absence checks use boolean assertions, and warning capture is bounded.
+An external process supervisor and serialized workers contain failures that
+block the test runner's own event loop. A dropdown test also now waits for its
+scheduled focus restoration before tearing down jsdom.
+
+Priority selection tests check that real options have no aria-hidden ancestor
+and that selecting an option emits the correct value. The analytics test mounts
+the actual DataTable, types a filter, clears it, and checks rendered rows and
+React warnings. Collaboration tests use two real WebSocket clients through the
+application router, assert bidirectional document edits, reject unauthorized
+clients before document loading, and verify connection cleanup. These cover
+observable behavior rather than merely successful imports or route registration.
+The same transport behavior runs with Buffer, ArrayBuffer, and buffer-fragment
+messages. This closes the uncovered fragmented-message branch without lowering
+the coverage floor.

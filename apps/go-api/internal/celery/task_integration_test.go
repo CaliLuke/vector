@@ -5,41 +5,18 @@ package celery
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func TestPublisherTaskEmitsPersistentCeleryProtocolV2Message(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	container, err := testcontainers.Run(ctx, "rabbitmq:3.13.6-management-alpine",
-		testcontainers.WithExposedPorts("5672/tcp"),
-		testcontainers.WithWaitStrategy(wait.ForLog("Server startup complete").WithStartupTimeout(time.Minute)),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := testcontainers.TerminateContainer(container); err != nil {
-			t.Errorf("terminate RabbitMQ: %v", err)
-		}
-	})
-	host, err := container.Host(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	port, err := container.MappedPort(ctx, "5672/tcp")
-	if err != nil {
-		t.Fatal(err)
-	}
-	brokerURL := fmt.Sprintf("amqp://guest:guest@%s:%s/", host, port.Port())
+	brokerURL := startDisposableRabbitMQ(t, ctx)
 	queue := "go-plane-task-test-" + uuid.NewString()
 	consumer, err := amqp.Dial(brokerURL)
 	if err != nil {

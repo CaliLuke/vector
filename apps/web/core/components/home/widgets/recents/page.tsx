@@ -17,7 +17,7 @@ import { useMember } from "@/hooks/store/use-member";
 
 type BlockProps = {
   activity: TActivityEntityData;
-  parentRef: React.RefObject<HTMLDivElement>;
+  parentRef: React.RefObject<HTMLDivElement | null>;
   workspaceSlug: string;
 };
 

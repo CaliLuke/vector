@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
-import test from "node:test";
+import { after, afterEach, test } from "node:test";
 import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createModuleStub, resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -17,16 +18,22 @@ const packageStubs = {
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');")}`,
-      };
+      return createModuleStub(
+        "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');"
+      );
     }
-    if (Object.hasOwn(packageStubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
+    return resolvePackageStub(specifier, packageStubs, context, nextResolve);
   },
+});
+
+const environment = await createReactDomTestEnvironment();
+
+afterEach(async () => {
+  await environment.render(null);
+});
+
+after(async () => {
+  await environment.unmount();
 });
 
 let dropdowns;
@@ -48,12 +55,62 @@ function keyDown(element, key) {
 }
 
 async function activateWithKeyboard(element, key) {
-  let useNativeClick;
-  await React.act(() => {
-    useNativeClick = keyDown(element, key);
+  await React.act(async () => {
+    const useNativeClick = keyDown(element, key);
+    // jsdom does not produce the native click for an uncancelled Enter/Space key.
+    if (useNativeClick) element.click();
+    await waitForAnimationFramesInCurrentAct();
   });
-  // jsdom does not produce the native click for an uncancelled Enter/Space key.
-  if (useNativeClick) await React.act(() => element.click());
+}
+
+async function activateOption(option) {
+  await React.act(async () => {
+    option.dispatchEvent(new MouseEvent("mousedown", { button: 0, bubbles: true, cancelable: true }));
+    option.click();
+  });
+}
+
+async function waitForCondition(condition, message, timeoutMs = 2_000) {
+  const deadline = performance.now() + timeoutMs;
+  await React.act(async () => {
+    await new Promise((resolve) => {
+      const check = () => (condition() || performance.now() >= deadline ? resolve() : setTimeout(check, 10));
+      check();
+    });
+  });
+  assert.ok(condition(), message);
+}
+
+function waitForAnimationFramesInCurrentAct(frameCount = 2) {
+  return new Promise((resolve) => {
+    let frames = 0;
+    const flushNextFrame = () => {
+      frames += 1;
+      if (frames === frameCount) resolve();
+      else requestAnimationFrame(flushNextFrame);
+    };
+    requestAnimationFrame(flushNextFrame);
+  });
+}
+
+async function actWithAnimationFrames(action) {
+  await React.act(async () => {
+    action();
+    await waitForAnimationFramesInCurrentAct();
+  });
+}
+
+function assertNoConsoleErrors(t) {
+  const errors = [];
+  const originalConsoleError = console.error;
+  const originalConsoleWarn = console.warn;
+  console.error = (...args) => errors.push(args);
+  console.warn = (...args) => errors.push(args);
+  t.after(() => {
+    console.error = originalConsoleError;
+    console.warn = originalConsoleWarn;
+    assert.deepEqual(errors, [], "the interaction should not log React or browser errors");
+  });
 }
 
 async function waitForFocus(element, message = "focus should return to the trigger") {
@@ -70,7 +127,7 @@ async function waitForFocus(element, message = "focus should return to the trigg
   assert.ok(document.activeElement === element, message);
 }
 
-async function renderDropdown(environment, kind, callbacks = {}) {
+async function renderDropdown(kind, callbacks = {}) {
   const { CustomMenu, CustomSelect, CustomSearchSelect } = await loadDropdowns();
   const props = {
     customButton: React.createElement("button", null, "Trigger"),
@@ -99,48 +156,57 @@ async function renderDropdown(environment, kind, callbacks = {}) {
 
 for (const kind of ["menu", "select", "search"]) {
   test(`${kind} trigger toggles on repeated non-pointer activation`, async (t) => {
-    const environment = await createReactDomTestEnvironment();
-    t.after(() => environment.unmount());
-    const trigger = await renderDropdown(environment, kind);
+    assertNoConsoleErrors(t);
+    const trigger = await renderDropdown(kind);
 
-    await React.act(() => trigger.click());
+    if (kind === "menu") await actWithAnimationFrames(() => trigger.click());
+    else await React.act(() => trigger.click());
     assert.equal(trigger.getAttribute("aria-expanded"), "true");
     assert.ok(document.querySelector("[role=menu], [role=listbox]"));
 
-    await React.act(() => trigger.click());
+    if (kind === "menu") await actWithAnimationFrames(() => trigger.click());
+    else await React.act(() => trigger.click());
     assert.equal(trigger.getAttribute("aria-expanded"), "false");
     assert.ok(!document.querySelector("[role=menu], [role=listbox]"), "a second activation should close the popup");
 
-    await React.act(() => trigger.click());
+    if (kind === "menu") await actWithAnimationFrames(() => trigger.click());
+    else await React.act(() => trigger.click());
     assert.equal(trigger.getAttribute("aria-expanded"), "true");
     assert.ok(document.querySelector("[role=menu], [role=listbox]"));
   });
 
   for (const key of ["Enter", " ", "ArrowDown", "ArrowUp"]) {
     test(`${kind} opens once with ${JSON.stringify(key)} and closes with Escape`, async (t) => {
-      const environment = await createReactDomTestEnvironment();
-      t.after(() => environment.unmount());
-      const trigger = await renderDropdown(environment, kind);
+      assertNoConsoleErrors(t);
+      const trigger = await renderDropdown(kind);
 
-      await React.act(() => trigger.focus());
+      if (kind === "menu") await actWithAnimationFrames(() => trigger.focus());
+      else await React.act(() => trigger.focus());
       await activateWithKeyboard(trigger, key);
       assert.equal(trigger.getAttribute("aria-expanded"), "true");
+      await waitForCondition(
+        () => document.querySelector("[role=menu], [role=listbox]"),
+        "keyboard activation should render the popup"
+      );
       const options = document.querySelector("[role=menu], [role=listbox]");
       assert.ok(options);
 
       const escapeTarget = kind === "menu" ? options : kind === "search" ? options.querySelector("input") : trigger;
       await waitForFocus(escapeTarget, "keyboard opening should focus the active menu or search control");
-      await React.act(() => keyDown(escapeTarget, "Escape"));
+      if (kind === "menu") await actWithAnimationFrames(() => keyDown(escapeTarget, "Escape"));
+      else await React.act(() => keyDown(escapeTarget, "Escape"));
       assert.equal(trigger.getAttribute("aria-expanded"), "false");
-      assert.ok(!document.querySelector("[role=menu], [role=listbox]"), "Escape should close the popup");
+      await waitForCondition(
+        () => !document.querySelector("[role=menu], [role=listbox]"),
+        "Escape should close the popup"
+      );
       await waitForFocus(trigger);
     });
   }
 }
 
 test("CustomMenu composes a button trigger and opens/closes with keyboard while restoring focus", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  assertNoConsoleErrors(t);
   const { CustomMenu } = await loadDropdowns();
   const openCallbacks = [];
   const closeCallbacks = [];
@@ -165,39 +231,38 @@ test("CustomMenu composes a button trigger and opens/closes with keyboard while 
   assert.equal(childRef.current, triggerElement);
   assert.equal(triggerElement.getAttribute("aria-label"), "More actions");
 
-  await React.act(() => keyDown(triggerElement, "Enter"));
+  await activateWithKeyboard(triggerElement, "Enter");
   assert.deepEqual(openCallbacks, ["opened"]);
   const menuItem = [...document.querySelectorAll("button")].find((button) => button.textContent.includes("Open item"));
   assert.ok(menuItem, "Enter opens a visible menu item");
 
-  await React.act(() => menuItem.focus());
-  await React.act(() => keyDown(menuItem, "Escape"));
+  await actWithAnimationFrames(() => menuItem.focus());
+  await actWithAnimationFrames(() => keyDown(menuItem, "Escape"));
   assert.deepEqual(closeCallbacks, ["closed"]);
   assert.equal(document.querySelectorAll("button").length, 1);
 
-  await React.act(() => keyDown(triggerElement, " "));
+  await activateWithKeyboard(triggerElement, " ");
   assert.equal(openCallbacks.length, 2);
   assert.ok([...document.querySelectorAll("button")].some((button) => button.textContent.includes("Open item")));
   const spaceMenuItem = [...document.querySelectorAll("button")].find((button) =>
     button.textContent.includes("Open item")
   );
-  await React.act(() => spaceMenuItem.focus());
-  await React.act(() => keyDown(spaceMenuItem, "Escape"));
+  await actWithAnimationFrames(() => spaceMenuItem.focus());
+  await actWithAnimationFrames(() => keyDown(spaceMenuItem, "Escape"));
 
-  await React.act(() => keyDown(triggerElement, "ArrowDown"));
+  await activateWithKeyboard(triggerElement, "ArrowDown");
   assert.ok([...document.querySelectorAll("button")].some((button) => button.textContent.includes("Open item")));
   const arrowDownMenuItem = [...document.querySelectorAll("button")].find((button) =>
     button.textContent.includes("Open item")
   );
-  await React.act(() => arrowDownMenuItem.focus());
-  await React.act(() => keyDown(arrowDownMenuItem, "Escape"));
+  await actWithAnimationFrames(() => arrowDownMenuItem.focus());
+  await actWithAnimationFrames(() => keyDown(arrowDownMenuItem, "Escape"));
   assert.equal(openCallbacks.length, 3);
   assert.equal(closeCallbacks.length, 3);
 });
 
 test("CustomMenu keeps a disabled child disabled and retains the text-content compatibility trigger", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  assertNoConsoleErrors(t);
   const { CustomMenu } = await loadDropdowns();
   await environment.render(
     React.createElement(
@@ -241,8 +306,7 @@ test("CustomMenu keeps a disabled child disabled and retains the text-content co
 });
 
 test("CustomSelect and CustomSearchSelect keep one trigger and call onOpen after opening", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  assertNoConsoleErrors(t);
   const { CustomSelect, CustomSearchSelect } = await loadDropdowns();
   const opened = [];
   const openedAfterRerender = [];
@@ -286,39 +350,99 @@ test("CustomSelect and CustomSearchSelect keep one trigger and call onOpen after
   const selectOption = [...document.querySelectorAll("[role=option]")].find((option) =>
     option.textContent.includes("Select option")
   );
-  await React.act(async () => {
-    selectOption.click();
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  });
+  await activateOption(selectOption);
+  await waitForCondition(() => selectChanges.length > 0, "selecting an option should notify onChange");
   assert.deepEqual(selectChanges, ["one"]);
   assert.equal(document.body.textContent.includes("Select option"), false);
   const search = environment.container.querySelectorAll("button")[1];
   await React.act(async () => search.click());
   assert.ok(document.body.textContent.includes("Search option"));
+  await waitForCondition(() => opened.length > 0, "opening the search dropdown should call onOpen");
   assert.deepEqual(opened, ["open"]);
   await environment.render(renderDropdowns(() => openedAfterRerender.push("open")));
   assert.deepEqual(opened, ["open"]);
   assert.deepEqual(openedAfterRerender, []);
 
-  const searchOption = [...document.querySelectorAll("[role=option]")].find((option) =>
-    option.textContent.includes("Search option")
-  );
-  await React.act(async () => keyDown(searchOption, "Escape"));
+  const searchInput = document.querySelector("input[placeholder='Search']");
+  assert.ok(searchInput, "the searchable dropdown should focus its input");
+  await React.act(async () => {
+    searchInput.focus();
+    keyDown(searchInput, "Escape");
+  });
+  await waitForCondition(() => closed.length > 0, "closing the search dropdown should call onClose");
   assert.deepEqual(opened, ["open"]);
   assert.deepEqual(closed, ["closed"]);
 
-  await React.act(async () => environment.container.querySelectorAll("button")[1].click());
+  const searchTriggerAfterEscape = environment.container.querySelectorAll("button")[1];
+  await React.act(async () => searchTriggerAfterEscape.click());
+  await waitForCondition(
+    () => searchTriggerAfterEscape.getAttribute("aria-expanded") === "true",
+    "the search trigger should reopen the Headless UI Combobox"
+  );
+  await waitForCondition(
+    () => document.querySelectorAll("[role=option]").length > 0,
+    "reopening the search dropdown should render its option"
+  );
   const reopenedSearchOption = [...document.querySelectorAll("[role=option]")].find((option) =>
     option.textContent.includes("Search option")
   );
-  await React.act(async () => reopenedSearchOption.click());
+  await activateOption(reopenedSearchOption);
+  await waitForCondition(() => searchChanges.length > 0, "selecting a search option should notify onChange");
   assert.deepEqual(searchChanges, ["two"]);
   assert.deepEqual(closed, ["closed", "closed"]);
 });
 
+void test("CustomSearchSelect defaultOpen synchronizes Headless UI state and closes with callbacks", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomSearchSelect } = await loadDropdowns();
+  const defaultOpenEvents = [];
+  await environment.render(
+    React.createElement(CustomSearchSelect, {
+      customButton: React.createElement("button", null, "Search trigger"),
+      customButtonAsChild: true,
+      defaultOpen: true,
+      value: null,
+      options: [{ value: "one", content: "Option one", query: "option one" }],
+      onChange() {},
+      onOpen: () => defaultOpenEvents.push("open"),
+      onClose: () => defaultOpenEvents.push("close"),
+    })
+  );
+
+  const trigger = environment.container.querySelector("button");
+  await waitForCondition(
+    () => trigger.getAttribute("aria-expanded") === "true",
+    "defaultOpen should synchronize Headless UI's expanded state"
+  );
+  assert.deepEqual(defaultOpenEvents, ["open"]);
+
+  await React.act(async () => trigger.click());
+  await waitForCondition(
+    () => trigger.getAttribute("aria-expanded") === "false",
+    "the first trigger click should close the default-open dropdown"
+  );
+  assert.deepEqual(defaultOpenEvents, ["open", "close"]);
+
+  await React.act(async () => trigger.click());
+  await waitForCondition(
+    () => trigger.getAttribute("aria-expanded") === "true",
+    "the trigger should reopen the dropdown"
+  );
+  const defaultOpenSearchInput = document.querySelector("input[placeholder='Search']");
+  assert.ok(defaultOpenSearchInput, "the reopened dropdown should expose its search input");
+  await React.act(async () => {
+    defaultOpenSearchInput.focus();
+    keyDown(defaultOpenSearchInput, "Escape");
+  });
+  await waitForCondition(
+    () => trigger.getAttribute("aria-expanded") === "false",
+    "Escape should close the dropdown's Headless UI state"
+  );
+  assert.deepEqual(defaultOpenEvents, ["open", "close", "open", "close"]);
+});
+
 test("CustomSelect and CustomSearchSelect honor disabled state from either the wrapper or child trigger", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  assertNoConsoleErrors(t);
   const { CustomSelect, CustomSearchSelect } = await loadDropdowns();
   await environment.render(
     React.createElement(
@@ -378,4 +502,31 @@ test("CustomSelect and CustomSearchSelect honor disabled state from either the w
   await React.act(() => triggers[2].click());
   await React.act(() => triggers[3].click());
   assert.equal(document.querySelector("[role=option]"), null);
+});
+
+void test("CustomSelect preserves an explicit null-valued option", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomSelect } = await loadDropdowns();
+  const changes = [];
+  await environment.render(
+    React.createElement(
+      CustomSelect,
+      {
+        customButton: React.createElement("button", null, "Select trigger"),
+        customButtonAsChild: true,
+        value: "selected",
+        onChange: (value) => changes.push(value),
+      },
+      React.createElement(CustomSelect.Option, { value: null }, "No value")
+    )
+  );
+
+  await React.act(async () => environment.container.querySelector("button").click());
+  await waitForCondition(() => document.querySelector("[role=option]"), "the null-valued option should render");
+  const option = document.querySelector("[role=option]");
+  await activateOption(option);
+
+  assert.deepEqual(changes, [null]);
+  await waitForFocus(environment.container.querySelector("button"));
+  await React.act(waitForAnimationFramesInCurrentAct);
 });

@@ -74,7 +74,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 	writerDone := make(chan struct{})
 	go exportLoop(readerCtx, queue, endpoint, stderr, writerDone)
 	start := func(docker bool) (*child, error) {
-		args := []string{"exec", "turbo", "run", "dev", "--concurrency=18"}
+		args := []string{"run", "dev:frontend"}
 		name := "pnpm"
 		if docker {
 			name = "docker"

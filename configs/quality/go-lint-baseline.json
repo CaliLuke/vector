@@ -1,0 +1,4505 @@
+{
+  "version": 1,
+  "issues": [
+    {
+      "fingerprint": ["bodyclose", "cmd/system/http_test.go", "response body must be closed"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["bodyclose", "design/public_feedback_schema_fixture_test.go", "response body must be closed"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["bodyclose", "internal/backgroundtasks/webhook_tasks_test.go", "response body must be closed"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["bodyclose", "modulelifecycle/design/transport_test.go", "response body must be closed"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["bodyclose", "project_lifecycle_contract_test.go", "response body must be closed"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "account_authentication_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": ["errcheck", "account_authentication.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "api_cycle_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "api_module_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "api_project_membership_lifecycle_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "api_project_membership_lifecycle_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "api_project_membership_lifecycle.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "api_state_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "api_user_identity_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "api_v1_stickies_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["errcheck", "auth_redirects.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/background-worker/main.go",
+        "Error return value of `fmt.Fprintln` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/bootstrap/install_integration_test.go",
+        "Error return value of `conn.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/durable-metadata/main.go", "Error return value of `fmt.Fprintf` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/durable-metadata/main.go",
+        "Error return value of `fmt.Fprintln` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `file.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `fmt.Fprintf` is not checked"],
+      "count": 5
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/parity-diff/main.go", "Error return value of `fmt.Fprintln` is not checked"],
+      "count": 6
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/support-migrate/main.go", "Error return value of `fmt.Fprintf` is not checked"],
+      "count": 5
+    },
+    {
+      "fingerprint": ["errcheck", "cmd/support-migrate/main.go", "Error return value of `fmt.Fprintln` is not checked"],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/support-migrate/main.go",
+        "Error return value of `migration.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/system/account_authentication_adapters_test.go",
+        "Error return value of `client.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/system/cycle_lifecycle_transport_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/system/main.go",
+        "Error return value of `publicProjectMetadataReadsCache.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "cmd/system/query_http_contract_test.go",
+        "Error return value of `response.Write` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "custom_view_creation.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 11
+    },
+    {
+      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `cycle.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "cycle_reads_test.go", "Error return value of `result.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "external_integrations_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "external_integrations.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "instance_management.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "intake_inbox_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/accountauthentication/admin.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/accountauthentication/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/accountauthentication/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/accountauthentication/repository.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/assets/attachment_scope_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/assets/attachment_scope_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/assets/attachment.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/assets/legacy_upload.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/assets/public.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/assets/service.go", "Error return value of `body.Close` is not checked"],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/assets/storage_rustfs_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/authentication/apikey/postgres_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/authentication/apikey/postgres_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/authentication/authworkflow/post_login_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/authentication/djangosession/postgres_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/deletion_store.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/description_asset_copy.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/event_tracking_integration_test.go",
+        "Error return value of `request.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/instance_metrics_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/instance_metrics.go",
+        "Error return value of `registration.Unregister` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/instance_metrics.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_activities_integration_test.go",
+        "Error return value of `emailStore.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_activities_integration_test.go",
+        "Error return value of `store.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_activities.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_automation_integration_test.go",
+        "Error return value of `activityStore.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_automation.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_description_sync.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_export_test.go",
+        "Error return value of `book.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_export.go",
+        "Error return value of `workbook.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_notifications.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_version_sync.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/issue_version_task.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/link_preview_test.go",
+        "Error return value of `io.WriteString` is not checked"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/link_preview.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/page_transactions.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/recent_visits.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/templated_email_tasks_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/version_history.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/webhook_tasks_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/webhook_tasks.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/workspace_seed_integration_test.go",
+        "Error return value of `pool.Exec` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/workspace_seed_integration_test.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/backgroundtasks/workspace_seed.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/bootstrap/instance.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/bootstrap/schema_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/bootstrap/schema.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/bootstrap/schema.go",
+        "Error return value of `migrator.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/bootstrap/support.go",
+        "Error return value of `migration.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/customviewcreation/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/customviewcreation/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/deployboardreads/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/deployboardreads/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/devtools/checks.go",
+        "Error return value of `apiResp.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintf` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintln` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/devtools/checks.go",
+        "Error return value of `resp.Body.Close` is not checked"
+      ],
+      "count": 11
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/devtools/local_logs.go",
+        "Error return value of `resp.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/devtools/runner_test.go",
+        "Error return value of `r.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `fmt.Fprintf` is not checked"],
+      "count": 4
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `fmt.Fprintln` is not checked"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `pipe.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/devtools/runner.go", "Error return value of `sink.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/estimatereads/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "internal/htmlcompat/escape.go", "Error return value is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "internal/htmlcompat/parse_test.go", "Error return value is not checked"],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/htmlcompat/parse_test.go",
+        "Error return value of `f.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/htmlcompat/parse_test.go",
+        "Error return value of `fmt.Fprintf` is not checked"
+      ],
+      "count": 9
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/htmlcompat/parse_test.go",
+        "Error return value of `io.WriteString` is not checked"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": ["errcheck", "internal/htmlcompat/token.go", "Error return value is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/instancemanagement/repository_timestamp_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/instancemanagement/repository_workspace_deletion_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/instancemanagement/repository_workspace_update_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/instancemanagement/repository_workspaces_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/instancemanagement/repository.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/parity/normalization.go",
+        "Error return value of `file.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/parity/response.go", "Error return value of `file.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/parity/testcontainers_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectconfiguration/repository.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectlabelreads/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectlabelreads/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectmembershipreads/asset_url_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectmembershipreads/asset_url_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectpublication/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectpublication/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectstatereads/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectstatereads/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectstatereads/writes_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/projectstatereads/writes.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/proxy/assets_lifecycle_proxy_policy_integration_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/proxy/caddy_integration_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/proxy/ticket_collaboration_proxy_policy_integration_test.go",
+        "Error return value of `response.Body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/publicprojectmetadatareads/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/publicprojectmetadatareads/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/standardviews/create_defaults_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/standardviews/create_defaults_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/testsupport/postgres/pair.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/useridentity/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/useridentity/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/userproperties/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitemhistory/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitemhistory/repository_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/collaboration_model.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/issue_writes_integration_test.go",
+        "Error return value of `conn.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/issue_writes_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/lifecycle.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/model_integration_test.go",
+        "Error return value of `conn.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/model_integration_test.go",
+        "Error return value of `pair.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "internal/workitems/model.go", "Error return value of `tx.Rollback` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/planning.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workitems/relationships.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workspaceanalytics/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workspaceexports/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 10
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workspacehomepreferences/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workspaceprojectreads/lifecycle.go",
+        "Error return value of `tx.Rollback` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "internal/workspaceuserinsights/repository_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "invitations_membership.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "notification_actions.go", "Error return value of `body.Close` is not checked"],
+      "count": 4
+    },
+    {
+      "fingerprint": ["errcheck", "oauth_redirects_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `resp.Body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "oauth_redirects.go", "Error return value of `response.Body.Close` is not checked"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["errcheck", "page_lifecycle_methods.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "page_reads_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "page_reads_test.go", "Error return value of `response.body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "project_configuration.go", "Error return value of `body.Close` is not checked"],
+      "count": 8
+    },
+    {
+      "fingerprint": ["errcheck", "project_intake_writes.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "project_label_writes.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "project_label_writes/design/transport_test.go",
+        "Error return value of `s.record` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "project_lifecycle_contract_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "project_lifecycle_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "project_member_preferences.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "project_publication.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "public_feedback_error_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "ticket_collaboration.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "ticket_collaboration/design/client_openapi_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "ticket_collaboration/design/transport_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "work_item_core.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "work_item_core/design/identifier_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "work_item_core/design/transport_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["errcheck", "work_item_history_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_analytics_integration_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_analytics_integration_test.go",
+        "Error return value of `connection.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "workspace_analytics_test.go", "Error return value of `body.Close` is not checked"],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_analytics_test.go",
+        "Error return value of `response.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_exports_test.go",
+        "Error return value of `responseBody.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "workspace_exports.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "workspace_lifecycle.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_project_reads_test.go",
+        "Error return value of `response.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errcheck",
+        "workspace_user_insights_test.go",
+        "Error return value of `body.Close` is not checked"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["errcheck", "workspace_webhooks.go", "Error return value of `body.Close` is not checked"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "account_authentication.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "activity_reads.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "cmd/durable-metadata/main.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "cmd/system/http.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/assets/durable_metadata.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/assets/source_lookup_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/assets/workspace_scope_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/authentication/djangosession/validator_test.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/admission.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/api_activity_logs.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/cleanup.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/exporter_history.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/issue_export.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/backgroundtasks/issue_version_task.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/celery/publisher_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/cyclereads/lifecycle_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/djangoinput/input.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/htmlcompat/parse_test.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/htmlcompat/parse.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/htmlcompat/render.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/htmlcompat/token.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/instancemail/sender_test.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/projectconfiguration/repository_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/publicprojectmetadatareads/repository.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 9
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/pythoncompat/integer.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/pythoncompat/integer.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/stickies/content/binary_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/useraccountwrites/cache.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/workspacememberme/repository.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/workspacesidebarpreferences/repository.go",
+        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/workspaceuserinsights/repository_integration_test.go",
+        "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "internal/workspacewebhooks/repository.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "invitations_membership_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "last_visited_workspace_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "public_feedback_error_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "work_item_core_error_logging_test.go",
+        "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "workspace_favorites_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "workspace_metadata_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "errorlint",
+        "workspace_recent_visits_test.go",
+        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "account_authentication.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "activity_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "api_cycle_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "api_label_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "api_module_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "api_project_membership_lifecycle_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "api_state_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["govet", "api_v1_stickies.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 10
+    },
+    {
+      "fingerprint": ["govet", "cmd/bootstrap/main.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/durable-metadata/main.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/account_authentication_adapters_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/account_authentication_adapters.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/assets_lifecycle_transport_test.go",
+        "shadow: declaration of \"method\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/http_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "cmd/system/http.go", "nilness: tautological condition: nil == nil"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "cmd/system/http.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/http.go",
+        "shadow: declaration of \"options\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/main_logging_test.go",
+        "shadow: declaration of \"ctx\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "cmd/system/main.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 14
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "cmd/system/project_intake_protocol_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "custom_view_creation.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["govet", "cycle_lifecycle.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 8
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "design/estimate_reads_contract_test.go",
+        "shadow: declaration of \"exists\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "instance_management.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "intake_inbox_reads_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/accountauthentication/admin.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/accountauthentication/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 9
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/activityreads/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/activityreads/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/attachment.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/bindingsgen/main.go",
+        "shadow: declaration of \"importedPackage\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/durable_metadata_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/durable_metadata_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/durable_metadata.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/legacy_upload.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/postgres.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 11
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/public_authorization_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 16
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/service.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/assets/storage_rustfs_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/apikey/throttle_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/authworkflow/post_login_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/djangosession/postgres_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 21
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/djangosession/validator_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/djangosession/validator.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/djangosession/validator.go",
+        "shadow: declaration of \"ok\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authentication/password/password.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authredirects/redis.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/authredirects/service.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/analytics_export_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/analytics_export.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/api_activity_logs_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/cleanup_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 10
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/deletion_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 8
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/deletion_store.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/description_asset_copy_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/description_asset_copy.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/email_templates.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/event_tracking_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/event_tracking.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/exporter_history_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/file_assets_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/instance_metrics_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_activities_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 18
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_automation_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_description_sync.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_export_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_export.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_notifications.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_version_sync.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/issue_version_task.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/link_preview_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/pinned_http.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/recent_visits_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/recent_visits.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/runtime.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/templated_email_tasks_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/templated_email_tasks.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/version_history_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 15
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/version_history.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/webhook_admission.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/webhook_tasks_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/webhook_tasks.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/backgroundtasks/workspace_seed_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/install.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/instance_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/instance.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/schema_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/schema.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 8
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/bootstrap/support.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/celery/publisher_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 9
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/celery/publisher.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/celery/soft_delete_message_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/celery/task_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/cyclereads/lifecycle.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 11
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/cyclereads/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/database/uuid_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/database/uuid_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/deployboardreads/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/devtools/checks.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/devtools/local_stack_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/htmlcompat/parse_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemail/sender_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemanagement/repository_test.go",
+        "shadow: declaration of \"validation\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemanagement/repository_timestamp_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemanagement/repository_workspace_update_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemanagement/repository_workspaces_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/instancemanagement/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/intakeinboxreads/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/intakeinboxreads/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/issuequery/query.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/modulereads/lifecycle_links.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/modulereads/lifecycle_links.go",
+        "shadow: declaration of \"text\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/modulereads/lifecycle_modules.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 20
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/notifications/actions_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/notifications/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/notifications/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/notifications/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/pagereads/lifecycle.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/parity/compare_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/parity/runner.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/parity/snapshot.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/parity/testcontainers_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectconfiguration/operations.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 8
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectconfiguration/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectlabelreads/api_v1.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectlabelreads/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectlabelreads/writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectmemberpreferences/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectmembershipreads/invitations_commands.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectmembershipreads/lifecycle.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 6
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectpublication/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectpublication/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectstatereads/api_v1.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectstatereads/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectstatereads/writes_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/projectstatereads/writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/proxy/caddy_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/proxy/deployment_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/publicprojectmetadatareads/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 14
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/publicprojectmetadatareads/throttle_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/routing/inventory_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/standardviews/create_defaults_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/standardviews/mutation_validation_upgrade_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/stickies/access_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/stickies/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/stickies/repository_parity_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/stickies/sort_repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/testsupport/postgres/pair.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/useraccountwrites/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/useridentity/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/usernotificationpreferences/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/userprofileflags/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/userproperties/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitemhistory/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitemhistory/repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/collaboration_writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/collaboration.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/draft.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/intake.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 11
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/issue_projection.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/issue_writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/lifecycle.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/model_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/planning.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/public_feedback_intake.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/public_feedback_list.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workitems/public_feedback.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspaceanalytics/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspacefavorites/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspacehomepreferences/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspacemetadata/repository_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspaceprojectreads/lifecycle.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspacequicklinks/repository_test.go",
+        "shadow: declaration of \"e\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "internal/workspaceuserinsights/repository_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "invitations_membership.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 7
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "last_visited_workspace_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "module_lifecycle.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 4
+    },
+    {
+      "fingerprint": ["govet", "module_reads_test.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 4
+    },
+    {
+      "fingerprint": ["govet", "module_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "notification_reads_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "oauth_redirect_repository.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": ["govet", "oauth_redirects.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "page_lifecycle_methods.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "project_configuration.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "project_intake_writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["govet", "project_lifecycle.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "project_publication.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "project_state_reads_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "project_state_writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "timezones_test.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "user_account_writes.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 8
+    },
+    {
+      "fingerprint": ["govet", "user_identity.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "user_settings_test.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "work_item_core/design/identifier_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["govet", "work_item_history.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "workspace_analytics_integration_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "workspace_favorites_test.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["govet", "workspace_personal.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "govet",
+        "workspace_user_insights.go",
+        "shadow: declaration of \"err\" shadows declaration at line #"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": ["govet", "workspace_webhooks.go", "shadow: declaration of \"err\" shadows declaration at line #"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "cmd/system/http.go", "ineffectual assignment to bestIndent"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "cmd/system/http.go", "ineffectual assignment to options"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["ineffassign", "internal/cyclereads/lifecycle.go", "ineffectual assignment to currentInstance"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ineffassign",
+        "internal/usernotificationpreferences/repository.go",
+        "ineffectual assignment to converted"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "internal/workitems/collaboration_writes.go", "ineffectual assignment to input"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "internal/workitems/list.go", "ineffectual assignment to order"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "internal/workspaceexports/repository.go", "ineffectual assignment to order"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "oauth_redirects.go", "ineffectual assignment to endpoint"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "oauth_redirects.go", "ineffectual assignment to scopes"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "ticket_collaboration.go", "ineffectual assignment to p"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["ineffassign", "work_item_core.go", "ineffectual assignment to p"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/account_authentication_adapters.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/assets_lifecycle_transport_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/cycle_lifecycle_middleware_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/instance_management_http_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/project_configuration_middleware_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/remaining_mount_helpers_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "nilerr",
+        "cmd/system/workspace_lifecycle_middleware_test.go",
+        "error is not nil (line #) but it returns nil"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["nilerr", "instance_admin_session.go", "error is not nil (line #) but it returns nil"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["nilerr", "internal/assets/service.go", "error is not nil (line #) but it returns nil"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["nilerr", "internal/instancemail/sender_test.go", "error is not nil (line #) but it returns nil"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["nilerr", "internal/workitems/input.go", "error is not nil (line #) but it returns nil"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "activity_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "analytic_views.go", "QF1003: could use tagged switch on candidate"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/account_authentication_adapters.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/assets_lifecycle_transport_test.go",
+        "QF1003: could use tagged switch on method"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/http_test.go",
+        "QF1011: could omit type http.Handler from declaration; it will be inferred from the right-hand side"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cmd/system/http.go", "QF1001: could apply De Morgan's law"],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/http.go",
+        "QF1003: could use tagged switch on protocol.apiAuthorization"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cmd/system/http.go", "QF1003: could use tagged switch on value"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cmd/system/main_logging_test.go", "QF1003: could use tagged switch on test.want"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/main.go",
+        "QF1011: could omit type backgroundtasks.TaskFallback from declaration; it will be inferred from the right-hand side"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/module_lifecycle_transport_test.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/module_lifecycle_transport_test.go",
+        "QF1003: could use tagged switch on test.method"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cmd/system/session_service_protocol.go", "S1023: redundant return statement"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "cmd/system/workspace_search_http_test.go",
+        "QF1003: could use tagged switch on status"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cycle_lifecycle.go", "QF1002: could use tagged switch on pattern"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "cycle_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "deploy_board_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "estimate_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "external_integrations.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["staticcheck", "instance_admin_session.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "instance_management.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "instance_workspace_slug_check.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "intake_inbox_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/assets/attachment.go",
+        "SA4006: this value of workspaceID is never used"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/assets/bindingsgen/main.go",
+        "QF1012: Use fmt.Fprintf(...) instead of WriteString(fmt.Sprintf(...))"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/assets/bindingsgen/main.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 11
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/django_json.go",
+        "S1017: should replace this if statement with an unconditional strings.TrimPrefix"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/postgres.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/validator.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/validator.go",
+        "QF1003: could use tagged switch on octet"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/validator.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 26
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/djangosession/workflow.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/authentication/password/password.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/analytics_export.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/api_activity_logs.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/cleanup.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/description_asset_copy.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/event_tracking.go",
+        "QF1003: could use tagged switch on key"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/event_tracking.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/exporter_history.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/file_assets.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/instance_metrics.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_activities.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_automation.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_description_sync.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_email_notifications.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_export.go",
+        "SA1019: strings.Title has been deprecated since Go 1.18 and an alternative has been available since Go 1.0: The rule Title uses for word boundaries does not handle Unicode punctuation properly. Use golang.org/x/text/cases instead. "
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_export.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_notifications.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_version_sync.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/issue_version_task.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/link_preview_test.go",
+        "ST1013: should use constant http.StatusFound instead of numeric literal 302"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/page_transactions.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/recent_visits.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/runtime.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/templated_email_tasks.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/version_history.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/webhook_tasks.go",
+        "QF1003: could use tagged switch on b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/backgroundtasks/webhook_tasks.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/bootstrap/install.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/bootstrap/instance_integration_test.go",
+        "S1038: should use t.Fatalf(...) instead of t.Fatal(fmt.Sprintf(...))"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/bootstrap/instance.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/celery/publisher.go", "ST1005: error strings should not be capitalized"],
+      "count": 11
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/celery/task.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/cyclereads/lifecycle.go", "SA9003: empty branch"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/cyclereads/repository.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/cyclereads/repository.go", "QF1003: could use tagged switch on value"],
+      "count": 3
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/devtools/checks.go", "ST1005: error strings should not be capitalized"],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/devtools/local_logs.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/djangoinput/input.go",
+        "S1034: assigning the result of this type assertion to a variable (switch value := value.(type)) could eliminate type assertions in switch cases"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/djangoinput/input.go",
+        "S1034(related information): could eliminate this type assertion"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/emailvalidation/email.go", "QF1001: could apply De Morgan's law"],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/htmlcompat/escape.go",
+        "S1003: should use !strings.ContainsAny(s, \"&>\") instead"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/htmlcompat/escape.go",
+        "S1003: should use !strings.ContainsAny(s, escapedChars) instead"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/htmlcompat/parse_test.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/htmlcompat/parse.go", "QF1004: could use strings.ReplaceAll instead"],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/htmlcompat/parse.go",
+        "S1008: should use 'return p.tok.DataAtom == a.Noscript' instead of 'if p.tok.DataAtom == a.Noscript { return true }; return false'"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/htmlcompat/render.go",
+        "ST1012: error var plaintextAbort should have name of the form errFoo"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/htmlcompat/token.go", "QF1004: could use bytes.ReplaceAll instead"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/instancemail/sender_test.go",
+        "QF1011: could omit type io.Reader from declaration; it will be inferred from the right-hand side"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/intakeinboxreads/repository.go",
+        "QF1003: could use tagged switch on value"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/issuequery/group.go", "ST1005: error strings should not be capitalized"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/pagereads/lifecycle.go", "QF1003: could use tagged switch on operation"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/pagereads/repository.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/projectlabelreads/write_input.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/projectmembershipreads/invitations_commands.go",
+        "SA1019: strings.Title has been deprecated since Go 1.18 and an alternative has been available since Go 1.0: The rule Title uses for word boundaries does not handle Unicode punctuation properly. Use golang.org/x/text/cases instead. "
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/projectmembershipreads/invitations_contract_regressions_test.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/projectmembershipreads/lifecycle.go",
+        "QF1001: could apply De Morgan's law"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/projectmembershipreads/lifecycle.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/publicprojectmetadatareads/throttle.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/pythoncompat/integer.go",
+        "SA6003: should range over string, not []rune(string)"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/stickies/content/binary.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/stickies/content/html.go", "QF1003: could use tagged switch on b"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/useraccountwrites/cache.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/usernotificationpreferences/repository.go",
+        "QF1002: could use tagged switch on field"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/usernotificationpreferences/repository.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/workitemhistory/repository_integration_test.go",
+        "QF1003: could use tagged switch on operation"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/workitems/api_html.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/workitems/filters.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/workitems/input.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/workitems/intake.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "internal/workitems/issue_writes.go", "QF1001: could apply De Morgan's law"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/workitems/issue_writes.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "internal/workspaceprojectreads/repository.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 5
+    },
+    {
+      "fingerprint": ["staticcheck", "module_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "module_reads.go",
+        "ST1005: error strings should not end with punctuation or newlines"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": ["staticcheck", "page_lifecycle/imported.go", "ST1001: should not use dot imports"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "page_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "project_label_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "project_label_writes.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "project_membership_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "project_state_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "stickies.go", "ST1005: error strings should not be capitalized"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["staticcheck", "user_accounts.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "user_api_tokens.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "user_identity.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "user_instance_admin.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "user_notification_preferences.go",
+        "ST1005: error strings should not be capitalized"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "user_profile_flags.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "staticcheck",
+        "work_item_core/design/target_errors_test.go",
+        "S1021: should merge variable declaration with assignment on next line"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "workspace_project_reads.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["staticcheck", "workspace_slug_check.go", "ST1005: error strings should not be capitalized"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "account_authentication.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "api_state_reads.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "cmd/system/public_feedback_options.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "cmd/system/work_item_core_http_test.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "cmd/system/work_item_core_http.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "internal/assets/domain.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "internal/assets/service.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "internal/projectintakewrites/repository.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "internal/projectstatereads/writes.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unconvert", "project_state_reads.go", "unnecessary conversion"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["unconvert", "project_state_writes.go", "unnecessary conversion"],
+      "count": 2
+    },
+    {
+      "fingerprint": ["unconvert", "work_item_core/design/transport_test.go", "unnecessary conversion"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "api_v1_stickies.go", "apiV1StickyString - allowBlank always receives true"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/custom_view_creation_http.go",
+        "mountCustomViewCreation - result 0 (*github.com/CaliLuke/go-plane/customviewcreation/gen/http/custom_view_creation/server.Server) is never used"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "(*csrfTokenResponseWriter).finish - method is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "assetLifecycleAllowedMethods - mounts is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "newHTTPHandler - dbg always receives false"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/http.go",
+        "newHTTPHandlerWithBackendReplacements - dbg always receives false"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "newHTTPHandlerWithProfileFlags - dbg always receives false"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "newHTTPHandlerWithSlugChecks - dbg always receives false"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "newHTTPHandlerWithStickies - dbg always receives false"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/http.go",
+        "newHTTPHandlerWithStickiesAndWorkspaceSlugCheck - dbg always receives false"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "cmd/system/http.go", "prependVary - value always receives \"Accept-Encoding\""],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/http.go",
+        "resolveActivityReadProtocol - result 0 (github.com/CaliLuke/go-plane/cmd/system.readServiceProtocol) is never used"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/project_intake_protocol.go",
+        "newIntakeMixedProtocol - name always receives \"Intake\""
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cmd/system/project_publication_http.go",
+        "newProjectPublicationProtocol - name is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "cycle_lifecycle.go",
+        "(*cycleLifecycleService).create - result 1 (github.com/CaliLuke/go-plane.cycleLifecyclePrincipal) is never used"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "design/page_lifecycle.go", "pageLifecycleEmptyMethod - pageID always receives true"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "design/page_lifecycle.go", "pageLifecycleOptionsMethod - action is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/assets/legacy_fields.go",
+        "legacyJSONField - fallback always receives `{}` (\"{}\")"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/assets/postgres.go",
+        "(*PostgresRepository).findAsset - filterIsDeleted always receives false"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/assets/service.go",
+        "(*LifecycleService).projectAssetForMutation - result 0 (github.com/google/uuid.UUID) is never used"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/assets/service.go",
+        "assetFilenameDefault - generatedWhenMissing always receives true"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/authredirects/service.go", "(*Service).completeLogin - signup is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/backgroundtasks/description_asset_copy.go",
+        "descriptionAssetEntityColumn - result 1 (error) is always nil"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/cyclereads/lifecycle.go", "timestampValue - result 1 (bool) is never used"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/cyclereads/repository.go",
+        "(*Repository).groupedIssues - previous is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/cyclereads/repository.go",
+        "hasCommaToken - expected always receives \"None\""
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/htmlcompat/node.go", "(*insertionModeStack).pop - result im is never used"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/htmlcompat/node.go",
+        "(*nodeStack).contains - a always receives a.Template (465160)"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/litelists/repository.go", "paging - result 1 ([]any) is always nil"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/pagereads/lifecycle.go", "(*Repository).archivePage - user is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/pagereads/lifecycle.go", "(*Repository).unarchivePage - user is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/pagereads/lifecycle.go",
+        "(*Repository).updatePageDescription - slug is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/pagereads/lifecycle.go",
+        "lifecycleJSONField - result 0 (any) is never used"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/pagereads/lifecycle.go",
+        "validatePageLifecycleFields - partial always receives true"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "internal/projectstatereads/writes.go", "stateBool - fallback always receives false"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/publicprojectmetadatareads/throttle.go",
+        "(*AnonymousThrottle).inspectSession - result 2 (bool) is always false"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/workitems/collaboration_projection.go",
+        "(*Repository).collaborationDump - annotated always receives false"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "internal/workitems/repository.go",
+        "(*Repository).publishTask - name always receives \"plane.bgtasks.issue_activities_task.issue_activity\""
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "oauth_redirects.go", "(*oauthRedirectService).errorRedirect - provider is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "oauth_redirects.go",
+        "oauthResponse - contentType always receives \"text/html; charset=utf-8\""
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unparam",
+        "projectconfiguration/design/design.go",
+        "jsonResponse - schema always receives Any (18)"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unparam", "projectintakewrites/design/design.go", "rawRequest - required always receives true"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "accountauthentication/design/design.go", "func accountAuthenticationMethod is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "apistatereads/design/design.go", "var apiStateWritesHTTPErrorResponseBody is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "cmd/system/http.go", "func buildHTTPHandler is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unused",
+        "cmd/system/http.go",
+        "func djangoProtocolAuthenticatedOptionsWithoutActionsHandler is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unused",
+        "cmd/system/http.go",
+        "func newHTTPHandlerWithWorkspaceReplacementsAndEntityFavorites is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "cmd/system/main.go", "func envOrDefault is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueAnalyticsAssignee is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueAnalyticsLabel is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleIssueProjection is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cyclePointAnalyticsAssignee is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cyclePointAnalyticsLabel is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/cycle_reads.go", "var cycleSnapshotAnalyticsAssignee is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/instance_management.go", "func instanceManagementAdminPayload is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/instance_management.go", "func instanceManagementProtectedMethod is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "design/module_reads.go", "var moduleIssueItem is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/assets/legacy_fields.go", "func legacyStringField is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/authentication/djangosession/validator.go", "func encode is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/backgroundtasks/runtime.go", "const executionSchema is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/issuequery/query.go", "func validLegacyIntegerList is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/issuequery/query.go", "func validLegacyUUIDList is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/modulereads/lifecycle_modules.go", "func mustUUID is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/notifications/repository.go", "const watching is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/pagereads/lifecycle.go", "func fieldsString is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/projectconfiguration/operations.go", "const estimateReadSQL is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/projectintakewrites/repository.go", "func parseBody is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/projectlabelreads/write_input.go", "func labelFloat is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/projectlabelreads/write_input.go", "func pythonType is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/routing/caddy.go", "func caddyPathPatternWithoutTrailingSlash is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/routing/caddy.go", "func hasProtocolCompanion is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unused",
+        "internal/workitems/collaboration_authorization.go",
+        "func (*Repository).collaborationMembership is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/workitems/model.go", "func asObject is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "unused",
+        "internal/workitems/public_feedback_intake.go",
+        "func (*Repository).publicIssueWriteProjection is unused"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/workspacehomepreferences/repository.go", "const prefListJSON is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "internal/workspaceprojectreads/lifecycle.go", "func insertProjectRecord is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "module_reads.go", "func moduleIssueGroupValues is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "oauth_redirects.go", "func oauthFailureCode is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "oauth_redirects.go", "func oauthFailureName is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "user_properties.go", "func raw is unused"],
+      "count": 1
+    },
+    {
+      "fingerprint": ["unused", "workspace_analytics.go", "func (*workspaceAnalyticsService).respond is unused"],
+      "count": 1
+    }
+  ]
+}

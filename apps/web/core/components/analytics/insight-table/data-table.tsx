@@ -6,21 +6,13 @@
 
 import * as React from "react";
 import type {
-  ColumnDef,
   ColumnFiltersState,
+  ColumnVisibilityState,
+  RowData,
+  RowSelectionState,
   SortingState,
-  VisibilityState,
-  Table as TanstackTable,
 } from "@tanstack/react-table";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { flexRender, useTable } from "@tanstack/react-table";
 
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
@@ -28,25 +20,28 @@ import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 // plane package imports
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@plane/propel/table";
 import { cn } from "@plane/utils";
+import { analyticsTableFeatures } from "./table-features";
+import type { AnalyticsColumnDef, AnalyticsTable } from "./table-features";
 // plane web components
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData extends RowData> {
+  columns: AnalyticsColumnDef<TData>[];
   data: TData[];
   searchPlaceholder: string;
-  actions?: (table: TanstackTable<TData>) => React.ReactNode;
+  actions?: (table: AnalyticsTable<TData>) => React.ReactNode;
 }
 
-export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, actions }: DataTableProps<TData, TValue>) {
-  const [rowSelection, _setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+export function DataTable<TData extends RowData>({ columns, data, searchPlaceholder, actions }: DataTableProps<TData>) {
+  const [rowSelection, _setRowSelection] = React.useState<RowSelectionState>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<ColumnVisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, _setSorting] = React.useState<SortingState>([]);
   const { t } = useTranslation();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
 
-  const table = useReactTable({
+  const table = useTable({
+    features: analyticsTableFeatures,
     data,
     columns,
     state: {
@@ -57,18 +52,16 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
     },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   });
+
+  const searchColumn = table.getHeaderGroups()[0]?.headers[0]?.column;
+  const searchFilter = searchColumn?.getFilterValue();
 
   return (
     <div className="space-y-4">
       <div className="flex w-full items-center justify-between">
         <div className="relative flex max-w-[300px] items-center gap-4">
-          {table.getHeaderGroups()?.[0]?.headers?.[0]?.id && (
+          {searchColumn && (
             <div className="flex items-center gap-2 text-13 whitespace-nowrap text-placeholder">
               {searchPlaceholder}
             </div>
@@ -98,10 +91,9 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
               ref={inputRef}
               className="w-full max-w-[234px] border-none bg-transparent text-13 text-primary placeholder:text-placeholder focus:outline-none"
               placeholder="Search"
-              value={table.getColumn(table.getHeaderGroups()?.[0]?.headers?.[0]?.id)?.getFilterValue() as string}
+              value={typeof searchFilter === "string" ? searchFilter : ""}
               onChange={(e) => {
-                const columnId = table.getHeaderGroups()?.[0]?.headers?.[0]?.id;
-                if (columnId) table.getColumn(columnId)?.setFilterValue(e.target.value);
+                searchColumn?.setFilterValue(e.target.value);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -114,10 +106,7 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder, act
                 type="button"
                 className="grid place-items-center"
                 onClick={() => {
-                  const columnId = table.getHeaderGroups()?.[0]?.headers?.[0]?.id;
-                  if (columnId) {
-                    table.getColumn(columnId)?.setFilterValue("");
-                  }
+                  searchColumn?.setFilterValue("");
                   setIsSearchOpen(false);
                 }}
               >

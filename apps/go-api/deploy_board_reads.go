@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"io"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/deployboardreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const deployBoardReadsInternalErrorDetail = "Something went wrong please try again later"

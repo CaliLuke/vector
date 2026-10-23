@@ -4,10 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
-	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
-	invitationserver "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
-	loomhttp "github.com/CaliLuke/loom/http"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +11,11 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	store "github.com/CaliLuke/go-plane/internal/projectmembershipreads"
+	invitationserver "github.com/CaliLuke/go-plane/invitationsmembership/gen/http/invitations_membership/server"
+	loomhttp "github.com/CaliLuke/loom/http"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"

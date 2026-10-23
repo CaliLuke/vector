@@ -16,7 +16,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
-	"github.com/CaliLuke/loom/pkg"
+	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
 )

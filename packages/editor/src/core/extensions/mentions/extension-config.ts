@@ -7,7 +7,7 @@
 import { mergeAttributes } from "@tiptap/core";
 import type { MentionOptions } from "@tiptap/extension-mention";
 import Mention from "@tiptap/extension-mention";
-import type { MarkdownSerializerState } from "@tiptap/pm/markdown";
+import type { MarkdownSerializerState } from "prosemirror-markdown";
 import type { Node as NodeType } from "@tiptap/pm/model";
 // types
 import type { TMentionHandler } from "@/types";

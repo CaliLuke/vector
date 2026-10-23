@@ -19,8 +19,10 @@ export function CustomMentionExtension(props: TMentionHandler) {
   const { searchCallback, renderComponent, getMentionedEntityDetails } = props;
   return CustomMentionExtensionConfig.extend({
     addOptions(this) {
+      const parentOptions = this.parent?.();
+      if (!parentOptions) throw new Error("Custom mention extension requires its base options.");
       return {
-        ...this.parent?.(),
+        ...parentOptions,
         renderComponent,
         getMentionedEntityDetails,
       };

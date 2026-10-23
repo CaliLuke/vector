@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "files": {
+    "src/controllers/collaboration.controller.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/controllers/document.controller.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/controllers/health.controller.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/controllers/index.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/controllers/pdf-export.controller.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/env.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/extensions/database.ts": {
+      "lines": 45.94,
+      "statements": 45.94,
+      "functions": 100,
+      "branches": 21.42
+    },
+    "src/extensions/force-close-handler.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/extensions/index.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/extensions/logger.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/extensions/redis.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/extensions/title-sync.ts": {
+      "lines": 63.82,
+      "statements": 62.5,
+      "functions": 83.33,
+      "branches": 36.84
+    },
+    "src/extensions/title-update/debounce.ts": {
+      "lines": 72.61,
+      "statements": 71.11,
+      "functions": 70,
+      "branches": 50
+    },
+    "src/extensions/title-update/title-update-manager.ts": {
+      "lines": 90.56,
+      "statements": 90.56,
+      "functions": 100,
+      "branches": 80
+    },
+    "src/extensions/title-update/title-utils.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/hocuspocus.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/lib/auth-middleware.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/lib/auth.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/lib/errors.ts": {
+      "lines": 32.25,
+      "statements": 32.25,
+      "functions": 100,
+      "branches": 47.36
+    },
+    "src/lib/pdf/colors.ts": {
+      "lines": 48.78,
+      "statements": 47.61,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/lib/pdf/icons.tsx": {
+      "lines": 41.86,
+      "statements": 36,
+      "functions": 5.88,
+      "branches": 3.44
+    },
+    "src/lib/pdf/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/lib/pdf/mark-renderers.ts": {
+      "lines": 23.4,
+      "statements": 23.4,
+      "functions": 38.46,
+      "branches": 13.95
+    },
+    "src/lib/pdf/node-renderers.tsx": {
+      "lines": 68.62,
+      "statements": 68.94,
+      "functions": 85.29,
+      "branches": 40.99
+    },
+    "src/lib/pdf/plane-pdf-exporter.tsx": {
+      "lines": 85,
+      "statements": 85.71,
+      "functions": 75,
+      "branches": 77.77
+    },
+    "src/lib/pdf/styles.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/lib/stateless.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/redis.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/schema/pdf-export.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/server.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/api.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/page/core.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/page/extended.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/services/page/handler.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/page/project-page.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/pdf-export/effect-utils.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/services/pdf-export/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/services/pdf-export/pdf-export.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/services/user.service.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 100
+    },
+    "src/start.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/types/admin-commands.ts": {
+      "lines": 84.84,
+      "statements": 84.84,
+      "functions": 42.85,
+      "branches": 0
+    },
+    "src/types/index.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/utils/broadcast-error.ts": {
+      "lines": 20,
+      "statements": 20,
+      "functions": 0,
+      "branches": 0
+    },
+    "src/utils/broadcast-message.ts": {
+      "lines": 0,
+      "statements": 0,
+      "functions": 0,
+      "branches": 0
+    }
+  }
+}

@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"uuid"
 )
 
 func TestSoftDeleteWorkspacePersistsTimestampAndReleasesSlug(t *testing.T) {

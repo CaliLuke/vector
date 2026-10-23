@@ -5,15 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"net/url"
 	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+
+	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_quick_links"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacequicklinks"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceQuickLinksRepository interface {

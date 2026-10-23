@@ -25,31 +25,31 @@ export type TIssueFilterPriorityObject = {
 };
 
 export enum EIssueGroupByToServerOptions {
-  "state" = "state_id",
-  "priority" = "priority",
-  "labels" = "labels__id",
+  state = "state_id",
+  priority = "priority",
+  labels = "labels__id",
   "state_detail.group" = "state__group",
-  "assignees" = "assignees__id",
-  "cycle" = "cycle_id",
-  "module" = "issue_module__module_id",
-  "target_date" = "target_date",
-  "project" = "project_id",
-  "created_by" = "created_by",
+  assignees = "assignees__id",
+  cycle = "cycle_id",
+  module = "issue_module__module_id",
+  target_date = "target_date",
+  project = "project_id",
+  created_by = "created_by",
   // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
-  "team_project" = "project_id",
+  team_project = "project_id",
 }
 
 export enum EIssueGroupBYServerToProperty {
-  "state_id" = "state_id",
-  "priority" = "priority",
-  "labels__id" = "label_ids",
-  "state__group" = "state__group",
-  "assignees__id" = "assignee_ids",
-  "cycle_id" = "cycle_id",
-  "issue_module__module_id" = "module_ids",
-  "target_date" = "target_date",
-  "project_id" = "project_id",
-  "created_by" = "created_by",
+  state_id = "state_id",
+  priority = "priority",
+  labels__id = "label_ids",
+  state__group = "state__group",
+  assignees__id = "assignee_ids",
+  cycle_id = "cycle_id",
+  issue_module__module_id = "module_ids",
+  target_date = "target_date",
+  project_id = "project_id",
+  created_by = "created_by",
 }
 
 export enum EIssueCommentAccessSpecifier {

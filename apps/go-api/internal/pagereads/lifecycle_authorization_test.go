@@ -7,9 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 var pageLifecycleForbiddenBody = map[string]any{

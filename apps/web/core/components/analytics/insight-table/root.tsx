@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { ColumnDef, Row, Table } from "@tanstack/react-table";
+import type { AnalyticsColumnDef, AnalyticsRow, AnalyticsTable } from "./table-features";
 import { Download } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -15,10 +15,10 @@ interface InsightTableProps<T extends Exclude<TAnalyticsTabsBase, "overview">> {
   analyticsType: T;
   data?: AnalyticsTableDataMap[T][];
   isLoading?: boolean;
-  columns: ColumnDef<AnalyticsTableDataMap[T]>[];
+  columns: AnalyticsColumnDef<AnalyticsTableDataMap[T]>[];
   columnsLabels?: Record<string, string>;
   headerText: string;
-  onExport?: (rows: Row<AnalyticsTableDataMap[T]>[]) => void;
+  onExport?: (rows: AnalyticsRow<AnalyticsTableDataMap[T]>[]) => void;
 }
 
 export function InsightTable<T extends Exclude<TAnalyticsTabsBase, "overview">>(
@@ -36,7 +36,7 @@ export function InsightTable<T extends Exclude<TAnalyticsTabsBase, "overview">>(
         columns={columns}
         data={data || []}
         searchPlaceholder={`${data?.length || 0} ${headerText}`}
-        actions={(table: Table<AnalyticsTableDataMap[T]>) => (
+        actions={(table: AnalyticsTable<AnalyticsTableDataMap[T]>) => (
           <Button
             variant="secondary"
             prependIcon={<Download className="h-3.5 w-3.5" />}

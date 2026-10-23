@@ -1,0 +1,3605 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "activityreads/design/design.go",
+        "11b0ae48955df8c19e938c4ca88f8398b401068f6aa0107d5eaa6222001af9d8",
+        "12be4fcbda2edb923a74f3f9c9508f01635df405541828918f3c1e339de2e05a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "activityreads/design/design.go",
+        "3a05830e0dae779379e4ef3b7ec23419954d5fca7a172853a5cd51f3a2ec7f7f",
+        "e52b671e73a73ee1a50934cb4c23e98ec5b9836c659ec55543dfe12277236ec9"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "activityreads/design/design.go",
+        "4e8a6e0824564b36404d2083c0100bc4b1cd0d97cadb726ff39bee20a36bc921",
+        "4e8a6e0824564b36404d2083c0100bc4b1cd0d97cadb726ff39bee20a36bc921"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "apicyclereads/design/design.go",
+        "01aa15b65c55159ab68e0945257b91342780d0c6d9a441a26aac2f923109889e",
+        "12be4fcbda2edb923a74f3f9c9508f01635df405541828918f3c1e339de2e05a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "apicyclereads/design/design.go",
+        "85bc778235aaa3a9c9ac33d5e9c82243af64981576be399de487ab8addf4110d",
+        "a610dab489e58980e35f78fec35a72454f97220d874f90ce1eda88de50a6aa07"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "apimodulereads/design/design.go",
+        "4e8a6e0824564b36404d2083c0100bc4b1cd0d97cadb726ff39bee20a36bc921",
+        "74d998ea365e77b417ce8a4a234f62c3cc78094b6064063737511eec9365ba23"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "0a0a1ba1752d9f319a3486c9d5fe125033c16429c5f2fa072d5c6279678d5d2a",
+        "a610dab489e58980e35f78fec35a72454f97220d874f90ce1eda88de50a6aa07"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "11b0ae48955df8c19e938c4ca88f8398b401068f6aa0107d5eaa6222001af9d8",
+        "461c9dbb2aa61c8c2a58c6c852fcf5c6072a33d8854227c1532c1fd56e2289b9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "37fdafa891f03111bcccbb38419f682d409fa1df0eb9c65baaa6a24838148c0b",
+        "a41a03074ecb8d7b8f50c3f219c1efa3bfe0fe8bf7aca0f88d22090ea8c3a75b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "4e8a6e0824564b36404d2083c0100bc4b1cd0d97cadb726ff39bee20a36bc921",
+        "ca8503a273b48314c416a34867d90607681ac640400de3abcfe84c19ed2cf163"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "activityreads/design/design.go",
+        "work_item_core/design/design.go",
+        "8dc6de278d7b77745ce21c6bf9e9e7f5434dcdd1164056a86b1b7956626d0136",
+        "a41a03074ecb8d7b8f50c3f219c1efa3bfe0fe8bf7aca0f88d22090ea8c3a75b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads_test.go",
+        "api_module_reads_test.go",
+        "24c3487a891f5ece169d57d82347fdbb87dd95620ee73487042d2a8a7457397f",
+        "d27fb8940a43ffe2db13a45778ae57dab6a2c8927ebbe187276599db391e069c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_label_reads.go",
+        "0393f0b96991e95ec2e90b13c791bcd62278316b584fdf99327e7e56bba23ab0",
+        "0900b82a021e7f80cc410351e2dbb14e9f61e2c9f4ac0ab1d0f3c91e923e565c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_label_reads.go",
+        "4a3fd697dbc06b5434b2d3eb766374fd9ddc53dcd4718165a26bc29796044410",
+        "5e28d73134c8f56da812c41a954a3843064d96c992bc8db030f800b3925be4b8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_label_reads.go",
+        "affa057cbe4d820ab789016dc83f4ca6c1d80bfbe3f9ec50b475f38cb8823440",
+        "ffd22d59869bb60d08a73dd2ad87e5bc6c90942a0cb9cae97a76c640690ee6c0"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_module_reads.go",
+        "0393f0b96991e95ec2e90b13c791bcd62278316b584fdf99327e7e56bba23ab0",
+        "8493e368ff7ee0135e8731aaac4966ff3f448ce6a1fbef4b3cee22264da8e2b7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_state_reads.go",
+        "4a3fd697dbc06b5434b2d3eb766374fd9ddc53dcd4718165a26bc29796044410",
+        "5a8c9f662c91b7860744669fd8645a4fa085909ccfe36faa9e9b15fda268670e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_cycle_reads.go",
+        "api_user_identity.go",
+        "2a9b77fef773c19ee96583bcae89b0678a5995004be79f348e43ce260e6f823a",
+        "ffd22d59869bb60d08a73dd2ad87e5bc6c90942a0cb9cae97a76c640690ee6c0"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_label_reads.go",
+        "api_module_reads.go",
+        "0900b82a021e7f80cc410351e2dbb14e9f61e2c9f4ac0ab1d0f3c91e923e565c",
+        "8493e368ff7ee0135e8731aaac4966ff3f448ce6a1fbef4b3cee22264da8e2b7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_label_reads.go",
+        "api_module_reads.go",
+        "5e28d73134c8f56da812c41a954a3843064d96c992bc8db030f800b3925be4b8",
+        "92faff525fe6b1576ddfce62499fe0eb9b8b41ebd2a171e3aeb2c6895a2dbbc6"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_label_reads.go",
+        "api_module_reads.go",
+        "affa057cbe4d820ab789016dc83f4ca6c1d80bfbe3f9ec50b475f38cb8823440",
+        "d9ac339e86d8f53c1ed1610dd9b4ea7518ca7d052c4137c348748fd0d49312c5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_module_reads.go",
+        "api_state_reads.go",
+        "5a8c9f662c91b7860744669fd8645a4fa085909ccfe36faa9e9b15fda268670e",
+        "92faff525fe6b1576ddfce62499fe0eb9b8b41ebd2a171e3aeb2c6895a2dbbc6"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "api_module_reads.go",
+        "api_user_identity.go",
+        "2a9b77fef773c19ee96583bcae89b0678a5995004be79f348e43ce260e6f823a",
+        "d9ac339e86d8f53c1ed1610dd9b4ea7518ca7d052c4137c348748fd0d49312c5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "01aa15b65c55159ab68e0945257b91342780d0c6d9a441a26aac2f923109889e",
+        "8042dca962b0b9043fbc12f4b02dee16da9a181ec261e5996b3e4cee2d6be7af"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "243a913b0a66f27eb452896ca85cd83431bd5db69c99b6556a3b0dbaa8df0134",
+        "c73e20a30aa1239dfb549de4a1e7d9a14a26cae622a66403a6dd31a141fe2183"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "34e98e114460f4697ced1d73363ed2308452bb651462bf91610d85a62e871c23",
+        "85bc778235aaa3a9c9ac33d5e9c82243af64981576be399de487ab8addf4110d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "34e98e114460f4697ced1d73363ed2308452bb651462bf91610d85a62e871c23",
+        "a15eadc800de807eb1a9352b5c1d964f4612732bddb59349613edff345e99482"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "3a0e28faa2e552e6b8384804c2ba1f1f55e6adaf7513d35cae93a6d803eeb822",
+        "5bd9ab04e467346a2c017df4b61e5e87bbcefe05359157ea54df3c8816b7830f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apicyclereads/design/design.go",
+        "3a0e28faa2e552e6b8384804c2ba1f1f55e6adaf7513d35cae93a6d803eeb822",
+        "8042dca962b0b9043fbc12f4b02dee16da9a181ec261e5996b3e4cee2d6be7af"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apilabelreads/design/design.go",
+        "5bd9ab04e467346a2c017df4b61e5e87bbcefe05359157ea54df3c8816b7830f",
+        "77b3ee361d6f1b8e4bffa4d3fdc20f46901be238d5f61efc4698531867593e45"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "1b51dd344ef3846552600e2a5f9856d24e1646dd803ea1e96874ebc22eb31aa2",
+        "243a913b0a66f27eb452896ca85cd83431bd5db69c99b6556a3b0dbaa8df0134"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "6d2939e23b8bfc08bd626737dec824b9f0d032c6bc31ce2773cdf7965c9b6c3e",
+        "d0d66a4eaa12b888ecacf5d1c655ed94e473cfbd570b25a31e64ef00a3200993"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "a15eadc800de807eb1a9352b5c1d964f4612732bddb59349613edff345e99482",
+        "ec68e624edea39164cd7fc6bb0fa758af69535df4c2377a42ebe85eb0423ccf8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "e879f8685196e59f836200847d2cf990a0623376fce8abae6c0a1c569876ed99",
+        "eac073126d68dec9ebde7b9b967ac4e5498b5ba90e86a9c7632bca27656ba540"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "1540b2b345ad094499284fca2c166a7ed761ea7ef65b1fe4d7936e8c16e3781f",
+        "e3292408aec0014ea07c351c5d52d206dd921f16ce7be890c41ca07272979ed5"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "c73e20a30aa1239dfb549de4a1e7d9a14a26cae622a66403a6dd31a141fe2183",
+        "f76ac325d33c126d705f78cdbb4b19efec2452cddadfaf2b18be023968edba61"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "work_item_core/design/design.go",
+        "30bf389f8e6c6ab40cafc9c681d7511c8da312760faf01cbc4152ef6805a5e4d",
+        "30bf389f8e6c6ab40cafc9c681d7511c8da312760faf01cbc4152ef6805a5e4d"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "work_item_core/design/design.go",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apicyclereads/design/design.go",
+        "work_item_core/design/design.go",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apilabelreads/design/design.go",
+        "apimodulereads/design/design.go",
+        "0605e2ec86c9626961931ce73bcde66fdcc817f83286e85c83e546d99cac7846",
+        "77b3ee361d6f1b8e4bffa4d3fdc20f46901be238d5f61efc4698531867593e45"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apilabelreads/design/design.go",
+        "apimodulereads/design/design.go",
+        "1b74e317bfe49e58e7a79f1496b5e58dd2b89ffcf3a4050436552b550817a402",
+        "eb4ecc832df1d14f3cb97dc1d99c37ea197446412ca69771dd2222a70897023e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apilabelreads/design/design.go",
+        "invitationsmembership/design/design.go",
+        "09d8e47b31fe53fd88f69666b126e422d1c4e7fe173be53b1745ab3cbf387114",
+        "eb4ecc832df1d14f3cb97dc1d99c37ea197446412ca69771dd2222a70897023e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "0605e2ec86c9626961931ce73bcde66fdcc817f83286e85c83e546d99cac7846",
+        "fc0bd9656a4f08d4ad1dbe275ead6fb784c9c04ea2536f8235020bfb01163085"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "1b51dd344ef3846552600e2a5f9856d24e1646dd803ea1e96874ebc22eb31aa2",
+        "9ec70fbe4ab2b86cc3ff21c63e636ca9968e4eb93864964ac74268b3f2e97f07"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "a046871aebc7d3541feb1582ce9928f55c279a9acaeed9553d516789173265ef",
+        "e830daf2279fcc86698fce30cfdd720ed52a7a31f3db4bf441abe33b45050c3b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "a046871aebc7d3541feb1582ce9928f55c279a9acaeed9553d516789173265ef",
+        "fc0bd9656a4f08d4ad1dbe275ead6fb784c9c04ea2536f8235020bfb01163085"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "b941f66e0a36b460b411da8eb31447700812163024c831cbd7d850ed35b66833",
+        "defeddbdafb6df96d2f185a927fe081f4cd5cf18791336927cfeb79a54dfc533"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "c352ec6f27df2472d80c8251bf511368ee94ab590305a0b4a7e8f9f510bcade3",
+        "da728fc0807073ed62f991a2eebe1e0b0718b1c4884d6bcf2c5ec489a65e5465"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apimodulereads/design/design.go",
+        "defeddbdafb6df96d2f185a927fe081f4cd5cf18791336927cfeb79a54dfc533",
+        "ec68e624edea39164cd7fc6bb0fa758af69535df4c2377a42ebe85eb0423ccf8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apistatereads/design/design.go",
+        "14d654911616d268451cea7930fb68743c4457b64a1d6dd29a6ed275434a882d",
+        "e830daf2279fcc86698fce30cfdd720ed52a7a31f3db4bf441abe33b45050c3b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "apistatereads/design/design.go",
+        "1b74e317bfe49e58e7a79f1496b5e58dd2b89ffcf3a4050436552b550817a402",
+        "74179ef69f28906deb13e014e0c131b08d6061da6684233db7cd73499e11d050"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "4a68e99312a6ccef5a634b7982dffcfeb88070d8596d439510e1f74c7c74645b",
+        "b941f66e0a36b460b411da8eb31447700812163024c831cbd7d850ed35b66833"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "9ec70fbe4ab2b86cc3ff21c63e636ca9968e4eb93864964ac74268b3f2e97f07",
+        "f76ac325d33c126d705f78cdbb4b19efec2452cddadfaf2b18be023968edba61"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "work_item_core/design/design.go",
+        "534a3b70c044a1f60a3812a4a1cfd12653427d03045b2f51cf56aee06a2ecf61",
+        "534a3b70c044a1f60a3812a4a1cfd12653427d03045b2f51cf56aee06a2ecf61"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "work_item_core/design/design.go",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d",
+        "74b79a0adf2017f5fc408dbb06cb52738fcf6f15af1e068ced3a4215f2748a0d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apimodulereads/design/design.go",
+        "work_item_core/design/design.go",
+        "74d998ea365e77b417ce8a4a234f62c3cc78094b6064063737511eec9365ba23",
+        "ca8503a273b48314c416a34867d90607681ac640400de3abcfe84c19ed2cf163"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apistatereads/design/design.go",
+        "apiuseridentity/design/design.go",
+        "74179ef69f28906deb13e014e0c131b08d6061da6684233db7cd73499e11d050",
+        "753518bb0f13e2e0ea95ac8eb9128b3dcf52adee2e632e053423d082c2f61c56"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apistatereads/design/design.go",
+        "projectlifecycle/design/design.go",
+        "14d654911616d268451cea7930fb68743c4457b64a1d6dd29a6ed275434a882d",
+        "5e5aee524158935fe79fbb8c62c5f82a577da5207bf7c2256538f21909168cbc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apiuseridentity/design/design.go",
+        "invitationsmembership/design/design.go",
+        "09d8e47b31fe53fd88f69666b126e422d1c4e7fe173be53b1745ab3cbf387114",
+        "753518bb0f13e2e0ea95ac8eb9128b3dcf52adee2e632e053423d082c2f61c56"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "apiuseridentity/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "48843c6875deeb19d6c5e2fe3e76fe403e34e8aec66d7567b88bdfc0c4d94868",
+        "c0d75d03e740c1273932087c49a5e1184c1fe7ff708dac0701a3bc3c60590772"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "036f2fc020408c2a9e907169ba008aee2b94905fec3225dcb76a59f9c6d4cb46",
+        "9b22904d588fcb7dd72562d3ad52a05be09c585d327ef45ff727ef607d65a0be"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "036f2fc020408c2a9e907169ba008aee2b94905fec3225dcb76a59f9c6d4cb46",
+        "a73c630db5deb987f63570096a89c7df47601c72dd76c1ecc742f3d8d458202d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0778ad4f916130413ecaefb4bb83b5bf096527027890812a016ab0d17f4078c7",
+        "aa671f288e1fdb02dc9a440526a06b71f036e6418b1e0327ee5cfc27e68065e5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0778ad4f916130413ecaefb4bb83b5bf096527027890812a016ab0d17f4078c7",
+        "fde26f181fb3437abc9bcaf0b264844622243ef3fbc49cb609e54f687d75171c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0cd8dd82239141fbdd72c67ffa6dec7e50b849799cb5ed89d50ddd11ae2f22a3",
+        "48636b0407dcba71ff2f5e653fddb8c744576b7ac7b3d7b920f9d6c9f0676575"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0cd8dd82239141fbdd72c67ffa6dec7e50b849799cb5ed89d50ddd11ae2f22a3",
+        "e2149523ae4916f5c873aa63e9b92e1924a0f0638ee1acb134c1d3e1ef98c11f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0d7eb4ab44f6650ce2b190fdbe7b5f1523171f9dcf447bc8ab35908a5eacbb10",
+        "1267e4f6bd43006291b03d71b09208eaccf13de7179548c3c3323d454e9074ae"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0d7eb4ab44f6650ce2b190fdbe7b5f1523171f9dcf447bc8ab35908a5eacbb10",
+        "3bba1b7eeb791991ace269ad65622c8c544c194c9897b6ac83ac3d597e016179"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0e4590ffbc360081598d1903986c9ce058fa3a2389ef55cf6476138b589f84ea",
+        "16fb99e49ce6bb7bcc23abb4f77547bc1c29e5e587f1cd8a74094129a846e80d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0e4590ffbc360081598d1903986c9ce058fa3a2389ef55cf6476138b589f84ea",
+        "6ffaf2335cfa6636cb8f7608dfe3bbce2a0c41144e70ae625cbfdf75c1ceaf9d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0f8e7ed9b9148178cdcc36c0af4a18aed45a618e7ca93919b677c68193bebc4b",
+        "5cf4dd8c46a76eb53123fd3bfccafa8e0b57fe296f6a580ce82b16223b49799d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "0f8e7ed9b9148178cdcc36c0af4a18aed45a618e7ca93919b677c68193bebc4b",
+        "78fdfb13de0192310d4037bf878cf082e339416008cfb99cabc01392506ed778"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "124ea4cabb2ca0a83140574ad7861f9d3d20792e7409ab476f0fdb77a87813f6",
+        "a6ce45b3fc2dad4ccade5f7bd4cd6a7312e6bbae648cfd3277134bb7a3bd1e0a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "124ea4cabb2ca0a83140574ad7861f9d3d20792e7409ab476f0fdb77a87813f6",
+        "bc25fdb42b0c91d5adfc9b59257eb70d3b8805cf22609771b8b503e89cb8cce5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1267e4f6bd43006291b03d71b09208eaccf13de7179548c3c3323d454e9074ae",
+        "8154ca7281c62f98e3bd5d6d73829dd5cca9ac4b8c50173a50dd237e8f79b975"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "163079bafe250149e0aad368afcb17151cd959991e9336842667734e945f8b3d",
+        "3bba1b7eeb791991ace269ad65622c8c544c194c9897b6ac83ac3d597e016179"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "163079bafe250149e0aad368afcb17151cd959991e9336842667734e945f8b3d",
+        "8154ca7281c62f98e3bd5d6d73829dd5cca9ac4b8c50173a50dd237e8f79b975"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "164ac80b3387882a4669e53824faca80f98e7aa077de2530a6128c76e46a928f",
+        "58813eda2500b259578acb8ca934126de51ddfe4606cfa82219b777752625a2a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "16fb99e49ce6bb7bcc23abb4f77547bc1c29e5e587f1cd8a74094129a846e80d",
+        "aa671f288e1fdb02dc9a440526a06b71f036e6418b1e0327ee5cfc27e68065e5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "18a67d683e3632a046bf787df3f19ebddf2e172f295473eb21e1649f435b689c",
+        "1eda30a1878e4768a2964d3a866584c6776ae886ba9e96fe2549c8a2518bab4a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "18a67d683e3632a046bf787df3f19ebddf2e172f295473eb21e1649f435b689c",
+        "f66102b5df4ec6921d43a13af602a6914b7a6ea1a55e3b2df6567d8eec868f18"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1b5686464b775d5b4b517406c77d4e5db43b4e371991ec689570261726dd9181",
+        "a42cfc7b790db523a66492f0ddab47a6c87de3890fb6146bab5873e764b950b1"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1b5686464b775d5b4b517406c77d4e5db43b4e371991ec689570261726dd9181",
+        "c422409c68641329f207718245ece864741f23cec10b7ca115f1b309c3671c95"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1d4e0815b4ce9a0205719d0cc7964c96500cb8312c2a81dc4e7fb8081409e4ed",
+        "5c6e7294fdb9f00a025495ee5986fe1437ab9035fcbca901a8edba73582e5751"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1d4e0815b4ce9a0205719d0cc7964c96500cb8312c2a81dc4e7fb8081409e4ed",
+        "748eb7723cc707ded710e5591af7f77ed5a98cab02d0bf2750eb4c957aeabb46"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "1eda30a1878e4768a2964d3a866584c6776ae886ba9e96fe2549c8a2518bab4a",
+        "a73c630db5deb987f63570096a89c7df47601c72dd76c1ecc742f3d8d458202d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "22b95d0f627103298d894e13d99cd24485fad103235877104642ece407b82338",
+        "9402ffaf91a0bbb687a746e2be9f892229541a4a6fed4e087a4d896d14cf920e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "22b95d0f627103298d894e13d99cd24485fad103235877104642ece407b82338",
+        "fcad76d634d929614715cf2f684d708244534fd3889749b858acc036df307927"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "22cf9883b2dec1ea6dd78c2f99049c7bc44fbe7ba5fdfbfa481ab3c092f4f653",
+        "59aa151777dd46cab009035edd6418964f099c61156fae1c82d298bc83e3d4d4"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "22cf9883b2dec1ea6dd78c2f99049c7bc44fbe7ba5fdfbfa481ab3c092f4f653",
+        "6ffaf2335cfa6636cb8f7608dfe3bbce2a0c41144e70ae625cbfdf75c1ceaf9d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "243473b52f7c10b4d2c3b2c3135c36eda8e1290d2c75ba40b684debbc4ac5696",
+        "b8cba7a4cd7ee3cfb9f47dfaa39ca5372aa3e3f2521b1fc203369268cf0f38d3"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "27c9ff34dfc17c615ddb02a3af7a05b4225614cdc9c4985716e8ef12c216018b",
+        "5c6e7294fdb9f00a025495ee5986fe1437ab9035fcbca901a8edba73582e5751"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "27c9ff34dfc17c615ddb02a3af7a05b4225614cdc9c4985716e8ef12c216018b",
+        "748eb7723cc707ded710e5591af7f77ed5a98cab02d0bf2750eb4c957aeabb46"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "29565eb79a0f4a036e001d2728508ac55b49af902617afeaa4c16051f5c96478",
+        "a6e465ec0da3962194f5d41b1becd830f1b53d7fa6de49ec0d011542b3e0867c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "2d184dc98a065dc098a7b1cd71a9a15a0851c72d61b33630881ffe28e3946e15",
+        "3707aa5e74769e18456548cd4725afc6a6bb9f0e92ac69cf42e84ebe6ae2d9a7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "2d184dc98a065dc098a7b1cd71a9a15a0851c72d61b33630881ffe28e3946e15",
+        "e8915ba3976f7407b74c6db418f47232568cb20de0266d4ae697961a08f065ac"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "2e91bb3adae27834b531f4ae5a4dc3ded63fd5c69bf0e8a3a9709aed31aee44b",
+        "42c4909870d412f4b4f3d143b7328e6072234bd408fc4cc49271c78335ca2dbd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "2e91bb3adae27834b531f4ae5a4dc3ded63fd5c69bf0e8a3a9709aed31aee44b",
+        "c9c06e73c2f17a451e6884cc28046fee05844ff88bc0cb1b3ccf6bcfffac66d1"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "3212fd53384c46a7d2abac984af8493fa7a81f41e53fcaa98a666612b7c2ea03",
+        "330a14c67bffeb1cb378c83708fe1bd6f047f1af78c6dd1f42f6858e05d21b45"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "3212fd53384c46a7d2abac984af8493fa7a81f41e53fcaa98a666612b7c2ea03",
+        "79efda7f693f68ec54f9ee8322e14bdecd72caee9755f1c121307e2d17609032"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "330a14c67bffeb1cb378c83708fe1bd6f047f1af78c6dd1f42f6858e05d21b45",
+        "604a13e84bedb1977e45f81975e2967b16f5e1db19285d8d4bf94407679a2923"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "3707aa5e74769e18456548cd4725afc6a6bb9f0e92ac69cf42e84ebe6ae2d9a7",
+        "e8915ba3976f7407b74c6db418f47232568cb20de0266d4ae697961a08f065ac"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "3e2b0a90d36a16b2cf87b66aae493786385d89c07ea7dfd6ea654e88ca121ff4",
+        "838f5b87f15f2aded7b6d2044f03a02130832dc56a9ca7c1ddbff2eca0cc8979"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "3e2b0a90d36a16b2cf87b66aae493786385d89c07ea7dfd6ea654e88ca121ff4",
+        "92fa10d3f2533f7e98bc8ef5c5000f13f2d40715b6339fe379954f6f84cebaa6"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "42c4909870d412f4b4f3d143b7328e6072234bd408fc4cc49271c78335ca2dbd",
+        "c9c06e73c2f17a451e6884cc28046fee05844ff88bc0cb1b3ccf6bcfffac66d1"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "42e974111f992b9825f8260a9af4203fad9c31686d874ab9bed634d54eb4ca54",
+        "54179d4f90ca9bcce34924785d362dfa7383600d2209aa7efe8fd8868a1c7ae5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "42e974111f992b9825f8260a9af4203fad9c31686d874ab9bed634d54eb4ca54",
+        "bf56a96fe549918b2150cc111226993fe927d2e120e64909655216a7057444e5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4759157e7d11c8fd235043d064337bcd6866d25bb60628ca3eec023d67353dbf",
+        "db0f3720168ec3b74000ebc9471caf1ef6afa26741f6b7a3649134f3b7bd3d84"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4759157e7d11c8fd235043d064337bcd6866d25bb60628ca3eec023d67353dbf",
+        "e20a8e404c0b05d15ef20f4164358dcbaca7420db3919fbf3d48114c05eb03bd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "48636b0407dcba71ff2f5e653fddb8c744576b7ac7b3d7b920f9d6c9f0676575",
+        "e2149523ae4916f5c873aa63e9b92e1924a0f0638ee1acb134c1d3e1ef98c11f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "48f9f0a323aa9cc04ef779fd2836963c81dd5ec97cdd563d4ebd31e6ea67a7da",
+        "64e642f047526a0ee13fffb45b8ab389eece9ecf028d3a8c22c15c1a637fc669"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "48f9f0a323aa9cc04ef779fd2836963c81dd5ec97cdd563d4ebd31e6ea67a7da",
+        "beea70447d7d4ff32645096db31337f54f5ef41b5f9678fd2af19144a4cde041"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4b94d8955ace78db13737e50e54605c5228e6bca5feea138251802c79092c06c",
+        "9a17510d2709f515fef749f5db381ef0cd28ee0804f1d231653ada3884dbbb5b"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4ea61aa9c6da3ecd5ed651a98e604b3d812c3096ff197011b0eef47b5cd40c65",
+        "863133c52ef036b61cbce839169b840305076239fab38873d2c9326809384f0c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4ea61aa9c6da3ecd5ed651a98e604b3d812c3096ff197011b0eef47b5cd40c65",
+        "8a87c2dbaabe1035091e230d3a99dc8e4a18f5387265cdfeeadcf5b2c2d9e71c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4f91f23d26918db58963fa8b8e8fd6a297714fd1f94d7184477c90a863e02755",
+        "75df1cea94900ad5b6133e2b549eca9508154e5e82ccb0c26daa27d2d93fcfbc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "4f91f23d26918db58963fa8b8e8fd6a297714fd1f94d7184477c90a863e02755",
+        "b6eefcebbc1143559cdfe9fa9947b250d22e87d7bad48631884aee3b57d2f8a8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "54179d4f90ca9bcce34924785d362dfa7383600d2209aa7efe8fd8868a1c7ae5",
+        "6a003aa04ec3db9b776d991e56e660a0195e15646ae0234b575daa662fb85ec2"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "54d60c47a0242ddaafe342a1e57dfa608db20b062501c83b0802439e0224cbf4",
+        "82765d88a09a7bc2e5601ccb0136f8441a93f1c47b5bb644ca412f71aad60a65"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "55f6f6e76090c850596a64ed13e8fab19296323a6c54ca451b907554714fabbc",
+        "cc6e9e047a5866f13d9cacf2eb028fe907439a5fa1e6e450443d3271ffbee738"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "59aa151777dd46cab009035edd6418964f099c61156fae1c82d298bc83e3d4d4",
+        "fde26f181fb3437abc9bcaf0b264844622243ef3fbc49cb609e54f687d75171c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "5abc731f0b64dde6a0b5f1421f528504aa4cd7eb7e933460a915a22ba3a64286",
+        "631224efba2deac341529e31389112ee72674698fab885d3bda9266ed3dbca51"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "5abc731f0b64dde6a0b5f1421f528504aa4cd7eb7e933460a915a22ba3a64286",
+        "b04acf339fa259458bf60b91ad0f5d3f913eed42f3b8fa809a81081c4bcc550b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "5cf4dd8c46a76eb53123fd3bfccafa8e0b57fe296f6a580ce82b16223b49799d",
+        "78fdfb13de0192310d4037bf878cf082e339416008cfb99cabc01392506ed778"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "604a13e84bedb1977e45f81975e2967b16f5e1db19285d8d4bf94407679a2923",
+        "79efda7f693f68ec54f9ee8322e14bdecd72caee9755f1c121307e2d17609032"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "622a95ca543b1db307bed9b40c33a327aa0eb30bc8d4be46e6afb730b4d610be",
+        "918907ba768d3908a80b5cfac0ff938683ca302f0ca5646701bc0df2ec734894"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "622a95ca543b1db307bed9b40c33a327aa0eb30bc8d4be46e6afb730b4d610be",
+        "c422409c68641329f207718245ece864741f23cec10b7ca115f1b309c3671c95"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "631224efba2deac341529e31389112ee72674698fab885d3bda9266ed3dbca51",
+        "d72bc206ab31b0aa41b85fe164f8b43f8911efc61990b6fc59b4ba12d76c1405"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "64e642f047526a0ee13fffb45b8ab389eece9ecf028d3a8c22c15c1a637fc669",
+        "7911f128ad951fc555c03290fd2853f10e5058418d7316f5acaa52e5d121d432"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "6a003aa04ec3db9b776d991e56e660a0195e15646ae0234b575daa662fb85ec2",
+        "bf56a96fe549918b2150cc111226993fe927d2e120e64909655216a7057444e5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "6eae06efc3663c8c1d7f3697a70152ed1cd52f416adeb7c47b619a31b6710b0c",
+        "979376a12e5789c2784eb0f95eb7a41f987f4394592796486b37dd21c60d40b4"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "6f79c9caa6f4a3ed0e7db209fa10ebefe74fbc4377b28795e7e1e50931781d41",
+        "f0dfcbc785dfd834246b5488e7d365f01db66d068f3a70aa6c1669924a196355"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "75df1cea94900ad5b6133e2b549eca9508154e5e82ccb0c26daa27d2d93fcfbc",
+        "f188e39eadc38124aa4f0b103a26c1289f509ebb67f114eac14604aae368ec28"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "7911f128ad951fc555c03290fd2853f10e5058418d7316f5acaa52e5d121d432",
+        "beea70447d7d4ff32645096db31337f54f5ef41b5f9678fd2af19144a4cde041"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "7a256b1885901ba52366ef893012365c7cddeab282c9555bd0b3e27dccae1964",
+        "ae5eca2d2e0b0ef307a1dbfaf9a793f3e9d01d26fc68e9bf40ed67374a66becf"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "838f5b87f15f2aded7b6d2044f03a02130832dc56a9ca7c1ddbff2eca0cc8979",
+        "da83d44d9791d80674439d51355e01b21ec4e69197d812195625a18c6e15e23a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "863133c52ef036b61cbce839169b840305076239fab38873d2c9326809384f0c",
+        "8a87c2dbaabe1035091e230d3a99dc8e4a18f5387265cdfeeadcf5b2c2d9e71c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "8fb5665d8d93e3033489adb855ad7e93e0008810128c9741b497321d12aefdf8",
+        "fcb6db99de5c9d44b4a792aa5bce12b41c51d85d8ea3284435034527d542dc51"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "918907ba768d3908a80b5cfac0ff938683ca302f0ca5646701bc0df2ec734894",
+        "a42cfc7b790db523a66492f0ddab47a6c87de3890fb6146bab5873e764b950b1"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "92fa10d3f2533f7e98bc8ef5c5000f13f2d40715b6339fe379954f6f84cebaa6",
+        "b6eefcebbc1143559cdfe9fa9947b250d22e87d7bad48631884aee3b57d2f8a8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "9402ffaf91a0bbb687a746e2be9f892229541a4a6fed4e087a4d896d14cf920e",
+        "f52028197eff85f7f66c7eacdb0c1dfd99abbeb972d2ece36b7464b82c3a864c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "9882af05a7e840d36d90e576305b907a0de3b39743bc4b21ae827388258939c4",
+        "da83d44d9791d80674439d51355e01b21ec4e69197d812195625a18c6e15e23a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "9882af05a7e840d36d90e576305b907a0de3b39743bc4b21ae827388258939c4",
+        "f188e39eadc38124aa4f0b103a26c1289f509ebb67f114eac14604aae368ec28"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "98a32a75e9e4c720b668a63c232d64089b8104e7986c16c42f55f31e10eb1335",
+        "c641d7122cfb902ae55affc1bd17dd3ce799f7195a1317b08822eb2b1aaa107c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "9b22904d588fcb7dd72562d3ad52a05be09c585d327ef45ff727ef607d65a0be",
+        "f66102b5df4ec6921d43a13af602a6914b7a6ea1a55e3b2df6567d8eec868f18"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "a4517d960f8f03429d209fd6950149f70ccf58ba927b0d1c70fe31f9274385a7",
+        "a74d855a44f6307da8894305befbc215096c93aeec8245f3a3fced3f1ce877ba"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "a4517d960f8f03429d209fd6950149f70ccf58ba927b0d1c70fe31f9274385a7",
+        "fcad76d634d929614715cf2f684d708244534fd3889749b858acc036df307927"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "a6123fc1eda48507639722bfb3642d842339b7966d8e516ca9e0ae397be519fb",
+        "ac432dc0238d7111434a8465b744753c449b9664d5d19f6b5d86dbf0fe302991"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "a6ce45b3fc2dad4ccade5f7bd4cd6a7312e6bbae648cfd3277134bb7a3bd1e0a",
+        "bc25fdb42b0c91d5adfc9b59257eb70d3b8805cf22609771b8b503e89cb8cce5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "a74d855a44f6307da8894305befbc215096c93aeec8245f3a3fced3f1ce877ba",
+        "f52028197eff85f7f66c7eacdb0c1dfd99abbeb972d2ece36b7464b82c3a864c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "ab1182b1178cd11d852e1bb18e426c6425c7b33703f7bb8da727cdb543151b93",
+        "ae5e70c9c32b2be3cf4ecfb4bc82014ff1361268db9073f127799a226ddf75c8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "ab1182b1178cd11d852e1bb18e426c6425c7b33703f7bb8da727cdb543151b93",
+        "b4d6df2ad3d1aac7344e92889ea4ca61428530ccfc56bdb84050d57ee4ea45cc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "ae10dea9a7cb48ab0fb4cf5affbb80ab6558ed250c5057a6156697c9056d12e2",
+        "c038f9a84c8a06a4b73c2f64723f278f712d9efb7dd72661288ec62b180b4f51"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "ae5e70c9c32b2be3cf4ecfb4bc82014ff1361268db9073f127799a226ddf75c8",
+        "b4d6df2ad3d1aac7344e92889ea4ca61428530ccfc56bdb84050d57ee4ea45cc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "b04acf339fa259458bf60b91ad0f5d3f913eed42f3b8fa809a81081c4bcc550b",
+        "d72bc206ab31b0aa41b85fe164f8b43f8911efc61990b6fc59b4ba12d76c1405"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "assetslifecycle/design/design.go",
+        "assetslifecycle/design/design.go",
+        "db0f3720168ec3b74000ebc9471caf1ef6afa26741f6b7a3649134f3b7bd3d84",
+        "e20a8e404c0b05d15ef20f4164358dcbaca7420db3919fbf3d48114c05eb03bd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http_test.go",
+        "cmd/system/http_test.go",
+        "0b04a412064e1b92024e2cb67d1ff704ebdeaa818c28b055ecd0f1cf537039b8",
+        "feb70b5707adc778041c5bd59b321d9d48ddc502da0c401f528093fb75a255fe"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http_test.go",
+        "cmd/system/http_test.go",
+        "37b90d4821446d9dd44d046feec7c12ab3130552f9e4dbb264bc6421044cb4cf",
+        "37b90d4821446d9dd44d046feec7c12ab3130552f9e4dbb264bc6421044cb4cf"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "065efed16ed06920337c47d550cdb613e890020a15f6dfae1df6465e29da057d",
+        "4f4d199566bd744ec22f32226db7e059d0d4a97b633373546718c222a9505dd3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "065efed16ed06920337c47d550cdb613e890020a15f6dfae1df6465e29da057d",
+        "c81ade0c525b2e17900e1a7272c07bf411065eb2a65b37ad52c0fc18e9ecb434"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "20e51077cccef44ff75d08d3414755f6c146b76680d418a790aac537b8a23e0d",
+        "6493253e4833afbe51dad936b60db5af0d1ea7831a8ca597f2b5d074227a035d"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "2388f4f661c6073e92ffd0000f70e41f333c1159251574575c4fbf4dd307b5b3",
+        "30b07fb5b2a7f796e57200de516b5ee15aa3043073f991551e7543736a60eb80"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "32ae488d2f6889a0351db310ebb17c807efc391a5f29ef3de1d08f1a1448e1e5",
+        "f2864b988ba531fbdca316b3aece942d4f896eabe1b3979809330480028b9e6e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "36e290bafb123f382ef50ac1e960a93d251590a591529925826ee2a8cb49889b",
+        "5cc1496a9f7f1931d2eae7e788e113853e425c58b254f02773de098589273220"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "4f4d199566bd744ec22f32226db7e059d0d4a97b633373546718c222a9505dd3",
+        "d6fdbdbff9d1006b62bdf6143f65e267f71bea5a57c1acbeacf7d971c5282fa7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "7f6ed2c115640c3fa7f90e349aa42c2cdf299b3de815e514cf92c06d1b4076c3",
+        "c0446313a22eaa1ab968703bb1ab026a1a8519b73945fc33a4cbf0bb575ce29b"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "82f973667ea05313caf0d79d920230bfc8161809da026782d652334930af0221",
+        "c9113e301dac75688fadd375c075cbe9b4ddc2cf0f760f6c8d8607c5d2055656"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "c81ade0c525b2e17900e1a7272c07bf411065eb2a65b37ad52c0fc18e9ecb434",
+        "d6fdbdbff9d1006b62bdf6143f65e267f71bea5a57c1acbeacf7d971c5282fa7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "cmd/system/http.go",
+        "e18faad103d61619d6e7d6e1aaed6e2566aaedff5a7204c9c06cd03d4d33408b",
+        "fb247ca3e8cc7aa1b5c90d35edf5d8d1a75e1e8153412eb1b5251b61b3ef11b9"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "internal/authentication/djangosession/validator.go",
+        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49",
+        "8dce43c37b29f172ad2133b6b75331b768507aebb94eb2cc18632559190e9a49"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/http.go",
+        "internal/publicprojectmetadatareads/throttle.go",
+        "6c8574a76bf51ccbfdae58bfa2bc585888795108dd245cf65fcc0bbc6a854a89",
+        "6c8574a76bf51ccbfdae58bfa2bc585888795108dd245cf65fcc0bbc6a854a89"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cmd/system/work_item_history_http_test.go",
+        "cmd/system/work_item_history_http_test.go",
+        "0a34eb5f41917561482b886aa19ce53c2ae93263d9cfcdec933b213cebaf229c",
+        "29e7eb51244d69f769b047e879581670ff21fbdbb6bfbd4639ed937645a1ea88"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "custom_view_creation.go",
+        "project_publication.go",
+        "307d6fb18cd28b0a65e7f2de1661011be5d3149bcc60e6e54cb3f161faca09b3",
+        "fbfa5685497200940896e0bf3ddeda4270a8e275ceaacfcc8caffdc453c926cd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "custom_view_creation.go",
+        "workspace_user_insights.go",
+        "307d6fb18cd28b0a65e7f2de1661011be5d3149bcc60e6e54cb3f161faca09b3",
+        "8a3f8ee8707a008ff12a7024cc99bab8e2f2d19c6127fe57553563c650e9d09f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cycle_lifecycle.go",
+        "module_lifecycle.go",
+        "b11c2651785f35295e32c6aa3b6a89328020321a929651ea450a2aec565e7d94",
+        "ee2f6ceee80263d6a0023e5728146caebdbbf938ded8e79de83529d768205b30"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cycle_lifecycle.go",
+        "module_lifecycle.go",
+        "dbe6f9b259e11bfd12f2e51a4a89b5adaa1071f889f28b577b023528abdce81e",
+        "e38904c46c1a010ff96a1cf063a043a46c3e8af1b76ea03d141daa069db208ca"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cycle_lifecycle.go",
+        "work_item_core.go",
+        "d90f8db9034eb8ff68ea984f9fb1d5c6d049338cfcc6aaf4e6c0a6b7ef41c9ea",
+        "ebc9cb77a2a7a303982bd1d79721a7997283d39546fb1462ceb1d531a1924412"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "0582c03a0ba3faf7ed017d893a6ddc0084e6cd6e5c66a8170f1e528016b97460",
+        "6fb4308b0b0532f8a467c37b1b58b47727f421abe026cf95bb4cec9f50752ce5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "0582c03a0ba3faf7ed017d893a6ddc0084e6cd6e5c66a8170f1e528016b97460",
+        "e94cf39e4418e3fc1d2287e1080efc8aa9bd934577d9580a80d3bcea1d8a55c3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "4c77e622f81802f7346071718bdb906a46985c5521e852795584a046ddf778f0",
+        "80f6b00e5823eda54dfad29fd75fded5a98931cd30bee8188ed4dc1e5ba17cc4"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "5c719b4e75190cdf8227cf878534a7e05eaebac915bb17d68c246f05ff1869ad",
+        "7abdbbdea708add1d7a1c1be1551dc5e9aa1817fd10c5558e87947fd270df437"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "6fb4308b0b0532f8a467c37b1b58b47727f421abe026cf95bb4cec9f50752ce5",
+        "e94cf39e4418e3fc1d2287e1080efc8aa9bd934577d9580a80d3bcea1d8a55c3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "b1eb9e9896d44eba74b0fdcc5e1de7b9582d62cf5b4db9e402b229246198089b",
+        "eaa7ae75b39dad189e8155975b42169000cea4b4cef72d94094fdc3832478eef"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "b1eb9e9896d44eba74b0fdcc5e1de7b9582d62cf5b4db9e402b229246198089b",
+        "f0a110730b22548a5f793530e7f3a8978759431f9289d3aa8870428376b95951"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "be965f8d3bce97ab22f5e4094388079a6387a80348c37814fb29e61af8381abf",
+        "ea844479472ba443e832abc8a21ca6c2050246dfa667b7f072a55adabcba534f"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "cyclelifecycle/design/design.go",
+        "eaa7ae75b39dad189e8155975b42169000cea4b4cef72d94094fdc3832478eef",
+        "f0a110730b22548a5f793530e7f3a8978759431f9289d3aa8870428376b95951"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "60213b97924a00406389e3abe46588eaf830e4239a1079b90da77ca7a6963f42",
+        "f7a393d8919a49696a538d33e08716b2522d699d499a3bc260b039a789c4a14e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "b8e11aff840c6ed28214c85a6fa372f1f5d4ea14b31489769a79cde561e2e37d",
+        "f9218a2d3415d1f6cbba6975e7e8ecef45a817f7ff535c96fc66c9ca2f652db2"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "cyclelifecycle/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "9f7773186fa13ccd2d57e331a6f199cfb94e1d6276b945824ca04b66a55a0e63",
+        "f9218a2d3415d1f6cbba6975e7e8ecef45a817f7ff535c96fc66c9ca2f652db2"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "deploy_board_reads.go",
+        "estimate_reads.go",
+        "538c10366d475ed30a1bcb47d2b8d9c5c34a8aadeeaead9a8f4fd58090e4b77b",
+        "f7b37643acc990b8538fbdc19935345e1317b566e8500312261afc007c979d69"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "deploy_board_reads.go",
+        "module_reads.go",
+        "43a90802ddd7ee63a87165450ba33bb01bc5266fb435e1f17ac4762a27c70995",
+        "73ec896e958d3a8591906872439f4fffd167f2096e133cb59ac9adeafc618e1e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "deploy_board_reads.go",
+        "workspace_project_reads.go",
+        "73ec896e958d3a8591906872439f4fffd167f2096e133cb59ac9adeafc618e1e",
+        "b9213fb0a1e4b2e5f1a7b91d5f807bf0e127431d832088959ae738b04d76ad8d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/cycle_reads.go",
+        "design/cycle_reads.go",
+        "94580314ef75d5e17348df9f4fec3900b33b84d9f255ddd46cecdee2d318260b",
+        "eec792727e2e8601a2dc361990998b120352969936e38a5fc7092e4054384f70"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/cycle_reads.go",
+        "design/module_reads.go",
+        "84bd25f1f81a149fb0f69eb4d630861f8eb4cf00a5f4ab3f0c69e88ffc731655",
+        "c8bf261a97bf4e4314910f01d6bb70da1d673d286f24a77b3d4bdad8978f6aad"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/cycle_reads.go",
+        "design/public_feedback.go",
+        "3db1bd8158ce901c443afb793cf7b75e6116d6a560c009da7a8ca7e0558cd573",
+        "84bd25f1f81a149fb0f69eb4d630861f8eb4cf00a5f4ab3f0c69e88ffc731655"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/deploy_board_reads.go",
+        "design/estimate_reads.go",
+        "851b3c0784768cd6c69f81939ffd66660a64bb215e8d558a71129a367aff01ff",
+        "bc8da6a8dc39cb606289abbbd3b8958056ae27f3a31a80fe680a960d3d63c368"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/instance_workspace_slug_check.go",
+        "design/user_notification_preferences.go",
+        "236b6a2f4a6278ecad9374439d7359ec13cfd43481ec1ebc474c1cac24736984",
+        "663d990a30e0f0f92557b256fa1812d9dd9698ac4754e80b70013da2d251ccff"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/intake_inbox_reads.go",
+        "design/intake_inbox_reads.go",
+        "56fd0ff61f97490d8673439ab6fe2ae2c02f296a9334e0682a7e07fe87a300a5",
+        "f1b0da54dc00cf4e5a197d669f71afce5a45f9f5b438a27a88b730cc0e861030"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/module_reads.go",
+        "design/public_feedback.go",
+        "3db1bd8158ce901c443afb793cf7b75e6116d6a560c009da7a8ca7e0558cd573",
+        "c8bf261a97bf4e4314910f01d6bb70da1d673d286f24a77b3d4bdad8978f6aad"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/project_identifiers.go",
+        "design/workspace_home_preferences.go",
+        "b59e65404ec9e7b3ae159d6a019d6acb46d4390763569ecac094afe46e867460",
+        "c822ca3ee09d34f5b92491d87114fbf713311f1e7667c6e0ac608cfcf6e93796"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/project_label_reads.go",
+        "design/project_membership_reads.go",
+        "06adee5a2f72f40d00ded72691e58a7e1909af92175cdef907da94d77dbe550e",
+        "c7033521d5e703738024e00cf6baf749cb0377ef904d923ea1fd0b0d06db5cd7"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/project_label_reads.go",
+        "design/project_membership_reads.go",
+        "0e3a48914d3040882c4e2ee316a4d94db9ee561cbd674a5a5797d704fd6cfa98",
+        "2350e39aec39d9e9594c8f8f828a0728f19285ed94a3835450263699c071fb7c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/project_membership_reads.go",
+        "design/workspace_recent_visits.go",
+        "26a7cc758cb2615d988747ad73b2de6377096a29b6ad57276e24aab424626ff1",
+        "c6ea5dd7f067abc4b08fcbcef4bffec8d749075605f85cf4599965fbe65c1a17"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/project_membership_reads.go",
+        "workspace_webhooks/design/design.go",
+        "26a7cc758cb2615d988747ad73b2de6377096a29b6ad57276e24aab424626ff1",
+        "95064c26cf2963aeb85dbc32a0f41fbbcc226ff71053c677f35087e266a52801"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/project_state_reads.go",
+        "design/workspace_quick_links.go",
+        "7d03428005d857a199983f320b44cd6357a12eed6207fda920343b3cc51e93a7",
+        "823255f652fa63a429ab32de97799fe242fbcd782c9609905755c52c64791ab3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/project_state_reads.go",
+        "workspace_webhooks/design/design.go",
+        "7d03428005d857a199983f320b44cd6357a12eed6207fda920343b3cc51e93a7",
+        "91c04828d20fe6d7cd8838b3617f8e2c1518f174b71395877e01fa23e6a074ea"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/public_feedback.go",
+        "ticket_collaboration/design/design.go",
+        "93fa010d615f5a5e2db8d8d86be50dd35449937975f64f687e8ce8210f6f6f8a",
+        "a442d98999a60046194eb892ae22c4a1792cd8bd01c9d416eb0ee2b0abbd7ed5"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/standard_views.go",
+        "design/standard_views.go",
+        "bc2604338c289556b409737fbd408cea54b728351a4274e37101aa9122e98434",
+        "da864c0026ae3136ca1dbc6e5e74910eeb617bb7b6ca5077daa9674ffcf490e6"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/user_properties.go",
+        "design/user_properties.go",
+        "5508d4d25a87522f5c353a59f77868924eb453e694e068eef12c4e72fd075cde",
+        "b274b28f663c482fddea4d3bbbfc5ff29bf8c10579afd3e59bfbdadc8382e434"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "design/workspace_quick_links.go",
+        "design/workspace_themes.go",
+        "823255f652fa63a429ab32de97799fe242fbcd782c9609905755c52c64791ab3",
+        "8beb09cd0c731b61cf91ac1ef2f442406065119115aef524ff08ed1c88ddd5c2"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/workspace_quick_links.go",
+        "design/workspace_themes.go",
+        "92189762ee7a1b52e55e35440c2b5d49e875c87ec1edd795a06c6b04c43d560b",
+        "d5491dafd2fa18f2db24192651c8f545dc398982eceac62ef1aa32f3b8708982"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/workspace_quick_links.go",
+        "workspace_webhooks/design/design.go",
+        "1f6374fe2cd34f16cb0f64ce2336fe876936c62acc3126eb62628c78b2a28e2c",
+        "d5491dafd2fa18f2db24192651c8f545dc398982eceac62ef1aa32f3b8708982"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/workspace_recent_visits.go",
+        "workspace_webhooks/design/design.go",
+        "95064c26cf2963aeb85dbc32a0f41fbbcc226ff71053c677f35087e266a52801",
+        "c6ea5dd7f067abc4b08fcbcef4bffec8d749075605f85cf4599965fbe65c1a17"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/workspace_themes.go",
+        "workspace_webhooks/design/design.go",
+        "0670c803c1f4f08e68c885c929d045d18c69514dd03814a7f1a0af2f7de1f0e1",
+        "8beb09cd0c731b61cf91ac1ef2f442406065119115aef524ff08ed1c88ddd5c2"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "design/workspace_themes.go",
+        "workspace_webhooks/design/design.go",
+        "1f6374fe2cd34f16cb0f64ce2336fe876936c62acc3126eb62628c78b2a28e2c",
+        "92189762ee7a1b52e55e35440c2b5d49e875c87ec1edd795a06c6b04c43d560b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "instance_management.go",
+        "instance_management.go",
+        "a2555ce38ea0d62cb5782349a64269ca52ef12dfde8cbde2b6eea470575fc488",
+        "d258c3613b1dbea4e632bee6d5aa2191b3e29e65d868ccfa3117222c6e44292b"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "intake_inbox_reads.go",
+        "intake_inbox_reads.go",
+        "16f0235565a80c91c7448d5c2883c1ad166b5fbf955ab42b81a96eaf1a0a543d",
+        "80b143a9100cb42e9590423cb079aa61645551dbe082c46bbcf280925ed28140"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/assets/attachment.go",
+        "internal/assets/attachment.go",
+        "82e0197768041847d29b93e573a6a8ae76f7b0187ae08b0603be795e181e1ef4",
+        "a9696ad524fd278b27f9aacda83627a09562ad7b471250124f92b0ae127d9e24"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/assets/public.go",
+        "internal/assets/public.go",
+        "a7943503f322a6b4b5a383685206dd65b6b6fcc586eb1d4633d5d6cf5e89e5e9",
+        "df8cb1f34954aa027b815437b4fe27ed2bfc5058019de09729690553b5b1ee8a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/authentication/apikey/throttle.go",
+        "internal/publicprojectmetadatareads/throttle.go",
+        "4598904bedc8311196dab35f55febebf2527c245cf4b8838d0be7054e468c830",
+        "4598904bedc8311196dab35f55febebf2527c245cf4b8838d0be7054e468c830"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/authentication/apikey/throttle.go",
+        "internal/publicprojectmetadatareads/throttle.go",
+        "8ef41cc57116f6ab292fd2bebce7a5f08616e24af1c4fbdf5c98429f28937ca3",
+        "b34804fb0b07a0c6a6f88a6a8d545ec679cd69c4e87d84b4b5836c427378fa79"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/api_activity_logs.go",
+        "internal/backgroundtasks/page_transactions.go",
+        "1f801c6fe2d1f7da369d4023fd8d88ce7d0c67fdcdb958406daa6922989a39dc",
+        "f31a77faab0f494b9caf49bf6477c49c514fbda35e2f1cdb916e5729bc309833"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/instance_metrics_integration_test.go",
+        "internal/backgroundtasks/issue_activities_integration_test.go",
+        "12d9f26f813a764ff0a2bcc5889f33d8b5bc16cb354047fe7fa13016c436e2c1",
+        "9ec7f33bc19092cbe66676192cf9f7b8250d40c3324d4b51a487c70d5f6c6f8a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/instance_metrics.go",
+        "internal/backgroundtasks/issue_email_notifications.go",
+        "2eff1a90895322a4999f5189b59c0e7a30ec6f69726c4d99a9d013b96fe01657",
+        "d626303918a508bb595b08ff43818581440f932333fb3cae7634fec3493c8ab6"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/issue_description_sync.go",
+        "internal/backgroundtasks/issue_version_sync.go",
+        "0465ea64001d5c50149d4b173d391f21d0653eb121b3532df68e15e75a069035",
+        "2314ab892107ae8b3b0f775a56bc42f086ec13e8a7dd18b387f0f197d25cffff"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/issue_description_sync.go",
+        "internal/backgroundtasks/issue_version_sync.go",
+        "5b7336693d5e50347fda0e16cb87fc4d61dd07aa3a1933ba929bd40282363606",
+        "fe9fb1f7e523d5a7ca9316b4a155fb0645a641b934e42ef3afd8c72c0cda9bc9"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/issue_version_task.go",
+        "internal/backgroundtasks/recent_visits.go",
+        "08923719684ec30dbc6caf84fc448452c54834e685b81598f345ab97fb0bbb01",
+        "e87e4cf5fd07d33381647f2548aaa7a90b23de763fa610b52ad405871171d699"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/link_preview_workflow.go",
+        "internal/backgroundtasks/workspace_seed_workflow.go",
+        "91d3bafe28ace1218e180026605764348fae8bc20c4e5c0364ad3cd4656e8f76",
+        "d50d9a6120017075ed30610452ca22da7786d8b02e87c4b2e85c3616cd863995"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/templated_email_tasks.go",
+        "internal/backgroundtasks/templated_email_tasks.go",
+        "3875a9fbf3d024610f60daf2ff6f7af5bd1afa206f24e040cf7712328e14f6d2",
+        "a66e4338509b03cc685949c3847e09ace96e113a5b11fee739c47f5997cf0923"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/version_history.go",
+        "internal/backgroundtasks/version_history.go",
+        "01a090c2c1339e880144f090f6bcebd028f55af19dd9150eaeca2633c17a6f79",
+        "366988595367aa85446f61e7a81c068eddd3f816198c4254f082a58a8dbd73c0"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/backgroundtasks/version_history.go",
+        "internal/backgroundtasks/version_history.go",
+        "329d4fb64078c2db02e70bde25cf74d725c9394a846d9b4e6cbd73a5026af88d",
+        "8d083be02fb1ae21f50ad77ee4b2acf1bd908cb26d671cb843e00fe2d7ef0932"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/cyclereads/api_v1_test.go",
+        "internal/modulereads/api_v1_test.go",
+        "b2ca6e70eb9e3abb51648ff769214dc5c4eb51076f644862bafcc79f0e5e5750",
+        "f2f313780871837a5d9e6eb079e90d3661ee360156c5d7f61b2cf0a335f0db67"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/cyclereads/recent_visit_test.go",
+        "internal/modulereads/recent_visit_test.go",
+        "1a047e3526cc8d7388b5dbe91faa7cd39f171b4f21aae9486ac9b44b1697c380",
+        "c23a8f648fb921a22eed8c6310e0e7c8c1fdd5b28c0159bdfc31fe3dc7f05f2e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/cyclereads/repository.go",
+        "internal/modulereads/repository.go",
+        "a241c03f2ce1f72e2d26ec5fa14a860adbaeee6b1bee2f65416d40d00bfa5a11",
+        "c7817516ef8f30cfa41d15a1443ac1d3a0304976fff36ce84bdc4c86fc1eb233"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/cyclereads/repository.go",
+        "internal/pagereads/repository.go",
+        "3ae77f76bcf008cc6b15337d233376eebf57e8902de6111301814740cbd46b53",
+        "a241c03f2ce1f72e2d26ec5fa14a860adbaeee6b1bee2f65416d40d00bfa5a11"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/modulereads/repository.go",
+        "internal/pagereads/repository.go",
+        "3ae77f76bcf008cc6b15337d233376eebf57e8902de6111301814740cbd46b53",
+        "c7817516ef8f30cfa41d15a1443ac1d3a0304976fff36ce84bdc4c86fc1eb233"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/pagereads/repository_test.go",
+        "internal/pagereads/repository_test.go",
+        "58f7102ba6da11e067833a53f35138a4370b5a106b719123a179df41f2c259ba",
+        "7d28d0f251ddd37194b1bc33d1d3b1faa84728122de167c141f7b8116401a5ac"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/proxy/assets_lifecycle_proxy_policy_integration_test.go",
+        "internal/proxy/ticket_collaboration_proxy_policy_integration_test.go",
+        "8dfa2d144857659b6307270dc18def2a059e77b49a06ebd4de5db8c06c01305e",
+        "9fce1b3863c0627b46679b92672a08ab1c6b4d8de392dd2ad5bb517eeb62122f"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "5916ea3a94274770c83844a46397e91fdf8c5e49853e8f397d366fb3c4e43c1a",
+        "a8c3876905e9d6049df07b8a87553dedfa6f4ad6eba468ba36c43ab54f31c37c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "5916ea3a94274770c83844a46397e91fdf8c5e49853e8f397d366fb3c4e43c1a",
+        "aed0798ebf2a80a4a18d87419b5971155fac5c9e02e79f158b8051407fac3b74"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "internal/publicprojectmetadatareads/repository_test.go",
+        "a8c3876905e9d6049df07b8a87553dedfa6f4ad6eba468ba36c43ab54f31c37c",
+        "aed0798ebf2a80a4a18d87419b5971155fac5c9e02e79f158b8051407fac3b74"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "internal/workitemhistory/repository_integration_test.go",
+        "internal/workspaceuserinsights/repository_integration_test.go",
+        "c2e2455036f6df346c9e6f17e6e854d432348bda3228de0824e5637ef32441fe",
+        "e3994d0085543e15c16e2e20089b481b964bb7d8c62cac7dab01cfee4279415e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "internal/workspaceprojectreads/api_projects.go",
+        "internal/workspaceprojectreads/api_projects.go",
+        "b21e1cb87a8ef8ba6e4315cd3556831bb387ca39fda592023be8309b90a58cff",
+        "d5c542da7c2a20db5103660425d7746d0973765ba792774d53147aa1a41c9532"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "11fc0cbb10438c20cf935f683df1bc97e377dfef4175ee9823ba4ca1dc792eaf",
+        "946eb5cd80acb7948490523529a59aeea4693a61c0c4426e80399e52119c6aaa"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "23d8162dd9efeb48554c88866f308f653371c9eac7796d07a3c4d9f212047e99",
+        "912268cec7afa91e398049f8dfe5558a807263533c53da7d6b399038d5b6d039"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "25742e7db2ac5ff6f534fdeece655317127d803247f1943171c196559495917d",
+        "dff6feb557f827635b19aeefad59efb0e090bcb69958aa17d0f5b2257e26e260"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "25742e7db2ac5ff6f534fdeece655317127d803247f1943171c196559495917d",
+        "ea57faa883070d1267ecf24ebee13b1fd5ce0afc1d6b19452bde91bf86dda934"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "5f9fd84904b360e7f3640b1bc4a39713800d965a046410a8b57902f35721acd8",
+        "c920fbd55f9b7027f1902127e9670a2dad2e6fa353b379ae4bbcae6f97e63e27"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "invitationsmembership/design/design.go",
+        "invitationsmembership/design/design.go",
+        "dff6feb557f827635b19aeefad59efb0e090bcb69958aa17d0f5b2257e26e260",
+        "ea57faa883070d1267ecf24ebee13b1fd5ce0afc1d6b19452bde91bf86dda934"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "module_reads.go",
+        "workspace_project_reads.go",
+        "43a90802ddd7ee63a87165450ba33bb01bc5266fb435e1f17ac4762a27c70995",
+        "b9213fb0a1e4b2e5f1a7b91d5f807bf0e127431d832088959ae738b04d76ad8d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "5ff265fccf1171a5ddeccab6370dd89618c35be53b5cf813570a6963fe9fa434",
+        "d17864a2790bc25cb5380c9fffb9e4b08608f57b7d2814e73f9fc3eb383da67a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "803c472d3fe4c648edc7725c15dcffa5e6f702de30383f9dc22fe2b6069ebe81",
+        "dcf637c5979181cc0df2c3377c39fb2eb6d3bd02de3c9ff7a8f59402ed2ddafe"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "803c472d3fe4c648edc7725c15dcffa5e6f702de30383f9dc22fe2b6069ebe81",
+        "e77a035c7cb3da5f7ae382f4d28732de7f2994a621bcf317d6b85b877ba171ac"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "a854923813b602faecd7a10de1d8d775a2a6af7ec3195e3aae2c4b53cce789b2",
+        "af7e9347d3f211df1332798bf9bce12dfeddcc6121a7f7d80b14997dd8ded305"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "a854923813b602faecd7a10de1d8d775a2a6af7ec3195e3aae2c4b53cce789b2",
+        "f7af533f3913e21daf4cd996812e4d60bc00b3233cf131c0f502c0c0a376a46c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "af7e9347d3f211df1332798bf9bce12dfeddcc6121a7f7d80b14997dd8ded305",
+        "f7af533f3913e21daf4cd996812e4d60bc00b3233cf131c0f502c0c0a376a46c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "be7d9de13bc30bab8b88e02611050a38d5c7d1f2c38e78ccf25cb8662a5b4a52",
+        "c64611c55b18692ca49de31bf484369d71b3a70ec31a81b9a17d382f5af30f92"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "c1a0b5d21672af3b6d317460c5363025164a38abb392d29bc8ef06038d8ea4f8",
+        "e6bfa1570c218a09e555e3ef2d5750f00b15654374bbec634f804251f1f1039c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "modulelifecycle/design/design.go",
+        "modulelifecycle/design/design.go",
+        "dcf637c5979181cc0df2c3377c39fb2eb6d3bd02de3c9ff7a8f59402ed2ddafe",
+        "e77a035c7cb3da5f7ae382f4d28732de7f2994a621bcf317d6b85b877ba171ac"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationactions/design/design.go",
+        "12b71c371d674fadbd00b2eb00aa40f54ad55edd4dd0f45b7e5be1a5d6a7d216",
+        "19c28ba02c29408b21fe6e3636c3a1e39b5d7c2ee69048c6bff208097169dc3b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationactions/design/design.go",
+        "987defceb3a2439eee7b5aae5339ff07ed86748ffceb6c6b3a716734cde665bb",
+        "ef9166f6db2c46136f061a0d856395713261cdb48615a9ab23628d89bccce606"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationactions/design/design.go",
+        "987defceb3a2439eee7b5aae5339ff07ed86748ffceb6c6b3a716734cde665bb",
+        "f051795deefeefe1fbd84f1b6245de399885f44b1946b05ebda9e8d842186833"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationactions/design/design.go",
+        "c330741df42799a86069a6d6cd75b4a8820f8c45684ebe65a4b663f11ee9e6d7",
+        "c9573a4d3291203fa8e746684ab120865660dc3a65983d814158e76ae00131a8"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationactions/design/design.go",
+        "ef9166f6db2c46136f061a0d856395713261cdb48615a9ab23628d89bccce606",
+        "f051795deefeefe1fbd84f1b6245de399885f44b1946b05ebda9e8d842186833"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationreads/design/design.go",
+        "12b71c371d674fadbd00b2eb00aa40f54ad55edd4dd0f45b7e5be1a5d6a7d216",
+        "e15d34fcf5783f9bce8f7daa260703f8f32b0c94e76993fcfd9f5671ba0a9d3d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationreads/design/design.go",
+        "19c28ba02c29408b21fe6e3636c3a1e39b5d7c2ee69048c6bff208097169dc3b",
+        "e15d34fcf5783f9bce8f7daa260703f8f32b0c94e76993fcfd9f5671ba0a9d3d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationreads/design/design.go",
+        "ce209bc03207d9cd1d2ea6e87e3bc14e74a0c07c5330f7adfcb6c8d103efefd0",
+        "ce209bc03207d9cd1d2ea6e87e3bc14e74a0c07c5330f7adfcb6c8d103efefd0"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "notificationactions/design/design.go",
+        "notificationreads/design/design.go",
+        "f993db5b353735abc9635c6f63d7d24d81ee65b63f2c2ef29cc566a5499cda39",
+        "f993db5b353735abc9635c6f63d7d24d81ee65b63f2c2ef29cc566a5499cda39"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "0f6a8405dc1400762a0c2f221660b649fb7830d10597be8ea93afa52e7d5c60b",
+        "a86c74f0efdfacbc1ba2bc3e49075542db1539e7da1114110816c7cac8b6cc67"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "0f6a8405dc1400762a0c2f221660b649fb7830d10597be8ea93afa52e7d5c60b",
+        "cfd9f81ae3b04e60cb4429c219de618638cc2d89f3c63781e6791777c0e01e32"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "2dc0ff3811b9f47def74d335bc85d19c23064b08436b84f9d89bc8c686402b3a",
+        "95027e81ce1164adec36297f7ccb9f9b0ed3d2e11840fd51229dbc20699c47af"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "2dc0ff3811b9f47def74d335bc85d19c23064b08436b84f9d89bc8c686402b3a",
+        "f7fb4315e1489279a2f9df53c95c9bd5c3a9ea960aa81e38a93ad6b1cb816d74"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "49a4f0cccc30850670a6cccc2019ffaa5b19ec66abd2b3441e2d3d202a7272b5",
+        "fe6b3392abe99f5d64b97bd08c7dd0cd1543a267bddb1836a80cb5cfc7831033"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "4a504fb23563e6f9e7aed942dfc33368ea015dfef81b23150bfdd031f2439a9a",
+        "60d0c2765c06c015db7afe9adbafcf2a46771513eedcc52532dc174c8c7e6983"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "4a504fb23563e6f9e7aed942dfc33368ea015dfef81b23150bfdd031f2439a9a",
+        "cfd9f81ae3b04e60cb4429c219de618638cc2d89f3c63781e6791777c0e01e32"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "60d0c2765c06c015db7afe9adbafcf2a46771513eedcc52532dc174c8c7e6983",
+        "a86c74f0efdfacbc1ba2bc3e49075542db1539e7da1114110816c7cac8b6cc67"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "95027e81ce1164adec36297f7ccb9f9b0ed3d2e11840fd51229dbc20699c47af",
+        "f7fb4315e1489279a2f9df53c95c9bd5c3a9ea960aa81e38a93ad6b1cb816d74"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "page_lifecycle/imported.go",
+        "page_lifecycle/imported.go",
+        "a67e44ffd79ed8eb3f09c31a85c232bd7d12dcbb6eb78bb1939b8c043cafcdb7",
+        "b0cb07bb1691980ca5ba964319603a97453f73605f1357c4313b09fc211747bd"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "project_intake_writes.go",
+        "project_member_preferences.go",
+        "11e55085fea48185a685bc5dd24865267ba7b912b37f842b1e5b2987d59904a1",
+        "c9dce7104e7baa017c178f3c729e121d81052de0f50804bd303a87becc492f9c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "project_label_writes/design/design.go",
+        "project_label_writes/design/design.go",
+        "0e1786124919afcf63186fb07f42676a647a22239988b8cdf06913eeff018d46",
+        "b82acc13a4919df09ae110e94a4d0d4c5d0cd01f77a6e71894bf460ad36e00ed"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "project_membership_reads.go",
+        "project_membership_reads.go",
+        "22c1c724c7a31490b3b675dc1b550dea11c883acf9693ebeac6758940c11fa21",
+        "95c3b53487c11e0f139b598004eb397b342ede40cd3a165da245402e207ecdcf"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "project_publication.go",
+        "work_item_history.go",
+        "bbc8f5cf1895ac5f8dffe7cbbf2dd38dc494d68a949a3d198d04a511db17f1d6",
+        "fbfa5685497200940896e0bf3ddeda4270a8e275ceaacfcc8caffdc453c926cd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "134fbc64c94246f0f2b30e2bb79119dfc1473e00baa7e779a537d5d8791cb5ea",
+        "7199e972c801ac07281682c42ea3b9a13fb3e2b96e052b9ce2e8c36dd11a5f9f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "134fbc64c94246f0f2b30e2bb79119dfc1473e00baa7e779a537d5d8791cb5ea",
+        "e7c20b5ae8481366788197516e4a9788843c57a30f5b4d90b7f672a78baec904"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "18effbfde0b92e5df83f470836c407809a4fd4de316601104419a3814f335215",
+        "d030407c49a6e5d95fa9e13e22e62094bbd64b2f15b667a6ffcbc4cadae898a5"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "7199e972c801ac07281682c42ea3b9a13fb3e2b96e052b9ce2e8c36dd11a5f9f",
+        "e7c20b5ae8481366788197516e4a9788843c57a30f5b4d90b7f672a78baec904"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectlifecycle/design/design.go",
+        "972d19834066cbd2cdedbaaf4ee5c4db1dba4de6bbda10b2b3bd9b6cc8db8142",
+        "a6ea4fb04d29425b3e8749ff7efe11a2e24a1afae44580e43ad129683a3a27d1"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "4ceddba90e4f108fae8fa1655058c04087ce75094f84b42d3ee08a4c593f5253",
+        "5e5aee524158935fe79fbb8c62c5f82a577da5207bf7c2256538f21909168cbc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "9f7773186fa13ccd2d57e331a6f199cfb94e1d6276b945824ca04b66a55a0e63",
+        "b8e11aff840c6ed28214c85a6fa372f1f5d4ea14b31489769a79cde561e2e37d"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectlifecycle/design/design.go",
+        "work_item_core/design/design.go",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73",
+        "c0dd40f1dbe5d7a39e8adcf020430ea6a83a9be5bbebfaafdb6aab1b93319a73"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "projectmembershiplifecycle/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "094b7176115cf329f73460c67f1d1d4788ce9679ffa91d4cd91c2113423bb550",
+        "5c87ebfeb22465cbc3c4ab060c0ed9bfe29d06c53b0eb4e5591b2268cead127e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "projectmembershiplifecycle/design/design.go",
+        "projectmembershiplifecycle/design/design.go",
+        "b0204f51b15897ebca1c9a174a14fd478feb984a1208a9c4220ada991c5ddc63",
+        "d148415015ef6bf82681a0b6da9f2fd52052528e774c16eed7755e4b25d224ae"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "projectmembershiplifecycle/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "4ceddba90e4f108fae8fa1655058c04087ce75094f84b42d3ee08a4c593f5253",
+        "a5f7d69090380c8f0a94bff8f119f60af52679534cd2a098b76454236cf93173"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "0b89daa393a4b863235215e9581075ec10a2f08a2dbfa81ffc76d74009dcac40",
+        "899c6a4574738e5cd3b2be95c1d0bbfd5dd7f024660220c62c858466c0a8e704"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "0b89daa393a4b863235215e9581075ec10a2f08a2dbfa81ffc76d74009dcac40",
+        "cdec1ff8cdc7d127af03f4d0ac6e90f549c58e416651c9be60321848d84e8932"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "280e53b74c6b3e67df6843025d5eec7cf7c9520b725eb722d4f36ee4b856a1fe",
+        "78c287d1ac48a8bc8063988a4e1aa07517797cd68beba65bd1f56a2b2221d5b5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "280e53b74c6b3e67df6843025d5eec7cf7c9520b725eb722d4f36ee4b856a1fe",
+        "cdec1ff8cdc7d127af03f4d0ac6e90f549c58e416651c9be60321848d84e8932"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "3ad00d9c757c9f380124146d97680af160807a371056edda886eef73c76c58df",
+        "a8635df395a5b7ee0166ead2e145e934d87d3d1ed7fdb284e5707543b68b9cfe"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "public_project_metadata_reads.go",
+        "public_project_metadata_reads.go",
+        "78c287d1ac48a8bc8063988a4e1aa07517797cd68beba65bd1f56a2b2221d5b5",
+        "899c6a4574738e5cd3b2be95c1d0bbfd5dd7f024660220c62c858466c0a8e704"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "0763712ebb047dc3692bdadcc919c9de6517b8931a087f1793a42295ba328d9a",
+        "60fa6d7e25956b57ba4a9a0d65677c0b10095286917743cd8c444475b4adcf9b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "0cf0db94fd052e201315fa110de59256620bc13cb4147db64d90e60c3ef62750",
+        "c5a3a1f8a97c7fdd56aaaf83499289bfc21e9a508367b3e2b51d4d883afe65bc"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "113c8111975ef2cb2ec012a91203adef993888e183300c5d6c688a5e440cf255",
+        "ea1c6ded82cb364cd72f1e76a3f9ce6c98267b48bc01891f0eaf86d715eb8b93"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "25db21cabdf7a3498e8f317c0dc782dcbdb01fadff43dd4679f7950c182c577d",
+        "348368dd4bf012a5bd8a087cb123c050b4717c0e4b7ca50c2fd2c797a2f50c69"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "25db21cabdf7a3498e8f317c0dc782dcbdb01fadff43dd4679f7950c182c577d",
+        "be7672a3a84aefc242b2081419fc6e4b40d570fa7ce97f92f194648ae3d9c1dd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "2c9ac17eff2f46040d4afc1d748d4c2693e4986d2bdb812a0fdf2a9b856a5604",
+        "e895af7a605a2f9eb333ce5a056d5103e721d9896e600a50fab1dc6f5985487f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "2c9ac17eff2f46040d4afc1d748d4c2693e4986d2bdb812a0fdf2a9b856a5604",
+        "f30a6054182d9f49b7b647ccf69dd758ae30b506e9758cda2b73e18aadabbd63"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "2e004303a314389d552448a8f61e17dcc585d0302e93434c3212ab082b6623cc",
+        "ca2730ed2bdfadec66bb4395cc05da7d93c357177a04ab7fd40f440a24134e02"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "348368dd4bf012a5bd8a087cb123c050b4717c0e4b7ca50c2fd2c797a2f50c69",
+        "b06c6afeb3080b435eaae4107fee885b34bba11381e2101594d79c2e56f4dc6c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "39d8896db5329d8a837b09d8ed993d2055ef7e9c80db2cdc71ba9632d6212d56",
+        "5f5b79f2c030cf08dcf4271c203e37ae30646bc4bd2813f41095b4a92a9e4d2c"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "39d8896db5329d8a837b09d8ed993d2055ef7e9c80db2cdc71ba9632d6212d56",
+        "7128a5957597a13dd4f061d909c467db3d03e297a0c7bfca3e198bbb27de14f7"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "3c33d121f4e9a47aba174edf39516976a1baccb95d99a2033e7a0bf4a41b2ce5",
+        "4a68e99312a6ccef5a634b7982dffcfeb88070d8596d439510e1f74c7c74645b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "514c75248ac30a2dd4d300c7cc28a0f9d0ef5a64fe03cc9610b8ae917aec8bd2",
+        "7400c3726f91935eecfe0ae814541b25ddf067a97428786d0fc7b33dfdeed81e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "514c75248ac30a2dd4d300c7cc28a0f9d0ef5a64fe03cc9610b8ae917aec8bd2",
+        "cd0142dba8bc4979f0051b2c237229a598405933b74f378c961445a0566d7abf"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "56cb2310f68c1d943b18e54fcc21b7455e22dc0f71bba0f0637cbe255bb120b5",
+        "c88020a73c0b3a54403b3c836c8d9aa934eb24d3a0557fd75cc56b2dd3f61067"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "5b0eced65ddcb79df65f2c79ed9a217d64d7a1ab0881028c114a0502e3bb5479",
+        "84135d6366b395c09b5eb2d392baad834956bed195f5a4d794975c4a9c4c8b69"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "5b0eced65ddcb79df65f2c79ed9a217d64d7a1ab0881028c114a0502e3bb5479",
+        "e367eae0dd40a7bf4c6cb3864f55147e066ff72e9d3dac7cfc85e14595ef25c9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "5f5b79f2c030cf08dcf4271c203e37ae30646bc4bd2813f41095b4a92a9e4d2c",
+        "73e1609aca730e631613281e1797623665756ba00423daeeff299c6f3567c576"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "60fa6d7e25956b57ba4a9a0d65677c0b10095286917743cd8c444475b4adcf9b",
+        "a5f7d69090380c8f0a94bff8f119f60af52679534cd2a098b76454236cf93173"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "7128a5957597a13dd4f061d909c467db3d03e297a0c7bfca3e198bbb27de14f7",
+        "73e1609aca730e631613281e1797623665756ba00423daeeff299c6f3567c576"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "7400c3726f91935eecfe0ae814541b25ddf067a97428786d0fc7b33dfdeed81e",
+        "e895af7a605a2f9eb333ce5a056d5103e721d9896e600a50fab1dc6f5985487f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "75e5e98b2dd4e683c30bece117fcfed2ea1fee935417d58bb0847d90e2780857",
+        "77449b2fc1d1e46111df88edb964040a5f463f4064af142b322dc587255b211a"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "75e5e98b2dd4e683c30bece117fcfed2ea1fee935417d58bb0847d90e2780857",
+        "ea10994976237ba3fe22ce0cb707bbc1704f937cd7009cf1b1d7cef4aafc916b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "77449b2fc1d1e46111df88edb964040a5f463f4064af142b322dc587255b211a",
+        "ea10994976237ba3fe22ce0cb707bbc1704f937cd7009cf1b1d7cef4aafc916b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "84135d6366b395c09b5eb2d392baad834956bed195f5a4d794975c4a9c4c8b69",
+        "c86f865e96cbc72fdeebbbf477cd1667619f16dd978358399c3f60745bf71e17"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "b06c6afeb3080b435eaae4107fee885b34bba11381e2101594d79c2e56f4dc6c",
+        "be7672a3a84aefc242b2081419fc6e4b40d570fa7ce97f92f194648ae3d9c1dd"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "ba5491b46fc315a994f5c1ce36b6b8a2a6908bfbf66eb241dbeef8baa5b78cf8",
+        "f9a6b1da4660093c39821dfb1f074df9634d033b78a7019ff07552db7e9f8d9e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "c86f865e96cbc72fdeebbbf477cd1667619f16dd978358399c3f60745bf71e17",
+        "e367eae0dd40a7bf4c6cb3864f55147e066ff72e9d3dac7cfc85e14595ef25c9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "cd0142dba8bc4979f0051b2c237229a598405933b74f378c961445a0566d7abf",
+        "f30a6054182d9f49b7b647ccf69dd758ae30b506e9758cda2b73e18aadabbd63"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "ticket_collaboration/design/design.go",
+        "e0fac5c481dfbe01ee0d7f8ab59f7e5b2f3cd6fcc006061f4158fe2a50e6cd9f",
+        "e0fac5c481dfbe01ee0d7f8ab59f7e5b2f3cd6fcc006061f4158fe2a50e6cd9f"
+      ],
+      "count": 4
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "work_item_core/design/design.go",
+        "0763712ebb047dc3692bdadcc919c9de6517b8931a087f1793a42295ba328d9a",
+        "33296fc14e0a957cd472a68a58c94c497dac57e5787574299a9f39ad55adcb7b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "work_item_core/design/design.go",
+        "0a0a1ba1752d9f319a3486c9d5fe125033c16429c5f2fa072d5c6279678d5d2a",
+        "3c33d121f4e9a47aba174edf39516976a1baccb95d99a2033e7a0bf4a41b2ce5"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "work_item_core/design/design.go",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65",
+        "6f3d89cab1ee6be1b8ebaa6ab03f388f17a42b24715797d29cfe001162e6ca65"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "work_item_core/design/design.go",
+        "acfd07468e3d803444dcf49c62df24dec9e5d012181f2b244da856e165f93380",
+        "acfd07468e3d803444dcf49c62df24dec9e5d012181f2b244da856e165f93380"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "ticket_collaboration/design/design.go",
+        "work_item_core/design/design.go",
+        "df68a896cb6461bef4870e8f131a7a0252d0b3f43bbc22e25f452252c045019b",
+        "df68a896cb6461bef4870e8f131a7a0252d0b3f43bbc22e25f452252c045019b"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "user_properties.go",
+        "user_properties.go",
+        "2726baf48a8f041e10320c14aeaad904929c6e3b4e8947f3db9ea6192423fb25",
+        "618480011661e1f14ecf0f44d36c758e74d22406835abfb1b042be4884cc9489"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "user_properties.go",
+        "user_properties.go",
+        "334a2c261aae0dfe1d060afda501e60e33e3fd19a04202f6ace9a8b15eeec04f",
+        "b353f239384119be14fd5bccfd60e44eff00bff2b437df017371cda6686e9b50"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core_test.go",
+        "work_item_core_test.go",
+        "1e66aca2cb0d8a22c47b280d810a0e9051269857a6dde09415c15737507a0968",
+        "9981e2d26bb7407b0bca5ce58e7cefb07e3c37ef5e381d3fed6374c004c5b48b"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "0167becb068de145bedaa5391987f14819efdb72565b651f5021431e42cbb433",
+        "639926c79df1f539477ad5c0007490ab08792fd529151710a82453e80150a186"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "03f8fd5c5fa62cf95882b5d94b9dd09415858ca20d100b4a22cd13d024126897",
+        "241f39db53ee39b1d7a2c99a25566e24d8381bdb5dc5518eb4b574a83dc136b0"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "03f8fd5c5fa62cf95882b5d94b9dd09415858ca20d100b4a22cd13d024126897",
+        "d1645c6e31fec81c2f83b79f7fb1738bb57520a44f6a6f09538276a9d4f63392"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "048e05c4e25160ae4195334b22024a5c53e34036f8d00e2d93b16cdfb5ec6f9f",
+        "992f4707e9f56c465fa0bedbdcd3c002cb492139be3f41ca29542256ad471a83"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "0b1d6e7a4dd72b6c28f85da9c209f1d8b4960b83556773940677d9648e0f62cf",
+        "7c5f36b9f97cbe73a9ce4cb80f1b58eece2cfd1bf3d19a0a0c3ad51e74c15ff3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "0b1d6e7a4dd72b6c28f85da9c209f1d8b4960b83556773940677d9648e0f62cf",
+        "b1fc2164c1db3e68cb896955c126b7466692841ea771c8a7c617d10b0159131e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "13fd7cae3a7eb7f846337338a58bec514aba6bffa518ced5c3ed000735571782",
+        "16c1263c564c5b0f4513cd38af8c5beb31527099a4ae1adce8a39a65b04293b8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "13fd7cae3a7eb7f846337338a58bec514aba6bffa518ced5c3ed000735571782",
+        "7c5f36b9f97cbe73a9ce4cb80f1b58eece2cfd1bf3d19a0a0c3ad51e74c15ff3"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "16c1263c564c5b0f4513cd38af8c5beb31527099a4ae1adce8a39a65b04293b8",
+        "470c01ba537044901e425d2177e93cfeca26d1de5c378ef97c007a68218718be"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "1a28b1949202068ddaf4a723fe3cec84a208230cbbeccc53b790acc24ab565f3",
+        "d1fb8b3df1601f40279ef961245182c38acd4783696d67d6c15d10214af90141"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "1b4b0cffea4fefbdee757dd285488cdc5a1c7f07ab4e93187d01a4e7ab073815",
+        "760b9daa09c1f6af45ce008d3c1d072476bcf72666027a72415f9ebe8065af90"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "1cda5aeeda94762845806770de1ca65e14ab7e9daef7ce1e20452355c9ed27e2",
+        "31c9ee6cd5164be28c00fd129b69faeac5ac5b2c40c39b24ebd2280e1f41a3e8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "1cda5aeeda94762845806770de1ca65e14ab7e9daef7ce1e20452355c9ed27e2",
+        "baf0c992057c796f52a43f7da7dd62b7dec65929988f7491d646c45ac3dea140"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "218beb2f442df254bd960f6021a12a7343b2c7b03b3411a0642c2dd5ce354e72",
+        "3e02e515fb25d3315ab8648b18683e527a3295ad6903ac01ca8c4ca0e1330f2f"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "2274bcac7be8199c541e48c5493e2176eb84823388fa2ffb6d2949ed1b78a1ab",
+        "2cc9b9ad1bd1d837bbd9f1ea0c2d6b15a40e1fe72e3e2266de92da1b44e18136"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "241f39db53ee39b1d7a2c99a25566e24d8381bdb5dc5518eb4b574a83dc136b0",
+        "a6f0203929a70ea579e1805084bc48ad2d68dd5ae74f728d8573964d13c7f5a1"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "26c4efca3ede01ec4eec052656ec3d6b58dd446e9ae6ed903a332b0367ec5960",
+        "54f41e82c9cc706571b3aa3ca78c990e0b8da4a34bc7c8789f095915a7733c1f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "26c4efca3ede01ec4eec052656ec3d6b58dd446e9ae6ed903a332b0367ec5960",
+        "d73d250df12c6a0e0507263d88a94f3d5ad716a8920dc23fb89acef1600fd772"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "31c9ee6cd5164be28c00fd129b69faeac5ac5b2c40c39b24ebd2280e1f41a3e8",
+        "72d68e8aae4030932c31ca40e2d1e8d222df3b49288dcfbeb33a06d33a12ed2b"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "33296fc14e0a957cd472a68a58c94c497dac57e5787574299a9f39ad55adcb7b",
+        "461c9dbb2aa61c8c2a58c6c852fcf5c6072a33d8854227c1532c1fd56e2289b9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "37bfcc68648620c09500cfd6d8502af2e8a8e28b8b349f9a2187498c19d037af",
+        "cef095b574ba787f13da45f1b6db0b01b2214910eb660fa83c38e6e7742a1385"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "37bfcc68648620c09500cfd6d8502af2e8a8e28b8b349f9a2187498c19d037af",
+        "e3d554c881f6e574e62dcae6cc912a23bf8af1a16316c4617f76c7c0e23aaf62"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "37fdafa891f03111bcccbb38419f682d409fa1df0eb9c65baaa6a24838148c0b",
+        "8dc6de278d7b77745ce21c6bf9e9e7f5434dcdd1164056a86b1b7956626d0136"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "3acdc894bb6f8832c4c7a38d3ef76157d6cef0ce5a53ff68087a8f57d70988b5",
+        "edec3fb1756f3777d00a4f2b4e2c3afc7abff22c09e6fce41fd2e680a69fdcdc"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "470c01ba537044901e425d2177e93cfeca26d1de5c378ef97c007a68218718be",
+        "b1fc2164c1db3e68cb896955c126b7466692841ea771c8a7c617d10b0159131e"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "4ebf5c2db1371cb83350f877a643273326dd1b977345ac405c5b5c0c12008f8f",
+        "e3d554c881f6e574e62dcae6cc912a23bf8af1a16316c4617f76c7c0e23aaf62"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "4ebf5c2db1371cb83350f877a643273326dd1b977345ac405c5b5c0c12008f8f",
+        "ed2dc81c101072cc3ba79c079692d381279babbfda52751f54148eb053a1d5d9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "503ec215395616caf26fbc3df47a9dfbb25fdb86d880fcaed5292d4ff7ffb17f",
+        "6bd8e3c4e18d922d25230916c62a30a5b20d47fc9f0685a65c98d809679e056f"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "54f41e82c9cc706571b3aa3ca78c990e0b8da4a34bc7c8789f095915a7733c1f",
+        "799d99eb91c3f657ad5c9623dc89ca67577292ce945ae9fd334794f00c660cdc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "6714029eb0f295981f7214b777fa75defecb3842f30956982e77bd883d911031",
+        "d1645c6e31fec81c2f83b79f7fb1738bb57520a44f6a6f09538276a9d4f63392"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "6714029eb0f295981f7214b777fa75defecb3842f30956982e77bd883d911031",
+        "d73d250df12c6a0e0507263d88a94f3d5ad716a8920dc23fb89acef1600fd772"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "6af86d41fb7b0199dcf94119e9070fa2a9cc7e5db62d4db756a264380961b3b1",
+        "7f6fd1f1d6370ec81139812fb04f44ee45974a9dde07b0ea67c5ec9561ac6239"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "72d68e8aae4030932c31ca40e2d1e8d222df3b49288dcfbeb33a06d33a12ed2b",
+        "baf0c992057c796f52a43f7da7dd62b7dec65929988f7491d646c45ac3dea140"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "76553e61ed2a50066779c7bf55ac8999e3e2f7644e46c65e9a5efad873040f61",
+        "8400aabcdae46bf0ccb7eb82164386508c8a043dd6ec270800d309d6892bfe22"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "799d99eb91c3f657ad5c9623dc89ca67577292ce945ae9fd334794f00c660cdc",
+        "f28a5e3d4ce6172bd630307445ea2fc112ac64c447d003eb4c021cc88adcdafa"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "89583a8255c0a8499408a42448be71e90fd53f5669d85dd52f14a6e940e6b1f2",
+        "bf9050cd9c6481b24db3a8009137506f64b6fe0b2fa1be957c66c8790fb7099a"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "89c782c8769db568c2525128a685538d0e2250edf304c51e4b15a2957ec37f4d",
+        "ebb2cdb01cd76b7040c605777120f8fe7a3a8439a433d21f50327de6b8b71daa"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "8a0a4f92331f0a960176e37010101d4415ae0d5c26b19ed206816cc72d0056d9",
+        "afa68682dad1836d16ff0c8e02557970d775cd0cd1be28622b149ad977c8182c"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "9583104bb28fb1ea2c663140cc6fa1eff4356faf0734082543db1e67c880908b",
+        "d33efa377759c5b21bc3069c03af68e084615454dbba5c42a16ad67473465e17"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "9583104bb28fb1ea2c663140cc6fa1eff4356faf0734082543db1e67c880908b",
+        "e0a2f7a43cb6f4e0dac574412e5d4b50c083713fb523b1a7ca906694ddd7b350"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "a6f0203929a70ea579e1805084bc48ad2d68dd5ae74f728d8573964d13c7f5a1",
+        "f28a5e3d4ce6172bd630307445ea2fc112ac64c447d003eb4c021cc88adcdafa"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "cef095b574ba787f13da45f1b6db0b01b2214910eb660fa83c38e6e7742a1385",
+        "ed2dc81c101072cc3ba79c079692d381279babbfda52751f54148eb053a1d5d9"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "d33efa377759c5b21bc3069c03af68e084615454dbba5c42a16ad67473465e17",
+        "faadef4969a7fe9a1257d81434377598e6906d4ba854feb14c48c208a3b73746"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/design.go",
+        "work_item_core/design/design.go",
+        "e0a2f7a43cb6f4e0dac574412e5d4b50c083713fb523b1a7ca906694ddd7b350",
+        "faadef4969a7fe9a1257d81434377598e6906d4ba854feb14c48c208a3b73746"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "work_item_core/design/transport_test.go",
+        "work_item_core_test.go",
+        "9980dd8855cce12b5de8ecd2ba91e6570b470f85e592b078034e06c9cfda7bb0",
+        "ec4f2ceb74a34ab9e1cfabef236eb581a71cf2ab2c19937ded0999bcfefb3c32"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "work_item_history.go",
+        "workspace_exports.go",
+        "aa214a9e4f806f1e9e6618ed4a224d034d4f71c553a9030d8601e58eae505797",
+        "bbc8f5cf1895ac5f8dffe7cbbf2dd38dc494d68a949a3d198d04a511db17f1d6"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_analytics.go",
+        "workspace_analytics.go",
+        "2d12b2bf6a91be9775878cf86373f494f36233ba3a33ff9422db2e97458454cf",
+        "a3bdf9b2cad8f50be69934209d0c4858aa101cfa28ae53b029de13c63e8848d3"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "workspace_analytics.go",
+        "workspace_analytics.go",
+        "a619a06f1927a213c3d97842743c2ab2db14d02be12bb30e9fcf0cbc3e1bb126",
+        "d75447a115b6ff7977d75254c06c5f8e184001f74f8b97073606d1babeaf3162"
+      ],
+      "count": 3
+    },
+    {
+      "fingerprint": [
+        "workspace_analytics.go",
+        "workspace_user_insights.go",
+        "6cae5a3b81bb457e32c484e42126776b3559d802404fe9dccd794c2c91649a6d",
+        "a619a06f1927a213c3d97842743c2ab2db14d02be12bb30e9fcf0cbc3e1bb126"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_analytics.go",
+        "workspace_user_insights.go",
+        "6cae5a3b81bb457e32c484e42126776b3559d802404fe9dccd794c2c91649a6d",
+        "d75447a115b6ff7977d75254c06c5f8e184001f74f8b97073606d1babeaf3162"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_exports.go",
+        "workspace_personal.go",
+        "53defcdf604440f285002366885087bf6f0ff7c113698901b2c2a86adf7ee30a",
+        "aa214a9e4f806f1e9e6618ed4a224d034d4f71c553a9030d8601e58eae505797"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_metadata.go",
+        "workspace_metadata.go",
+        "51241cad0d0b7d9f99182b17c227ed8fd43f44a264082c1623aaeb542309644e",
+        "87ce7bc19d2deb7c57238c48a12592fda3bde91db1fa76bf90efd51fd33cbed8"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_metadata.go",
+        "workspace_quick_links.go",
+        "51241cad0d0b7d9f99182b17c227ed8fd43f44a264082c1623aaeb542309644e",
+        "9553b526624f4fa87a0ef54975cdfcf95d363568ba0617a2113e75e839add4fc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_metadata.go",
+        "workspace_quick_links.go",
+        "87ce7bc19d2deb7c57238c48a12592fda3bde91db1fa76bf90efd51fd33cbed8",
+        "9553b526624f4fa87a0ef54975cdfcf95d363568ba0617a2113e75e839add4fc"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_personal.go",
+        "workspace_personal.go",
+        "5a338e285bda49b70061270fcc970b4b61552857c074bc65238c91a1dd6013c6",
+        "b48e41007eaccb95ade823417a0a7107e34aa73464d3e8bbb6af16ba3d98a59e"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "workspace_personal.go",
+        "workspace_user_insights.go",
+        "53defcdf604440f285002366885087bf6f0ff7c113698901b2c2a86adf7ee30a",
+        "8a3f8ee8707a008ff12a7024cc99bab8e2f2d19c6127fe57553563c650e9d09f"
+      ],
+      "count": 1
+    },
+    {
+      "fingerprint": [
+        "workspace_project_reads.go",
+        "workspace_project_reads.go",
+        "6dd444952130d3e7f76a0132ee7924263320c970b39e3f193f630277131251a9",
+        "820bbd007675766792b23282f74418240bc5bade2636901bfea93a08d809c647"
+      ],
+      "count": 2
+    },
+    {
+      "fingerprint": [
+        "workspace_webhooks/design/design.go",
+        "workspace_webhooks/design/design.go",
+        "0670c803c1f4f08e68c885c929d045d18c69514dd03814a7f1a0af2f7de1f0e1",
+        "91c04828d20fe6d7cd8838b3617f8e2c1518f174b71395877e01fa23e6a074ea"
+      ],
+      "count": 1
+    }
+  ]
+}

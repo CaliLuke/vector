@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	storeuuid "uuid"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -22,7 +24,6 @@ import (
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
 	"github.com/google/uuid"
-	storeuuid "uuid"
 )
 
 type projectLifecycleRepository interface {

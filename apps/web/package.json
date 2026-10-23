@@ -44,11 +44,11 @@
     "cmdk": "catalog:",
     "comlink": "catalog:",
     "date-fns": "catalog:",
-    "emoji-picker-react": "catalog:",
     "export-to-csv": "catalog:",
     "isbot": "catalog:",
     "lodash-es": "catalog:",
     "lucide-react": "catalog:",
+    "masonry-layout": "catalog:",
     "mobx": "catalog:",
     "mobx-react": "catalog:",
     "mobx-utils": "catalog:",
@@ -61,7 +61,6 @@
     "react-hook-form": "catalog:",
     "react-is": "catalog:",
     "react-markdown": "catalog:",
-    "react-masonry-component": "catalog:",
     "react-pdf-html": "catalog:",
     "react-popper": "catalog:",
     "react-router": "catalog:",
@@ -69,6 +68,7 @@
     "serve": "catalog:",
     "smooth-scroll-into-view-if-needed": "catalog:",
     "swr": "catalog:",
+    "tailwindcss": "catalog:",
     "use-font-face-observer": "catalog:",
     "uuid": "catalog:"
   },
@@ -79,13 +79,13 @@
     "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/lodash-es": "catalog:",
+    "@types/masonry-layout": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-color": "catalog:",
     "@types/react-dom": "catalog:",
     "dotenv": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:"
+    "vite": "catalog:"
   }
 }

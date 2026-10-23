@@ -6,11 +6,12 @@ import (
 	"errors"
 	"fmt"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/entity_favorites"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/entityfavorites"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type entityFavoritesRepository interface {

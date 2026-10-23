@@ -170,7 +170,7 @@ export const TopNavPowerK = observer(() => {
       if ((e.key === "ArrowDown" || e.key === "ArrowUp") && isOpen) {
         e.preventDefault();
         // Get the Command.List element
-        const commandList = containerRef.current?.querySelector("[cmdk-list]") as HTMLElement;
+        const commandList = containerRef.current?.querySelector("[cmdk-list]");
         if (commandList) {
           // Create and dispatch a keyboard event on the list to trigger cmdk navigation
           const syntheticEvent = new KeyboardEvent("keydown", {
@@ -182,8 +182,8 @@ export const TopNavPowerK = observer(() => {
 
           // Also try to focus the first/selected item
           if (e.key === "ArrowDown") {
-            const firstItem = commandList.querySelector('[cmdk-item]:not([aria-disabled="true"])') as HTMLElement;
-            if (firstItem) {
+            const firstItem = commandList.querySelector('[cmdk-item]:not([aria-disabled="true"])');
+            if (firstItem instanceof HTMLElement) {
               firstItem.focus();
             }
           }
@@ -195,8 +195,8 @@ export const TopNavPowerK = observer(() => {
       if (e.key === "Enter" && isOpen) {
         e.preventDefault();
         // Find the currently selected/focused item
-        const selectedItem = containerRef.current?.querySelector('[cmdk-item][aria-selected="true"]') as HTMLElement;
-        if (selectedItem) {
+        const selectedItem = containerRef.current?.querySelector('[cmdk-item][aria-selected="true"]');
+        if (selectedItem instanceof HTMLElement) {
           // Trigger click on the selected item
           selectedItem.click();
         }

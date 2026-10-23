@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"math"
 	"strconv"
 	"strings"
 	"time"
 	"uuid"
+
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 
 	stickyapi "github.com/CaliLuke/go-plane/gen/stickies"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"

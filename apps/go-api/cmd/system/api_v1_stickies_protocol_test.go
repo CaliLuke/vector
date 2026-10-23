@@ -1,11 +1,12 @@
 package main
 
 import (
-	systemapi "github.com/CaliLuke/go-plane"
-	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	systemapi "github.com/CaliLuke/go-plane"
+	stickystore "github.com/CaliLuke/go-plane/internal/stickies"
 )
 
 func TestAPIV1StickyUnsupportedMethodsUseWorkspacePermission(t *testing.T) {

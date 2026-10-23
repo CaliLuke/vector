@@ -6,11 +6,12 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/deploy_board_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/deployboardreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const deployBoardFixture = `{"anchor":"demo-anchor","created_at":"2026-01-02T03:04:05Z","created_by":null,"deleted_at":null,"entity_identifier":"00000000-0000-4000-8000-000000000002","entity_name":"project","id":"00000000-0000-4000-8000-000000000003","intake":null,"is_activity_enabled":true,"is_comments_enabled":true,"is_disabled":false,"is_reactions_enabled":false,"is_votes_enabled":true,"project":"00000000-0000-4000-8000-000000000002","project_details":{"id":"00000000-0000-4000-8000-000000000002","identifier":"DEMO","name":"Demo","cover_image":null,"cover_image_url":"/api/assets/v2/static/00000000-0000-4000-8000-000000000020/","logo_props":{},"description":"Demo project"},"updated_at":"2026-01-02T03:04:06Z","updated_by":null,"view_props":{"views":["list"]},"workspace":"00000000-0000-4000-8000-000000000001","workspace_detail":{"id":"00000000-0000-4000-8000-000000000001","name":"Demo Workspace","slug":"demo","logo_url":"/api/assets/v2/static/00000000-0000-4000-8000-000000000021/"}}`

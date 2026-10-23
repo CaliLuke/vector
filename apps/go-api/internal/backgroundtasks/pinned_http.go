@@ -3,7 +3,6 @@ package backgroundtasks
 import (
 	"bytes"
 	"context"
-	"github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	"net"
 	"net/http"
 	"net/netip"
@@ -11,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 )
 
 // All network I/O remains standard net/http. The narrow hook pins sockets to

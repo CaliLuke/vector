@@ -15,21 +15,21 @@ export const withTimeoutAndRetry =
   (operation: string, { timeoutMs = 5000, maxRetries = 2 }: { timeoutMs?: number; maxRetries?: number } = {}) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E | PdfTimeoutError, R> =>
     effect.pipe(
-      Effect.timeoutFail({
+      Effect.timeoutOrElse({
         duration: Duration.millis(timeoutMs),
-        onTimeout: () =>
-          new PdfTimeoutError({
-            message: `Operation "${operation}" timed out after ${timeoutMs}ms`,
-            operation,
-          }),
+        orElse: () =>
+          Effect.fail(
+            new PdfTimeoutError({
+              message: `Operation "${operation}" timed out after ${timeoutMs}ms`,
+              operation,
+            })
+          ),
       }),
       Effect.retry(
         pipe(
           Schedule.exponential(Duration.millis(200)),
-          Schedule.compose(Schedule.recurs(maxRetries)),
-          Schedule.tapInput((error: E | PdfTimeoutError) =>
-            Effect.logWarning("PDF_EXPORT: Retrying operation", { operation, error })
-          )
+          Schedule.upTo({ times: maxRetries }),
+          Schedule.tap(({ input: error }) => Effect.logWarning("PDF_EXPORT: Retrying operation", { operation, error }))
         )
       )
     );
@@ -43,7 +43,7 @@ export const recoverWithDefault =
   <E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, never, R> =>
     effect.pipe(
       Effect.tapError((error) => Effect.logWarning("PDF_EXPORT: Operation failed, using fallback", { error })),
-      Effect.catchAll(() => Effect.succeed(fallback))
+      Effect.catch(() => Effect.succeed(fallback))
     );
 
 /**

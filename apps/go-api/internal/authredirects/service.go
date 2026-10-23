@@ -541,7 +541,9 @@ func (service *Service) AdminSignUp(ctx context.Context, request Request) Result
 	if !created.Exists {
 		return service.failure(request, 5000, "INSTANCE_NOT_CONFIGURED", nil)
 	}
-	if created.SetupDone || created.AlreadyExists {
+	// A successful creation also marks setup complete. Only a result without
+	// the newly created user represents another request completing setup first.
+	if created.AlreadyExists || (created.SetupDone && created.User.ID == "") {
 		return service.failure(request, 5150, "ADMIN_ALREADY_EXIST", nil)
 	}
 	if created.UserAlreadyExists {

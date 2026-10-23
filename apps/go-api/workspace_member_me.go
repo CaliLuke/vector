@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_member_me"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacememberme"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceMemberMeRepo interface {

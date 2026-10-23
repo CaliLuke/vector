@@ -11,7 +11,10 @@ import { CORE_EXTENSIONS } from "@/constants/extension";
 
 type Direction = "up" | "down";
 
-export const insertEmptyParagraphAtNodeBoundaries: (direction: Direction, nodeType: string) => KeyboardShortcutCommand =
+export const insertEmptyParagraphAtNodeBoundaries: (
+  direction: Direction,
+  nodeType: string
+) => KeyboardShortcutCommand =
   (direction, nodeType) =>
   ({ editor }) => {
     try {

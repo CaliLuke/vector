@@ -5,7 +5,7 @@
 }
 /* backdrop filter */
 .backdrop-blur-custom {
-  @apply backdrop-filter blur-[9px];
+  @apply blur-[9px] backdrop-filter;
 }
 
 /* progress bar */

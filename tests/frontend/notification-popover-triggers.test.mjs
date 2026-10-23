@@ -85,7 +85,7 @@ test("activity filter options expose keyboard-focusable toggle buttons", async (
   await act(async () => environment.container.querySelector("button").click());
   const option = document.querySelector('button[aria-pressed="false"]');
   assert.ok(option, "the filter option must be a native toggle button");
-  option.focus();
+  await act(async () => option.focus());
   assert.equal(document.activeElement, option);
   await act(async () => {
     option.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
@@ -141,7 +141,7 @@ for (const [name, modulePath, exportName, visibleOption] of [
     }
 
     const trigger = buttons[0];
-    trigger.focus();
+    await act(async () => trigger.focus());
     await act(async () => trigger.click());
     assert.equal(trigger.getAttribute("aria-expanded"), "true");
     assert.ok([...document.querySelectorAll("body *")].some((element) => element.textContent.trim() === visibleOption));

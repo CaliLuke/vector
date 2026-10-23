@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Combobox as BaseCombobox } from "@base-ui-components/react/combobox";
+import { Combobox as BaseCombobox } from "@base-ui/react/combobox";
 import { SearchIcon } from "../icons";
 import { cn } from "../utils/classname";
 
@@ -74,10 +74,10 @@ function ComboboxRoot({
   children,
 }: ComboboxProps) {
   const handleValueChange = React.useCallback(
-    (newValue: string | string[]) => {
-      onValueChange?.(newValue);
+    (newValue: string | string[] | null) => {
+      onValueChange?.(newValue ?? (multiSelect ? [] : ""));
     },
-    [onValueChange]
+    [multiSelect, onValueChange]
   );
 
   return (
@@ -153,7 +153,7 @@ function ComboboxOptions({
       const getTextContent = (node: React.ReactNode): string => {
         if (typeof node === "string") return node;
         if (typeof node === "number") return String(node);
-        if (React.isValidElement(node) && node.props.children) {
+        if (React.isValidElement<{ children?: React.ReactNode }>(node) && node.props.children) {
           return getTextContent(node.props.children);
         }
         if (Array.isArray(node)) {
@@ -162,8 +162,9 @@ function ComboboxOptions({
         return "";
       };
 
-      const textContent = getTextContent(child.props.children);
-      const value = child.props.value || "";
+      const item = child as React.ReactElement<{ children?: React.ReactNode; value?: string }>;
+      const textContent = getTextContent(item.props.children);
+      const value = item.props.value || "";
 
       const searchLower = searchQuery.toLowerCase();
       return textContent.toLowerCase().includes(searchLower) || String(value).toLowerCase().includes(searchLower);

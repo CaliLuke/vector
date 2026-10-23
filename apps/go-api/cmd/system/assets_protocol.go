@@ -3,10 +3,11 @@ package main
 import (
 	_ "embed"
 	"encoding/json"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"net/http"
 	"slices"
 	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 
 	systemapi "github.com/CaliLuke/go-plane"
 )

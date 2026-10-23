@@ -7,11 +7,12 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/analytic_views"
 	store "github.com/CaliLuke/go-plane/internal/analyticviews"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	loom "github.com/CaliLuke/loom/pkg"
-	"uuid"
 )
 
 const analyticTestID = "00000000-0000-4000-8000-000000000011"

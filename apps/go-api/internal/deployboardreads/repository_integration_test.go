@@ -9,9 +9,10 @@ import (
 	"reflect"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 const integrationUnsavedDeployBoardDefaults = `{"created_by":null,"deleted_at":null,"entity_identifier":null,"entity_name":"","intake":null,"is_activity_enabled":false,"is_comments_enabled":false,"is_disabled":false,"is_reactions_enabled":false,"is_votes_enabled":false,"updated_by":null,"view_props":null}`

@@ -99,6 +99,57 @@ func TestLocalDevScriptUsesGoLogForwarderAndGeneratedEnvironment(t *testing.T) {
 	}
 }
 
+func TestLocalDevBuildCompletesBeforeWatchersStart(t *testing.T) {
+	repository := findRepositoryRoot(t)
+	for _, scenario := range []struct {
+		name      string
+		buildExit string
+		want      string
+	}{
+		{name: "successful build", buildExit: "0", want: "build\nwatchers\n"},
+		{name: "failed build prevents watchers", buildExit: "7", want: "build\n"},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			root := t.TempDir()
+			for _, directory := range []string{"scripts/quality", "bin", "apps/go-api", "apps/web", "apps/admin", "apps/space", "apps/live"} {
+				if err := os.MkdirAll(filepath.Join(root, directory), 0700); err != nil {
+					t.Fatal(err)
+				}
+			}
+			for _, name := range []string{"dev.sh", "dev-env.sh", "quality/run-bounded.mjs"} {
+				content, err := os.ReadFile(filepath.Join(repository, "scripts", name))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(root, "scripts", name), content, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			for _, directory := range []string{"", "apps/go-api", "apps/web", "apps/admin", "apps/space", "apps/live"} {
+				if err := os.WriteFile(filepath.Join(root, directory, ".env"), nil, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			bin := filepath.Join(root, "bin")
+			writeExecutable(t, filepath.Join(bin, "docker"), "#!/bin/sh\nexit 0\n")
+			writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\nprintf 'build\\n' >> \"$DEV_TEST_EVENTS\"\nexit \"$DEV_TEST_BUILD_EXIT\"\n")
+			writeExecutable(t, filepath.Join(bin, "go"), "#!/bin/sh\nprintf 'watchers\\n' >> \"$DEV_TEST_EVENTS\"\n")
+			events := filepath.Join(root, "events")
+			t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+			t.Setenv("DEV_TEST_EVENTS", events)
+			t.Setenv("DEV_TEST_BUILD_EXIT", scenario.buildExit)
+			command := exec.Command("bash", filepath.Join(root, "scripts/dev.sh"))
+			output, err := command.CombinedOutput()
+			if (err == nil) != (scenario.buildExit == "0") {
+				t.Fatalf("startup error=%v output=%s", err, output)
+			}
+			if got := readFile(t, events); got != scenario.want {
+				t.Fatalf("startup sequence=%q, want %q", got, scenario.want)
+			}
+		})
+	}
+}
+
 func composeServices(t *testing.T, root string, env map[string]string) map[string]any {
 	t.Helper()
 	composeFile, err := os.ReadFile(filepath.Join(root, "docker-compose-local.yml"))

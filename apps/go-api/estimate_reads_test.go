@@ -6,11 +6,12 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/estimate_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/estimatereads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const estimateReadFixture = `{"id":"00000000-0000-4000-8000-000000000011","created_at":"2026-01-02T03:04:05Z","updated_at":"2026-01-02T03:04:05Z","created_by":null,"updated_by":null,"deleted_at":null,"workspace":"00000000-0000-4000-8000-000000000002","project":"00000000-0000-4000-8000-000000000003","name":"Story points","description":"","type":"points","last_used":false,"points":[{"id":"00000000-0000-4000-8000-000000000012","created_at":"2026-01-02T03:04:05Z","updated_at":"2026-01-02T03:04:05Z","created_by":null,"updated_by":null,"deleted_at":null,"estimate":"00000000-0000-4000-8000-000000000011","workspace":"00000000-0000-4000-8000-000000000002","project":"00000000-0000-4000-8000-000000000003","key":1,"value":"1","description":""}]}`

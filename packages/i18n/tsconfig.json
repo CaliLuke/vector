@@ -2,6 +2,7 @@
   "extends": "@plane/typescript-config/react-library.json",
   "compilerOptions": {
     "noUncheckedIndexedAccess": false,
+    "types": ["react", "node"],
     "resolveJsonModule": true
   },
   "include": ["src"],

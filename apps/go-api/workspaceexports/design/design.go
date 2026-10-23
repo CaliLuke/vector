@@ -5,8 +5,9 @@
 package design
 
 import (
-	. "github.com/CaliLuke/loom/dsl"
 	"strconv"
+
+	. "github.com/CaliLuke/loom/dsl"
 )
 
 var sessionCookie = APIKeySecurity("PlaneSessionCookie", func() { Description("Plane session cookie authentication.") })

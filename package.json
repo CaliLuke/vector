@@ -6,7 +6,7 @@
   "license": "AGPL-3.0-only",
   "repository": "https://github.com/CaliLuke/vector.git",
   "scripts": {
-    "build": "turbo run build",
+    "build": "node scripts/quality/run-bounded.mjs --seconds 1800 --memory-mib 4096 --heap-mib 2048 -- turbo run build --concurrency=1",
     "dev": "bash scripts/dev.sh",
     "dev:stop": "bash scripts/dev.sh stop",
     "dev:check-login": "go -C apps/go-api run ./cmd/devtools check-login",
@@ -17,40 +17,36 @@
     "test:local-stack": "go -C apps/go-api test ./internal/devtools",
     "test:local-logs": "go -C apps/go-api test ./internal/devtools && node --test tests/frontend/local-logging.test.mjs",
     "test:issue-loading": "node --test tests/frontend/project-issues-loading.test.mjs",
-    "test:frontend": "node --test tests/frontend/*.test.mjs",
+    "test:frontend": "node scripts/quality/run-bounded.mjs --seconds 300 --memory-mib 1024 --heap-mib 384 -- node --test --test-timeout=15000 --test-concurrency=1 tests/frontend/*.test.mjs",
     "start": "turbo run start",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
     "fix": "turbo run fix",
     "fix:format": "turbo run fix:format",
     "fix:lint": "turbo run fix:lint",
-    "check": "turbo run check",
-    "check:lint": "turbo run check:lint",
+    "check": "./check.sh",
+    "check:lint": "bash scripts/quality/lint.sh",
     "check:format": "turbo run check:format",
     "check:types": "turbo run check:types",
     "test:hydration": "node tests/frontend/hydration-console.mjs",
     "test:setup": "bash tests/setup/test-setup.sh",
     "prepare": "husky",
-    "doctor": "npx react-doctor@latest"
+    "doctor": "react-doctor",
+    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo run dev --concurrency=18"
   },
   "devDependencies": {
+    "@typescript/native": "catalog:",
     "husky": "catalog:",
+    "jscpd": "catalog:",
     "jsdom": "catalog:",
-    "lint-staged": "catalog:",
+    "knip": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "react-doctor": "^0.4.2",
+    "oxlint-tsgolint": "catalog:",
+    "react-doctor": "0.9.18",
     "turbo": "catalog:"
   },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,cjs,mjs,cts,mts,json,css,md}": [
-      "pnpm exec oxfmt --no-error-on-unmatched-pattern"
-    ],
-    "*.{js,jsx,ts,tsx,cjs,mjs,cts,mts}": [
-      "pnpm exec oxlint --fix --deny-warnings"
-    ]
-  },
   "engines": {
-    "node": ">=22.18.0"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "packageManager": "pnpm@11.3.0+sha512.2c403d6594527287672b1f7056343a1f7c3634036a67ffabfcc2b3d7595d843768f8787148d1b57cf7956c90606bbd192857c363af19e96d2d0ec9ec5741d215"
 }

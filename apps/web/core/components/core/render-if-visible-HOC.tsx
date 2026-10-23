@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { ReactNode, MutableRefObject } from "react";
+import type { JSX, ReactNode, MutableRefObject } from "react";
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@plane/utils";
 import { runIdleTask } from "@/lib/idle-task";

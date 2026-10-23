@@ -1,0 +1,4038 @@
+{
+  "version": 1,
+  "findings": [
+    {
+      "finding": {
+        "category": "catalog",
+        "file": "pnpm-workspace.yaml",
+        "name": "@tanstack/react-virtual"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "catalog",
+        "file": "pnpm-workspace.yaml",
+        "name": "@tanstack/virtual-core"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/admin/package.json",
+        "name": "uuid"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/live/package.json",
+        "name": "@tiptap/html"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/space/package.json",
+        "name": "clsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/space/package.json",
+        "name": "react-dropzone"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "clsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "comlink"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "react-fast-compare"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "react-is"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "react-markdown"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "recharts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "apps/web/package.json",
+        "name": "use-font-face-observer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/editor/package.json",
+        "name": "buffer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/propel/package.json",
+        "name": "@plane/hooks"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/propel/package.json",
+        "name": "@plane/utils"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/ui/package.json",
+        "name": "clsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/ui/package.json",
+        "name": "react-day-picker"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/ui/package.json",
+        "name": "tailwind-merge"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "dependencies",
+        "file": "packages/ui/package.json",
+        "name": "use-font-face-observer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "devDependencies",
+        "file": "apps/live/package.json",
+        "name": "@types/pdf-parse"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "devDependencies",
+        "file": "package.json",
+        "name": "jscpd"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "devDependencies",
+        "file": "packages/propel/package.json",
+        "name": "@plane/tailwind-config"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "devDependencies",
+        "file": "packages/types/package.json",
+        "name": "@types/react-dom"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "devDependencies",
+        "file": "packages/ui/package.json",
+        "name": "autoprefixer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_EMAIL_CODE"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_EMAIL"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_FIRST_NAME"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_PASSWORD"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "TOAST_ALERT"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/web/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_EMAIL_CODE"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/web/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_EMAIL"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/web/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_FIRST_NAME"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "enumMembers",
+        "file": "apps/web/helpers/authentication.helper.tsx",
+        "namespace": "EErrorAlertType",
+        "name": "INLINE_PASSWORD"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/admin/components/common/header/index.tsx",
+        "name": "HamburgerToggle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/extensions/title-update/debounce.ts",
+        "name": "createDebounceState"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/auth.ts",
+        "name": "handleAuthentication"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "DANGER_COLORS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "EDITOR_BACKGROUND_COLORS_DARK"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "EDITOR_BACKGROUND_COLORS_LIGHT"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "extractColorKeyFromCssVariable"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "getBackgroundColorHex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "getTextColorHex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "isCssVariable"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "NEUTRAL_COLORS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "SUCCESS_COLORS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "WARNING_COLORS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "ArchiveIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "DiagramIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "FileTextIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "getFileIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "ImageIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "MusicIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "PaperclipIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "PresentationIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "TableIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "TaskIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/icons.tsx",
+        "name": "VideoIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "applyMarks"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "createKeyGenerator"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "createPdfDocument"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "markRenderers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "nodeRenderers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "pdfStyles"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "renderNode"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "renderPlaneDocToPdfBlob"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/mark-renderers.ts",
+        "name": "markRenderers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/node-renderers.tsx",
+        "name": "nodeRenderers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/plane-pdf-exporter.tsx",
+        "name": "createPdfDocument"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/lib/pdf/plane-pdf-exporter.tsx",
+        "name": "renderPlaneDocToPdfBlob"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/schema/pdf-export.ts",
+        "name": "PdfMetadataFetchError"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/types/admin-commands.ts",
+        "name": "isHealthCheckCommand"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/live/src/types/admin-commands.ts",
+        "name": "isValidForceCloseReason"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/filters/applied-filters/filters-list.tsx",
+        "name": "replaceUnderscoreIfSnakeCase"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/properties/member.tsx",
+        "name": "ButtonAvatars"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "getDisplayPropertiesCount"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "getGroupId"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "HIGHLIGHT_CLASS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "HIGHLIGHT_WITH_LINE"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "isSubGrouped"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
+        "name": "removeNillKeys"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/helpers/emoji.helper.tsx",
+        "name": "renderEmoji"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/helpers/string.helper.ts",
+        "name": "capitalizeFirstLetter"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/helpers/string.helper.ts",
+        "name": "checkURLValidity"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/helpers/string.helper.ts",
+        "name": "replaceUnderscoreIfSnakeCase"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/space/store/helpers/base-issues.store.ts",
+        "name": "ISSUE_FILTER_DEFAULT_DATA"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/analytics/export.ts",
+        "name": "csvConfig"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/auth-screens/header.tsx",
+        "name": "AuthHeaderBase"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/common/quick-actions-helper.tsx",
+        "name": "useIntakeHeaderMenuItems"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/common/quick-actions-helper.tsx",
+        "name": "useLayoutMenuItems"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/cycles/analytics-sidebar/issue-progress.tsx",
+        "name": "cycleChartOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/dropdowns/constants.ts",
+        "name": "TRANSPARENT_BUTTON_VARIANTS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/data/index.ts",
+        "name": "bindZero"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/data/index.ts",
+        "name": "charCapitalize"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/data/index.ts",
+        "name": "datePreview"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/data/index.ts",
+        "name": "timePreview"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/data/index.ts",
+        "name": "weeks"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/gantt-chart/views/helpers.ts",
+        "name": "generateDate"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/icons/attachment/document-icon.tsx",
+        "name": "DocumentIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/icons/attachment/img-file-icon.tsx",
+        "name": "ImgIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/icons/attachment/tune-icon.tsx",
+        "name": "TuneIcon"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/inbox/modals/create-modal/create-root.tsx",
+        "name": "defaultIssueData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-detail/label/create-label.tsx",
+        "name": "LabelCreate"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-detail/links/root.tsx",
+        "name": "IssueLinkRoot"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-detail/reactions/issue-comment.tsx",
+        "name": "IssueCommentReaction"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/cycle.tsx",
+        "name": "AppliedCycleFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/date.tsx",
+        "name": "AppliedDateFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/label.tsx",
+        "name": "AppliedLabelsFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/members.tsx",
+        "name": "AppliedMembersFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/module.tsx",
+        "name": "AppliedModuleFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/priority.tsx",
+        "name": "AppliedPriorityFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/project.tsx",
+        "name": "AppliedProjectFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/state-group.tsx",
+        "name": "AppliedStateGroupFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/state.tsx",
+        "name": "AppliedStateFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/created-by.tsx",
+        "name": "FilterCreatedBy"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
+        "name": "FilterCycle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/labels.tsx",
+        "name": "FilterLabels"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/mentions.tsx",
+        "name": "FilterMentions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/module.tsx",
+        "name": "FilterModule"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
+        "name": "handleOptionalAction"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
+        "name": "useIssueActionHandlers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/helper.tsx",
+        "name": "useMenuItemFactory"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
+        "name": "getScopeMemberIds"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
+        "name": "getTeamProjectColumns"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
+        "name": "LabelDragPreview"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/modules/sidebar-select/select-status.tsx",
+        "name": "SidebarStatusSelect"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
+        "name": "getDefaultTabUrl"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
+        "name": "getTabPreferences"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
+        "name": "getValidatedDefaultTab"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
+        "name": "saveTabPreferences"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/navigation/tab-navigation-utils.ts",
+        "name": "TAB_PREFS_KEY"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/pages/navigation-pane/tab-panels/index.ts",
+        "name": "PAGE_NAVIGATION_PANE_TABS_LIST"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/power-k/core/shortcut-handler.ts",
+        "name": "formatModifierShortcut"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/power-k/core/shortcut-handler.ts",
+        "name": "isTypingInInput"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/power-k/ui/modal/command-item-shortcut-badge.tsx",
+        "name": "formatKeySequenceForDisplay"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/power-k/ui/modal/command-item-shortcut-badge.tsx",
+        "name": "formatShortcutForDisplay"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/project-states/state-delete-modal.tsx",
+        "name": "StateDeleteModal"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/project/dropdowns/filters/member-list.tsx",
+        "name": "MemberListFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/projects/create/attributes.tsx",
+        "name": "default"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/relations/index.tsx",
+        "name": "ISSUE_RELATION_OPTIONS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/rich-filters/filter-value-input/root.tsx",
+        "name": "AdditionalFilterValueInput"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/web-hooks/empty-state.tsx",
+        "name": "WebhooksEmptyState"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/web-hooks/form/individual-event-options.tsx",
+        "name": "INDIVIDUAL_WEBHOOK_OPTIONS"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/workspace-notifications/notification-card/content.ts",
+        "name": "shouldRender"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/components/workspace-notifications/sidebar/notification-card/content.tsx",
+        "name": "BASE_NOTIFICATION_CONTENT_MAP"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/hooks/store/workspace-draft/use-workspace-draft-issue-filters.ts",
+        "name": "useWorkspaceDraftIssueFilters"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/hooks/use-local-storage.tsx",
+        "name": "getValueFromLocalStorage"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/hooks/use-local-storage.tsx",
+        "name": "setValueIntoLocalStorage"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/hooks/use-timeline-chart.ts",
+        "name": "getTimelineStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/lib/idle-task.ts",
+        "name": "cancelIdle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/lib/idle-task.ts",
+        "name": "requestIdle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/lib/store-context.tsx",
+        "name": "rootStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/services/estimate.service.ts",
+        "name": "EstimateService"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/services/integrations/github.service.ts",
+        "name": "GithubIntegrationService"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/services/integrations/jira.service.ts",
+        "name": "JiraImporterService"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/services/timezone.service.ts",
+        "name": "TimezoneService"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/services/workspace-notification.service.ts",
+        "name": "WorkspaceNotificationService"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/base-command-palette.store.ts",
+        "name": "BaseCommandPaletteStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/issue/cycle/issue.store.ts",
+        "name": "ACTIVE_CYCLE_ISSUES"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/issue/helpers/base-issues-utils.ts",
+        "name": "checkIssueDateFilter"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/issue/helpers/base-issues-utils.ts",
+        "name": "getOrderedWorkItems"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/project/base-project-member.store.ts",
+        "name": "BaseProjectMemberStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/utils.ts",
+        "name": "filterProjectMembersByRole"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/utils.ts",
+        "name": "filterWorkspaceMembersByRole"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/utils.ts",
+        "name": "getMemberSortKey"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/utils.ts",
+        "name": "parseOrderKey"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/member/utils.ts",
+        "name": "sortMembers"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/pages/project-page.store.ts",
+        "name": "ROLE_PERMISSIONS_TO_CREATE_PAGE"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/user/account.store.ts",
+        "name": "AccountStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/user/base-permissions.store.ts",
+        "name": "BaseUserPermissionStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/core/store/workspace/index.ts",
+        "name": "BaseWorkspaceRootStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/helpers/cover-image.helper.ts",
+        "name": "analyzeCoverImageChange"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "apps/web/helpers/cover-image.helper.ts",
+        "name": "isStaticCoverImage"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/components/menus/ai-menu.tsx",
+        "name": "AIFeaturesMenu"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/components/menus/menu-items.ts",
+        "name": "HorizontalRuleItem"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/components/menus/menu-items.ts",
+        "name": "ImageItem"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/components/menus/menu-items.ts",
+        "name": "LinkItem"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/components/menus/menu-items.ts",
+        "name": "TableItem"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/code-inline/index.tsx",
+        "name": "inputRegex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/code/code-block.ts",
+        "name": "backtickInputRegex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/code/code-block.ts",
+        "name": "tildeInputRegex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/custom-image/utils.ts",
+        "name": "isImageDuplicationComplete"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/custom-list-keymap/list-helpers.ts",
+        "name": "isCursorInSubList"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/custom-list-keymap/list-helpers.ts",
+        "name": "nextListIsHigher"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/emoji/emoji.ts",
+        "name": "EmojiSuggestionPluginKey"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/emoji/emoji.ts",
+        "name": "inputRegex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/emoji/emoji.ts",
+        "name": "pasteRegex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/table/table/utilities/helpers.ts",
+        "name": "isColumnSelected"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/table/table/utilities/helpers.ts",
+        "name": "isRectSelected"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/table/table/utilities/helpers.ts",
+        "name": "isRowSelected"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/unique-id/extension.ts",
+        "name": "generateUniqueID"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/unique-id/extension.ts",
+        "name": "UniqueIDAttribute"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/extensions/work-item-embed/extension.tsx",
+        "name": "WorkItemEmbedExtension"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/hooks/use-editor-navigation.ts",
+        "name": "createMainNavigationExtension"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/hooks/use-editor-navigation.ts",
+        "name": "createTitleNavigationExtension"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/plugins/drag-handle.ts",
+        "name": "getScrollParent"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/editor/src/core/plugins/highlight.ts",
+        "name": "NodeHighlightPlugin"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/i18n/scripts/lib/locale-io.ts",
+        "name": "flattenKeys"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/i18n/scripts/lib/locale-io.ts",
+        "name": "readJsonFile"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/i18n/src/core/index.ts",
+        "name": "setLanguage"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/banner/helper.tsx",
+        "name": "bannerBaseStyles"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/banner/helper.tsx",
+        "name": "bannerSizeStyling"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/banner/helper.tsx",
+        "name": "bannerStyling"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/card/helper.tsx",
+        "name": "containerStyle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/card/helper.tsx",
+        "name": "directions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/propel/src/card/helper.tsx",
+        "name": "spacings"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/badge/helper.tsx",
+        "name": "badgeStyling"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/card/helper.tsx",
+        "name": "containerStyle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/card/helper.tsx",
+        "name": "directions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/card/helper.tsx",
+        "name": "spacings"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/header/helper.tsx",
+        "name": "headerStyle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/header/helper.tsx",
+        "name": "minHeights"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/tag/helper.tsx",
+        "name": "containerStyle"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/ui/src/tag/helper.tsx",
+        "name": "sizes"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/utils/src/theme/color-conversion.ts",
+        "name": "hexToRgb"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/utils/src/theme/color-conversion.ts",
+        "name": "rgbToHex"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "exports",
+        "file": "packages/utils/src/theme/color-validation.ts",
+        "name": "adjustLightnessForDarkMode"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/live/src/extensions/title-update/title-utils.ts",
+        "name": "apps/live/src/extensions/title-update/title-utils.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/live/src/lib/auth-middleware.ts",
+        "name": "apps/live/src/lib/auth-middleware.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/components/issues/filters/applied-filters/label.tsx",
+        "name": "apps/space/components/issues/filters/applied-filters/label.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/components/issues/filters/labels.tsx",
+        "name": "apps/space/components/issues/filters/labels.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/components/issues/issue-layouts/kanban/headers/sub-group-by-card.tsx",
+        "name": "apps/space/components/issues/issue-layouts/kanban/headers/sub-group-by-card.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/components/issues/issue-layouts/kanban/swimlanes.tsx",
+        "name": "apps/space/components/issues/issue-layouts/kanban/swimlanes.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/helpers/common.helper.ts",
+        "name": "apps/space/helpers/common.helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/helpers/file.helper.ts",
+        "name": "apps/space/helpers/file.helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/hooks/store/use-user-profile.ts",
+        "name": "apps/space/hooks/store/use-user-profile.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/space/hooks/use-mention.tsx",
+        "name": "apps/space/hooks/use-mention.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/(all)/[workspaceSlug]/(settings)/settings/(workspace)/integrations/page.tsx",
+        "name": "apps/web/app/(all)/[workspaceSlug]/(settings)/settings/(workspace)/integrations/page.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/compat/next/image.tsx",
+        "name": "apps/web/app/compat/next/image.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/layout.tsx",
+        "name": "apps/web/app/layout.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/routes/redirects/core/index.ts",
+        "name": "apps/web/app/routes/redirects/core/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/routes/redirects/extended/index.ts",
+        "name": "apps/web/app/routes/redirects/extended/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/app/routes/redirects/index.ts",
+        "name": "apps/web/app/routes/redirects/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/account/auth-forms/index.ts",
+        "name": "apps/web/core/components/account/auth-forms/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/account/auth-forms/set-password.tsx",
+        "name": "apps/web/core/components/account/auth-forms/set-password.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/active-cycles/workspace-active-cycles-upgrade.tsx",
+        "name": "apps/web/core/components/active-cycles/workspace-active-cycles-upgrade.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/analytics/empty-state.tsx",
+        "name": "apps/web/core/components/analytics/empty-state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/analytics/select/duration.tsx",
+        "name": "apps/web/core/components/analytics/select/duration.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/analytics/trend-piece.tsx",
+        "name": "apps/web/core/components/analytics/trend-piece.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/api-token/empty-state.tsx",
+        "name": "apps/web/core/components/api-token/empty-state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/auth-screens/workspace/not-a-member.tsx",
+        "name": "apps/web/core/components/auth-screens/workspace/not-a-member.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/constants.ts",
+        "name": "apps/web/core/components/base-layouts/constants.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/gantt/index.ts",
+        "name": "apps/web/core/components/base-layouts/gantt/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/gantt/layout.tsx",
+        "name": "apps/web/core/components/base-layouts/gantt/layout.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/gantt/sidebar.tsx",
+        "name": "apps/web/core/components/base-layouts/gantt/sidebar.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/hooks/use-group-drop-target.ts",
+        "name": "apps/web/core/components/base-layouts/hooks/use-group-drop-target.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/hooks/use-layout-state.ts",
+        "name": "apps/web/core/components/base-layouts/hooks/use-layout-state.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/kanban/group-header.tsx",
+        "name": "apps/web/core/components/base-layouts/kanban/group-header.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/kanban/group.tsx",
+        "name": "apps/web/core/components/base-layouts/kanban/group.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/kanban/item.tsx",
+        "name": "apps/web/core/components/base-layouts/kanban/item.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/kanban/layout.tsx",
+        "name": "apps/web/core/components/base-layouts/kanban/layout.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/layout-switcher.tsx",
+        "name": "apps/web/core/components/base-layouts/layout-switcher.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/list/group-header.tsx",
+        "name": "apps/web/core/components/base-layouts/list/group-header.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/list/group.tsx",
+        "name": "apps/web/core/components/base-layouts/list/group.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/list/item.tsx",
+        "name": "apps/web/core/components/base-layouts/list/item.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/list/layout.tsx",
+        "name": "apps/web/core/components/base-layouts/list/layout.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/base-layouts/loaders/layout-loader.tsx",
+        "name": "apps/web/core/components/base-layouts/loaders/layout-loader.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/comments/comments.tsx",
+        "name": "apps/web/core/components/comments/comments.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/comments/index.ts",
+        "name": "apps/web/core/components/comments/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/activity/activity-block.tsx",
+        "name": "apps/web/core/components/common/activity/activity-block.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/activity/activity-item.tsx",
+        "name": "apps/web/core/components/common/activity/activity-item.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/activity/helper.tsx",
+        "name": "apps/web/core/components/common/activity/helper.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/activity/user.tsx",
+        "name": "apps/web/core/components/common/activity/user.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/latest-feature-block.tsx",
+        "name": "apps/web/core/components/common/latest-feature-block.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/new-empty-state.tsx",
+        "name": "apps/web/core/components/common/new-empty-state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/common/pro-icon.tsx",
+        "name": "apps/web/core/components/common/pro-icon.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/core/sidebar/sidebar-menu-hamburger-toggle.tsx",
+        "name": "apps/web/core/components/core/sidebar/sidebar-menu-hamburger-toggle.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/cycles/list/cycle-list-project-group-header.tsx",
+        "name": "apps/web/core/components/cycles/list/cycle-list-project-group-header.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/empty-state/comic-box-button.tsx",
+        "name": "apps/web/core/components/empty-state/comic-box-button.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/empty-state/helper.tsx",
+        "name": "apps/web/core/components/empty-state/helper.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/estimates/empty-screen.tsx",
+        "name": "apps/web/core/components/estimates/empty-screen.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/estimates/estimate-search.tsx",
+        "name": "apps/web/core/components/estimates/estimate-search.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/estimates/inputs/index.ts",
+        "name": "apps/web/core/components/estimates/inputs/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/exporter/export-modal.tsx",
+        "name": "apps/web/core/components/exporter/export-modal.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/exporter/single-export.tsx",
+        "name": "apps/web/core/components/exporter/single-export.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/home/widgets/links/action.tsx",
+        "name": "apps/web/core/components/home/widgets/links/action.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/icons/locked-component.tsx",
+        "name": "apps/web/core/components/icons/locked-component.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/inbox/inbox-filter/filters/state.tsx",
+        "name": "apps/web/core/components/inbox/inbox-filter/filters/state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/integration/github/select-repository.tsx",
+        "name": "apps/web/core/components/integration/github/select-repository.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/integration/single-integration-card.tsx",
+        "name": "apps/web/core/components/integration/single-integration-card.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/integration/slack/select-channel.tsx",
+        "name": "apps/web/core/components/integration/slack/select-channel.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/issues/bulk-operations/upgrade-banner.tsx",
+        "name": "apps/web/core/components/issues/bulk-operations/upgrade-banner.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/issues/issue-detail/relation-select.tsx",
+        "name": "apps/web/core/components/issues/issue-detail/relation-select.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/issues/label.tsx",
+        "name": "apps/web/core/components/issues/label.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/issues/layout-quick-actions.tsx",
+        "name": "apps/web/core/components/issues/layout-quick-actions.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/index.ts",
+        "name": "apps/web/core/components/license/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/base-paid-plan-card.tsx",
+        "name": "apps/web/core/components/license/modal/card/base-paid-plan-card.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/checkout-button.tsx",
+        "name": "apps/web/core/components/license/modal/card/checkout-button.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/discount-info.tsx",
+        "name": "apps/web/core/components/license/modal/card/discount-info.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/free-plan.tsx",
+        "name": "apps/web/core/components/license/modal/card/free-plan.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/index.ts",
+        "name": "apps/web/core/components/license/modal/card/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/plan-upgrade.tsx",
+        "name": "apps/web/core/components/license/modal/card/plan-upgrade.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/card/talk-to-sales.tsx",
+        "name": "apps/web/core/components/license/modal/card/talk-to-sales.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/index.ts",
+        "name": "apps/web/core/components/license/modal/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/license/modal/upgrade-modal.tsx",
+        "name": "apps/web/core/components/license/modal/upgrade-modal.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/create-or-join-workspaces.tsx",
+        "name": "apps/web/core/components/onboarding/create-or-join-workspaces.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/create-workspace.tsx",
+        "name": "apps/web/core/components/onboarding/create-workspace.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/invitations.tsx",
+        "name": "apps/web/core/components/onboarding/invitations.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/invite-members.tsx",
+        "name": "apps/web/core/components/onboarding/invite-members.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/profile-setup.tsx",
+        "name": "apps/web/core/components/onboarding/profile-setup.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/onboarding/step-indicator.tsx",
+        "name": "apps/web/core/components/onboarding/step-indicator.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/pages/editor/ai/index.ts",
+        "name": "apps/web/core/components/pages/editor/ai/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/pages/editor/title.tsx",
+        "name": "apps/web/core/components/pages/editor/title.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/pages/list/index.ts",
+        "name": "apps/web/core/components/pages/list/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/power-k/actions/helper.ts",
+        "name": "apps/web/core/components/power-k/actions/helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx",
+        "name": "apps/web/core/components/power-k/ui/pages/work-item-selection-page.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/profile/profile-setting-content-wrapper.tsx",
+        "name": "apps/web/core/components/profile/profile-setting-content-wrapper.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/project/empty-state.tsx",
+        "name": "apps/web/core/components/project/empty-state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/project/integration-card.tsx",
+        "name": "apps/web/core/components/project/integration-card.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/project/multi-select-modal.tsx",
+        "name": "apps/web/core/components/project/multi-select-modal.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/cycle.tsx",
+        "name": "apps/web/core/components/readonly/cycle.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/date.tsx",
+        "name": "apps/web/core/components/readonly/date.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/estimate.tsx",
+        "name": "apps/web/core/components/readonly/estimate.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/index.tsx",
+        "name": "apps/web/core/components/readonly/index.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/labels.tsx",
+        "name": "apps/web/core/components/readonly/labels.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/member.tsx",
+        "name": "apps/web/core/components/readonly/member.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/module.tsx",
+        "name": "apps/web/core/components/readonly/module.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/priority.tsx",
+        "name": "apps/web/core/components/readonly/priority.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/readonly/state.tsx",
+        "name": "apps/web/core/components/readonly/state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/settings/layout.tsx",
+        "name": "apps/web/core/components/settings/layout.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/sidebar/search-button.tsx",
+        "name": "apps/web/core/components/sidebar/search-button.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/stickies/action-bar.tsx",
+        "name": "apps/web/core/components/stickies/action-bar.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/stickies/modal/index.tsx",
+        "name": "apps/web/core/components/stickies/modal/index.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/stickies/modal/stickies.tsx",
+        "name": "apps/web/core/components/stickies/modal/stickies.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/stickies/sticky/sticky-item-drag-handle.tsx",
+        "name": "apps/web/core/components/stickies/sticky/sticky-item-drag-handle.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/integration-and-import-export-banner.tsx",
+        "name": "apps/web/core/components/ui/integration-and-import-export-banner.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/loader/notification-loader.tsx",
+        "name": "apps/web/core/components/ui/loader/notification-loader.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/loader/pages-loader.tsx",
+        "name": "apps/web/core/components/ui/loader/pages-loader.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/loader/settings/integration.tsx",
+        "name": "apps/web/core/components/ui/loader/settings/integration.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/markdown-to-component.tsx",
+        "name": "apps/web/core/components/ui/markdown-to-component.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/ui/profile-empty-state.tsx",
+        "name": "apps/web/core/components/ui/profile-empty-state.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/user/index.ts",
+        "name": "apps/web/core/components/user/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/user/user-greetings.tsx",
+        "name": "apps/web/core/components/user/user-greetings.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace-notifications/notification-app-sidebar-option.tsx",
+        "name": "apps/web/core/components/workspace-notifications/notification-app-sidebar-option.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/base.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/base.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/feature-detail.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/feature-detail.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/frequency-toggle.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/frequency-toggle.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/index.ts",
+        "name": "apps/web/core/components/workspace/billing/comparison/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/plan-detail.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/plan-detail.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/plans.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/plans.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/billing/comparison/root.tsx",
+        "name": "apps/web/core/components/workspace/billing/comparison/root.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/ConfirmWorkspaceMemberRemove.tsx",
+        "name": "apps/web/core/components/workspace/ConfirmWorkspaceMemberRemove.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/help-section/index.ts",
+        "name": "apps/web/core/components/workspace/sidebar/help-section/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/user-menu-item.tsx",
+        "name": "apps/web/core/components/workspace/sidebar/user-menu-item.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/user-menu.tsx",
+        "name": "apps/web/core/components/workspace/sidebar/user-menu.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/workspace-menu-header.tsx",
+        "name": "apps/web/core/components/workspace/sidebar/workspace-menu-header.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/workspace-menu-item.tsx",
+        "name": "apps/web/core/components/workspace/sidebar/workspace-menu-item.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/sidebar/workspace-menu.tsx",
+        "name": "apps/web/core/components/workspace/sidebar/workspace-menu.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/upgrade-badge.tsx",
+        "name": "apps/web/core/components/workspace/upgrade-badge.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/components/workspace/views/header.tsx",
+        "name": "apps/web/core/components/workspace/views/header.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/hooks/store/use-dashboard.ts",
+        "name": "apps/web/core/hooks/store/use-dashboard.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/hooks/store/use-inbox-issues.ts",
+        "name": "apps/web/core/hooks/store/use-inbox-issues.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/hooks/use-debounced-duplicate-issues.tsx",
+        "name": "apps/web/core/hooks/use-debounced-duplicate-issues.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/hooks/use-integration-popup.tsx",
+        "name": "apps/web/core/hooks/use-integration-popup.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/services/app_config.service.ts",
+        "name": "apps/web/core/services/app_config.service.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/services/app_installation.service.ts",
+        "name": "apps/web/core/services/app_installation.service.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/core/store/issue/issue_gantt_view.store.ts",
+        "name": "apps/web/core/store/issue/issue_gantt_view.store.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/helpers/dashboard.helper.ts",
+        "name": "apps/web/helpers/dashboard.helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/helpers/emoji.helper.tsx",
+        "name": "apps/web/helpers/emoji.helper.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/helpers/graph.helper.ts",
+        "name": "apps/web/helpers/graph.helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/helpers/react-hook-form.helper.ts",
+        "name": "apps/web/helpers/react-hook-form.helper.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/public/sw.js",
+        "name": "apps/web/public/sw.js"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "apps/web/public/workbox-9f2f79cf.js",
+        "name": "apps/web/public/workbox-9f2f79cf.js"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/ce/components/document-editor-side-effects.ts",
+        "name": "packages/editor/src/ce/components/document-editor-side-effects.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/ce/helpers/parser.ts",
+        "name": "packages/editor/src/ce/helpers/parser.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/core/extensions/table/table/icons.ts",
+        "name": "packages/editor/src/core/extensions/table/table/icons.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/core/helpers/parser.ts",
+        "name": "packages/editor/src/core/helpers/parser.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/ee/extensions/index.ts",
+        "name": "packages/editor/src/ee/extensions/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/editor/src/ee/types/index.ts",
+        "name": "packages/editor/src/ee/types/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/i18n/src/constants/index.ts",
+        "name": "packages/i18n/src/constants/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/i18n/src/hooks/index.ts",
+        "name": "packages/i18n/src/hooks/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/propel/postcss.config.js",
+        "name": "packages/propel/postcss.config.js"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/propel/src/emoji-icon-picker/emoji/index.ts",
+        "name": "packages/propel/src/emoji-icon-picker/emoji/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/propel/src/emoji-icon-picker/icon/index.ts",
+        "name": "packages/propel/src/emoji-icon-picker/icon/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/propel/src/spinners/index.ts",
+        "name": "packages/propel/src/spinners/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/services/src/indexedDB.service.ts",
+        "name": "packages/services/src/indexedDB.service.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/services/src/live.service.ts",
+        "name": "packages/services/src/live.service.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/shared-state/src/store/user.store.ts",
+        "name": "packages/shared-state/src/store/user.store.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/shared-state/src/store/workspace.store.ts",
+        "name": "packages/shared-state/src/store/workspace.store.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/types/src/current-user/index.ts",
+        "name": "packages/types/src/current-user/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/types/src/current-user/profile.ts",
+        "name": "packages/types/src/current-user/profile.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/types/src/issues/issue_subscription.ts",
+        "name": "packages/types/src/issues/issue_subscription.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/auth-confirm-password-input.tsx",
+        "name": "packages/ui/src/auth-form/auth-confirm-password-input.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/auth-forgot-password.tsx",
+        "name": "packages/ui/src/auth-form/auth-forgot-password.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/auth-form.tsx",
+        "name": "packages/ui/src/auth-form/auth-form.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/auth-input.tsx",
+        "name": "packages/ui/src/auth-form/auth-input.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/auth-password-input.tsx",
+        "name": "packages/ui/src/auth-form/auth-password-input.tsx"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/ui/src/auth-form/index.ts",
+        "name": "packages/ui/src/auth-form/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/utils/src/rich-filters/factories/configs/index.ts",
+        "name": "packages/utils/src/rich-filters/factories/configs/index.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "files",
+        "file": "packages/utils/src/work-item-filters/configs/filters/shared.ts",
+        "name": "packages/utils/src/work-item-filters/configs/filters/shared.ts"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/admin/app/(all)/(home)/auth-helpers.tsx",
+        "name": "EErrorAlertType"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/colors.ts",
+        "name": "EditorColorKey"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "KeyGenerator"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "MarkRendererRegistry"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "NodeRendererRegistry"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "PDFExportOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "PDFMarkRenderer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "PDFNodeRenderer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "PDFRenderContext"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "TipTapMark"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/index.ts",
+        "name": "TipTapNode"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/types.ts",
+        "name": "PDFMarkRenderer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/lib/pdf/types.ts",
+        "name": "PDFNodeRenderer"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/schema/pdf-export.ts",
+        "name": "PdfExportError"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/live/src/schema/pdf-export.ts",
+        "name": "TPdfExportRequestBody"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/helpers/authentication.helper.tsx",
+        "name": "EPageTypes"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/hooks/use-intersection-observer.tsx",
+        "name": "UseIntersectionObserverProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/store/helpers/base-issues.store.ts",
+        "name": "TIssueDisplayFilterOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/store/publish/publish.store.ts",
+        "name": "IPublishStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/types/auth.ts",
+        "name": "ICsrfTokenData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/types/auth.ts",
+        "name": "IEmailCheckData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/space/types/auth.ts",
+        "name": "IEmailCheckResponse"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/app/(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/pages/(detail)/header.tsx",
+        "name": "IPagesHeaderProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/analytics/insight-card.tsx",
+        "name": "InsightCardProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/gantt-chart/views/week-view.ts",
+        "name": "IDayBlock"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/home/widgets/links/create-update-link-modal.tsx",
+        "name": "TLinkOperationsModal"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/home/widgets/links/links.tsx",
+        "name": "TLinkOperationsModal"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/home/widgets/links/use-links.tsx",
+        "name": "TProjectLinkRoot"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/attachment/delete-attachment-modal.tsx",
+        "name": "TAttachmentOperationsRemoveModal"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-detail-widgets/attachments/helper.tsx",
+        "name": "TAttachmentSnapshot"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-detail/issue-activity/root.tsx",
+        "name": "TActivityOperations"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-detail/links/links.tsx",
+        "name": "TLinkOperationsModal"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-detail/links/root.tsx",
+        "name": "TIssueLinkRoot"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-detail/reactions/issue-comment.tsx",
+        "name": "TIssueCommentReaction"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-layouts/kanban/base-kanban-root.tsx",
+        "name": "KanbanStoreType"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-layouts/spreadsheet/base-spreadsheet-root.tsx",
+        "name": "SpreadsheetStoreType"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
+        "name": "TGetScopeMemberIdsResult"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "TActiveAdditionalPropertiesProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "TCreateSubWorkItemProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "TCreateUpdatePropertyValuesProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "THandleParentWorkItemDetailsProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "THandleProjectEntitiesFetchProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "THandleTemplateChangeProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
+        "name": "TPropertyValuesValidationProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/pages/navigation-pane/types/extensions.ts",
+        "name": "INavigationPaneExtensionComponent"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/pages/navigation-pane/types/extensions.ts",
+        "name": "INavigationPaneExtensionProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/pages/navigation-pane/types/index.ts",
+        "name": "INavigationPaneExtensionComponent"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/pages/navigation-pane/types/index.ts",
+        "name": "INavigationPaneExtensionProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/power-k/core/types.ts",
+        "name": "TCommandPaletteState"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/power-k/core/types.ts",
+        "name": "TSelectionPageProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/project/settings/member-columns.tsx",
+        "name": "RowData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/sidebar/sidebar-item.tsx",
+        "name": "AppSidebarItemComponent"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/sidebar/sidebar-item.tsx",
+        "name": "AppSidebarItemProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/stickies/layout/sticky.helpers.ts",
+        "name": "TargetData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/stickies/sticky/use-operations.tsx",
+        "name": "TOperations"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/views/helper.tsx",
+        "name": "TLayoutSelectionProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/workspace-notifications/sidebar/notification-card/content.tsx",
+        "name": "TNotificationContentHandler"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/components/workspace-notifications/sidebar/notification-card/content.tsx",
+        "name": "TNotificationFieldData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/hooks/editor/use-extended-editor-config.ts",
+        "name": "TExtendedEditorFileHandlersArgs"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/hooks/use-collaborative-page-actions.tsx",
+        "name": "CollaborativeAction"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/hooks/use-intersection-observer.ts",
+        "name": "UseIntersectionObserverProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/hooks/use-multiple-select.ts",
+        "name": "TSelectionSnapshot"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/services/file.service.ts",
+        "name": "TFileAssetType"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/services/file.service.ts",
+        "name": "UnSplashImageUrls"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/base-command-palette.store.ts",
+        "name": "IBaseCommandPaletteStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/base-command-palette.store.ts",
+        "name": "ModalData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/base-power-k.store.ts",
+        "name": "ModalData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/issue/issue-details/root.store.ts",
+        "name": "TIssueCrudState"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/issue/workspace/filter.store.ts",
+        "name": "TBaseFilterStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/member/project/base-project-member.store.ts",
+        "name": "IBaseProjectMemberStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/pages/base-page.ts",
+        "name": "TBasePage"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/pages/base-page.ts",
+        "name": "TBasePagePermissions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/user/base-permissions.store.ts",
+        "name": "IBaseUserPermissionStore"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/core/store/workspace/link.store.ts",
+        "name": "IWorkspaceLinkStoreActions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "apps/web/helpers/cover-image.helper.ts",
+        "name": "TCoverImageResult"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/ce/extensions/document-extensions.tsx",
+        "name": "TDocumentEditorAdditionalExtensionsRegistry"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/ce/extensions/rich-text-extensions.tsx",
+        "name": "TRichTextEditorAdditionalExtensionsRegistry"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/ce/helpers/asset-duplication.ts",
+        "name": "AssetDuplicationContext"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/ce/helpers/asset-duplication.ts",
+        "name": "AssetDuplicationResult"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/custom-image/types.ts",
+        "name": "PixelAttribute"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/custom-image/types.ts",
+        "name": "UploadEntity"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/emoji/emoji.ts",
+        "name": "EmojiItem"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/slash-commands/root.tsx",
+        "name": "SlashCommandOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/trailing-node.ts",
+        "name": "TrailingNodeOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/editor/src/core/extensions/unique-id/extension.ts",
+        "name": "UniqueIDGenerationContext"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/i18n/scripts/lib/locale-io.ts",
+        "name": "NamespaceData"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/banner/helper.tsx",
+        "name": "IBannerStyling"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/card/helper.tsx",
+        "name": "ICardProperties"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/pill/pill.tsx",
+        "name": "ERadius"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/pill/pill.tsx",
+        "name": "TPillSize"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/pill/pill.tsx",
+        "name": "TPillVariant"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/pill/pill.tsx",
+        "name": "TRadius"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/propel/src/separator/separator.tsx",
+        "name": "SeparatorProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/badge/helper.tsx",
+        "name": "IBadgeStyling"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/card/helper.tsx",
+        "name": "ICardProperties"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/dropdowns/helper.tsx",
+        "name": "IDropdownProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/dropdowns/helper.tsx",
+        "name": "IPortalProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/header/helper.tsx",
+        "name": "IHeaderProperties"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/oauth/oauth-button.tsx",
+        "name": "OAuthButtonProps"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/popovers/types.ts",
+        "name": "TPopoverButtonDefaultOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/popovers/types.ts",
+        "name": "TPopoverDefaultOptions"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/tables/types.ts",
+        "name": "TTableColumn"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/ui/src/tag/helper.tsx",
+        "name": "ITagProperties"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "types",
+        "file": "packages/utils/src/theme/palette-generator.ts",
+        "name": "ShadeStop"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "apps/space/additional.d.ts",
+        "name": "next-images"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "packages/editor/postcss.config.js",
+        "name": "@tailwindcss/postcss"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "pnpm-workspace.yaml",
+        "name": "@tiptap/pm"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "tests/frontend/editor-link-protocol-lifecycle.test.mjs",
+        "name": "@tiptap/core"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "tests/frontend/editor-link-protocol-lifecycle.test.mjs",
+        "name": "@tiptap/starter-kit"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "tests/frontend/editor-link-protocol-lifecycle.test.mjs",
+        "name": "linkifyjs"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "tests/frontend/sub-issues-content-race.test.mjs",
+        "name": "@atlaskit/pragmatic-drag-and-drop-hitbox"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unlisted",
+        "file": "tests/frontend/workspace-menu-keyboard.test.mjs",
+        "name": "@headlessui/react"
+      },
+      "count": 1
+    },
+    {
+      "finding": {
+        "category": "unresolved",
+        "file": "tests/frontend/image-picker-search.test.mjs",
+        "name": "@/services/file.service"
+      },
+      "count": 1
+    }
+  ]
+}

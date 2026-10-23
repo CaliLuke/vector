@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
@@ -18,7 +20,6 @@ import (
 	api "github.com/CaliLuke/go-plane/workspacesearch/gen/workspace_search"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceSearchSessions interface {

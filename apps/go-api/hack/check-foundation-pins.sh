@@ -29,15 +29,16 @@ if ! grep -Fqx "FROM $go_api_image AS build" Dockerfile; then
   exit 1
 fi
 
-check_module github.com/CaliLuke/loom v1.10.0-alpha.15
+check_module github.com/CaliLuke/loom v1.10.0-alpha.16
 check_module github.com/CaliLuke/selvedge v0.7.0
-check_module github.com/golang-migrate/migrate/v4 v4.19.1
+check_module github.com/golang-migrate/migrate/v4 v4.20.1
 check_module github.com/google/go-cmp v0.7.0
 check_module github.com/jackc/pgx/v5 v5.11.0
-check_module github.com/riverqueue/river v0.43.0
+check_module github.com/riverqueue/river v0.49.0
+check_module github.com/riverqueue/river/cmd/river v0.49.0
 check_module github.com/sqlc-dev/sqlc v1.31.1
-check_module github.com/testcontainers/testcontainers-go v0.42.0
-check_module github.com/testcontainers/testcontainers-go/modules/postgres v0.42.0
+check_module github.com/testcontainers/testcontainers-go v0.44.0
+check_module github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0
 check_module golang.org/x/net v0.61.0
 
 echo "M0 and M1 foundation versions are pinned"

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
+	planeinternaldjangomigrationapi "github.com/CaliLuke/go-plane/assetslifecycle/gen/plane_internal_django_migration_api"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/google/uuid"
 )

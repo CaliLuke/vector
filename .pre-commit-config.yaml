@@ -1,0 +1,49 @@
+minimum_prek_version: "0.5.5"
+repos:
+  - repo: local
+    hooks:
+      - id: vector-go-fast
+        priority: 0
+        name: Go fast gates
+        entry: ./check.sh --go --fast
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        groups: [fast, go]
+      - id: vector-typescript-fast
+        priority: 10
+        name: TypeScript fast gates
+        entry: ./check.sh --typescript --fast
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        groups: [fast, typescript]
+      - id: vector-go-full
+        priority: 20
+        name: Go full gates
+        entry: ./check.sh --go --full
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
+        groups: [full, ci, go]
+      - id: vector-typescript-build
+        priority: 30
+        name: Frontend production builds
+        entry: ./check.sh --build
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
+        groups: [full, ci, typescript]
+      - id: vector-typescript-full
+        priority: 40
+        name: TypeScript full gates
+        entry: ./check.sh --typescript --full
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push, manual]
+        groups: [full, ci, typescript]

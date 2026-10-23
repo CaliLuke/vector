@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"strings"
 	"testing"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func TestAPIProjectLiteSortOrderUsesProjectMemberAnnotation(t *testing.T) {

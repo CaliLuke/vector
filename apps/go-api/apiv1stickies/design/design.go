@@ -3,8 +3,11 @@
 //go:generate go tool loom gen github.com/CaliLuke/go-plane/apiv1stickies/design --output ..
 package design
 
-import . "github.com/CaliLuke/loom/dsl"
-import "strconv"
+import (
+	"strconv"
+
+	. "github.com/CaliLuke/loom/dsl"
+)
 
 var apiKeyAuth = APIKeySecurity("ApiKeyAuth", func() {
 	Description("Plane API token authentication.")

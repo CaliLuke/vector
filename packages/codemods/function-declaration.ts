@@ -216,7 +216,6 @@ function extractPropsTypeFromWrapper(
 
   if (isMemo) {
     // For memo<Props>, the first type parameter is the props type
-    // @ts-expect-error: jscodeshift types are too strict here
     return typeParam;
   }
 

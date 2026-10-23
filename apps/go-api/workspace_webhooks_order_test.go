@@ -10,11 +10,12 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacewebhooks"
 	api "github.com/CaliLuke/go-plane/workspace_webhooks/gen/workspace_webhooks"
 	loomhttp "github.com/CaliLuke/loom/http"
-	"uuid"
 )
 
 type missingWebhookRepository struct {

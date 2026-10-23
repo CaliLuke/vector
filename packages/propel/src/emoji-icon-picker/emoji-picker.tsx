@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useCallback } from "react";
-import { Tabs } from "@base-ui-components/react";
+import { Tabs } from "@base-ui/react";
 import { Popover } from "../popover";
 import { cn } from "../utils/classname";
 import { convertPlacementToSideAndAlign } from "../utils/placement";
@@ -131,10 +131,10 @@ export function EmojiPicker(props: TCustomEmojiPicker) {
               <Tabs.Tab
                 key={tab.key}
                 value={tab.key}
-                className={({ selected }) =>
+                className={({ active }) =>
                   cn("rounded-sm border border-subtle bg-layer-1 py-1 text-13", {
-                    "bg-surface-1 text-primary": selected,
-                    "text-placeholder hover:bg-layer-1/60 hover:text-tertiary": !selected,
+                    "bg-surface-1 text-primary": active,
+                    "text-placeholder hover:bg-layer-1/60 hover:text-tertiary": !active,
                   })
                 }
               >

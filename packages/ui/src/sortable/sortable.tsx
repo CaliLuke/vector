@@ -4,15 +4,13 @@
  * See the LICENSE file for details.
  */
 
-// @ts-expect-error Due to live server dependencies
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/dist/cjs/entry-point/element/adapter.js";
-import React, { Fragment, useEffect, useMemo } from "react";
-import { Draggable } from "./draggable";
-
-type TEnhancedData<T> = T & { __uuid__?: string };
+import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import React, { Fragment, useEffect } from "react";
+import { Draggable, isSortableDragData, type SortableDragData } from "./draggable";
 
 type Props<T> = {
-  data: TEnhancedData<T>[];
+  data: T[];
   render: (item: T, index: number) => React.ReactNode;
   onChange: (data: T[], movedItem?: T) => void;
   keyExtractor: (item: T, index: number) => string;
@@ -21,23 +19,22 @@ type Props<T> = {
 };
 
 const moveItem = <T,>(
-  data: TEnhancedData<T>[],
-  source: TEnhancedData<T>,
-  destination: TEnhancedData<T> & Record<symbol, string>,
+  data: T[],
+  source: SortableDragData,
+  destination: SortableDragData & Record<string | symbol, unknown>,
   keyExtractor: (item: T, index: number) => string
 ): {
   newData: T[];
   movedItem: T | undefined;
 } => {
-  const sourceIndex = data.findIndex((item, index) => keyExtractor(item, index) === keyExtractor(source, 0));
+  const sourceIndex = data.findIndex((item, index) => keyExtractor(item, index) === source.sortableId);
   if (sourceIndex === -1) return { newData: data, movedItem: undefined };
 
-  const destinationIndex = data.findIndex((item, index) => keyExtractor(item, index) === keyExtractor(destination, 0));
+  const destinationIndex = data.findIndex((item, index) => keyExtractor(item, index) === destination.sortableId);
 
   if (destinationIndex === -1) return { newData: data, movedItem: undefined };
 
-  const symbolKey = Reflect.ownKeys(destination).find((key) => key.toString() === "Symbol(closestEdge)");
-  const position = symbolKey ? destination[symbolKey as symbol] : "bottom"; // Add 'as symbol' to cast symbolKey to symbol
+  const position = extractClosestEdge(destination);
 
   // Calculate final position before removing source item
   const finalIndex = position === "bottom" ? destinationIndex + 1 : destinationIndex;
@@ -47,34 +44,28 @@ const moveItem = <T,>(
   const adjustedDestinationIndex = finalIndex > sourceIndex ? finalIndex - 1 : finalIndex;
 
   const newData = [...data];
-  const [movedItem] = newData.splice(sourceIndex, 1);
+  const movedItem = newData.splice(sourceIndex, 1)[0];
+  if (!movedItem) return { newData: data, movedItem: undefined };
 
   // Insert at the calculated position (bounds check is implicit in splice)
   newData.splice(adjustedDestinationIndex, 0, movedItem);
 
-  const { __uuid__: movedItemId, ...movedItemData } = movedItem;
   return {
-    newData: newData.map((item) => {
-      const { __uuid__: uuid, ...rest } = item;
-      return rest as T;
-    }),
-    movedItem: movedItemData as T,
+    newData,
+    movedItem,
   };
 };
 
 export function Sortable<T>({ data, render, onChange, keyExtractor, containerClassName, id }: Props<T>) {
+  const generatedId = React.useId();
   useEffect(() => {
     const unsubscribe = monitorForElements({
-      // @ts-expect-error Due to live server dependencies
       onDrop({ source, location }) {
         const destination = location?.current?.dropTargets[0];
         if (!destination) return;
-        const { newData, movedItem } = moveItem(
-          data,
-          source.data as TEnhancedData<T>,
-          destination.data as TEnhancedData<T> & { closestEdge: string },
-          keyExtractor
-        );
+        if (!isSortableDragData(source.data) || !isSortableDragData(destination.data)) return;
+        if (source.data.sortableGroupId !== destination.data.sortableGroupId) return;
+        const { newData, movedItem } = moveItem(data, source.data, destination.data, keyExtractor);
         onChange(newData, movedItem);
       },
     });
@@ -85,17 +76,14 @@ export function Sortable<T>({ data, render, onChange, keyExtractor, containerCla
     };
   }, [data, keyExtractor, onChange]);
 
-  const enhancedData = useMemo(() => {
-    const uuid = id ? id : Math.random().toString(36).substring(7);
-    return data.map((item) => ({ ...item, __uuid__: uuid }));
-  }, [data, id]);
+  const groupId = id ?? generatedId;
 
   return (
     <>
       {data.map((item, index) => (
         <Draggable
-          key={keyExtractor(enhancedData[index], index)}
-          data={enhancedData[index]}
+          key={keyExtractor(item, index)}
+          data={{ sortableId: keyExtractor(item, index), sortableGroupId: groupId }}
           className={containerClassName}
         >
           <Fragment>{render(item, index)}</Fragment>

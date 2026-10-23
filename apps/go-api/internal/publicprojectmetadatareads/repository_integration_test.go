@@ -9,9 +9,10 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 func TestRepositoryMatchesPublicProjectMetadataQueries(t *testing.T) {

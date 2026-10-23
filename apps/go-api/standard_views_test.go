@@ -7,10 +7,11 @@ import (
 	"os"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/standard_views"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/standardviews"
-	"uuid"
 )
 
 type standardViewsRepositoryStub struct {

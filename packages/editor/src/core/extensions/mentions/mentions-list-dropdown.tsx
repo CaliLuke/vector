@@ -120,7 +120,7 @@ export const MentionsListDropdown = forwardRef(function MentionsListDropdown(pro
     const container = dropdownContainer?.current;
     if (!container) return;
 
-    const item = container.querySelector(`#mention-item-${selectedIndex.section}-${selectedIndex.item}`) as HTMLElement;
+    const item = container.querySelector(`#mention-item-${selectedIndex.section}-${selectedIndex.item}`);
     if (item) {
       const containerRect = container.getBoundingClientRect();
       const itemRect = item.getBoundingClientRect();

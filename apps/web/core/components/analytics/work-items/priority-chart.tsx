@@ -5,7 +5,6 @@
  */
 
 import { useMemo } from "react";
-import type { ColumnDef, Row, RowData, Table } from "@tanstack/react-table";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -29,17 +28,7 @@ import { exportCSV } from "../export";
 import { DataTable } from "../insight-table/data-table";
 import { ChartLoader } from "../loaders";
 import { generateBarColor } from "./utils";
-
-declare module "@tanstack/react-table" {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface ColumnMeta<TData extends RowData, TValue> {
-    export: {
-      key: string;
-      value: (row: Row<TData>) => string | number;
-      label?: string;
-    };
-  }
-}
+import type { AnalyticsColumnDef, AnalyticsTable } from "../insight-table/table-features";
 
 interface Props {
   x_axis: ChartXAxisProperty;
@@ -148,7 +137,7 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
     [props.x_axis]
   );
 
-  const defaultColumns: ColumnDef<TChartDatum>[] = useMemo(
+  const defaultColumns: AnalyticsColumnDef<TChartDatum>[] = useMemo(
     () => [
       {
         accessorKey: "name",
@@ -177,7 +166,7 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
     [xAxisLabel]
   );
 
-  const columns: ColumnDef<TChartDatum>[] = useMemo(
+  const columns: AnalyticsColumnDef<TChartDatum>[] = useMemo(
     () =>
       parsedData
         ? Object.keys(parsedData?.schema ?? {}).map((key) => ({
@@ -225,7 +214,7 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
             data={parsedData.data}
             columns={[...defaultColumns, ...columns]}
             searchPlaceholder={`${parsedData.data.length} ${xAxisLabel}`}
-            actions={(table: Table<TChartDatum>) => (
+            actions={(table: AnalyticsTable<TChartDatum>) => (
               <Button
                 variant="secondary"
                 prependIcon={<Download className="h-3.5 w-3.5" />}

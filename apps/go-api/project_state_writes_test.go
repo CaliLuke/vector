@@ -10,11 +10,12 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	statessvr "github.com/CaliLuke/go-plane/gen/http/project_state_reads/server"
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	loomhttp "github.com/CaliLuke/loom/http"
-	"uuid"
 )
 
 type stateWriteBoundaryRepository struct {

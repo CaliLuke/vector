@@ -6,11 +6,12 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/project_label_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectlabelreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const projectLabelFixture = `{"parent":null,"name":"Bug","color":"#FF0000","id":"00000000-0000-4000-8000-000000000001","project_id":"00000000-0000-4000-8000-000000000002","workspace_id":"00000000-0000-4000-8000-000000000003","sort_order":100.0}`

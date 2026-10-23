@@ -128,9 +128,8 @@ export const ScatterChart = React.memo(function ScatterChart<K extends string, T
             allowDecimals={!!yAxis.allowDecimals}
           />
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
-              onMouseEnter={(payload) => setActiveLegend(payload.value)}
+              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
               onMouseLeave={() => setActiveLegend(null)}
               formatter={(value) => itemLabels[value]}
               {...getLegendProps(legend)}
@@ -147,7 +146,7 @@ export const ScatterChart = React.memo(function ScatterChart<K extends string, T
               }}
               content={({ active, label, payload }) =>
                 customTooltipContent ? (
-                  customTooltipContent({ active, label, payload })
+                  customTooltipContent({ active, label: String(label ?? ""), payload })
                 ) : (
                   <CustomTooltip
                     active={active}

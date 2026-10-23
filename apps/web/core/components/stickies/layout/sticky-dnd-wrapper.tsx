@@ -6,12 +6,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import type {
-  DropTargetRecord,
-  DragLocationHistory,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 import { observer } from "mobx-react";
 import { usePathname } from "next/navigation";
@@ -26,6 +23,7 @@ type Props = {
   stickyId: string;
   workspaceSlug: string;
   itemWidth: string;
+  className?: string;
   isLastChild: boolean;
   isInFirstRow: boolean;
   isInLastRow: boolean;
@@ -34,7 +32,7 @@ type Props = {
 };
 
 export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props) {
-  const { stickyId, workspaceSlug, itemWidth, isLastChild, handleDrop, handleLayout } = props;
+  const { stickyId, workspaceSlug, itemWidth, className = "", isLastChild, handleDrop, handleLayout } = props;
   // states
   const [_instruction, setInstruction] = useState<InstructionType | undefined>(undefined);
   // refs
@@ -91,7 +89,7 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
   return (
     <div
       ref={elementRef}
-      className="box-border flex flex-col p-[8px]"
+      className={`box-border flex flex-col p-[8px] ${className}`}
       style={{
         width: itemWidth,
       }}

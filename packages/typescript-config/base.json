@@ -24,6 +24,8 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
+    "types": [],
+    "noUncheckedSideEffectImports": true,
     "tsBuildInfoFile": ".turbo/tsconfig.tsbuildinfo",
     "verbatimModuleSyntax": true
   }

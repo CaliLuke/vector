@@ -58,6 +58,24 @@ export function isCustomButtonDisabled(disabled: boolean, customButton: React.Re
   return disabled || childDisabled === true;
 }
 
+export function SyncComboboxOpenState({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const previousOpen = React.useRef(open);
+
+  React.useEffect(() => {
+    if (previousOpen.current === open) return;
+    previousOpen.current = open;
+    onOpenChange(open);
+  }, [onOpenChange, open]);
+
+  return null;
+}
+
 export interface IPortalProps {
   children: React.ReactNode;
   container?: Element | null;

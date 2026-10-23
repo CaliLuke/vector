@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "jsx-a11y", "import", "promise", "unicorn", "oxc"],
+  "plugins": ["eslint", "react", "typescript", "jsx-a11y", "import", "promise", "unicorn", "oxc"],
   "categories": {
     "correctness": "warn",
     "suspicious": "warn",
@@ -13,7 +13,7 @@
   },
   "settings": {
     "react": {
-      "version": "18.3"
+      "version": "19.3"
     },
     "jsx-a11y": {
       "polymorphicPropName": "as"
@@ -23,10 +23,8 @@
     ".cache/**",
     ".next/**",
     ".react-router/**",
-    ".storybook/**",
     ".turbo/**",
     ".vite/**",
-    "*.config.{js,mjs,cjs,ts}",
     "build/**",
     "coverage/**",
     "dist/**",
@@ -35,10 +33,8 @@
   ],
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "react/prop-types": "off",
     "unicorn/filename-case": "off",
     "unicorn/no-null": "off",
-    "unicorn/prevent-abbreviations": "off",
     "no-unused-vars": [
       "warn",
       {
@@ -48,6 +44,13 @@
         "destructuredArrayIgnorePattern": "^_",
         "ignoreRestSiblings": true
       }
-    ]
+    ],
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
+    "eslint/complexity": ["warn", { "max": 15 }],
+    "eslint/max-lines": ["warn", { "max": 700, "skipBlankLines": true, "skipComments": true }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
   }
 }

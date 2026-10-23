@@ -3,10 +3,11 @@ package djangoapi
 
 import (
 	"fmt"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"math"
 	"math/big"
 	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 )
 
 type Query struct {

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Home, Settings, Briefcase, GridIcon, Layers2, FileIcon } from "lucide-react";
 import * as React from "react";
 import { ContrastIcon, EpicIcon, LayersIcon } from "@plane/propel/icons";

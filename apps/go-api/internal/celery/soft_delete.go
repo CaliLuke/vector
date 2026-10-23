@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"strings"
 )
 
 // SoftDelete queues Django's existing recursive soft-deletion task. Publication

@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import type { Connection, Extension, Hocuspocus, onConfigurePayload } from "@hocuspocus/server";
+import type { Extension, Hocuspocus, onConfigurePayload } from "@hocuspocus/server";
 import { logger } from "@plane/logger";
 import { Redis } from "@/extensions/redis";
 import { AdminCommand, CloseCode, getForceCloseMessage, isForceCloseCommand } from "@/types/admin-commands";
@@ -54,7 +54,7 @@ export class ForceCloseHandler implements Extension {
       };
 
       let messageSent = 0;
-      document.connections.forEach(({ connection }: { connection: Connection }) => {
+      document.connections.forEach((_connectionData, connection) => {
         try {
           connection.sendStateless(JSON.stringify(forceCloseMessage));
           messageSent++;
@@ -72,7 +72,7 @@ export class ForceCloseHandler implements Extension {
       logger.info(`[FORCE_CLOSE_HANDLER] Closing ${connectionCount} connections...`);
 
       let closed = 0;
-      document.connections.forEach(({ connection }: { connection: Connection }) => {
+      document.connections.forEach((_connectionData, connection) => {
         try {
           connection.close({ code, reason });
           closed++;
@@ -125,7 +125,7 @@ export const forceCloseDocumentAcrossServers = async (
   };
 
   let messageSentCount = 0;
-  document.connections.forEach(({ connection }: { connection: Connection }) => {
+  document.connections.forEach((_connectionData, connection) => {
     try {
       connection.sendStateless(JSON.stringify(forceCloseMessage));
       messageSentCount++;
@@ -143,7 +143,7 @@ export const forceCloseDocumentAcrossServers = async (
   logger.info(`[FORCE_CLOSE] Closing ${connectionsBefore} local connections...`);
 
   let closedCount = 0;
-  document.connections.forEach(({ connection }: { connection: Connection }) => {
+  document.connections.forEach((_connectionData, connection) => {
     try {
       connection.close({ code, reason });
       closedCount++;

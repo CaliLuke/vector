@@ -1,0 +1,1 @@
+prek run --all-files --group full --stage pre-push

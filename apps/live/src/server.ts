@@ -6,15 +6,11 @@
 
 import type { Server as HttpServer } from "http";
 import type { Hocuspocus } from "@hocuspocus/server";
-import compression from "compression";
-import cors from "cors";
 import type { Express, Request, Response, Router } from "express";
-import express from "express";
-import expressWs from "express-ws";
-import helmet from "helmet";
 // plane imports
 import { registerController } from "@plane/decorators";
-import { logger, loggerMiddleware } from "@plane/logger";
+import { logger } from "@plane/logger";
+import { createLiveApplication } from "@/app";
 // controllers
 import { CONTROLLERS } from "@/controllers";
 // env
@@ -31,12 +27,15 @@ export class Server {
   private httpServer: HttpServer | undefined;
 
   constructor() {
-    this.app = express();
-    expressWs(this.app);
-    this.setupMiddleware();
-    this.router = express.Router();
-    this.app.set("port", env.PORT || 3000);
-    this.app.use(env.LIVE_BASE_PATH, this.router);
+    const application = createLiveApplication({
+      port: env.PORT || 3000,
+      basePath: env.LIVE_BASE_PATH,
+      compressionLevel: env.COMPRESSION_LEVEL,
+      compressionThreshold: env.COMPRESSION_THRESHOLD,
+      corsAllowedOrigins: env.CORS_ALLOWED_ORIGINS,
+    });
+    this.app = application.app;
+    this.router = application.router;
   }
 
   public async initialize(): Promise<void> {
@@ -54,32 +53,6 @@ export class Server {
     }
   }
 
-  private setupMiddleware() {
-    // Security middleware
-    this.app.use(helmet());
-    // Middleware for response compression
-    this.app.use(compression({ level: env.COMPRESSION_LEVEL, threshold: env.COMPRESSION_THRESHOLD }));
-    // Logging middleware
-    this.app.use(loggerMiddleware);
-    // Body parsing middleware
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
-    // cors middleware
-    this.setupCors();
-  }
-
-  private setupCors() {
-    const allowedOrigins = env.CORS_ALLOWED_ORIGINS.split(",").map((s) => s.trim());
-    this.app.use(
-      cors({
-        origin: allowedOrigins.length > 0 ? allowedOrigins : false,
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
-      })
-    );
-  }
-
   private setupNotFoundHandler() {
     this.app.use((_req: Request, res: Response) => {
       res.status(404).json({
@@ -93,19 +66,18 @@ export class Server {
   }
 
   public listen() {
-    this.httpServer = this.app
-      .listen(this.app.get("port"), () => {
-        logger.info(`SERVER: Express server has started at port ${this.app.get("port")}`);
-      })
-      .on("error", (err) => {
-        logger.error("SERVER: Failed to start server:", err);
-        throw err;
-      });
+    this.httpServer = this.app.listen(this.app.get("port"), (error?: Error) => {
+      if (error) {
+        logger.error("SERVER: Failed to start server:", error);
+        throw error;
+      }
+      logger.info(`SERVER: Express server has started at port ${this.app.get("port")}`);
+    });
   }
 
   public async destroy() {
     if (this.hocuspocusServer) {
-      this.hocuspocusServer.closeConnections();
+      await HocusPocusServerManager.getInstance().destroy();
       logger.info("SERVER: HocusPocus connections closed gracefully.");
     }
 

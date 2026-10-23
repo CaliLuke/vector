@@ -2,8 +2,9 @@ package cyclereads
 
 import (
 	"context"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 )
 
 var apiAuditFields = strings.Fields("id created_at updated_at deleted_at created_by updated_by workspace project")

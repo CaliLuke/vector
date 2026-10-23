@@ -1,5 +1,5 @@
 {
-  "loom_version": "v1.10.0-alpha.13",
+  "loom_version": "v1.10.0-alpha.16",
   "design_package": "github.com/CaliLuke/go-plane/ticket_collaboration/design",
   "design_digest": "34156a991c3f8bdb1253649dbfc0189e239e7534a1c2c3998fd199bb78ff4aa0"
 }

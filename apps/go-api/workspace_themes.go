@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_themes"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	store "github.com/CaliLuke/go-plane/internal/workspacethemes"
 	"github.com/CaliLuke/loom/security"
-	"strings"
-	"uuid"
 )
 
 type workspaceThemesRepo interface {

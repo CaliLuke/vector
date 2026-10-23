@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/workitems"
@@ -18,7 +20,6 @@ import (
 	api "github.com/CaliLuke/go-plane/workspaceanalytics/gen/workspace_analytics"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceAnalyticsSessions interface {

@@ -6,16 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+
+	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/analytic_views"
 	store "github.com/CaliLuke/go-plane/internal/analyticviews"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type analyticViewsRepository interface {

@@ -17,6 +17,7 @@ import { onStateless } from "@/lib/stateless";
 export class HocusPocusServerManager {
   private static instance: HocusPocusServerManager | null = null;
   private server: Hocuspocus | null = null;
+  private destroyPromise: Promise<void> | null = null;
   // server options
   private serverName = env.HOSTNAME || uuidv4();
 
@@ -58,6 +59,37 @@ export class HocusPocusServerManager {
    */
   public getServer(): Hocuspocus | null {
     return this.server;
+  }
+
+  public async destroy(): Promise<void> {
+    if (this.destroyPromise) return this.destroyPromise;
+
+    this.destroyPromise = this.runDestroy();
+    try {
+      await this.destroyPromise;
+    } finally {
+      this.destroyPromise = null;
+    }
+  }
+
+  private async runDestroy(): Promise<void> {
+    const server = this.server;
+    if (!server) return;
+
+    await new Promise<void>((resolve) => {
+      server.configuration.extensions.push({
+        async afterUnloadDocument({ instance }) {
+          if (instance.getDocumentsCount() === 0) resolve();
+        },
+      });
+
+      if (server.getDocumentsCount() === 0) resolve();
+      server.closeConnections();
+      server.flushPendingStores();
+    });
+
+    await server.hooks("onDestroy", { instance: server });
+    this.server = null;
   }
 
   /**

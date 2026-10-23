@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_project_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceProjectRepositoryStub struct {

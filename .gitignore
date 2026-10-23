@@ -10,6 +10,9 @@ node_modules
 
 # Testing
 /coverage
+**/coverage/
+.quality/reports/
+.quality/bin/
 
 # Next.js
 /.next/

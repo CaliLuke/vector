@@ -5,7 +5,6 @@
  */
 
 // plane imports
-import type { IncomingHttpHeaders } from "http";
 import type { TUserDetails } from "@plane/editor";
 import { logger } from "@plane/logger";
 import { AppError } from "@/lib/errors";
@@ -27,7 +26,7 @@ export const onAuthenticate = async ({
   context,
   token,
 }: {
-  requestHeaders: IncomingHttpHeaders;
+  requestHeaders: Headers;
   context: HocusPocusServerContext;
   requestParameters: URLSearchParams;
   token: string;
@@ -49,7 +48,7 @@ export const onAuthenticate = async ({
   } finally {
     // If cookie is still not found, fallback to request headers
     if (!cookie) {
-      cookie = requestHeaders.cookie?.toString();
+      cookie = requestHeaders.get("cookie") ?? undefined;
     }
   }
 

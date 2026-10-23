@@ -56,7 +56,6 @@
     "@types/react-dom": "catalog:",
     "dotenv": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vite-tsconfig-paths": "catalog:"
+    "vite": "catalog:"
   }
 }

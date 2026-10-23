@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 type workspaceProjectRow func(...any) error

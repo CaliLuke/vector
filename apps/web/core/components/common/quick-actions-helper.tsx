@@ -5,6 +5,7 @@
  */
 
 // types
+import type { ReactElement } from "react";
 import type { ICycle, IModule, IProjectView, IWorkspaceView } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 // hooks
@@ -61,7 +62,7 @@ interface UseLayoutMenuItemsProps {
 
 type MenuResult = {
   items: TContextMenuItem[];
-  modals: JSX.Element | null;
+  modals: ReactElement | null;
 };
 
 export const useCycleMenuItems = (props: UseCycleMenuItemsProps): MenuResult => {

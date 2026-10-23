@@ -90,7 +90,7 @@ export const SlashCommandsMenu = forwardRef(function SlashCommandsMenu(props: Sl
     const container = commandListContainer?.current;
     if (!container) return;
 
-    const item = container.querySelector(`#item-${selectedIndex.section}-${selectedIndex.item}`) as HTMLElement;
+    const item = container.querySelector(`#item-${selectedIndex.section}-${selectedIndex.item}`);
 
     // use scroll into view to bring the item in view if it is not in view
     item?.scrollIntoView({ block: "nearest" });

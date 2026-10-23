@@ -5,6 +5,7 @@
     "module": "ES2022",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
+    "types": ["vite/client", "react", "react-dom"],
     "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "esModuleInterop": true,

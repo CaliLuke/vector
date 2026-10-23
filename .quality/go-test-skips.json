@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "skips": [
+    {
+      "package": "github.com/CaliLuke/go-plane/cmd/bootstrap",
+      "test": "TestInstallFreshDatabaseAndRepeatWithRustFS",
+      "reason": "Requires an explicitly configured empty disposable PostgreSQL database and RustFS endpoint; performs installation writes.",
+      "scope": "cmd/bootstrap; PLANE_BOOTSTRAP_CLI_TEST_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/cmd/system",
+      "test": "TestRedisMagicCodeIssuerPayloadVerifiesAndConsumes",
+      "reason": "Requires an explicitly configured disposable Redis instance.",
+      "scope": "cmd/system; Redis test endpoint environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/assets",
+      "test": "TestStorageMetadataCrashAfterWriteBeforeCompletion",
+      "reason": "Manual crash-recovery proof requires an explicitly configured disposable database, asset row, and object storage fixture.",
+      "scope": "internal/assets; PLANE_DURABLE_METADATA_CRASH_PROOF and fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/assets",
+      "test": "TestPublicAssetAuthorizationPostgres",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/assets; PLANE_PUBLIC_ASSETS_TEST_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/assets",
+      "test": "TestStorageRustFSPresignedPostGetCopyHeadDelete",
+      "reason": "Requires an explicitly configured RustFS endpoint and disposable bucket.",
+      "scope": "internal/assets; RustFS test endpoint environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/bootstrap",
+      "test": "TestPostgresBootstrapRegistrationAndConfiguration",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/bootstrap; PLANE_SCHEMA_BOOTSTRAP_TEST_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/bootstrap",
+      "test": "TestPostgresSchemaBootstrapFreshAdoptAndRejectPartial",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/bootstrap; PLANE_SCHEMA_BOOTSTRAP_TEST_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresAnalyticsExportBuildsAndEmailsCSV",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresAPIActivityLogAdmissionRollback",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresAPIActivityLogRestartAndRetryAfterCommit",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresCleanupBatchOperations",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresCleanupWorkflowUsesDurableAdmission",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresDeletionDurableCascadeRetryAndRetention",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresDescriptionAssetCopyUsesDurableWorkflowAndStableS3Key",
+      "reason": "Requires explicitly configured disposable PostgreSQL and object storage fixtures.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL and storage fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresEventTrackingWorkflowDeliversPostHogCaptureOverHTTP",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresExporterHistoryWorkflowUsesDurableAdmission",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresCleanupAndExporterBeatSchedulesPersistTimers",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresFileAssetMetadataWorkflowUsesStableAdmission",
+      "reason": "Requires explicitly configured disposable PostgreSQL and object storage fixtures.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL and storage fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresInstanceMetricsCollectionAndDurableSchedule",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresIssueActivityWorkflowIsIdempotentPerEvent",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresIssueAutomationArchivesAndClosesWithRecoverableEffects",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresIssueExportProducesAndStoresArchive",
+      "reason": "Requires explicitly configured disposable PostgreSQL and object storage fixtures.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL and storage fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresLinkPreviewDurableRetryAndStaleRowGuards",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresRecentVisitAdmissionRefreshesAndEvicts",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresTemplatedEmailWorkflowRetriesAndDeliversSMTP",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database and SMTP test fixture.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL and mail fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresTemplatedEmailPreparationUsesPlaneRows",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresVersionHistoryWorkflowsTrackAndCoalesce",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresWebhookModelActivityDeliversSignedPayloadRetriesAndDeactivates",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database and HTTP receiver fixture.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL and webhook fixture environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/backgroundtasks",
+      "test": "TestPostgresWorkspaceSeedAtomicRetryAndSourceContent",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database with the application schema.",
+      "scope": "internal/backgroundtasks; PLANE_BACKGROUND_TASKS_DATABASE_URL"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/database",
+      "test": "TestGeneratedUUIDQueriesRoundTrip",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/database; PostgreSQL test URL environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/parity",
+      "test": "TestPostgresTwoDatabaseTransition",
+      "reason": "Requires two explicitly configured disposable migrated PostgreSQL databases and mutates a proof row.",
+      "scope": "internal/parity; source/target test database URL environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/parity",
+      "test": "TestPostgresIdentityRejectsSameDatabase",
+      "reason": "Requires explicitly configured disposable migrated PostgreSQL databases.",
+      "scope": "internal/parity; source/target test database URL environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/stickies",
+      "test": "TestPostgresMembershipScopeForEveryStickyOperation",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/stickies; sticky PostgreSQL proof environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/stickies",
+      "test": "TestRepositoryPostgresOperationsAndIsolation",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/stickies; sticky PostgreSQL proof environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/stickies",
+      "test": "TestStickyCreateDifferentialTransition",
+      "reason": "Requires explicitly configured migrated source and target PostgreSQL databases.",
+      "scope": "internal/stickies; differential proof flag and database URL environment"
+    },
+    {
+      "package": "github.com/CaliLuke/go-plane/internal/stickies",
+      "test": "TestConcurrentStickyCreateAllocatesDistinctIncreasingSortOrders",
+      "reason": "Requires an explicitly configured disposable PostgreSQL database.",
+      "scope": "internal/stickies; sticky PostgreSQL proof environment"
+    }
+  ]
+}

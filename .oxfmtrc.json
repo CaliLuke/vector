@@ -34,7 +34,8 @@
     "docs/go-backend-replacement/evidence/go-only-completion/final-acceptance/**",
     "docs/go-backend-replacement/evidence/post-retirement-review/**",
     "apps/go-api/cmd/system/user_email_code_options.json",
-    "apps/go-api/cmd/system/workspace_collection_options.json"
+    "apps/go-api/cmd/system/workspace_collection_options.json",
+    "apps/go-api/internal/htmlcompat/testdata/**"
   ],
   "sortTailwindcss": {
     "stylesheet": "packages/tailwind-config/index.css",
@@ -43,6 +44,12 @@
   "overrides": [
     {
       "files": ["packages/codemods/**/*"],
+      "options": {
+        "printWidth": 80
+      }
+    },
+    {
+      "files": ["apps/go-api/cmd/system/csrf_failure.html"],
       "options": {
         "printWidth": 80
       }

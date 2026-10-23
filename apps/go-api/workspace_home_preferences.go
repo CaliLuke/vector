@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_home_preferences"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacehomepreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"strings"
-	"uuid"
 )
 
 type workspaceHomePreferencesRepo interface {

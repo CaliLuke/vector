@@ -15,7 +15,10 @@ import { NODE_FILE_MAP } from "@/plane-editor/constants/utility";
 import type { TFileHandler } from "@/types";
 // local imports
 import type { NodeFileMapType } from "../../../ce/constants/utility";
+import type { ExtensionFileSetStorageKey } from "@/plane-editor/types/storage";
 import type { TFileNode } from "./types";
+
+type FileSetStorage = Partial<Record<ExtensionFileSetStorageKey, Map<string, boolean>>>;
 
 const DELETE_PLUGIN_KEY = new PluginKey("delete-utility");
 
@@ -61,7 +64,9 @@ export const TrackFileDeletionPlugin = (editor: Editor, deleteHandler: TFileHand
         const nodeFileSetDetails = NODE_FILE_MAP[nodeType];
         if (!nodeFileSetDetails || !src) return;
         try {
-          editor.storage[nodeType]?.[nodeFileSetDetails.fileSetName]?.set(src, true);
+          (editor.storage as unknown as Record<string, FileSetStorage>)[nodeType]?.[
+            nodeFileSetDetails.fileSetName
+          ]?.set(src, true);
           // update assets list storage value
           editor.commands.updateAssetsList?.({
             idToRemove: node.attrs.id,

@@ -6,12 +6,13 @@ import (
 	"errors"
 	"fmt"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const projectStateReadsInternalErrorDetail = "Something went wrong please try again later"

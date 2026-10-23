@@ -74,7 +74,7 @@ export function SelectDuplicateInboxIssueModal(props: Props) {
     setQuery("");
   };
 
-  const handleSubmit = (selectedItem: string) => {
+  const handleSubmit = (selectedItem: string | null) => {
     if (!selectedItem || selectedItem.length === 0)
       return setToast({
         title: "Error",
@@ -146,7 +146,11 @@ export function SelectDuplicateInboxIssueModal(props: Props) {
           />
         </div>
 
-        <Combobox.Options static className="max-h-80 scroll-py-2 divide-y divide-subtle-1 overflow-y-auto">
+        <Combobox.Options
+          modal={false}
+          static
+          className="max-h-80 scroll-py-2 divide-y divide-subtle-1 overflow-y-auto"
+        >
           {isSearching ? (
             <Loader className="space-y-3 p-3">
               <Loader.Item height="40px" />

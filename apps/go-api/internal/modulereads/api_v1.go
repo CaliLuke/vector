@@ -3,9 +3,10 @@ package modulereads
 import (
 	"context"
 	"encoding/json"
-	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"strconv"
 	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 )
 
 type APIV1Request struct {

@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { FileText, GithubIcon, MessageSquare, Rocket } from "lucide-react";
+import { FileText, MessageSquare, Rocket } from "lucide-react";
+import { GithubIcon } from "@plane/propel/icons";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks

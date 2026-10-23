@@ -6,12 +6,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/CaliLuke/selvedge"
-	"github.com/CaliLuke/selvedge/retry"
-	"github.com/google/uuid"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/CaliLuke/selvedge"
+	"github.com/CaliLuke/selvedge/retry"
+	"github.com/google/uuid"
 )
 
 type seedLostResponseStore struct {

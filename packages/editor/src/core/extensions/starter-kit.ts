@@ -43,10 +43,14 @@ export const CustomStarterKitExtension = (args: TArgs) => {
         class: "editor-heading-block",
       },
     },
+    // These are registered explicitly below or by our custom list keymap.
+    link: false,
+    underline: false,
+    listKeymap: false,
     dropcursor: {
       class:
         "text-tertiary transition-all motion-reduce:transition-none motion-reduce:hover:transform-none duration-200 ease-[cubic-bezier(0.165, 0.84, 0.44, 1)]",
     },
-    ...(enableHistory ? {} : { history: false }),
+    ...(enableHistory ? {} : { undoRedo: false }),
   });
 };

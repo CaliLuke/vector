@@ -118,7 +118,7 @@ export function Dropdown(props: ISingleSelectDropdown) {
       as="div"
       ref={dropdownRef}
       value={value}
-      onChange={onChange}
+      onChange={(nextValue) => onChange(nextValue ?? "")}
       className={cn(
         "h-full",
         typeof containerClassName === "function" ? containerClassName(isOpen) : containerClassName
@@ -139,7 +139,7 @@ export function Dropdown(props: ISingleSelectDropdown) {
       />
 
       {isOpen && (
-        <Combobox.Options className="fixed z-10" static>
+        <Combobox.Options modal={false} className="fixed z-10" static>
           <div
             className={cn(
               "my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2 text-11 shadow-raised-200 focus:outline-none",

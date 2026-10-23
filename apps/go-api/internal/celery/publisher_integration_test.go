@@ -5,7 +5,6 @@ package celery
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -16,16 +15,12 @@ import (
 )
 
 func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
-	brokerSetting := os.Getenv("CELERY_TEST_DISPOSABLE_AMQP_URL")
-	if brokerSetting == "" {
-		t.Skip("CELERY_TEST_DISPOSABLE_AMQP_URL is not set")
-	}
-	brokers := strings.Split(brokerSetting, ";")
-	consumerURL := strings.TrimSpace(brokers[len(brokers)-1])
-	consumerURL = strings.Replace(consumerURL, "pyamqp://", "amqp://", 1)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	brokerSetting := startDisposableRabbitMQ(t, ctx)
 
 	queue := "go-plane-celery-test-" + uuid.NewString()
-	consumerConnection, err := amqp.Dial(consumerURL)
+	consumerConnection, err := amqp.Dial(brokerSetting)
 	if err != nil {
 		t.Fatalf("connect consumer: %v", err)
 	}
@@ -43,10 +38,10 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 		if _, err := consumerChannel.QueueDelete(queue, false, false, false); err != nil {
 			t.Errorf("delete disposable queue: %v", err)
 		}
-		if err := consumerChannel.Close(); err != nil && !strings.Contains(err.Error(), "channel/connection is not open") {
+		if err := consumerChannel.Close(); err != nil {
 			t.Errorf("close consumer channel: %v", err)
 		}
-		if err := consumerConnection.Close(); err != nil && !strings.Contains(err.Error(), "connection is already closed") {
+		if err := consumerConnection.Close(); err != nil {
 			t.Errorf("close consumer connection: %v", err)
 		}
 	})
@@ -61,17 +56,17 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 		}
 	})
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	publishCtx, cancelPublish := context.WithTimeout(ctx, 5*time.Second)
+	defer cancelPublish()
 	record := activitylog.APIActivityLog{Path: "/api/v1/example/", ResponseCode: 200}
-	if err := publisher.Log(ctx, record); err != nil {
+	if err := publisher.Log(publishCtx, record); err != nil {
 		t.Fatalf("Log() error = %v", err)
 	}
 	if _, err := consumerChannel.QueueDelete(queue, false, false, false); err != nil {
 		t.Fatalf("delete queue between publishes: %v", err)
 	}
 	record.Path = "/api/v1/redeclared-queue/"
-	if err := publisher.Log(ctx, record); err != nil {
+	if err := publisher.Log(publishCtx, record); err != nil {
 		t.Fatalf("Log() after queue deletion error = %v", err)
 	}
 
@@ -106,11 +101,11 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("processLogsMessage() error = %v", err)
 	}
-	current, err := publisher.sessionForPublish(ctx)
+	current, err := publisher.sessionForPublish(publishCtx)
 	if err != nil {
 		t.Fatalf("sessionForPublish() error = %v", err)
 	}
-	if err := publishConfirmedCeleryTask(ctx, current.channel, current.returns, queue+"-missing", message); err == nil || !strings.Contains(err.Error(), "returned by broker") {
+	if err := publishConfirmedCeleryTask(publishCtx, current.channel, current.returns, queue+"-missing", message); err == nil || !strings.Contains(err.Error(), "returned by broker") {
 		t.Fatalf("unroutable publish error = %v, want broker return", err)
 	}
 
@@ -118,7 +113,7 @@ func TestPublisherEmitsCeleryConsumableProcessLogsMessage(t *testing.T) {
 		t.Fatalf("close established publisher transport: %v", err)
 	}
 	record.Path = "/api/v1/reconnected-session/"
-	if err := publisher.Log(ctx, record); err != nil {
+	if err := publisher.Log(publishCtx, record); err != nil {
 		t.Fatalf("Log() after stale session error = %v", err)
 	}
 	recoveredDelivery := consumeDelivery(t, consumerChannel, queue)

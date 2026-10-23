@@ -158,10 +158,9 @@ export const AreaChart = React.memo(function AreaChart<K extends string, T exten
             allowDecimals={!!yAxis.allowDecimals}
           />
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
               formatter={(value) => itemLabels[value]}
-              onMouseEnter={(payload) => setActiveLegend(payload.value)}
+              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
               onMouseLeave={() => setActiveLegend(null)}
               {...getLegendProps(legend)}
             />

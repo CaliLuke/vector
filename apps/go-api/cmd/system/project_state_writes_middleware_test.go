@@ -11,13 +11,14 @@ import (
 	"strings"
 	"testing"
 
+	"uuid"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	activityapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
 	statesapi "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	"github.com/CaliLuke/go-plane/gen/system"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
-	"uuid"
 )
 
 const stateMiddlewareProject = "22222222-2222-4222-8222-222222222222"

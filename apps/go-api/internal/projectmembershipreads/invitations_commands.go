@@ -363,7 +363,8 @@ func (r *InvitationsRepository) invitationCreate(ctx context.Context, c Invitati
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback(ctx)
+	// Commit or the returned error closes the transaction; rollback is best-effort cleanup.
+	defer func() { _ = tx.Rollback(ctx) }()
 	for _, e := range entries {
 		if project {
 			_, err = tx.Exec(ctx, `INSERT INTO project_member_invites(id,project_id,workspace_id,email,role,token,accepted,created_by_id,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,false,$7,clock_timestamp(),clock_timestamp()) ON CONFLICT DO NOTHING`, uuid.NewString(), c.ProjectID, workspaceID, e.email, e.role, e.token, c.UserID)
@@ -773,7 +774,8 @@ func (r *InvitationsRepository) mutateWorkspaceMember(ctx context.Context, c Inv
 		if err != nil {
 			return nil, err
 		}
-		defer tx.Rollback(ctx)
+		// Commit or the returned error closes the transaction; rollback is best-effort cleanup.
+		defer func() { _ = tx.Rollback(ctx) }()
 		if cascade {
 			if _, err = tx.Exec(ctx, `UPDATE project_members SET role=5 WHERE workspace_id=$1 AND member_id=$2 AND deleted_at IS NULL`, workspace, userID); err != nil {
 				return nil, err

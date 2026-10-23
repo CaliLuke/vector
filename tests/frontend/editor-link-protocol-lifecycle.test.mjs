@@ -71,7 +71,10 @@ registerHooks({
       return {
         format: "module",
         shortCircuit: true,
-        source: typescript.transpileModule(source, { compilerOptions }).outputText,
+        source: typescript.transpileModule(source, {
+          compilerOptions,
+          fileName: fileURLToPath(url),
+        }).outputText,
       };
     }
     return nextLoad(url, context);
@@ -84,13 +87,14 @@ const [{ Editor }, { default: StarterKit }, { CustomLinkExtension }, { find }] =
   import("../../packages/editor/src/core/extensions/custom-link/extension.tsx"),
   import("linkifyjs"),
 ]);
+const editorStarterKit = StarterKit.configure({ link: false });
 
 function hasCustomLinkMark(editor, text) {
   return (editor.getJSON().content ?? [])
     .flatMap((node) => node.content ?? [])
     .some(
       (node) =>
-        node.text === text && node.marks?.some((mark) => mark.type === "customLink" && mark.attrs?.href === text)
+        node.text?.includes(text) && node.marks?.some((mark) => mark.type === "customLink" && mark.attrs?.href === text)
     );
 }
 
@@ -103,7 +107,7 @@ test("late custom protocols rebuild linkify and preserve existing editor behavio
 
   const defaultEditor = new Editor({
     element: document.createElement("div"),
-    extensions: [StarterKit, CustomLinkExtension],
+    extensions: [editorStarterKit, CustomLinkExtension],
   });
   let lateCustomEditor;
   let repeatedCustomEditor;
@@ -120,7 +124,7 @@ test("late custom protocols rebuild linkify and preserve existing editor behavio
     lateCustomEditor = new Editor({
       element: document.createElement("div"),
       extensions: [
-        StarterKit,
+        editorStarterKit,
         CustomLinkExtension.configure({
           protocols: ["slack"],
           validate: () => true,
@@ -143,7 +147,7 @@ test("late custom protocols rebuild linkify and preserve existing editor behavio
     repeatedCustomEditor = new Editor({
       element: document.createElement("div"),
       extensions: [
-        StarterKit,
+        editorStarterKit,
         CustomLinkExtension.configure({
           protocols: ["slack"],
           validate: () => true,
@@ -156,7 +160,6 @@ test("late custom protocols rebuild linkify and preserve existing editor behavio
       find("slack://another-channel").some((link) => link.isLink),
       true
     );
-
     lateCustomEditor.destroy();
     lateCustomEditor = undefined;
     repeatedCustomEditor.commands.insertContent("slack://surviving-editor ");

@@ -4,6 +4,7 @@
   "private": true,
   "description": "common tailwind configuration across monorepo",
   "license": "AGPL-3.0",
+  "type": "module",
   "sideEffects": [
     "**/*.css"
   ],

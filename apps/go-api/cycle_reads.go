@@ -10,12 +10,13 @@ import (
 	"strconv"
 	"strings"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/cycle_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/cyclereads"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const cycleReadsInternalErrorDetail = "Something went wrong please try again later"

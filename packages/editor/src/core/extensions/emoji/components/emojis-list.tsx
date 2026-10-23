@@ -95,7 +95,7 @@ export const EmojisListDropdown = forwardRef(function EmojisListDropdown(
     const container = dropdownContainerRef.current;
     if (!container) return;
 
-    const item = container.querySelector(`#emoji-item-${selectedIndex}`) as HTMLElement;
+    const item = container.querySelector(`#emoji-item-${selectedIndex}`);
     if (item) {
       const containerRect = container.getBoundingClientRect();
       const itemRect = item.getBoundingClientRect();

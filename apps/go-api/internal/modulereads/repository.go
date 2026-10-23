@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"strings"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 var (

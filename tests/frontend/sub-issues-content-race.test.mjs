@@ -3,6 +3,7 @@ import { createRequire, registerHooks } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
 import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createModuleStub, resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const requireFromWeb = createRequire(new URL("../../apps/web/package.json", import.meta.url));
@@ -28,6 +29,58 @@ const packageStubs = {
     "export const TOAST_TYPE = { ERROR: 'error', SUCCESS: 'success' }; export const setToast = () => {};",
 };
 
+function resolveSubIssuesAlias(specifier, context) {
+  const sourceBySpecifier = {
+    "@/services/issue":
+      "export class IssueService { subIssues() { throw new Error('IssueService I/O must be provided by the test'); } } export class IssueArchiveService extends IssueService {}",
+    "@/hooks/use-issue-peek-overview-redirection": "export default () => ({ handleRedirection() {} });",
+    "@/components/issues/delete-issue-modal": "export const DeleteIssueModal = () => null;",
+  };
+  if (specifier === "@/lib/store-context") {
+    const contextUrl = new URL("./helpers/work-item-store-context.mjs", import.meta.url).href;
+    return createModuleStub(
+      `export { StoreContext } from ${JSON.stringify(contextUrl)}; export const store = globalThis.__subIssuesContentStore;`
+    );
+  }
+  if (Object.hasOwn(sourceBySpecifier, specifier)) return createModuleStub(sourceBySpecifier[specifier]);
+  if (specifier === "../../issue-modal/modal" && context.parentURL?.includes("/sub-issues/content.")) {
+    return createModuleStub("export const CreateUpdateIssueModal = () => null;");
+  }
+  return undefined;
+}
+
+function resolveSubIssuesPackage(specifier, context, nextResolve) {
+  if (specifier === "@plane/propel/tooltip") {
+    const url = new URL("../../packages/propel/src/tooltip/root.tsx", import.meta.url);
+    return nextResolve(pathToFileURL(fileURLToPath(url)).href, context);
+  }
+  if (specifier === "@plane/ui" && context.parentURL?.includes("/sub-issues/")) {
+    const files = [
+      ["Collapsible", "../../packages/ui/src/collapsible/collapsible.tsx"],
+      ["CustomMenu", "../../packages/ui/src/dropdowns/custom-menu.tsx"],
+      ["ControlLink", "../../packages/ui/src/control-link/control-link.tsx"],
+    ];
+    const exports = files
+      .map(
+        ([name, path]) =>
+          `export { ${name} } from ${JSON.stringify(pathToFileURL(fileURLToPath(new URL(path, import.meta.url))).href)};`
+      )
+      .join("\n");
+    return createModuleStub(exports);
+  }
+  if (
+    specifier === "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item" &&
+    context.parentURL?.includes("issue-layouts/utils.")
+  ) {
+    const url = new URL(
+      "../../apps/web/node_modules/@atlaskit/pragmatic-drag-and-drop-hitbox/dist/cjs/tree-item.js",
+      import.meta.url
+    );
+    return nextResolve(pathToFileURL(fileURLToPath(url)).href, context);
+  }
+  return undefined;
+}
+
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (
@@ -36,77 +89,11 @@ registerHooks({
     ) {
       return nextResolve(reactModuleUrls.get(specifier), context);
     }
-    if (specifier === "@/lib/store-context") {
-      const contextUrl = new URL("./helpers/work-item-store-context.mjs", import.meta.url).href;
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent(`export { StoreContext } from ${JSON.stringify(contextUrl)}; export const store = globalThis.__subIssuesContentStore;`)}`,
-      };
-    }
-    if (specifier === "@/services/issue") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export class IssueService { subIssues() { throw new Error('IssueService I/O must be provided by the test'); } } export class IssueArchiveService extends IssueService {}")}`,
-      };
-    }
-    if (specifier === "@/hooks/use-issue-peek-overview-redirection") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export default () => ({ handleRedirection() {} });")}`,
-      };
-    }
-    if (specifier === "@plane/propel/tooltip") {
-      return nextResolve(
-        pathToFileURL(fileURLToPath(new URL("../../packages/propel/src/tooltip/root.tsx", import.meta.url))).href,
-        context
-      );
-    }
-    if (specifier === "@plane/ui" && context.parentURL?.includes("/sub-issues/")) {
-      const files = [
-        ["Collapsible", "../../packages/ui/src/collapsible/collapsible.tsx"],
-        ["CustomMenu", "../../packages/ui/src/dropdowns/custom-menu.tsx"],
-        ["ControlLink", "../../packages/ui/src/control-link/control-link.tsx"],
-      ];
-      const exports = files
-        .map(
-          ([name, path]) =>
-            `export { ${name} } from ${JSON.stringify(pathToFileURL(fileURLToPath(new URL(path, import.meta.url))).href)};`
-        )
-        .join("\n");
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(exports)}` };
-    }
-    if (
-      specifier === "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item" &&
-      context.parentURL?.includes("issue-layouts/utils.")
-    ) {
-      return nextResolve(
-        pathToFileURL(
-          fileURLToPath(
-            new URL(
-              "../../apps/web/node_modules/@atlaskit/pragmatic-drag-and-drop-hitbox/dist/cjs/tree-item.js",
-              import.meta.url
-            )
-          )
-        ).href,
-        context
-      );
-    }
-    if (specifier === "@/components/issues/delete-issue-modal") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const DeleteIssueModal = () => null;")}`,
-      };
-    }
-    if (specifier === "../../issue-modal/modal" && context.parentURL?.includes("/sub-issues/content.")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const CreateUpdateIssueModal = () => null;")}`,
-      };
-    }
-    if (Object.hasOwn(packageStubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
+    const alias = resolveSubIssuesAlias(specifier, context);
+    if (alias) return alias;
+    const packageResolution = resolveSubIssuesPackage(specifier, context, nextResolve);
+    if (packageResolution) return packageResolution;
+    return resolvePackageStub(specifier, packageStubs, context, nextResolve);
   },
 });
 
@@ -207,11 +194,11 @@ test("duplicate StrictMode sub-item fetch completions keep the rendered child li
   };
   await environment.render(
     React.createElement(
-      StoreContext.Provider,
-      { value: storeValue },
+      React.StrictMode,
+      null,
       React.createElement(
-        React.StrictMode,
-        null,
+        StoreContext.Provider,
+        { value: storeValue },
         React.createElement(SubIssuesCollapsibleContent, {
           workspaceSlug: "default",
           projectId: "project-id",

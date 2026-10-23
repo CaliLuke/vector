@@ -4,28 +4,29 @@
  * See the LICENSE file for details.
  */
 
-// @ts-expect-error Due to live server dependencies
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/dist/cjs/entry-point/combine.js";
-import {
-  draggable,
-  dropTargetForElements,
-  // @ts-expect-error Due to live server dependencies
-} from "@atlaskit/pragmatic-drag-and-drop/dist/cjs/entry-point/element/adapter.js";
-import {
-  attachClosestEdge,
-  extractClosestEdge,
-  // @ts-expect-error Due to live server dependencies
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/cjs/closest-edge.js";
-import { isEqual } from "lodash-es";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
+import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import React, { useEffect, useRef, useState } from "react";
 import { DropIndicator } from "../drop-indicator";
 import { cn } from "../utils";
 
 type Props = {
   children: React.ReactNode;
-  data: any; //@todo make this generic
+  data: SortableDragData;
   className?: string;
 };
+
+export type SortableDragData = {
+  sortableId: string;
+  sortableGroupId: string;
+};
+
+export function isSortableDragData(
+  data: Record<string | symbol, unknown>
+): data is Record<string | symbol, unknown> & SortableDragData {
+  return typeof data.sortableId === "string" && typeof data.sortableGroupId === "string";
+}
 
 function Draggable({ children, data, className }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,7 +47,6 @@ function Draggable({ children, data, className }: Props) {
         }),
         dropTargetForElements({
           element: el,
-          // @ts-expect-error Due to live server dependencies
           onDragEnter: (args) => {
             setIsDraggedOver(true);
             setClosestEdge(extractClosestEdge(args.self.data));
@@ -55,9 +55,10 @@ function Draggable({ children, data, className }: Props) {
           onDrop: () => {
             setIsDraggedOver(false);
           },
-          // @ts-expect-error Due to live server dependencies
-          canDrop: ({ source }) => !isEqual(source.data, data) && source.data.__uuid__ === data.__uuid__,
-          // @ts-expect-error Due to live server dependencies
+          canDrop: ({ source }) =>
+            isSortableDragData(source.data) &&
+            source.data.sortableGroupId === data.sortableGroupId &&
+            source.data.sortableId !== data.sortableId,
           getData: ({ input, element }) =>
             attachClosestEdge(data, {
               input,

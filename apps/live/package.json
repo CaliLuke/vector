@@ -6,16 +6,14 @@
   "license": "AGPL-3.0",
   "author": "Plane Software Inc.",
   "type": "module",
-  "main": "./dist/start.mjs",
-  "module": "./dist/start.mjs",
   "exports": {
     ".": "./dist/start.mjs",
     "./package.json": "./package.json"
   },
   "scripts": {
     "build": "tsc --noEmit && tsdown",
-    "dev": "tsdown --watch --no-clean --onSuccess \"node --env-file=.env .\"",
-    "start": "node --env-file=.env .",
+    "dev": "tsdown --watch --no-clean --onSuccess \"node --env-file=.env dist/start.mjs\"",
+    "start": "node --env-file=.env dist/start.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -27,8 +25,6 @@
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
-    "@effect/platform": "catalog:",
-    "@effect/platform-node": "catalog:",
     "@fontsource/inter": "catalog:",
     "@hocuspocus/extension-database": "catalog:",
     "@hocuspocus/extension-logger": "catalog:",
@@ -63,6 +59,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hocuspocus/provider": "catalog:",
     "@plane/typescript-config": "workspace:*",
     "@types/compression": "catalog:",
     "@types/cors": "catalog:",
@@ -71,11 +68,13 @@
     "@types/node": "catalog:",
     "@types/pdf-parse": "catalog:",
     "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@types/ws": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "pdf-parse": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   }
 }

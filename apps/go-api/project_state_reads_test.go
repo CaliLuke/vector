@@ -6,11 +6,12 @@ import (
 	"errors"
 	"testing"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/project_state_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectstatereads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const projectStateFixture = `{"id":"00000000-0000-4000-8000-000000000001","project_id":"00000000-0000-4000-8000-000000000002","workspace_id":"00000000-0000-4000-8000-000000000003","name":"Backlog","color":"#60646C","group":"backlog","default":true,"description":"First backlog state","sequence":100.0}`

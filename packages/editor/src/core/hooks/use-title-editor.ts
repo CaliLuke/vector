@@ -6,7 +6,7 @@
 
 import type { HocuspocusProvider } from "@hocuspocus/provider";
 import type { Extensions } from "@tiptap/core";
-import { Placeholder } from "@tiptap/extension-placeholder";
+import { Placeholder } from "@tiptap/extensions";
 import { useEditor } from "@tiptap/react";
 import { useImperativeHandle } from "react";
 // constants
@@ -89,7 +89,7 @@ export const useTitleEditor = (props: TUseTitleEditorProps) => {
         .run();
     },
     setEditorValue: (content: string) => {
-      editor?.commands.setContent(content, false);
+      editor?.commands.setContent(content, { emitUpdate: false });
     },
   }));
 

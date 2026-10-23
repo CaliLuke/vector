@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"uuid"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrForbidden = errors.New("workspace analytics requires an active admin or member")

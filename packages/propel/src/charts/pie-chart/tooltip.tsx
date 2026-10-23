@@ -12,7 +12,7 @@ import { Card, ECardSpacing } from "../../card";
 type Props = {
   dotColor?: string;
   label: string;
-  payload: Payload<ValueType, NameType>[];
+  payload: readonly Payload<ValueType, NameType>[];
 };
 
 export const CustomPieChartTooltip = React.memo(function CustomPieChartTooltip(props: Props) {
@@ -25,7 +25,7 @@ export const CustomPieChartTooltip = React.memo(function CustomPieChartTooltip(p
     >
       <p className="flex-shrink-0 truncate border-b border-subtle pb-2 text-11 font-medium text-primary">{label}</p>
       {payload?.map((item) => (
-        <div key={item?.dataKey} className="flex items-center gap-2 text-11 capitalize">
+        <div key={String(item?.dataKey)} className="flex items-center gap-2 text-11 capitalize">
           <div className="flex items-center gap-2 truncate">
             <div
               className="size-2 flex-shrink-0 rounded-xs"

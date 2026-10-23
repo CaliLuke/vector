@@ -6,7 +6,7 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false,
     "rootDirs": [".", "./.react-router/types"],
-    "types": ["vite/client"],
+    "types": ["vite/client", "react", "react-dom"],
     "paths": {
       "package.json": ["./package.json"],
       "@/*": ["./*"]

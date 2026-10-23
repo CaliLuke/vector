@@ -5,7 +5,7 @@
  */
 
 import * as React from "react";
-import { Menu as BaseMenu } from "@base-ui-components/react/menu";
+import { Menu as BaseMenu } from "@base-ui/react/menu";
 import { MoreHorizontal } from "lucide-react";
 import { ChevronDownIcon, ChevronRightIcon } from "../icons";
 import { cn } from "../utils/classname";
@@ -129,7 +129,7 @@ function Menu(props: TMenuProps) {
   };
 
   return (
-    <BaseMenu.Root openOnHover={openOnHover} onOpenChange={handleOpenChange}>
+    <BaseMenu.Root onOpenChange={handleOpenChange}>
       {customButton ? (
         <BaseMenu.Trigger
           type="button"
@@ -138,6 +138,7 @@ function Menu(props: TMenuProps) {
           tabIndex={customButtonTabIndex}
           disabled={disabled}
           aria-label={ariaLabel}
+          openOnHover={openOnHover}
         >
           {customButton}
         </BaseMenu.Trigger>
@@ -153,6 +154,7 @@ function Menu(props: TMenuProps) {
               } ${buttonClassName}`}
               tabIndex={customButtonTabIndex}
               aria-label={ariaLabel}
+              openOnHover={openOnHover}
             >
               <MoreHorizontal className={`h-3.5 w-3.5 ${verticalEllipsis ? "rotate-90" : ""}`} />
             </BaseMenu.Trigger>
@@ -168,6 +170,7 @@ function Menu(props: TMenuProps) {
               tabIndex={customButtonTabIndex}
               disabled={disabled}
               aria-label={ariaLabel}
+              openOnHover={openOnHover}
             >
               {label}
               {!noChevron && <ChevronDownIcon className="h-3.5 w-3.5" />}

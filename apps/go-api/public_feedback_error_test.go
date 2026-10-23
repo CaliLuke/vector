@@ -6,10 +6,11 @@ import (
 	"io"
 	"testing"
 
+	"uuid"
+
 	publicfeedback "github.com/CaliLuke/go-plane/gen/public_feedback"
 	metadata "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/go-plane/internal/workitems"
-	"uuid"
 )
 
 func TestPublicFeedbackMissingBoardMapsToDjango404(t *testing.T) {

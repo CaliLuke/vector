@@ -144,9 +144,8 @@ export const LineChart = React.memo(function LineChart<K extends string, T exten
             allowDecimals={!!yAxis.allowDecimals}
           />
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
-              onMouseEnter={(payload) => setActiveLegend(payload.value)}
+              onMouseEnter={(payload) => setActiveLegend(payload.value ?? null)}
               onMouseLeave={() => setActiveLegend(null)}
               formatter={(value) => itemLabels[value]}
               {...getLegendProps(legend)}
@@ -162,7 +161,7 @@ export const LineChart = React.memo(function LineChart<K extends string, T exten
                 pointerEvents: "auto",
               }}
               content={({ active, label, payload }) => {
-                if (customTooltipContent) return customTooltipContent({ active, label, payload });
+                if (customTooltipContent) return customTooltipContent({ active, label: String(label ?? ""), payload });
                 return (
                   <CustomTooltip
                     active={active}

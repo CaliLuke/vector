@@ -21,6 +21,8 @@ import (
 	"testing"
 	"time"
 
+	"uuid"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	assetslifecycleserver "github.com/CaliLuke/go-plane/assetslifecycle/gen/http/plane_internal_django_migration_api/server"
 	analyticviewsapi "github.com/CaliLuke/go-plane/gen/analytic_views"
@@ -56,7 +58,6 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 func TestEntityFavoritesAllowProtocol(t *testing.T) {
@@ -3256,25 +3257,44 @@ func TestPublicProjectMetadataReadsHTTPEmptyCookieNameFailsWhenSessionMustChange
 	}
 }
 
-func TestPublicProjectMetadataReadsHTTPUsesAdminCookieForInstancesSubstring(t *testing.T) {
-	ctx := newLogContext(context.Background(), io.Discard, false)
-	handler := newHTTPHandlerWithPendingReplacements(
-		ctx, system.NewEndpoints(systemapi.NewSystem()), false,
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		pendingReplacementEndpoints{
-			publicProjectMetadataReads:       publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
-			publicProjectMetadataThrottle:    &publicProjectMetadataThrottleStub{allowed: true, expire: true},
-			publicProjectMetadataCookie:      djangoSessionCookieConfig{Name: "session-id"},
-			publicProjectMetadataAdminCookie: djangoSessionCookieConfig{Name: "admin-session-id"},
-		},
-	)
-	request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/contains-instances-value/labels/", nil)
-	request.AddCookie(&http.Cookie{Name: "session-id", Value: "normal-session-key"})
-	request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-session-key"})
-	response := httptest.NewRecorder()
-	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusOK || !strings.HasPrefix(response.Header().Get("Set-Cookie"), `admin-session-id="";`) {
-		t.Fatalf("response=%d headers=%v", response.Code, response.Header())
+func TestPublicProjectMetadataReadsHTTPDoesNotChangeAdminCookieForAnchorText(t *testing.T) {
+	for _, scenario := range []struct {
+		name      string
+		path      string
+		status    int
+		refresh   bool
+		wantValue string
+	}{
+		{name: "expire public session", path: "/api/public/anchor/contains-instances-value/labels/", status: http.StatusOK},
+		{name: "refresh public session", path: "/api/public/anchor/instances/labels/", status: http.StatusOK, refresh: true, wantValue: "refreshed-public-session"},
+		{name: "slashless route", path: "/api/public/anchor/instances/labels", status: http.StatusMovedPermanently},
+		{name: "slashless refresh public session", path: "/api/public/anchor/instances/labels", status: http.StatusMovedPermanently, refresh: true, wantValue: "refreshed-public-session"},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			throttle := &publicProjectMetadataThrottleStub{
+				allowed: true, expire: !scenario.refresh, refresh: scenario.refresh,
+				result: djangosession.SessionRefresh{SessionKey: scenario.wantValue, MaxAgeSeconds: 604800},
+			}
+			handler := newHTTPHandlerWithPendingReplacements(
+				newLogContext(context.Background(), io.Discard, false), system.NewEndpoints(systemapi.NewSystem()), false,
+				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+				pendingReplacementEndpoints{
+					publicProjectMetadataReads:       publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
+					publicProjectMetadataThrottle:    throttle,
+					publicProjectMetadataCookie:      djangoSessionCookieConfig{Name: "session-id"},
+					publicProjectMetadataAdminCookie: djangoSessionCookieConfig{Name: "admin-session-id"},
+				},
+			)
+			request := httptest.NewRequest(http.MethodGet, scenario.path, nil)
+			request.AddCookie(&http.Cookie{Name: "session-id", Value: "normal-session-key"})
+			request.AddCookie(&http.Cookie{Name: "admin-session-id", Value: "admin-session-key"})
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			cookies := response.Result().Cookies()
+			if response.Code != scenario.status || len(cookies) != 1 || cookies[0].Name != "session-id" || cookies[0].Value != scenario.wantValue {
+				t.Fatalf("response=%d cookies=%v", response.Code, cookies)
+			}
+		})
 	}
 }
 
@@ -3844,7 +3864,7 @@ func TestPublicProjectMetadataReadsHTTPRefreshesUnaccessedSessionAfter413(t *tes
 		wantCookie string
 	}{
 		{name: "standard", path: "/api/public/anchor/example/labels/", cookieName: "session-id", wantCookie: "session-id=refreshed-session"},
-		{name: "admin", path: "/api/public/anchor/instances-example/labels/", cookieName: "admin-session-id", wantCookie: "admin-session-id=refreshed-session"},
+		{name: "instances anchor", path: "/api/public/anchor/instances-example/labels/", cookieName: "session-id", wantCookie: "session-id=refreshed-session"},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			refresh := &djangosession.SessionRefresh{SessionKey: "refreshed-session", MaxAgeSeconds: 3600, ExpiresAt: time.Date(2026, time.September, 2, 3, 4, 5, 0, time.UTC)}
@@ -5399,7 +5419,7 @@ func TestCSRFTokenHTTPSessionLifecycle(t *testing.T) {
 			route = djangoCSRFResponseCookiePolicy(djangoCSRFCookieConfig{}).Handler(route)
 		}
 		route = publicProjectMetadataReadsCompatibilityMiddleware(
-			throttle, nil, sessionConfig, sessionConfig, nil, "", defaultFileSizeLimit, false,
+			throttle, nil, sessionConfig, nil, "", defaultFileSizeLimit, false,
 			false,
 		)(route)
 		route = csrfTokenResponseCompatibilityMiddleware(route)

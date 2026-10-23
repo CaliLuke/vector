@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { Placeholder } from "@tiptap/extension-placeholder";
+import { Placeholder } from "@tiptap/extensions";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
 // types

@@ -5,15 +5,12 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import type {
-  DropTargetRecord,
-  DragLocationHistory,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import type Masonry from "masonry-layout";
+import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { observer } from "mobx-react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import Masonry from "react-masonry-component";
 
 // plane imports
 import { EUserPermissionsLevel } from "@plane/constants";
@@ -45,10 +42,11 @@ type TStickiesLayout = {
 
 type TProps = TStickiesLayout & {
   columnCount: number;
+  containerWidth: number | null;
 };
 
 export const StickiesList = observer(function StickiesList(props: TProps) {
-  const { workspaceSlug, intersectionElement, columnCount } = props;
+  const { workspaceSlug, intersectionElement, columnCount, containerWidth } = props;
   // navigation
   const pathname = usePathname();
   // theme hook
@@ -71,13 +69,63 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
   );
   const stickiesResolvedPath = resolvedTheme === "light" ? lightStickiesAsset : darkStickiesAsset;
   const stickiesSearchResolvedPath = resolvedTheme === "light" ? lightStickiesSearchAsset : darkStickiesSearchAsset;
-  const masonryRef = useRef<any>(null);
+  const masonryRef = useRef<MasonryInstance | null>(null);
+  const masonryContainerRef = useRef<HTMLDivElement | null>(null);
+  const masonryResizeObserverRef = useRef<ResizeObserver | null>(null);
+  const shouldRenderMasonry = loader !== "init-loader" && !(loader === "loaded" && workspaceStickyIds.length === 0);
+  const stickyIdsKey = workspaceStickyIds.join("\0");
+  const hasIntersectionElement = intersectionElement != null;
+
+  useEffect(() => {
+    if (!shouldRenderMasonry) return;
+
+    const container = masonryContainerRef.current;
+    if (!container) return;
+
+    let cancelled = false;
+    let masonry: MasonryInstance | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+
+    void import("masonry-layout").then(({ default: Masonry }) => {
+      if (cancelled) return;
+
+      const masonryInstance = new Masonry(container, {
+        itemSelector: ".sticky-masonry-item",
+      });
+      if (!masonryInstance.layout || !masonryInstance.reloadItems || !masonryInstance.destroy) {
+        throw new Error("The installed masonry-layout package is missing required lifecycle methods.");
+      }
+      masonry = masonryInstance as MasonryInstance;
+      masonryRef.current = masonry;
+
+      resizeObserver = new ResizeObserver(() => masonry?.layout());
+      masonryResizeObserverRef.current = resizeObserver;
+      container.querySelectorAll<HTMLElement>(".sticky-masonry-item").forEach((item) => resizeObserver?.observe(item));
+    });
+
+    return () => {
+      cancelled = true;
+      resizeObserver?.disconnect();
+      masonryResizeObserverRef.current = null;
+      masonry?.destroy();
+      if (masonryRef.current === masonry) masonryRef.current = null;
+    };
+  }, [shouldRenderMasonry]);
+
+  useEffect(() => {
+    if (!shouldRenderMasonry) return;
+
+    const container = masonryContainerRef.current;
+    const resizeObserver = masonryResizeObserverRef.current;
+    resizeObserver?.disconnect();
+    container?.querySelectorAll<HTMLElement>(".sticky-masonry-item").forEach((item) => resizeObserver?.observe(item));
+
+    masonryRef.current?.reloadItems();
+    masonryRef.current?.layout();
+  }, [containerWidth, hasIntersectionElement, itemWidth, shouldRenderMasonry, stickyIdsKey]);
 
   const handleLayout = () => {
-    if (masonryRef.current) {
-      // Force reflow
-      masonryRef.current.performLayout();
-    }
+    masonryRef.current?.layout();
   };
 
   // Function to determine if an item is in first or last row
@@ -149,13 +197,13 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
 
   return (
     <div className="transition-opacity duration-300 ease-in-out">
-      {/* @ts-expect-error type mismatch here */}
-      <Masonry elementType="div" ref={masonryRef}>
+      <div ref={masonryContainerRef}>
         {workspaceStickyIds.map((stickyId, index) => {
           const { isInFirstRow, isInLastRow } = getRowPositions(index);
           return (
             <StickyDNDWrapper
               key={stickyId}
+              className="sticky-masonry-item"
               stickyId={stickyId}
               workspaceSlug={workspaceSlug.toString()}
               itemWidth={itemWidth}
@@ -167,11 +215,17 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
             />
           );
         })}
-        {intersectionElement && <div style={{ width: itemWidth }}>{intersectionElement}</div>}
-      </Masonry>
+        {intersectionElement && (
+          <div className="sticky-masonry-item" style={{ width: itemWidth }}>
+            {intersectionElement}
+          </div>
+        )}
+      </div>
     </div>
   );
 });
+
+type MasonryInstance = Required<Pick<Masonry, "layout" | "reloadItems" | "destroy">>;
 
 export function StickiesLayout(props: TStickiesLayout) {
   // states
@@ -207,7 +261,7 @@ export function StickiesLayout(props: TStickiesLayout) {
 
   return (
     <div ref={ref} className="size-full">
-      <StickiesList {...props} columnCount={columnCount} />
+      <StickiesList {...props} columnCount={columnCount} containerWidth={containerWidth} />
     </div>
   );
 }

@@ -6,10 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/public_project_metadata_reads"
 	store "github.com/CaliLuke/go-plane/internal/publicprojectmetadatareads"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 const publicProjectMetadataInternalErrorDetail = "Something went wrong please try again later"

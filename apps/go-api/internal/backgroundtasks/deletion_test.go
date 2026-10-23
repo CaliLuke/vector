@@ -1,8 +1,9 @@
 package backgroundtasks
 
 import (
-	"github.com/CaliLuke/go-plane/internal/deletion"
 	"testing"
+
+	"github.com/CaliLuke/go-plane/internal/deletion"
 )
 
 func TestDeletionRetentionRejectsInvalidConfiguration(t *testing.T) {

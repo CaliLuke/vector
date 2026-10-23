@@ -25,6 +25,20 @@ const substitutes = {
   "@plane/utils": "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
 };
 
+async function flushAnimationFrames() {
+  await act(async () => {
+    await new Promise((resolve) => {
+      let frames = 0;
+      const flushNextFrame = () => {
+        frames += 1;
+        if (frames === 6) resolve();
+        else requestAnimationFrame(flushNextFrame);
+      };
+      requestAnimationFrame(flushNextFrame);
+    });
+  });
+}
+
 registerWebModuleHooks();
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -66,12 +80,15 @@ test("member role filter uses one focusable trigger and Escape returns focus", a
   assert.ok(trigger);
   assert.equal(environment.container.querySelectorAll("button").length, 1, "trigger should not nest buttons");
   assert.equal(trigger.textContent.trim(), "Filters");
-  trigger.focus();
+  await act(() => trigger.focus());
+  await flushAnimationFrames();
   await act(async () => trigger.click());
+  await flushAnimationFrames();
   const role = [...document.querySelectorAll("button")].find((button) => button.textContent.includes("Admin"));
   assert.ok(role, "opening the menu should show role filters");
   assert.ok(document.querySelector('[role="menu"]'), "the real CustomMenu should expose its menu");
   await act(() => role.click());
+  await flushAnimationFrames();
   assert.equal(appliedRole, "20", "selecting Admin should apply the corresponding workspace role filter");
   assert.ok(document.querySelector('[role="menu"]'), "the filter menu should stay open after applying a role");
 
@@ -79,6 +96,7 @@ test("member role filter uses one focusable trigger and Escape returns focus", a
     const escapeTarget = document.activeElement instanceof HTMLElement ? document.activeElement : role;
     escapeTarget.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
   });
+  await flushAnimationFrames();
   assert.equal(document.querySelector('[role="menu"]'), null, "Escape should close the menu");
   const focusDeadline = performance.now() + 200;
   await act(

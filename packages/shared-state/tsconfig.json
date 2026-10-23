@@ -2,6 +2,7 @@
   "extends": "@plane/typescript-config/react-library.json",
   "compilerOptions": {
     "exactOptionalPropertyTypes": false,
+    "types": [],
     "paths": {
       "@/*": ["./src/*"]
     }

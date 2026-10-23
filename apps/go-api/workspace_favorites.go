@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"strings"
 
+	"uuid"
+
 	api "github.com/CaliLuke/go-plane/gen/workspace_favorites"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacefavorites"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"uuid"
 )
 
 type workspaceFavoritesRepository interface {

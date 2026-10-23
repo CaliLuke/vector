@@ -5,8 +5,6 @@
   "description": "Shared state shared across multiple apps internally",
   "license": "AGPL-3.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
@@ -29,8 +27,7 @@
     "lodash-es": "catalog:",
     "mobx": "catalog:",
     "mobx-utils": "catalog:",
-    "uuid": "catalog:",
-    "zod": "catalog:"
+    "uuid": "catalog:"
   },
   "devDependencies": {
     "@plane/typescript-config": "workspace:*",

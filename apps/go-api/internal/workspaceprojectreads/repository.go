@@ -9,9 +9,10 @@ import (
 	"strconv"
 	"strings"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
-	"uuid"
 )
 
 var (

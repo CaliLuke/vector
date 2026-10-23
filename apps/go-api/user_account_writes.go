@@ -16,6 +16,8 @@ import (
 	"time"
 	"uuid"
 
+	"math/big"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -26,7 +28,6 @@ import (
 	loomhttp "github.com/CaliLuke/loom/http"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
-	"math/big"
 )
 
 const userAccountWritesInternalMessage = "Something went wrong please try again later"

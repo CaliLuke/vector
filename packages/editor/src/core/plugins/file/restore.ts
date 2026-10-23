@@ -17,7 +17,10 @@ import { NODE_FILE_MAP } from "@/plane-editor/constants/utility";
 import type { TFileHandler } from "@/types";
 // local imports
 import type { NodeFileMapType } from "../../../ce/constants/utility";
+import type { ExtensionFileSetStorageKey } from "@/plane-editor/types/storage";
 import type { TFileNode } from "./types";
+
+type FileSetStorage = Partial<Record<ExtensionFileSetStorageKey, Map<string, boolean>>>;
 
 const RESTORE_PLUGIN_KEY = new PluginKey("restore-utility");
 
@@ -70,7 +73,9 @@ export const TrackFileRestorationPlugin = (editor: Editor, restoreHandler: TFile
           const src = node.attrs.src;
           const nodeFileSetDetails = NODE_FILE_MAP[nodeType];
           if (!nodeFileSetDetails) return;
-          const extensionFileSetStorage = editor.storage[nodeType]?.[nodeFileSetDetails.fileSetName];
+          const extensionFileSetStorage = (editor.storage as unknown as Record<string, FileSetStorage>)[nodeType]?.[
+            nodeFileSetDetails.fileSetName
+          ];
           const wasDeleted = extensionFileSetStorage?.get(src);
           if (!nodeFileSetDetails || !src) return;
           if (wasDeleted === undefined) {

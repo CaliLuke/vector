@@ -8,10 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"uuid"
+
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/instancemanagement"
 	api "github.com/CaliLuke/go-plane/workspacelifecycle/gen/workspace_lifecycle"
-	"uuid"
 )
 
 type workspaceLifecycleTestRepository struct {

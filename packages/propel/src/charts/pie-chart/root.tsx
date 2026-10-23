@@ -13,6 +13,10 @@ import { getLegendProps } from "../components/legend";
 import { CustomActiveShape } from "./active-shape";
 import { CustomPieChartTooltip } from "./tooltip";
 
+const renderActiveShape = (shapeProps: React.ComponentProps<typeof CustomActiveShape>) => (
+  <CustomActiveShape {...shapeProps} />
+);
+
 export const PieChart = React.memo(function PieChart<K extends string, T extends string>(props: TPieChartProps<K, T>) {
   const {
     data,
@@ -32,12 +36,11 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
     tooltipLabel,
   } = props;
   // states
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeLegend, setActiveLegend] = useState<string | null>(null);
 
   const renderCells = useMemo(
     () =>
-      cells.map((cell, index) => (
+      cells.map((cell) => (
         <Cell
           key={cell.key}
           className="transition-opacity duration-200"
@@ -46,8 +49,6 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
           style={{
             outline: "none",
           }}
-          onMouseEnter={() => setActiveIndex(index)}
-          onMouseLeave={() => setActiveIndex(null)}
         />
       )),
     [activeLegend, cells]
@@ -66,14 +67,12 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
           }}
         >
           <Pie
-            activeIndex={activeIndex === null ? undefined : activeIndex}
-            onMouseLeave={() => setActiveIndex(null)}
             data={data}
             dataKey={dataKey}
             cx="50%"
             cy="50%"
-            blendStroke
-            activeShape={<CustomActiveShape />}
+            stroke="none"
+            activeShape={renderActiveShape}
             innerRadius={innerRadius}
             outerRadius={outerRadius}
             cornerRadius={cornerRadius}
@@ -112,41 +111,43 @@ export const PieChart = React.memo(function PieChart<K extends string, T extends
             )}
           </Pie>
           {legend && (
-            // @ts-expect-error recharts types are not up to date
             <Legend
               onMouseEnter={(payload) => {
-                // @ts-expect-error recharts types are not up to date
-                const key: string | undefined = payload.payload?.key;
+                const key =
+                  typeof payload.payload === "object" && payload.payload !== null && "key" in payload.payload
+                    ? String(payload.payload.key)
+                    : undefined;
                 if (!key) return;
                 setActiveLegend(key);
-                setActiveIndex(null);
               }}
               onMouseLeave={() => setActiveLegend(null)}
               {...getLegendProps(legend)}
             />
           )}
-          {showTooltip && (
-            <Tooltip
-              cursor={{
-                fill: "currentColor",
-                className: "bg-layer-1-hover cursor-pointer",
-              }}
-              wrapperStyle={{
-                pointerEvents: "none",
-              }}
-              content={({ active, payload }) => {
-                if (!active || !payload || !payload.length) return null;
-                const cellData = cells.find((c) => c.key === payload[0].payload.key);
-                if (!cellData) return null;
-                const label = tooltipLabel
-                  ? typeof tooltipLabel === "function"
-                    ? tooltipLabel(payload[0]?.payload?.payload)
-                    : tooltipLabel
-                  : dataKey;
-                return <CustomPieChartTooltip dotColor={cellData.fill} label={label} payload={payload} />;
-              }}
-            />
-          )}
+          <Tooltip
+            cursor={
+              showTooltip
+                ? {
+                    fill: "currentColor",
+                    className: "bg-layer-1-hover cursor-pointer",
+                  }
+                : false
+            }
+            wrapperStyle={{
+              pointerEvents: "none",
+            }}
+            content={({ active, payload }) => {
+              if (!showTooltip || !active || !payload || !payload.length) return null;
+              const cellData = cells.find((c) => c.key === payload[0].payload.key);
+              if (!cellData) return null;
+              const label = tooltipLabel
+                ? typeof tooltipLabel === "function"
+                  ? tooltipLabel(payload[0]?.payload?.payload)
+                  : tooltipLabel
+                : dataKey;
+              return <CustomPieChartTooltip dotColor={cellData.fill} label={String(label)} payload={payload} />;
+            }}
+          />
         </CorePieChart>
       </ResponsiveContainer>
     </div>
