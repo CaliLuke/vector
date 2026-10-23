@@ -19,8 +19,6 @@ const (
 	IssueVersionSyncWorkflowName = "plane.issues.sync_versions"
 	issueVersionSyncActivity     = "plane.issues.sync_version_batch"
 	issueVersionSyncQueue        = "plane-background"
-	issueVersionSyncBatchDefault = 5000
-	issueVersionSyncBatchLimit   = 5000
 )
 
 type IssueVersionSyncInput struct {
@@ -73,7 +71,7 @@ func RegisterIssueVersionSyncWorkflow(app *selvedge.App, store issueVersionSyncS
 	}
 	activity := execution.Activity[IssueVersionSyncBatchInput, IssueVersionSyncBatchOutput]{Name: issueVersionSyncActivity}
 	if err := executionSelvedge.Register(activities, activity, func(ctx context.Context, input IssueVersionSyncBatchInput) (IssueVersionSyncBatchOutput, error) {
-		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueVersionSyncBatchLimit {
+		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 			return IssueVersionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue version sync batch", ErrPermanentVersionHistory)
 		}
 		result, err := store.SyncIssueVersionBatch(ctx, input)
@@ -85,7 +83,7 @@ func RegisterIssueVersionSyncWorkflow(app *selvedge.App, store issueVersionSyncS
 		return nil, fmt.Errorf("register issue version sync activity: %w", err)
 	}
 	workflow := selvedge.DefineWorkflow(IssueVersionSyncWorkflowName, func(ctx *selvedge.WorkflowContext, input IssueVersionSyncInput) (IssueVersionSyncOutput, error) {
-		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueVersionSyncBatchLimit || input.Countdown < 0 {
+		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit || input.Countdown < 0 {
 			return IssueVersionSyncOutput{}, fmt.Errorf("%w: invalid issue version sync workflow input", ErrPermanentVersionHistory)
 		}
 		var result IssueVersionSyncOutput
@@ -118,17 +116,9 @@ func (dispatcher *IssueVersionSyncDispatcher) Admit(ctx context.Context, eventID
 	if _, err := uuid.Parse(eventID); err != nil {
 		return "", fmt.Errorf("issue version sync event ID must be a UUID: %w", err)
 	}
-	if batchSize == 0 {
-		batchSize = issueVersionSyncBatchDefault
-	}
-	if batchSize > issueVersionSyncBatchLimit {
-		batchSize = issueVersionSyncBatchLimit
-	}
-	if offset < 0 || batchSize < 1 || countdown < 0 {
-		return "", errors.New("issue version sync requires non-negative offset and countdown and positive batch size")
-	}
-	if countdown == 0 {
-		countdown = issueDescriptionSyncDelayDefault
+	batchSize, offset, countdown, err := normalizeIssueSyncAdmission("issue version sync", batchSize, offset, countdown)
+	if err != nil {
+		return "", err
 	}
 	input := IssueVersionSyncInput{RunID: eventID, Offset: offset, BatchSize: batchSize, Countdown: countdown}
 	return admitOrReconcile(ctx, dispatcher.app, dispatcher.workflow, "issue-version-sync:"+eventID, input)
@@ -158,7 +148,7 @@ type syncIssueVersionRow struct {
 }
 
 func (store *PostgresIssueVersionSyncStore) SyncIssueVersionBatch(ctx context.Context, input IssueVersionSyncBatchInput) (IssueVersionSyncBatchOutput, error) {
-	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueVersionSyncBatchLimit {
+	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 		return IssueVersionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue version sync batch", ErrPermanentVersionHistory)
 	}
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})

@@ -158,3 +158,16 @@ func TestPublicProjectMetadataReadsMarksRenderPhaseFailures(t *testing.T) {
 		t.Fatalf("err=%T %v capture=%#v", err, err, capture)
 	}
 }
+
+func TestPublicProjectMetadataReadsMarksDecodeFailures(t *testing.T) {
+	service := &publicProjectMetadataReadsService{
+		repository: &publicProjectMetadataReadsRepositoryStub{labels: json.RawMessage(`{invalid`)},
+	}
+	capture := &PublicProjectMetadataReadsResponseCapture{}
+	ctx := WithPublicProjectMetadataReadsResponseCapture(context.Background(), capture)
+	_, err := service.Labels(ctx, &api.LabelsPayload{Anchor: "anchor"})
+	var internal *api.PublicProjectMetadataInternalError
+	if !errors.As(err, &internal) || !capture.RenderError {
+		t.Fatalf("err=%T %v capture=%#v", err, err, capture)
+	}
+}

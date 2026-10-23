@@ -51,6 +51,24 @@ func TestAPICyclePermissionPrecedesThrottleAndTimezone(t *testing.T) {
 	}
 }
 
+func TestAPICycleDoesNotAcceptAnotherAdapterPrincipal(t *testing.T) {
+	repository := &apiCycleRepositoryStub{}
+	value, err := NewAPICycleReads(repository, &activityAPIKeyStub{}, &activityThrottleStub{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	service := value.(*apiCycleReadsService)
+	ctx := context.WithValue(context.Background(), apiLabelPrincipalKey{}, struct {
+		apikey.Principal
+		Key string
+	}{apikey.Principal{UserID: uuid.New(), Timezone: "UTC"}, "label-key"})
+	_, _, err = service.GetAPIV1WorkspacesBySlugProjectsByProjectIDCycles(ctx, &api.GetAPIV1WorkspacesBySlugProjectsByProjectIDCyclesPayload{})
+	var unauthorized *api.APICycleReadsErrorResponseBody
+	if !errors.As(err, &unauthorized) || unauthorized.Name != "status_401" || repository.reads != 0 {
+		t.Fatalf("error=%v reads=%d", err, repository.reads)
+	}
+}
+
 func TestAPICyclePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 	repository := &apiCycleRepositoryStub{body: map[string]any{"end_date": "2020-01-01T00:00:00Z", "progress_snapshot": map[string]any{"end_date": "2020-01-01T00:00:00Z"}}}
 	keys := &activityAPIKeyStub{principal: apikey.Principal{UserID: uuid.New(), Timezone: "Asia/Kolkata"}}
@@ -59,7 +77,8 @@ func TestAPICyclePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 		t.Fatal(err)
 	}
 	service := value.(*apiCycleReadsService)
-	ctx, err := service.APIKeyAuth(context.Background(), "key", &security.APIKeyScheme{})
+	effects := &apikey.Effects{}
+	ctx, err := service.APIKeyAuth(apikey.WithEffects(context.Background(), effects), "key", &security.APIKeyScheme{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,5 +94,8 @@ func TestAPICyclePreservesPathIdentityAndOpaqueJSONTimestamps(t *testing.T) {
 	}
 	if repository.request.Params["cycle_id"] != "real-cycle" || repository.request.Params["per_page"] != "١_٠" || !strings.Contains(string(data), `"end_date":"2020-01-01T05:30:00+05:30"`) || !strings.Contains(string(data), `"progress_snapshot":{"end_date":"2020-01-01T00:00:00Z"}`) {
 		t.Fatalf("request=%#v body=%s", repository.request, data)
+	}
+	if !effects.Authenticated || effects.Rate == nil || !effects.Rate.Allowed {
+		t.Fatalf("request effects=%+v", effects)
 	}
 }

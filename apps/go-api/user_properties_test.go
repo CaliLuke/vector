@@ -4,26 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/user_properties"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
+	store "github.com/CaliLuke/go-plane/internal/userproperties"
 	loom "github.com/CaliLuke/loom/pkg"
 )
 
 type userPropertiesRepositoryStub struct {
-	authorized        bool
-	projectAuthorized bool
-	err               error
-	body              json.RawMessage
-	patched           map[string]json.RawMessage
+	authorized            bool
+	projectAuthorized     bool
+	err                   error
+	body                  json.RawMessage
+	patched               map[string]json.RawMessage
+	projectAuthorizations int
 }
 
 func (r *userPropertiesRepositoryStub) Authorized(context.Context, uuid.UUID, string) (bool, error) {
 	return r.authorized, r.err
 }
 func (r *userPropertiesRepositoryStub) AuthorizedProject(context.Context, uuid.UUID, string, uuid.UUID) (bool, error) {
+	r.projectAuthorizations++
 	return r.projectAuthorized, r.err
 }
 func (r *userPropertiesRepositoryStub) GetWorkspace(context.Context, uuid.UUID, string) (json.RawMessage, error) {
@@ -119,6 +123,60 @@ func TestUserPropertiesRejectsNonProjectMember(t *testing.T) {
 	}
 }
 
+func TestUserPropertiesCycleAuthorizesProjectBeforeParsingCycleID(t *testing.T) {
+	repo := &userPropertiesRepositoryStub{projectAuthorized: false}
+	service, err := NewUserProperties(repo, userPropertiesSessionStub{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, err := service.(api.Authorizer).APIKeyAuth(context.Background(), "valid", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = service.CycleGet(ctx, &api.CycleGetPayload{
+		Slug: "demo", ProjectID: "00000000-0000-4000-8000-000000000002", CycleID: "invalid",
+	})
+	var forbidden *api.UserPropertiesForbidden
+	if !errors.As(err, &forbidden) || repo.projectAuthorizations != 1 {
+		t.Fatalf("err=%T %v project authorizations=%d", err, err, repo.projectAuthorizations)
+	}
+}
+
 func (r *userPropertiesRepositoryStub) CheckScopedPatch(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, string) error {
 	return r.err
+}
+
+func TestUserPropertiesResultMapsStorageAndDecodeFailures(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		data     json.RawMessage
+		err      error
+		notFound bool
+	}{
+		{name: "missing properties", err: fmt.Errorf("lookup failed: %w", store.ErrNotFound), notFound: true},
+		{name: "storage failure", err: errors.New("connection lost")},
+		{name: "malformed stored JSON", data: json.RawMessage(`{"id":`)},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			properties, err := userPropertiesResult(tc.data, tc.err)
+			if properties != nil {
+				t.Fatalf("unexpected properties: %v", properties)
+			}
+			if tc.notFound {
+				var missing *api.UserPropertiesNotFound
+				if !errors.As(err, &missing) || missing.Message != "Not found." {
+					t.Fatalf("error=%T %v", err, err)
+				}
+			} else {
+				var internal *api.UserPropertiesInternal
+				if !errors.As(err, &internal) || internal.Message != "Something went wrong please try again later" {
+					t.Fatalf("error=%T %v", err, err)
+				}
+			}
+		})
+	}
+	properties, err := userPropertiesResult(userPropertiesJSON(), nil)
+	if err != nil || properties.ID != "00000000-0000-4000-8000-000000000010" {
+		t.Fatalf("properties=%v err=%v", properties, err)
+	}
 }

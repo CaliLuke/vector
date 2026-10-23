@@ -111,8 +111,22 @@ func TestPersonalDashboardProductionMounts(t *testing.T) {
 
 func TestPersonalDashboardNormalizesSourceIntegerMonths(t *testing.T) {
 	for _, suffix := range []string{"dashboard", "issues-completed-graph"} {
-		for _, tc := range []struct{ input, normalized string }{{"２", "2"}, {"0_2", "2"}, {"2147483648", "2147483648"}, {" +02 ", "2"}} {
-			t.Run(suffix+"/"+tc.input, func(t *testing.T) {
+		for _, tc := range []struct {
+			input      string
+			normalized string
+			include    bool
+		}{
+			{input: "２", normalized: "2", include: true},
+			{input: "0_2", normalized: "2", include: true},
+			{input: "2147483648", normalized: "2147483648", include: true},
+			{input: " +02 ", normalized: "2", include: true},
+			{normalized: "1"},
+		} {
+			name := tc.input
+			if !tc.include {
+				name = "default"
+			}
+			t.Run(suffix+"/"+name, func(t *testing.T) {
 				repository := &personalDashboardMountRepository{}
 				sessions := searchMountSessions{&cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}}
 				service, err := systemapi.NewPersonalDashboard(repository, sessions)
@@ -120,7 +134,11 @@ func TestPersonalDashboardNormalizesSourceIntegerMonths(t *testing.T) {
 					t.Fatal(err)
 				}
 				handler := extensionHTTPHandler(pendingReplacementEndpoints{personalDashboard: api.NewEndpoints(service), personalDashboardMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
-				request := httptest.NewRequest(http.MethodGet, "/api/users/me/workspaces/demo/"+suffix+"/?month="+url.QueryEscape(tc.input), nil)
+				path := "/api/users/me/workspaces/demo/" + suffix + "/"
+				if tc.include {
+					path += "?month=" + url.QueryEscape(tc.input)
+				}
+				request := httptest.NewRequest(http.MethodGet, path, nil)
 				request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 				response := httptest.NewRecorder()
 				handler.ServeHTTP(response, request)

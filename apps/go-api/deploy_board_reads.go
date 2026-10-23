@@ -51,15 +51,7 @@ func (service *deployBoardReadsService) APIKeyAuth(
 	key string,
 	_ *security.APIKeyScheme,
 ) (context.Context, error) {
-	principalID, _, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		principal, err := service.sessions.Validate(ctx, key)
-		if err != nil {
-			return ctx, &api.DeployBoardReadsUnauthenticated{Detail: unauthenticatedDetail}
-		}
-		principalID = principal.UserID
-	}
-	userID, err := uuid.Parse(principalID)
+	userID, err := readServiceSessionUserUUID(ctx, key, service.sessions)
 	if err != nil {
 		return ctx, &api.DeployBoardReadsUnauthenticated{Detail: unauthenticatedDetail}
 	}

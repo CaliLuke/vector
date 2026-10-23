@@ -56,15 +56,9 @@ func NewWorkspaceAnalytics(repository workspaceAnalyticsRepository, sessions wor
 }
 
 func (s *workspaceAnalyticsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	userID, timezone, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		if key == "" {
-			key = sessionCredentialFromContext(ctx)
-		}
-		principal, err := s.sessions.Validate(ctx, key)
-		if err == nil {
-			userID, timezone = principal.UserID, principal.UserTimezone
-		}
+	userID, timezone, sessionErr := serviceSessionIdentityFromRequest(ctx, key, s.sessions)
+	if sessionErr != nil {
+		userID, timezone = "", ""
 	}
 	id, err := uuid.Parse(userID)
 	if userID == "" || err != nil {

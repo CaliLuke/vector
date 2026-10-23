@@ -42,15 +42,9 @@ func NewPersonalDashboard(repository personalDashboardRepository, sessions perso
 }
 
 func (s *personalDashboardService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	userID, timezone, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		if key == "" {
-			key = sessionCredentialFromContext(ctx)
-		}
-		principal, err := s.sessions.Validate(ctx, key)
-		if err == nil {
-			userID, timezone = principal.UserID, principal.UserTimezone
-		}
+	userID, timezone, sessionErr := serviceSessionIdentityFromRequest(ctx, key, s.sessions)
+	if sessionErr != nil {
+		userID, timezone = "", ""
 	}
 	if _, err := uuid.Parse(userID); userID == "" || err != nil {
 		return ctx, s.error(http.StatusUnauthorized, map[string]any{"detail": unauthenticatedDetail})
@@ -105,6 +99,16 @@ func (s *personalDashboardService) error(status int, body any) error {
 func (s *personalDashboardService) internal() error {
 	return s.error(500, map[string]any{"error": "Something went wrong please try again later"})
 }
+func (s *personalDashboardService) month(value *string) (string, error) {
+	if value == nil {
+		return "1", nil
+	}
+	parsed, err := pythoncompat.DecimalInteger(*value)
+	if err != nil {
+		return "", s.error(http.StatusBadRequest, map[string]any{"error": "Invalid month."})
+	}
+	return parsed.String(), nil
+}
 func personalDashboardRaw(data json.RawMessage) (*api.PersonalDashboardRawJSON, io.ReadCloser, error) {
 	if !json.Valid(data) {
 		return nil, nil, fmt.Errorf("invalid dashboard JSON")
@@ -134,13 +138,9 @@ func (s *personalDashboardService) Dashboard(ctx context.Context, p *api.Dashboa
 	if err != nil {
 		return nil, nil, err
 	}
-	month := "1"
-	if p.Month != nil {
-		parsed, err := pythoncompat.DecimalInteger(*p.Month)
-		if err != nil {
-			return nil, nil, s.error(http.StatusBadRequest, map[string]any{"error": "Invalid month."})
-		}
-		month = parsed.String()
+	month, err := s.month(p.Month)
+	if err != nil {
+		return nil, nil, err
 	}
 	body, err := s.repository.Dashboard(ctx, actor.id, p.Slug, month)
 	if err != nil {
@@ -153,13 +153,9 @@ func (s *personalDashboardService) IssuesCompletedGraph(ctx context.Context, p *
 	if err != nil {
 		return nil, nil, err
 	}
-	month := "1"
-	if p.Month != nil {
-		parsed, err := pythoncompat.DecimalInteger(*p.Month)
-		if err != nil {
-			return nil, nil, s.error(http.StatusBadRequest, map[string]any{"error": "Invalid month."})
-		}
-		month = parsed.String()
+	month, err := s.month(p.Month)
+	if err != nil {
+		return nil, nil, err
 	}
 	body, err := s.repository.CompletedGraph(ctx, actor.id, p.Slug, month)
 	if err != nil {

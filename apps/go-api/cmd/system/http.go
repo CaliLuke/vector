@@ -5607,49 +5607,7 @@ func publicFeedbackMethodNotAllowedHandler() http.Handler {
 }
 
 func lastDjangoSessionCookie(request *http.Request, name string) *http.Cookie {
-	values := make(map[string]string)
-	header := djangoJoinedHeader(request, "Cookie")
-	for _, chunk := range strings.Split(header, ";") {
-		key, value, found := strings.Cut(chunk, "=")
-		if !found {
-			key, value = "", key
-		}
-		key = strings.TrimSpace(key)
-		value = strings.TrimSpace(value)
-		if key == "" && value == "" {
-			continue
-		}
-		values[key] = djangoCookieUnquote(value)
-	}
-	value, found := values[name]
-	if !found {
-		return nil
-	}
-	return &http.Cookie{Name: name, Value: value}
-}
-
-func djangoCookieUnquote(value string) string {
-	if len(value) < 2 || value[0] != '"' || value[len(value)-1] != '"' {
-		return value
-	}
-	characters := []rune(value[1 : len(value)-1])
-	var decoded strings.Builder
-	decoded.Grow(len(value))
-	for index := 0; index < len(characters); index++ {
-		if characters[index] != '\\' || index+1 >= len(characters) {
-			decoded.WriteRune(characters[index])
-			continue
-		}
-		if index+3 < len(characters) && characters[index+1] >= '0' && characters[index+1] <= '3' &&
-			characters[index+2] >= '0' && characters[index+2] <= '7' && characters[index+3] >= '0' && characters[index+3] <= '7' {
-			decoded.WriteRune((characters[index+1]-'0')*64 + (characters[index+2]-'0')*8 + characters[index+3] - '0')
-			index += 3
-			continue
-		}
-		decoded.WriteRune(characters[index+1])
-		index++
-	}
-	return decoded.String()
+	return djangosession.CookieFromHeaderValues(request.Header.Values("Cookie"), name)
 }
 
 func djangoLatin1String(value []byte) string {

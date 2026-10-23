@@ -11,6 +11,7 @@ import (
 	"time"
 
 	api "github.com/CaliLuke/go-plane/apistatereads/gen/api_state_reads"
+	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
@@ -85,36 +86,20 @@ func (s *apiStateReadsService) execute(ctx context.Context, operation string, pa
 	if !ok {
 		return nil, nil, apiStateError(401, map[string]any{"detail": "Authentication credentials were not provided."})
 	}
-	raw := activityPayloadRequest(ctx, operation, payload)
-	request := store.APIV1Request{Operation: operation, Params: raw.Params, Present: raw.Present}
-	if err := s.repository.AuthorizeAPIV1(ctx, principal.UserID.String(), raw.Params["slug"], raw.Params["project_id"], false); err != nil {
-		return nil, nil, mapAPIStateError(err)
-	}
-	rate, err := s.throttle.Allow(ctx, principal.Key)
+	reader, err := (apiV1ReadPipeline{
+		principal: principal.Principal, key: principal.Key, operation: operation, payload: payload, throttle: s.throttle,
+		authorize: func(ctx context.Context, userID string, request activitystore.Request) error {
+			return s.repository.AuthorizeAPIV1(ctx, userID, request.Params["slug"], request.Params["project_id"], false)
+		},
+		read: func(ctx context.Context, userID string, request activitystore.Request) (any, error) {
+			return s.repository.ReadAPIV1(ctx, userID, store.APIV1Request{Operation: request.Operation, Params: request.Params, Present: request.Present})
+		},
+		newError: apiStateError, mapError: mapAPIStateError,
+	}).execute(ctx)
 	if err != nil {
-		return nil, nil, apiStateError(500, map[string]any{"detail": "Something went wrong please try again later"})
+		return nil, nil, err
 	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Rate = &rate
-	}
-	if !rate.Allowed {
-		return nil, nil, apiStateError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
-	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
-			return nil, nil, apiStateError(400, map[string]any{"error": "The required key does not exist."})
-		}
-		return nil, nil, mapAPIStateError(err)
-	}
-	body, err := s.repository.ReadAPIV1(ctx, principal.UserID.String(), request)
-	if err != nil {
-		return nil, nil, mapAPIStateError(err)
-	}
-	data, err := json.Marshal(activityTimestamps(body, principal.Timezone))
-	if err != nil {
-		return nil, nil, mapAPIStateError(err)
-	}
-	return &api.APIStateReadsRawJSONResponseMetadata{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(data)), nil
+	return &api.APIStateReadsRawJSONResponseMetadata{ContentType: "application/json"}, reader, nil
 }
 
 func apiStateError(status int, body map[string]any) error {

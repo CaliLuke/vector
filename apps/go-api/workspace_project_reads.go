@@ -58,15 +58,7 @@ func NewWorkspaceProjectReads(repository workspaceProjectReadsRepository, sessio
 }
 
 func (service *workspaceProjectReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	userIDValue, _, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		principal, err := service.sessions.Validate(ctx, key)
-		if err != nil {
-			return ctx, &api.WorkspaceProjectUnauthenticated{Detail: unauthenticatedDetail}
-		}
-		userIDValue = principal.UserID
-	}
-	userID, err := uuid.Parse(userIDValue)
+	userID, err := readServiceSessionUserUUID(ctx, key, service.sessions)
 	if err != nil {
 		return ctx, &api.WorkspaceProjectUnauthenticated{Detail: unauthenticatedDetail}
 	}

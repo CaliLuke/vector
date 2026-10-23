@@ -31,6 +31,10 @@ These identifiers do not identify the product as an official Plane distribution.
 ## Contracts and jobs
 
 Generated HTTP transports derive from checked-in designs. Domain services enforce access control and database constraints.
+Use Loom's design, generated transport, validation, security hooks, and request
+metadata facilities wherever they cover the requirement. Shared application
+helpers run inside those service boundaries; they must not introduce parallel
+HTTP routing, credential extraction, or transport validation paths.
 Request transactions record durable work. Workers execute that work with retries and persisted status.
 Do not replace durable effects with detached goroutines.
 

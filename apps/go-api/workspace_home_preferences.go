@@ -9,7 +9,6 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_home_preferences"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacehomepreferences"
 	loom "github.com/CaliLuke/loom/pkg"
 	"github.com/CaliLuke/loom/security"
@@ -21,26 +20,19 @@ type workspaceHomePreferencesRepo interface {
 	Get(context.Context, uuid.UUID, string, string) (json.RawMessage, error)
 	Update(context.Context, uuid.UUID, string, string, *string, *bool, *float64) (json.RawMessage, error)
 }
-type workspaceHomePreferencesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
-}
 type workspaceHomePreferencesService struct {
 	repo     workspaceHomePreferencesRepo
-	sessions workspaceHomePreferencesSessions
+	sessions serviceSessionValidator
 }
 
-func NewWorkspaceHomePreferences(r workspaceHomePreferencesRepo, s workspaceHomePreferencesSessions) (api.Service, error) {
+func NewWorkspaceHomePreferences(r workspaceHomePreferencesRepo, s serviceSessionValidator) (api.Service, error) {
 	if r == nil || s == nil {
 		return nil, fmt.Errorf("workspace home preferences dependencies are required")
 	}
 	return &workspaceHomePreferencesService{r, s}, nil
 }
 func (s *workspaceHomePreferencesService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	p, e := s.sessions.Validate(ctx, key)
-	if e != nil {
-		return ctx, &api.WorkspaceHomePreferenceUnauthenticated{Detail: unauthenticatedDetail}
-	}
-	id, e := uuid.Parse(p.UserID)
+	id, e := validateSessionUserUUID(ctx, key, s.sessions)
 	if e != nil {
 		return ctx, &api.WorkspaceHomePreferenceUnauthenticated{Detail: unauthenticatedDetail}
 	}

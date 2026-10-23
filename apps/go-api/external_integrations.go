@@ -69,15 +69,9 @@ func NewExternalIntegrations(repository externalIntegrationsRepository, sessions
 }
 
 func (s *externalIntegrationsService) APIKeyAuth(ctx context.Context, credential string, _ *security.APIKeyScheme) (context.Context, error) {
-	userID, timezone, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		if credential == "" {
-			credential = sessionCredentialFromContext(ctx)
-		}
-		principal, err := s.sessions.Validate(ctx, credential)
-		if err == nil {
-			userID, timezone = principal.UserID, principal.UserTimezone
-		}
+	userID, timezone, sessionErr := serviceSessionIdentityFromRequest(ctx, credential, s.sessions)
+	if sessionErr != nil {
+		userID, timezone = "", ""
 	}
 	if userID == "" {
 		return ctx, s.error(401, map[string]any{"detail": "Authentication credentials were not provided."})

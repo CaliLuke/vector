@@ -19,9 +19,6 @@ const (
 	IssueDescriptionSyncWorkflowName = "plane.issues.sync_description_versions"
 	issueDescriptionSyncActivity     = "plane.issues.sync_description_version_batch"
 	issueDescriptionSyncQueue        = "plane-background"
-	issueDescriptionSyncBatchDefault = 5000
-	issueDescriptionSyncBatchLimit   = 5000
-	issueDescriptionSyncDelayDefault = 5 * time.Minute
 )
 
 type IssueDescriptionSyncInput struct {
@@ -74,7 +71,7 @@ func RegisterIssueDescriptionSyncWorkflow(app *selvedge.App, store issueDescript
 	}
 	activity := execution.Activity[IssueDescriptionSyncBatchInput, IssueDescriptionSyncBatchOutput]{Name: issueDescriptionSyncActivity}
 	if err := executionSelvedge.Register(activities, activity, func(ctx context.Context, input IssueDescriptionSyncBatchInput) (IssueDescriptionSyncBatchOutput, error) {
-		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueDescriptionSyncBatchLimit {
+		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 			return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue description sync batch", ErrPermanentVersionHistory)
 		}
 		result, err := store.SyncIssueDescriptionVersionBatch(ctx, input)
@@ -86,7 +83,7 @@ func RegisterIssueDescriptionSyncWorkflow(app *selvedge.App, store issueDescript
 		return nil, fmt.Errorf("register issue description sync activity: %w", err)
 	}
 	workflow := selvedge.DefineWorkflow(IssueDescriptionSyncWorkflowName, func(ctx *selvedge.WorkflowContext, input IssueDescriptionSyncInput) (IssueDescriptionSyncOutput, error) {
-		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueDescriptionSyncBatchLimit || input.Countdown < 0 {
+		if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit || input.Countdown < 0 {
 			return IssueDescriptionSyncOutput{}, fmt.Errorf("%w: invalid issue description sync workflow input", ErrPermanentVersionHistory)
 		}
 		var result IssueDescriptionSyncOutput
@@ -128,17 +125,9 @@ func (dispatcher *IssueDescriptionSyncDispatcher) Admit(ctx context.Context, eve
 	if _, err := uuid.Parse(eventID); err != nil {
 		return "", fmt.Errorf("issue description sync event ID must be a UUID: %w", err)
 	}
-	if batchSize == 0 {
-		batchSize = issueDescriptionSyncBatchDefault
-	}
-	if batchSize > issueDescriptionSyncBatchLimit {
-		batchSize = issueDescriptionSyncBatchLimit
-	}
-	if offset < 0 || batchSize < 1 || countdown < 0 {
-		return "", errors.New("issue description sync requires non-negative offset and countdown and positive batch size")
-	}
-	if countdown == 0 {
-		countdown = issueDescriptionSyncDelayDefault
+	batchSize, offset, countdown, err := normalizeIssueSyncAdmission("issue description sync", batchSize, offset, countdown)
+	if err != nil {
+		return "", err
 	}
 	input := IssueDescriptionSyncInput{RunID: eventID, Offset: offset, BatchSize: batchSize, Countdown: countdown}
 	return admitOrReconcile(ctx, dispatcher.app, dispatcher.workflow, "issue-description-sync:"+eventID, input)
@@ -167,7 +156,7 @@ type syncIssueRow struct {
 }
 
 func (store *PostgresIssueDescriptionSyncStore) SyncIssueDescriptionVersionBatch(ctx context.Context, input IssueDescriptionSyncBatchInput) (IssueDescriptionSyncBatchOutput, error) {
-	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueDescriptionSyncBatchLimit {
+	if _, err := uuid.Parse(input.RunID); err != nil || input.Offset < 0 || input.BatchSize < 1 || input.BatchSize > issueSyncBatchLimit {
 		return IssueDescriptionSyncBatchOutput{}, fmt.Errorf("%w: invalid issue description sync batch", ErrPermanentVersionHistory)
 	}
 	tx, err := store.pool.BeginTx(ctx, pgx.TxOptions{})

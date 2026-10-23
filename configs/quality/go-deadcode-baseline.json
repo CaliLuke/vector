@@ -18,10 +18,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["github.com/CaliLuke/go-plane", "raw"],
-      "count": 1
-    },
-    {
       "fingerprint": ["github.com/CaliLuke/go-plane", "workspaceAnalyticsService.respond"],
       "count": 1
     },

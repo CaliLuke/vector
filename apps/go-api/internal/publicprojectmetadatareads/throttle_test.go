@@ -16,16 +16,24 @@ import (
 )
 
 type throttleCacheStub struct {
-	data map[string][]byte
-	ttl  time.Duration
+	data   map[string][]byte
+	ttl    time.Duration
+	getErr error
+	setErr error
 }
 
 func (cache *throttleCacheStub) Get(_ context.Context, key string) ([]byte, bool, error) {
+	if cache.getErr != nil {
+		return nil, false, cache.getErr
+	}
 	data, found := cache.data[key]
 	return data, found, nil
 }
 
 func (cache *throttleCacheStub) Set(_ context.Context, key string, value []byte, ttl time.Duration) error {
+	if cache.setErr != nil {
+		return cache.setErr
+	}
 	cache.data[key] = value
 	cache.ttl = ttl
 	return nil
@@ -165,6 +173,70 @@ func TestConfiguredAnonymousThrottleRejectsInvalidRate(t *testing.T) {
 		if err == nil {
 			t.Fatalf("rate %q was accepted", rate)
 		}
+	}
+}
+
+func TestConfiguredAnonymousThrottleRejectsMissingConfiguration(t *testing.T) {
+	validCache := &throttleCacheStub{data: map[string][]byte{}}
+	validSessions := &throttleSessionsStub{}
+	validInvalidator := &throttleInvalidatorStub{}
+	for _, test := range []struct {
+		name        string
+		cache       throttleCache
+		sessions    throttleSessionValidator
+		invalidator throttleSessionInvalidator
+		config      AnonymousThrottleConfig
+		admin       []AdminSessionConfig
+	}{
+		{name: "cache", sessions: validSessions, invalidator: validInvalidator, config: AnonymousThrottleConfig{Scope: "anon", Rate: "30/minute"}},
+		{name: "session validator", cache: validCache, invalidator: validInvalidator, config: AnonymousThrottleConfig{Scope: "anon", Rate: "30/minute"}},
+		{name: "session invalidator", cache: validCache, sessions: validSessions, config: AnonymousThrottleConfig{Scope: "anon", Rate: "30/minute"}},
+		{name: "scope", cache: validCache, sessions: validSessions, invalidator: validInvalidator, config: AnonymousThrottleConfig{Rate: "30/minute"}},
+		{name: "multiple admin configurations", cache: validCache, sessions: validSessions, invalidator: validInvalidator, config: AnonymousThrottleConfig{Scope: "anon", Rate: "30/minute"}, admin: []AdminSessionConfig{{CookieName: "admin"}, {CookieName: "other"}}},
+		{name: "empty admin cookie", cache: validCache, sessions: validSessions, invalidator: validInvalidator, config: AnonymousThrottleConfig{Scope: "anon", Rate: "30/minute"}, admin: []AdminSessionConfig{{CookieAge: 3600}}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := NewConfiguredAnonymousThrottle(test.cache, test.sessions, test.invalidator, "session-id", false, 0, test.config, test.admin...)
+			if err == nil {
+				t.Fatal("NewConfiguredAnonymousThrottle() succeeded with invalid configuration")
+			}
+		})
+	}
+}
+
+func TestAnonymousThrottleFailsClosedOnCacheErrors(t *testing.T) {
+	readErr := errors.New("cache unavailable")
+	writeErr := errors.New("cache write failed")
+	for _, test := range []struct {
+		name      string
+		cache     *throttleCacheStub
+		wantError error
+	}{
+		{name: "read", cache: &throttleCacheStub{data: map[string][]byte{}, getErr: readErr}, wantError: readErr},
+		{name: "malformed history", cache: &throttleCacheStub{data: map[string][]byte{":1:throttle_anon_192.0.2.20": []byte("not a pickle")}}},
+		{name: "write", cache: &throttleCacheStub{data: map[string][]byte{}, setErr: writeErr}, wantError: writeErr},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			throttle, err := NewAnonymousThrottle(test.cache, &throttleSessionsStub{}, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, false, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			request := httptest.NewRequest(http.MethodGet, "/", nil)
+			request.RemoteAddr = "192.0.2.20:1234"
+			allowed, _, err := throttle.AllowAnonymousRequest(context.Background(), request)
+			if allowed || err == nil {
+				t.Fatalf("allowed=%v err=%v, want denied with error", allowed, err)
+			}
+			if test.wantError != nil && !errors.Is(err, test.wantError) {
+				t.Fatalf("AllowAnonymousRequest() error = %v, want wrapped %v", err, test.wantError)
+			}
+			if test.name == "malformed history" && !strings.Contains(err.Error(), "decode Django anonymous throttle") {
+				t.Fatalf("malformed history error = %v", err)
+			}
+			if test.name == "malformed history" && string(test.cache.data[":1:throttle_anon_192.0.2.20"]) != "not a pickle" {
+				t.Fatal("malformed cached history was unexpectedly replaced")
+			}
+		})
 	}
 }
 
@@ -788,8 +860,32 @@ func TestRedisThrottleCacheDefersConfigurationUntilAThrottleRequest(t *testing.T
 	if _, _, err := cache.Get(context.Background(), "key"); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
 		t.Fatalf("lazy cache Get() error = %v", err)
 	}
+	if err := cache.Ping(context.Background()); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
+		t.Fatalf("lazy cache Ping() error = %v", err)
+	}
+	if err := cache.Set(context.Background(), "key", []byte("value"), time.Minute); err == nil || !strings.Contains(err.Error(), "parse Redis URL") {
+		t.Fatalf("lazy cache Set() error = %v", err)
+	}
 	if err := cache.Close(); err != nil {
 		t.Fatalf("Close() after lazy configuration failure = %v", err)
+	}
+}
+
+func TestAnonymousThrottlePropagatesSessionRefreshFailures(t *testing.T) {
+	refreshErr := errors.New("session store unavailable")
+	sessions := &throttleSessionsStub{refreshErr: refreshErr}
+	throttle, err := NewAnonymousThrottle(&throttleCacheStub{data: map[string][]byte{}}, sessions, &throttleInvalidatorStub{}, djangosession.DefaultCookieName, true, 3600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "/api/labels/", nil)
+	if _, err := throttle.RefreshSession(context.Background(), request, djangosession.SessionRefresh{SessionKey: "prepared"}); !errors.Is(err, refreshErr) {
+		t.Fatalf("RefreshSession() error = %v, want wrapped %v", err, refreshErr)
+	}
+
+	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "valid-session"})
+	if _, _, err := throttle.FinalizeUnaccessedSession(context.Background(), request, http.StatusRequestEntityTooLarge); !errors.Is(err, refreshErr) {
+		t.Fatalf("FinalizeUnaccessedSession() error = %v, want wrapped %v", err, refreshErr)
 	}
 }
 

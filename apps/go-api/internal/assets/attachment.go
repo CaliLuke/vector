@@ -81,6 +81,10 @@ func (service *LifecycleService) bulkAssociateProjectAssets(ctx context.Context,
 }
 
 func (service *LifecycleService) listLegacyIssueAttachments(ctx context.Context, slug, rawProjectID, rawIssueID string) ([]*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {
+	return service.listScopedIssueAttachments(ctx, slug, rawProjectID, rawIssueID, false)
+}
+
+func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context, slug, rawProjectID, rawIssueID string, uploadedOnly bool) ([]*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {
 	_, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
 	if err != nil {
 		return nil, err
@@ -90,7 +94,7 @@ func (service *LifecycleService) listLegacyIssueAttachments(ctx context.Context,
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, false)
+	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, uploadedOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -243,20 +247,7 @@ func (service *LifecycleService) attachmentScope(ctx context.Context, slug, rawP
 }
 
 func (service *LifecycleService) listIssueAttachments(ctx context.Context, slug, rawProjectID, rawIssueID string) ([]*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {
-	_, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
-	if err != nil {
-		return nil, err
-	}
-	projectID, _ := uuid.Parse(rawProjectID)
-	issueID, err := uuid.Parse(rawIssueID)
-	if err != nil {
-		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, true)
-	if err != nil {
-		return nil, err
-	}
-	return decodeAttachmentRows[api.PlaneAppSerializersIssueIssueattachmentserializerResponse](decorateIssueAttachmentRows(rows, slug, false))
+	return service.listScopedIssueAttachments(ctx, slug, rawProjectID, rawIssueID, true)
 }
 
 // API V1's collection GET uses the same issue authorization as its upload and

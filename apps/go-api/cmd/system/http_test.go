@@ -3895,23 +3895,29 @@ func TestPublicProjectMetadataReadsHTTPRefreshesUnaccessedSessionAfter413(t *tes
 
 func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *testing.T) {
 	for _, testCase := range []struct {
-		name   string
-		err    error
-		status int
-		body   string
+		name         string
+		err          error
+		status       int
+		body         string
+		expire       bool
+		refresh      *djangosession.SessionRefresh
+		cookieConfig djangoSessionCookieConfig
 	}{
 		{name: "session store", err: fmt.Errorf("database unavailable: %w", djangosession.ErrSessionStore), status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 		{name: "signed non-object session", err: djangosession.ErrInvalidSessionShape, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "cookie expiry", expire: true, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
+		{name: "cookie refresh", refresh: &djangosession.SessionRefresh{SessionKey: "refreshed"}, cookieConfig: djangoSessionCookieConfig{Configured: true}, status: http.StatusInternalServerError, body: string(djangoServerErrorBody)},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			var logs bytes.Buffer
-			throttle := &publicProjectMetadataThrottleStub{earlyErr: testCase.err}
+			throttle := &publicProjectMetadataThrottleStub{earlyErr: testCase.err, earlyExpire: testCase.expire, earlyRefresh: testCase.refresh}
 			handler := newHTTPHandlerWithPendingReplacements(
 				newLogContext(context.Background(), &logs, false), system.NewEndpoints(systemapi.NewSystem()), false,
 				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 				pendingReplacementEndpoints{
 					publicProjectMetadataReads:     publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
 					publicProjectMetadataThrottle:  throttle,
+					publicProjectMetadataCookie:    testCase.cookieConfig,
 					publicProjectMetadataBodyLimit: 8,
 					publicProjectMetadataBodySet:   true,
 				},
@@ -3921,7 +3927,7 @@ func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *
 			response := httptest.NewRecorder()
 			handler.ServeHTTP(response, request)
 			if response.Code != testCase.status || response.Body.String() != testCase.body ||
-				response.Header().Get("Vary") != "origin" || throttle.earlyCalls != 1 ||
+				response.Header().Get("Vary") != "origin" || response.Header().Get("Set-Cookie") != "" || throttle.earlyCalls != 1 || throttle.calls != 0 ||
 				!strings.Contains(logs.String(), "public project metadata compatibility failure") {
 				t.Fatalf("response=%d %q early=%d logs=%s", response.Code, response.Body.String(), throttle.earlyCalls, logs.String())
 			}
@@ -3930,27 +3936,44 @@ func TestPublicProjectMetadataReadsHTTPReplaces413OnUnaccessedSessionFailure(t *
 }
 
 func TestPublicProjectMetadataReadsHTTPBodyReadFailureRetainsValidUnaccessedSessionCookie(t *testing.T) {
-	ctx := newLogContext(context.Background(), io.Discard, false)
-	throttle := &publicProjectMetadataThrottleStub{allowed: true}
-	handler := newHTTPHandlerWithPendingReplacements(
-		ctx, system.NewEndpoints(systemapi.NewSystem()), false,
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		pendingReplacementEndpoints{
-			publicProjectMetadataReads:     publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
-			publicProjectMetadataThrottle:  throttle,
-			publicProjectMetadataBodyLimit: 8,
-			publicProjectMetadataBodySet:   true,
-		},
-	)
-	request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
-	request.Body = failingRequestBody{}
-	request.ContentLength = -1
-	request.AddCookie(&http.Cookie{Name: djangosession.DefaultCookieName, Value: "valid-session-key"})
-	response := httptest.NewRecorder()
-	handler.ServeHTTP(response, request)
-	if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) ||
-		response.Header().Get("Set-Cookie") != "" || strings.Contains(response.Header().Get("Vary"), "Cookie") || throttle.calls != 0 {
-		t.Fatalf("response=%d %q headers=%v throttle calls=%d", response.Code, response.Body.String(), response.Header(), throttle.calls)
+	for _, testCase := range []struct {
+		name         string
+		cookie       string
+		cookieConfig djangoSessionCookieConfig
+		wantFrame    string
+		wantLog      string
+	}{
+		{name: "valid unaccessed session", cookie: djangosession.DefaultCookieName + "=valid-session-key", wantFrame: "DENY", wantLog: "read request body: request body unavailable"},
+		{name: "invalid cookie cannot be expired", cookie: "=short", cookieConfig: djangoSessionCookieConfig{Configured: true}, wantLog: "delete Django session cookie"},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			var logs bytes.Buffer
+			ctx := newLogContext(context.Background(), &logs, false)
+			throttle := &publicProjectMetadataThrottleStub{allowed: true}
+			handler := newHTTPHandlerWithPendingReplacements(
+				ctx, system.NewEndpoints(systemapi.NewSystem()), false,
+				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+				pendingReplacementEndpoints{
+					publicProjectMetadataReads:     publicprojectmetadatareadsapi.NewEndpoints(publicProjectMetadataReadsHTTPStub{}),
+					publicProjectMetadataThrottle:  throttle,
+					publicProjectMetadataCookie:    testCase.cookieConfig,
+					publicProjectMetadataBodyLimit: 8,
+					publicProjectMetadataBodySet:   true,
+				},
+			)
+			request := httptest.NewRequest(http.MethodGet, "/api/public/anchor/example/labels/", nil)
+			request.Body = failingRequestBody{}
+			request.ContentLength = -1
+			request.Header.Set("Cookie", testCase.cookie)
+			response := httptest.NewRecorder()
+			handler.ServeHTTP(response, request)
+			if response.Code != http.StatusInternalServerError || response.Body.String() != string(djangoServerErrorBody) ||
+				response.Header().Get("Set-Cookie") != "" || response.Header().Get("X-Frame-Options") != testCase.wantFrame ||
+				response.Header().Get("Vary") != "origin" || throttle.calls != 0 ||
+				!strings.Contains(logs.String(), testCase.wantLog) {
+				t.Fatalf("response=%d %q headers=%v throttle calls=%d logs=%s", response.Code, response.Body.String(), response.Header(), throttle.calls, logs.String())
+			}
+		})
 	}
 }
 

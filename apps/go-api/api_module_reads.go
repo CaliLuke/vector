@@ -1,17 +1,15 @@
 package systemapi
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	api "github.com/CaliLuke/go-plane/apimodulereads/gen/api_module_reads"
+	activitystore "github.com/CaliLuke/go-plane/internal/activityreads"
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
 	"github.com/CaliLuke/loom/security"
@@ -63,36 +61,20 @@ func (s *apiModuleReadsService) execute(ctx context.Context, operation string, p
 	if !ok {
 		return nil, nil, apiModuleError(401, map[string]any{"detail": "Authentication credentials were not provided."})
 	}
-	raw := activityPayloadRequest(ctx, operation, payload)
-	request := store.APIV1Request{Operation: operation, Params: raw.Params, Present: raw.Present}
-	if err := s.repository.AuthorizeAPIV1(ctx, principal.UserID.String(), raw.Params["slug"], raw.Params["project_id"], false); err != nil {
-		return nil, nil, mapAPIModuleError(err)
-	}
-	rate, err := s.throttle.Allow(ctx, principal.Key)
+	reader, err := (apiV1ReadPipeline{
+		principal: principal.Principal, key: principal.Key, operation: operation, payload: payload, throttle: s.throttle,
+		authorize: func(ctx context.Context, userID string, request activitystore.Request) error {
+			return s.repository.AuthorizeAPIV1(ctx, userID, request.Params["slug"], request.Params["project_id"], false)
+		},
+		read: func(ctx context.Context, userID string, request activitystore.Request) (any, error) {
+			return s.repository.ReadAPIV1(ctx, userID, store.APIV1Request{Operation: request.Operation, Params: request.Params, Present: request.Present})
+		},
+		newError: apiModuleError, mapError: mapAPIModuleError,
+	}).execute(ctx)
 	if err != nil {
-		return nil, nil, apiModuleError(500, map[string]any{"detail": "Something went wrong please try again later"})
+		return nil, nil, err
 	}
-	if effects := apikey.EffectsFromContext(ctx); effects != nil {
-		effects.Rate = &rate
-	}
-	if !rate.Allowed {
-		return nil, nil, apiModuleError(429, map[string]any{"detail": fmt.Sprintf("Request was throttled. Expected available in %d seconds.", int(rate.Wait/time.Second))})
-	}
-	if err := djangosession.ValidateUserTimezone(principal.Timezone); err != nil {
-		if errors.Is(err, djangosession.ErrTimezoneNotFound) {
-			return nil, nil, apiModuleError(400, map[string]any{"error": "The required key does not exist."})
-		}
-		return nil, nil, mapAPIModuleError(err)
-	}
-	body, err := s.repository.ReadAPIV1(ctx, principal.UserID.String(), request)
-	if err != nil {
-		return nil, nil, mapAPIModuleError(err)
-	}
-	data, err := json.Marshal(activityTimestamps(body, principal.Timezone))
-	if err != nil {
-		return nil, nil, mapAPIModuleError(err)
-	}
-	return &api.APIModuleReadsRawJSONResponseMetadata{ContentType: "application/json"}, io.NopCloser(bytes.NewReader(data)), nil
+	return &api.APIModuleReadsRawJSONResponseMetadata{ContentType: "application/json"}, reader, nil
 }
 
 func apiModuleError(status int, body map[string]any) error {

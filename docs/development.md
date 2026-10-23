@@ -138,6 +138,18 @@ dropdown keyboard handler, frontend test module-stub helpers, read-only hydratio
 test assertions, repeated page-persistence test setup, and the project-issues
 test resolver.
 
+The Go service consolidation lowers the duplicate baseline from 525 to 505
+directed reports, with 590 fewer reported duplicate lines than the original
+baseline (overlapping reports counted separately). Shared session handling,
+user-property conversion, attachment listing, throttle serialization, cookie
+parsing, public metadata decoding, and background-task admission preserve each
+service's authorization and effect ordering. Eight changed report identities replace
+pre-existing fragments in smaller helpers' callers; no file-pair allowance
+increased. Six shadowing findings and an unused conversion helper were
+retired from the lint baseline; the conversion helper was also retired from the
+dead-code baseline. Generated contracts and workflow-specific durable identities
+remain explicit.
+
 The initial measured coverage is 30.20% lines across 44 Live source files,
 79.82% across 2 codemod files, 0.05% across 224 editor files, and 2.16% across
 116 UI files. These are explicit starting floors, not coverage targets. The

@@ -13,7 +13,6 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_quick_links"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacequicklinks"
 	"github.com/CaliLuke/loom/security"
 )
@@ -27,16 +26,12 @@ type workspaceQuickLinksRepository interface {
 	Delete(context.Context, uuid.UUID, string, uuid.UUID) error
 }
 
-type workspaceQuickLinksSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
-}
-
 type workspaceQuickLinksService struct {
 	repository workspaceQuickLinksRepository
-	sessions   workspaceQuickLinksSessions
+	sessions   serviceSessionValidator
 }
 
-func NewWorkspaceQuickLinks(repository workspaceQuickLinksRepository, sessions workspaceQuickLinksSessions) (api.Service, error) {
+func NewWorkspaceQuickLinks(repository workspaceQuickLinksRepository, sessions serviceSessionValidator) (api.Service, error) {
 	if repository == nil || sessions == nil {
 		return nil, fmt.Errorf("workspace quick links dependencies are required")
 	}
@@ -44,11 +39,7 @@ func NewWorkspaceQuickLinks(repository workspaceQuickLinksRepository, sessions w
 }
 
 func (s *workspaceQuickLinksService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.sessions.Validate(ctx, key)
-	if err != nil {
-		return ctx, &api.WorkspaceQuickLinkUnauthenticated{Detail: unauthenticatedDetail}
-	}
-	userID, err := uuid.Parse(principal.UserID)
+	userID, err := validateSessionUserUUID(ctx, key, s.sessions)
 	if err != nil {
 		return ctx, &api.WorkspaceQuickLinkUnauthenticated{Detail: unauthenticatedDetail}
 	}

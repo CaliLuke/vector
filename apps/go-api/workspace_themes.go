@@ -9,7 +9,6 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_themes"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	store "github.com/CaliLuke/go-plane/internal/workspacethemes"
 	"github.com/CaliLuke/loom/security"
@@ -23,26 +22,19 @@ type workspaceThemesRepo interface {
 	Update(context.Context, uuid.UUID, string, uuid.UUID, *string, json.RawMessage) (json.RawMessage, error)
 	Delete(context.Context, uuid.UUID, string, uuid.UUID) error
 }
-type workspaceThemesSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
-}
 type workspaceThemesService struct {
 	repo     workspaceThemesRepo
-	sessions workspaceThemesSessions
+	sessions serviceSessionValidator
 }
 
-func NewWorkspaceThemes(r workspaceThemesRepo, s workspaceThemesSessions) (api.Service, error) {
+func NewWorkspaceThemes(r workspaceThemesRepo, s serviceSessionValidator) (api.Service, error) {
 	if r == nil || s == nil {
 		return nil, fmt.Errorf("workspace themes dependencies are required")
 	}
 	return &workspaceThemesService{r, s}, nil
 }
 func (s *workspaceThemesService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	p, e := s.sessions.Validate(ctx, key)
-	if e != nil {
-		return ctx, &api.WorkspaceThemeUnauthenticated{Detail: unauthenticatedDetail}
-	}
-	id, e := uuid.Parse(p.UserID)
+	id, e := validateSessionUserUUID(ctx, key, s.sessions)
 	if e != nil {
 		return ctx, &api.WorkspaceThemeUnauthenticated{Detail: unauthenticatedDetail}
 	}

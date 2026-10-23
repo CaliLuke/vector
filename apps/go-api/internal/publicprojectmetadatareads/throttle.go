@@ -2,7 +2,6 @@ package publicprojectmetadatareads
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
@@ -290,49 +289,7 @@ func (throttle *AnonymousThrottle) inspectSession(ctx context.Context, request *
 }
 
 func lastCookie(request *http.Request, name string) *http.Cookie {
-	values := make(map[string]string)
-	header := latin1String([]byte(strings.Join(request.Header.Values("Cookie"), ",")))
-	for _, chunk := range strings.Split(header, ";") {
-		key, value, found := strings.Cut(chunk, "=")
-		if !found {
-			key, value = "", key
-		}
-		key = strings.TrimSpace(key)
-		value = strings.TrimSpace(value)
-		if key == "" && value == "" {
-			continue
-		}
-		values[key] = djangoCookieUnquote(value)
-	}
-	value, found := values[name]
-	if !found {
-		return nil
-	}
-	return &http.Cookie{Name: name, Value: value}
-}
-
-func djangoCookieUnquote(value string) string {
-	if len(value) < 2 || value[0] != '"' || value[len(value)-1] != '"' {
-		return value
-	}
-	characters := []rune(value[1 : len(value)-1])
-	var decoded strings.Builder
-	decoded.Grow(len(value))
-	for index := 0; index < len(characters); index++ {
-		if characters[index] != '\\' || index+1 >= len(characters) {
-			decoded.WriteRune(characters[index])
-			continue
-		}
-		if index+3 < len(characters) && characters[index+1] >= '0' && characters[index+1] <= '3' &&
-			characters[index+2] >= '0' && characters[index+2] <= '7' && characters[index+3] >= '0' && characters[index+3] <= '7' {
-			decoded.WriteRune((characters[index+1]-'0')*64 + (characters[index+2]-'0')*8 + characters[index+3] - '0')
-			index += 3
-			continue
-		}
-		decoded.WriteRune(characters[index+1])
-		index++
-	}
-	return decoded.String()
+	return djangosession.CookieFromHeaderValues(request.Header.Values("Cookie"), name)
 }
 
 func latin1String(value []byte) string {
@@ -455,55 +412,11 @@ func anonymousThrottleIdentifier(request *http.Request) string {
 }
 
 func encodeFloatListPickle(values []float64) []byte {
-	payload := []byte{']', 0x94}
-	if len(values) == 1 {
-		payload = append(payload, 'G')
-		payload = binary.BigEndian.AppendUint64(payload, math.Float64bits(values[0]))
-		payload = append(payload, 'a')
-	} else if len(values) > 1 {
-		payload = append(payload, '(')
-		for _, value := range values {
-			payload = append(payload, 'G')
-			payload = binary.BigEndian.AppendUint64(payload, math.Float64bits(value))
-		}
-		payload = append(payload, 'e')
-	}
-	payload = append(payload, '.')
-	encoded := []byte{0x80, 0x04, 0x95}
-	encoded = binary.LittleEndian.AppendUint64(encoded, uint64(len(payload)))
-	return append(encoded, payload...)
+	return pythoncompat.EncodeFloatListPickle(values)
 }
 
 func decodeFloatListPickle(data []byte) ([]float64, error) {
-	values := make([]float64, 0, anonThrottleLimit)
-	for index := 0; index < len(data); {
-		opcode := data[index]
-		index++
-		switch opcode {
-		case 0x80:
-			if index >= len(data) || data[index] > 5 {
-				return nil, fmt.Errorf("unsupported pickle protocol")
-			}
-			index++
-		case 0x95:
-			if index+8 > len(data) {
-				return nil, fmt.Errorf("truncated pickle frame")
-			}
-			index += 8
-		case 'G':
-			if index+8 > len(data) {
-				return nil, fmt.Errorf("truncated pickle float")
-			}
-			values = append(values, math.Float64frombits(binary.BigEndian.Uint64(data[index:index+8])))
-			index += 8
-		case ']', 0x94, '(', 'a', 'e':
-		case '.':
-			return values, nil
-		default:
-			return nil, fmt.Errorf("unsupported pickle opcode 0x%02x", opcode)
-		}
-	}
-	return nil, fmt.Errorf("pickle has no stop opcode")
+	return pythoncompat.DecodeFloatListPickle(data)
 }
 
 type RedisThrottleCache struct {

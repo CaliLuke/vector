@@ -1602,18 +1602,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["govet", "api_cycle_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["govet", "api_label_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["govet", "api_module_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
-      "count": 1
-    },
-    {
       "fingerprint": [
         "govet",
         "api_project_membership_lifecycle_test.go",
@@ -1623,7 +1611,7 @@
     },
     {
       "fingerprint": ["govet", "api_state_reads.go", "shadow: declaration of \"err\" shadows declaration at line #"],
-      "count": 3
+      "count": 2
     },
     {
       "fingerprint": ["govet", "api_v1_stickies.go", "shadow: declaration of \"err\" shadows declaration at line #"],
@@ -3086,10 +3074,6 @@
       "count": 2
     },
     {
-      "fingerprint": ["govet", "workspace_personal.go", "shadow: declaration of \"err\" shadows declaration at line #"],
-      "count": 2
-    },
-    {
       "fingerprint": [
         "govet",
         "workspace_user_insights.go",
@@ -4491,10 +4475,6 @@
     },
     {
       "fingerprint": ["unused", "oauth_redirects.go", "func oauthFailureName is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "user_properties.go", "func raw is unused"],
       "count": 1
     },
     {

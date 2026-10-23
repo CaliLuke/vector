@@ -49,16 +49,10 @@ func NewWorkspaceExports(repo workspaceExportsRepository, sessions workspaceExpo
 	return &workspaceExportsService{repo: repo, sessions: sessions, publisher: publisher}, nil
 }
 func (s *workspaceExportsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	userID, tz, inspected := readServiceSessionPrincipal(ctx)
+	userID, tz, sessionErr := serviceSessionIdentityFromRequest(ctx, key, s.sessions)
 	email := ""
-	if !inspected {
-		if key == "" {
-			key = sessionCredentialFromContext(ctx)
-		}
-		p, err := s.sessions.Validate(ctx, key)
-		if err == nil {
-			userID, tz = p.UserID, p.UserTimezone
-		}
+	if sessionErr != nil {
+		userID, tz = "", ""
 	}
 	if _, err := uuid.Parse(userID); userID == "" || err != nil {
 		return ctx, s.error(401, map[string]any{"detail": unauthenticatedDetail})

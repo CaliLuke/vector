@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"net/url"
+
+	"uuid"
 )
 
 type readServiceSessionPrincipalKey struct{}
@@ -84,6 +86,14 @@ func ReadServiceSessionTimezone(ctx context.Context) (string, bool) {
 func readServiceSessionPrincipal(ctx context.Context) (string, string, bool) {
 	identity, ok := ctx.Value(readServiceSessionPrincipalKey{}).(readServiceSessionIdentity)
 	return identity.userID, identity.timezone, ok
+}
+
+func readServiceSessionUserUUID(ctx context.Context, key string, sessions serviceSessionValidator) (uuid.UUID, error) {
+	userID, _, err := serviceSessionIdentity(ctx, key, sessions)
+	if err != nil {
+		return uuid.Nil(), err
+	}
+	return uuid.Parse(userID)
 }
 
 func rawJSONReadCloser(data []byte) io.ReadCloser {

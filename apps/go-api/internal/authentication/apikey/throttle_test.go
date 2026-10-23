@@ -1,8 +1,10 @@
 package apikey
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -100,6 +102,22 @@ func TestThrottleReturnsCacheFailures(t *testing.T) {
 	}
 	if _, err := throttle.AllowCacheKey(context.Background(), ":1:throttle_asset_asset-id", "asset-ID"); err == nil {
 		t.Fatal("AllowCacheKey succeeded after cache write failure")
+	}
+}
+
+func TestThrottleRejectsCorruptHistoryWithoutOverwritingIt(t *testing.T) {
+	corrupt := []byte{0x95, 0x00} // A truncated frame in the persisted history.
+	cache := &throttleCacheStub{value: bytes.Clone(corrupt), found: true}
+	throttle, err := NewThrottle(cache, "5/minute")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rate, err := throttle.Allow(context.Background(), "token")
+	if err == nil || !strings.Contains(err.Error(), "decode Django API-key throttle: truncated pickle frame") {
+		t.Fatalf("corrupt cache error=%v", err)
+	}
+	if rate.Allowed || !bytes.Equal(cache.value, corrupt) || cache.ttl != 0 {
+		t.Fatalf("corrupt history granted access or was overwritten: rate=%+v cache=%+v", rate, cache)
 	}
 }
 

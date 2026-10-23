@@ -65,15 +65,7 @@ func NewModuleReads(repository moduleReadsRepository, sessions moduleReadsSessio
 }
 
 func (service *moduleReadsService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principalID, _, inspected := readServiceSessionPrincipal(ctx)
-	if !inspected {
-		principal, err := service.sessions.Validate(ctx, key)
-		if err != nil {
-			return ctx, &api.ModuleReadsUnauthenticated{Detail: unauthenticatedDetail}
-		}
-		principalID = principal.UserID
-	}
-	userID, err := uuid.Parse(principalID)
+	userID, err := readServiceSessionUserUUID(ctx, key, service.sessions)
 	if err != nil {
 		return ctx, &api.ModuleReadsUnauthenticated{Detail: unauthenticatedDetail}
 	}

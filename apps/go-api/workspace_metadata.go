@@ -8,7 +8,6 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/workspace_metadata"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/workspacemetadata"
 	"github.com/CaliLuke/loom/security"
 )
@@ -19,19 +18,15 @@ type workspaceMetadataRepository interface {
 	ListStates(context.Context, uuid.UUID, string) (json.RawMessage, error)
 }
 
-type workspaceMetadataSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
-}
-
 type workspaceMetadataService struct {
 	repository workspaceMetadataRepository
-	sessions   workspaceMetadataSessions
+	sessions   serviceSessionValidator
 }
 
 type workspaceMetadataPrincipal struct{}
 
 // NewWorkspaceMetadata constructs the workspace labels and states service.
-func NewWorkspaceMetadata(repository workspaceMetadataRepository, sessions workspaceMetadataSessions) (api.Service, error) {
+func NewWorkspaceMetadata(repository workspaceMetadataRepository, sessions serviceSessionValidator) (api.Service, error) {
 	if repository == nil || sessions == nil {
 		return nil, fmt.Errorf("workspace metadata dependencies are required")
 	}
@@ -39,11 +34,7 @@ func NewWorkspaceMetadata(repository workspaceMetadataRepository, sessions works
 }
 
 func (s *workspaceMetadataService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.sessions.Validate(ctx, key)
-	if err != nil {
-		return ctx, &api.WorkspaceMetadataUnauthenticated{Detail: unauthenticatedDetail}
-	}
-	userID, err := uuid.Parse(principal.UserID)
+	userID, err := validateSessionUserUUID(ctx, key, s.sessions)
 	if err != nil {
 		return ctx, &api.WorkspaceMetadataUnauthenticated{Detail: unauthenticatedDetail}
 	}

@@ -79,17 +79,31 @@ func (s *userPropertiesService) auth(ctx context.Context, slug string, project *
 	}
 	return id, nil
 }
-func raw(n loom.Nullable[any]) json.RawMessage {
-	if !n.Present() {
-		return nil
+
+func (s *userPropertiesService) projectIdentity(ctx context.Context, slug, projectID string) (uuid.UUID, uuid.UUID, error) {
+	project, err := uuid.Parse(projectID)
+	if err != nil {
+		return uuid.Nil(), uuid.Nil(), userPropertiesNotFoundError()
 	}
-	if n.IsNull() {
-		return json.RawMessage("null")
+	user, err := s.auth(ctx, slug, &project)
+	if err != nil {
+		return uuid.Nil(), uuid.Nil(), err
 	}
-	v, _ := n.Value()
-	b, _ := json.Marshal(v)
-	return b
+	return user, project, nil
 }
+
+func (s *userPropertiesService) scopedIdentity(ctx context.Context, slug, projectID, entityID string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
+	user, project, err := s.projectIdentity(ctx, slug, projectID)
+	if err != nil {
+		return uuid.Nil(), uuid.Nil(), uuid.Nil(), err
+	}
+	entity, err := uuid.Parse(entityID)
+	if err != nil {
+		return uuid.Nil(), uuid.Nil(), uuid.Nil(), userPropertiesNotFoundError()
+	}
+	return user, project, entity, nil
+}
+
 func addUserPropertyNullable[T any](m map[string]json.RawMessage, key string, value loom.Nullable[T]) {
 	if raw := rawValue(value); raw != nil {
 		m[key] = raw
@@ -109,54 +123,41 @@ func rawValue[T any](n loom.Nullable[T]) json.RawMessage {
 	b, _ := json.Marshal(v)
 	return b
 }
-func patchMap(values ...func(map[string]json.RawMessage)) map[string]json.RawMessage {
-	m := map[string]json.RawMessage{}
-	for _, value := range values {
-		value(m)
-	}
-	return m
+func userPropertyFilterFields(filters, displayFilters, displayProperties, richFilters loom.Nullable[loom.JSONValue]) map[string]json.RawMessage {
+	fields := make(map[string]json.RawMessage)
+	addUserPropertyNullable(fields, "filters", filters)
+	addUserPropertyNullable(fields, "display_filters", displayFilters)
+	addUserPropertyNullable(fields, "display_properties", displayProperties)
+	addUserPropertyNullable(fields, "rich_filters", richFilters)
+	return fields
 }
-func convert(b json.RawMessage) (*api.UserProperties, error) {
-	var x api.UserProperties
-	if e := json.Unmarshal(b, &x); e != nil {
-		return nil, e
+
+func userPropertiesResult(data json.RawMessage, err error) (*api.UserProperties, error) {
+	if err != nil {
+		return nil, userPropertiesError(err)
 	}
-	return &x, nil
+	var properties api.UserProperties
+	if err := json.Unmarshal(data, &properties); err != nil {
+		return nil, userPropertiesInternalError()
+	}
+	return &properties, nil
 }
+
 func (s *userPropertiesService) WorkspaceGet(ctx context.Context, p *api.WorkspaceGetPayload) (*api.UserProperties, error) {
 	id, e := s.auth(ctx, p.Slug, nil)
 	if e != nil {
 		return nil, e
 	}
-	b, e := s.repo.GetWorkspace(ctx, id, p.Slug)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	x, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return x, nil
+	return userPropertiesResult(s.repo.GetWorkspace(ctx, id, p.Slug))
 }
 func (s *userPropertiesService) WorkspacePatch(ctx context.Context, p *api.WorkspacePatchPayload) (*api.UserProperties, error) {
 	id, e := s.auth(ctx, p.Slug, nil)
 	if e != nil {
 		return nil, e
 	}
-	fields := patchMap(
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "filters", p.Filters) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "display_filters", p.DisplayFilters) },
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "display_properties", p.DisplayProperties)
-		},
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "rich_filters", p.RichFilters) },
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "navigation_project_limit", p.NavigationProjectLimit)
-		},
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "navigation_control_preference", p.NavigationControlPreference)
-		},
-	)
+	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
+	addUserPropertyNullable(fields, "navigation_project_limit", p.NavigationProjectLimit)
+	addUserPropertyNullable(fields, "navigation_control_preference", p.NavigationControlPreference)
 	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
 		// Django creates the default property row before serializer validation.
 		if _, lookupErr := s.repo.GetWorkspace(ctx, id, p.Slug); lookupErr != nil {
@@ -164,54 +165,23 @@ func (s *userPropertiesService) WorkspacePatch(ctx context.Context, p *api.Works
 		}
 		return nil, api.JSONFieldValidation(invalid)
 	}
-	b, e := s.repo.PatchWorkspace(ctx, id, p.Slug, fields)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	x, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return x, nil
+	return userPropertiesResult(s.repo.PatchWorkspace(ctx, id, p.Slug, fields))
 }
 func (s *userPropertiesService) ProjectGet(ctx context.Context, p *api.ProjectGetPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, e := s.projectIdentity(ctx, p.Slug, p.ProjectID)
 	if e != nil {
 		return nil, e
 	}
-	b, e := s.repo.GetProject(ctx, id, p.Slug, x)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.GetProject(ctx, id, p.Slug, x))
 }
 func (s *userPropertiesService) ProjectPatch(ctx context.Context, p *api.ProjectPatchPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, e := s.projectIdentity(ctx, p.Slug, p.ProjectID)
 	if e != nil {
 		return nil, e
 	}
-	fields := patchMap(
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "filters", p.Filters) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "display_filters", p.DisplayFilters) },
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "display_properties", p.DisplayProperties)
-		},
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "rich_filters", p.RichFilters) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "preferences", p.Preferences) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "sort_order", p.SortOrder) },
-	)
+	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
+	addUserPropertyNullable(fields, "preferences", p.Preferences)
+	addUserPropertyNullable(fields, "sort_order", p.SortOrder)
 	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
 		// Django creates the default property row before serializer validation.
 		if _, lookupErr := s.repo.GetProject(ctx, id, p.Slug, x); lookupErr != nil {
@@ -219,135 +189,49 @@ func (s *userPropertiesService) ProjectPatch(ctx context.Context, p *api.Project
 		}
 		return nil, api.JSONFieldValidation(invalid)
 	}
-	b, e := s.repo.PatchProject(ctx, id, p.Slug, x, fields)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.PatchProject(ctx, id, p.Slug, x, fields))
 }
 func (s *userPropertiesService) CycleGet(ctx context.Context, p *api.CycleGetPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.CycleID)
 	if e != nil {
 		return nil, e
 	}
-	y, e := uuid.Parse(p.CycleID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	b, e := s.repo.GetCycle(ctx, id, p.Slug, x, y)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.GetCycle(ctx, id, p.Slug, x, y))
 }
 func (s *userPropertiesService) CyclePatch(ctx context.Context, p *api.CyclePatchPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.CycleID)
 	if e != nil {
 		return nil, e
 	}
-	y, e := uuid.Parse(p.CycleID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	fields := patchMap(
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "filters", p.Filters) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "display_filters", p.DisplayFilters) },
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "display_properties", p.DisplayProperties)
-		},
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "rich_filters", p.RichFilters) },
-	)
+	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
 	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
 		if lookupErr := s.repo.CheckScopedPatch(ctx, id, p.Slug, x, y, "cycle"); lookupErr != nil {
 			return nil, userPropertiesError(lookupErr)
 		}
 		return nil, userPropertiesInternalError()
 	}
-	b, e := s.repo.PatchCycle(ctx, id, p.Slug, x, y, fields)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.PatchCycle(ctx, id, p.Slug, x, y, fields))
 }
 func (s *userPropertiesService) ModuleGet(ctx context.Context, p *api.ModuleGetPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.ModuleID)
 	if e != nil {
 		return nil, e
 	}
-	y, e := uuid.Parse(p.ModuleID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	b, e := s.repo.GetModule(ctx, id, p.Slug, x, y)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.GetModule(ctx, id, p.Slug, x, y))
 }
 func (s *userPropertiesService) ModulePatch(ctx context.Context, p *api.ModulePatchPayload) (*api.UserProperties, error) {
-	x, e := uuid.Parse(p.ProjectID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	id, e := s.auth(ctx, p.Slug, &x)
+	id, x, y, e := s.scopedIdentity(ctx, p.Slug, p.ProjectID, p.ModuleID)
 	if e != nil {
 		return nil, e
 	}
-	y, e := uuid.Parse(p.ModuleID)
-	if e != nil {
-		return nil, userPropertiesNotFoundError()
-	}
-	fields := patchMap(
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "filters", p.Filters) },
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "display_filters", p.DisplayFilters) },
-		func(m map[string]json.RawMessage) {
-			addUserPropertyNullable(m, "display_properties", p.DisplayProperties)
-		},
-		func(m map[string]json.RawMessage) { addUserPropertyNullable(m, "rich_filters", p.RichFilters) },
-	)
+	fields := userPropertyFilterFields(p.Filters, p.DisplayFilters, p.DisplayProperties, p.RichFilters)
 	if invalid := normalizeJSONFields(fields, "filters", "display_filters", "display_properties", "rich_filters", "preferences"); invalid != nil {
 		if lookupErr := s.repo.CheckScopedPatch(ctx, id, p.Slug, x, y, "module"); lookupErr != nil {
 			return nil, userPropertiesError(lookupErr)
 		}
 		return nil, userPropertiesInternalError()
 	}
-	b, e := s.repo.PatchModule(ctx, id, p.Slug, x, y, fields)
-	if e != nil {
-		return nil, userPropertiesError(e)
-	}
-	xx, err := convert(b)
-	if err != nil {
-		return nil, userPropertiesInternalError()
-	}
-	return xx, nil
+	return userPropertiesResult(s.repo.PatchModule(ctx, id, p.Slug, x, y, fields))
 }
 
 func userPropertiesNotFoundError() error {

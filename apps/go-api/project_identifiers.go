@@ -8,7 +8,6 @@ import (
 	"uuid"
 
 	api "github.com/CaliLuke/go-plane/gen/project_identifiers"
-	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/projectidentifiers"
 	"github.com/CaliLuke/loom/security"
 )
@@ -19,19 +18,15 @@ type projectIdentifiersRepository interface {
 	Delete(context.Context, uuid.UUID, string, string) error
 }
 
-type projectIdentifiersSessions interface {
-	Validate(context.Context, string) (djangosession.Principal, error)
-}
-
 type projectIdentifiersService struct {
 	repository projectIdentifiersRepository
-	sessions   projectIdentifiersSessions
+	sessions   serviceSessionValidator
 }
 
 type projectIdentifiersPrincipal struct{}
 
 // NewProjectIdentifiers constructs the project identifier service.
-func NewProjectIdentifiers(repository projectIdentifiersRepository, sessions projectIdentifiersSessions) (api.Service, error) {
+func NewProjectIdentifiers(repository projectIdentifiersRepository, sessions serviceSessionValidator) (api.Service, error) {
 	if repository == nil || sessions == nil {
 		return nil, fmt.Errorf("project identifiers dependencies are required")
 	}
@@ -39,11 +34,7 @@ func NewProjectIdentifiers(repository projectIdentifiersRepository, sessions pro
 }
 
 func (s *projectIdentifiersService) APIKeyAuth(ctx context.Context, key string, _ *security.APIKeyScheme) (context.Context, error) {
-	principal, err := s.sessions.Validate(ctx, key)
-	if err != nil {
-		return ctx, &api.ProjectIdentifierUnauthenticated{Detail: unauthenticatedDetail}
-	}
-	userID, err := uuid.Parse(principal.UserID)
+	userID, err := validateSessionUserUUID(ctx, key, s.sessions)
 	if err != nil {
 		return ctx, &api.ProjectIdentifierUnauthenticated{Detail: unauthenticatedDetail}
 	}

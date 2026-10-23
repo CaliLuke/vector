@@ -66,16 +66,10 @@ func (service *publicProjectMetadataReadsService) Cycles(
 	payload *api.CyclesPayload,
 ) ([]*api.PublicProjectCollectionItem, error) {
 	data, err := service.repository.Cycles(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var cycles []*api.PublicProjectCollectionItem
-	if err := json.Unmarshal(data, &cycles); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &cycles); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return cycles, nil
 }
 
@@ -84,16 +78,10 @@ func (service *publicProjectMetadataReadsService) Labels(
 	payload *api.LabelsPayload,
 ) ([]*api.PublicProjectLabel, error) {
 	data, err := service.repository.Labels(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var labels []*api.PublicProjectLabel
-	if err := json.Unmarshal(data, &labels); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &labels); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return labels, nil
 }
 
@@ -102,16 +90,10 @@ func (service *publicProjectMetadataReadsService) Modules(
 	payload *api.ModulesPayload,
 ) ([]*api.PublicProjectCollectionItem, error) {
 	data, err := service.repository.Modules(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var modules []*api.PublicProjectCollectionItem
-	if err := json.Unmarshal(data, &modules); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &modules); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return modules, nil
 }
 
@@ -120,16 +102,10 @@ func (service *publicProjectMetadataReadsService) Members(
 	payload *api.MembersPayload,
 ) ([]*api.PublicProjectMember, error) {
 	data, err := service.repository.Members(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var members []*api.PublicProjectMember
-	if err := json.Unmarshal(data, &members); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &members); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return members, nil
 }
 
@@ -138,16 +114,10 @@ func (service *publicProjectMetadataReadsService) Meta(
 	payload *api.MetaPayload,
 ) (*api.PublicProjectMeta, error) {
 	data, err := service.repository.Meta(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var meta api.PublicProjectMeta
-	if err := json.Unmarshal(data, &meta); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &meta); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return &meta, nil
 }
 
@@ -156,16 +126,10 @@ func (service *publicProjectMetadataReadsService) Settings(
 	payload *api.SettingsPayload,
 ) (*api.PublicProjectSettings, error) {
 	data, err := service.repository.Settings(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var settings api.PublicProjectSettings
-	if err := json.Unmarshal(data, &settings); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &settings); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return &settings, nil
 }
 
@@ -178,16 +142,10 @@ func (service *publicProjectMetadataReadsService) ProjectAnchor(
 		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
 	}
 	data, err := service.repository.ProjectAnchor(ctx, payload.Slug, projectID)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var anchor api.PublicProjectSettings
-	if err := json.Unmarshal(data, &anchor); err != nil {
-		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+	if decodeErr := service.decodeResponse(ctx, data, err, &anchor); decodeErr != nil {
+		return nil, decodeErr
 	}
-	service.capture(ctx, data)
 	return &anchor, nil
 }
 
@@ -196,17 +154,24 @@ func (service *publicProjectMetadataReadsService) States(
 	payload *api.StatesPayload,
 ) ([]*api.PublicProjectState, error) {
 	data, err := service.repository.States(ctx, payload.Anchor)
-	if err != nil {
-		service.captureRenderError(ctx, err)
-		return nil, publicProjectMetadataReadsRepositoryError(err)
-	}
 	var states []*api.PublicProjectState
-	if err := json.Unmarshal(data, &states); err != nil {
+	if decodeErr := service.decodeResponse(ctx, data, err, &states); decodeErr != nil {
+		return nil, decodeErr
+	}
+	return states, nil
+}
+
+func (service *publicProjectMetadataReadsService) decodeResponse(ctx context.Context, data json.RawMessage, readErr error, destination any) error {
+	if readErr != nil {
+		service.captureRenderError(ctx, readErr)
+		return publicProjectMetadataReadsRepositoryError(readErr)
+	}
+	if err := json.Unmarshal(data, destination); err != nil {
 		service.markRenderError(ctx)
-		return nil, &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
+		return &api.PublicProjectMetadataInternalError{Message: publicProjectMetadataInternalErrorDetail}
 	}
 	service.capture(ctx, data)
-	return states, nil
+	return nil
 }
 
 func (service *publicProjectMetadataReadsService) captureRenderError(ctx context.Context, err error) {
