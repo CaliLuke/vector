@@ -73,4 +73,6 @@ ENV TURBO_TELEMETRY_DISABLED=1
 
 EXPOSE 3000
 
-CMD ["node", "apps/live"]
+RUN test -s apps/live/dist/start.mjs && node --check apps/live/dist/start.mjs
+
+CMD ["node", "apps/live/dist/start.mjs"]

@@ -107,19 +107,25 @@ describe("Redis manager and collaboration transport", () => {
     const binding = await run("docker", ["port", containerId, "6379/tcp"]);
     const address = binding.stdout.trim();
     redisUrl = `redis://${address}`;
-    // Container creation can precede host port forwarding (notably on macOS).
-    // Wait for the actual endpoint before spending the application's retry budget.
+    // A published TCP port can accept connections before Valkey is ready.
+    // Require a protocol response before spending the application's retry budget.
     const endpoint = new URL(redisUrl);
     await vi.waitFor(
       () =>
         new Promise<void>((resolve, reject) => {
           const socket = createConnection({ host: endpoint.hostname, port: Number(endpoint.port) });
           socket.setTimeout(500, () => socket.destroy(new Error("Redis readiness connection timed out")));
-          socket.once("connect", () => {
+          socket.once("connect", () => socket.write("*1\r\n$4\r\nPING\r\n"));
+          let response = "";
+          socket.on("data", (data) => {
+            response += data.toString();
+            if (!response.includes("\r\n")) return;
             socket.destroy();
-            resolve();
+            if (response === "+PONG\r\n") resolve();
+            else reject(new Error(`Unexpected Redis readiness response: ${response}`));
           });
           socket.once("error", reject);
+          socket.once("close", () => reject(new Error("Redis readiness connection closed")));
         }),
       { timeout: 10000, interval: 100 }
     );
