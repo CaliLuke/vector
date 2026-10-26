@@ -47,7 +47,6 @@ export const SpreadsheetAssigneeColumn = function SpreadsheetAssigneeColumn(prop
         }
         buttonClassName="text-left rounded-none group-[.selected-issue-row]:bg-accent-primary/5 group-[.selected-issue-row]:hover:bg-accent-primary/10 px-page-x"
         buttonContainerClassName="w-full"
-        optionsClassName="z-[9]"
         onClose={onClose}
       />
     </div>

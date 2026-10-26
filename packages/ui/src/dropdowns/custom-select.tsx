@@ -47,7 +47,7 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
     } = props;
     // states
     const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-    const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+    const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const customButtonDisabled = isCustomButtonDisabled(disabled, customButton);
     // refs
@@ -171,26 +171,23 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
                     onKeyDown={(event) => {
                       if (event.key === "Escape") closeDropdown();
                     }}
+                    className={cn(
+                      "z-30 my-1 min-w-48 overflow-y-scroll rounded-md border-[0.5px] border-subtle-1 bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap focus:outline-none",
+                      optionsClassName
+                    )}
+                    ref={setPopperElement}
+                    style={styles.popper}
+                    {...attributes.popper}
                   >
                     <div
-                      className={cn(
-                        "z-30 my-1 min-w-48 overflow-y-scroll rounded-md border-[0.5px] border-subtle-1 bg-surface-1 px-2 py-2.5 text-11 whitespace-nowrap focus:outline-none",
-                        optionsClassName
-                      )}
-                      ref={setPopperElement}
-                      style={styles.popper}
-                      {...attributes.popper}
+                      className={cn("space-y-1 overflow-y-scroll", {
+                        "max-h-60": maxHeight === "lg",
+                        "max-h-48": maxHeight === "md",
+                        "max-h-36": maxHeight === "rg",
+                        "max-h-28": maxHeight === "sm",
+                      })}
                     >
-                      <div
-                        className={cn("space-y-1 overflow-y-scroll", {
-                          "max-h-60": maxHeight === "lg",
-                          "max-h-48": maxHeight === "md",
-                          "max-h-36": maxHeight === "rg",
-                          "max-h-28": maxHeight === "sm",
-                        })}
-                      >
-                        {children}
-                      </div>
+                      {children}
                     </div>
                   </Combobox.Options>,
                   document.body

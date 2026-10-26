@@ -10,7 +10,7 @@ export function useLabelPickerElements() {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
 
   return { dropdownRef, inputRef, referenceElement, setReferenceElement, popperElement, setPopperElement };
 }

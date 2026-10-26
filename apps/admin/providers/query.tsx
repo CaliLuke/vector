@@ -6,12 +6,15 @@
 
 import { useState } from "react";
 import type { PropsWithChildren } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { reportLocalQueryError } from "@plane/utils/local-logging";
 
 export function QueryProvider({ children }: PropsWithChildren) {
   const [client] = useState(
     () =>
       new QueryClient({
+        queryCache: new QueryCache({ onError: (error) => reportLocalQueryError(error, "query") }),
+        mutationCache: new MutationCache({ onError: (error) => reportLocalQueryError(error, "mutation") }),
         defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
       })
   );

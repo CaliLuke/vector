@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { setImmediate } from "node:timers/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
-import { installLocalLogging } from "../../packages/utils/src/local-logging.ts";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import { installLocalLogging, reportLocalQueryError } from "../../packages/utils/src/local-logging.ts";
 
 function browser(t) {
   const requests = [];
@@ -21,6 +22,7 @@ function browser(t) {
     responseURL = "http://localhost:8000/api/workspaces/default/?password=private";
     status = 500;
     pending = false;
+    open() {}
     send() {
       if (!this.pending) this.dispatchEvent(new Event("loadend"));
     }
@@ -141,6 +143,7 @@ test("console diagnostics include their caller stack while keeping messages sear
   assert.match(stacks[0], /navigationWarning/);
   assert.match(stacks[1], /componentError/);
   assert.match(stacks[2], /http:\/\/localhost:8000\/navigation\.ts/);
+  assert.match(stacks[2], /http:\/\/localhost:8000\/navigation\.ts:1:9/);
   assert.equal(exported.options.body.includes("private"), false, "caller stack URLs must discard query secrets");
 });
 
@@ -202,6 +205,8 @@ test("XHR aborts are ignored while status-zero network failures are recorded", a
   abortedRequest.abort();
 
   const networkFailure = new XHR();
+  networkFailure.open("GET", "/api/unavailable/?token=private");
+  networkFailure.responseURL = "";
   networkFailure.pending = true;
   networkFailure.send();
   networkFailure.status = 0;
@@ -219,12 +224,20 @@ test("XHR aborts are ignored while status-zero network failures are recorded", a
     records[0].attributes.find((attribute) => attribute.key === "http.response.status_code").value.intValue,
     "0"
   );
+  assert.equal(
+    records[0].attributes.find((attribute) => attribute.key === "http.request.path").value.stringValue,
+    "/api/unavailable/"
+  );
+  assert.equal(exported.options.body.includes("private"), false);
 });
 
 test("logging ignores other origins and restores the browser hooks", async (t) => {
   const { window, requests, XHR } = browser(t);
   const originalFetch = window.fetch;
+  // oxlint-disable-next-line unbound-method -- Compare method identity without invoking it.
   const originalSend = XHR.prototype.send;
+  // oxlint-disable-next-line unbound-method -- Compare method identity without invoking it.
+  const originalOpen = XHR.prototype.open;
   const originalError = console.error;
   const stop = installLocalLogging("plane-web-browser");
   await window.fetch("https://example.com/failed");
@@ -233,8 +246,87 @@ test("logging ignores other origins and restores the browser hooks", async (t) =
   assert.equal(requests.length, 1);
   stop();
   assert.equal(window.fetch, originalFetch);
+  // oxlint-disable-next-line unbound-method -- Compare method identity without invoking it.
   assert.equal(XHR.prototype.send, originalSend);
+  // oxlint-disable-next-line unbound-method -- Compare method identity without invoking it.
+  assert.equal(XHR.prototype.open, originalOpen);
   assert.equal(console.error, originalError);
   delete globalThis.window;
   delete globalThis.XMLHttpRequest;
+});
+
+test("final Query and mutation failures export code locations without private error data", async (t) => {
+  const { window, requests } = browser(t);
+  const stop = installLocalLogging("plane-web-browser");
+  const client = new QueryClient({
+    queryCache: new QueryCache({ onError: (error) => reportLocalQueryError(error, "query") }),
+    mutationCache: new MutationCache({ onError: (error) => reportLocalQueryError(error, "mutation") }),
+  });
+  t.after(() => {
+    stop();
+    client.clear();
+    delete globalThis.window;
+    delete globalThis.XMLHttpRequest;
+  });
+  let attempts = 0;
+  await assert.rejects(
+    client.fetchQuery({
+      queryKey: ["private-query-key"],
+      retry: 1,
+      retryDelay: 0,
+      queryFn: () => {
+        attempts++;
+        throw Object.assign(new Error("private-response-data\n    at private-multiline-data"), {
+          isAxiosError: true,
+          response: { status: 200, data: "private-response-data" },
+          request: { status: 200 },
+        });
+      },
+    })
+  );
+  let localFailure = false;
+  const mutation = client.getMutationCache().build(client, {
+    mutationKey: ["private-mutation-key"],
+    mutationFn: () => {
+      throw new Error("private-variable-data");
+    },
+    onError: () => {
+      localFailure = true;
+    },
+  });
+  await assert.rejects(mutation.execute({ secret: "private-variable-data" }));
+  window.tick();
+  await setImmediate();
+  const exported = requests.find((request) => request.url === "/__local_telemetry/v1/logs");
+  const records = JSON.parse(exported.options.body).resourceLogs[0].scopeLogs[0].logRecords;
+  assert.equal(attempts, 2);
+  assert.equal(localFailure, true, "native mutation error callbacks must remain active");
+  assert.equal(records.length, 2, "Query retries report only their final failure");
+  assert.deepEqual(
+    records.map((record) => record.attributes.find((attr) => attr.key === "query.operation").value.stringValue),
+    ["query", "mutation"]
+  );
+  assert.ok(records.every((record) => record.attributes.some((attr) => attr.key === "code.stacktrace")));
+  assert.equal(exported.options.body.includes("private-"), false);
+});
+
+test("local Query diagnostics ignore cancellation, already reported HTTP failures, and disposal", async (t) => {
+  const { window, requests } = browser(t);
+  const stop = installLocalLogging("plane-web-browser");
+  t.after(() => {
+    stop();
+    delete globalThis.window;
+    delete globalThis.XMLHttpRequest;
+  });
+  reportLocalQueryError(new DOMException("navigation", "AbortError"), "query");
+  reportLocalQueryError({ isAxiosError: true, request: { status: 0 }, message: "network failure" }, "query");
+  reportLocalQueryError({ response: { status: 422, data: "private-data" } }, "mutation");
+  window.tick();
+  await setImmediate();
+  assert.equal(requests.length, 0);
+  stop();
+  reportLocalQueryError(new Error("after disposal"), "query");
+  window.tick();
+  await setImmediate();
+  assert.equal(requests.length, 0);
 });

@@ -26,7 +26,7 @@ function SearchableDropdownOptions({
   children,
 }: {
   inputRef: Ref<HTMLInputElement>;
-  popperRef: Ref<HTMLDivElement>;
+  popperRef: Ref<HTMLElement>;
   style: CSSProperties | undefined;
   attributes: Record<string, string> | undefined;
   query: string;
@@ -36,26 +36,25 @@ function SearchableDropdownOptions({
   children: ReactNode;
 }) {
   return (
-    <Combobox.Options modal={false} className="fixed z-10">
-      <div
-        className="my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none"
-        ref={popperRef}
-        style={style}
-        {...attributes}
-      >
-        <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
-          <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
-          <ComboSearchInput
-            ref={inputRef}
-            className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
-            query={query}
-            onQueryChange={onQueryChange}
-            onEscapeClose={onEscapeClose}
-            placeholder={placeholder}
-          />
-        </div>
-        <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">{children}</div>
+    <Combobox.Options
+      modal={false}
+      className="z-10 my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none"
+      ref={popperRef}
+      style={style}
+      {...attributes}
+    >
+      <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
+        <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
+        <ComboSearchInput
+          ref={inputRef}
+          className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
+          query={query}
+          onQueryChange={onQueryChange}
+          onEscapeClose={onEscapeClose}
+          placeholder={placeholder}
+        />
       </div>
+      <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">{children}</div>
     </Combobox.Options>
   );
 }
@@ -69,7 +68,7 @@ export function useSearchableDropdown(
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
   const { isMobile } = usePlatformOS();
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: placement ?? "bottom-start",

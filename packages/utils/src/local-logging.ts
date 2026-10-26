@@ -1,6 +1,9 @@
 const clean = (text: string) =>
   text
-    .replace(/(https?:\/\/[^\s?#]+)[?#][^\s]*/g, "$1")
+    .replace(
+      /(https?:\/\/[^\s?#]+)[?#][^\s]*/g,
+      (url: string, path: string) => path + (url.match(/:\d+:\d+\)?$/)?.[0] ?? "")
+    )
     .replace(
       /((?:proxy-)?authorization|(?:set-)?cookie|password|token|secret)([\w-]*["']?\s*[:=]\s*)(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\r\n]*)/gi,
       "$1$2[redacted]"
@@ -30,13 +33,33 @@ const truncateJsonString = (value: string, maxBytes: number) => {
   return characters.slice(0, low).join("");
 };
 
+type QueryOperation = "query" | "mutation";
+let queryReporter: ((error: unknown, operation: QueryOperation) => void) | undefined;
+
+const isReportedRequestError = (error: object) => {
+  const response = "response" in error ? error.response : undefined;
+  const request = "isAxiosError" in error && error.isAxiosError && "request" in error ? error.request : undefined;
+  const transport = response ?? request;
+  const status = transport && typeof transport === "object" && "status" in transport ? transport.status : undefined;
+  return typeof status === "number" && (status === 0 || status >= 400);
+};
+
+/** Report final native Query failures without exporting keys, variables, or response data. */
+export function reportLocalQueryError(error: unknown, operation: QueryOperation): void {
+  queryReporter?.(error, operation);
+}
+
 /** Local development diagnostics, sent only to the local proxy's OTLP receiver. */
 export function installLocalLogging(service: string): () => void {
   if (!["localhost", "127.0.0.1"].includes(window.location.hostname)) return () => {};
 
   const endpoint = "/__local_telemetry/v1/logs";
   const originalFetch = window.fetch;
+  // oxlint-disable-next-line unbound-method -- Store the original method for restoration; invocation supplies its XHR receiver.
+  const originalOpen = XMLHttpRequest.prototype.open;
+  // oxlint-disable-next-line unbound-method -- Store the original method for restoration; invocation supplies its XHR receiver.
   const originalSend = XMLHttpRequest.prototype.send;
+  const requestUrls = new WeakMap<XMLHttpRequest, string>();
   const originalError = console.error;
   const originalWarn = console.warn;
   const queue: object[] = [];
@@ -103,11 +126,34 @@ export function installLocalLogging(service: string): () => void {
   };
 
   const failedRequest = (url: string, status: number) => {
-    const parsed = new URL(url, window.location.href);
+    let parsed: URL;
+    try {
+      parsed = new URL(url, window.location.href);
+    } catch {
+      return;
+    }
     if (parsed.origin !== window.location.origin || parsed.pathname === endpoint) return;
     if (status === 0 || status >= 400) {
       report("HTTP request failed", { "http.response.status_code": status, "http.request.path": parsed.pathname });
     }
+  };
+  const previousQueryReporter = queryReporter;
+  queryReporter = (error, operation) => {
+    // HTTP failures already have a request record. Cancellations are normal lifecycle events.
+    if (error && typeof error === "object") {
+      if ("name" in error && ["AbortError", "CanceledError", "CancelledError"].includes(String(error.name))) return;
+      if (isReportedRequestError(error)) return;
+    }
+    // Error messages can contain server data. Retain only code locations from the stack.
+    const stack =
+      error instanceof Error
+        ? error.stack
+            ?.replace(error.message, "")
+            ?.split("\n")
+            .filter((line) => /^\s+at /.test(line))
+            .join("\n")
+        : "";
+    report("Query execution failed", { "query.operation": operation, ...(stack ? { "code.stacktrace": stack } : {}) });
   };
   window.fetch = async (...args: Parameters<typeof window.fetch>) => {
     const input = args[0];
@@ -121,6 +167,17 @@ export function installLocalLogging(service: string): () => void {
       throw error;
     }
   };
+  // oxlint-disable-next-line no-extend-native -- Capture the URL before network failures clear responseURL.
+  XMLHttpRequest.prototype.open = function (
+    method: string,
+    url: string | URL,
+    async: boolean = true,
+    username?: string | null,
+    password?: string | null
+  ) {
+    originalOpen.call(this, method, url, async, username, password);
+    requestUrls.set(this, String(url));
+  };
   // oxlint-disable-next-line no-extend-native -- Development instrumentation covers all Axios instances and is restored on disposal.
   XMLHttpRequest.prototype.send = function (body) {
     let aborted = false;
@@ -128,7 +185,7 @@ export function installLocalLogging(service: string): () => void {
       aborted = true;
     };
     const onLoadEnd = () => {
-      if (!aborted) failedRequest(this.responseURL, this.status);
+      if (!aborted) failedRequest(this.responseURL || requestUrls.get(this) || "", this.status);
       this.removeEventListener("abort", markAborted);
     };
     this.addEventListener("abort", markAborted, { once: true });
@@ -164,9 +221,12 @@ export function installLocalLogging(service: string): () => void {
     window.removeEventListener("pagehide", onPageHide);
     window.fetch = originalFetch;
     // oxlint-disable-next-line no-extend-native -- Restore the original development instrumentation hook.
+    XMLHttpRequest.prototype.open = originalOpen;
+    // oxlint-disable-next-line no-extend-native -- Restore the original development instrumentation hook.
     XMLHttpRequest.prototype.send = originalSend;
     console.error = originalError;
     console.warn = originalWarn;
+    queryReporter = previousQueryReporter;
     void flush();
   };
 }

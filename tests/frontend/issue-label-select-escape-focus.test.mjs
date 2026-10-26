@@ -26,7 +26,6 @@ const packageStubs = {
     "export class UserService { currentUser() { throw new Error('unexpected identity request'); } } export default new UserService();",
   "@/services/workspace.service":
     "export class WorkspaceService { workspaceMemberMe() { throw new Error('unexpected membership request'); } getWorkspaceUserProjectsRole() { throw new Error('unexpected roles request'); } }",
-  "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -38,13 +37,40 @@ registerHooks({
     if (Object.hasOwn(packageStubs, specifier)) {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
     }
-    if (specifier === "@headlessui/react") {
+    if (specifier === "@headlessui/react" || specifier === "react-popper") {
       const webRoot = path.join(repositoryRoot, "apps/web");
       return nextResolve(specifier, { ...context, parentURL: pathToFileURL(path.join(webRoot, "index.js")).href });
     }
     return nextResolve(specifier, context);
   },
 });
+
+function positionedLabelTrigger(environment) {
+  // jsdom has no layout. Give real Popper a viewport and a trigger away from its origin.
+  Object.defineProperties(document.documentElement, {
+    clientWidth: { configurable: true, value: 1200 },
+    clientHeight: { configurable: true, value: 800 },
+  });
+  const trigger = environment.container.querySelector("button");
+  trigger.getBoundingClientRect = () => ({
+    x: 400,
+    y: 100,
+    left: 400,
+    top: 100,
+    right: 600,
+    bottom: 132,
+    width: 200,
+    height: 32,
+  });
+  return trigger;
+}
+
+function assertPositionedLabelListbox() {
+  const menu = document.querySelector('[role="listbox"]');
+  assert.ok(menu, "the label options are open");
+  assert.equal(menu.getAttribute("data-popper-placement"), "bottom-start");
+  assert.equal(menu.style.transform, "translate(400px, 132px)");
+}
 
 await test("ticket detail label picker returns focus to its real trigger on Escape", async (t) => {
   const environment = await createReactDomTestEnvironment();
@@ -78,9 +104,10 @@ await test("ticket detail label picker returns focus to its real trigger on Esca
       })
     )
   );
-  const trigger = environment.container.querySelector("button");
+  const trigger = positionedLabelTrigger(environment);
   await clickWithPointer(trigger);
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
+  assertPositionedLabelListbox();
   const search = document.querySelector('[role="combobox"]');
   assert.ok(search);
   await React.act(() => search.focus());
@@ -93,8 +120,9 @@ await test("ticket detail label picker returns focus to its real trigger on Esca
   assert.equal(focusReturned, true, "Escape should return focus to the ticket label trigger");
 });
 
-await test("Escape closes the label popup and returns focus to its trigger", async () => {
+await test("Escape closes the label popup and returns focus to its trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
   const { WorkItemLabelSelectBase } = await import("../../apps/web/core/components/issues/select/base.tsx");
   await environment.render(
     React.createElement(WorkItemLabelSelectBase, {
@@ -105,8 +133,9 @@ await test("Escape closes the label popup and returns focus to its trigger", asy
     })
   );
 
-  const trigger = environment.container.querySelector("button");
+  const trigger = positionedLabelTrigger(environment);
   const search = await openSearchCombobox(trigger);
+  assertPositionedLabelListbox();
 
   await React.act(async () => {
     search.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
@@ -114,8 +143,9 @@ await test("Escape closes the label popup and returns focus to its trigger", asy
 
   assert.equal(document.querySelector('input[placeholder="Search"]'), null);
   const activeElementAfterEscape = document.activeElement;
-  await environment.unmount();
   assert.equal(activeElementAfterEscape, trigger);
+  await openSearchCombobox(trigger);
+  assertPositionedLabelListbox();
 });
 
 await test("label creation stays keyboard accessible and empty search keeps creation disabled", async (t) => {
@@ -202,16 +232,18 @@ await test("layout label creation preserves its draft after failure and permits 
       })
     )
   );
-  const trigger = environment.container.querySelector("button");
+  const trigger = positionedLabelTrigger(environment);
   await clickWithPointer(trigger);
   const search = document.querySelector('[role="combobox"]');
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
+  assertPositionedLabelListbox();
   await React.act(() => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(search, "New label");
     search.dispatchEvent(new Event("input", { bubbles: true }));
   });
   await React.act(async () => document.querySelector('[role="listbox"] button').click());
   assert.ok(document.querySelector('[role="alert"]'));
+  assertPositionedLabelListbox();
   assert.equal(search.value, "New label");
   assert.equal(selected, undefined);
   fail = false;
@@ -219,6 +251,7 @@ await test("layout label creation preserves its draft after failure and permits 
   assert.deepEqual(selected, ["created"]);
   assert.equal(search.value, "");
   assert.equal(document.querySelector('[role="alert"]'), null);
+  assertPositionedLabelListbox();
 });
 
 async function expectCreationRetry(environment, create) {

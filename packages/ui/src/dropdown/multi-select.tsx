@@ -49,7 +49,7 @@ export function MultiSelectDropdown(props: IMultiSelectDropdown) {
   // states
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
   // refs
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   // popper-js refs
@@ -140,32 +140,33 @@ export function MultiSelectDropdown(props: IMultiSelectDropdown) {
       />
 
       {isOpen && (
-        <Combobox.Options modal={false} className="fixed z-10" static>
-          <div
-            className={cn(
-              "my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
-              optionsContainerClassName
-            )}
-            ref={setPopperElement}
-            style={styles.popper}
-            {...attributes.popper}
-          >
-            <DropdownOptions
-              isOpen={isOpen}
-              query={query}
-              setQuery={setQuery}
-              inputIcon={inputIcon}
-              inputPlaceholder={inputPlaceholder}
-              inputClassName={inputClassName}
-              inputContainerClassName={inputContainerClassName}
-              disableSearch={disableSearch}
-              keyExtractor={keyExtractor}
-              options={sortedOptions}
-              value={value}
-              renderItem={renderItem}
-              loader={loader}
-            />
-          </div>
+        <Combobox.Options
+          as="div"
+          modal={false}
+          className={cn(
+            "fixed z-10 my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
+            optionsContainerClassName
+          )}
+          ref={setPopperElement}
+          style={styles.popper}
+          {...attributes.popper}
+          static
+        >
+          <DropdownOptions
+            isOpen={isOpen}
+            query={query}
+            setQuery={setQuery}
+            inputIcon={inputIcon}
+            inputPlaceholder={inputPlaceholder}
+            inputClassName={inputClassName}
+            inputContainerClassName={inputContainerClassName}
+            disableSearch={disableSearch}
+            keyExtractor={keyExtractor}
+            options={sortedOptions}
+            value={value}
+            renderItem={renderItem}
+            loader={loader}
+          />
         </Combobox.Options>
       )}
     </Combobox>

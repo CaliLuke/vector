@@ -33,8 +33,12 @@ const packageStubs = {
     'export const cn = (...values) => values.flatMap((value) =>\n      typeof value === "string" ? [value] : value && typeof value === "object" ? Object.keys(value).filter((key) => value[key]) : []\n    ).join(" ");',
   "@plane/utils/file": "export const getFileURL = (value) => value;",
   "@plane/utils/array": "export const sortByCurrentUserThenSelected = (options) => options;",
-  "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
   "@/hooks/use-current-user": `export const useCurrentUser = () => ({ data: { id: "current-user" } });`,
+  "@/hooks/use-member-rosters": `
+    const member = { id: "current-user", display_name: "You", first_name: "You", last_name: "", is_bot: false };
+    const row = { member, is_active: true };
+    export const useWorkspaceMemberRoster = () => ({ members: [row], membersById: new Map([[member.id, row]]), isLoading: false, isError: false });
+    export const useProjectMemberRoster = (_, __, {canLoad}) => ({ memberships: canLoad ? [{member: member.id, role: 20}] : undefined, isLoading: false, isError: false });`,
   "@/hooks/use-platform-os": `export const usePlatformOS = () => ({ isMobile: false });`,
 };
 
@@ -104,6 +108,8 @@ async function openMemberDropdown(environment, trigger) {
   const nativeOpen = trigger.getAttribute("aria-expanded");
   const input = document.querySelector('input[placeholder="search"]');
   assert.ok(input, "opening the member dropdown should mount its search input");
+  const menu = document.querySelector('[role="listbox"]');
+  assert.ok(menu.getAttribute("data-popper-placement"), "the visible menu is attached to the real positioner");
   assert.equal(input.getAttribute("role"), "combobox");
   assert.equal(nativeOpen, "true", "Headless UI should open on the native pointer sequence");
   assert.equal(document.activeElement, input, "opening the member dropdown should focus search");
@@ -260,4 +266,59 @@ await test("member picker error offers a retry action", async () => {
   await React.act(async () => retry.click());
   assert.equal(retryCount, 1);
   await environment.unmount();
+});
+
+await test("a spreadsheet assignee cell opens a positioned picker and applies selection and removal", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const router = createRouterFixture("/workspace/workspace-views/all-issues/");
+  const { SpreadsheetAssigneeColumn } =
+    await import("../../apps/web/core/components/issues/issue-layouts/spreadsheet/columns/assignee-column.tsx");
+  const changes = [];
+  function Table() {
+    const [issue, setIssue] = React.useState({ id: "work-item", project_id: "project", assignee_ids: [] });
+    return React.createElement(
+      "table",
+      null,
+      React.createElement(
+        "tbody",
+        null,
+        React.createElement(
+          "tr",
+          null,
+          React.createElement(
+            "td",
+            null,
+            React.createElement(SpreadsheetAssigneeColumn, {
+              issue,
+              disabled: false,
+              onClose() {},
+              onChange(current, patch, details) {
+                changes.push({ id: current.id, patch, details });
+                setIssue({ ...current, ...patch });
+              },
+            })
+          )
+        )
+      )
+    );
+  }
+  await router.render(environment, React.createElement(Table));
+  const trigger = environment.container.querySelector("td button");
+  const search = await openMemberDropdown(environment, trigger);
+  assert.equal(document.querySelector('[role="listbox"]').style.position, "absolute");
+  await clickWithPointer(document.querySelector('[role="option"]'));
+  assert.deepEqual(changes[0], {
+    id: "work-item",
+    patch: { assignee_ids: ["current-user"] },
+    details: { changed_property: "assignees", change_details: ["current-user"] },
+  });
+  assert.match(trigger.textContent, /You/);
+  await React.act(() => pressKey(search, "Escape"));
+  assert.equal(document.querySelector('[role="listbox"]'), null);
+  assert.equal(document.activeElement, trigger);
+  await openMemberDropdown(environment, trigger);
+  await clickWithPointer(document.querySelector('[role="option"]'));
+  assert.deepEqual(changes[1].patch, { assignee_ids: [] });
+  assert.match(trigger.textContent, /Assignees/);
 });

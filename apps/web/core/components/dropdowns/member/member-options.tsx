@@ -57,7 +57,7 @@ export function MemberOptions(props: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   // states
   const [query, setQuery] = useState("");
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
   // plane hooks
   const { t } = useTranslation();
   // store hooks
@@ -111,76 +111,76 @@ export function MemberOptions(props: Props) {
   );
 
   return createPortal(
-    <Combobox.Options modal={false} data-prevent-outside-click>
-      <div
-        className={cn(
-          "z-30 my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
-          optionsClassName
-        )}
-        ref={setPopperElement}
-        style={{
-          ...styles.popper,
-        }}
-        {...attributes.popper}
-      >
-        <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
-          <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
-          <ComboSearchInput
-            ref={inputRef}
-            className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
-            query={query}
-            onQueryChange={setQuery}
-            onEscapeClose={restoreButtonFocusOnClose}
-            placeholder={t("search")}
-          />
-        </div>
-        <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">
-          {isRosterLoading ? (
-            <p className="px-1.5 py-1 text-placeholder italic">{t("loading")}</p>
-          ) : isRosterError ? (
-            <div className="flex items-center justify-between gap-2 px-1.5 py-1">
-              <p className="text-placeholder italic">{t("something_went_wrong_please_try_again")}</p>
-              <Button type="button" variant="link" size="sm" onClick={onRosterRetry}>
-                {t("retry")}
-              </Button>
-            </div>
-          ) : filteredOptions ? (
-            filteredOptions.length > 0 ? (
-              filteredOptions.map(
-                (option) =>
-                  option && (
-                    <Combobox.Option
-                      key={option.value}
-                      value={option.value}
-                      className={({ active, selected }) =>
-                        cn(
-                          "flex w-full items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none",
-                          active && "bg-layer-transparent-hover",
-                          selected ? "text-primary" : "text-secondary",
-                          getIsUserSuspended(option.value) ? "cursor-not-allowed" : "cursor-pointer"
-                        )
-                      }
-                      disabled={getIsUserSuspended(option.value)}
-                    >
-                      {({ selected }) => (
-                        <>
-                          <span className="flex-grow truncate">{option.content}</span>
-                          {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
-                          {getIsUserSuspended(option.value) && (
-                            <Pill variant={EPillVariant.DEFAULT} size={EPillSize.XS} className="border-none">
-                              Suspended
-                            </Pill>
-                          )}
-                        </>
-                      )}
-                    </Combobox.Option>
-                  )
-              )
-            ) : (
-              <p className="px-1.5 py-1 text-placeholder italic">{t("no_matching_results")}</p>
+    // Position the public options element: direct-child refs are cleared by
+    // https://github.com/tailwindlabs/headlessui/issues/3908 (remove this note after its fix).
+    <Combobox.Options
+      modal={false}
+      data-prevent-outside-click
+      ref={setPopperElement}
+      style={styles.popper}
+      {...attributes.popper}
+      className={cn(
+        "z-50 my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none",
+        optionsClassName
+      )}
+    >
+      <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
+        <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
+        <ComboSearchInput
+          ref={inputRef}
+          className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
+          query={query}
+          onQueryChange={setQuery}
+          onEscapeClose={restoreButtonFocusOnClose}
+          placeholder={t("search")}
+        />
+      </div>
+      <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">
+        {isRosterLoading ? (
+          <p className="px-1.5 py-1 text-placeholder italic">{t("loading")}</p>
+        ) : isRosterError ? (
+          <div className="flex items-center justify-between gap-2 px-1.5 py-1">
+            <p className="text-placeholder italic">{t("something_went_wrong_please_try_again")}</p>
+            <Button type="button" variant="link" size="sm" onClick={onRosterRetry}>
+              {t("retry")}
+            </Button>
+          </div>
+        ) : filteredOptions ? (
+          filteredOptions.length > 0 ? (
+            filteredOptions.map(
+              (option) =>
+                option && (
+                  <Combobox.Option
+                    key={option.value}
+                    value={option.value}
+                    className={({ active, selected }) =>
+                      cn(
+                        "flex w-full items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none",
+                        active && "bg-layer-transparent-hover",
+                        selected ? "text-primary" : "text-secondary",
+                        getIsUserSuspended(option.value) ? "cursor-not-allowed" : "cursor-pointer"
+                      )
+                    }
+                    disabled={getIsUserSuspended(option.value)}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span className="flex-grow truncate">{option.content}</span>
+                        {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
+                        {getIsUserSuspended(option.value) && (
+                          <Pill variant={EPillVariant.DEFAULT} size={EPillSize.XS} className="border-none">
+                            Suspended
+                          </Pill>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                )
             )
-          ) : null}
-        </div>
+          ) : (
+            <p className="px-1.5 py-1 text-placeholder italic">{t("no_matching_results")}</p>
+          )
+        ) : null}
       </div>
     </Combobox.Options>,
     document.body

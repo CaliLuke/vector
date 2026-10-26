@@ -23,11 +23,11 @@ const packageStubs = {
     "export const ISSUE_PRIORITIES = [{ key: 'urgent', title: 'Urgent' }, { key: 'high', title: 'High' }, { key: 'medium', title: 'Medium' }, { key: 'low', title: 'Low' }, { key: 'none', title: 'No priority' }];",
   "@plane/i18n": `export const useTranslation = () => ({ t: key => ({ "common.priority": "Priority", search: "Search" })[key] ?? key });`,
   "@plane/propel/icons":
-    "export const CheckIcon = () => null; export const PriorityIcon = () => null; export const ChevronDownIcon = () => null; export const SearchIcon = () => null; export const EstimatePropertyIcon=()=>null; export const IntakeStateGroupIcon=()=>null; export const StateGroupIcon=()=>null;",
+    "export const CheckIcon = () => null; export const PriorityIcon = () => null; export const ChevronDownIcon = () => null; export const SearchIcon = () => null; export const EstimatePropertyIcon=()=>null; export const IntakeStateGroupIcon=()=>null; export const StateGroupIcon=()=>null; export const ProjectIcon=()=>null;",
+  "@plane/propel/emoji-icon-picker": "export const Logo=()=>null;",
   "@plane/utils/datetime": "export const convertMinutesToHoursMinutesString=value=>String(value);",
   "@plane/utils/common":
     "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
-  "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
 
 registerHooks({
@@ -104,7 +104,28 @@ async function assertPropertySearchLifecycle(t, load, props, searchText, indexed
   );
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
+  Object.defineProperties(document.documentElement, {
+    clientWidth: { configurable: true, value: 1200 },
+    clientHeight: { configurable: true, value: 800 },
+  });
+  trigger.getBoundingClientRect = () => ({
+    x: 400,
+    y: 100,
+    left: 400,
+    top: 100,
+    right: 600,
+    bottom: 132,
+    width: 200,
+    height: 32,
+  });
   const search = await openSearchCombobox(trigger);
+  const menu = document.querySelector('[role="listbox"]');
+  assert.equal(menu.getAttribute("data-popper-placement"), "bottom-start");
+  assert.equal(
+    menu.style.transform,
+    "translate(400px, 132px)",
+    "the menu opens below its trigger, away from the page origin"
+  );
 
   await React.act(async () => {
     const setInputValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set?.bind(search);
@@ -169,6 +190,22 @@ void test("intake dropdown shares focus, Escape and search reset", async (t) => 
     "triage"
   );
   assert.equal(closed, 1);
+});
+
+void test("project dropdown opens a positioned menu and restores search focus", async (t) => {
+  await assertPropertySearchLifecycle(
+    t,
+    async () => (await import("../../apps/web/core/components/dropdowns/project/base.tsx")).ProjectDropdownBase,
+    {
+      onChange() {},
+      value: "project",
+      multiple: false,
+      projectIds: ["project"],
+      getProjectById: () => ({ id: "project", name: "Project" }),
+    },
+    "Project",
+    1
+  );
 });
 
 void test("state picker stays controlled while its default state loads", async (t) => {
