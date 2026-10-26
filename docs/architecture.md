@@ -344,14 +344,15 @@ They retain rejected selections and close after the save completes. Cycle transf
 uses a Query mutation; retries after a successful transfer refresh the affected
 cycle data without repeating the transfer.
 
-The view filter editor owns its recursive expression separately from the native
-Form metadata fields. With TanStack Form 1.33.5 and TypeScript 7.0.2, storing the
-bounded `rich_filters` value in `defaultValues` compiles, but registering it through
-`form.Field` fails with TS2589. The public `setFieldValue` API uses the same recursive
-path types. Upstream tracking is [issue #1830](https://github.com/TanStack/form/issues/1830).
-Move the expression
-into Form when its recursive value API compiles with this type, keeping the
-regression that preserves edited filters across failed saves.
+The view form owns metadata and filter drafts in native TanStack Form fields. Filter
+nodes are stored in a flat, typed array with child indexes, then reconstructed into
+the existing nested API expression at the editor and submission boundaries. This
+preserves logical nesting, child order, operator keys and literal values while
+allowing Form to track dirty state, reset defaults and retain failed submissions.
+There is no separate React filter draft. The projection avoids the recursive field
+path expansion reported in [TanStack Form #1830](https://github.com/TanStack/form/issues/1830);
+it can be removed when a released native field API handles the nested expression
+without TS2589. No dependency patches or compiler suppressions are used.
 
 Calendar navigation dates are React state scoped to the identity session. Calendar
 weeks derive from the current profile preference. Each mounted Kanban board owns

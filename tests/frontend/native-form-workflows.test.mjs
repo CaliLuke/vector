@@ -146,6 +146,50 @@ await test("view forms keep dirty values across refetches and failures", async (
   });
   assert.equal(env.container.querySelector('[role="alert"]'), null);
 });
+await test("view filter edits participate in native form dirty state and reset", async (t) => {
+  const env = await setup(t);
+  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
+  const original = { not: { priority__exact: "low" } };
+  const saved = [];
+  await env.render(
+    React.createElement(ViewForm, {
+      workspaceSlug: "workspace",
+      data: { id: "view", name: "Original", rich_filters: original },
+      handleClose: () => {},
+      handleFormSubmit: async (value) => saved.push(value),
+    })
+  );
+  const form = formObserver.getForms(viewFormSource).at(-1);
+  assert.equal(form.state.isDirty, false);
+  await act(async () => env.container.querySelector('[aria-label="Edit filters"]').click());
+  assert.equal(form.state.isDirty, true);
+  await submit(env.container);
+  assert.deepEqual(saved[0].rich_filters, {
+    and: [{ priority__in: "high" }, { not: { state_group__in: "completed" } }],
+  });
+  await act(async () => form.reset());
+  assert.equal(form.state.isDirty, false);
+  await submit(env.container);
+  assert.deepEqual(saved[1].rich_filters, original);
+});
+await test("editing view metadata preserves malformed saved filter siblings", async (t) => {
+  const env = await setup(t);
+  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
+  const original = { and: [{ priority__exact: "high" }], unsupported__exact: "kept" };
+  const saved = [];
+  await env.render(
+    React.createElement(ViewForm, {
+      workspaceSlug: "workspace",
+      data: { id: "view", name: "Original", rich_filters: original },
+      handleClose: () => {},
+      handleFormSubmit: async (value) => saved.push(value),
+    })
+  );
+  await change(env.container.querySelector('[name="name"]'), "Renamed view");
+  await submit(env.container);
+  assert.equal(saved[0].name, "Renamed view");
+  assert.deepEqual(saved[0].rich_filters, original);
+});
 await test("retrying label attachment reuses the created label", async (t) => {
   const env = await setup(t);
   const { LabelCreate } = await import("../../apps/web/core/components/issues/issue-detail/label/create-label.tsx");

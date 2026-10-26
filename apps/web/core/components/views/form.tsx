@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
 
 import { ETabIndices, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
@@ -25,6 +25,8 @@ import { WorkspaceLevelWorkItemFiltersHOC } from "@/components/work-item-filters
 import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { LayoutDropDown } from "../dropdowns/layout";
+import { createFilterDraft, filterDraftExpression } from "./filter-draft";
+import type { FilterDraftNode } from "./filter-draft";
 
 type ViewDraft = Pick<
   IProjectView,
@@ -62,17 +64,13 @@ export const ViewForm = function ViewForm(props: Props) {
   const projectCatalogue = useWorkspaceProjectDetails(props.workspaceSlug);
   const projectRows = projectCatalogue.projects;
   const { isMobile } = usePlatformOS();
-  const { rich_filters: initialFilters, ...defaultValues } = initialView(props);
-  // The recursive filter editor owns its expression; native fields own the view metadata.
-  // Move the expression into Form when an upstream release supports recursive values.
-  // https://github.com/TanStack/form/issues/1830#issuecomment-6388306032
-  const [richFilters, setRichFilters] = useState(initialFilters);
+  const { rich_filters, ...metadata } = initialView(props);
   const form = useForm({
-    defaultValues,
-    onSubmit: async ({ value }) => {
+    defaultValues: { ...metadata, filter_nodes: createFilterDraft(rich_filters) },
+    onSubmit: async ({ value: { filter_nodes, ...value } }) => {
       form.setErrorMap({ onSubmit: undefined });
       try {
-        await handleFormSubmit({ ...value, rich_filters: richFilters });
+        await handleFormSubmit({ ...value, rich_filters: filterDraftExpression(filter_nodes) });
       } catch (cause) {
         form.setErrorMap({ onSubmit: { form: "Could not save the view. Please try again.", fields: {} } });
         throw cause;
@@ -84,20 +82,6 @@ export const ViewForm = function ViewForm(props: Props) {
   const busy = useStore(form.store, (state) => state.isSubmitting);
   const project = projectId ? projectRows?.find((candidate) => candidate.id === projectId) : undefined;
   const { getIndex } = getTabIndex(ETabIndices.PROJECT_VIEW, isMobile);
-  const filters: IIssueFilters = {
-    richFilters,
-    displayFilters: values.display_filters,
-    displayProperties: values.display_properties,
-    kanbanFilters: undefined,
-  };
-  const filterProps = {
-    entityId: data?.id,
-    initialWorkItemFilters: filters,
-    isTemporary: true as const,
-    showOnMount: true,
-    workspaceSlug,
-    updateFilters: setRichFilters,
-  };
   const submitViewForm = () => {
     form.setErrorMap({ onSubmit: undefined });
     return form.handleSubmit().catch(() => {});
@@ -185,24 +169,19 @@ export const ViewForm = function ViewForm(props: Props) {
               />
             </FiltersDropdown>
           </div>
-          {projectId ? (
-            <ProjectLevelWorkItemFiltersHOC
-              {...filterProps}
-              projectId={projectId}
-              entityType={EIssuesStoreType.PROJECT_VIEW}
-              filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.filters}
-            >
-              {({ editor }) => editor && <WorkItemFiltersRow editor={editor} variant="modal" />}
-            </ProjectLevelWorkItemFiltersHOC>
-          ) : (
-            <WorkspaceLevelWorkItemFiltersHOC
-              {...filterProps}
-              entityType={EIssuesStoreType.GLOBAL}
-              filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.my_issues.filters}
-            >
-              {({ editor }) => editor && <WorkItemFiltersRow editor={editor} variant="modal" />}
-            </WorkspaceLevelWorkItemFiltersHOC>
-          )}
+          <form.Field name="filter_nodes">
+            {(field) => (
+              <ViewFilters
+                entityId={data?.id}
+                projectId={projectId}
+                workspaceSlug={workspaceSlug}
+                nodes={field.state.value}
+                onChange={field.handleChange}
+                displayFilters={values.display_filters}
+                displayProperties={values.display_properties}
+              />
+            )}
+          </form.Field>
         </div>
         {saveError && (
           <p role="alert" className="text-13 text-danger-primary">
@@ -228,6 +207,52 @@ export const ViewForm = function ViewForm(props: Props) {
     </ModalForm>
   );
 };
+
+function ViewFilters({
+  entityId,
+  projectId,
+  workspaceSlug,
+  nodes,
+  onChange,
+  displayFilters,
+  displayProperties,
+}: {
+  entityId: string | undefined;
+  projectId: string | undefined;
+  workspaceSlug: string;
+  nodes: FilterDraftNode[];
+  onChange: (nodes: FilterDraftNode[]) => void;
+  displayFilters: IIssueFilters["displayFilters"];
+  displayProperties: IIssueFilters["displayProperties"];
+}) {
+  const richFilters = useMemo(() => filterDraftExpression(nodes), [nodes]);
+  const filterProps = {
+    entityId,
+    initialWorkItemFilters: { richFilters, displayFilters, displayProperties, kanbanFilters: undefined },
+    isTemporary: true as const,
+    showOnMount: true,
+    workspaceSlug,
+    updateFilters: (expression: IProjectView["rich_filters"]) => onChange(createFilterDraft(expression)),
+  };
+  return projectId ? (
+    <ProjectLevelWorkItemFiltersHOC
+      {...filterProps}
+      projectId={projectId}
+      entityType={EIssuesStoreType.PROJECT_VIEW}
+      filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.filters}
+    >
+      {({ editor }) => editor && <WorkItemFiltersRow editor={editor} variant="modal" />}
+    </ProjectLevelWorkItemFiltersHOC>
+  ) : (
+    <WorkspaceLevelWorkItemFiltersHOC
+      {...filterProps}
+      entityType={EIssuesStoreType.GLOBAL}
+      filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.my_issues.filters}
+    >
+      {({ editor }) => editor && <WorkItemFiltersRow editor={editor} variant="modal" />}
+    </WorkspaceLevelWorkItemFiltersHOC>
+  );
+}
 
 function ViewIconPicker({
   logo,
