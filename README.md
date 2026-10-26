@@ -9,7 +9,7 @@ The application API, authentication, database bootstrap, and background jobs run
 
 ## Run locally
 
-Install Git, Go 1.27.3, Node.js 22.18 or later, Corepack, and Docker with Compose and Buildx.
+Install Git, Go 1.27.3, Node.js 26.12.1, Corepack 0.36.0 (`npm install --global corepack@0.36.0`), and Docker with Compose and Buildx.
 
 ```sh
 git clone https://github.com/CaliLuke/vector.git

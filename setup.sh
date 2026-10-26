@@ -89,7 +89,7 @@ fi
 if command -v corepack >/dev/null 2>&1; then
     corepack pnpm install || success=false
 else
-    echo -e "${RED}✗${NC} Corepack is required. Install Corepack, then run this script again."
+    echo -e "${RED}✗${NC} Corepack 0.36.0 is required. Run 'npm install --global corepack@0.36.0', then run this script again."
     success=false
 fi
 

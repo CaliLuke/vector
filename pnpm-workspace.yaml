@@ -42,10 +42,10 @@ catalog:
   "@react-router/node": "8.5.0"
   "@react-router/serve": "8.5.0"
   "@storybook/addon-designs": "12.0.0"
-  "@storybook/addon-docs": "10.6.3"
-  "@storybook/addon-links": "10.6.3"
-  "@storybook/addon-onboarding": "10.6.3"
-  "@storybook/react-vite": "10.6.3"
+  "@storybook/addon-docs": "10.6.4"
+  "@storybook/addon-links": "10.6.4"
+  "@storybook/addon-onboarding": "10.6.4"
+  "@storybook/react-vite": "10.6.4"
   "@tailwindcss/postcss": "4.3.3"
   "@tailwindcss/typography": "0.5.20"
   "@tanstack/react-table": "9.3.1"
@@ -79,7 +79,7 @@ catalog:
   "@types/jscodeshift": "^17.3.0"
   "@types/lodash-es": "4.17.12"
   "@types/mdast": "^4.0.4"
-  "@types/node": "22.20.5"
+  "@types/node": "26.6.5"
   "@types/pdf-parse": "^1.1.5"
   "@types/react": "19.3.0"
   "@types/react-color": "^3.0.9"
@@ -88,7 +88,7 @@ catalog:
   "@types/ws": "^8.18.2"
   "@vitest/coverage-v8": "5.0.5"
   "ast-types": "0.16.3"
-  "autoprefixer": "^10.6.1"
+  "autoprefixer": "^10.6.2"
   "axios": "1.20.0"
   "buffer": "^6.0.3"
   "chroma-js": "^3.2.0"
@@ -99,21 +99,21 @@ catalog:
   "compression": "1.8.2"
   "cors": "^2.8.6"
   "date-fns": "^4.4.0"
-  "dotenv": "18.0.8"
-  "effect": "4.0.5"
+  "dotenv": "18.0.9"
+  "effect": "4.0.6"
   "emoji-regex": "11.0.0"
   "export-to-csv": "^1.5.0"
   "express": "5.3.0"
   "express-winston": "^4.2.0"
   "express-ws": "^5.0.2"
   "file-type": "22.2.0"
-  "framer-motion": "14.5.0"
+  "framer-motion": "14.6.0"
   "frimousse": "^0.4.0"
   "hast-util-to-mdast": "^10.1.2"
   "helmet": "^8.3.0"
   "highlight.js": "^11.12.0"
   "husky": "9.1.7"
-  "i18next": "26.5.4"
+  "i18next": "26.5.11"
   "i18next-icu": "2.6.1"
   "i18next-resources-to-backend": "1.2.3"
   "ioredis": "6.0.0"
@@ -122,7 +122,7 @@ catalog:
   "jsdom": "30.1.3"
   "jscodeshift": "^17.4.0"
   "jsx-dom-cjs": "^8.0.3"
-  "linkifyjs": "^4.3.3"
+  "linkifyjs": "^4.4.0"
   "lodash-es": "4.18.1"
   "lowlight": "^3.0.0"
   "lucide-react": "1.61.0"
@@ -130,11 +130,11 @@ catalog:
   "next-themes": "0.4.6"
   "oxfmt": "0.74.0"
   "oxlint": "1.89.0"
-  "oxlint-tsgolint": "7.0.2004"
-  "knip": "6.42.1"
+  "oxlint-tsgolint": "7.0.2005"
+  "knip": "6.43.0"
   "jscpd": "5.4.2"
   "pdf-parse": "^2.4.5"
-  "postcss": "8.5.31"
+  "postcss": "8.5.32"
   "prosemirror-codemark": "^0.4.2"
   "prosemirror-markdown": "^1.13.9"
   "react": "19.3.1"
@@ -143,7 +143,7 @@ catalog:
   "react-dom": "19.3.1"
   "react-dropzone": "20.1.4"
   "react-fast-compare": "^3.2.2"
-  "react-i18next": "17.1.0"
+  "react-i18next": "17.1.9"
   "react-is": "^19.3.1"
   "react-markdown": "^10.1.0"
   "react-pdf-html": "^2.1.5"
@@ -159,13 +159,13 @@ catalog:
   "serve": "14.2.6"
   "sharp": "^0.35.5"
   "smooth-scroll-into-view-if-needed": "^2.0.2"
-  "storybook": "10.6.3"
-  "@tanstack/react-query": "5.104.5"
+  "storybook": "10.6.4"
+  "@tanstack/react-query": "5.105.0"
   "tailwind-merge": "3.7.0"
   "tailwindcss": "4.3.3"
   "tippy.js": "^6.3.7"
   "tiptap-markdown": "^0.9.0"
-  "tsdown": "0.23.1"
+  "tsdown": "0.23.2"
   "tsx": "4.23.15"
   "turbo": "2.11.10"
   "typescript": "npm:@typescript/typescript6@6.0.2"
@@ -190,17 +190,18 @@ overrides:
   # 3.0.10 drops first text when block IDs append a transaction; https://github.com/ueberdosis/tiptap/issues/8584
   # Remove after an upstream release passes the unique-id/collaboration regression.
   "@tiptap/y-tiptap": 3.0.9
+  # Tiptap's server API supports 21, but its peer range lags; https://github.com/ueberdosis/tiptap/issues/8540
+  # Remove when @tiptap/html accepts happy-dom >=21.0.4 (GHSA-834v-8h66-3h79).
+  "@tiptap/html>happy-dom": 21.0.4
   "mdast-util-to-hast@^13": 13.2.1
-  "valibot@^1": 1.4.2
-  "glob@^11": 11.1.0
-  "brace-expansion@^5": 5.0.7
-  "nanoid@^3": 3.3.8
-  "esbuild@^0": 0.28.1
+  "valibot@^1": 1.5.0
+  "brace-expansion@^5": 5.0.12
+  "nanoid@^3": 3.3.20
+  "esbuild@^0": 0.28.2
   "@babel/core": 7.29.7
-  "@babel/helpers": 7.29.7
-  "@babel/runtime": 7.29.7
-  "chokidar@^3": 3.6.0
-  prosemirror-view: 1.42.7
+  "@babel/helpers": 7.29.10
+  "@babel/runtime": 7.29.10
+  prosemirror-view: 1.42.8
   prosemirror-model: 1.25.12
   prosemirror-state: 1.4.4
   prosemirror-keymap: 1.2.3
@@ -217,40 +218,37 @@ overrides:
   "@types/express-ws>@types/express": 5.0.6
   "typescript@^6": "catalog:"
   "vite@^8": "catalog:"
-  "qs@^6": 6.15.2
-  "diff@^5": 5.2.2
-  "webpack@^5": 5.104.1
+  "qs@^6": 6.16.1
   lodash-es: "catalog:"
   "lodash@^4": 4.18.1
-  "markdown-it@^14": 14.2.0
-  "rollup@^4": 4.59.0
-  "minimatch@3": 3.1.4
-  "minimatch@10": 10.2.3
-  "serialize-javascript@^7": 7.0.5
-  "ajv@6": 6.14.0
-  "ajv@8": 8.18.0
+  "markdown-it@^14": 14.3.3
+  "minimatch@3": 3.1.5
+  "minimatch@10": 10.2.6
+  "ajv@6": 6.15.0
+  "ajv@8": 8.20.0
   "undici@7": 7.29.0
-  "flatted@^3": 3.4.2
-  "picomatch@^2": 2.3.2
-  "yaml@1": 1.10.3
-  "yaml@2": 2.8.3
-  "path-to-regexp@<1": 0.1.13
-  "defu@^6": 6.1.5
+  "flatted@^3": 3.4.4
+  "yaml@2": 2.9.1
+  "defu@^6": 6.1.7
   "postcss@^8": "catalog:"
   "axios@^1": "catalog:"
-  "follow-redirects@^1": 1.16.0
-  "fast-uri@<3.1.5": "3.1.5"
-  "js-yaml@4": 4.3.0
+  "follow-redirects@^1": 1.16.2
+  "fast-uri@^3": 3.1.9
   "linkify-it@^5": 5.0.2
-  "body-parser@^1": 1.20.6
   "tmp@^0.2": 0.2.7
   "form-data@^4": 4.0.6
   "ws@8": 8.22.0
-  "ws@7": 7.5.11
-  "@opentelemetry/core@^2": 2.8.0
-  "@opentelemetry/resources@^2": 2.8.0
-  "@opentelemetry/sdk-trace-base@^2": 2.8.0
-  "morgan@^1": 1.11.0
+  "ws@7": 7.5.13
+  # SDK 2 requires API <1.10; keep its shared API within the declared peer range.
+  "@opentelemetry/api@^1": 1.9.1
+  "@opentelemetry/core@^2": 2.12.0
+  "@opentelemetry/resources@^2": 2.12.0
+  "@opentelemetry/sdk-trace-base@^2": 2.12.0
+  "morgan@^1": 1.12.1
+  # Remove when serve releases a compression pin >=1.8.2; https://github.com/advisories/GHSA-vc2v-76pw-4v95
+  "serve>compression": "catalog:"
+  # Remove when typography releases a parser pin >=6.1.5; https://github.com/advisories/GHSA-rj75-hqrm-r3gf
+  "@tailwindcss/typography>postcss-selector-parser": 6.1.5
 
 allowBuilds:
   "@parcel/watcher": true
@@ -260,19 +258,22 @@ allowBuilds:
   turbo: true
   sharp: false
 
-minimumReleaseAgeExclude:
-  - "@storybook/addon-docs@10.6.3"
-  - "@storybook/builder-vite@10.6.3"
-  - "@storybook/react-dom-shim@10.6.3"
-  - "@storybook/react-vite@10.6.3"
-  - "@storybook/react@10.6.3"
-  - storybook@10.6.3
-  - prosemirror-markdown@1.13.9
-  - prosemirror-transform@1.12.4
-  - prosemirror-view@1.42.7
-
 # Remove when tiptap-markdown declares its runtime @tiptap/pm requirement; see https://github.com/aguingand/tiptap-markdown/issues/88
 packageExtensions:
   tiptap-markdown@0.9.0:
     peerDependencies:
       "@tiptap/pm": "^3.0.1"
+
+minimumReleaseAgeExclude:
+  - "@storybook/addon-docs@10.6.4"
+  - "@storybook/addon-links@10.6.4"
+  - "@storybook/addon-onboarding@10.6.4"
+  - "@storybook/builder-vite@10.6.4"
+  - "@storybook/react-dom-shim@10.6.4"
+  - "@storybook/react-vite@10.6.4"
+  - "@storybook/react@10.6.4"
+  - "@tanstack/query-core@5.105.0"
+  - "@tanstack/react-query@5.105.0"
+  - autoprefixer@10.6.2
+  - postcss@8.5.32
+  - storybook@10.6.4

@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	caddyImage       = "caddy:2.11.3-alpine"
+	caddyImage       = "caddy:2.11.7-alpine"
 	caddyHTTPPort    = "80/tcp"
 	stickyCollection = "/api/workspaces/example/stickies/"
 )
@@ -315,13 +315,13 @@ func TestGoAPIDockerfileBuildsNativeRuntimeBinaries(t *testing.T) {
 	}
 	dockerfile := string(content)
 	for _, required := range []string{
-		"FROM golang:1.27.3-bookworm AS build",
+		"FROM golang:1.27.3-trixie AS build",
 		"go build -trimpath -o /out/go-plane ./cmd/system",
 		"go build -trimpath -o /out/go-bootstrap ./cmd/bootstrap",
 		"go build -trimpath -o /out/go-background-worker ./cmd/background-worker",
 		"go build -trimpath -o /out/go-support-migrate ./cmd/support-migrate",
 		"go build -trimpath -o /out/river github.com/riverqueue/river/cmd/river",
-		"FROM gcr.io/distroless/static-debian12:nonroot",
+		"FROM gcr.io/distroless/static-debian13:nonroot",
 	} {
 		if !strings.Contains(dockerfile, required) {
 			t.Errorf("Go API Dockerfile omits %q", required)

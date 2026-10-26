@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	postgresImage    = "postgres:15.7-alpine"
+	postgresImage    = "postgres:15.19-alpine"
 	seedDatabase     = "plane_parity_seed"
 	sourceDatabase   = "plane_parity_source"
 	targetDatabase   = "plane_parity_target"

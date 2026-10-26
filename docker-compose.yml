@@ -79,7 +79,7 @@ services:
 
   plane-db:
     container_name: plane-db
-    image: postgres:15.7-alpine
+    image: postgres:15.19-alpine
     restart: always
     command: postgres -c 'max_connections=1000'
     healthcheck:
@@ -99,7 +99,7 @@ services:
 
   plane-redis:
     container_name: plane-redis
-    image: valkey/valkey:7.2.11-alpine
+    image: valkey/valkey:7.2.14-alpine
     restart: always
     volumes:
       - redisdata:/data

@@ -3,7 +3,7 @@
 ## Requirements
 
 - Go 1.27.3, as pinned in `apps/go-api/go.mod`.
-- Node.js 22.22.2+, 24.15+, or 26+ and Corepack. `package.json` pins pnpm.
+- Node.js 26.12.1 and Corepack 0.36.0 (`npm install --global corepack@0.36.0`). `package.json` pins pnpm 12.15.0 with its registry integrity hash.
 - Docker with Compose and Buildx. On macOS, the helper supports the default Colima profile.
 
 Workspace typechecks use the native TypeScript 7 compiler (`tsc`, currently 7.0.2).
@@ -13,6 +13,18 @@ and test loaders that import it; it does not supply the `tsc` command. This foll
 [Microsoft's side-by-side installation guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60).
 Verify command resolution with `pnpm exec tsc --version` and
 `pnpm -r exec tsc --version`.
+
+Dependency updates are recorded in the workspace catalog and lockfile. The Tiptap
+HTML server currently has a scoped Happy DOM 21.0.4 override to include the fix for
+[GHSA-834v-8h66-3h79](https://github.com/advisories/GHSA-834v-8h66-3h79).
+[Tiptap issue #8540](https://github.com/ueberdosis/tiptap/issues/8540) tracks its
+outdated peer range. Remove the override when Tiptap accepts the fixed release;
+the editor serialization regression covers the consumer integration.
+
+The Compose PostgreSQL and Valkey images stay on their existing data-format lines
+with current patch releases. Upgrading PostgreSQL to a new major requires a
+verified backup and restore or `pg_upgrade`; changing the image tag alone does
+not migrate an existing volume.
 
 ## Start
 
@@ -82,7 +94,7 @@ Go unit tests and focused database tests run without Python or historical Git ob
 
 ## Quality gates
 
-Install Prek 0.5.5 and the pinned Go analysis tools once per machine or checkout:
+Install Prek 0.5.7 and the pinned Go analysis tools once per machine or checkout:
 
 ```sh
 brew install prek

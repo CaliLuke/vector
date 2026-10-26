@@ -23,7 +23,7 @@ if [ "$(go env GOVERSION)" != "go$module_go" ]; then
   exit 1
 fi
 
-go_api_image="golang:${module_go}-bookworm"
+go_api_image="golang:${module_go}-trixie"
 if ! grep -Fqx "FROM $go_api_image AS build" Dockerfile; then
   echo "Go API build image is not pinned to $go_api_image from go.mod" >&2
   exit 1

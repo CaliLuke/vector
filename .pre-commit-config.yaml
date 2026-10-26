@@ -1,4 +1,4 @@
-minimum_prek_version: "0.5.5"
+minimum_prek_version: "0.5.7"
 repos:
   - repo: local
     hooks:

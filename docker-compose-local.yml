@@ -43,7 +43,7 @@ services:
 
   plane-redis:
     logging: *local-logging
-    image: valkey/valkey:7.2.11-alpine
+    image: valkey/valkey:7.2.14-alpine
     restart: unless-stopped
     networks:
       - dev_env
@@ -81,7 +81,7 @@ services:
 
   plane-db:
     logging: *local-logging
-    image: postgres:15.7-alpine
+    image: postgres:15.19-alpine
     restart: unless-stopped
     networks:
       - dev_env
@@ -149,7 +149,7 @@ services:
 
   proxy:
     logging: *local-logging
-    image: caddy:2.11.3-alpine
+    image: caddy:2.11.7-alpine
     restart: unless-stopped
     networks:
       - dev_env
