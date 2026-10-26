@@ -11,11 +11,11 @@ import { CheckIcon } from "@plane/propel/icons";
 // helpers
 import { cn } from "../../utils";
 // types
-import type { IMultiSelectDropdownOptions, ISingleSelectDropdownOptions } from "../dropdown";
+import type { IDropdownOptions } from "../dropdown";
 // components
 import { DropdownOptionsLoader, InputSearch } from ".";
 
-export function DropdownOptions(props: IMultiSelectDropdownOptions | ISingleSelectDropdownOptions) {
+export function DropdownOptions(props: IDropdownOptions) {
   const {
     isOpen,
     query,

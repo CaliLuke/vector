@@ -1,3 +1,4 @@
+import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
@@ -46,22 +47,8 @@ registerHooks({
 });
 
 function positionedLabelTrigger(environment) {
-  // jsdom has no layout. Give real Popper a viewport and a trigger away from its origin.
-  Object.defineProperties(document.documentElement, {
-    clientWidth: { configurable: true, value: 1200 },
-    clientHeight: { configurable: true, value: 800 },
-  });
   const trigger = environment.container.querySelector("button");
-  trigger.getBoundingClientRect = () => ({
-    x: 400,
-    y: 100,
-    left: 400,
-    top: 100,
-    right: 600,
-    bottom: 132,
-    width: 200,
-    height: 32,
-  });
+  setPositioningGeometry(trigger);
   return trigger;
 }
 

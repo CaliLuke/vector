@@ -1,3 +1,4 @@
+import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { pathToFileURL } from "node:url";
@@ -39,22 +40,6 @@ registerHooks({
     return nextResolve(specifier, context);
   },
 });
-
-function setPositioningGeometry(trigger) {
-  Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1200 });
-  Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
-  trigger.getBoundingClientRect = () => ({
-    x: 400,
-    y: 100,
-    left: 400,
-    top: 100,
-    right: 600,
-    bottom: 132,
-    width: 200,
-    height: 32,
-    toJSON() {},
-  });
-}
 
 await test("a cycle picker shares one native catalogue read across repeated opens", async (t) => {
   const fixture = await createQueryRouterFixture(t);

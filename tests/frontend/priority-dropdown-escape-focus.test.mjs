@@ -1,3 +1,4 @@
+import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { registerHooks } from "node:module";
@@ -104,20 +105,7 @@ async function assertPropertySearchLifecycle(t, load, props, searchText, indexed
   );
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
-  Object.defineProperties(document.documentElement, {
-    clientWidth: { configurable: true, value: 1200 },
-    clientHeight: { configurable: true, value: 800 },
-  });
-  trigger.getBoundingClientRect = () => ({
-    x: 400,
-    y: 100,
-    left: 400,
-    top: 100,
-    right: 600,
-    bottom: 132,
-    width: 200,
-    height: 32,
-  });
+  setPositioningGeometry(trigger);
   const search = await openSearchCombobox(trigger);
   const menu = document.querySelector('[role="listbox"]');
   assert.equal(menu.getAttribute("data-popper-placement"), "bottom-start");

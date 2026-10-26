@@ -64,6 +64,18 @@ async function setup(t) {
     render: (element) => router.render(env, React.createElement(QueryClientProvider, { client }, element)),
   };
 }
+
+async function renderViewForm(env, data, handleFormSubmit) {
+  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
+  await env.render(
+    React.createElement(ViewForm, {
+      workspaceSlug: "workspace",
+      data,
+      handleClose: () => {},
+      handleFormSubmit,
+    })
+  );
+}
 await test("cycle validation uses the selected project and failed creation retains the draft", async (t) => {
   const env = await setup(t);
   const { CycleCreateUpdateModal } = await import("../../apps/web/core/components/cycles/modal.tsx");
@@ -148,16 +160,10 @@ await test("view forms keep dirty values across refetches and failures", async (
 });
 await test("view filter edits participate in native form dirty state and reset", async (t) => {
   const env = await setup(t);
-  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
   const original = { not: { priority__exact: "low" } };
   const saved = [];
-  await env.render(
-    React.createElement(ViewForm, {
-      workspaceSlug: "workspace",
-      data: { id: "view", name: "Original", rich_filters: original },
-      handleClose: () => {},
-      handleFormSubmit: async (value) => saved.push(value),
-    })
+  await renderViewForm(env, { id: "view", name: "Original", rich_filters: original }, async (value) =>
+    saved.push(value)
   );
   const form = formObserver.getForms(viewFormSource).at(-1);
   assert.equal(form.state.isDirty, false);
@@ -174,16 +180,10 @@ await test("view filter edits participate in native form dirty state and reset",
 });
 await test("editing view metadata preserves malformed saved filter siblings", async (t) => {
   const env = await setup(t);
-  const { ViewForm } = await import("../../apps/web/core/components/views/form.tsx");
   const original = { and: [{ priority__exact: "high" }], unsupported__exact: "kept" };
   const saved = [];
-  await env.render(
-    React.createElement(ViewForm, {
-      workspaceSlug: "workspace",
-      data: { id: "view", name: "Original", rich_filters: original },
-      handleClose: () => {},
-      handleFormSubmit: async (value) => saved.push(value),
-    })
+  await renderViewForm(env, { id: "view", name: "Original", rich_filters: original }, async (value) =>
+    saved.push(value)
   );
   await change(env.container.querySelector('[name="name"]'), "Renamed view");
   await submit(env.container);

@@ -22,7 +22,9 @@
     "dev:build": "tsdown --no-clean"
   },
   "dependencies": {
+    "@plane/utils": "workspace:*",
     "@tanstack/react-form": "catalog:",
+    "@tanstack/react-query": "catalog:",
     "react": "catalog:"
   },
   "devDependencies": {

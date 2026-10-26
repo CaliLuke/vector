@@ -1503,9 +1503,15 @@ importers:
 
   packages/hooks:
     dependencies:
+      '@plane/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@tanstack/react-form':
         specifier: 'catalog:'
         version: 1.33.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.104.5(@types/react@19.3.0)(react@19.3.1)
       react:
         specifier: 'catalog:'
         version: 19.3.1

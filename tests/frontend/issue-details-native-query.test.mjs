@@ -3,7 +3,7 @@ import { registerHooks } from "node:module";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { createModuleStub } from "./helpers/module-stubs.mjs";
-import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createQueryDomFixture } from "./helpers/query-dom.mjs";
 import { React } from "./helpers/react.mjs";
 import { seedIssueQueryScope } from "./helpers/issue-query-fixtures.mjs";
 
@@ -42,9 +42,9 @@ const { useWorkItemByIdentifier, useWorkItemSubItems } =
   await import("../../apps/web/core/hooks/use-work-item-detail.ts");
 const { useQueryClient } = await import("@tanstack/react-query");
 
-function setup(t) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  t.after(() => client.clear());
+function setup(t, suppliedClient) {
+  const client = suppliedClient ?? new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  if (!suppliedClient) t.after(() => client.clear());
   const scope = {
     accountId: "alice",
     sessionGeneration: 0,
@@ -73,12 +73,16 @@ function setItemAccessStatus(client, scope, issueId, denied = false) {
   return queryKey;
 }
 
-function installDetailHookScope(t, environment, scope) {
+async function setupDetailDom(t) {
+  const { env: environment, client } = await createQueryDomFixture(t, {
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
+  const { scope } = setup(t, client);
   globalThis.detailTestHookScope = scope;
-  t.after(async () => {
-    await environment.unmount();
+  t.after(() => {
     delete globalThis.detailTestHookScope;
   });
+  return { environment, client, scope };
 }
 
 function deferred() {
@@ -161,9 +165,7 @@ await test("identifier reads reject a canonical record with a different sequence
 });
 
 await test("an item's denial marker hides cached by-identifier data without refetching", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  const { client, scope } = setup(t);
-  installDetailHookScope(t, environment, scope);
+  const { environment, client, scope } = await setupDetailDom(t);
   const record = {
     id: "issue",
     project_id: scope.projectId,
@@ -186,9 +188,7 @@ await test("an item's denial marker hides cached by-identifier data without refe
 });
 
 await test("a successful UI edit updates the native by-identifier record from its accepted receipt", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  const { client, scope } = setup(t);
-  installDetailHookScope(t, environment, scope);
+  const { environment, client, scope } = await setupDetailDom(t);
   const record = {
     id: "issue",
     project_id: scope.projectId,
@@ -316,9 +316,7 @@ await test("identifier reads accept the backend detail contract without a projec
 });
 
 await test("sub-item hook exposes grouped backend responses as rows with a successful read state", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  const { client, scope } = setup(t);
-  installDetailHookScope(t, environment, scope);
+  const { environment, client, scope } = await setupDetailDom(t);
   const child = { id: "child", project_id: scope.projectId, parent_id: "parent" };
   client.setQueryData(issueDetailKeys.subItems(scope, "parent"), { sub_issues: { started: [child] } });
   setItemAccessStatus(client, scope, "parent");
@@ -346,9 +344,7 @@ await test("an accepted no-content PATCH refreshes only its captured detail quer
 });
 
 await test("an accepted no-content PATCH cancels a pending initial detail read before refreshing", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  const { client, scope } = setup(t);
-  installDetailHookScope(t, environment, scope);
+  const { environment, client, scope } = await setupDetailDom(t);
   setItemAccessStatus(client, scope, "issue");
 
   const staleRead = deferred();
@@ -390,9 +386,11 @@ await test("an accepted no-content PATCH cancels a pending initial detail read b
   await React.act(async () => {
     refreshedRead.resolve({ id: "issue", project_id: scope.projectId, name: "Fresh post-write title" });
     await reconciliation;
-    await new Promise((resolve) => setImmediate(resolve));
+    // Query batches observer notifications on a timer; cache completion alone does not flush the rendered read.
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
   assert.equal(client.getQueryData(issueDetailKeys.detail(scope, "issue")).name, "Fresh post-write title");
+  assert.equal(environment.container.querySelector("#initial-detail-result").textContent, "Fresh post-write title");
 });
 
 await test("a replacement detail query is not invalidated while a no-content refresh cancels its predecessor", async (t) => {

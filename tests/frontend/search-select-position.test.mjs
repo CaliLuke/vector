@@ -1,3 +1,4 @@
+import { setPositioningGeometry } from "./helpers/positioning.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
@@ -35,11 +36,6 @@ for (const [name, buttonProps] of Object.entries(variants)) {
     const environment = await createReactDomTestEnvironment();
     t.after(() => environment.unmount());
     const { CustomSearchSelect } = await import("../../packages/ui/src/dropdowns/custom-search-select.tsx");
-    // jsdom has no layout; provide a viewport and a trigger away from its origin.
-    Object.defineProperties(document.documentElement, {
-      clientWidth: { configurable: true, value: 1200 },
-      clientHeight: { configurable: true, value: 800 },
-    });
     await environment.render(
       React.createElement(CustomSearchSelect, {
         ...buttonProps,
@@ -50,16 +46,7 @@ for (const [name, buttonProps] of Object.entries(variants)) {
       })
     );
     const trigger = environment.container.querySelector("button");
-    trigger.getBoundingClientRect = () => ({
-      x: 400,
-      y: 100,
-      left: 400,
-      top: 100,
-      right: 600,
-      bottom: 132,
-      width: 200,
-      height: 32,
-    });
+    setPositioningGeometry(trigger);
     await act(async () => trigger.click());
     const menu = document.querySelector('[role="listbox"]');
     assert.ok(menu, "the options are open");

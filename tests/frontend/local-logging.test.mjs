@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
+import { registerHooks } from "node:module";
 import { setImmediate } from "node:timers/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
-import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { installLocalLogging, reportLocalQueryError } from "../../packages/utils/src/local-logging.ts";
+
+const localLoggingUrl = new URL("../../packages/utils/src/local-logging.ts", import.meta.url).href;
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "@plane/utils/local-logging") return nextResolve(localLoggingUrl, context);
+    return nextResolve(specifier, context);
+  },
+});
+const { createAppQueryClient } = await import("../../packages/hooks/src/query-client.ts");
 
 function browser(t) {
   const requests = [];
@@ -40,7 +49,7 @@ function browser(t) {
   return { window, requests, XHR };
 }
 
-test("browser failures survive as OTLP records without request secrets", async (t) => {
+await test("browser failures survive as OTLP records without request secrets", async (t) => {
   const { window, requests, XHR } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
   t.after(() => {
@@ -75,7 +84,7 @@ test("browser failures survive as OTLP records without request secrets", async (
   assert.ok(exports.every((request) => !request.options.body.includes("private")));
 });
 
-test("failed exports are retried without recursively logging the collector", async (t) => {
+await test("failed exports are retried without recursively logging the collector", async (t) => {
   const { window, requests } = browser(t);
   const original = window.fetch;
   let fail = true;
@@ -99,7 +108,7 @@ test("failed exports are retried without recursively logging the collector", asy
   assert.equal(requests[0].options.body, requests[1].options.body);
 });
 
-test("console diagnostics include their caller stack while keeping messages searchable", async (t) => {
+await test("console diagnostics include their caller stack while keeping messages searchable", async (t) => {
   const { window, requests } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
   t.after(() => {
@@ -147,7 +156,7 @@ test("console diagnostics include their caller stack while keeping messages sear
   assert.equal(exported.options.body.includes("private"), false, "caller stack URLs must discard query secrets");
 });
 
-test("Unicode and control-heavy records stay below the keepalive limit across batches", async (t) => {
+await test("Unicode and control-heavy records stay below the keepalive limit across batches", async (t) => {
   const { window, requests } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
   t.after(() => {
@@ -190,7 +199,7 @@ test("Unicode and control-heavy records stay below the keepalive limit across ba
   assert.ok(stacks.every((stack) => stack.includes("𐐀") && stack.length < 8000));
 });
 
-test("XHR aborts are ignored while status-zero network failures are recorded", async (t) => {
+await test("XHR aborts are ignored while status-zero network failures are recorded", async (t) => {
   const { window, requests, XHR } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
   t.after(() => {
@@ -231,7 +240,7 @@ test("XHR aborts are ignored while status-zero network failures are recorded", a
   assert.equal(exported.options.body.includes("private"), false);
 });
 
-test("logging ignores other origins and restores the browser hooks", async (t) => {
+await test("logging ignores other origins and restores the browser hooks", async (t) => {
   const { window, requests, XHR } = browser(t);
   const originalFetch = window.fetch;
   // oxlint-disable-next-line unbound-method -- Compare method identity without invoking it.
@@ -255,13 +264,11 @@ test("logging ignores other origins and restores the browser hooks", async (t) =
   delete globalThis.XMLHttpRequest;
 });
 
-test("final Query and mutation failures export code locations without private error data", async (t) => {
+await test("final Query and mutation failures export code locations without private error data", async (t) => {
   const { window, requests } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
-  const client = new QueryClient({
-    queryCache: new QueryCache({ onError: (error) => reportLocalQueryError(error, "query") }),
-    mutationCache: new MutationCache({ onError: (error) => reportLocalQueryError(error, "mutation") }),
-  });
+  const client = createAppQueryClient({ queries: { retry: 1, refetchOnWindowFocus: false } });
+  assert.deepEqual(client.getDefaultOptions().queries, { retry: 1, refetchOnWindowFocus: false });
   t.after(() => {
     stop();
     client.clear();
@@ -310,7 +317,7 @@ test("final Query and mutation failures export code locations without private er
   assert.equal(exported.options.body.includes("private-"), false);
 });
 
-test("local Query diagnostics ignore cancellation, already reported HTTP failures, and disposal", async (t) => {
+await test("local Query diagnostics ignore cancellation, already reported HTTP failures, and disposal", async (t) => {
   const { window, requests } = browser(t);
   const stop = installLocalLogging("plane-web-browser");
   t.after(() => {

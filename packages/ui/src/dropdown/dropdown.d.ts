@@ -60,6 +60,7 @@ export interface ISingleSelectDropdown extends IDropdown {
 }
 
 export interface IDropdownButton {
+  value: string | string[];
   isOpen: boolean;
   buttonContent?: (isOpen: boolean, value: string | string[] | undefined) => React.ReactNode;
   buttonClassName?: string;
@@ -67,14 +68,6 @@ export interface IDropdownButton {
   handleOnClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   setReferenceElement: (element: HTMLButtonElement | null) => void;
   disabled?: boolean;
-}
-
-export interface IMultiSelectDropdownButton extends IDropdownButton {
-  value: string[];
-}
-
-export interface ISingleSelectDropdownButton extends IDropdownButton {
-  value: string;
 }
 
 export interface IDropdownOptions {
@@ -97,12 +90,4 @@ export interface IDropdownOptions {
   options: TDropdownOption[] | undefined;
   loader?: React.ReactNode;
   isMobile?: boolean;
-}
-
-export interface IMultiSelectDropdownOptions extends IDropdownOptions {
-  value: string[];
-}
-
-export interface ISingleSelectDropdownOptions extends IDropdownOptions {
-  value: string;
 }

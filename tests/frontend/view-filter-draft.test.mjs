@@ -6,7 +6,7 @@ registerWebModuleHooks();
 const { createFilterDraft, filterDraftExpression } =
   await import("../../apps/web/core/components/views/filter-draft.ts");
 
-test("filter drafts preserve nested logic, ordering, duplicate conditions and literal wire values", () => {
+await test("filter drafts preserve nested logic, ordering, duplicate conditions and literal wire values", () => {
   const expression = {
     and: [
       { priority__in: "high,urgent" },
@@ -20,7 +20,7 @@ test("filter drafts preserve nested logic, ordering, duplicate conditions and li
   assert.deepEqual(filterDraftExpression(createFilterDraft(expression)), expression);
 });
 
-test("filter drafts retain empty filters and empty values", () => {
+await test("filter drafts retain empty filters and empty values", () => {
   assert.deepEqual(filterDraftExpression(createFilterDraft({})), {});
   assert.deepEqual(filterDraftExpression(createFilterDraft({ label_id__in: [] })), { label_id__in: [] });
   assert.deepEqual(filterDraftExpression(createFilterDraft({ customproperty_text__exact: "" })), {
@@ -28,16 +28,16 @@ test("filter drafts retain empty filters and empty values", () => {
   });
 });
 
-test("filter drafts preserve all five API node levels", () => {
+await test("filter drafts preserve all five API node levels", () => {
   const expression = { and: [{ not: { or: [{ and: [{ priority__exact: "high" }] }] } }] };
   assert.deepEqual(filterDraftExpression(createFilterDraft(expression)), expression);
 });
 
-test("invalid filter references cannot silently drop a condition", () => {
+await test("invalid filter references cannot silently drop a condition", () => {
   assert.throws(() => filterDraftExpression([{ kind: "not", child: 0 }]), /missing child/);
 });
 
-test("malformed sibling predicates survive conversion for the editor's explicit repair flow", () => {
+await test("malformed sibling predicates survive conversion for the editor's explicit repair flow", () => {
   const expression = {
     and: [{ priority__exact: "high", not: { unknown__exact: "nested" } }],
     or: [{ label_id__in: ["label"] }],

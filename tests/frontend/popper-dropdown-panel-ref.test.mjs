@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
 import { React, act } from "./helpers/react.mjs";
 import { createModuleStub } from "./helpers/module-stubs.mjs";
+import { clickWithPointer } from "./helpers/pointer.mjs";
 import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 
 registerWebTestModules(
@@ -22,14 +23,17 @@ registerWebTestModules(
   }
 );
 
-async function openAndAssertPopperPanel(t, Component, value) {
+async function openAndAssertPopperPanel(t, Component, value, selectedValue) {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
+  const changes = [];
 
   await environment.render(
     React.createElement(Component, {
       value,
-      onChange() {},
+      onChange(nextValue) {
+        changes.push(nextValue);
+      },
       options: [{ value: "one", data: { one: "one" } }],
       keyExtractor: (option) => option.value,
       disableSearch: true,
@@ -57,19 +61,26 @@ async function openAndAssertPopperPanel(t, Component, value) {
   assert.match(panel.getAttribute("data-popper-placement") ?? "", /^(top|bottom)-start$/);
   assert.equal(panel.style.position, "absolute", "Popper positions the public options element");
   assert.notEqual(panel.style.transform, "", "Popper applies coordinates to the public options element");
+
+  if (selectedValue !== undefined) {
+    const option = panel.querySelector('[role="option"]');
+    assert.ok(option);
+    await clickWithPointer(option);
+    assert.deepEqual(changes, [selectedValue]);
+  }
 }
 
-test("single-select options element receives the real Popper ref and positioning", async (t) => {
+await test("single-select options element receives the real Popper ref and positioning", async (t) => {
   const { Dropdown } = await import("../../packages/ui/src/dropdown/single-select.tsx");
-  await openAndAssertPopperPanel(t, Dropdown, "one");
+  await openAndAssertPopperPanel(t, Dropdown, "one", "one");
 });
 
-test("multi-select options element receives the real Popper ref and positioning", async (t) => {
+await test("multi-select options element receives the real Popper ref and positioning", async (t) => {
   const { MultiSelectDropdown } = await import("../../packages/ui/src/dropdown/multi-select.tsx");
-  await openAndAssertPopperPanel(t, MultiSelectDropdown, ["one"]);
+  await openAndAssertPopperPanel(t, MultiSelectDropdown, [], ["one"]);
 });
 
-test("custom select options element receives the real Popper ref and positioning", async (t) => {
+await test("custom select options element receives the real Popper ref and positioning", async (t) => {
   const { CustomSelect } = await import("../../packages/ui/src/dropdowns/custom-select.tsx");
   await openAndAssertPopperPanel(
     t,

@@ -8,9 +8,9 @@ import { Combobox } from "@headlessui/react";
 import React, { Fragment } from "react";
 // helper
 import { cn } from "../../utils";
-import type { IMultiSelectDropdownButton, ISingleSelectDropdownButton } from "../dropdown";
+import type { IDropdownButton } from "../dropdown";
 
-export function DropdownButton(props: IMultiSelectDropdownButton | ISingleSelectDropdownButton) {
+export function DropdownButton(props: IDropdownButton) {
   const {
     isOpen,
     buttonContent,
