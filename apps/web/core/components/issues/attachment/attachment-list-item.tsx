@@ -1,55 +1,49 @@
+import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import { useTranslation } from "@plane/i18n";
 import { TrashIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { TIssueServiceType } from "@plane/types";
-import { EIssueServiceType } from "@plane/types";
+import type { TIssueAttachment } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
-import { convertBytesToSize, getFileExtension, getFileName, getFileURL, renderFormattedDate } from "@plane/utils";
+import { convertBytesToSize, getFileExtension, getFileName } from "@plane/utils/attachment";
+import { getFileURL } from "@plane/utils/file";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // components
 //
 import { ButtonAvatars } from "@/components/dropdowns/member/avatar";
 import { getFileIcon } from "@/components/icons";
 // helpers
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 type TIssueAttachmentsListItem = {
-  attachmentId: string;
   disabled?: boolean;
-  issueServiceType?: TIssueServiceType;
+  attachment: TIssueAttachment;
+  onDelete: (attachmentId: string) => void;
 };
 
-export const IssueAttachmentsListItem = observer(function IssueAttachmentsListItem(props: TIssueAttachmentsListItem) {
+export function IssueAttachmentsListItem(props: TIssueAttachmentsListItem) {
   const { t } = useTranslation();
   // props
-  const { attachmentId, disabled, issueServiceType = EIssueServiceType.ISSUES } = props;
+  const { attachment, disabled, onDelete } = props;
   // store hooks
-  const { getUserDetails } = useMember();
-  const {
-    attachment: { getAttachmentById },
-    toggleDeleteAttachmentModal,
-  } = useIssueDetail(issueServiceType);
+  const { workspaceSlug } = useParams({ strict: false });
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const getUserDetails = (userId: string) => membersById?.get(userId)?.member;
   // derived values
-  const attachment = attachmentId ? getAttachmentById(attachmentId) : undefined;
-  const fileName = getFileName(attachment?.attributes.name ?? "");
-  const fileExtension = getFileExtension(attachment?.attributes.name ?? "");
+  const fileName = getFileName(attachment.attributes.name ?? "");
+  const fileExtension = getFileExtension(attachment.attributes.name ?? "");
   const fileIcon = getFileIcon(fileExtension, 18);
-  const fileURL = getFileURL(attachment?.asset_url ?? "");
+  const fileURL = getFileURL(attachment.asset_url ?? "");
   // hooks
   const { isMobile } = usePlatformOS();
-
-  if (!attachment) return <></>;
 
   return (
     <>
@@ -78,7 +72,7 @@ export const IssueAttachmentsListItem = observer(function IssueAttachmentsListIt
               tooltipContent={`${getUserDetails(attachment?.created_by)?.display_name ?? ""} uploaded on ${renderFormattedDate(attachment.updated_at)}`}
             >
               <div className="flex items-center justify-center">
-                <ButtonAvatars showTooltip userIds={attachment?.created_by} />
+                <ButtonAvatars showTooltip userIds={attachment?.created_by} workspaceSlug={workspaceSlug} />
               </div>
             </Tooltip>
           )}
@@ -86,7 +80,7 @@ export const IssueAttachmentsListItem = observer(function IssueAttachmentsListIt
           <CustomMenu ellipsis closeOnSelect placement="bottom-end" disabled={disabled}>
             <CustomMenu.MenuItem
               onClick={() => {
-                toggleDeleteAttachmentModal(attachmentId);
+                onDelete(attachment.id);
               }}
             >
               <div className="flex items-center gap-2">
@@ -99,4 +93,4 @@ export const IssueAttachmentsListItem = observer(function IssueAttachmentsListIt
       </div>
     </>
   );
-});
+}

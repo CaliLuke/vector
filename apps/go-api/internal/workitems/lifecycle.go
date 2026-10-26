@@ -15,16 +15,11 @@ import (
 )
 
 func (r *Repository) lifecycle(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	return r.projectRequest(ctx, q, body, contentType, (*Repository).authorizeLifecycle, (*Repository).lifecycleTransaction)
+}
+
+func (r *Repository) lifecycleTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	op := q.Operation
-	roles := []int{15, 20}
-	if strings.HasSuffix(op, "_bulk_delete_issues") {
-		roles = []int{20}
-	} else if strings.HasSuffix(op, "_deleted_issues") {
-		roles = []int{5, 15, 20}
-	}
-	if err := r.allowProject(ctx, q, roles, false); err != nil {
-		return Result{}, err
-	}
 	if strings.HasSuffix(op, "_deleted_issues") {
 		return r.deletedIssues(ctx, q)
 	}
@@ -35,7 +30,7 @@ func (r *Repository) lifecycle(ctx context.Context, q Request, body io.Reader, c
 		return r.bulkLifecycle(ctx, q, body, contentType)
 	}
 	if q.Method == "GET" {
-		row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+`||jsonb_build_object('is_subscribed',
+		row, err := r.row(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+`||jsonb_build_object('parent_id',`+djangoapi.VisibleParentSQL("i", "$4::uuid")+`,'is_subscribed',
  EXISTS(SELECT 1 FROM issue_subscribers s WHERE s.issue_id=i.id AND s.workspace_id=i.workspace_id AND s.project_id=i.project_id AND s.subscriber_id=$4 AND s.deleted_at IS NULL))
  FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.id=$1 AND i.project_id=$2 AND w.slug=$3
  AND i.deleted_at IS NULL AND i.archived_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM issue_types t WHERE t.id=i.type_id AND t.is_epic)`, q.IssueID, q.ProjectID, q.Slug, q.ActorID)
@@ -343,4 +338,18 @@ func validateBulkDates(start, target any) (bool, error) {
 		return false, errors.New("invalid comparison date")
 	}
 	return !parsed[0].After(parsed[1]), nil
+}
+
+func (r *Repository) authorizeLifecycle(ctx context.Context, q Request) error {
+	op := q.Operation
+	roles := []int{15, 20}
+	if strings.HasSuffix(op, "_bulk_delete_issues") {
+		roles = []int{20}
+	} else if strings.HasSuffix(op, "_deleted_issues") {
+		roles = []int{5, 15, 20}
+	}
+	if err := r.allowProject(ctx, q, roles, false); err != nil {
+		return err
+	}
+	return nil
 }

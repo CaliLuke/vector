@@ -4,18 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { observer } from "mobx-react";
-// plane imports
-import type { TDocumentInfo } from "@plane/editor";
-import { useTranslation } from "@plane/i18n";
-import { getReadTimeFromWordsCount } from "@plane/utils";
-// store
-import type { TPageInstance } from "@/store/pages/base-page";
+import { usePageRecord } from "@/components/pages/page-record-context";
 
-type Props = {
-  page: TPageInstance;
-};
+import { useCallback, useMemo, useSyncExternalStore } from "react";
+// plane imports
+import type { EditorRefApi, TDocumentInfo } from "@plane/editor";
+import { useTranslation } from "@plane/i18n";
+import { getReadTimeFromWordsCount } from "@plane/utils/datetime";
+// store
 
 const DEFAULT_DOCUMENT_INFO: TDocumentInfo = {
   words: 0,
@@ -23,27 +19,37 @@ const DEFAULT_DOCUMENT_INFO: TDocumentInfo = {
   paragraphs: 0,
 };
 
-export const PageNavigationPaneInfoTabDocumentInfo = observer(function PageNavigationPaneInfoTabDocumentInfo(
-  props: Props
-) {
-  const { page } = props;
-  // states
-  const [documentInfo, setDocumentInfo] = useState<TDocumentInfo>(DEFAULT_DOCUMENT_INFO);
-  // derived values
-  const {
-    editor: { editorRef },
-  } = page;
-  // translation
+function documentInfoSubscription(editor: EditorRefApi | null) {
+  let snapshot = editor?.getDocumentInfo() ?? DEFAULT_DOCUMENT_INFO;
+  return {
+    getSnapshot: () => snapshot,
+    subscribe: (notify: () => void) => {
+      const update = (next: TDocumentInfo) => {
+        if (
+          next.words === snapshot.words &&
+          next.characters === snapshot.characters &&
+          next.paragraphs === snapshot.paragraphs
+        )
+          return;
+        snapshot = next;
+        notify();
+      };
+      const unsubscribe = editor?.onDocumentInfoChange(update);
+      update(editor?.getDocumentInfo() ?? DEFAULT_DOCUMENT_INFO);
+      return () => unsubscribe?.();
+    },
+  };
+}
+
+export function PageNavigationPaneInfoTabDocumentInfo() {
+  const { editorRef } = usePageRecord();
   const { t } = useTranslation();
-  // subscribe to asset changes
-  useEffect(() => {
-    const unsubscribe = editorRef?.onDocumentInfoChange(setDocumentInfo);
-    // for initial render of this component to get the editor assets
-    setDocumentInfo(editorRef?.getDocumentInfo() ?? DEFAULT_DOCUMENT_INFO);
-    return () => {
-      unsubscribe?.();
-    };
-  }, [editorRef]);
+  const subscription = useMemo(() => documentInfoSubscription(editorRef), [editorRef]);
+  const documentInfo = useSyncExternalStore(
+    subscription.subscribe,
+    subscription.getSnapshot,
+    () => DEFAULT_DOCUMENT_INFO
+  );
 
   const secondsToReadableTime = useCallback(() => {
     const wordsCount = documentInfo.words;
@@ -87,4 +93,4 @@ export const PageNavigationPaneInfoTabDocumentInfo = observer(function PageNavig
       ))}
     </div>
   );
-});
+}

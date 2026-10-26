@@ -6,45 +6,37 @@
 
 import { useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
-import { ProjectIcon } from "@plane/propel/icons";
-import type { ICustomSearchSelectOption } from "@plane/types";
 import { CustomSearchSelect } from "@plane/ui";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
 
 // local imports
-import { SwitcherLabel } from "../common/switcher-label";
 import { ProjectHeaderButton } from "./project-header-button";
 import { getTabUrl } from "./tab-navigation-utils";
 import { useTabPreferences } from "./use-tab-preferences";
 import { useNavigationItems } from "./use-navigation-items";
+import { getProjectSwitcherOptions, useProjectSwitcherData } from "./project-switcher-options";
 
 type TProjectHeaderProps = {
   workspaceSlug: string;
   projectId: string;
 };
 
-export const ProjectHeader = observer(function ProjectHeader(props: TProjectHeaderProps) {
+export const ProjectHeader = function ProjectHeader(props: TProjectHeaderProps) {
   const { workspaceSlug, projectId } = props;
   // router
   const router = useRouter();
   // store hooks
-  const { joinedProjectIds, getPartialProjectById } = useProject();
-  const { allowPermissions } = useUserPermissions();
+  const {
+    projectRows,
+    joinedProjectIds,
+    currentProject: currentProjectDetails,
+  } = useProjectSwitcherData(workspaceSlug, projectId);
 
   // Get current project details
-  const currentProjectDetails = getPartialProjectById(projectId);
-
   // Get available navigation items for this project
-  const navigationItems = useNavigationItems({
-    workspaceSlug: workspaceSlug,
-    projectId,
-    project: currentProjectDetails,
-    allowPermissions,
-  });
+  const navigationItems = useNavigationItems({ workspaceSlug, projectId, project: currentProjectDetails });
 
   // Get preferences from hook
   const { tabPreferences } = useTabPreferences(workspaceSlug, projectId);
@@ -62,28 +54,9 @@ export const ProjectHeader = observer(function ProjectHeader(props: TProjectHead
   );
 
   // Memoize switcher options to prevent recalculation on every render
-  const switcherOptions = useMemo<ICustomSearchSelectOption[]>(
-    () =>
-      joinedProjectIds
-        .map((id): ICustomSearchSelectOption | null => {
-          const project = getPartialProjectById(id);
-          if (!project) return null;
-
-          return {
-            value: id,
-            query: project.name,
-            content: (
-              <SwitcherLabel
-                name={project.name}
-                logo_props={project.logo_props}
-                LabelIcon={ProjectIcon}
-                type="material"
-              />
-            ),
-          };
-        })
-        .filter((option): option is ICustomSearchSelectOption => option !== null),
-    [joinedProjectIds, getPartialProjectById]
+  const switcherOptions = useMemo(
+    () => getProjectSwitcherOptions(joinedProjectIds, projectRows),
+    [joinedProjectIds, projectRows]
   );
 
   // Memoize onChange handler
@@ -109,4 +82,4 @@ export const ProjectHeader = observer(function ProjectHeader(props: TProjectHead
       customButtonClassName="group flex items-center gap-0.5 rounded-sm hover:bg-surface-2 outline-none cursor-pointer h-full"
     />
   );
-});
+};

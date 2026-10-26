@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { after, afterEach, test } from "node:test";
-import { act, createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { act, React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -99,6 +100,32 @@ test("last search breadcrumb opens its menu when the title is clicked", async ()
   await act(async () => environment.container.querySelector("button")?.click());
   assert.ok(document.querySelector("input[placeholder='Search']"), "clicking the last item should open its menu");
 });
+
+for (const isLast of [false, true]) {
+  for (const shouldTruncate of [false, true]) {
+    void test(`search breadcrumb shares label layout (current=${isLast}, truncated=${shouldTruncate})`, async () => {
+      await environment.render(
+        React.createElement(BreadcrumbNavigationSearchDropdown, {
+          title: "Project alpha",
+          icon: React.createElement("svg", { "data-testid": "breadcrumb-icon" }),
+          selectedItem: "alpha",
+          navigationItems: [],
+          isLast,
+          shouldTruncate,
+        })
+      );
+
+      const icon = environment.container.querySelector('[data-testid="breadcrumb-icon"]');
+      const iconAndTitle = icon.parentElement.parentElement;
+      assert.equal(iconAndTitle.textContent, "Project alpha");
+      assert.ok(iconAndTitle.classList.contains("items-center"), "the icon and title must share a centered row");
+      const labelFrame = iconAndTitle.closest(".text-13");
+      assert.ok(labelFrame, "both breadcrumb variants must use the shared breadcrumb text sizing");
+      assert.equal(labelFrame.closest("button")?.contains(labelFrame), true);
+      assert.notEqual(labelFrame.tagName, "BUTTON", "label typography must not depend on the trigger variant");
+    });
+  }
+}
 
 test("navigation breadcrumb separates label navigation from menu selection", async () => {
   let navigated = 0;

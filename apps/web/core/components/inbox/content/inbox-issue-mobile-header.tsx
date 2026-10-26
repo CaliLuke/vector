@@ -4,102 +4,38 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import { Clock, FileStack, MoreHorizontal, PanelLeft, MoveRight } from "lucide-react";
-import { IconButton, getIconButtonStyling } from "@plane/propel/icon-button";
-import {
-  LinkIcon,
-  NewTabIcon,
-  TrashIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  CheckCircleFilledIcon,
-  CloseCircleFilledIcon,
-} from "@plane/propel/icons";
-import type { TNameDescriptionLoader } from "@plane/types";
-
-import { Header, CustomMenu, EHeaderVariant } from "@plane/ui";
-import { cn, findHowManyDaysLeft, generateWorkItemLink } from "@plane/utils";
-// components
+import { PanelLeft, MoveRight } from "lucide-react";
+import { IconButton } from "@plane/propel/icon-button";
+import { ChevronDownIcon, ChevronUpIcon } from "@plane/propel/icons";
+import type { TNameDescriptionLoader, TInboxIssue } from "@plane/types";
+import { Header, EHeaderVariant } from "@plane/ui";
+import { cn } from "@plane/utils/common";
 import { NameDescriptionUpdateStatus } from "@/components/issues/issue-update-status";
-// hooks
-import { useProject } from "@/hooks/store/use-project";
-
-// store types
-import type { IInboxIssueStore } from "@/store/inbox/inbox-issue.store";
-
-// local imports
 import { InboxIssueStatus } from "../inbox-issue-status";
+import { IntakeMobileActionMenu } from "./intake-action-controls";
+import type { IntakeActions } from "./intake-action-controls";
 
 type Props = {
-  workspaceSlug: string;
-  inboxIssue: IInboxIssueStore | undefined;
+  inboxIssue: TInboxIssue;
+  actions: IntakeActions;
   isSubmitting: TNameDescriptionLoader;
   handleInboxIssueNavigation: (direction: "next" | "prev") => void;
-  canMarkAsAccepted: boolean;
-  canMarkAsDeclined: boolean;
-  isAcceptedOrDeclined: boolean | undefined;
-  canMarkAsDuplicate: boolean;
-  canDelete: boolean;
-  setAcceptIssueModal: (value: boolean) => void;
-  setDeclineIssueModal: (value: boolean) => void;
-  setDeleteIssueModal: (value: boolean) => void;
-  handleIssueSnoozeAction: () => Promise<void>;
-  setSelectDuplicateIssue: (value: boolean) => void;
-  handleCopyIssueLink: () => void;
   isMobileSidebar: boolean;
   setIsMobileSidebar: (value: boolean) => void;
   isNotificationEmbed: boolean;
   embedRemoveCurrentNotification?: () => void;
-  isProjectAdmin: boolean;
-  handleActionWithPermission: (isAdmin: boolean, action: () => void, errorMessage: string) => void;
 };
 
-export const InboxIssueActionsMobileHeader = observer(function InboxIssueActionsMobileHeader(props: Props) {
-  const {
-    inboxIssue,
-    isSubmitting,
-    handleInboxIssueNavigation,
-    canMarkAsAccepted,
-    canMarkAsDeclined,
-    canDelete,
-    canMarkAsDuplicate,
-    isAcceptedOrDeclined,
-    workspaceSlug,
-    setAcceptIssueModal,
-    setDeclineIssueModal,
-    setDeleteIssueModal,
-    handleIssueSnoozeAction,
-    setSelectDuplicateIssue,
-    handleCopyIssueLink,
-    isMobileSidebar,
-    setIsMobileSidebar,
-    isNotificationEmbed,
-    embedRemoveCurrentNotification,
-    isProjectAdmin,
-    handleActionWithPermission,
-  } = props;
-  const router = useRouter();
-  const { getProjectIdentifierById } = useProject();
-
-  const issue = inboxIssue?.issue;
-  const currentInboxIssueId = issue?.id;
-  // days left for snooze
-  const numberOfDaysLeft = findHowManyDaysLeft(inboxIssue?.snoozed_till);
-
-  if (!issue || !inboxIssue) return null;
-
-  const projectIdentifier = getProjectIdentifierById(issue?.project_id);
-
-  const workItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug?.toString(),
-    projectId: issue?.project_id,
-    issueId: currentInboxIssueId,
-    projectIdentifier,
-    sequenceId: issue?.sequence_id,
-  });
-
+export function InboxIssueActionsMobileHeader({
+  inboxIssue,
+  actions,
+  isSubmitting,
+  handleInboxIssueNavigation,
+  isMobileSidebar,
+  setIsMobileSidebar,
+  isNotificationEmbed,
+  embedRemoveCurrentNotification,
+}: Props) {
   return (
     <Header variant={EHeaderVariant.SECONDARY} className="justify-start">
       {isNotificationEmbed && (
@@ -135,102 +71,9 @@ export const InboxIssueActionsMobileHeader = observer(function InboxIssueActions
           </div>
         </div>
         <div className="ml-auto">
-          <CustomMenu
-            customButton={<MoreHorizontal className="size-4" />}
-            customButtonClassName={getIconButtonStyling("secondary", "lg")}
-            placement="bottom-start"
-          >
-            {isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem onClick={handleCopyIssueLink}>
-                <div className="flex items-center gap-2">
-                  <LinkIcon width={14} height={14} strokeWidth={2} />
-                  Copy work item link
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem onClick={() => void router.navigate({ href: workItemLink })}>
-                <div className="flex items-center gap-2">
-                  <NewTabIcon width={14} height={14} strokeWidth={2} />
-                  Open work item
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {canMarkAsAccepted && !isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem
-                onClick={() =>
-                  handleActionWithPermission(
-                    isProjectAdmin,
-                    handleIssueSnoozeAction,
-                    "Only project admins can snooze/Un-snooze work items"
-                  )
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <Clock size={14} strokeWidth={2} />
-                  {inboxIssue?.snoozed_till && numberOfDaysLeft && numberOfDaysLeft > 0 ? "Un-snooze" : "Snooze"}
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {canMarkAsDuplicate && !isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem
-                onClick={() =>
-                  handleActionWithPermission(
-                    isProjectAdmin,
-                    () => setSelectDuplicateIssue(true),
-                    "Only project admins can mark work items as duplicate"
-                  )
-                }
-              >
-                <div className="flex items-center gap-2">
-                  <FileStack size={14} strokeWidth={2} />
-                  Mark as duplicate
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {canMarkAsAccepted && (
-              <CustomMenu.MenuItem
-                onClick={() =>
-                  handleActionWithPermission(
-                    isProjectAdmin,
-                    () => setAcceptIssueModal(true),
-                    "Only project admins can accept work items"
-                  )
-                }
-              >
-                <div className="flex items-center gap-2 text-success-secondary">
-                  <CheckCircleFilledIcon width={14} height={14} />
-                  Accept
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {canMarkAsDeclined && (
-              <CustomMenu.MenuItem
-                onClick={() =>
-                  handleActionWithPermission(
-                    isProjectAdmin,
-                    () => setDeclineIssueModal(true),
-                    "Only project admins can deny work items"
-                  )
-                }
-              >
-                <div className="flex items-center gap-2 text-danger-secondary">
-                  <CloseCircleFilledIcon width={14} height={14} />
-                  Decline
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-            {canDelete && !isAcceptedOrDeclined && (
-              <CustomMenu.MenuItem onClick={() => setDeleteIssueModal(true)}>
-                <div className="flex items-center gap-2 text-danger-primary">
-                  <TrashIcon height={14} width={14} strokeWidth={2} />
-                  Delete
-                </div>
-              </CustomMenu.MenuItem>
-            )}
-          </CustomMenu>
+          <IntakeMobileActionMenu actions={actions} />
         </div>
       </div>
     </Header>
   );
-});
+}

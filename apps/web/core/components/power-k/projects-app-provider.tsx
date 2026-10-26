@@ -6,12 +6,12 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
 
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { usePowerK } from "@/hooks/store/use-power-k";
-import { useUser } from "@/hooks/store/user";
+import { usePowerK } from "@/hooks/use-power-k";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 
 // plane web imports
 import { ProjectLevelModals } from "@/components/modals/project-level";
@@ -27,7 +27,7 @@ import { ProjectsAppPowerKModalWrapper } from "./ui/modal/wrapper";
 /**
  * Projects App PowerK provider
  */
-export const ProjectsAppPowerKProvider = observer(function ProjectsAppPowerKProvider() {
+export const ProjectsAppPowerKProvider = function ProjectsAppPowerKProvider() {
   // router
   const router = useRouter();
   const params = useParams({ strict: false });
@@ -37,14 +37,19 @@ export const ProjectsAppPowerKProvider = observer(function ProjectsAppPowerKProv
   const [shouldShowContextBasedActions, setShouldShowContextBasedActions] = useState(true);
   // store hooks
   const { activeContext, isPowerKModalOpen, togglePowerKModal, setActivePage } = usePowerK();
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   // derived values
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail();
-  // derived values
-  const workItemId = workItemIdentifier ? getIssueIdByIdentifier(workItemIdentifier.toString()) : undefined;
-  const workItemDetails = workItemId ? getIssueById(workItemId) : undefined;
+  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug?.toString());
+  const [projectIdentifier, sequenceId] = (workItemIdentifier?.toString() ?? "").split("-");
+  const identifierProjectId = projectCatalogue.projects?.find(
+    (project) => project.identifier === projectIdentifier
+  )?.id;
+  const workItemDetails = useWorkItemByIdentifier(
+    workspaceSlug?.toString(),
+    projectIdentifier,
+    sequenceId,
+    identifierProjectId
+  ).issue;
   const projectId = routerProjectId ?? workItemDetails?.project_id ?? undefined;
   const commands = useProjectsAppPowerKCommands();
   // Build command context from props and store
@@ -93,4 +98,4 @@ export const ProjectsAppPowerKProvider = observer(function ProjectsAppPowerKProv
       />
     </>
   );
-});
+};

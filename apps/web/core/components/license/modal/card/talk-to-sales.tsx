@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // types
 // plane imports
 import { getButtonStyling } from "@plane/propel/button";
 import type { EProductSubscriptionEnum, IPaymentProduct, TSubscriptionPrice } from "@plane/types";
 import { Loader } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // local imports
 import { BasePaidPlanCard } from "./base-paid-plan-card";
 
@@ -29,7 +28,7 @@ export type TalkToSalesCardProps = {
   renderTrialButton?: (props: { productId: string | undefined; priceId: string | undefined }) => React.ReactNode;
 };
 
-export const TalkToSalesCard = observer(function TalkToSalesCard(props: TalkToSalesCardProps) {
+export const TalkToSalesCard = function TalkToSalesCard(props: TalkToSalesCardProps) {
   const {
     planVariant,
     href,
@@ -101,4 +100,4 @@ export const TalkToSalesCard = observer(function TalkToSalesCard(props: TalkToSa
       renderActionButton={renderActionButton}
     />
   );
-});
+};

@@ -1,6 +1,10 @@
 package djangoapi
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+)
 
 func IssueOrderSQL(raw string) (string, string) {
 	fallback := "created_at"
@@ -21,7 +25,7 @@ func IssueOrderSQL(raw string) (string, string) {
 	case "assignees__first_name":
 		joins = " LEFT JOIN issue_assignees ordering_assignee ON ordering_assignee.issue_id=i.id LEFT JOIN users ordering_user ON ordering_user.id=ordering_assignee.assignee_id"
 	case "labels__name":
-		joins = " LEFT JOIN issue_labels ordering_link ON ordering_link.issue_id=i.id LEFT JOIN labels ordering_label ON ordering_label.id=ordering_link.label_id"
+		joins = " LEFT JOIN issue_labels ordering_link ON " + issuequery.LiveIssueLabelPredicate("i", "ordering_link") + " LEFT JOIN labels ordering_label ON ordering_label.id=ordering_link.label_id"
 	case "issue_module__module__name":
 		joins = " LEFT JOIN module_issues ordering_link ON ordering_link.issue_id=i.id LEFT JOIN modules ordering_module ON ordering_module.id=ordering_link.module_id"
 	}
@@ -29,5 +33,5 @@ func IssueOrderSQL(raw string) (string, string) {
 }
 
 func IssueRowSQL(alias string) string {
-	return `to_jsonb(` + alias + `)||jsonb_build_object('description_binary',replace(encode(` + alias + `.description_binary,'base64'),chr(10),''),'assignees',COALESCE((SELECT jsonb_agg(ia.assignee_id ORDER BY ia.created_at DESC) FROM issue_assignees ia WHERE ia.issue_id=` + alias + `.id AND ia.deleted_at IS NULL),'[]'::jsonb),'labels',COALESCE((SELECT jsonb_agg(il.label_id ORDER BY il.created_at DESC) FROM issue_labels il WHERE il.issue_id=` + alias + `.id AND il.deleted_at IS NULL),'[]'::jsonb))`
+	return `to_jsonb(` + alias + `)||jsonb_build_object('description_binary',replace(encode(` + alias + `.description_binary,'base64'),chr(10),''),'assignees',COALESCE((SELECT jsonb_agg(ia.assignee_id ORDER BY ia.created_at DESC) FROM issue_assignees ia WHERE ia.issue_id=` + alias + `.id AND ia.deleted_at IS NULL),'[]'::jsonb),'labels',COALESCE((SELECT jsonb_agg(il.label_id ORDER BY il.created_at DESC) FROM issue_labels il WHERE ` + issuequery.LiveIssueLabelPredicate(alias, "il") + `),'[]'::jsonb))`
 }

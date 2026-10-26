@@ -4,29 +4,26 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane imports
-import { getNumberCount } from "@plane/utils";
+import { getNumberCount } from "@plane/utils/string";
 // components
 import { CountChip } from "@/components/common/count-chip";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { emptyNotificationCounts, notificationCountOptions } from "@/queries/notifications";
 
 type TNotificationAppSidebarOption = {
   workspaceSlug: string;
 };
 
-export const NotificationAppSidebarOption = observer(function NotificationAppSidebarOption(
+export const NotificationAppSidebarOption = function NotificationAppSidebarOption(
   props: TNotificationAppSidebarOption
 ) {
   const { workspaceSlug } = props;
   // hooks
-  const { unreadNotificationsCount, getUnreadNotificationsCount } = useWorkspaceNotifications();
 
-  useSWR(
-    workspaceSlug ? "WORKSPACE_UNREAD_NOTIFICATION_COUNT" : null,
-    workspaceSlug ? () => getUnreadNotificationsCount(workspaceSlug) : null
+  const { data: unreadNotificationsCount = emptyNotificationCounts } = useQuery(
+    notificationCountOptions(workspaceSlug)
   );
 
   // derived values
@@ -42,4 +39,4 @@ export const NotificationAppSidebarOption = observer(function NotificationAppSid
       <CountChip count={`${isMentionsEnabled ? `@ ` : ``}${getNumberCount(totalNotifications)}`} />
     </div>
   );
-});
+};

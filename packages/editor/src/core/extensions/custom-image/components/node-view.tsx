@@ -23,7 +23,7 @@ export type CustomImageNodeViewProps = Omit<NodeViewProps, "extension" | "update
 };
 
 export function CustomImageNodeView(props: CustomImageNodeViewProps) {
-  const { editor, extension, node, updateAttributes } = props;
+  const { editor, node, updateAttributes, getPos } = props;
   const { src: imgNodeSrc, status } = node.attrs;
 
   const [isUploaded, setIsUploaded] = useState(!!imgNodeSrc);
@@ -35,7 +35,6 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
   const [editorContainer, setEditorContainer] = useState<HTMLDivElement | null>(null);
   const imageComponentRef = useRef<HTMLDivElement>(null);
   const hasRetriedOnMount = useRef(false);
-  const isDuplicatingRef = useRef(false);
 
   useEffect(() => {
     const closestEditorContainer = imageComponentRef.current?.closest(".editor-container");
@@ -59,63 +58,77 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
     if (!imgNodeSrc) {
       setResolvedSrc(undefined);
       setResolvedDownloadSrc(undefined);
-      return;
+      return undefined;
     }
 
     setResolvedSrc(undefined);
     setResolvedDownloadSrc(undefined);
     setFailedToLoadImage(false);
 
+    let current = true;
     const getImageSource = async () => {
       try {
-        const url = await extension.options.getImageSource?.(imgNodeSrc);
+        const url = await editor.storage.utility.fileHandler.getAssetSrc(imgNodeSrc);
+        if (!current) return;
         setResolvedSrc(url);
-        const downloadUrl = await extension.options.getImageDownloadSource?.(imgNodeSrc);
+        const downloadUrl = await editor.storage.utility.fileHandler.getAssetDownloadSrc(imgNodeSrc);
+        if (!current) return;
         setResolvedDownloadSrc(downloadUrl);
       } catch (error) {
+        if (!current) return;
         console.error("Error fetching image source:", error);
         setFailedToLoadImage(true);
       }
     };
     void getImageSource();
+    return () => {
+      current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imgNodeSrc, extension.options.getImageSource, extension.options.getImageDownloadSource]);
+  }, [editor, imgNodeSrc]);
 
   useEffect(() => {
+    let current = true;
+    const ownsPendingCopy = () => {
+      if (!current || editor.isDestroyed) return false;
+      const position = getPos();
+      const live = position === undefined ? undefined : editor.state.doc.nodeAt(position);
+      return (
+        live?.attrs.id === node.attrs.id &&
+        live?.attrs.src === imgNodeSrc &&
+        live?.attrs.status === ECustomImageStatus.DUPLICATING
+      );
+    };
     const handleDuplication = async () => {
-      if (status !== ECustomImageStatus.DUPLICATING || !extension.options.duplicateImage || !imgNodeSrc) {
+      if (status !== ECustomImageStatus.DUPLICATING || !imgNodeSrc) {
         return;
       }
 
-      // Prevent duplicate calls - check if already duplicating this asset
-      if (isDuplicatingRef.current) {
-        return;
-      }
-
-      isDuplicatingRef.current = true;
       try {
         hasRetriedOnMount.current = true;
 
-        const newAssetId = await extension.options.duplicateImage(imgNodeSrc);
+        const newAssetId = await editor.storage.utility.fileHandler.duplicate(imgNodeSrc);
 
         if (!newAssetId) {
           throw new Error("Duplication returned invalid asset ID");
         }
-
+        if (!ownsPendingCopy()) return;
         setFailedToLoadImage(false);
         updateAttributes({ src: newAssetId, status: ECustomImageStatus.UPLOADED });
       } catch (error: unknown) {
+        if (!ownsPendingCopy()) return;
         console.error("Failed to duplicate image:", error);
         // Update status to failed
         updateAttributes({ status: ECustomImageStatus.DUPLICATION_FAILED });
-      } finally {
-        isDuplicatingRef.current = false;
       }
     };
 
     void handleDuplication();
+    return () => {
+      current = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, imgNodeSrc, extension.options.duplicateImage, updateAttributes]);
+  }, [editor, status, imgNodeSrc, node.attrs.id, getPos, updateAttributes]);
 
   useEffect(() => {
     if (hasImageDuplicationFailed(status) && !hasRetriedOnMount.current && imgNodeSrc) {

@@ -85,7 +85,7 @@ func (service *LifecycleService) listLegacyIssueAttachments(ctx context.Context,
 }
 
 func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context, slug, rawProjectID, rawIssueID string, uploadedOnly bool) ([]*api.PlaneAppSerializersIssueIssueattachmentserializerResponse, error) {
-	_, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
+	userID, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (service *LifecycleService) listScopedIssueAttachments(ctx context.Context,
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, uploadedOnly)
+	rows, err := service.assets.repository.VisibleIssueAttachments(ctx, userID, workspaceID, projectID, issueID, uploadedOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +124,16 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 		return nil, err
 	}
 	workspaceID = activeWorkspaceID
+	found, allowed, err := service.assets.repository.IssueAccess(ctx, userID, workspaceID, projectID, issueID)
+	if err != nil {
+		return nil, err
+	}
+	if !found {
+		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found."}}
+	}
+	if !allowed {
+		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have the required permissions."}}
+	}
 	if file.Name == "" {
 		return nil, &djangoapi.HTTPError{Status: http.StatusBadRequest, Body: map[string]any{"asset": []string{"No file was submitted."}}}
 	}
@@ -148,7 +158,9 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 		return nil, fmt.Errorf("store legacy issue attachment: %w", err)
 	}
 	assetID := uuid.New()
-	if err := service.assets.repository.CreateLegacyIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, fields, key); err != nil {
+	assetURL := issueAttachmentURL(slug, projectID, issueID, assetID)
+	activity := map[string]any{"type": "attachment.activity.created", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
+	if err := service.assets.repository.CreateLegacyIssueAttachment(ctx, assetID, userID, workspaceID, projectID, issueID, fields, key, assetURL, activity); err != nil {
 		return nil, err
 	}
 	rows, err := service.assets.repository.IssueAttachments(ctx, workspaceID, projectID, issueID, false)
@@ -166,13 +178,6 @@ func (service *LifecycleService) createLegacyIssueAttachment(ctx context.Context
 		return nil, fmt.Errorf("legacy issue attachment %s missing after creation", assetID)
 	}
 	serialized = decorateIssueAttachmentRows([]map[string]any{serialized}, slug, false)[0]
-	current, err := json.Marshal(pythonJSONNumbers(serialized))
-	if err != nil {
-		return nil, err
-	}
-	if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{"type": "attachment.activity.created", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": string(current), "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}); err != nil {
-		return nil, fmt.Errorf("queue legacy issue attachment activity: %w", err)
-	}
 	return decodeAttachmentResult[api.PlaneAppSerializersIssueIssueattachmentserializerResponse](decorateIssueAttachmentRows([]map[string]any{serialized}, slug, false)[0])
 }
 
@@ -204,23 +209,12 @@ func (service *LifecycleService) deleteLegacyIssueAttachment(ctx context.Context
 	if err != nil {
 		return err
 	}
-	asset, _, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	_, _, err = service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
-	if err := service.assets.storage.Delete(ctx, asset.Asset); err != nil {
-		return fmt.Errorf("delete legacy issue attachment object: %w", err)
-	}
-	if err := service.assets.repository.DeleteLegacyIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID); err != nil {
-		return err
-	}
-	if err := service.assets.publishTask(ctx, "plane.bgtasks.deletion_task.soft_delete_related_objects", []any{"db", "fileasset", assetID.String()}, map[string]any{"using": nil}); err != nil {
-		return fmt.Errorf("queue legacy issue attachment soft deletion: %w", err)
-	}
-	if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil, "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}); err != nil {
-		return fmt.Errorf("queue legacy issue attachment deletion: %w", err)
-	}
-	return nil
+	activity := map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(), "issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil, "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
+	return service.assets.repository.DeleteLegacyIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID, activity)
 }
 
 func (service *LifecycleService) attachmentScope(ctx context.Context, slug, rawProjectID string) (uuid.UUID, uuid.UUID, error) {
@@ -264,7 +258,7 @@ func (service *LifecycleService) listIssueAttachmentsAPI(ctx context.Context, sl
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	_, _, _, found, allowed, err := service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
+	userID, workspaceID, _, found, allowed, err := service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +268,7 @@ func (service *LifecycleService) listIssueAttachmentsAPI(ctx context.Context, sl
 	if !allowed {
 		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You are not allowed to download this attachment"}}
 	}
-	rows, err := service.assets.repository.IssueAttachmentsBySlug(ctx, slug, projectID, issueID, true)
+	rows, err := service.assets.repository.VisibleIssueAttachments(ctx, userID, workspaceID, projectID, issueID, true)
 	if err != nil {
 		return nil, err
 	}
@@ -353,7 +347,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 		externalID = stringValue(request.ExternalID)
 		externalSource = stringValue(request.ExternalSource)
 		if externalID != "" && externalSource != "" {
-			id, exists, checkErr := service.assets.repository.IssueAttachmentExternal(ctx, workspaceID, projectID, issueID, externalID, externalSource)
+			id, exists, checkErr := service.assets.repository.IssueAttachmentExternal(ctx, userID, workspaceID, projectID, issueID, externalID, externalSource)
 			if checkErr != nil {
 				return nil, checkErr
 			}
@@ -369,7 +363,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 		return nil, fmt.Errorf("create issue attachment FileAsset: %w", err)
 	}
 	assetURL := issueAttachmentURL(slug, projectID, issueID, assetID)
-	created, serialized, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	created, serialized, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +382,7 @@ func (service *LifecycleService) createIssueAttachmentAPI(ctx context.Context, s
 }
 
 func (service *LifecycleService) getIssueAttachmentV1(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) (*string, error) {
-	_, workspaceID, projectID, found, allowed, err := service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
+	userID, workspaceID, projectID, found, allowed, err := service.issuePermissionV1(ctx, slug, rawProjectID, rawIssueID)
 	if err != nil {
 		return nil, err
 	}
@@ -403,7 +397,7 @@ func (service *LifecycleService) getIssueAttachmentV1(ctx context.Context, slug,
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	issueID, _ := uuid.Parse(rawIssueID)
-	asset, _, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	asset, _, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return nil, sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 	}
@@ -443,8 +437,8 @@ func (service *LifecycleService) issuePermissionV1(ctx context.Context, slug, ra
 	if err != nil {
 		return uuid.Nil, uuid.Nil, uuid.Nil, false, false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue not found"}}
 	}
-	found, member, creator, err := service.assets.repository.IssuePermission(ctx, userID, workspaceID, projectID, issueID)
-	return userID, workspaceID, projectID, found, member || creator, err
+	found, allowed, err := service.assets.repository.IssueAccess(ctx, userID, workspaceID, projectID, issueID)
+	return userID, workspaceID, projectID, found, allowed, err
 }
 
 func (service *LifecycleService) confirmIssueAttachmentV1(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) error {
@@ -466,30 +460,24 @@ func (service *LifecycleService) confirmIssueAttachmentV1(ctx context.Context, s
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	asset, row, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	asset, row, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 	}
+	var activity map[string]any
 	if !asset.IsUploaded {
 		current := decorateIssueAttachmentRows([]map[string]any{row}, slug, true)[0]
 		currentJSON, marshalErr := json.Marshal(pythonJSONNumbers(current))
 		if marshalErr != nil {
 			return marshalErr
 		}
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{
+		activity = map[string]any{
 			"type": "attachment.activity.created", "requested_data": nil, "actor_id": userID.String(), "issue_id": rawIssueID,
 			"project_id": projectID.String(), "current_instance": string(currentJSON), "epoch": time.Now().Unix(),
 			"notification": true, "origin": service.assets.taskOrigin(ctx),
-		}); err != nil {
-			return fmt.Errorf("queue API issue attachment created activity: %w", err)
 		}
 	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", []any{assetID.String()}, nil); err != nil {
-			return fmt.Errorf("queue API issue attachment metadata: %w", err)
-		}
-	}
-	return service.assets.repository.UpdateIssueAttachmentUploaded(ctx, userID, workspaceID, projectID, issueID, assetID)
+	return service.assets.repository.UpdateIssueAttachmentUploaded(ctx, userID, workspaceID, projectID, issueID, assetID, activity, len(asset.StorageMetadata) == 0)
 }
 
 func (service *LifecycleService) deleteIssueAttachmentV1(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) error {
@@ -511,29 +499,20 @@ func (service *LifecycleService) deleteIssueAttachmentV1(ctx context.Context, sl
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	asset, _, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	_, _, err = service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 	}
-	if err := service.assets.repository.DeleteIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID); err != nil {
+	activity := map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(), "issue_id": rawIssueID,
+		"project_id": projectID.String(), "current_instance": nil, "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
+	if err := service.assets.repository.DeleteIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID, activity); err != nil {
 		return err
-	}
-	if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{
-		"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(), "issue_id": rawIssueID,
-		"project_id": projectID.String(), "current_instance": nil, "epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx),
-	}); err != nil {
-		return fmt.Errorf("queue API issue attachment deleted activity: %w", err)
-	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", []any{assetID.String()}, nil); err != nil {
-			return fmt.Errorf("queue API deleted issue attachment metadata: %w", err)
-		}
 	}
 	return nil
 }
 
 func (service *LifecycleService) getIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) (*api.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkResult, error) {
-	_, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
+	userID, workspaceID, err := service.attachmentScope(ctx, slug, rawProjectID)
 	if err != nil {
 		return nil, err
 	}
@@ -546,7 +525,7 @@ func (service *LifecycleService) getIssueAttachment(ctx context.Context, slug, r
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	asset, _, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	asset, _, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return nil, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
@@ -583,30 +562,24 @@ func (service *LifecycleService) confirmIssueAttachment(ctx context.Context, slu
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	asset, row, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
+	asset, row, err := service.assets.repository.IssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID)
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
+	var activity map[string]any
 	if !asset.IsUploaded {
 		row = decorateIssueAttachmentRows([]map[string]any{row}, slug, false)[0]
 		currentInstance, marshalErr := json.Marshal(pythonJSONNumbers(row))
 		if marshalErr != nil {
 			return marshalErr
 		}
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{
+		activity = map[string]any{
 			"type": "attachment.activity.created", "requested_data": nil, "actor_id": userID.String(),
 			"issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": string(currentInstance),
 			"epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx),
-		}); err != nil {
-			return fmt.Errorf("queue issue attachment created activity: %w", err)
 		}
 	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", []any{assetID.String()}, nil); err != nil {
-			return fmt.Errorf("queue issue attachment metadata: %w", err)
-		}
-	}
-	return service.assets.repository.UpdateIssueAttachmentUploaded(ctx, userID, workspaceID, projectID, issueID, assetID)
+	return service.assets.repository.UpdateIssueAttachmentUploaded(ctx, userID, workspaceID, projectID, issueID, assetID, activity, len(asset.StorageMetadata) == 0)
 }
 
 func (service *LifecycleService) deleteIssueAttachment(ctx context.Context, slug, rawProjectID, rawIssueID, rawAssetID string) error {
@@ -637,26 +610,11 @@ func (service *LifecycleService) deleteIssueAttachment(ctx context.Context, slug
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	asset, _, err := service.assets.repository.IssueAttachment(ctx, workspaceID, projectID, issueID, assetID)
-	if err != nil {
+	activity := map[string]any{"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(),
+		"issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil,
+		"epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx)}
+	if err := service.assets.repository.DeleteIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID, activity); err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
-	}
-	if err := service.assets.repository.DeleteIssueAttachment(ctx, userID, workspaceID, projectID, issueID, assetID); err != nil {
-		return err
-	}
-	{
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.issue_activities_task.issue_activity", nil, map[string]any{
-			"type": "attachment.activity.deleted", "requested_data": nil, "actor_id": userID.String(),
-			"issue_id": issueID.String(), "project_id": projectID.String(), "current_instance": nil,
-			"epoch": time.Now().Unix(), "notification": true, "origin": service.assets.taskOrigin(ctx),
-		}); err != nil {
-			return fmt.Errorf("queue issue attachment deleted activity: %w", err)
-		}
-		if len(asset.StorageMetadata) == 0 {
-			if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", []any{assetID.String()}, nil); err != nil {
-				return fmt.Errorf("queue deleted issue attachment metadata: %w", err)
-			}
-		}
 	}
 	return nil
 }

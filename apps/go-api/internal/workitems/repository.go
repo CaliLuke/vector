@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -46,11 +48,17 @@ type IssueActivityAdmitter interface {
 }
 
 type Repository struct {
+	propertyFilter           *issuequery.PreparedPropertyFilter
+	propertyPredicates       map[int]*workitemtypes.ScopedPropertyPredicate
+	propertyDiscovery        *workitemtypes.PropertyDiscoverySnapshot
+	typeDiscovery            *workitemtypes.TypeIdentityCatalog
 	db                       Database
 	publisher                Publisher
 	issueDescriptionVersions IssueDescriptionVersionAdmitter
 	recentVisits             RecentVisitAdmitter
 	issueActivities          IssueActivityAdmitter
+	transactionalEffects     bool
+	itemEdit                 *itemEditState
 	origin                   string
 	now                      func() time.Time
 }
@@ -84,6 +92,12 @@ func NewRepositoryWithNativeTasks(db Database, publisher Publisher, origin strin
 }
 
 func (r *Repository) publishTask(ctx context.Context, name string, args []any, kwargs map[string]any) error {
+	if r.transactionalEffects && name == "plane.bgtasks.webhook_task.model_activity" {
+		return r.enqueueEffect(ctx, "webhook", map[string]any{"name": name, "args": args, "kwargs": kwargs})
+	}
+	if r.transactionalEffects && name == "plane.bgtasks.issue_activities_task.issue_activity" {
+		return r.enqueueEffect(ctx, "activity", kwargs)
+	}
 	if name == "plane.bgtasks.issue_activities_task.issue_activity" && r.issueActivities != nil {
 		return r.issueActivities.AdmitIssueActivityTask(ctx, uuid.NewString(), kwargs)
 	}
@@ -91,6 +105,13 @@ func (r *Repository) publishTask(ctx context.Context, name string, args []any, k
 }
 
 func (r *Repository) admitIssueDescriptionVersion(ctx context.Context, updatedIssue any, issueID, userID string, isCreating bool) error {
+	if r.transactionalEffects {
+		snapshot, err := snapshotJSON(updatedIssue)
+		if err != nil {
+			return err
+		}
+		return r.enqueueEffect(ctx, "description_version", map[string]any{"snapshot": snapshot, "issue_id": issueID, "user_id": userID, "is_creating": isCreating})
+	}
 	if r.issueDescriptionVersions != nil {
 		snapshot, err := snapshotJSON(updatedIssue)
 		if err != nil {

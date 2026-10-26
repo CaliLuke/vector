@@ -5,35 +5,11 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-// plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-// hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { ProjectIssueLayout } from "../../project-issue-layout";
 // local imports
-import { ProjectIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseKanBanRoot } from "../base-kanban-root";
 
-export const ProfileIssuesKanBanLayout = observer(function ProfileIssuesKanBanLayout() {
-  // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+export function ProfileIssuesKanBanLayout() {
   const { profileViewId } = useParams({ strict: false });
-  const { allowPermissions } = useUserPermissions();
-
-  const canEditPropertiesBasedOnProject = (projectId: string) =>
-    allowPermissions(
-      [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-      EUserPermissionsLevel.PROJECT,
-      workspaceSlug.toString(),
-      projectId
-    );
-
-  return (
-    <BaseKanBanRoot
-      QuickActions={ProjectIssueQuickActions}
-      canEditPropertiesBasedOnProject={canEditPropertiesBasedOnProject}
-      viewId={profileViewId?.toString()}
-    />
-  );
-});
+  return <ProjectIssueLayout Layout={BaseKanBanRoot} viewId={profileViewId?.toString()} />;
+}

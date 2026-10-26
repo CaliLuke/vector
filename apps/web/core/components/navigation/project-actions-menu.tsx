@@ -7,12 +7,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 
-import { LogOut, MoreHorizontal, Settings, Share2, ArchiveIcon } from "lucide-react";
+import { MoreHorizontal, Settings, Share2, ArchiveIcon } from "lucide-react";
 // plane imports
-import { MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon } from "@plane/propel/icons";
 import { CustomMenu } from "@plane/ui";
+import { LeaveProjectMenuItem } from "./leave-project-menu-item";
 
 type Props = {
   workspaceSlug: string;
@@ -103,17 +103,7 @@ export function ProjectActionsMenu({
         </div>
       </CustomMenu.MenuItem>
       {/* Leave project */}
-      {!isAuthorized && (
-        <CustomMenu.MenuItem
-          onClick={onLeaveProject}
-          data-ph-element={MEMBER_TRACKER_ELEMENTS.SIDEBAR_PROJECT_QUICK_ACTIONS}
-        >
-          <div className="flex items-center justify-start gap-2">
-            <LogOut className="h-3.5 w-3.5 stroke-[1.5]" />
-            <span>{t("leave_project")}</span>
-          </div>
-        </CustomMenu.MenuItem>
-      )}
+      {!isAuthorized && <LeaveProjectMenuItem onLeave={onLeaveProject} />}
     </CustomMenu>
   );
 }

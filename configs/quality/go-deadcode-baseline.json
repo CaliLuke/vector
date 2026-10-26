@@ -60,10 +60,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/cyclereads", "WithLifecycleRequestOrigin"],
-      "count": 1
-    },
-    {
       "fingerprint": ["github.com/CaliLuke/go-plane/internal/htmlcompat", "escapeCommentString"],
       "count": 1
     },
@@ -128,14 +124,6 @@
       "count": 1
     },
     {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectlabelreads", "labelFloat"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/projectlabelreads", "pythonType"],
-      "count": 1
-    },
-    {
       "fingerprint": ["github.com/CaliLuke/go-plane/internal/routing", "caddyPathPatternWithoutTrailingSlash"],
       "count": 1
     },
@@ -177,22 +165,6 @@
     },
     {
       "fingerprint": ["github.com/CaliLuke/go-plane/internal/standardviews", "Service.UpdateWorkspace"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.ContainerID"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.SeedSidecarURL"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.SourceSidecarURL"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["github.com/CaliLuke/go-plane/internal/testsupport/postgres", "Pair.TargetSidecarURL"],
       "count": 1
     },
     {

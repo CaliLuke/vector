@@ -4,79 +4,39 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useCallback } from "react";
-import { observer } from "mobx-react";
-
-// plane constants
-import { EIssueFilterType, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 // i18n
 import { useTranslation } from "@plane/i18n";
-// types
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
-import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
+import { EIssueLayoutTypes } from "@plane/types";
 // components
 import { DisplayFiltersSelection, FiltersDropdown, LayoutSelection } from "@/components/issues/issue-layouts/filters";
 import { WorkItemFiltersToggle } from "@/components/work-item-filters/filters-toggle";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
+import { useProfileIssueDisplayPreferences } from "@/hooks/use-profile-issue-display-preferences";
 
-export const ProfileIssuesFilter = observer(function ProfileIssuesFilter() {
+export function ProfileIssuesFilter() {
   // i18n
   const { t } = useTranslation();
-  // router
-  const { workspaceSlug, userId: routeUserId } = useParams({ strict: false });
-  const userId = routeUserId ? routeUserId.toString() : undefined;
-  // store hook
   const {
-    issuesFilter: { issueFilters, updateFilters },
-  } = useIssues(EIssuesStoreType.PROFILE);
-  // derived values
-  const activeLayout = issueFilters?.displayFilters?.layout;
-
-  const handleLayoutChange = useCallback(
-    (layout: EIssueLayoutTypes) => {
-      if (!workspaceSlug || !userId) return;
-      updateFilters(workspaceSlug.toString(), undefined, EIssueFilterType.DISPLAY_FILTERS, { layout: layout }, userId);
-    },
-    [workspaceSlug, updateFilters, userId]
-  );
-
-  const handleDisplayFilters = useCallback(
-    (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      if (!workspaceSlug || !userId) return;
-      updateFilters(
-        workspaceSlug.toString(),
-        undefined,
-        EIssueFilterType.DISPLAY_FILTERS,
-        updatedDisplayFilter,
-        userId
-      );
-    },
-    [workspaceSlug, updateFilters, userId]
-  );
-
-  const handleDisplayProperties = useCallback(
-    (property: Partial<IIssueDisplayProperties>) => {
-      if (!workspaceSlug || !userId) return;
-      updateFilters(workspaceSlug.toString(), undefined, EIssueFilterType.DISPLAY_PROPERTIES, property, userId);
-    },
-    [workspaceSlug, updateFilters, userId]
-  );
+    activeLayout,
+    handleDisplayFilters,
+    handleDisplayProperties,
+    handleLayoutChange,
+    issueFilters,
+    layoutDisplayFiltersOptions,
+    userId,
+  } = useProfileIssueDisplayPreferences();
 
   return (
     <div className="relative flex items-center justify-end gap-2">
       <LayoutSelection
         layouts={[EIssueLayoutTypes.LIST, EIssueLayoutTypes.KANBAN]}
-        onChange={(layout) => handleLayoutChange(layout)}
+        onChange={handleLayoutChange}
         selectedLayout={activeLayout}
       />
-      {userId && <WorkItemFiltersToggle entityType={EIssuesStoreType.PROFILE} entityId={userId} />}
+      {userId && <WorkItemFiltersToggle />}
       <FiltersDropdown title={t("common.display")} placement="bottom-end">
         <DisplayFiltersSelection
-          layoutDisplayFiltersOptions={
-            activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.profile_issues.layoutOptions[activeLayout] : undefined
-          }
+          layoutDisplayFiltersOptions={layoutDisplayFiltersOptions}
           displayFilters={issueFilters?.displayFilters ?? {}}
           handleDisplayFiltersUpdate={handleDisplayFilters}
           displayProperties={issueFilters?.displayProperties ?? {}}
@@ -85,4 +45,4 @@ export const ProfileIssuesFilter = observer(function ProfileIssuesFilter() {
       </FiltersDropdown>
     </div>
   );
-});
+}

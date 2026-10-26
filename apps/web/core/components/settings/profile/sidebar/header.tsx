@@ -4,16 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { Avatar } from "@plane/ui";
 // hooks
-import { useUser } from "@/hooks/store/user";
-import { getFileURL } from "@plane/utils";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { getFileURL } from "@plane/utils/file";
 
-export const ProfileSettingsSidebarHeader = observer(function ProfileSettingsSidebarHeader() {
+export function ProfileSettingsSidebarHeader() {
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
 
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -34,4 +33,4 @@ export const ProfileSettingsSidebarHeader = observer(function ProfileSettingsSid
       </div>
     </div>
   );
-});
+}

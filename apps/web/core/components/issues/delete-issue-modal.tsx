@@ -4,128 +4,117 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-
-// types
-import { PROJECT_ERROR_MESSAGES, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TDeDupeIssue, TIssue } from "@plane/types";
-// ui
 import { AlertModalCore } from "@plane/ui";
-// hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+
+import { canDeleteIssue, isIssueCreator } from "./issue-delete-modal-feedback";
+
+import { useIssueConfirmation, useIssueConfirmationScope } from "./use-issue-confirmation";
 
 type Props = {
   isOpen: boolean;
   handleClose: () => void;
-  dataId?: string | null | undefined;
   data?: TIssue | TDeDupeIssue;
   isSubIssue?: boolean;
   onSubmit?: () => Promise<void>;
   isEpic?: boolean;
 };
 
-export const DeleteIssueModal = observer(function DeleteIssueModal(props: Props) {
-  const { dataId, data, isOpen, handleClose, isSubIssue = false, onSubmit, isEpic = false } = props;
-  // states
-  const [isDeleting, setIsDeleting] = useState(false);
-  // store hooks
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { issueMap } = useIssues();
-  const { getProjectById } = useProject();
-  const { allowPermissions } = useUserPermissions();
+export function DeleteIssueModal(props: Props) {
+  const { data, isOpen, isSubIssue = false, isEpic = false } = props;
+  const { workspaceSlug, scopeKey } = useIssueConfirmationScope([data?.project_id, data?.id, isSubIssue, isEpic]);
+
+  if (!isOpen || !data?.id || !workspaceSlug) return null;
+  return <DeleteIssueDialog key={scopeKey} {...props} workspaceSlug={workspaceSlug} scopeKey={scopeKey} />;
+}
+
+type DialogProps = Props & { workspaceSlug: string; scopeKey: string };
+
+function DeleteIssueDialog(props: DialogProps) {
+  const { data, isOpen, handleClose, isSubIssue = false, onSubmit, isEpic = false, workspaceSlug, scopeKey } = props;
+  const issue = data;
+  const permissions = useProjectPermissions(workspaceSlug, issue?.project_id ?? undefined);
+  const projectCatalogue = useWorkspaceProjectDetails();
   const { t } = useTranslation();
+  const confirmation = useIssueConfirmation(scopeKey, permissions, handleClose);
 
-  const { data: currentUser } = useUser();
+  if (!issue) return null;
+  const projectDetails = projectCatalogue.projects?.find((project) => project.id === issue.project_id);
+  const accountId = confirmation.currentUser?.id;
 
-  useEffect(() => {
-    setIsDeleting(false);
-  }, [isOpen]);
+  const isCreator = isIssueCreator(accountId, issue.created_by);
+  const authorized = canDeleteIssue({
+    canStart: confirmation.canStart,
+    hasProjectRole: permissions.projectRole !== undefined,
+    isCreator,
+    isAdmin: permissions.can([EUserPermissions.ADMIN]),
+  });
+  const issueLabels = getIssueDeleteLabels(t, isEpic, isSubIssue);
 
-  if (!dataId && !data) return null;
-
-  // derived values
-  const issue = data ? data : issueMap[dataId!];
-  const projectDetails = getProjectById(issue?.project_id);
-  const isIssueCreator = issue?.created_by === currentUser?.id;
-
-  const canPerformProjectAdminActions = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug?.toString(),
-    projectDetails?.id
-  );
-
-  const authorized = isIssueCreator || canPerformProjectAdminActions;
-
-  const onClose = () => {
-    setIsDeleting(false);
-    handleClose();
+  const handleIssueDelete = () => {
+    confirmation.submitDelete({
+      authorized,
+      onSubmit,
+      entity: issueLabels.entity,
+      successToast: {
+        title: t("common.success"),
+        message: t("entity.delete.success", { entity: issueLabels.translatedEntity }),
+      },
+      t,
+    });
   };
-
-  const handleIssueDelete = async () => {
-    setIsDeleting(true);
-
-    if (!authorized) {
-      setToast({
-        title: t(PROJECT_ERROR_MESSAGES.permissionError.i18n_title),
-        type: TOAST_TYPE.ERROR,
-        message:
-          PROJECT_ERROR_MESSAGES.permissionError.i18n_message && t(PROJECT_ERROR_MESSAGES.permissionError.i18n_message),
-      });
-      onClose();
-      return;
-    }
-    if (onSubmit)
-      await onSubmit()
-        .then(() => {
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: t("common.success"),
-            message: t("entity.delete.success", {
-              entity: isSubIssue ? t("common.sub_work_item") : isEpic ? t("common.epic") : t("common.work_item"),
-            }),
-          });
-          onClose();
-        })
-        .catch((errors) => {
-          const isPermissionError =
-            errors?.error ===
-            `Only admin or creator can delete the ${isSubIssue ? "sub-work item" : isEpic ? "epic" : "work item"}`;
-          const currentError = isPermissionError
-            ? PROJECT_ERROR_MESSAGES.permissionError
-            : PROJECT_ERROR_MESSAGES.issueDeleteError;
-          setToast({
-            title: t(currentError.i18n_title),
-            type: TOAST_TYPE.ERROR,
-            message: currentError.i18n_message && t(currentError.i18n_message),
-          });
-        })
-        .finally(() => onClose());
+  const retryAccess = () => {
+    void Promise.all([
+      confirmation.currentUserQuery.refetch(),
+      permissions.membershipQuery.refetch(),
+      permissions.rolesQuery.refetch(),
+    ]);
   };
 
   return (
     <AlertModalCore
-      handleClose={onClose}
+      handleClose={confirmation.closeWhenIdle}
       handleSubmit={handleIssueDelete}
-      isSubmitting={isDeleting}
+      isSubmitting={confirmation.isPending || !confirmation.canStart || !onSubmit}
       isOpen={isOpen}
-      title={t("entity.delete.label", { entity: isEpic ? t("common.epic") : t("common.work_item") })}
+      title={t("entity.delete.label", { entity: issueLabels.translatedIssueType })}
       content={
         <>
-          {/* TODO: Translate here */}
-          {`Are you sure you want to delete ${isEpic ? "epic" : "work item"} `}
-          <span className="font-medium break-words text-primary">
-            {projectDetails?.identifier}-{issue?.sequence_id}
-          </span>
-          {` ? All of the data related to the ${isEpic ? "epic" : "work item"} will be permanently removed. This action cannot be undone.`}
+          {confirmation.accessError ? (
+            <span>
+              Unable to verify delete permissions. Please retry or close this dialog.{" "}
+              <button type="button" onClick={retryAccess} disabled={confirmation.isPending}>
+                Retry
+              </button>
+            </span>
+          ) : (
+            <>
+              {/* TODO: Translate here */}
+              {`Are you sure you want to delete ${issueLabels.issueType} `}
+              <span className="font-medium break-words text-primary">
+                {projectDetails?.identifier}-{issue.sequence_id}
+              </span>
+              {` ? All of the data related to the ${issueLabels.issueType} will be permanently removed. This action cannot be undone.`}
+            </>
+          )}
         </>
       }
+      primaryButtonText={{ loading: confirmation.canStart ? "Deleting" : "Checking permissions", default: "Delete" }}
     />
   );
-});
+}
+
+function getIssueDeleteLabels(t: (key: string) => string, isEpic: boolean, isSubIssue: boolean) {
+  const issueType = isEpic ? "epic" : "work item";
+  const translatedIssueType = isEpic ? t("common.epic") : t("common.work_item");
+  return {
+    issueType,
+    translatedIssueType,
+    translatedEntity: isSubIssue ? t("common.sub_work_item") : translatedIssueType,
+    entity: isSubIssue ? "sub-work item" : issueType,
+  };
+}

@@ -46,7 +46,8 @@ export type TCoreSupportedDateFilterOperators<V extends TFilterValue = TFilterVa
   | TCoreSupportedRangeDateFilterOperators<V>;
 
 export type TCoreAllAvailableDateFilterOperatorsForDisplay<V extends TFilterValue = TFilterValue> =
-  TCoreSupportedDateFilterOperators<V>;
+  | TCoreSupportedDateFilterOperators<V>
+  | `not_${TCoreSupportedDateFilterOperators<V>}`;
 
 // -------- SELECT FILTER OPERATORS --------
 
@@ -80,4 +81,5 @@ export type TCoreSupportedSelectFilterOperators<V extends TFilterValue = TFilter
   | TCoreSupportedMultiSelectFilterOperators<V>;
 
 export type TCoreAllAvailableSelectFilterOperatorsForDisplay<V extends TFilterValue = TFilterValue> =
-  TCoreSupportedSelectFilterOperators<V>;
+  | TCoreSupportedSelectFilterOperators<V>
+  | `not_${TCoreSupportedSelectFilterOperators<V>}`;

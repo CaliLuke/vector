@@ -5,23 +5,22 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
 // hooks
-import { useSticky } from "@/hooks/use-stickies";
+import { useStickies, StickiesProvider } from "./provider";
 // local imports
 import { StickiesTruncated } from "./layout/stickies-truncated";
 import { StickySearch } from "./modal/search";
 import { useStickyOperations } from "./sticky/use-operations";
 
-export const StickiesWidget = observer(function StickiesWidget() {
+const StickiesWidgetContent = function StickiesWidgetContent() {
   // params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { creatingSticky, toggleShowNewSticky } = useSticky();
+  const { creatingSticky } = useStickies();
   const { t } = useTranslation();
   // sticky operations
   const { stickyOperations } = useStickyOperations({
@@ -37,7 +36,6 @@ export const StickiesWidget = observer(function StickiesWidget() {
           <StickySearch />
           <button
             onClick={() => {
-              toggleShowNewSticky(true);
               stickyOperations.create();
             }}
             className="my-auto flex gap-1 text-13 font-medium text-accent-primary"
@@ -60,4 +58,12 @@ export const StickiesWidget = observer(function StickiesWidget() {
       </div>
     </div>
   );
-});
+};
+
+export function StickiesWidget({ workspaceSlug }: { workspaceSlug: string }) {
+  return (
+    <StickiesProvider key={workspaceSlug} workspaceSlug={workspaceSlug}>
+      <StickiesWidgetContent />
+    </StickiesProvider>
+  );
+}

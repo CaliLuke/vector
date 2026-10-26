@@ -42,6 +42,7 @@ type Endpoints struct {
 	DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk loom.Endpoint
 	GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk    loom.Endpoint
 	PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk  loom.Endpoint
+	PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk                                      loom.Endpoint
 	PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk                   loom.Endpoint
 	DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk                           loom.Endpoint
 	GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk                              loom.Endpoint
@@ -203,6 +204,16 @@ type PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachment
 type PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkRequestData struct {
 	// Payload is the method payload.
 	Payload *PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload
+	// Body streams the HTTP request body.
+	Body io.ReadCloser
+}
+
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData holds both the
+// payload and the HTTP request body reader of the
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" method.
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData struct {
+	// Payload is the method payload.
+	Payload *PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload
 	// Body streams the HTTP request body.
 	Body io.ReadCloser
 }
@@ -487,6 +498,7 @@ func NewEndpoints(s Service) *Endpoints {
 		DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk: NewDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkEndpoint(s, a.APIKeyAuth),
 		GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk:    NewGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkEndpoint(s, a.APIKeyAuth),
 		PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk:  NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkEndpoint(s, a.APIKeyAuth),
+		PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk:                                      NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEndpoint(s, a.APIKeyAuth),
 		PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk:                   NewPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkEndpoint(s, a.APIKeyAuth),
 		DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk:                           NewDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkEndpoint(s, a.APIKeyAuth),
 		GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk:                              NewGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkEndpoint(s, a.APIKeyAuth),
@@ -574,6 +586,7 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	e.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(e.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
+	e.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk = m(e.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk)
 	e.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk = m(e.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk)
 	e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk = m(e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
 	e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk = m(e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
@@ -1249,6 +1262,31 @@ func NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttach
 			return nil, err
 		}
 		return nil, s.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk(ctx, ep.Payload, ep.Body)
+	}
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEndpoint returns an endpoint
+// function that calls the method
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" of service
+// "PlaneInternalDjangoMigrationAPI".
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		ep := req.(*PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "PlaneSessionCookie",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if ep.Payload.PlaneSessionCookieCredential != nil {
+			key = *ep.Payload.PlaneSessionCookieCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		return nil, s.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk(ctx, ep.Payload, ep.Body)
 	}
 }
 

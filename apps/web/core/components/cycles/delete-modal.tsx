@@ -5,8 +5,6 @@
  */
 
 import { useParams, useLocation, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
 // types
 import { PROJECT_ERROR_MESSAGES } from "@plane/constants";
@@ -14,9 +12,11 @@ import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { ICycle } from "@plane/types";
 // ui
-import { AlertModalCore } from "@plane/ui";
+import { CatalogueDeleteConfirmation } from "@/components/cycles-modules/catalogue-delete-confirmation";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { isAuthorizationError } from "@/queries/authorization-errors";
 
 interface ICycleDelete {
   cycle: ICycle;
@@ -26,12 +26,19 @@ interface ICycleDelete {
   projectId: string;
 }
 
-export const CycleDeleteModal = observer(function CycleDeleteModal(props: ICycleDelete) {
+export function CycleDeleteModal(props: ICycleDelete) {
+  return props.isOpen ? (
+    <CycleDeleteDialog key={JSON.stringify([props.workspaceSlug, props.projectId, props.cycle.id])} {...props} />
+  ) : null;
+}
+function CycleDeleteDialog(props: ICycleDelete) {
   const { isOpen, handleClose, cycle, workspaceSlug, projectId } = props;
   // states
-  const [loader, setLoader] = useState(false);
   // store hooks
-  const { deleteCycle } = useCycle();
+  const { mutation, scope } = useProjectCycles(workspaceSlug, projectId);
+  const mounted = useCommittedScope(
+    JSON.stringify([scope.accountId, scope.sessionGeneration, workspaceSlug, projectId, cycle.id, isOpen])
+  );
   const { t } = useTranslation();
   // router
   const router = useRouter();
@@ -40,56 +47,35 @@ export const CycleDeleteModal = observer(function CycleDeleteModal(props: ICycle
   const peekCycle = searchParams.get("peekCycle");
 
   const formSubmit = async () => {
-    if (!cycle) return;
-
-    setLoader(true);
+    if (!mounted()) return;
     try {
-      await deleteCycle(workspaceSlug, projectId, cycle.id)
-        .then(() => {
-          if (cycleId || peekCycle) void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles` });
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: "Success!",
-            message: "Cycle deleted successfully.",
-          });
-        })
-        .catch((errors) => {
-          const isPermissionError = errors?.error === "You don't have the required permissions.";
-          const currentError = isPermissionError
-            ? PROJECT_ERROR_MESSAGES.permissionError
-            : PROJECT_ERROR_MESSAGES.cycleDeleteError;
-          setToast({
-            title: t(currentError.i18n_title),
-            type: TOAST_TYPE.ERROR,
-            message: currentError.i18n_message && t(currentError.i18n_message),
-          });
-        })
-        .finally(() => handleClose());
-    } catch {
+      const result = await mutation.mutateAsync({ type: "delete", id: cycle.id });
+      if (!mounted() || !result.captured.isCurrent()) return;
+      if (cycleId === cycle.id || peekCycle === cycle.id)
+        void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles` });
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "Cycle deleted successfully." });
+      handleClose();
+    } catch (error) {
+      if (!mounted()) return;
+      const message = isAuthorizationError(error)
+        ? PROJECT_ERROR_MESSAGES.permissionError
+        : PROJECT_ERROR_MESSAGES.cycleDeleteError;
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Warning!",
-        message: "Something went wrong please try again later.",
+        title: t(message.i18n_title),
+        message: message.i18n_message && t(message.i18n_message),
       });
     }
-
-    setLoader(false);
   };
 
   return (
-    <AlertModalCore
+    <CatalogueDeleteConfirmation
+      entity="cycle"
+      itemName={cycle?.name}
       handleClose={handleClose}
       handleSubmit={formSubmit}
-      isSubmitting={loader}
+      isSubmitting={mutation.isPending}
       isOpen={isOpen}
-      title="Delete cycle"
-      content={
-        <>
-          Are you sure you want to delete cycle{' "'}
-          <span className="font-medium break-words text-primary">{cycle?.name}</span>
-          {'"'}? All of the data related to the cycle will be permanently removed. This action cannot be undone.
-        </>
-      }
     />
   );
-});
+}

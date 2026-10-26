@@ -42,3 +42,18 @@ func DescriptionVersionsWorkItemHistoryPath(slug string, projectID string, workI
 func DescriptionVersionDetailWorkItemHistoryPath(slug string, projectID string, workItemID string, pk string) string {
 	return fmt.Sprintf("/api/workspaces/%v/projects/%v/work-items/%v/description-versions/%v/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(workItemID), loomhttp.EscapePathSegment(pk))
 }
+
+// PropertyHistoryWorkItemHistoryPath returns the URL path to the work_item_history service property_history HTTP endpoint.
+func PropertyHistoryWorkItemHistoryPath(slug string, projectID string, workItemID string) string {
+	return fmt.Sprintf("/api/workspaces/%v/projects/%v/work-items/%v/property-history/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(workItemID))
+}
+
+// PropertyVersionsWorkItemHistoryPath returns the URL path to the work_item_history service property_versions HTTP endpoint.
+func PropertyVersionsWorkItemHistoryPath(slug string, projectID string, workItemID string, propertyID string) string {
+	return fmt.Sprintf("/api/workspaces/%v/projects/%v/work-items/%v/properties/%v/versions/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(workItemID), loomhttp.EscapePathSegment(propertyID))
+}
+
+// PropertyVersionDetailWorkItemHistoryPath returns the URL path to the work_item_history service property_version_detail HTTP endpoint.
+func PropertyVersionDetailWorkItemHistoryPath(slug string, projectID string, workItemID string, propertyID string, pk string) string {
+	return fmt.Sprintf("/api/workspaces/%v/projects/%v/work-items/%v/properties/%v/versions/%v/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(workItemID), loomhttp.EscapePathSegment(propertyID), loomhttp.EscapePathSegment(pk))
+}

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import {
   BUSINESS_PLAN_FEATURES,
@@ -17,7 +16,7 @@ import {
 } from "@plane/constants";
 import { EProductSubscriptionEnum } from "@plane/types";
 import { EModalWidth, ModalCore } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { FreePlanCard, PlanUpgradeCard } from "@/components/license";
 import type { TCheckoutParams } from "@/components/license/modal/card/checkout-button";
@@ -31,7 +30,7 @@ export type PaidPlanUpgradeModalProps = {
   handleClose: () => void;
 };
 
-export const PaidPlanUpgradeModal = observer(function PaidPlanUpgradeModal(props: PaidPlanUpgradeModalProps) {
+export const PaidPlanUpgradeModal = function PaidPlanUpgradeModal(props: PaidPlanUpgradeModalProps) {
   const { isOpen, handleClose } = props;
   // derived values
   const isSelfHosted = true;
@@ -133,4 +132,4 @@ export const PaidPlanUpgradeModal = observer(function PaidPlanUpgradeModal(props
       </div>
     </ModalCore>
   );
-});
+};

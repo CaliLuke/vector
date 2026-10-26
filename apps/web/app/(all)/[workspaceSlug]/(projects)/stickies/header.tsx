@@ -5,7 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { Button } from "@plane/propel/button";
@@ -16,12 +15,12 @@ import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { StickySearch } from "@/components/stickies/modal/search";
 import { useStickyOperations } from "@/components/stickies/sticky/use-operations";
 // hooks
-import { useSticky } from "@/hooks/use-stickies";
+import { useStickies } from "@/components/stickies/provider";
 
-export const WorkspaceStickyHeader = observer(function WorkspaceStickyHeader() {
+export const WorkspaceStickyHeader = function WorkspaceStickyHeader() {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/stickies" });
   // hooks
-  const { creatingSticky, toggleShowNewSticky } = useSticky();
+  const { creatingSticky } = useStickies();
   const { stickyOperations } = useStickyOperations({ workspaceSlug: workspaceSlug?.toString() });
 
   return (
@@ -48,7 +47,6 @@ export const WorkspaceStickyHeader = observer(function WorkspaceStickyHeader() {
             variant="primary"
             size="lg"
             onClick={() => {
-              toggleShowNewSticky(true);
               stickyOperations.create();
             }}
             loading={creatingSticky}
@@ -59,4 +57,4 @@ export const WorkspaceStickyHeader = observer(function WorkspaceStickyHeader() {
       </Header>
     </>
   );
-});
+};

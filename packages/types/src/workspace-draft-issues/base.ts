@@ -15,15 +15,15 @@ export type TWorkspaceDraftIssue = {
   priority: TIssuePriorities | undefined;
   label_ids: string[];
   assignee_ids: string[];
-  estimate_point: string | undefined;
+  estimate_point: string | null | undefined;
 
-  project_id: string | undefined;
+  project_id: string | null | undefined;
   parent_id: string | undefined;
   cycle_id: string | undefined;
   module_ids: string[] | undefined;
 
-  start_date: string | undefined;
-  target_date: string | undefined;
+  start_date: string | null | undefined;
+  target_date: string | null | undefined;
   completed_at: string | undefined;
 
   created_at: string;
@@ -33,7 +33,9 @@ export type TWorkspaceDraftIssue = {
 
   is_draft: boolean;
 
-  type_id: string;
+  type_id: string | null;
+  description_html?: string;
+  custom_properties?: Record<string, unknown>;
 };
 
 export type TWorkspaceDraftPaginationInfo<T> = {

@@ -23,8 +23,10 @@ type sourceLookupRepository struct {
 	assetIDErr          error
 	userAssetErr        error
 	issueAttachmentErr  error
+	deleteAttachmentErr error
 	assetKeyErr         error
 	restoreErr          error
+	asset               FileAsset
 	deleteAllowed       bool
 	calls               []string
 }
@@ -55,7 +57,11 @@ func (repository *sourceLookupRepository) AssetByWorkspaceAndID(context.Context,
 	return FileAsset{}, repository.lookupErr
 }
 
-func (repository *sourceLookupRepository) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error) {
+func (repository *sourceLookupRepository) AssetByWorkspaceAndIDIncludingDeleted(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error) {
+	return repository.asset, repository.lookupErr
+}
+
+func (repository *sourceLookupRepository) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, error) {
 	repository.calls = append(repository.calls, "AssetForDuplicate")
 	return FileAsset{}, repository.lookupErr
 }
@@ -78,19 +84,28 @@ func (repository *sourceLookupRepository) UserAssetByID(context.Context, uuid.UU
 	return FileAsset{}, repository.lookupErr
 }
 
-func (repository *sourceLookupRepository) IssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error) {
+func (repository *sourceLookupRepository) IssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error) {
 	repository.calls = append(repository.calls, "IssueAttachment")
 	return FileAsset{}, nil, repository.issueAttachmentErr
 }
 
-func (repository *sourceLookupRepository) UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, bool) error {
+func (repository *sourceLookupRepository) DeleteIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any) error {
+	repository.calls = append(repository.calls, "DeleteIssueAttachment")
+	return repository.deleteAttachmentErr
+}
+
+func (repository *sourceLookupRepository) UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, *uuid.UUID, uuid.UUID, bool) error {
 	repository.calls = append(repository.calls, "UpdateAssetDeletedByKey")
 	return repository.assetKeyErr
 }
 
-func (repository *sourceLookupRepository) RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID) error {
+func (repository *sourceLookupRepository) RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error {
 	repository.calls = append(repository.calls, "RestoreWorkspaceAsset")
 	return repository.restoreErr
+}
+
+func (repository *sourceLookupRepository) AssetParentVisible(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error) {
+	return true, nil
 }
 
 func (repository *sourceLookupRepository) WorkspaceMemberByID(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
@@ -98,9 +113,9 @@ func (repository *sourceLookupRepository) WorkspaceMemberByID(context.Context, u
 	return true, nil
 }
 
-func (repository *sourceLookupRepository) IssuePermission(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, bool, error) {
-	repository.calls = append(repository.calls, "IssuePermission")
-	return true, true, false, nil
+func (repository *sourceLookupRepository) IssueAccess(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, error) {
+	repository.calls = append(repository.calls, "IssueAccess")
+	return true, true, nil
 }
 
 func (repository *sourceLookupRepository) IssueAttachmentDeleteAllowed(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (bool, error) {
@@ -296,7 +311,14 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 			name: "v2 workspace asset restore",
 			want: map[string]any{"error": "The required object does not exist."},
 			repository: func() *sourceLookupRepository {
-				return &sourceLookupRepository{workspaceID: workspaceID, restoreErr: missing}
+				return &sourceLookupRepository{
+					workspaceID: workspaceID,
+					asset: FileAsset{
+						ID:          assetID,
+						WorkspaceID: &workspaceID,
+					},
+					restoreErr: missing,
+				}
 			},
 			call: func(service *LifecycleService) error {
 				return service.PostAPIAssetsV2WorkspacesBySlugRestoreByAssetID(ctx, &api.PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDPayload{Slug: "workspace", AssetID: assetID})
@@ -327,7 +349,7 @@ func TestAssetsLifecycleMissingRowsUseSourceBodiesAtOperationBoundaries(t *testi
 			name: "v2 issue attachment delete",
 			want: map[string]any{"error": "The required object does not exist."},
 			repository: func() *sourceLookupRepository {
-				return &sourceLookupRepository{workspaceID: workspaceID, issueAttachmentErr: missing, deleteAllowed: true}
+				return &sourceLookupRepository{workspaceID: workspaceID, deleteAttachmentErr: missing, deleteAllowed: true}
 			},
 			call: func(service *LifecycleService) error {
 				return service.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk(ctx, &api.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload{Slug: "workspace", ProjectID: projectID, IssueID: issueID, Pk: assetID})

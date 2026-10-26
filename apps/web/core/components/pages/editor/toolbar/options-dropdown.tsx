@@ -4,43 +4,48 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 import { useRouter } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
+import { useCallback, useMemo, useState } from "react";
 import { ArrowUpToLine, Clipboard, History } from "lucide-react";
 // plane imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // hooks
 
 import { usePageFilters } from "@/hooks/use-page-filters";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 import { useQueryParams } from "@/hooks/use-query-params";
+import { useWorkspaceMarkdownCopy } from "@/hooks/use-workspace-markdown-copy";
 // plane web imports
 import type { TPageNavigationPaneTab } from "@/components/pages/navigation-pane/tab-panels";
-import type { EPageStoreType } from "@/hooks/store";
-// store
-import type { TPageInstance } from "@/store/pages/base-page";
+import { usePageRecord } from "@/components/pages/page-record-context";
 // local imports
 import { PageActions } from "../../dropdowns";
 import { ExportPageModal } from "../../modals/export-page-modal";
 import { PAGE_NAVIGATION_PANE_TABS_QUERY_PARAM } from "../../navigation-pane";
 
 type Props = {
-  page: TPageInstance;
-  storeType: EPageStoreType;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: Props) {
-  const { page, storeType } = props;
+export function PageOptionsDropdown(props: Props) {
+  const { page, workspaceSlug } = props;
+  const { editorRef } = usePageRecord();
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
+  const {
+    actionLabel: markdownActionLabel,
+    actionDisabled: markdownActionDisabled,
+    handleAction,
+  } = useWorkspaceMarkdownCopy(workspaceSlug);
+  const getCurrentEditorRef = useCallback(() => editorRef, [editorRef]);
   // states
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   // navigation
   const router = useRouter();
   // store values
-  const {
-    name,
-    isContentEditable,
-    editor: { editorRef },
-  } = page;
+  const { name } = page;
   // page filters
   const { isFullWidth, handleFullWidth, isStickyToolbarEnabled, handleStickyToolbar } = usePageFilters();
   // query params
@@ -98,17 +103,17 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
         },
         {
           key: "copy-markdown",
-          action: () => {
-            if (!editorRef) return;
-            editorRef.copyMarkdownToClipboard();
-            setToast({
-              type: TOAST_TYPE.SUCCESS,
-              title: "Success!",
-              message: "Markdown copied to clipboard.",
-            });
-          },
-          title: "Copy markdown",
+          action: () =>
+            handleAction(getCurrentEditorRef, () => {
+              setToast({
+                type: TOAST_TYPE.SUCCESS,
+                title: "Success!",
+                message: "Markdown copied to clipboard.",
+              });
+            }),
+          title: markdownActionLabel,
           icon: Clipboard,
+          disabled: markdownActionDisabled,
           shouldRender: true,
         },
         {
@@ -141,7 +146,10 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
       handleStickyToolbar,
       isStickyToolbarEnabled,
       isContentEditable,
-      editorRef,
+      getCurrentEditorRef,
+      markdownActionLabel,
+      markdownActionDisabled,
+      handleAction,
       updateQueryParams,
       router,
       setIsExportModalOpen,
@@ -157,6 +165,7 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
         pageTitle={name ?? ""}
       />
       <PageActions
+        workspaceSlug={workspaceSlug}
         extraOptions={EXTRA_MENU_OPTIONS}
         optionsOrder={[
           "full-screen",
@@ -170,8 +179,7 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
           "export",
         ]}
         page={page}
-        storeType={storeType}
       />
     </>
   );
-});
+}

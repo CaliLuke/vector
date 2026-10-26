@@ -4,274 +4,164 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
-import { Eye, EyeOff } from "lucide-react";
-// plane imports
-import { E_PASSWORD_STRENGTH } from "@plane/constants";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { Input, PasswordStrengthIndicator } from "@plane/ui";
-import { getPasswordStrength } from "@plane/utils";
-// components
+import { AuthPasswordInput, AuthConfirmPasswordInput } from "@plane/ui";
+import { isPasswordConfirmationValid } from "@plane/utils/auth";
 import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
-// helpers
 import { authErrorHandler, EAuthenticationErrorCodes, passwordErrors } from "@/helpers/authentication.helper";
-// hooks
-import { useUser } from "@/hooks/store/user";
-// services
-import { AuthService } from "@/services/auth.service";
+import { useCurrentUser, usePasswordMutation } from "@/hooks/use-current-user";
+import { authService } from "@/services/auth.service";
 
-export interface FormValues {
-  old_password: string;
-  new_password: string;
-  confirm_password: string;
-}
-
-const defaultValues: FormValues = {
-  old_password: "",
-  new_password: "",
-  confirm_password: "",
-};
-
-const authService = new AuthService();
-
-const defaultShowPassword = {
-  oldPassword: false,
-  password: false,
-  confirmPassword: false,
-};
-
-export const SecurityProfileSettings = observer(function SecurityProfileSettings() {
-  // store
-  const { data: currentUser, changePassword } = useUser();
-  // states
-  const [showPassword, setShowPassword] = useState(defaultShowPassword);
-  const [isPasswordInputFocused, setIsPasswordInputFocused] = useState(false);
-  const [isRetryPasswordInputFocused, setIsRetryPasswordInputFocused] = useState(false);
-
-  // use form
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setError,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<FormValues>({ defaultValues });
-  // derived values
-  const oldPassword = watch("old_password");
-  const password = watch("new_password");
-  const confirmPassword = watch("confirm_password");
-  const oldPasswordRequired = !currentUser?.is_password_autoset;
-  // i18n
+export function SecurityProfileSettings() {
+  const { data: currentUser } = useCurrentUser();
+  const passwordMutation = usePasswordMutation();
   const { t } = useTranslation();
-
-  const isNewPasswordSameAsOldPassword = oldPassword !== "" && password !== "" && password === oldPassword;
-
-  const handleShowPassword = (key: keyof typeof showPassword) =>
-    setShowPassword((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const handleChangePassword = async (formData: FormValues) => {
-    const { old_password, new_password } = formData;
-    try {
-      const csrfToken = await authService.requestCSRFToken().then((data) => data?.csrf_token);
-      if (!csrfToken) throw new Error("csrf token not found");
-
-      await changePassword(csrfToken, {
-        ...(oldPasswordRequired && { old_password }),
-        new_password,
-      });
-
-      reset(defaultValues);
-      setShowPassword(defaultShowPassword);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("auth.common.password.toast.change_password.success.title"),
-        message: t("auth.common.password.toast.change_password.success.message"),
-      });
-    } catch (error: unknown) {
-      const err = error as Error & { error_code?: string };
-      const code = err.error_code?.toString();
-      const errorInfo = code ? authErrorHandler(code as EAuthenticationErrorCodes) : undefined;
-
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: errorInfo?.title ?? t("auth.common.password.toast.change_password.error.title"),
-        message:
-          typeof errorInfo?.message === "string"
-            ? errorInfo.message
-            : t("auth.common.password.toast.change_password.error.message"),
-      });
-
-      if (code && passwordErrors.includes(code as EAuthenticationErrorCodes)) {
-        setError("new_password", {
-          type: "manual",
-          message: errorInfo?.message?.toString() || t("auth.common.password.toast.change_password.error.message"),
+  const oldPasswordRequired = !currentUser?.is_password_autoset;
+  const form = useForm({
+    defaultValues: { old_password: "", new_password: "", confirm_password: "" },
+    validators: {
+      onChange: ({ value }) => {
+        if (oldPasswordRequired && !value.old_password.trim()) return t("common.errors.required");
+        if (value.new_password && value.new_password === value.old_password)
+          return t("new_password_must_be_different_from_old_password");
+        if (!isPasswordConfirmationValid(value.new_password, value.confirm_password))
+          return t("auth.common.password.errors.match");
+        return undefined;
+      },
+    },
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        const { csrf_token } = await authService.requestCSRFToken();
+        if (!csrf_token) throw new Error("CSRF token not found");
+        await passwordMutation.mutateAsync({
+          kind: "change",
+          csrfToken: csrf_token,
+          ...(oldPasswordRequired && { old_password: value.old_password }),
+          new_password: value.new_password,
         });
+        passwordMutation.reset();
+        formApi.reset();
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("auth.common.password.toast.change_password.success.title"),
+          message: t("auth.common.password.toast.change_password.success.message"),
+        });
+      } catch (error) {
+        passwordMutation.reset();
+        const code = error && typeof error === "object" && "error_code" in error ? String(error.error_code) : undefined;
+        const info = code ? authErrorHandler(code as EAuthenticationErrorCodes) : undefined;
+        const message =
+          typeof info?.message === "string"
+            ? info.message
+            : t("auth.common.password.toast.change_password.error.message");
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: info?.title ?? t("auth.common.password.toast.change_password.error.title"),
+          message,
+        });
+        if (code && passwordErrors.includes(code as EAuthenticationErrorCodes)) {
+          formApi.setFieldMeta("new_password", (meta) => ({
+            ...meta,
+            errorMap: { ...meta.errorMap, onChange: message },
+          }));
+        }
+        throw error;
       }
-    }
-  };
-
-  const isButtonDisabled =
-    getPasswordStrength(password) != E_PASSWORD_STRENGTH.STRENGTH_VALID ||
-    (oldPasswordRequired && oldPassword.trim() === "") ||
-    password.trim() === "" ||
-    confirmPassword.trim() === "" ||
-    password !== confirmPassword ||
-    password === oldPassword;
-
-  const passwordSupport = password.length > 0 &&
-    getPasswordStrength(password) != E_PASSWORD_STRENGTH.STRENGTH_VALID && (
-      <PasswordStrengthIndicator password={password} isFocused={isPasswordInputFocused} />
-    );
-
-  const renderPasswordMatchError = !isRetryPasswordInputFocused || confirmPassword.length >= password.length;
-
+    },
+  });
+  const { isSubmitting, canSubmit, values } = useStore(form.store, (state) => ({
+    isSubmitting: state.isSubmitting,
+    canSubmit: state.canSubmit,
+    values: state.values,
+  }));
   return (
     <div className="size-full">
       <ProfileSettingsHeading title={t("auth.common.password.change_password.label.default")} />
-      <form onSubmit={handleSubmit(handleChangePassword)} className="mt-7 flex flex-col gap-8">
-        <div className="flex flex-col gap-y-7">
-          {oldPasswordRequired && (
-            <div className="flex flex-col gap-y-2">
-              <h4 className="text-13">{t("auth.common.password.current_password.label")}</h4>
-              <div className="relative flex items-center rounded-md">
-                <Controller
-                  control={control}
-                  name="old_password"
-                  rules={{
-                    required: t("common.errors.required"),
-                  }}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      id="old_password"
-                      type={showPassword?.oldPassword ? "text" : "password"}
-                      value={value}
-                      onChange={onChange}
-                      placeholder={t("old_password")}
-                      className="w-full"
-                      hasError={Boolean(errors.old_password)}
-                      autoComplete="current-password"
-                    />
-                  )}
-                />
-                {showPassword?.oldPassword ? (
-                  <EyeOff
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("oldPassword")}
-                  />
-                ) : (
-                  <Eye
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("oldPassword")}
-                  />
-                )}
-              </div>
-              {errors.old_password && (
-                <span className="text-11 text-danger-primary">{errors.old_password.message}</span>
-              )}
-            </div>
-          )}
-          <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2">
-            <div className="flex flex-col gap-y-2">
-              <h4 className="text-13">{t("auth.common.password.new_password.label")}</h4>
-              <div className="relative flex items-center rounded-md">
-                <Controller
-                  control={control}
-                  name="new_password"
-                  rules={{
-                    required: t("common.errors.required"),
-                  }}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      id="new_password"
-                      type={showPassword?.password ? "text" : "password"}
-                      value={value}
-                      placeholder={t("auth.common.password.new_password.placeholder")}
-                      onChange={onChange}
-                      className="w-full"
-                      hasError={Boolean(errors.new_password)}
-                      onFocus={() => setIsPasswordInputFocused(true)}
-                      onBlur={() => setIsPasswordInputFocused(false)}
-                      autoComplete="new-password"
-                    />
-                  )}
-                />
-                {showPassword?.password ? (
-                  <EyeOff
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("password")}
-                  />
-                ) : (
-                  <Eye
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("password")}
-                  />
-                )}
-              </div>
-              {passwordSupport}
-              {errors.new_password && (
-                <span className="text-11 text-danger-primary">{errors.new_password.message}</span>
-              )}
-              {isNewPasswordSameAsOldPassword && !isPasswordInputFocused && (
-                <span className="text-11 text-danger-primary">
-                  {t("new_password_must_be_different_from_old_password")}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <h4 className="text-13">{t("auth.common.password.confirm_password.label")}</h4>
-              <div className="relative flex items-center rounded-md">
-                <Controller
-                  control={control}
-                  name="confirm_password"
-                  rules={{
-                    required: t("common.errors.required"),
-                  }}
-                  render={({ field: { value, onChange } }) => (
-                    <Input
-                      id="confirm_password"
-                      type={showPassword?.confirmPassword ? "text" : "password"}
-                      placeholder={t("auth.common.password.confirm_password.placeholder")}
-                      value={value}
-                      onChange={onChange}
-                      className="w-full"
-                      hasError={Boolean(errors.confirm_password)}
-                      onFocus={() => setIsRetryPasswordInputFocused(true)}
-                      onBlur={() => setIsRetryPasswordInputFocused(false)}
-                      autoComplete="new-password"
-                    />
-                  )}
-                />
-                {showPassword?.confirmPassword ? (
-                  <EyeOff
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("confirmPassword")}
-                  />
-                ) : (
-                  <Eye
-                    className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-                    onClick={() => handleShowPassword("confirmPassword")}
-                  />
-                )}
-              </div>
-              {!!confirmPassword && password !== confirmPassword && renderPasswordMatchError && (
-                <span className="text-13 text-danger-primary">{t("auth.common.password.errors.match")}</span>
-              )}
-            </div>
-          </div>
-          <div>
-            <Button variant="primary" size="xl" type="submit" loading={isSubmitting} disabled={isButtonDisabled}>
-              {isSubmitting
-                ? `${t("auth.common.password.change_password.label.submitting")}`
-                : t("auth.common.password.change_password.label.default")}
-            </Button>
-          </div>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit().catch(() => {
+            // The password change failure is already reported with a toast.
+          });
+        }}
+        className="mt-7 flex flex-col gap-8"
+      >
+        {oldPasswordRequired && (
+          <form.Field name="old_password">
+            {(field) => (
+              <AuthPasswordInput
+                id={field.name}
+                name={field.name}
+                label={t("auth.common.password.current_password.label")}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                autoComplete="current-password"
+                disabled={isSubmitting}
+                showPasswordStrength={false}
+                placeholder={t("old_password")}
+              />
+            )}
+          </form.Field>
+        )}
+        <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2">
+          <form.Field name="new_password">
+            {(field) => (
+              <AuthPasswordInput
+                id={field.name}
+                name={field.name}
+                label={t("auth.common.password.new_password.label")}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors.join(" ")}
+                autoComplete="new-password"
+                disabled={isSubmitting}
+                placeholder={t("auth.common.password.new_password.placeholder")}
+              />
+            )}
+          </form.Field>
+          <form.Field name="confirm_password">
+            {(field) => (
+              <AuthConfirmPasswordInput
+                id={field.name}
+                name={field.name}
+                label={t("auth.common.password.confirm_password.label")}
+                password={values.new_password}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                autoComplete="new-password"
+                disabled={isSubmitting}
+                placeholder={t("auth.common.password.confirm_password.placeholder")}
+              />
+            )}
+          </form.Field>
+        </div>
+        {values.new_password && values.new_password === values.old_password && (
+          <p role="alert" className="text-11 text-danger-primary">
+            {t("new_password_must_be_different_from_old_password")}
+          </p>
+        )}
+        <div>
+          <Button
+            variant="primary"
+            size="xl"
+            type="submit"
+            loading={isSubmitting}
+            disabled={!canSubmit || !values.new_password || isSubmitting}
+          >
+            {t(
+              isSubmitting
+                ? "auth.common.password.change_password.label.submitting"
+                : "auth.common.password.change_password.label.default"
+            )}
+          </Button>
         </div>
       </form>
     </div>
   );
-});
+}

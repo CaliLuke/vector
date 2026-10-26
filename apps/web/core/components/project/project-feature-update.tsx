@@ -5,7 +5,6 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { useTranslation } from "@plane/i18n";
 // ui
@@ -14,7 +13,7 @@ import { Logo } from "@plane/propel/emoji-icon-picker";
 import { Row } from "@plane/ui";
 // components
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail } from "@/hooks/use-projects";
 // plane web imports
 import { ProjectFeaturesList } from "@/components/project/settings/features-list";
 
@@ -24,14 +23,24 @@ type Props = {
   onClose: () => void;
 };
 
-export const ProjectFeatureUpdate = observer(function ProjectFeatureUpdate(props: Props) {
+export function ProjectFeatureUpdate(props: Props) {
   const { workspaceSlug, projectId, onClose } = props;
   // store hooks
   const { t } = useTranslation();
-  const { getProjectById } = useProject();
+  const projectQuery = useProjectDetail(workspaceSlug, projectId ?? undefined);
 
   if (!workspaceSlug || !projectId) return null;
-  const currentProjectDetails = getProjectById(projectId);
+  const currentProjectDetails = projectQuery.project;
+  if (projectQuery.isError || projectQuery.accessError)
+    return (
+      <div role="alert">
+        Project details could not be loaded.{" "}
+        <button type="button" onClick={() => void projectQuery.retryAccess()}>
+          Retry
+        </button>
+      </div>
+    );
+  if (projectQuery.accessDenied) return <div role="alert">You do not have access to this project.</div>;
   if (!currentProjectDetails) return null;
 
   return (
@@ -64,4 +73,4 @@ export const ProjectFeatureUpdate = observer(function ProjectFeatureUpdate(props
       </div>
     </>
   );
-});
+}

@@ -6,11 +6,9 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
-import { RefreshCcw } from "lucide-react";
 // ui
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { Breadcrumbs, Header } from "@plane/ui";
@@ -18,14 +16,13 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { InboxIssueCreateModalRoot } from "@/components/inbox/modals/create-modal";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectDetail } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 import { IntakeIcon } from "@plane/propel/icons";
 
-export const ProjectInboxHeader = observer(function ProjectInboxHeader() {
+export const ProjectInboxHeader = function ProjectInboxHeader() {
   // states
   const [createIssueModal, setCreateIssueModal] = useState(false);
   // router
@@ -33,23 +30,19 @@ export const ProjectInboxHeader = observer(function ProjectInboxHeader() {
     from: "/_authenticated/$workspaceSlug/settings/projects/$projectId",
   });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { t } = useTranslation();
 
-  const { currentProjectDetails, loader: currentProjectDetailsLoader } = useProject();
-  const { loader } = useProjectInbox();
+  const { data: currentProjectDetails, isPending: projectPending } = useProjectDetail(workspaceSlug, projectId);
 
   // derived value
-  const isAuthorized = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
-    EUserPermissionsLevel.PROJECT
-  );
+  const isAuthorized = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST]);
 
   return (
     <Header>
       <Header.LeftItem>
         <div className="flex flex-grow items-center gap-4">
-          <Breadcrumbs isLoading={currentProjectDetailsLoader === "init-loader"}>
+          <Breadcrumbs isLoading={projectPending}>
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={
@@ -63,13 +56,6 @@ export const ProjectInboxHeader = observer(function ProjectInboxHeader() {
               isLast
             />
           </Breadcrumbs>
-
-          {loader === "pagination-loading" && (
-            <div className="flex items-center gap-1.5 text-tertiary">
-              <RefreshCcw className="h-3.5 w-3.5 animate-spin" />
-              <p className="text-13">{t("syncing")}...</p>
-            </div>
-          )}
         </div>
       </Header.LeftItem>
       <Header.RightItem>
@@ -91,4 +77,4 @@ export const ProjectInboxHeader = observer(function ProjectInboxHeader() {
       </Header.RightItem>
     </Header>
   );
-});
+};

@@ -142,6 +142,10 @@ type cycleLifecycleDeleteOrderDB struct {
 	events *[]string
 }
 
+func (database *cycleLifecycleDeleteOrderDB) Begin(ctx context.Context) (pgx.Tx, error) {
+	return database.base.Begin(ctx)
+}
+
 func (database *cycleLifecycleDeleteOrderDB) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
 	if strings.Contains(query, "UPDATE cycles SET deleted_at") {
 		*database.events = append(*database.events, "persist-cycle-delete")

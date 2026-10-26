@@ -4,70 +4,60 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateInstanceOptions } from "@/queries/instance";
 import { Telescope } from "lucide-react";
 // plane imports
-import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IInstance, IInstanceAdmin } from "@plane/types";
 import { Input, ToggleSwitch } from "@plane/ui";
 // components
-import { ControllerInput } from "@/components/common/controller-input";
+import { useSettingsForm, requiredField, SettingsForm } from "@/components/common/settings-form";
 // hooks
-import { useInstance } from "@/hooks/store";
 
 export interface IGeneralConfigurationForm {
   instance: IInstance;
   instanceAdmins: IInstanceAdmin[];
 }
 
-export const GeneralConfigurationForm = observer(function GeneralConfigurationForm(props: IGeneralConfigurationForm) {
+export const GeneralConfigurationForm = function GeneralConfigurationForm(props: IGeneralConfigurationForm) {
   const { instance, instanceAdmins } = props;
   // hooks
-  const { updateInstanceInfo } = useInstance();
+  const queryClient = useQueryClient();
+  const { mutateAsync: updateInstanceInfo } = useMutation(updateInstanceOptions(queryClient));
 
-  // form data
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm<Partial<IInstance>>({
+  const form = useSettingsForm({
     defaultValues: {
-      instance_name: instance?.instance_name,
-      is_telemetry_enabled: instance?.is_telemetry_enabled,
+      instance_name: instance.instance_name ?? "",
+      is_telemetry_enabled: instance.is_telemetry_enabled ?? false,
+    },
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        const saved = await updateInstanceInfo(value);
+        formApi.reset({
+          instance_name: saved.instance_name ?? value.instance_name,
+          is_telemetry_enabled: saved.is_telemetry_enabled,
+        });
+        setToast({ type: TOAST_TYPE.SUCCESS, title: "Settings saved", message: "Settings updated successfully." });
+      } catch (error) {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Unable to save settings",
+          message: "Your changes are still available. Please try again.",
+        });
+        throw error;
+      }
     },
   });
 
-  const onSubmit = async (formData: Partial<IInstance>) => {
-    const payload: Partial<IInstance> = { ...formData };
-
-    await updateInstanceInfo(payload)
-      .then(() =>
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "Settings updated successfully",
-        })
-      )
-      .catch((err) => console.error(err));
-  };
-
   return (
-    <div className="space-y-8">
+    <SettingsForm onSubmit={() => form.handleSubmit()} className="space-y-8">
       <div className="space-y-4">
         <div className="text-16 font-medium text-primary">Instance details</div>
         <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <ControllerInput
-            key="instance_name"
-            name="instance_name"
-            control={control}
-            type="text"
-            label="Name of instance"
-            placeholder="Instance name"
-            error={Boolean(errors.instance_name)}
-            required
-          />
+          <form.AppField name="instance_name" validators={{ onChange: requiredField("Name of instance") }}>
+            {(field) => <field.TextField type="text" label="Name of instance" placeholder="Instance name" required />}
+          </form.AppField>
 
           <div className="flex flex-col gap-1">
             <h4 className="text-13 text-tertiary">Email</h4>
@@ -122,30 +112,31 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
               </div>
             </div>
           </div>
-          <div className={`shrink-0 ${isSubmitting && "opacity-70"}`}>
-            <Controller
-              control={control}
-              name="is_telemetry_enabled"
-              render={({ field: { value, onChange } }) => (
-                <ToggleSwitch value={value ?? false} onChange={onChange} size="sm" disabled={isSubmitting} />
-              )}
-            />
-          </div>
+          <form.Subscribe selector={(state) => state.isSubmitting}>
+            {(isSubmitting) => (
+              <div className={`shrink-0 ${isSubmitting && "opacity-70"}`}>
+                <form.Field name="is_telemetry_enabled">
+                  {(field) => (
+                    <ToggleSwitch
+                      label="Allow anonymous usage data"
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      size="sm"
+                      disabled={isSubmitting}
+                    />
+                  )}
+                </form.Field>
+              </div>
+            )}
+          </form.Subscribe>
         </div>
       </div>
 
       <div>
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={() => {
-            void handleSubmit(onSubmit)();
-          }}
-          loading={isSubmitting}
-        >
-          {isSubmitting ? "Saving" : "Save changes"}
-        </Button>
+        <form.AppForm>
+          <form.SaveButton />
+        </form.AppForm>
       </div>
-    </div>
+    </SettingsForm>
   );
-});
+};

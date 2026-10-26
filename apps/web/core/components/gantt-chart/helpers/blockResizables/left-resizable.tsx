@@ -5,13 +5,14 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
 // plane utils
-import { cn, renderFormattedDate } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate } from "@plane/utils/datetime";
 //helpers
 //
 //hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
+import { getDateFromPositionOnGantt } from "../../views/helpers";
 
 type LeftResizableProps = {
   enableBlockLeftResize: boolean;
@@ -22,13 +23,13 @@ type LeftResizableProps = {
     width: number;
   };
 };
-export const LeftResizable = observer(function LeftResizable(props: LeftResizableProps) {
+export function LeftResizable(props: LeftResizableProps) {
   const { enableBlockLeftResize, isMoving, handleBlockDrag, position } = props;
   const [isHovering, setIsHovering] = useState(false);
 
-  const { getDateFromPositionOnGantt } = useTimeLineChartStore();
+  const { viewData } = useGanttChartState();
 
-  const date = position ? getDateFromPositionOnGantt(position.marginLeft, 0) : undefined;
+  const date = position && viewData ? getDateFromPositionOnGantt(position.marginLeft, viewData, 0) : undefined;
   const dateString = date ? renderFormattedDate(date) : undefined;
 
   const isLeftResizing = isMoving === "left" || isMoving === "move";
@@ -64,4 +65,4 @@ export const LeftResizable = observer(function LeftResizable(props: LeftResizabl
       />
     </>
   );
-});
+}

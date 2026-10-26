@@ -42,7 +42,7 @@ func collaborationDefault(table string, q Request, workspace any) map[string]any
 	return row
 }
 
-func writeCollaborationRecord(ctx context.Context, tx pgx.Tx, table string, row map[string]any, create bool) error {
+func writeCollaborationRecord(ctx context.Context, tx pgx.Tx, q Request, table string, row map[string]any, create bool) error {
 	columns, ok := collaborationColumns[table]
 	if !ok {
 		panic("unknown collaboration model")
@@ -55,17 +55,31 @@ func writeCollaborationRecord(ctx context.Context, tx pgx.Tx, table string, row 
 	if err != nil {
 		return err
 	}
-	statement := `INSERT INTO ` + table + ` SELECT (jsonb_populate_record(NULL::` + table + `,$1::jsonb)).*`
+	args := []any{encoded}
+	visible := collaborationWriteVisibility(q, table, &args)
+	statement := `INSERT INTO ` + table + ` SELECT v.* FROM jsonb_populate_record(NULL::` + table + `,$1::jsonb) v WHERE ` + visible
 	if !create {
 		cols := strings.Fields(columns)
 		values := make([]string, len(cols))
 		for i, col := range cols {
 			values[i] = "v." + col
 		}
-		statement = `UPDATE ` + table + ` t SET (` + strings.Join(cols, ",") + `)=(` + strings.Join(values, ",") + `) FROM jsonb_populate_record(NULL::` + table + `,$1::jsonb) v WHERE t.id=v.id`
+		matchesScope := `t.project_id IS NOT DISTINCT FROM v.project_id AND t.workspace_id IS NOT DISTINCT FROM v.workspace_id`
+		for _, column := range cols {
+			if column == "issue_id" || column == "comment_id" {
+				matchesScope += ` AND t.` + column + ` IS NOT DISTINCT FROM v.` + column
+			}
+		}
+		statement = `UPDATE ` + table + ` t SET (` + strings.Join(cols, ",") + `)=(` + strings.Join(values, ",") + `) FROM jsonb_populate_record(NULL::` + table + `,$1::jsonb) v WHERE t.id=v.id AND ` + matchesScope + ` AND ` + visible
 	}
-	_, err = tx.Exec(ctx, statement, encoded)
-	return err
+	result, err := tx.Exec(ctx, statement, args...)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return collaborationMissing(q)
+	}
+	return nil
 }
 
 // Comment and Description persist in the same transaction as IssueComment.save.
@@ -87,14 +101,14 @@ func (r *Repository) saveCollaboration(ctx context.Context, q Request, table str
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
-	if err = writeCollaborationRecord(ctx, tx, table, row, old == nil); err != nil {
+	if err = writeCollaborationRecord(ctx, tx, q, table, row, old == nil); err != nil {
 		return nil, err
 	}
 	if table == "issue_comments" {
 		if old == nil || row["description_id"] == nil {
 			description := collaborationDefault("descriptions", q, row["workspace_id"])
 			maps.Copy(description, map[string]any{"description_html": row["comment_html"], "description_json": row["comment_json"], "description_binary": nil, "description_stripped": stripTags(row["comment_html"].(string)), "created_at": now, "updated_at": now, "created_by_id": q.ActorID, "updated_by_id": nil})
-			if err = writeCollaborationRecord(ctx, tx, "descriptions", description, true); err != nil {
+			if err = writeCollaborationRecord(ctx, tx, q, "descriptions", description, true); err != nil {
 				return nil, err
 			}
 			row["description_id"] = description["id"]
@@ -116,8 +130,12 @@ func (r *Repository) saveCollaboration(ctx context.Context, q Request, table str
 					return nil, e
 				}
 				// Update only tracked fields, preserving unrelated description content.
-				if _, err = tx.Exec(ctx, `UPDATE descriptions d SET description_html=CASE WHEN $2::jsonb ? 'description_html' THEN $2::jsonb->>'description_html' ELSE d.description_html END, description_json=CASE WHEN $2::jsonb ? 'description_json' THEN $2::jsonb->'description_json' ELSE d.description_json END, description_stripped=CASE WHEN $2::jsonb ? 'description_stripped' THEN $2::jsonb->>'description_stripped' ELSE d.description_stripped END, updated_at=$3,updated_by_id=$4 WHERE id=$1`, row["description_id"], encoded, now, q.ActorID); err != nil {
-					return nil, err
+				updated, updateErr := tx.Exec(ctx, `UPDATE descriptions d SET description_html=CASE WHEN $2::jsonb ? 'description_html' THEN $2::jsonb->>'description_html' ELSE d.description_html END, description_json=CASE WHEN $2::jsonb ? 'description_json' THEN $2::jsonb->'description_json' ELSE d.description_json END, description_stripped=CASE WHEN $2::jsonb ? 'description_stripped' THEN $2::jsonb->>'description_stripped' ELSE d.description_stripped END, updated_at=$3,updated_by_id=$4 WHERE d.id=$1 AND d.project_id=$5 AND d.workspace_id=$6 AND d.deleted_at IS NULL AND NOT EXISTS(SELECT 1 FROM issue_comments other WHERE other.description_id=d.id AND other.id<>$7)`, row["description_id"], encoded, now, q.ActorID, q.ProjectID, row["workspace_id"], row["id"])
+				if updateErr != nil {
+					return nil, updateErr
+				}
+				if updated.RowsAffected() != 1 {
+					return nil, collaborationMissing(q)
 				}
 			}
 		}

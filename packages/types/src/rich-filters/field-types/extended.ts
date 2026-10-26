@@ -4,16 +4,32 @@
  * See the LICENSE file for details.
  */
 
+import type { TBaseFilterFieldConfig } from "./shared";
 import type { TFilterValue } from "../expression";
 
-/**
- * Extended filter types
- */
-export const EXTENDED_FILTER_FIELD_TYPE = {} as const;
+export const EXTENDED_FILTER_FIELD_TYPE = {
+  TEXT: "text",
+  NUMBER: "number",
+  NUMBER_RANGE: "number_range",
+} as const;
 
-// -------- UNION TYPES --------
+export type TTextFilterFieldConfig = TBaseFilterFieldConfig & {
+  type: typeof EXTENDED_FILTER_FIELD_TYPE.TEXT;
+  defaultValue?: string;
+};
 
-/**
- * All extended filter configurations
- */
-export type TExtendedFilterFieldConfigs<_V extends TFilterValue = TFilterValue> = never;
+export type TNumberFilterFieldConfig = TBaseFilterFieldConfig & {
+  type: typeof EXTENDED_FILTER_FIELD_TYPE.NUMBER;
+  defaultValue?: number;
+};
+
+export type TNumberRangeFilterFieldConfig = TBaseFilterFieldConfig & {
+  type: typeof EXTENDED_FILTER_FIELD_TYPE.NUMBER_RANGE;
+  defaultValue?: number[];
+};
+
+export type TLiteralFilterFieldConfig =
+  | TTextFilterFieldConfig
+  | TNumberFilterFieldConfig
+  | TNumberRangeFilterFieldConfig;
+export type TExtendedFilterFieldConfigs<_V extends TFilterValue = TFilterValue> = TLiteralFilterFieldConfig;

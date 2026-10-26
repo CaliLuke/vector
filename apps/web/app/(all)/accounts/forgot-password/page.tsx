@@ -5,7 +5,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // components
 import { ForgotPasswordForm } from "@/components/account/auth-forms/forgot-password";
 import { AuthHeader } from "@/components/auth-screens/header";
@@ -29,5 +29,5 @@ function ForgotPasswordPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/accounts/forgot-password/")({
-  component: observer(ForgotPasswordPage),
+  component: ForgotPasswordPage,
 });

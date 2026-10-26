@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import { isTreeDropTargetData, getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
 import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
@@ -12,15 +13,15 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { observer } from "mobx-react";
+
 import { createRoot } from "react-dom/client";
 // types
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import type { IIssueLabel, InstructionType } from "@plane/types";
 // ui
 import { DropIndicator } from "@plane/ui";
 // components
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 import { LabelName } from "./label-block/label-name";
 import { getCanDrop } from "./label-utils";
 
@@ -57,7 +58,7 @@ type Props = {
   ) => void;
 };
 
-export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
+export const LabelDndHOC = function LabelDndHOC(props: Props) {
   const { label, isGroup, isChild, isLastChild, children, onDrop } = props;
 
   const [isDragging, setIsDragging] = useState(false);
@@ -66,8 +67,9 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
   const labelRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLButtonElement | null>(null);
 
-  const { allowPermissions } = useUserPermissions();
-  const isEditable = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const isEditable = canProject([EUserPermissions.ADMIN]);
 
   useEffect(() => {
     const element = labelRef.current;
@@ -101,7 +103,7 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
       dropTargetForElements({
         element,
         canDrop: ({ source }) => getCanDrop(source, label, isChild),
-        getData: ({ input, element }) => {
+        getData: ({ input, element: targetElement }) => {
           const data = { id: label?.id, parentId: label?.parent, isGroup, isChild };
 
           const blockedStates: InstructionType[] = [];
@@ -113,7 +115,7 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
 
           return attachInstruction(data, {
             input,
-            element,
+            element: targetElement,
             currentLevel: isChild ? 1 : 0,
             indentPerLevel: 0,
             mode: isLastChild ? "last-in-group" : "standard",
@@ -121,8 +123,8 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
           });
         },
         onDrag: ({ self, source, location }) => {
-          const instruction = getInstructionFromPayload(self, source, location);
-          setInstruction(instruction);
+          const dragInstruction = getInstructionFromPayload(self, source, location);
+          setInstruction(dragInstruction);
         },
         onDragLeave: () => {
           setInstruction(undefined);
@@ -146,21 +148,21 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
           if (!dropTarget || !isTreeDropTargetData(dropTargetData)) return;
 
           // get possible instructions for the dropTarget
-          const instruction = getInstructionFromPayload(dropTarget, source, location);
+          const dropInstruction = getInstructionFromPayload(dropTarget, source, location);
 
           // if instruction is make child the set parentId as current dropTarget Id or else set it as dropTarget's parentId
-          parentId = instruction === "make-child" ? dropTargetData.id : dropTargetData.parentId;
+          parentId = dropInstruction === "make-child" ? dropTargetData.id : dropTargetData.parentId;
           // if instruction is any other than make-child, i.e., reorder-above and reorder-below then set the droppedId as dropTarget's id
-          const droppedLabelId = instruction !== "make-child" ? dropTargetData.id : undefined;
+          const droppedLabelId = dropInstruction !== "make-child" ? dropTargetData.id : undefined;
           // if instruction is to reorder-below that is enabled only for end of the last items in the list then dropAtEndOfList as true
-          if (instruction === "reorder-below") dropAtEndOfList = true;
+          if (dropInstruction === "reorder-below") dropAtEndOfList = true;
 
           const sourceData = source.data;
           if (isTreeDropTargetData(sourceData)) onDrop(sourceData.id, parentId, droppedLabelId, dropAtEndOfList);
         },
       })
     );
-  }, [labelRef?.current, dragHandleRef?.current, label, isChild, isGroup, isLastChild, onDrop]);
+  }, [isEditable, label, isChild, isGroup, isLastChild, onDrop]);
 
   const isMakeChild = instruction == "make-child";
 
@@ -171,4 +173,4 @@ export const LabelDndHOC = observer(function LabelDndHOC(props: Props) {
       {isLastChild && <DropIndicator classNames="my-1" isVisible={instruction === "reorder-below"} />}
     </div>
   );
-});
+};

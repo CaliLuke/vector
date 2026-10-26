@@ -6,29 +6,26 @@
 
 import { useParams } from "@tanstack/react-router";
 import React, { useCallback } from "react";
-import { observer } from "mobx-react";
 
 // hooks
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useUserPermissions } from "@/hooks/store/user";
+import { EUserPermissions } from "@plane/constants";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { cycleIsCompleted } from "@/queries/cycle-module-selectors";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // components
 import { CycleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseSpreadsheetRoot } from "../base-spreadsheet-root";
 
-export const CycleSpreadsheetLayout = observer(function CycleSpreadsheetLayout() {
+export const CycleSpreadsheetLayout = function CycleSpreadsheetLayout() {
   // router
   const { cycleId } = useParams({ strict: false });
   // store hooks
-  const { currentProjectCompletedCycleIds } = useCycle();
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const detail = useCycleDetails(workspaceSlug, projectId, cycleId);
   // auth
-  const isCompletedCycle =
-    cycleId && currentProjectCompletedCycleIds ? currentProjectCompletedCycleIds.includes(cycleId.toString()) : false;
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const isCompletedCycle = detail.cycle ? cycleIsCompleted(detail.cycle) : false;
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const canEditIssueProperties = useCallback(
     () => !isCompletedCycle && isEditingAllowed,
@@ -45,4 +42,4 @@ export const CycleSpreadsheetLayout = observer(function CycleSpreadsheetLayout()
       viewId={cycleId.toString()}
     />
   );
-});
+};

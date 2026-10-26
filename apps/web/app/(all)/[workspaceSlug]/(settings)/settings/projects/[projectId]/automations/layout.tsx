@@ -5,12 +5,11 @@
  */
 
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 function AutomationsListLayout(): React.JSX.Element | null {
   return <Outlet />;
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/automations")({
-  component: observer(AutomationsListLayout),
+  component: AutomationsListLayout,
 });

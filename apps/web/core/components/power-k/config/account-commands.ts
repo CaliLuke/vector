@@ -12,7 +12,7 @@ import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useSignOut } from "@/hooks/use-current-user";
 
 import { useRouter } from "@tanstack/react-router";
 
@@ -23,7 +23,7 @@ export const usePowerKAccountCommands = (): TPowerKCommandConfig[] => {
   // navigation
   const router = useRouter();
   // store
-  const { signOut } = useUser();
+  const { mutateAsync: signOut } = useSignOut();
   // translation
   const { t } = useTranslation();
 

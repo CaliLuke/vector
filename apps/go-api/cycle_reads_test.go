@@ -632,3 +632,16 @@ func cycleOptionalString(value *string) string {
 	}
 	return *value
 }
+
+func TestCycleIssuePropertyProjectionRequiresExplicitOptIn(t *testing.T) {
+	for _, value := range []string{"", "false", "true"} {
+		ctx := WithReadServiceQueryPresence(context.Background(), url.Values{"include_properties": {value}})
+		options, err := cycleIssueOptions(ctx, &struct{}{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if options.IncludeProperties != (value == "true") {
+			t.Fatalf("projection flag %q = %v", value, options.IncludeProperties)
+		}
+	}
+}

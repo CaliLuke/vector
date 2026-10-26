@@ -5,7 +5,7 @@
  */
 
 import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
-import { isEmpty } from "lodash-es";
+import isEmpty from "lodash-es/isEmpty.js";
 import { v4 as uuidv4 } from "uuid";
 // plane imports
 import type { TIssueFilterPriorityObject, TIssuePriorities } from "@plane/constants";
@@ -27,7 +27,7 @@ import { EIssueLayoutTypes } from "@plane/types";
 // local imports
 import { orderArrayBy } from "../array";
 import { getDate } from "../datetime";
-import { isEditorEmpty } from "../editor";
+import { isEditorEmpty } from "../editor/common";
 
 type THandleIssuesMutation = (
   formData: Partial<TIssue>,
@@ -291,9 +291,18 @@ export const getComputedDisplayFilters = (
  * @param {IIssueDisplayProperties} displayProperties
  * @returns {IIssueDisplayProperties}
  */
+function customDisplayProperties(properties: IIssueDisplayProperties) {
+  return Object.fromEntries(
+    Object.entries(properties ?? {}).filter(
+      ([key, value]) => /^customproperty_[a-zA-Z0-9_-]+$/.test(key) && typeof value === "boolean"
+    )
+  );
+}
+
 export const getComputedDisplayProperties = (
   displayProperties: IIssueDisplayProperties = {}
 ): IIssueDisplayProperties => ({
+  ...customDisplayProperties(displayProperties),
   assignee: displayProperties?.assignee ?? true,
   start_date: displayProperties?.start_date ?? true,
   due_date: displayProperties?.due_date ?? true,

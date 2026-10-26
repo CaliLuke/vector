@@ -47,6 +47,21 @@ type Service interface {
 	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
 	// implementations.
 	DescriptionVersionDetail(context.Context, *DescriptionVersionDetailPayload) (res *WorkItemHistoryResponseMetadata, body io.ReadCloser, err error)
+	// PropertyHistory implements property_history.
+	// If body implements [io.WriterTo], that implementation will be used instead.
+	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
+	// implementations.
+	PropertyHistory(context.Context, *PropertyHistoryPayload) (res *WorkItemHistoryResponseMetadata, body io.ReadCloser, err error)
+	// PropertyVersions implements property_versions.
+	// If body implements [io.WriterTo], that implementation will be used instead.
+	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
+	// implementations.
+	PropertyVersions(context.Context, *PropertyVersionsPayload) (res *WorkItemHistoryResponseMetadata, body io.ReadCloser, err error)
+	// PropertyVersionDetail implements property_version_detail.
+	// If body implements [io.WriterTo], that implementation will be used instead.
+	// Consider [github.com/CaliLuke/loom/pkg.SkipResponseWriter] to adapt existing
+	// implementations.
+	PropertyVersionDetail(context.Context, *PropertyVersionDetailPayload) (res *WorkItemHistoryResponseMetadata, body io.ReadCloser, err error)
 }
 
 // Authorizer defines the authorization functions to be implemented by the service.
@@ -69,7 +84,7 @@ const ServiceName = "work_item_history"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [6]string{"history", "meta", "versions", "version_detail", "description_versions", "description_version_detail"}
+var MethodNames = [9]string{"history", "meta", "versions", "version_detail", "description_versions", "description_version_detail", "property_history", "property_versions", "property_version_detail"}
 
 // DescriptionVersionDetailPayload is the payload type of the work_item_history
 // service description_version_detail method.
@@ -107,6 +122,37 @@ type MetaPayload struct {
 	Slug                         string  `json:"slug"`
 	ProjectID                    string  `json:"project_id"`
 	IssueID                      string  `json:"issue_id"`
+	PlaneSessionCookieCredential *string `json:"planeSessionCookieCredential,omitzero"`
+}
+
+// PropertyHistoryPayload is the payload type of the work_item_history service
+// property_history method.
+type PropertyHistoryPayload struct {
+	Slug                         string  `json:"slug"`
+	ProjectID                    string  `json:"project_id"`
+	WorkItemID                   string  `json:"work_item_id"`
+	PlaneSessionCookieCredential *string `json:"planeSessionCookieCredential,omitzero"`
+}
+
+// PropertyVersionDetailPayload is the payload type of the work_item_history
+// service property_version_detail method.
+type PropertyVersionDetailPayload struct {
+	Slug                         string  `json:"slug"`
+	ProjectID                    string  `json:"project_id"`
+	WorkItemID                   string  `json:"work_item_id"`
+	PropertyID                   string  `json:"property_id"`
+	Pk                           string  `json:"pk"`
+	PlaneSessionCookieCredential *string `json:"planeSessionCookieCredential,omitzero"`
+}
+
+// PropertyVersionsPayload is the payload type of the work_item_history service
+// property_versions method.
+type PropertyVersionsPayload struct {
+	Slug                         string  `json:"slug"`
+	ProjectID                    string  `json:"project_id"`
+	WorkItemID                   string  `json:"work_item_id"`
+	PropertyID                   string  `json:"property_id"`
+	Before                       *string `json:"before,omitzero"`
 	PlaneSessionCookieCredential *string `json:"planeSessionCookieCredential,omitzero"`
 }
 

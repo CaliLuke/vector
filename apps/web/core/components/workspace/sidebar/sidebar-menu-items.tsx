@@ -5,7 +5,6 @@
  */
 
 import React, { useMemo } from "react";
-import { observer } from "mobx-react";
 import { Ellipsis } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
@@ -17,11 +16,11 @@ import {
 } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { ChevronRightIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // store hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarActions, useExtendedSidebarOpen } from "@/providers/sidebar-state";
 import useLocalStorage from "@/hooks/use-local-storage";
 import {
   usePersonalNavigationPreferences,
@@ -29,7 +28,7 @@ import {
 } from "@/hooks/use-navigation-preferences";
 import { SidebarItemBase } from "./sidebar-item";
 
-export const SidebarMenuItems = observer(function SidebarMenuItems() {
+export function SidebarMenuItems() {
   // routers
   const { setValue: toggleWorkspaceMenu, storedValue: isWorkspaceMenuOpen } = useLocalStorage<boolean>(
     "is_workspace_menu_open",
@@ -37,7 +36,8 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
   );
 
   // store hooks
-  const { isExtendedSidebarOpened, toggleExtendedSidebar } = useAppTheme();
+  const isExtendedSidebarOpened = useExtendedSidebarOpen();
+  const { toggleExtendedSidebar } = useSidebarActions();
   // hooks
   const { preferences: personalPreferences } = usePersonalNavigationPreferences();
   const { preferences: workspacePreferences } = useWorkspaceNavigationPreferences();
@@ -178,4 +178,4 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
       </Disclosure>
     </>
   );
-});
+}

@@ -5,17 +5,13 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 // constants
 import type { EPageAccess } from "@plane/constants";
 import type { TPage } from "@plane/types";
 // ui
-import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
 
-// plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
-import { usePageStore } from "@/hooks/store";
+import { useCreateProjectPage } from "@/hooks/use-project-pages";
 // local imports
 import { PageForm } from "./page-form";
 
@@ -26,70 +22,27 @@ type Props = {
   pageAccess?: EPageAccess;
   handleModalClose: () => void;
   redirectionEnabled?: boolean;
-  storeType: EPageStoreType;
 };
 
 export function CreatePageModal(props: Props) {
-  const {
-    workspaceSlug,
-    projectId,
-    isModalOpen,
-    pageAccess,
-    handleModalClose,
-    redirectionEnabled = false,
-    storeType,
-  } = props;
-  // states
-  const [pageFormData, setPageFormData] = useState<Partial<TPage>>({
-    id: undefined,
-    name: "",
-    logo_props: undefined,
-  });
+  const { workspaceSlug, projectId, isModalOpen, pageAccess, handleModalClose, redirectionEnabled = false } = props;
   // router
   const router = useRouter();
   // store hooks
-  const { createPage } = usePageStore(storeType);
-  const handlePageFormData = <T extends keyof TPage>(key: T, value: TPage[T]) =>
-    setPageFormData((prev) => ({ ...prev, [key]: value }));
-
-  // update page access in form data when page access from the store changes
-  useEffect(() => {
-    setPageFormData((prev) => ({ ...prev, access: pageAccess }));
-  }, [pageAccess]);
-
-  const handleStateClear = () => {
-    setPageFormData({ id: undefined, name: "", access: pageAccess });
+  const create = useCreateProjectPage(workspaceSlug, projectId);
+  const handleFormSubmit = async (values: Partial<TPage>) => {
+    const page = await create.mutateAsync(values);
     handleModalClose();
+    if (redirectionEnabled) void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${page.id}` });
   };
-
-  const handleFormSubmit = async () => {
-    if (!workspaceSlug || !projectId) return;
-
-    try {
-      const pageData = await createPage(pageFormData);
-      if (pageData) {
-        handleStateClear();
-        if (redirectionEnabled)
-          void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${pageData.id}` });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  if (!isModalOpen) return null;
 
   return (
-    <ModalCore
-      isOpen={isModalOpen}
-      handleClose={handleModalClose}
-      position={EModalPosition.TOP}
-      width={EModalWidth.XXL}
-    >
-      <PageForm
-        formData={pageFormData}
-        handleFormData={handlePageFormData}
-        handleModalClose={handleStateClear}
-        handleFormSubmit={handleFormSubmit}
-      />
-    </ModalCore>
+    <PageForm
+      key={`${workspaceSlug}/${projectId}`}
+      pageAccess={pageAccess}
+      handleModalClose={handleModalClose}
+      handleFormSubmit={handleFormSubmit}
+    />
   );
 }

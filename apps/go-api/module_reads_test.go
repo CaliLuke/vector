@@ -1,10 +1,15 @@
 package systemapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"uuid"
@@ -12,6 +17,8 @@ import (
 	api "github.com/CaliLuke/go-plane/gen/module_reads"
 	"github.com/CaliLuke/go-plane/internal/authentication/djangosession"
 	store "github.com/CaliLuke/go-plane/internal/modulereads"
+	"github.com/CaliLuke/go-plane/internal/platform"
+	"github.com/CaliLuke/loom/clue/log"
 	"github.com/CaliLuke/loom/security"
 )
 
@@ -112,6 +119,63 @@ func authenticatedModuleReads(t *testing.T, repository *moduleReadsRepositoryStu
 		t.Fatal(err)
 	}
 	return service, ctx
+}
+
+func TestModuleListInternalFailureLogsSafeRequestContext(t *testing.T) {
+	const requestID = "123e4567-e89b-42d3-a456-426614174000"
+	const privateDetail = "sensitive database detail"
+
+	repository := &moduleReadsRepositoryStub{err: errors.New(privateDetail)}
+	serviceValue, err := NewModuleReads(repository, moduleReadsSessionsStub{}, &moduleRecentVisitsStub{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	service := serviceValue.(*moduleReadsService)
+	var logs bytes.Buffer
+	handler := platform.RequestIDMiddleware(http.HandlerFunc(func(_ http.ResponseWriter, request *http.Request) {
+		ctx := log.Context(request.Context(),
+			log.WithOutputs(log.Output{Writer: &logs, Format: log.FormatJSON}),
+			log.WithFunc(func(ctx context.Context) []log.KV {
+				id, ok := platform.RequestID(ctx)
+				if !ok {
+					return nil
+				}
+				return []log.KV{{K: log.RequestIDKey, V: id}}
+			}),
+			log.WithDisableBuffering(func(context.Context) bool { return true }),
+		)
+		ctx = context.WithValue(ctx, moduleReadsPrincipal{}, uuid.MustParse(userIDFixture))
+		_, _, readErr := service.List(ctx, &api.ListPayload{Slug: "demo", ProjectID: projectIDFixture})
+		var internal *api.ModuleReadsInternalError
+		if !errors.As(readErr, &internal) {
+			t.Errorf("error=%T %v, want unchanged generic internal response", readErr, readErr)
+		}
+	}))
+	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/demo/projects/"+projectIDFixture+"/modules/", nil)
+	request.Header.Set(platform.RequestIDHeader, requestID)
+	handler.ServeHTTP(httptest.NewRecorder(), request)
+
+	var entries []map[string]any
+	decoder := json.NewDecoder(&logs)
+	for {
+		var entry map[string]any
+		if err := decoder.Decode(&entry); errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			t.Fatalf("decode log entry: %v; logs=%s", err, logs.String())
+		}
+		entries = append(entries, entry)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("entries=%#v; logs=%s", entries, logs.String())
+	}
+	entry := entries[0]
+	if entry[log.RequestIDKey] != requestID || entry["error_kind"] != "other" || entry["operation"] != "module_reads.list" {
+		t.Fatalf("unsafe or incomplete classification: %#v", entry)
+	}
+	if strings.Contains(logs.String(), privateDetail) {
+		t.Fatalf("log leaked raw repository error: %s", logs.String())
+	}
 }
 
 func TestNewModuleReadsRequiresDependencies(t *testing.T) {
@@ -474,5 +538,17 @@ func TestModuleAndLinkDetailsUseEndpointSpecificNotFoundEnvelopesForInvalidIDs(t
 	var moduleNotFound *api.ModuleReadsModuleNotFound
 	if !errors.As(err, &moduleNotFound) || moduleNotFound.Message != "Module not found" {
 		t.Fatalf("module err=%T %v", err, err)
+	}
+}
+
+func TestModuleIssuePropertyProjectionRequiresExplicitOptIn(t *testing.T) {
+	repository, visits := &moduleReadsRepositoryStub{}, &moduleRecentVisitsStub{}
+	service, ctx := authenticatedModuleReads(t, repository, visits)
+	for _, value := range []string{"", "false", "true"} {
+		scoped := WithReadServiceQueryPresence(ctx, url.Values{"include_properties": {value}})
+		readRawResponse(t, captureRawResponse(service.Issues(scoped, &api.IssuesPayload{Slug: "demo", ProjectID: projectIDFixture, ModuleID: moduleIDFixture})))
+		if repository.issueOptions.IncludeProperties != (value == "true") {
+			t.Fatalf("projection flag %q = %v", value, repository.issueOptions.IncludeProperties)
+		}
 	}
 }

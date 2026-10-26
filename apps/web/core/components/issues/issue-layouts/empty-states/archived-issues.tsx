@@ -5,49 +5,24 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
-import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
-import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-work-item-filter-instance";
+import { IssueListEmptyState } from "./issue-list-empty-state";
 
-export const ProjectArchivedEmptyState = observer(function ProjectArchivedEmptyState() {
+export const ProjectArchivedEmptyState = function ProjectArchivedEmptyState() {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  // derived values
-  const archivedWorkItemFilter = useWorkItemFilterInstance(EIssuesStoreType.ARCHIVED, projectId);
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
-
   return (
-    <div className="relative h-full w-full overflow-y-auto">
-      {archivedWorkItemFilter?.hasActiveFilters ? (
-        <EmptyStateDetailed
-          assetKey="search"
-          title={t("common_empty_state.search.title")}
-          description={t("common_empty_state.search.description")}
-          actions={[
-            {
-              label: "Clear filters",
-              onClick: archivedWorkItemFilter?.clearFilters,
-              disabled: !canPerformEmptyStateActions || !archivedWorkItemFilter,
-              variant: "secondary",
-            },
-          ]}
-        />
-      ) : (
+    <IssueListEmptyState clearFiltersLabel="Clear filters">
+      {(canPerformEmptyStateActions) => (
         <EmptyStateDetailed
           assetKey="archived-work-item"
           title={t("workspace_empty_state.archive_work_items.title")}
@@ -63,6 +38,6 @@ export const ProjectArchivedEmptyState = observer(function ProjectArchivedEmptyS
           ]}
         />
       )}
-    </div>
+    </IssueListEmptyState>
   );
-});
+};

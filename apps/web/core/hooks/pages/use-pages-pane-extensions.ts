@@ -7,6 +7,7 @@
 import { useCallback, useMemo } from "react";
 import type { RefObject } from "react";
 
+import type { TPage } from "@plane/types";
 import type { EditorRefApi } from "@plane/editor";
 import {
   PAGE_NAVIGATION_PANE_TAB_KEYS,
@@ -17,11 +18,10 @@ import {
 import { useQueryParams } from "@/hooks/use-query-params";
 import type { TPageNavigationPaneTab } from "@/components/pages/navigation-pane/tab-panels";
 import type { INavigationPaneExtension } from "@/components/pages/navigation-pane";
-import type { TPageInstance } from "@/store/pages/base-page";
 import { useLocation, useRouter } from "@tanstack/react-router";
 
 export type TPageExtensionHookParams = {
-  page: TPageInstance;
+  page: TPage;
   editorRef: RefObject<EditorRefApi | null>;
 };
 

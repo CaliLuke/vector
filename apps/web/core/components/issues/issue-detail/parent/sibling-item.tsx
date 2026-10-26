@@ -4,35 +4,29 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { TIssue } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
 // helpers
-import { generateWorkItemLink } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 
 type TIssueParentSiblingItem = {
   workspaceSlug: string;
-  issueId: string;
+  issue: TIssue;
 };
 
-export const IssueParentSiblingItem = observer(function IssueParentSiblingItem(props: TIssueParentSiblingItem) {
-  const { workspaceSlug, issueId } = props;
+export function IssueParentSiblingItem(props: TIssueParentSiblingItem) {
+  const { workspaceSlug, issue: issueDetail } = props;
   // hooks
-  const { getProjectById } = useProject();
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
-  // derived values
-  const issueDetail = (issueId && getIssueById(issueId)) || undefined;
-  if (!issueDetail) return <></>;
-
-  const projectDetails = (issueDetail.project_id && getProjectById(issueDetail.project_id)) || undefined;
+  const projectDetails =
+    (issueDetail.project_id && projectRows?.find((project) => project.id === issueDetail.project_id)) || undefined;
 
   const workItemLink = generateWorkItemLink({
     workspaceSlug,
@@ -62,4 +56,4 @@ export const IssueParentSiblingItem = observer(function IssueParentSiblingItem(p
       </CustomMenu.MenuItem>
     </>
   );
-});
+}

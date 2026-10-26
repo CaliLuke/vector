@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 // types
@@ -14,15 +13,15 @@ import { AppliedPriorityFilters } from "./priority";
 import { AppliedStateFilters } from "./state";
 
 type Props = {
-  appliedFilters: TFilters;
+  appliedFilters: Partial<Record<keyof TFilters, string[]>>;
   handleRemoveAllFilters: () => void;
   handleRemoveFilter: (key: keyof TFilters, value: string | null) => void;
 };
 
 export const replaceUnderscoreIfSnakeCase = (str: string) => str.replace(/_/g, " ");
 
-export const AppliedFiltersList = observer(function AppliedFiltersList(props: Props) {
-  const { appliedFilters = {}, handleRemoveAllFilters, handleRemoveFilter } = props;
+export const AppliedFiltersList = function AppliedFiltersList(props: Props) {
+  const { appliedFilters, handleRemoveAllFilters, handleRemoveFilter } = props;
   const { t } = useTranslation();
 
   return (
@@ -75,4 +74,4 @@ export const AppliedFiltersList = observer(function AppliedFiltersList(props: Pr
       </button>
     </div>
   );
-});
+};

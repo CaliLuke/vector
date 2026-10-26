@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { InboxIcon } from "@plane/propel/icons";
@@ -18,9 +17,7 @@ type TNotificationSidebarHeader = {
   workspaceSlug: string;
 };
 
-export const NotificationSidebarHeader = observer(function NotificationSidebarHeader(
-  props: TNotificationSidebarHeader
-) {
+export const NotificationSidebarHeader = function NotificationSidebarHeader(props: TNotificationSidebarHeader) {
   const { workspaceSlug } = props;
   const { t } = useTranslation();
 
@@ -41,8 +38,8 @@ export const NotificationSidebarHeader = observer(function NotificationSidebarHe
         </Breadcrumbs>
       </Header.LeftItem>
       <Header.RightItem>
-        <NotificationSidebarHeaderOptions workspaceSlug={workspaceSlug} />
+        <NotificationSidebarHeaderOptions />
       </Header.RightItem>
     </Header>
   );
-});
+};

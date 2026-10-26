@@ -10,7 +10,7 @@ import { BarChart } from "@plane/propel/charts/bar-chart";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import type { IUserProfileData } from "@plane/types";
 import { Loader, Card } from "@plane/ui";
-import { capitalizeFirstLetter } from "@plane/utils";
+import { capitalizeFirstLetter } from "@plane/utils/string";
 
 type Props = {
   userProfile: IUserProfileData | undefined;

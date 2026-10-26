@@ -46,11 +46,3 @@ export type TIssueActivity = {
     };
   };
 };
-
-export type TIssueActivityMap = {
-  [issue_id: string]: TIssueActivity;
-};
-
-export type TIssueActivityIdMap = {
-  [issue_id: string]: string[];
-};

@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
+import { useProjectLabels } from "@/hooks/use-labels";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 export type TReadonlyLabelsProps = {
@@ -22,20 +20,14 @@ export type TReadonlyLabelsProps = {
   workspaceSlug: string;
 };
 
-export const ReadonlyLabels = observer(function ReadonlyLabels(props: TReadonlyLabelsProps) {
+export function ReadonlyLabels(props: TReadonlyLabelsProps) {
   const { className, value, projectId, workspaceSlug } = props;
 
-  const { getLabelById, fetchProjectLabels } = useLabel();
+  const { getLabelById } = useProjectLabels(workspaceSlug, projectId);
   const { isMobile } = usePlatformOS();
   const labels = value
     .map((labelId) => getLabelById(labelId))
     .filter((label): label is NonNullable<typeof label> => Boolean(label));
-
-  useEffect(() => {
-    if (projectId) {
-      fetchProjectLabels(workspaceSlug?.toString(), projectId);
-    }
-  }, [projectId, workspaceSlug]);
 
   return (
     <div className={cn("flex items-center gap-2 text-body-xs-regular", className)}>
@@ -58,4 +50,4 @@ export const ReadonlyLabels = observer(function ReadonlyLabels(props: TReadonlyL
       )}
     </div>
   );
-});
+}

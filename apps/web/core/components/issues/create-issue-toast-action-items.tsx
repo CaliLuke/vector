@@ -5,13 +5,16 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
-import { copyUrlToClipboard, generateWorkItemLink } from "@plane/utils";
+
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // plane imports
 // helpers
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
+import { EIssueServiceType } from "@plane/types";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 type TCreateIssueToastActionItems = {
   workspaceSlug: string;
@@ -20,21 +23,23 @@ type TCreateIssueToastActionItems = {
   isEpic?: boolean;
 };
 
-export const CreateIssueToastActionItems = observer(function CreateIssueToastActionItems(
-  props: TCreateIssueToastActionItems
-) {
+export const CreateIssueToastActionItems = function CreateIssueToastActionItems(props: TCreateIssueToastActionItems) {
   const { workspaceSlug, issueId, isEpic = false } = props;
   // state
   const [copied, setCopied] = useState(false);
   // store hooks
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
-  const { getProjectIdentifierById } = useProject();
+  const issueData = useWorkItemDetail(
+    workspaceSlug,
+    props.projectId,
+    issueId,
+    isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
+  );
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   // derived values
-  const issue = getIssueById(issueId);
-  const projectIdentifier = getProjectIdentifierById(issue?.project_id);
+  const issue = issueData.issue;
+  const projectIdentifier = projectRows?.find((project) => project.id === issue?.project_id)?.identifier ?? "";
 
   if (!issue) return null;
 
@@ -86,4 +91,12 @@ export const CreateIssueToastActionItems = observer(function CreateIssueToastAct
       )}
     </div>
   );
-});
+};
+
+export function notifyIssueCreated({
+  title,
+  message,
+  ...issue
+}: TCreateIssueToastActionItems & { title: string; message: string }) {
+  setToast({ type: TOAST_TYPE.SUCCESS, title, message, actionItems: <CreateIssueToastActionItems {...issue} /> });
+}

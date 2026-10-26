@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
 import type { TModuleDistribution, TModuleEstimateDistribution, TModulePlotType } from "@plane/types";
 import type { TSelectedFilterProgressStats } from "@/components/core/sidebar/progress-stats/shared";
@@ -24,7 +23,7 @@ type TModuleProgressStats = {
   totalIssuesCount: number;
 };
 
-export const ModuleProgressStats = observer(function ModuleProgressStats(props: TModuleProgressStats) {
+export const ModuleProgressStats = function ModuleProgressStats(props: TModuleProgressStats) {
   const {
     distribution,
     groupedIssues,
@@ -52,4 +51,4 @@ export const ModuleProgressStats = observer(function ModuleProgressStats(props: 
       totalIssuesCount={totalIssuesCount}
     />
   );
-});
+};

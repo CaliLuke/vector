@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // ui
 import { Checkbox } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 
@@ -20,7 +19,7 @@ type Props = {
   selectionHelpers: TSelectionHelper;
 };
 
-export const MultipleSelectEntityAction = observer(function MultipleSelectEntityAction(props: Props) {
+export const MultipleSelectEntityAction = function MultipleSelectEntityAction(props: Props) {
   const { className, disabled = false, groupId, id, selectionHelpers } = props;
   // derived values
   const isSelected = selectionHelpers.getIsEntitySelected(id);
@@ -42,4 +41,4 @@ export const MultipleSelectEntityAction = observer(function MultipleSelectEntity
       readOnly
     />
   );
-});
+};

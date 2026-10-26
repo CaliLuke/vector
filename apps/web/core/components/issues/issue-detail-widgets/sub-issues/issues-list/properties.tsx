@@ -7,11 +7,12 @@
 // plane imports
 import type { SyntheticEvent } from "react";
 import { useMemo } from "react";
-import { observer } from "mobx-react";
+
 import { useTranslation } from "@plane/i18n";
 import { StartDatePropertyIcon, DueDatePropertyIcon } from "@plane/propel/icons";
 import type { IIssueDisplayProperties, TIssue } from "@plane/types";
-import { getDate, renderFormattedPayloadDate, shouldHighlightIssueDueDate } from "@plane/utils";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { shouldHighlightIssueDueDate } from "@plane/utils/work-item";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 import { DateRangeDropdown } from "@/components/dropdowns/date-range";
@@ -20,7 +21,7 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/properties/with-display-properties-HOC";
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useProjectStates } from "@/hooks/use-project-states";
 
 type Props = {
   workspaceSlug: string;
@@ -39,10 +40,10 @@ type Props = {
   issue: TIssue;
 };
 
-export const SubIssuesListItemProperties = observer(function SubIssuesListItemProperties(props: Props) {
+export const SubIssuesListItemProperties = function SubIssuesListItemProperties(props: Props) {
   const { workspaceSlug, parentIssueId, issueId, canEdit, updateSubIssue, displayProperties, issue } = props;
   const { t } = useTranslation();
-  const { getStateById } = useProjectState();
+  const { getStateById } = useProjectStates(workspaceSlug, issue.project_id);
 
   const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -207,6 +208,7 @@ export const SubIssuesListItemProperties = observer(function SubIssuesListItemPr
       <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="assignee">
         <div className="h-5 flex-shrink-0">
           <MemberDropdown
+            workspaceSlug={workspaceSlug}
             value={issue.assignee_ids}
             projectId={issue.project_id ?? undefined}
             onChange={(val) =>
@@ -224,4 +226,4 @@ export const SubIssuesListItemProperties = observer(function SubIssuesListItemPr
       </WithDisplayPropertiesHOC>
     </div>
   );
-});
+};

@@ -1,8 +1,9 @@
-import { createRouterFixture, routerApi } from "./helpers/router.mjs";
+import { routerApi } from "./helpers/router.mjs";
+import { createQueryRouterFixture } from "./helpers/query-router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { act, createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
+import { act, React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -10,9 +11,15 @@ const primitives = new URL("./helpers/workspace-ui-test-primitives.mjs", import.
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (
-      ["mobx-react", "@plane/constants", "@plane/i18n", "@plane/propel/icons", "@plane/utils", "lucide-react"].includes(
-        specifier
-      )
+      context.parentURL?.endsWith("/workspace/sidebar/dropdown-item.tsx") &&
+      [
+        "@plane/i18n",
+        "@plane/propel/icons",
+        "@plane/utils/common",
+        "@plane/utils/file",
+        "@plane/utils/permission",
+        "lucide-react",
+      ].includes(specifier)
     ) {
       return { shortCircuit: true, url: primitives };
     }
@@ -21,6 +28,7 @@ registerHooks({
 });
 
 const { useLocation } = routerApi;
+const identityQueries = await import("../../apps/web/core/queries/identity.ts");
 
 function CurrentLocation() {
   const { pathname } = useLocation();
@@ -28,16 +36,14 @@ function CurrentLocation() {
 }
 
 test("workspace menu keyboard selection navigates through the real link", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
+  const fixture = await createQueryRouterFixture(t, "/default/");
+  fixture.client.setQueryData(identityQueries.currentUserOptions().queryKey, { id: "alice" });
   const { Menu } = await import("../../apps/web/node_modules/@headlessui/react/dist/headlessui.esm.js");
   const { default: SidebarDropdownItem } =
     await import("../../apps/web/core/components/workspace/sidebar/dropdown-item.tsx");
   let selectedWorkspace;
   const workspace = { id: "other", slug: "other", name: "Other", role: "MEMBER" };
-  const fixture = createRouterFixture("/default/");
   await fixture.render(
-    environment,
     React.createElement(
       React.Fragment,
       null,
@@ -63,7 +69,7 @@ test("workspace menu keyboard selection navigates through the real link", async 
     )
   );
 
-  await act(() => environment.container.querySelector("button").click());
+  await act(() => fixture.environment.container.querySelector("button").click());
   const menu = document.querySelector("[role=menu]");
   await act(() =>
     menu.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }))
@@ -71,7 +77,7 @@ test("workspace menu keyboard selection navigates through the real link", async 
   assert.ok(menu.getAttribute("aria-activedescendant"));
   await act(() => menu.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })));
 
-  assert.equal(environment.container.querySelector("output").textContent, "/other/");
+  assert.equal(fixture.environment.container.querySelector("output").textContent, "/other/");
   assert.equal(selectedWorkspace, workspace);
   assert.ok(!document.querySelector("[role=menu]"), "selection should close the menu");
 });

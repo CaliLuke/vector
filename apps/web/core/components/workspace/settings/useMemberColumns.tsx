@@ -7,60 +7,51 @@
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { EUserPermissions, EUserPermissionsLevel, LOGIN_MEDIUM_LABELS } from "@plane/constants";
+import { EUserPermissions, LOGIN_MEDIUM_LABELS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 import { MemberHeaderColumn } from "@/components/project/member-header-column";
 import type { RowData } from "@/components/workspace/settings/member-columns";
 import { AccountTypeColumn, NameColumn } from "@/components/workspace/settings/member-columns";
-import { useMember } from "@/hooks/store/use-member";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
-import type { IMemberFilters } from "@/store/member/utils";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import type { IMemberFilters } from "@/helpers/member-ordering";
 
-export const useMemberColumns = () => {
+export const useMemberColumns = (props: {
+  filters: IMemberFilters;
+  onFilterUpdate: (updates: Partial<IMemberFilters>) => void;
+}) => {
+  const { filters, onFilterUpdate } = props;
   // states
   const [removeMemberModal, setRemoveMemberModal] = useState<RowData | null>(null);
 
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
-  const { data: currentUser } = useUser();
-  const { allowPermissions } = useUserPermissions();
-  const {
-    workspace: {
-      filtersStore: { filters, updateFilters },
-    },
-  } = useMember();
+  const { data: currentUser } = useCurrentUser();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { t } = useTranslation();
 
   // derived values
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
 
   // oxlint-disable-next-line unicorn/consistent-function-scoping
   const isSuspended = (rowData: RowData) => rowData.is_active === false;
 
   // handlers
-  const handleDisplayFilterUpdate = (filterUpdates: Partial<IMemberFilters>) => {
-    updateFilters(filterUpdates);
-  };
-
   const columns = [
     {
       key: "Full name",
       content: t("workspace_settings.settings.members.details.full_name"),
       thClassName: "text-left",
       thRender: () => (
-        <MemberHeaderColumn
-          property="full_name"
-          displayFilters={filters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
+        <MemberHeaderColumn property="full_name" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
       ),
       tdRender: (rowData: RowData) => (
         <NameColumn
           rowData={rowData}
           workspaceSlug={workspaceSlug}
           isAdmin={isAdmin}
-          currentUser={currentUser}
+          currentUser={currentUser ?? undefined}
           setRemoveMemberModal={setRemoveMemberModal}
         />
       ),
@@ -76,7 +67,7 @@ export const useMemberColumns = () => {
         <MemberHeaderColumn
           property="display_name"
           displayFilters={filters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
+          handleDisplayFilterUpdate={onFilterUpdate}
         />
       ),
     },
@@ -88,11 +79,7 @@ export const useMemberColumns = () => {
         <div className={`w-48 truncate ${isSuspended(rowData) ? "text-placeholder" : ""}`}>{rowData.member.email}</div>
       ),
       thRender: () => (
-        <MemberHeaderColumn
-          property="email"
-          displayFilters={filters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
+        <MemberHeaderColumn property="email" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
       ),
     },
 
@@ -100,11 +87,7 @@ export const useMemberColumns = () => {
       key: "Account type",
       content: t("workspace_settings.settings.members.details.account_type"),
       thRender: () => (
-        <MemberHeaderColumn
-          property="role"
-          displayFilters={filters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-        />
+        <MemberHeaderColumn property="role" displayFilters={filters} handleDisplayFilterUpdate={onFilterUpdate} />
       ),
       tdRender: (rowData: RowData) => <AccountTypeColumn rowData={rowData} workspaceSlug={workspaceSlug} />,
     },
@@ -114,7 +97,7 @@ export const useMemberColumns = () => {
       content: t("workspace_settings.settings.members.details.authentication"),
       tdRender: (rowData: RowData) => {
         if (isSuspended(rowData)) return null;
-        const loginMedium = rowData.member.last_login_medium;
+        const loginMedium = rowData.last_login_medium;
         if (!loginMedium) return null;
         return <div>{LOGIN_MEDIUM_LABELS[loginMedium]}</div>;
       },
@@ -129,7 +112,7 @@ export const useMemberColumns = () => {
         <MemberHeaderColumn
           property="joining_date"
           displayFilters={filters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
+          handleDisplayFilterUpdate={onFilterUpdate}
         />
       ),
     },

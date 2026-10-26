@@ -4,29 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { MessageSquare } from "lucide-react";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent, IssueLink } from "./";
 
-type TIssueLinkActivity = { activityId: string; showIssue?: boolean; ends: "top" | "bottom" | undefined };
+type TIssueLinkActivity = { activity: TIssueActivity; showIssue?: boolean; ends: "top" | "bottom" | undefined };
 
-export const IssueLinkActivity = observer(function IssueLinkActivity(props: TIssueLinkActivity) {
-  const { activityId, showIssue = false, ends } = props;
+export const IssueLinkActivity = function IssueLinkActivity(props: TIssueLinkActivity) {
+  const { activity, showIssue = false, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
       icon={<MessageSquare size={14} className="text-secondary" aria-hidden="true" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
@@ -68,8 +62,8 @@ export const IssueLinkActivity = observer(function IssueLinkActivity(props: TIss
           </>
         )}
         {showIssue && (activity.verb === "created" ? ` to ` : ` from `)}
-        {showIssue && <IssueLink activityId={activityId} />}.
+        {showIssue && <IssueLink activity={activity} />}.
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

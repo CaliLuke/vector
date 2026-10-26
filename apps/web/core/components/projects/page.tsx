@@ -4,28 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import useSWR from "swr";
 // components
 import { ProjectRoot } from "@/components/project/root";
-// hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useWorkspace } from "@/hooks/store/use-workspace";
 
-export const ProjectPageRoot = observer(function ProjectPageRoot() {
-  // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // store
-  const { currentWorkspace } = useWorkspace();
-  const { fetchProjects } = useProject();
-  // fetching workspace projects
-  useSWR(
-    workspaceSlug && currentWorkspace ? `WORKSPACE_PROJECTS_${workspaceSlug}` : null,
-    workspaceSlug && currentWorkspace ? () => fetchProjects(workspaceSlug.toString()) : null,
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
-
+export function ProjectPageRoot() {
   return <ProjectRoot />;
-});
+}

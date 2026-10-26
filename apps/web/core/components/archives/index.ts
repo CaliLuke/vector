@@ -5,3 +5,4 @@
  */
 
 export * from "./archive-tabs-list";
+export * from "./archive-catalogue-header";

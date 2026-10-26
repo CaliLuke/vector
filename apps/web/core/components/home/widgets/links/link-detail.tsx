@@ -5,7 +5,6 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
 
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, NewTabIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
@@ -13,37 +12,29 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { LinkItemBlock } from "@plane/ui";
 // plane utils
-import { copyTextToClipboard } from "@plane/utils";
+import { copyTextToClipboard } from "@plane/utils/string";
 // hooks
-import { useHome } from "@/hooks/store/use-home";
+import type { TLink } from "@plane/types";
 // types
 import type { TLinkOperations } from "./use-links";
 
 export type TProjectLinkDetail = {
-  linkId: string;
+  linkDetail: TLink;
+  onEdit: (link: TLink) => void;
   linkOperations: TLinkOperations;
 };
 
-export const ProjectLinkDetail = observer(function ProjectLinkDetail(props: TProjectLinkDetail) {
+export const ProjectLinkDetail = function ProjectLinkDetail(props: TProjectLinkDetail) {
   // props
-  const { linkId, linkOperations } = props;
+  const { linkDetail, linkOperations, onEdit } = props;
   // hooks
-  const {
-    quickLinks: { getLinkById, toggleLinkModal, setLinkData },
-  } = useHome();
   const { t } = useTranslation();
   // derived values
-  const linkDetail = getLinkById(linkId);
+  const linkId = linkDetail.id;
   const linkUrl = linkDetail?.url;
 
   // handlers
-  const handleEdit = useCallback(
-    (modalToggle: boolean) => {
-      toggleLinkModal(modalToggle);
-      setLinkData(linkDetail);
-    },
-    [linkDetail, setLinkData, toggleLinkModal]
-  );
+  const handleEdit = useCallback(() => onEdit(linkDetail), [linkDetail, onEdit]);
 
   const handleCopyText = useCallback(() => {
     if (!linkUrl) return;
@@ -61,7 +52,7 @@ export const ProjectLinkDetail = observer(function ProjectLinkDetail(props: TPro
   }, [linkUrl]);
 
   const handleDelete = useCallback(() => {
-    linkOperations.remove(linkId);
+    void linkOperations.remove(linkId).catch(console.error);
   }, [linkId, linkOperations]);
 
   // derived values
@@ -69,7 +60,7 @@ export const ProjectLinkDetail = observer(function ProjectLinkDetail(props: TPro
     () => [
       {
         key: "edit",
-        action: () => handleEdit(true),
+        action: handleEdit,
         title: t("edit"),
         icon: EditIcon,
       },
@@ -106,4 +97,4 @@ export const ProjectLinkDetail = observer(function ProjectLinkDetail(props: TPro
       onClick={handleOpenInNewTab}
     />
   );
-});
+};

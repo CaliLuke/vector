@@ -4,14 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 import type { ReactNode } from "react";
-import type { EPageStoreType } from "@/hooks/store";
-import type { TPageInstance } from "@/store/pages/base-page";
 
 export interface INavigationPaneExtensionProps<T = Record<string, unknown>> {
-  page: TPageInstance;
+  page: TPage;
   extensionData?: T;
-  storeType: EPageStoreType;
 }
 
 export interface INavigationPaneExtensionComponent<T = Record<string, unknown>> {

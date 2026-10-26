@@ -11,7 +11,7 @@ import { BubbleMenu } from "@tiptap/react/menus";
 import type { BubbleMenuProps } from "@tiptap/react/menus";
 import { useEffect, useState, useRef } from "react";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import type { EditorMenuItem } from "@/components/menus";
 import {

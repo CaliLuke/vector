@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { ENotificationTab } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -14,7 +13,7 @@ type TNotificationEmptyStateProps = {
   currentNotificationTab: ENotificationTab;
 };
 
-export const NotificationEmptyState = observer(function NotificationEmptyState({
+export const NotificationEmptyState = function NotificationEmptyState({
   currentNotificationTab,
 }: TNotificationEmptyStateProps) {
   // plane imports
@@ -34,4 +33,4 @@ export const NotificationEmptyState = observer(function NotificationEmptyState({
       />
     </>
   );
-});
+};

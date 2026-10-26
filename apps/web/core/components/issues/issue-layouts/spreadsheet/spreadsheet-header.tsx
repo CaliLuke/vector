@@ -1,3 +1,4 @@
+import type { WorkItemPropertyIdentity } from "@/services/work-item-types.service";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -5,32 +6,33 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // constants
 import { SPREADSHEET_SELECT_GROUP } from "@plane/constants";
 // ui
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
+import type { TIssueStandardDisplayProperty, IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
 // hooks
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 import { SpreadsheetHeaderColumn } from "./spreadsheet-header-column";
 
 interface Props {
+  customColumns: WorkItemPropertyIdentity[];
   displayProperties: IIssueDisplayProperties;
   displayFilters: IIssueDisplayFilterOptions;
   handleDisplayFilterUpdate: (data: Partial<IIssueDisplayFilterOptions>) => void;
   canEditProperties: (projectId: string | undefined) => boolean;
   isEstimateEnabled: boolean;
-  spreadsheetColumnsList: (keyof IIssueDisplayProperties)[];
+  spreadsheetColumnsList: TIssueStandardDisplayProperty[];
   selectionHelpers: TSelectionHelper;
   isEpic?: boolean;
 }
 
-export const SpreadsheetHeader = observer(function SpreadsheetHeader(props: Props) {
+export const SpreadsheetHeader = function SpreadsheetHeader(props: Props) {
   const {
+    customColumns,
     displayProperties,
     displayFilters,
     handleDisplayFilterUpdate,
@@ -88,7 +90,18 @@ export const SpreadsheetHeader = observer(function SpreadsheetHeader(props: Prop
             isEpic={isEpic}
           />
         ))}
+        {customColumns.map((field) => (
+          <th
+            key={field.key}
+            scope="col"
+            tabIndex={0}
+            className="h-11 max-w-72 min-w-44 border-r border-subtle bg-layer-1 px-3 text-left text-13 font-medium"
+            title={field.name}
+          >
+            <span className="block truncate">{field.name}</span>
+          </th>
+        ))}
       </tr>
     </thead>
   );
-});
+};

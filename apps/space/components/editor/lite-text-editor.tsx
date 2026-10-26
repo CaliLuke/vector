@@ -9,13 +9,12 @@ import React from "react";
 import { LiteTextEditorWithRef } from "@plane/editor";
 import type { EditorRefApi, ILiteTextEditorProps, TFileHandler } from "@plane/editor";
 import type { MakeOptional } from "@plane/types";
-import { cn, isCommentEmpty } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { isCommentEmpty } from "@plane/utils/string";
 // helpers
 import { getEditorFileHandlers } from "@/helpers/editor.helper";
 // hooks
 import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
-// plane web imports
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
 // local imports
 import { EditorMentionsRoot } from "./embeds/mentions";
 import { IssueCommentToolbar } from "./toolbar";
@@ -58,7 +57,6 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
   // derived values
   const isEmpty = isCommentEmpty(props.initialValue);
   const editorRef = isMutableRefObject<EditorRefApi>(ref) ? ref.current : null;
-  const { liteText: liteTextEditorExtensions } = useEditorFlagging(anchor);
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
     anchor,
@@ -68,8 +66,8 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
     <div className="space-y-3 rounded-sm border border-subtle p-3">
       <LiteTextEditorWithRef
         ref={ref}
-        disabledExtensions={[...liteTextEditorExtensions.disabled, ...additionalDisabledExtensions]}
-        flaggedExtensions={liteTextEditorExtensions.flagged}
+        disabledExtensions={additionalDisabledExtensions}
+        flaggedExtensions={[]}
         editable={editable}
         fileHandler={getEditorFileHandlers({
           anchor,

@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import { useState } from "react";
-import { Tooltip } from "@plane/propel/tooltip";
 import type { ICustomSearchSelectOption } from "@plane/types";
 import { CustomSearchSelect } from "../dropdowns";
 import { cn } from "../utils";
@@ -40,19 +39,19 @@ export function BreadcrumbNavigationSearchDropdown(props: TBreadcrumbNavigationS
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const label = (
-    <Tooltip tooltipContent={title} position="bottom">
+    <Breadcrumbs.ItemWrapper label={title} isLast={isLast}>
       <span className="flex min-w-0 items-center gap-2">
         {shouldTruncate && <span className="flex text-tertiary @4xl:hidden">...</span>}
         <span
-          className={cn("flex min-w-0 gap-2", {
-            "hidden items-center gap-2 @4xl:flex": shouldTruncate,
+          className={cn("flex min-w-0 items-center gap-2", {
+            "hidden @4xl:flex": shouldTruncate,
           })}
         >
           {icon && <Breadcrumbs.Icon>{icon}</Breadcrumbs.Icon>}
           <Breadcrumbs.Label>{title}</Breadcrumbs.Label>
         </span>
       </span>
-    </Tooltip>
+    </Breadcrumbs.ItemWrapper>
   );
 
   const separator = (
@@ -78,10 +77,9 @@ export function BreadcrumbNavigationSearchDropdown(props: TBreadcrumbNavigationS
         event.stopPropagation();
         handleOnClick?.();
       }}
-      className={cn(
-        "group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none px-1.5 py-1 text-13 font-medium text-tertiary",
-        { "hover:bg-layer-1 hover:text-primary": !isLast }
-      )}
+      className={cn("group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none text-tertiary", {
+        "hover:bg-layer-1 hover:text-primary": !isLast,
+      })}
     >
       {label}
     </button>

@@ -4,12 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import useSWR from "swr";
 import type { TPageNavigationTabs } from "@plane/types";
-// hooks
-import type { EPageStoreType } from "@/hooks/store";
-import { usePageStore } from "@/hooks/store";
+import { PageListProvider, usePageList } from "./page-record-context";
 // local imports
 import { PagesListHeaderRoot } from "./header";
 import { PagesListMainContent } from "./pages-list-main-content";
@@ -18,35 +14,28 @@ type TPageView = {
   children: React.ReactNode;
   pageType: TPageNavigationTabs;
   projectId: string;
-  storeType: EPageStoreType;
   workspaceSlug: string;
 };
 
-export const PagesListView = observer(function PagesListView(props: TPageView) {
-  const { children, pageType, projectId, storeType, workspaceSlug } = props;
-  // store hooks
-  const { isAnyPageAvailable, fetchPagesList } = usePageStore(storeType);
-  // fetching pages list
-  useSWR(
-    workspaceSlug && projectId && pageType ? `PROJECT_PAGES_${projectId}` : null,
-    workspaceSlug && projectId && pageType ? () => fetchPagesList(workspaceSlug, projectId, pageType) : null
+export function PagesListView(props: TPageView) {
+  const { children, pageType, projectId, workspaceSlug } = props;
+  return (
+    <PageListProvider workspaceSlug={workspaceSlug} projectId={projectId} pageType={pageType}>
+      <PagesListContents pageType={pageType} projectId={projectId} workspaceSlug={workspaceSlug}>
+        {children}
+      </PagesListContents>
+    </PageListProvider>
   );
+}
 
-  // pages loader
+function PagesListContents({ children, pageType, projectId, workspaceSlug }: TPageView) {
+  const { pages } = usePageList();
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden">
-      {/* tab header */}
-      {isAnyPageAvailable && (
-        <PagesListHeaderRoot
-          pageType={pageType}
-          projectId={projectId}
-          storeType={storeType}
-          workspaceSlug={workspaceSlug}
-        />
+      {pages.length > 0 && (
+        <PagesListHeaderRoot pageType={pageType} projectId={projectId} workspaceSlug={workspaceSlug} />
       )}
-      <PagesListMainContent pageType={pageType} storeType={storeType}>
-        {children}
-      </PagesListMainContent>
+      <PagesListMainContent pageType={pageType}>{children}</PagesListMainContent>
     </div>
   );
-});
+}

@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { Header, EHeaderVariant } from "@plane/ui";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 // local imports
 import { InboxIssueAppliedFiltersDate } from "./date";
 import { InboxIssueAppliedFiltersLabel } from "./label";
@@ -17,10 +16,10 @@ import { InboxIssueAppliedFiltersPriority } from "./priority";
 import { InboxIssueAppliedFiltersState } from "./state";
 import { InboxIssueAppliedFiltersStatus } from "./status";
 
-export const InboxIssueAppliedFilters = observer(function InboxIssueAppliedFilters() {
-  const { getAppliedFiltersCount } = useProjectInbox();
+export const InboxIssueAppliedFilters = function InboxIssueAppliedFilters() {
+  const { appliedFilterCount } = useIntakePreferences();
 
-  if (getAppliedFiltersCount === 0) return <></>;
+  if (appliedFilterCount === 0) return <></>;
   return (
     <Header variant={EHeaderVariant.TERNARY}>
       {/* status */}
@@ -41,4 +40,4 @@ export const InboxIssueAppliedFilters = observer(function InboxIssueAppliedFilte
       <InboxIssueAppliedFiltersDate filterKey="updated_at" label="Updated date" />
     </Header>
   );
-});
+};

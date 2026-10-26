@@ -9,12 +9,12 @@ import { PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { ChevronRightIcon } from "@plane/propel/icons";
 import { EPillVariant, Pill, EPillSize } from "@plane/propel/pill";
 import { ToggleSwitch } from "@plane/ui";
-import { joinUrlPath } from "@plane/utils";
+import { joinUrlPath } from "@plane/utils/string";
 
 type Props = {
   workspaceSlug: string;
   projectId: string;
-  featureItem: any;
+  featureItem: { href?: string; key: string; property: string };
   value: boolean;
   handleSubmit: (featureKey: string, featureProperty: string) => void;
   disabled?: boolean;

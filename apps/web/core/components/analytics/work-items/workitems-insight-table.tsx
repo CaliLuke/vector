@@ -4,11 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Logo } from "@plane/propel/emoji-icon-picker";
@@ -17,42 +15,26 @@ import { ProjectIcon } from "@plane/propel/icons";
 import type { AnalyticsTableDataMap, WorkItemInsightColumns } from "@plane/types";
 // plane web components
 import { Avatar } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-import { useProject } from "@/hooks/store/use-project";
-import { AnalyticsService } from "@/services/analytics.service";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { analyticsStatsOptions } from "@/queries/analytics";
 // plane web components
+import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
 import { exportCSV } from "../export";
 import { InsightTable } from "../insight-table";
 import type { AnalyticsColumnDef, AnalyticsRow } from "../insight-table/table-features";
 
-const analyticsService = new AnalyticsService();
-
-const WorkItemsInsightTable = observer(function WorkItemsInsightTable() {
-  // router
-  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const workspaceSlug = params.workspaceSlug.toString();
+const WorkItemsInsightTable = function WorkItemsInsightTable() {
   const { t } = useTranslation();
   // store hooks
-  const { getProjectById } = useProject();
-  const { selectedDuration, selectedProjects, selectedCycle, selectedModule, isPeekView, isEpic } = useAnalytics();
-  const { data: workItemsData, isLoading } = useSWR(
-    `insights-table-work-items-${workspaceSlug}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isPeekView}-${isEpic}`,
-    () =>
-      analyticsService.getAdvanceAnalyticsStats<WorkItemInsightColumns[]>(
-        workspaceSlug,
-        "work-items",
-        {
-          // date_filter: selectedDuration,
-          ...(selectedProjects?.length > 0 ? { project_ids: selectedProjects.join(",") } : {}),
-          ...(selectedCycle ? { cycle_id: selectedCycle } : {}),
-          ...(selectedModule ? { module_id: selectedModule } : {}),
-          ...(isEpic ? { epic: true } : {}),
-        },
-        isPeekView
-      )
-  );
+  const { scope, requestFilters, isPeekView } = useAnalyticsState();
+  const projectCatalogue = useWorkspaceProjectDetails(scope.workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const query = useQuery(analyticsStatsOptions(scope, requestFilters, isPeekView));
+  const { data: workItemsData, isLoading } = query;
+  const canRead = isPeekView ? scope.hasProjectAnalyticsAccess : scope.hasWorkspaceAnalyticsAccess;
   // derived values
   const columnsLabels: Record<keyof Omit<WorkItemInsightColumns, "project_id" | "avatar_url" | "assignee_id">, string> =
     useMemo(
@@ -74,7 +56,7 @@ const WorkItemsInsightTable = observer(function WorkItemsInsightTable() {
             accessorKey: "project__name",
             header: () => <div className="text-left">{columnsLabels["project__name"]}</div>,
             cell: ({ row }) => {
-              const project = getProjectById(row.original.project_id);
+              const project = projectRows?.find((candidate) => candidate.id === row.original.project_id);
               return (
                 <div className="flex items-center gap-2">
                   {project?.logo_props ? (
@@ -182,19 +164,27 @@ const WorkItemsInsightTable = observer(function WorkItemsInsightTable() {
         },
       },
     ],
-    [columnsLabels, getProjectById, isPeekView, t]
+    [columnsLabels, isPeekView, projectRows, t]
   );
   return (
-    <InsightTable<"work-items">
-      analyticsType="work-items"
-      data={workItemsData}
-      isLoading={isLoading}
-      columns={columns}
-      columnsLabels={columnsLabels}
-      headerText={isPeekView ? t("common.assignee") : t("common.projects")}
-      onExport={(rows) => workItemsData && exportCSV(rows, columns, workspaceSlug)}
-    />
+    <div className="flex flex-col gap-2">
+      {!canRead ? (
+        <AnalyticsAccessDenied />
+      ) : query.isError ? (
+        <AnalyticsQueryError onRetry={() => void query.refetch()} />
+      ) : (
+        <InsightTable<"work-items">
+          analyticsType="work-items"
+          data={workItemsData}
+          isLoading={isLoading}
+          columns={columns}
+          columnsLabels={columnsLabels}
+          headerText={isPeekView ? t("common.assignee") : t("common.projects")}
+          onExport={(rows) => workItemsData && exportCSV(rows, columns, scope.workspaceSlug ?? "")}
+        />
+      )}
+    </div>
   );
-});
+};
 
 export default WorkItemsInsightTable;

@@ -4,17 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
-import type { TModuleStatus } from "@plane/propel/icons";
 // plane imports
-import { CloseIcon, SearchIcon } from "@plane/propel/icons";
 import type { TModuleDisplayFilters, TModuleFilters } from "@plane/types";
 // components
 import { FilterOption } from "@/components/issues/issue-layouts/filters";
-import { FilterLead, FilterMembers, FilterStartDate, FilterStatus, FilterTargetDate } from "@/components/modules";
-// hooks
-import { usePlatformOS } from "@/hooks/use-platform-os";
+import { DateRangeFilters } from "@/components/core/filters/date-range-filters";
+import { FilterSelectionPanel } from "@/components/core/filters/filter-selection-panel";
+import { FilterLead } from "./lead";
+import { FilterMembers } from "./members";
+import { FilterStatus } from "./status";
 
 type Props = {
   displayFilters: TModuleDisplayFilters;
@@ -22,107 +20,81 @@ type Props = {
   handleDisplayFiltersUpdate: (updatedDisplayProperties: Partial<TModuleDisplayFilters>) => void;
   handleFiltersUpdate: (key: keyof TModuleFilters, value: string | string[]) => void;
   memberIds?: string[] | undefined;
+  workspaceSlug: string | undefined;
   isArchived?: boolean;
 };
 
-export const ModuleFiltersSelection = observer(function ModuleFiltersSelection(props: Props) {
+export const ModuleFiltersSelection = function ModuleFiltersSelection(props: Props) {
   const {
     displayFilters,
     filters,
     handleDisplayFiltersUpdate,
     handleFiltersUpdate,
     memberIds,
+    workspaceSlug,
     isArchived = false,
   } = props;
-  // states
-  const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
-  // store
-  const { isMobile } = usePlatformOS();
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="bg-surface-1 p-2.5 pb-0">
-        <div className="flex items-center gap-1.5 rounded-sm border-[0.5px] border-subtle bg-surface-2 px-1.5 py-1 text-11">
-          <SearchIcon className="text-placeholder" width={12} height={12} strokeWidth={2} />
-          <input
-            type="text"
-            className="w-full bg-surface-2 outline-none placeholder:text-placeholder"
-            placeholder="Search"
-            value={filtersSearchQuery}
-            onChange={(e) => setFiltersSearchQuery(e.target.value)}
-            autoFocus={!isMobile}
-          />
-          {filtersSearchQuery !== "" && (
-            <button type="button" className="grid place-items-center" onClick={() => setFiltersSearchQuery("")}>
-              <CloseIcon className="text-tertiary" height={12} width={12} strokeWidth={2} />
-            </button>
+    <FilterSelectionPanel>
+      {(searchQuery) => (
+        <>
+          {!isArchived && (
+            <div className="py-2">
+              <FilterOption
+                isChecked={!!displayFilters.favorites}
+                onClick={() =>
+                  handleDisplayFiltersUpdate({
+                    favorites: !displayFilters.favorites,
+                  })
+                }
+                title="Favorites"
+              />
+            </div>
           )}
-        </div>
-      </div>
-      <div className="vertical-scrollbar scrollbar-sm h-full w-full divide-y divide-subtle-1 overflow-y-auto px-2.5">
-        {!isArchived && (
+
+          {/* status */}
+          {!isArchived && (
+            <div className="py-2">
+              <FilterStatus
+                appliedFilters={filters.status ?? null}
+                handleUpdate={(val) => handleFiltersUpdate("status", val)}
+                searchQuery={searchQuery}
+              />
+            </div>
+          )}
+
+          {/* lead */}
           <div className="py-2">
-            <FilterOption
-              isChecked={!!displayFilters.favorites}
-              onClick={() =>
-                handleDisplayFiltersUpdate({
-                  favorites: !displayFilters.favorites,
-                })
-              }
-              title="Favorites"
+            <FilterLead
+              appliedFilters={filters.lead ?? null}
+              handleUpdate={(val) => handleFiltersUpdate("lead", val)}
+              searchQuery={searchQuery}
+              memberIds={memberIds}
+              workspaceSlug={workspaceSlug}
             />
           </div>
-        )}
 
-        {/* status */}
-        {!isArchived && (
+          {/* members */}
           <div className="py-2">
-            <FilterStatus
-              appliedFilters={(filters.status as TModuleStatus[]) ?? null}
-              handleUpdate={(val) => handleFiltersUpdate("status", val)}
-              searchQuery={filtersSearchQuery}
+            <FilterMembers
+              appliedFilters={filters.members ?? null}
+              handleUpdate={(val) => handleFiltersUpdate("members", val)}
+              searchQuery={searchQuery}
+              memberIds={memberIds}
+              workspaceSlug={workspaceSlug}
             />
           </div>
-        )}
 
-        {/* lead */}
-        <div className="py-2">
-          <FilterLead
-            appliedFilters={filters.lead ?? null}
-            handleUpdate={(val) => handleFiltersUpdate("lead", val)}
-            searchQuery={filtersSearchQuery}
-            memberIds={memberIds}
+          <DateRangeFilters
+            startDate={filters.start_date ?? null}
+            dueDate={filters.target_date ?? null}
+            handleStartDateUpdate={(value) => handleFiltersUpdate("start_date", value)}
+            handleDueDateUpdate={(value) => handleFiltersUpdate("target_date", value)}
+            searchQuery={searchQuery}
           />
-        </div>
-
-        {/* members */}
-        <div className="py-2">
-          <FilterMembers
-            appliedFilters={filters.members ?? null}
-            handleUpdate={(val) => handleFiltersUpdate("members", val)}
-            searchQuery={filtersSearchQuery}
-            memberIds={memberIds}
-          />
-        </div>
-
-        {/* start date */}
-        <div className="py-2">
-          <FilterStartDate
-            appliedFilters={filters.start_date ?? null}
-            handleUpdate={(val) => handleFiltersUpdate("start_date", val)}
-            searchQuery={filtersSearchQuery}
-          />
-        </div>
-
-        {/* target date */}
-        <div className="py-2">
-          <FilterTargetDate
-            appliedFilters={filters.target_date ?? null}
-            handleUpdate={(val) => handleFiltersUpdate("target_date", val)}
-            searchQuery={filtersSearchQuery}
-          />
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </FilterSelectionPanel>
   );
-});
+};

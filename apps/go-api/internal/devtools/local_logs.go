@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	"github.com/CaliLuke/go-plane/internal/logredact"
 )
 
 const maxLogMessageBytes = 8000
@@ -18,17 +20,14 @@ const maxExportBytes = 256 << 10
 const maxExportRecords = 100
 
 var (
-	ansiPattern   = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
-	secretPattern = regexp.MustCompile(`(?i)(password|secret|authorization|cookie|token)([\w-]*["']?\s*[:=]\s*)("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\r\n]*)`)
-	headerPattern = regexp.MustCompile(`(?i)((?:proxy-)?authorization|(?:set-)?cookie)(["']?\s*[:=]\s*["']?)[^\r\n,"']+`)
-	errorPattern  = regexp.MustCompile(`(?i)\b(error|exception|fatal|panic)\b`)
-	warnPattern   = regexp.MustCompile(`(?i)\bwarn(?:ing)?\b`)
+	ansiPattern  = regexp.MustCompile(`\x1b\[[0-9;]*[A-Za-z]`)
+	errorPattern = regexp.MustCompile(`(?i)\b(error|exception|fatal|panic)\b`)
+	warnPattern  = regexp.MustCompile(`(?i)\bwarn(?:ing)?\b`)
 )
 
 // RecordLog turns one local process line into the OTLP/HTTP JSON shape accepted by Logal.
 func RecordLog(line, service string, eventTime time.Time) map[string]any {
-	message := headerPattern.ReplaceAllString(ansiPattern.ReplaceAllString(line, ""), `${1}${2}[redacted]`)
-	message = secretPattern.ReplaceAllStringFunc(message, redactSecret)
+	message := logredact.RedactSensitiveText(ansiPattern.ReplaceAllString(line, ""))
 	message = strings.TrimSpace(message)
 	if len(message) > maxLogMessageBytes {
 		message = message[:maxLogMessageBytes]
@@ -60,19 +59,6 @@ func RecordLog(line, service string, eventTime time.Time) map[string]any {
 			}},
 		}},
 	}
-}
-
-func redactSecret(value string) string {
-	match := secretPattern.FindStringSubmatch(value)
-	if len(match) != 4 {
-		return value
-	}
-	secret := match[3]
-	quote := ""
-	if len(secret) >= 2 && (secret[0] == '\'' || secret[0] == '"') && secret[len(secret)-1] == secret[0] {
-		quote = secret[:1]
-	}
-	return match[1] + match[2] + quote + "[redacted]" + quote
 }
 
 // ExportLogs posts a bounded OTLP batch. The response body is deliberately capped.

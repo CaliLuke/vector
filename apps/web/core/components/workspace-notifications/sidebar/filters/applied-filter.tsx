@@ -4,23 +4,22 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { ENotificationFilterType, FILTER_TYPE_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 import { Header, EHeaderVariant, Tag } from "@plane/ui";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 
 type TAppliedFilters = {
   workspaceSlug: string;
 };
 
-export const AppliedFilters = observer(function AppliedFilters(props: TAppliedFilters) {
+export const AppliedFilters = function AppliedFilters(props: TAppliedFilters) {
   const { workspaceSlug } = props;
   // hooks
-  const { filters, updateFilters } = useWorkspaceNotifications();
+  const { filters, updateFilters } = useNotifications();
   const { t } = useTranslation();
   // derived values
   const isFiltersEnabled = Object.entries(filters.type || {}).some(([, value]) => value);
@@ -68,4 +67,4 @@ export const AppliedFilters = observer(function AppliedFilters(props: TAppliedFi
       </Header.LeftItem>
     </Header>
   );
-});
+};

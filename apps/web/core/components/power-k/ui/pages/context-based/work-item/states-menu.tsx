@@ -6,13 +6,12 @@
 
 import { useParams } from "@tanstack/react-router";
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
 // plane types
 
 import type { TIssue } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 // local imports
 import { PowerKProjectStatesMenuItems } from "./state-menu-item";
 
@@ -21,16 +20,16 @@ type Props = {
   workItemDetails: TIssue;
 };
 
-export const PowerKProjectStatesMenu = observer(function PowerKProjectStatesMenu(props: Props) {
+export function PowerKProjectStatesMenu(props: Props) {
   const { workItemDetails } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getProjectStateIds, getStateById } = useProjectState();
+  const stateQuery = useRouteProjectStates(workItemDetails.project_id);
   // derived values
-  const projectStateIds = workItemDetails.project_id ? getProjectStateIds(workItemDetails.project_id) : undefined;
-  const projectStates = projectStateIds ? projectStateIds.map((stateId) => getStateById(stateId)) : undefined;
-  const filteredProjectStates = projectStates ? projectStates.filter((state) => !!state) : undefined;
+  const filteredProjectStates = workItemDetails.project_id
+    ? stateQuery.getProjectStates(workItemDetails.project_id)
+    : undefined;
 
   if (!filteredProjectStates) return <Spinner />;
 
@@ -45,4 +44,4 @@ export const PowerKProjectStatesMenu = observer(function PowerKProjectStatesMenu
       />
     </Command.Group>
   );
-});
+}

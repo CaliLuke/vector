@@ -25,6 +25,10 @@ type databaseStub struct {
 	rows    []pgx.Row
 }
 
+func (database *databaseStub) Begin(context.Context) (pgx.Tx, error) {
+	return nil, errors.New("unexpected transaction")
+}
+
 func (database *databaseStub) QueryRow(_ context.Context, query string, args ...any) pgx.Row {
 	database.queries = append(database.queries, query)
 	database.args = append(database.args, args)
@@ -370,7 +374,6 @@ func TestIssueFiltersCoverLegacyDatesNullsAndAdvertisedRelations(t *testing.T) {
 		}
 	}
 	for _, fragment := range []string{
-		"no_label.deleted_at",
 		"no_assignee.deleted_at",
 		"no_module.deleted_at",
 		"filter_mention.deleted_at",
@@ -421,7 +424,7 @@ func TestIssueOrderingPreservesDjangoDirectionQuirks(t *testing.T) {
 			t.Errorf("issueOrder(%q)=%q, want suffix %q", input, order, suffix)
 		}
 	}
-	for _, field := range []string{"assignees__first_name", "labels__name", "issue_module__module__name"} {
+	for _, field := range []string{"assignees__first_name", "issue_module__module__name"} {
 		if order := issueOrder(field); strings.Contains(order, "deleted_at") {
 			t.Errorf("relation ordering must include soft-deleted through rows: %s", order)
 		}
@@ -449,8 +452,7 @@ func TestUserTimestampSQLUsesRequesterTimezoneForWorkspaceAndIssueDetail(t *test
 	}
 	if strings.Contains(cycleIssueDetailSQL, "cycle_issue.deleted_at IS NULL AND issue.deleted_at IS NULL") ||
 		strings.Contains(cycleIssueDetailSQL, "assignee.issue_id=issue.id AND assignee.deleted_at IS NULL") ||
-		strings.Contains(cycleIssueDetailSQL, "issue_label.issue_id=issue.id AND issue_label.deleted_at IS NULL") ||
-		!strings.Contains(cycleIssueDetailSQL, "issue_label.issue_id=issue.id AND label.deleted_at IS NULL") ||
+		!strings.Contains(cycleIssueDetailSQL, "live_label.deleted_at IS NULL") ||
 		!strings.Contains(cycleIssueDetailSQL, "replace(encode(issue.description_binary,'base64'),E'\\n','')") {
 		t.Fatal("cycle issue detail does not match source manager and BinaryField serialization semantics")
 	}
@@ -648,8 +650,7 @@ func TestGroupedIssueSQLUsesPageGroupsForManyToManyAndRewritesMappedIDs(t *testi
 		"jsonb_build_object('label_ids'",
 		"selected.group_key",
 		"jsonb_agg(DISTINCT selected.group_key)",
-		"NOT EXISTS(SELECT 1 FROM issue_labels grouped_link WHERE grouped_link.issue_id=issue.id)",
-		"EXISTS(SELECT 1 FROM issue_labels grouped_link WHERE grouped_link.issue_id=issue.id AND grouped_link.deleted_at IS NULL)",
+		"live_label.deleted_at IS NULL",
 		"SELECT DISTINCT ON (processed.issue_id)",
 	} {
 		if !strings.Contains(query, fragment) {
@@ -707,8 +708,8 @@ func TestModuleGroupingUsesRelationIDsButOtherPayloadsOmitArchivedModules(t *tes
 			t.Errorf("module grouped SQL missing %q", fragment)
 		}
 	}
-	if !strings.Contains(issueListRelationProjection(IssueListOptions{}), "projected_module.archived_at IS NULL") {
-		t.Fatal("ordinary issue payloads must omit archived module IDs")
+	if projection := issueListRelationProjection(IssueListOptions{}); !strings.Contains(projection, "projected_module.deleted_at IS NULL") || !strings.Contains(projection, "projected_module.archived_at IS NULL") {
+		t.Fatalf("ordinary issue payloads must omit deleted and archived module IDs: %s", projection)
 	}
 }
 
@@ -997,8 +998,12 @@ func TestStandaloneManyToManySubgroupPreservesScalarProjectionJoinAndMultiplicit
 		if err != nil {
 			t.Fatal(err)
 		}
+		joinPrefix := "LEFT JOIN " + test.table + " standalone_subgroup ON standalone_subgroup.issue_id=issue.id"
+		if test.group == "labels__id" {
+			joinPrefix = "LEFT JOIN issue_labels standalone_subgroup ON standalone_subgroup.issue_id = issue.id"
+		}
 		for _, fragment := range []string{
-			"LEFT JOIN " + test.table + " standalone_subgroup ON standalone_subgroup.issue_id=issue.id",
+			joinPrefix,
 			"(standalone_subgroup.issue_id IS NULL OR standalone_subgroup.deleted_at IS NULL)",
 			",standalone_subgroup." + test.column + " standalone_subgroup_id",
 			"'" + test.group + "',issue.standalone_subgroup_id",
@@ -1095,14 +1100,14 @@ func TestStandaloneSubgroupUsesDistinctTotalsAndExpandedNextPage(t *testing.T) {
 	}
 }
 
-func TestStandaloneDeletedOnlyRelationIsExcludedAfterBaseTotal(t *testing.T) {
+func TestStandaloneDeletedOnlyAssigneeRelationIsExcludedAfterBaseTotal(t *testing.T) {
 	database := &databaseStub{rows: []pgx.Row{
 		boolRow(true), pageRowWithExpanded(`[]`, 1, 0),
 	}}
 	repository, _ := NewRepository(database)
 	data, err := repository.Issues(
 		context.Background(), uuid.New(), "alpha", uuid.New(), uuid.New(),
-		IssueListOptions{SubGroupBy: "labels__id", PerPage: 1, PerPageSet: true},
+		IssueListOptions{SubGroupBy: "assignees__id", PerPage: 1, PerPageSet: true},
 	)
 	if err != nil {
 		t.Fatal(err)

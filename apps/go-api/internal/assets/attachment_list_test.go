@@ -27,8 +27,8 @@ func (repository *issueAttachmentListRepository) RelatedWorkspaceIDBySlug(contex
 	return repository.workspaceID, nil
 }
 
-func (repository *issueAttachmentListRepository) IssueAttachments(_ context.Context, _, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
-	repository.calls = append(repository.calls, "IssueAttachments")
+func (repository *issueAttachmentListRepository) VisibleIssueAttachments(_ context.Context, _, _, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
+	repository.calls = append(repository.calls, "VisibleIssueAttachments")
 	repository.projectID = projectID
 	repository.issueID = issueID
 	repository.uploadedOnly = uploadedOnly
@@ -65,7 +65,7 @@ func TestIssueAttachmentListWrappersPreserveUploadFilterAndScopeOrder(t *testing
 			if _, err := test.list(service, ctx, "workspace", projectID.String(), issueID.String()); err != nil {
 				t.Fatalf("list attachments: %v", err)
 			}
-			if !reflect.DeepEqual(repository.calls, []string{"ProjectPermissionAllowed", "RelatedWorkspaceIDBySlug", "IssueAttachments"}) {
+			if !reflect.DeepEqual(repository.calls, []string{"ProjectPermissionAllowed", "RelatedWorkspaceIDBySlug", "VisibleIssueAttachments"}) {
 				t.Fatalf("repository calls=%v", repository.calls)
 			}
 			if repository.projectID != projectID || repository.issueID != issueID || repository.uploadedOnly != test.uploadedOnly {

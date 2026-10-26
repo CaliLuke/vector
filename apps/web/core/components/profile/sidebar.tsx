@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { observer } from "mobx-react";
 
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
@@ -18,14 +17,16 @@ import { EditIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IUserProfileProjectSegregation } from "@plane/types";
 import { Loader } from "@plane/ui";
-import { cn, renderFormattedDate, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { CoverImage } from "@/components/common/cover-image";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { useSidebarActions, useProfileSidebarCollapsed } from "@/providers/sidebar-state";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
 import { ProfileSidebarTime } from "./time";
@@ -35,16 +36,18 @@ type TProfileSidebar = {
   className?: string;
 };
 
-export const ProfileSidebar = observer(function ProfileSidebar(props: TProfileSidebar) {
+export function ProfileSidebar(props: TProfileSidebar) {
   const { userProjectsData, className = "" } = props;
   // refs
   const ref = useRef<HTMLDivElement>(null);
   // router
   const { userId } = useParams({ strict: false });
   // store hooks
-  const { data: currentUser } = useUser();
-  const { profileSidebarCollapsed, toggleProfileSidebar } = useAppTheme();
-  const { getProjectById } = useProject();
+  const { data: currentUser } = useCurrentUser();
+  const profileSidebarCollapsed = useProfileSidebarCollapsed();
+  const { toggleProfileSidebar } = useSidebarActions();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   const { toggleProfileSettingsModal } = useCommandPalette();
   const { isMobile } = usePlatformOS();
   const { t } = useTranslation();
@@ -83,7 +86,7 @@ export const ProfileSidebar = observer(function ProfileSidebar(props: TProfileSi
     window.addEventListener("resize", handleToggleProfileSidebar);
     handleToggleProfileSidebar();
     return () => window.removeEventListener("resize", handleToggleProfileSidebar);
-  }, []);
+  }, [profileSidebarCollapsed, toggleProfileSidebar]);
 
   return (
     <div
@@ -147,7 +150,7 @@ export const ProfileSidebar = observer(function ProfileSidebar(props: TProfileSi
             </div>
             <div className="mt-9 divide-y divide-subtle">
               {userProjectsData.project_data.map((project, index) => {
-                const projectDetails = getProjectById(project.id);
+                const projectDetails = projectRows?.find((candidate) => candidate.id === project.id);
 
                 const totalIssues =
                   project.created_issues + project.assigned_issues + project.pending_issues + project.completed_issues;
@@ -293,4 +296,4 @@ export const ProfileSidebar = observer(function ProfileSidebar(props: TProfileSi
       )}
     </div>
   );
-});
+}

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import { findSidebarScrollViewport } from "../../apps/web/core/components/workspace/sidebar/projects-list.utils.ts";
 
@@ -13,7 +14,7 @@ registerHooks({
     if (specifier === "@plane/ui") {
       return { shortCircuit: true, url: dragHandleSource };
     }
-    if (specifier === "@plane/utils") {
+    if (specifier === "@plane/utils/common") {
       return { shortCircuit: true, url: sidebarPrimitives };
     }
     if (specifier === "./utils" && context.parentURL?.endsWith("/packages/ui/src/drag-handle.tsx")) {

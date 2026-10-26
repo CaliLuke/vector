@@ -199,22 +199,32 @@ func (r *Repository) remove(ctx context.Context, user uuid.UUID, slug string, pr
 		projectClause = "v.project_id=$4"
 		args = append(args, *project)
 	}
-	q := `UPDATE issue_views v SET deleted_at=NOW() FROM workspaces w LEFT JOIN workspace_members wm ON wm.workspace_id=w.id AND wm.member_id=$1 AND wm.is_active=true AND wm.deleted_at IS NULL WHERE v.id=$3 AND v.workspace_id=w.id AND w.slug=$2 AND ` + projectClause + ` AND v.deleted_at IS NULL AND (v.owned_by_id=$1 OR wm.role=20) RETURNING v.project_id`
-	var projectID *uuid.UUID
-	if err := r.db.QueryRow(ctx, q, args...).Scan(&projectID); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return ErrForbidden
-		}
+	// A single statement keeps removal and dependent cleanup atomic, including
+	// when a cleanup trigger or constraint rejects the change.
+	q := `WITH removed AS (
+ UPDATE issue_views v SET deleted_at=NOW()
+ FROM workspaces w LEFT JOIN workspace_members wm ON wm.workspace_id=w.id AND wm.member_id=$1 AND wm.is_active=true AND wm.deleted_at IS NULL
+ WHERE v.id=$3 AND v.workspace_id=w.id AND w.slug=$2 AND ` + projectClause + `
+ AND v.deleted_at IS NULL AND (v.owned_by_id=$1 OR wm.role=20)
+ RETURNING v.id,v.workspace_id,v.project_id
+), favorites AS (
+ UPDATE user_favorites f SET deleted_at=NOW() FROM removed v
+ WHERE f.workspace_id=v.workspace_id AND f.entity_identifier=v.id AND f.entity_type='view'
+ AND f.project_id IS NOT DISTINCT FROM v.project_id AND f.deleted_at IS NULL
+), visits AS (
+ DELETE FROM user_recent_visits r USING removed v
+ WHERE v.project_id IS NOT NULL AND r.workspace_id=v.workspace_id AND r.project_id=v.project_id
+ AND r.entity_identifier=v.id AND r.entity_name='view'
+)
+SELECT EXISTS(SELECT 1 FROM removed)`
+	var removed bool
+	if err := r.db.QueryRow(ctx, q, args...).Scan(&removed); err != nil {
 		return err
 	}
-	_, err := r.db.Exec(ctx, `UPDATE user_favorites SET deleted_at=NOW() WHERE workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND entity_identifier=$3 AND entity_type='view' AND project_id IS NOT DISTINCT FROM $4 AND deleted_at IS NULL`, user, slug, id, projectID)
-	if err != nil {
-		return err
+	if !removed {
+		return ErrForbidden
 	}
-	if projectID != nil {
-		_, err = r.db.Exec(ctx, `DELETE FROM user_recent_visits WHERE workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND project_id=$4 AND entity_identifier=$3 AND entity_name='view'`, user, slug, id, projectID)
-	}
-	return err
+	return nil
 }
 
 // CheckMutation preserves lookup and permission errors before field validation.

@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { isNil, orderBy } from "lodash-es";
+import isNil from "lodash-es/isNil.js";
+import orderBy from "lodash-es/orderBy.js";
 // plane imports
 import { SPACE_BASE_PATH, SPACE_BASE_URL } from "@plane/constants";
 import type { IProjectView, TViewFilterProps, TViewFiltersSortBy, TViewFiltersSortKey } from "@plane/types";

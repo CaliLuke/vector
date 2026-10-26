@@ -6,33 +6,29 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useIssues } from "@/hooks/store/use-issues";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { cycleIsCompleted } from "@/queries/cycle-module-selectors";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 // components
 import { CycleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseCalendarRoot } from "../base-calendar-root";
 
-export const CycleCalendarLayout = observer(function CycleCalendarLayout() {
-  const { currentProjectCompletedCycleIds } = useCycle();
+export function CycleCalendarLayout() {
   const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
+  const detail = useCycleDetails(workspaceSlug, projectId, cycleId);
+  const actions = useIssuesActions(EIssuesStoreType.CYCLE);
 
-  const {
-    issues: { addIssueToCycle },
-  } = useIssues(EIssuesStoreType.CYCLE);
-
-  const isCompletedCycle =
-    cycleId && currentProjectCompletedCycleIds ? currentProjectCompletedCycleIds.includes(cycleId.toString()) : false;
+  const isCompletedCycle = detail.cycle ? cycleIsCompleted(detail.cycle) : false;
 
   const addIssuesToView = useCallback(
-    (issueIds: string[]) => {
+    async (issueIds: string[]) => {
       if (!workspaceSlug || !projectId || !cycleId) throw new Error();
-      return addIssueToCycle(workspaceSlug.toString(), projectId.toString(), cycleId.toString(), issueIds);
+      return actions.addIssuesToCycle(projectId, cycleId, issueIds);
     },
-    [addIssueToCycle, workspaceSlug, projectId, cycleId]
+    [actions, workspaceSlug, projectId, cycleId]
   );
 
   if (!cycleId) return null;
@@ -45,4 +41,4 @@ export const CycleCalendarLayout = observer(function CycleCalendarLayout() {
       viewId={cycleId?.toString()}
     />
   );
-});
+}

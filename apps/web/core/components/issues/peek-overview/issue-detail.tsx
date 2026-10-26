@@ -1,24 +1,23 @@
-// oxlint-disable no-shadow
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import { observer } from "mobx-react";
+import { workItemServiceType } from "@/helpers/work-item-service-type";
+// oxlint-disable no-shadow
+
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
 import { EFileAssetType } from "@plane/types";
 import type { TNameDescriptionLoader } from "@plane/types";
 // components
 import { DescriptionVersionsRoot } from "@/components/core/description-versions";
-import { DescriptionInput } from "@/components/editor/rich-text/description-input";
+import { IssueDescriptionInput } from "@/components/issues/description-input";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
-import { useUser } from "@/hooks/store/user";
-import useReloadConfirmations from "@/hooks/use-reload-confirmation";
+import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // plane web components
 import { IssueTypeSwitcher } from "@/components/issues/issue-type-switcher";
 // plane web hooks
@@ -40,45 +39,32 @@ type Props = {
   issueOperations: TIssueOperations;
   disabled: boolean;
   isArchived: boolean;
-  isSubmitting: TNameDescriptionLoader;
-  setIsSubmitting: (value: TNameDescriptionLoader) => void;
+  onEditorOpenChange: (open: boolean) => void;
+  setTitleStatus: (value: TNameDescriptionLoader) => void;
+  setDescriptionStatus: (value: TNameDescriptionLoader) => void;
 };
 
-export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetails(props: Props) {
-  const { editorRef, workspaceSlug, issueId, issueOperations, disabled, isArchived, isSubmitting, setIsSubmitting } =
-    props;
-  // store hooks
-  const { data: currentUser } = useUser();
+export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props: Props) {
   const {
-    issue: { getIssueById },
-  } = useIssueDetail();
+    editorRef,
+    workspaceSlug,
+    issueId,
+    issueOperations,
+    disabled,
+    isArchived,
+    onEditorOpenChange,
+    setTitleStatus,
+    setDescriptionStatus,
+  } = props;
+  // store hooks
+  const { data: currentUser } = useCurrentUser();
+  const record = useWorkItemDetailRecord();
 
-  const { getUserDetails } = useMember();
-  // reload confirmation
-  const { setShowAlert } = useReloadConfirmations(isSubmitting === "submitting");
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    if (isSubmitting === "submitted") {
-      setShowAlert(false);
-      timer = setTimeout(() => setIsSubmitting("saved"), 2000);
-    } else if (isSubmitting === "submitting") {
-      setShowAlert(true);
-    }
-    return () => clearTimeout(timer);
-  }, [isSubmitting, setShowAlert, setIsSubmitting]);
-
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
-  const issue = issueId ? getIssueById(issueId) : undefined;
+  const issue = issueId === record?.issueId ? record.issue : undefined;
 
   if (!issue || !issue.project_id) return <></>;
-
-  const issueDescription =
-    issue.description_html !== undefined || issue.description_html !== null
-      ? issue.description_html != ""
-        ? issue.description_html
-        : "<p></p>"
-      : undefined;
 
   return (
     <div className="space-y-2">
@@ -92,37 +78,35 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
         />
       )}
       <div className="flex items-center justify-between gap-2">
-        <IssueTypeSwitcher issueId={issueId} disabled={isArchived || disabled} />
+        <IssueTypeSwitcher
+          workspaceSlug={workspaceSlug}
+          onEditorOpenChange={onEditorOpenChange}
+          issueId={issueId}
+          disabled={isArchived || disabled}
+        />
       </div>
       <IssueTitleInput
         workspaceSlug={workspaceSlug}
         projectId={issue.project_id}
         issueId={issue.id}
-        isSubmitting={isSubmitting}
-        setIsSubmitting={(value) => setIsSubmitting(value)}
+        setIsSubmitting={setTitleStatus}
         issueOperations={issueOperations}
         disabled={disabled || isArchived}
         value={issue.name}
         containerClassName="-ml-3"
       />
 
-      <DescriptionInput
+      <IssueDescriptionInput
         issueSequenceId={issue.sequence_id}
         containerClassName="-ml-3 border-none"
         disabled={disabled || isArchived}
         editorRef={editorRef}
         entityId={issue.id}
         fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
-        initialValue={issueDescription}
+        initialValue={issue.description_html}
         key={issue.id}
-        onSubmit={async (value, isMigrationUpdate) => {
-          if (!issue.id || !issue.project_id) return;
-          await issueOperations.update(workspaceSlug, issue.project_id, issue.id, {
-            description_html: value.description_html,
-            ...(isMigrationUpdate ? { skip_activity: "true" } : {}),
-          });
-        }}
-        setIsSubmitting={(value) => setIsSubmitting(value)}
+        issueOperations={issueOperations}
+        setIsSubmitting={setDescriptionStatus}
         projectId={issue.project_id}
         workspaceSlug={workspaceSlug}
       />
@@ -130,10 +114,10 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
       <div className="flex items-center justify-between gap-2">
         {currentUser && (
           <IssueReaction
+            serviceType={workItemServiceType(issue)}
             workspaceSlug={workspaceSlug}
             projectId={issue.project_id}
             issueId={issueId}
-            currentUser={currentUser}
             disabled={isArchived}
           />
         )}
@@ -141,8 +125,8 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
           <DescriptionVersionsRoot
             className="flex-shrink-0"
             entityInformation={{
-              createdAt: issue.created_at ? new Date(issue.created_at) : new Date(),
-              createdByDisplayName: getUserDetails(issue.created_by ?? "")?.display_name ?? "",
+              createdAt: new Date(issue.created_at ?? 0),
+              createdByDisplayName: memberById(issue.created_by ?? "")?.member.display_name ?? "",
               id: issueId,
               isRestoreDisabled: disabled || isArchived,
             }}
@@ -169,4 +153,4 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
       </div>
     </div>
   );
-});
+};

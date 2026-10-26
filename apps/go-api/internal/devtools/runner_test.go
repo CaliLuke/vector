@@ -20,10 +20,12 @@ func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 	cwdFile := filepath.Join(root, "pnpm-cwd")
+	dockerArgsFile := filepath.Join(root, "docker-args")
 	writeExecutable(t, filepath.Join(bin, "pnpm"), "#!/bin/sh\npwd > \"$PNPM_CWD_FILE\"\nprintf 'password=private words\\n' >&2\nexec sleep 20\n")
-	writeExecutable(t, filepath.Join(bin, "docker"), "#!/bin/sh\nprintf 'go-api-1 | 2026-10-22T00:00:00Z ERROR token=private\\n'\nexec sleep 20\n")
+	writeExecutable(t, filepath.Join(bin, "docker"), "#!/bin/sh\nprintf '%s\\n' \"$*\" > \"$DOCKER_ARGS_FILE\"\nprintf 'go-migrator-1 | 2026-10-22T00:00:00Z ERROR token=private\\nproxy-1 | 2026-10-22T00:00:00Z ERROR token=private\\n'\nexec sleep 20\n")
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("PNPM_CWD_FILE", cwdFile)
+	t.Setenv("DOCKER_ARGS_FILE", dockerArgsFile)
 	var recordsMu sync.Mutex
 	var exported []byte
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,12 +69,15 @@ func TestRunnerMergesAndRedactsChildOutputAndUsesRepositoryRoot(t *testing.T) {
 	if strings.TrimSpace(readFile(t, cwdFile)) != root {
 		t.Fatalf("frontend started in %q, want repository root %q", readFile(t, cwdFile), root)
 	}
+	if args := readFile(t, dockerArgsFile); strings.Contains(args, "go-api") {
+		t.Fatalf("runner still tails the Go API, which exports its own logs: %q", args)
+	}
 	recordsMu.Lock()
 	defer recordsMu.Unlock()
 	if len(exported) == 0 {
 		t.Fatal("runner did not export child stderr/stdout records")
 	}
-	if strings.Contains(string(exported), "private") || !strings.Contains(string(exported), "plane-frontend") || !strings.Contains(string(exported), "plane-go-api") {
+	if strings.Contains(string(exported), "private") || !strings.Contains(string(exported), "plane-frontend") || !strings.Contains(string(exported), "plane-go-migrator") || !strings.Contains(string(exported), "plane-proxy") {
 		t.Fatalf("unexpected exported logs: %s", exported)
 	}
 }

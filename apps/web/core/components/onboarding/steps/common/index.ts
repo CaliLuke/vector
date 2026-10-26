@@ -5,3 +5,4 @@
  */
 
 export * from "./header";
+export { OnboardingActions } from "./actions";

@@ -32,7 +32,8 @@ type child struct {
 	err    error
 }
 
-// RunLocalDevelopment starts frontend tasks and tails the local Go/proxy containers.
+// RunLocalDevelopment starts frontend tasks and tails local containers that do
+// not export their own logs to Logal.
 // Interrupts and termination signals are forwarded to each process group.
 func RunLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Writer) int {
 	return runLocalDevelopment(ctx, root, stdout, stderr, logEndpoint)
@@ -78,7 +79,7 @@ func runLocalDevelopment(ctx context.Context, root string, stdout, stderr io.Wri
 		name := "pnpm"
 		if docker {
 			name = "docker"
-			args = []string{"compose", "-p", "plane", "-f", "docker-compose-local.yml", "logs", "--follow", "--since", "1m", "--no-color", "--timestamps", "go-api", "go-migrator", "proxy"}
+			args = []string{"compose", "-p", "plane", "-f", "docker-compose-local.yml", "logs", "--follow", "--since", "1m", "--no-color", "--timestamps", "go-migrator", "proxy"}
 		}
 		cmd := exec.Command(name, args...)
 		cmd.Dir = root

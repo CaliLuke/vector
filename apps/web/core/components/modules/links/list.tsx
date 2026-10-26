@@ -5,28 +5,22 @@
  */
 
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 // plane types
 import type { ILinkDetails } from "@plane/types";
 // components
 import { ModulesLinksListItem } from "@/components/modules";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
 
 type Props = {
+  workspaceSlug: string | undefined;
   disabled?: boolean;
   handleDeleteLink: (linkId: string) => void;
   handleEditLink: (link: ILinkDetails) => void;
-  moduleId: string;
+  links: readonly ILinkDetails[];
 };
 
-export const ModuleLinksList = observer(function ModuleLinksList(props: Props) {
-  const { moduleId, handleDeleteLink, handleEditLink, disabled } = props;
-  // store hooks
-  const { getModuleById } = useModule();
-  // derived values
-  const currentModule = getModuleById(moduleId);
-  const moduleLinks = currentModule?.link_module;
+export function ModuleLinksList(props: Props) {
+  const { links: moduleLinks, workspaceSlug, handleDeleteLink, handleEditLink, disabled } = props;
   // memoized link handlers
   const memoizedDeleteLink = useCallback((id: string) => handleDeleteLink(id), [handleDeleteLink]);
   const memoizedEditLink = useCallback((link: ILinkDetails) => handleEditLink(link), [handleEditLink]);
@@ -42,8 +36,9 @@ export const ModuleLinksList = observer(function ModuleLinksList(props: Props) {
           handleEditLink={() => memoizedEditLink(link)}
           isEditingAllowed={!disabled}
           link={link}
+          workspaceSlug={workspaceSlug}
         />
       ))}
     </>
   );
-});
+}

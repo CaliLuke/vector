@@ -6,44 +6,41 @@
 
 import { useParams, useLocation, useRouter } from "@tanstack/react-router";
 import React, { useRef } from "react";
-import { observer } from "mobx-react";
 
 // icons
+import type { IModule } from "@plane/types";
 import { Info } from "lucide-react";
 import { CheckIcon } from "@plane/propel/icons";
 // ui
 import { CircularProgressIndicator } from "@plane/ui";
 // components
-import { generateQueryParams } from "@plane/utils";
 import { ListItem } from "@/components/core/list";
 import { ModuleListItemAction, ModuleQuickActions } from "@/components/modules";
 // helpers
 // hooks
-import { useModule } from "@/hooks/store/use-module";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { getModulePeekHref } from "./module-peek-navigation";
 
 type Props = {
-  moduleId: string;
+  module: IModule;
 };
 
-export const ModuleListItem = observer(function ModuleListItem(props: Props) {
-  const { moduleId } = props;
+export const ModuleListItem = function ModuleListItem(props: Props) {
+  const { module: moduleDetails } = props;
+  const moduleId = moduleDetails.id;
   // refs
   const parentRef = useRef(null);
   // router
   const router = useRouter();
-  const { workspaceSlug, projectId } = useParams({
-    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
-  });
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const projectId = moduleDetails.project_id;
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
-  const { getModuleById } = useModule();
   const { isMobile } = usePlatformOS();
 
   // derived values
-  const moduleDetails = getModuleById(moduleId);
 
   if (!moduleDetails) return null;
 
@@ -59,12 +56,7 @@ export const ModuleListItem = observer(function ModuleListItem(props: Props) {
     e.stopPropagation();
     e.preventDefault();
 
-    const query = generateQueryParams(searchParams, ["peekModule"]);
-    if (searchParams.has("peekModule") && searchParams.get("peekModule") === moduleId) {
-      void router.navigate({ href: `${pathname}?${query}` });
-    } else {
-      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekModule=${moduleId}` });
-    }
+    void router.navigate({ href: getModulePeekHref(pathname, searchParams.toString(), moduleId) });
   };
 
   const handleArchivedModuleClick = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
@@ -105,10 +97,11 @@ export const ModuleListItem = observer(function ModuleListItem(props: Props) {
       quickActionElement={
         <div className="block md:hidden">
           <ModuleQuickActions
+            module={moduleDetails}
             parentRef={parentRef}
             moduleId={moduleId}
-            projectId={projectId.toString()}
-            workspaceSlug={workspaceSlug.toString()}
+            projectId={projectId}
+            workspaceSlug={workspaceSlug}
           />
         </div>
       }
@@ -116,4 +109,4 @@ export const ModuleListItem = observer(function ModuleListItem(props: Props) {
       parentRef={parentRef}
     />
   );
-});
+};

@@ -11,15 +11,19 @@ import type { TFilterValue } from "../expression";
 /**
  * Union type representing all extended operators that support date filter types.
  */
-export type TExtendedSupportedDateFilterOperators<_V extends TFilterValue = TFilterValue> = never;
+export type TExtendedSupportedDateFilterOperators<_V extends TFilterValue = TFilterValue> = "lt" | "lte" | "gt" | "gte";
 
-export type TExtendedAllAvailableDateFilterOperatorsForDisplay<_V extends TFilterValue = TFilterValue> = never;
+export type TExtendedAllAvailableDateFilterOperatorsForDisplay<_V extends TFilterValue = TFilterValue> =
+  | TExtendedSupportedDateFilterOperators
+  | `not_${TExtendedSupportedDateFilterOperators}`;
 
 // -------- SELECT FILTER OPERATORS --------
 
 /**
  * Union type representing all extended operators that support select filter types.
  */
-export type TExtendedSupportedSelectFilterOperators<_V extends TFilterValue = TFilterValue> = never;
+export type TExtendedSupportedSelectFilterOperators<_V extends TFilterValue = TFilterValue> = "isnull";
 
-export type TExtendedAllAvailableSelectFilterOperatorsForDisplay<_V extends TFilterValue = TFilterValue> = never;
+export type TExtendedAllAvailableSelectFilterOperatorsForDisplay<_V extends TFilterValue = TFilterValue> =
+  | "isnull"
+  | "not_isnull";

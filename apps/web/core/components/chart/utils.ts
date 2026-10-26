@@ -4,16 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { getWeekOfMonth, isValid } from "date-fns";
+import { getWeekOfMonth } from "date-fns/getWeekOfMonth";
+import { isValid } from "date-fns/isValid";
 import { CHART_X_AXIS_DATE_PROPERTIES, ChartXAxisDateGrouping, TO_CAPITALIZE_PROPERTIES } from "@plane/constants";
 import type { ChartXAxisProperty, TChart, TChartDatum } from "@plane/types";
-import {
-  capitalizeFirstLetter,
-  hexToHsl,
-  hslToHex,
-  renderFormattedDate,
-  renderFormattedDateWithoutYear,
-} from "@plane/utils";
+import { capitalizeFirstLetter } from "@plane/utils/string";
+import { hexToHsl, hslToHex } from "@plane/utils/color";
+import { renderFormattedDate, renderFormattedDateWithoutYear } from "@plane/utils/datetime";
 //
 
 const getDateGroupingName = (date: string, dateGrouping: ChartXAxisDateGrouping): string => {

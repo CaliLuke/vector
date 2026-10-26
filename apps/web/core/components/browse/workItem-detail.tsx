@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import type { TIssue } from "@plane/types";
 import { IssueDetailRoot } from "@/components/issues/issue-detail/root";
 
@@ -15,7 +14,7 @@ export type TWorkItemDetailRoot = {
   issue: TIssue | undefined;
 };
 
-export const WorkItemDetailRoot = observer(function WorkItemDetailRoot(props: TWorkItemDetailRoot) {
+export const WorkItemDetailRoot = function WorkItemDetailRoot(props: TWorkItemDetailRoot) {
   const { workspaceSlug, projectId, issueId, issue } = props;
 
   return (
@@ -26,4 +25,4 @@ export const WorkItemDetailRoot = observer(function WorkItemDetailRoot(props: TW
       is_archived={!!issue?.archived_at}
     />
   );
-});
+};

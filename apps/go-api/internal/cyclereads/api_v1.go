@@ -53,7 +53,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 		if err != nil {
 			return nil, err
 		}
-		return r.apiSerialize(ctx, value.(map[string]any), "bridge", p["fields"], p["expand"])
+		return r.apiSerialize(ctx, value.(map[string]any), "bridge", p["fields"], p["expand"], user)
 	}
 	detail := request.Operation == "detail"
 	current := request.Operation == "list" && p["cycle_view"] == "current"
@@ -89,7 +89,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 		fields, expand = "", ""
 	}
 	for index, raw := range rows {
-		rows[index], err = r.apiSerialize(ctx, raw.(map[string]any), kind, fields, expand)
+		rows[index], err = r.apiSerialize(ctx, raw.(map[string]any), kind, fields, expand, user)
 		if err != nil {
 			return nil, err
 		}

@@ -5,14 +5,14 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { ChevronRightIcon } from "@plane/propel/icons";
 // icons
 import { Row } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
-import { useProject } from "@/hooks/store/use-project";
+import { cn } from "@plane/utils/common";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 type Props = {
   projectId: string;
@@ -21,12 +21,13 @@ type Props = {
   isExpanded?: boolean;
 };
 
-export const CycleListProjectGroupHeader = observer(function CycleListProjectGroupHeader(props: Props) {
+export const CycleListProjectGroupHeader = function CycleListProjectGroupHeader(props: Props) {
   const { projectId, count, showCount = false, isExpanded = false } = props;
   // store hooks
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectRows?.find((row) => row.id === projectId);
 
   if (!project) return null;
   return (
@@ -46,4 +47,4 @@ export const CycleListProjectGroupHeader = observer(function CycleListProjectGro
       </div>
     </Row>
   );
-});
+};

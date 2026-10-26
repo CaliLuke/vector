@@ -6,21 +6,22 @@
 
 import { Link } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { EditIcon, CloseIcon } from "@plane/propel/icons";
 // Vector
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { submitRelationSelection } from "@/components/issues/issue-detail/submit-relation-selection";
+import { IssueResourceRetryButton } from "@/components/issues/issue-detail/resource-retry-button";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { ISearchIssueResponse } from "@plane/types";
-import { cn, generateWorkItemLink } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { useIssueRelations } from "@/hooks/use-issue-resources";
 // Vector web imports
 import { useTimeLineRelationOptions } from "@/components/relations";
 import type { TIssueRelationTypes } from "@plane/types";
@@ -35,43 +36,37 @@ type TIssueRelationSelect = {
   disabled?: boolean;
 };
 
-export const IssueRelationSelect = observer(function IssueRelationSelect(props: TIssueRelationSelect) {
+export const IssueRelationSelect = function IssueRelationSelect(props: TIssueRelationSelect) {
   const { className = "", workspaceSlug, projectId, issueId, relationKey, disabled = false } = props;
   // hooks
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const { isRelationModalOpen, toggleRelationModal } = useIssueDetailUiState();
   const {
-    createRelation,
-    removeRelation,
-    relation: { getRelationByIssueIdRelationType },
-    isRelationModalOpen,
-    toggleRelationModal,
-  } = useIssueDetail();
-  const { issueMap } = useIssues();
+    relations,
+    query,
+    isError,
+    retry,
+    create: createRelation,
+    remove: removeRelation,
+  } = useIssueRelations({
+    workspaceSlug,
+    projectId,
+    issueId,
+  });
   const { isMobile } = usePlatformOS();
-  const relationIssueIds = getRelationByIssueIdRelationType(issueId, relationKey);
+  const relationIssues = relations?.[relationKey];
+  const relationIssueIds = relationIssues?.map((issue) => issue.id);
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
 
   const onSubmit = async (data: ISearchIssueResponse[]) => {
-    if (data.length === 0) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please select at least one work item.",
-      });
-      return;
+    if (await submitRelationSelection(data, relationKey, createRelation)) {
+      toggleRelationModal(null, null);
     }
-
-    await createRelation(
-      workspaceSlug,
-      projectId,
-      issueId,
-      relationKey,
-      data.map((i) => i.id)
-    );
-
-    toggleRelationModal(null, null);
   };
 
+  if (query.isError || isError)
+    return <IssueResourceRetryButton onRetry={() => void (isError ? retry() : query.refetch())} />;
   if (!relationIssueIds) return null;
 
   const isRelationKeyModalActive =
@@ -109,10 +104,10 @@ export const IssueRelationSelect = observer(function IssueRelationSelect(props: 
           {relationIssueIds.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2 py-0.5">
               {relationIssueIds.map((relationIssueId) => {
-                const currentIssue = issueMap[relationIssueId];
+                const currentIssue = relationIssues?.find((relatedIssue) => relatedIssue.id === relationIssueId);
                 if (!currentIssue) return;
 
-                const projectDetails = getProjectById(currentIssue.project_id);
+                const projectDetails = projectRows?.find((project) => project.id === currentIssue.project_id);
 
                 return (
                   <div
@@ -143,7 +138,7 @@ export const IssueRelationSelect = observer(function IssueRelationSelect(props: 
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            removeRelation(workspaceSlug, projectId, issueId, relationKey, relationIssueId);
+                            void removeRelation(relationKey, relationIssueId);
                           }}
                         >
                           <CloseIcon className="h-2.5 w-2.5 text-tertiary hover:text-danger-primary" />
@@ -170,4 +165,4 @@ export const IssueRelationSelect = observer(function IssueRelationSelect(props: 
       </button>
     </>
   );
-});
+};

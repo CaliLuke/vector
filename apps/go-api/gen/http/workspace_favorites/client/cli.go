@@ -9,6 +9,7 @@ package client
 
 import (
 	"fmt"
+	"strconv"
 	"unicode/utf8"
 
 	workspacefavorites "github.com/CaliLuke/go-plane/gen/workspace_favorites"
@@ -194,10 +195,22 @@ func ValidateCLIPatchRequestBody(body *CLIPatchRequestBody, validationContext ..
 
 // BuildListPayload builds the payload for the workspace_favorites list
 // endpoint from CLI flags.
-func BuildListPayload(workspaceFavoritesListSlug string, workspaceFavoritesListSessionID string) (*workspacefavorites.ListPayload, error) {
+func BuildListPayload(workspaceFavoritesListSlug string, workspaceFavoritesListAll string, workspaceFavoritesListSessionID string) (*workspacefavorites.ListPayload, error) {
+	var err error
 	var slug string
 	{
 		slug = workspaceFavoritesListSlug
+	}
+	var all *bool
+	{
+		if workspaceFavoritesListAll != "" {
+			var val bool
+			val, err = strconv.ParseBool(workspaceFavoritesListAll)
+			all = &val
+			if err != nil {
+				return nil, fmt.Errorf("invalid value for all, must be BOOL")
+			}
+		}
 	}
 	var sessionID *string
 	{
@@ -207,6 +220,7 @@ func BuildListPayload(workspaceFavoritesListSlug string, workspaceFavoritesListS
 	}
 	v := &workspacefavorites.ListPayload{}
 	v.Slug = slug
+	v.All = all
 	v.SessionID = sessionID
 
 	return v, nil

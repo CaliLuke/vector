@@ -4,12 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { IssuePeekOverview } from "@/components/issues/peek-overview";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 
-export const HomePeekOverviewsRoot = observer(function HomePeekOverviewsRoot() {
-  const { peekIssue } = useIssueDetail();
+export const HomePeekOverviewsRoot = function HomePeekOverviewsRoot() {
+  const { peekIssue } = useIssueDetailUiState();
 
   return peekIssue ? <IssuePeekOverview /> : null;
-});
+};

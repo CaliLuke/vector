@@ -64,7 +64,8 @@ export type TSupportedOperators = TCoreSupportedOperators | TExtendedSupportedOp
 /**
  * All operators available for use in rich filters UI, including negated versions.
  */
-export type TAllAvailableOperatorsForDisplay = TSupportedOperators;
+export type TNegatedOperator = `not_${TSupportedOperators}`;
+export type TAllAvailableOperatorsForDisplay = TSupportedOperators | TNegatedOperator;
 
 // -------- RE-EXPORTS --------
 

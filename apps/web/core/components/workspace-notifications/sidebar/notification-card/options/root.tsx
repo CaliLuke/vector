@@ -5,59 +5,52 @@
  */
 
 import type { Dispatch, SetStateAction } from "react";
-import { observer } from "mobx-react";
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useNotification } from "@/hooks/store/notifications/use-notification";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 // local imports
-import { NotificationItemArchiveOption } from "./archive";
-import { NotificationItemReadOption } from "./read";
+import { NotificationItemToggle } from "./toggle";
 import { NotificationItemSnoozeOption } from "./snooze";
 
 type TNotificationOption = {
   workspaceSlug: string;
   notificationId: string;
-  isSnoozeStateModalOpen: boolean;
-  setIsSnoozeStateModalOpen: Dispatch<SetStateAction<boolean>>;
   customSnoozeModal: boolean;
   setCustomSnoozeModal: Dispatch<SetStateAction<boolean>>;
 };
 
-export const NotificationOption = observer(function NotificationOption(props: TNotificationOption) {
-  const {
-    workspaceSlug,
-    notificationId,
-    isSnoozeStateModalOpen,
-    setIsSnoozeStateModalOpen,
-    customSnoozeModal,
-    setCustomSnoozeModal,
-  } = props;
+export const NotificationOption = function NotificationOption(props: TNotificationOption) {
+  const { workspaceSlug, notificationId, customSnoozeModal, setCustomSnoozeModal } = props;
   // hooks
-  const notification = useNotification(notificationId);
+  const { notifications } = useNotifications();
+  const notification = notifications.get(notificationId);
+  if (!notification) return null;
 
   return (
     <div
-      className={cn("hidden flex-shrink-0 text-body-xs-medium group-hover:block", {
-        block: isSnoozeStateModalOpen,
-      })}
+      className={cn(
+        "hidden flex-shrink-0 text-body-xs-medium group-hover:block focus-within:block has-[[data-open]]:block",
+        {
+          block: customSnoozeModal,
+        }
+      )}
     >
       <div className="relative flex items-center justify-center gap-2">
         {/* read */}
-        <NotificationItemReadOption workspaceSlug={workspaceSlug} notification={notification} />
+        <NotificationItemToggle field="read_at" workspaceSlug={workspaceSlug} notification={notification} />
 
         {/* archive */}
-        <NotificationItemArchiveOption workspaceSlug={workspaceSlug} notification={notification} />
+        <NotificationItemToggle field="archived_at" workspaceSlug={workspaceSlug} notification={notification} />
 
         {/* snooze notification */}
         <NotificationItemSnoozeOption
           workspaceSlug={workspaceSlug}
           notification={notification}
-          setIsSnoozeStateModalOpen={setIsSnoozeStateModalOpen}
           customSnoozeModal={customSnoozeModal}
           setCustomSnoozeModal={setCustomSnoozeModal}
         />
       </div>
     </div>
   );
-});
+};

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ArrowDownWideNarrow, ArrowUpWideNarrow } from "lucide-react";
 import { INBOX_ISSUE_ORDER_BY_OPTIONS, INBOX_ISSUE_SORT_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -14,27 +13,23 @@ import type { TInboxIssueSortingOrderByKeys, TInboxIssueSortingSortByKeys } from
 import { CustomMenu } from "@plane/ui";
 // constants
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 import useSize from "@/hooks/use-window-size";
 
-export const InboxIssueOrderByDropdown = observer(function InboxIssueOrderByDropdown() {
+export const InboxIssueOrderByDropdown = function InboxIssueOrderByDropdown() {
   // hooks
   const { t } = useTranslation();
   const windowSize = useSize();
-  const { inboxSorting, handleInboxIssueSorting } = useProjectInbox();
+  const { sorting, setSorting } = useIntakePreferences();
   const orderByDetails =
-    INBOX_ISSUE_ORDER_BY_OPTIONS.find((option) => inboxSorting?.order_by?.includes(option.key)) || undefined;
+    INBOX_ISSUE_ORDER_BY_OPTIONS.find((option) => sorting?.order_by?.includes(option.key)) || undefined;
   const smallButton =
-    inboxSorting?.sort_by === "asc" ? (
-      <ArrowUpWideNarrow className="size-3" />
-    ) : (
-      <ArrowDownWideNarrow className="size-3" />
-    );
+    sorting?.sort_by === "asc" ? <ArrowUpWideNarrow className="size-3" /> : <ArrowDownWideNarrow className="size-3" />;
   const largeButton = (
     <div className={cn(getButtonStyling("secondary", "base"), "px-2 text-tertiary")}>
-      {inboxSorting?.sort_by === "asc" ? (
+      {sorting?.sort_by === "asc" ? (
         <ArrowUpWideNarrow className="size-3" />
       ) : (
         <ArrowDownWideNarrow className="size-3" />
@@ -54,10 +49,10 @@ export const InboxIssueOrderByDropdown = observer(function InboxIssueOrderByDrop
         <CustomMenu.MenuItem
           key={option.key}
           className="flex items-center justify-between gap-2"
-          onClick={() => handleInboxIssueSorting("order_by", option.key as TInboxIssueSortingOrderByKeys)}
+          onClick={() => setSorting("order_by", option.key as TInboxIssueSortingOrderByKeys)}
         >
           {t(option.i18n_label)}
-          {inboxSorting?.order_by?.includes(option.key) && <CheckIcon className="size-3" />}
+          {sorting?.order_by?.includes(option.key) && <CheckIcon className="size-3" />}
         </CustomMenu.MenuItem>
       ))}
       <hr className="my-2 border-subtle" />
@@ -65,12 +60,12 @@ export const InboxIssueOrderByDropdown = observer(function InboxIssueOrderByDrop
         <CustomMenu.MenuItem
           key={option.key}
           className="flex items-center justify-between gap-2"
-          onClick={() => handleInboxIssueSorting("sort_by", option.key as TInboxIssueSortingSortByKeys)}
+          onClick={() => setSorting("sort_by", option.key as TInboxIssueSortingSortByKeys)}
         >
           {t(option.i18n_label)}
-          {inboxSorting?.sort_by?.includes(option.key) && <CheckIcon className="size-3" />}
+          {sorting?.sort_by?.includes(option.key) && <CheckIcon className="size-3" />}
         </CustomMenu.MenuItem>
       ))}
     </CustomMenu>
   );
-});
+};

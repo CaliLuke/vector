@@ -7,7 +7,6 @@
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
-import { observer } from "mobx-react";
 
 import { useTranslation } from "@plane/i18n";
 // plane imports
@@ -16,22 +15,23 @@ import { setPromiseToast } from "@plane/propel/toast";
 import type { ISearchIssueResponse, TIssue } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { EIssuesStoreType } from "@plane/types";
 import { QuickAddIssueRoot } from "../quick-add";
 
 type TCalendarQuickAddIssueActions = {
   prePopulatedData?: Partial<TIssue>;
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
-  addIssuesToView?: (issueIds: string[]) => Promise<any>;
+  addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   onOpen?: () => void;
   isEpic?: boolean;
 };
 
-export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIssueActions(
+export const CalendarQuickAddIssueActions = function CalendarQuickAddIssueActions(
   props: TCalendarQuickAddIssueActions
 ) {
   const { prePopulatedData, quickAddCallback, addIssuesToView, onOpen, isEpic = false } = props;
@@ -42,11 +42,11 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
   const [isOpen, setIsOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isExistingIssueModalOpen, setIsExistingIssueModalOpen] = useState(false);
-  const { updateIssue } = useIssueDetail();
+  const issueActions = useIssuesActions(isEpic ? EIssuesStoreType.EPIC : EIssuesStoreType.PROJECT);
   // derived values
   const ExistingIssuesListModalPayload = addIssuesToView
     ? moduleId
-      ? { module: moduleId.toString(), target_date: "none" }
+      ? { module: moduleId, target_date: "none" }
       : { cycle: true, target_date: "none" }
     : { target_date: "none" };
 
@@ -55,7 +55,9 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
 
     const issueIds = data.map((i) => i.id);
     const addExistingIssuesPromise = Promise.all(
-      data.map((issue) => updateIssue(workspaceSlug.toString(), projectId.toString(), issue.id, prePopulatedData ?? {}))
+      data.map(async (issue) => {
+        await issueActions.updateIssue?.(projectId, issue.id, prePopulatedData ?? {});
+      })
     ).then(() => addIssuesToView?.(issueIds));
 
     setPromiseToast(addExistingIssuesPromise, {
@@ -66,7 +68,7 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
       },
       error: {
         title: t("toast.error"),
-        message: (err) => err?.message || t("common.errors.default.message"),
+        message: (err) => (err instanceof Error ? err.message : undefined) || t("common.errors.default.message"),
       },
     });
   };
@@ -85,8 +87,8 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
     <>
       {workspaceSlug && projectId && (
         <ExistingIssuesListModal
-          workspaceSlug={workspaceSlug.toString()}
-          projectId={projectId.toString()}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
           isOpen={isExistingIssueModalOpen}
           handleClose={() => setIsExistingIssueModalOpen(false)}
           searchParams={ExistingIssuesListModalPayload}
@@ -104,7 +106,7 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
       )}
       <QuickAddIssueRoot
         isQuickAddOpen={isOpen}
-        setIsQuickAddOpen={(isOpen) => setIsOpen(isOpen)}
+        setIsQuickAddOpen={(isQuickAddOpen) => setIsOpen(isQuickAddOpen)}
         layout={EIssueLayoutTypes.CALENDAR}
         prePopulatedData={prePopulatedData}
         quickAddCallback={quickAddCallback}
@@ -145,4 +147,4 @@ export const CalendarQuickAddIssueActions = observer(function CalendarQuickAddIs
       />
     </>
   );
-});
+};

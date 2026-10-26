@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { TWorkItemProjectedValue } from "./issue-property-values";
 import type { TIssuePriorities } from "../issues";
 import type { TStateGroups } from "../state";
 import type { TIssuePublicComment } from "./activity/issue_comment";
@@ -63,6 +64,10 @@ export type TBaseIssue = {
   cycle_id: string | null;
   module_ids: string[] | null;
   type_id: string | null;
+  custom_properties?: Record<string, unknown>;
+  property_values?: Record<string, TWorkItemProjectedValue>;
+  properties_evaluated_at?: string;
+  properties_revision?: number;
 
   created_at: string;
   updated_at: string;
@@ -221,5 +226,5 @@ export interface IWorkItemPeekOverview {
   embedIssue?: boolean;
   embedRemoveCurrentNotification?: () => void;
   is_draft?: boolean;
-  storeType?: EIssuesStoreType;
+  storeType?: Exclude<EIssuesStoreType, EIssuesStoreType.WORKSPACE_DRAFT>;
 }

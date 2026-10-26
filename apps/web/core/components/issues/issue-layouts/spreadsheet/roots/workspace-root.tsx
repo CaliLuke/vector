@@ -3,69 +3,72 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { IssueLayoutQuickActions } from "../../issue-layout-quick-actions";
 
+import { EstimateCatalogueBoundary } from "@/components/estimates/catalogue-boundary";
+import { useIssueEstimateOrder } from "@/hooks/use-issue-estimate-projection";
+import type { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
 import React, { useCallback } from "react";
-import { observer } from "mobx-react";
 // plane constants
-import { ALL_ISSUES, EIssueFilterType, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { ALL_ISSUES, EIssueFilterType, EUserPermissions } from "@plane/constants";
 import type { IIssueDisplayFilterOptions } from "@plane/types";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
 // components
 import { AllIssueQuickActions } from "@/components/issues/issue-layouts/quick-action-dropdowns";
 import { SpreadsheetLayoutLoader } from "@/components/ui/loader/layouts/spreadsheet-layout-loader";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspaceIssuePreferences } from "@/providers/workspace-issue-preferences";
+import { useWorkspaceProjectRoles } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useIssuesActions } from "@/hooks/use-issues-actions";
 import { useWorkspaceIssueProperties } from "@/hooks/use-workspace-issue-properties";
 // store
 import { IssueLayoutHOC } from "../../issue-layout-HOC";
 import type { TRenderQuickActions } from "../../list/list-view-types";
 import { SpreadsheetView } from "../spreadsheet-view";
+import { projectAllIssueIdsByDisplayOrder } from "../../issue-display-ordering";
+import { IssueListViewProvider } from "@/providers/issue-list-view";
 
 type Props = {
   isDefaultView: boolean;
   isLoading?: boolean;
-  toggleLoading: (value: boolean) => void;
   workspaceSlug: string;
   globalViewId: string;
   routeFilters: {
     [key: string]: string;
   };
-  fetchNextPages: () => void;
+  readState: ReturnType<typeof useIssueListPresentation>;
   globalViewsLoading: boolean;
-  issuesLoading: boolean;
 };
 
-export const WorkspaceSpreadsheetRoot = observer(function WorkspaceSpreadsheetRoot(props: Props) {
-  const { isLoading = false, workspaceSlug, globalViewId, fetchNextPages, issuesLoading } = props;
+export function WorkspaceSpreadsheetRoot(props: Props) {
+  const { isLoading = false, workspaceSlug, globalViewId, readState } = props;
 
   // Custom hooks
   useWorkspaceIssueProperties(workspaceSlug);
 
   // Store hooks
-  const {
-    issuesFilter: { filters, updateFilters },
-    issues: { getIssueLoader, getPaginationData, groupedIssueIds },
-  } = useIssues(EIssuesStoreType.GLOBAL);
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
   const { updateIssue, removeIssue, archiveIssue } = useIssuesActions(EIssuesStoreType.GLOBAL);
-  const { allowPermissions } = useUserPermissions();
+  const { canProject } = useWorkspaceProjectRoles(workspaceSlug);
 
   // Derived values
-  const issueFilters = globalViewId ? filters?.[globalViewId.toString()] : undefined;
+  const preferences = useWorkspaceIssuePreferences();
+  const issueFilters = preferences?.issueFilters;
+  const displayFilters: IIssueDisplayFilterOptions = issueFilters?.displayFilters ?? {};
+  const displayProperties = issueFilters?.displayProperties ?? {};
+  const estimateOrder = useIssueEstimateOrder(workspaceSlug, undefined, true, displayFilters.order_by);
+  const issueMap = readState.issuesById;
+  const groupedIssueIds = readState.groupedIssueIds;
+  const estimateProjection = estimateOrder.projection;
 
   // Permission checker
   const canEditProperties = useCallback(
     (projectId: string | undefined) => {
       if (!projectId) return false;
-      return allowPermissions(
-        [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-        EUserPermissionsLevel.PROJECT,
-        workspaceSlug.toString(),
-        projectId
-      );
+      return canProject(projectId, [EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
     },
-    [allowPermissions, workspaceSlug]
+    [canProject]
   );
 
   // Display filters handler
@@ -73,59 +76,77 @@ export const WorkspaceSpreadsheetRoot = observer(function WorkspaceSpreadsheetRo
     (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
       if (!workspaceSlug || !globalViewId) return;
 
-      updateFilters(
-        workspaceSlug.toString(),
-        undefined,
-        EIssueFilterType.DISPLAY_FILTERS,
-        { ...updatedDisplayFilter },
-        globalViewId.toString()
-      );
+      preferences?.updateFilters(EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter);
     },
-    [updateFilters, workspaceSlug, globalViewId]
+    [preferences, workspaceSlug, globalViewId]
   );
 
   // Quick actions renderer
   const renderQuickActions: TRenderQuickActions = useCallback(
     ({ issue, parentRef, customActionButton, placement, portalElement }) => (
-      <AllIssueQuickActions
+      <IssueLayoutQuickActions
+        QuickActions={AllIssueQuickActions}
         parentRef={parentRef}
         customActionButton={customActionButton}
         issue={issue}
-        handleDelete={async () => removeIssue(issue.project_id, issue.id)}
-        handleUpdate={async (data) => updateIssue && updateIssue(issue.project_id, issue.id, data)}
-        handleArchive={async () => archiveIssue && archiveIssue(issue.project_id, issue.id)}
+        actions={{ removeIssue, updateIssue, archiveIssue }}
         portalElement={portalElement}
         readOnly={!canEditProperties(issue.project_id ?? undefined)}
-        placements={placement}
+        placement={placement}
       />
     ),
     [canEditProperties, removeIssue, updateIssue, archiveIssue]
   );
 
-  // Loading state
-  if ((isLoading && issuesLoading && getIssueLoader() === "init-loader") || !globalViewId || !groupedIssueIds) {
-    return <SpreadsheetLayoutLoader />;
-  }
+  const loading = isLoading || readState.isPending || !globalViewId || !groupedIssueIds;
 
   // Computed values
-  const issueIds = groupedIssueIds[ALL_ISSUES];
-  const nextPageResults = getPaginationData(ALL_ISSUES, undefined)?.nextPageResults;
+  const issueIds =
+    projectAllIssueIdsByDisplayOrder(
+      groupedIssueIds,
+      (issueId) => issueMap[issueId],
+      membersById,
+      displayFilters.order_by,
+      readState.labelsById,
+      estimateProjection,
+      readState.stateProjection,
+      readState.parentProjection
+    ) ?? [];
+  const nextPageResults = readState.getPaginationData(ALL_ISSUES, undefined)?.nextPageResults;
 
   // Render spreadsheet
   return (
-    <IssueLayoutHOC layout={EIssueLayoutTypes.SPREADSHEET}>
-      <SpreadsheetView
-        displayProperties={issueFilters?.displayProperties ?? {}}
-        displayFilters={issueFilters?.displayFilters ?? {}}
-        handleDisplayFilterUpdate={handleDisplayFiltersUpdate}
-        issueIds={Array.isArray(issueIds) ? issueIds : []}
-        quickActions={renderQuickActions}
-        updateIssue={updateIssue}
-        canEditProperties={canEditProperties}
-        canLoadMoreIssues={!!nextPageResults}
-        loadMoreIssues={fetchNextPages}
-        isWorkspaceLevel
-      />
-    </IssueLayoutHOC>
+    <EstimateCatalogueBoundary state={estimateOrder} loading={<SpreadsheetLayoutLoader />}>
+      {loading ? (
+        <SpreadsheetLayoutLoader />
+      ) : (
+        <IssueListViewProvider readState={readState}>
+          <IssueLayoutHOC
+            layout={EIssueLayoutTypes.SPREADSHEET}
+            readState={{
+              isPending: readState.isPending,
+              isError: readState.isError,
+              retry: async () => {
+                await Promise.all([readState.retry(), estimateOrder.retry()]);
+              },
+              issueCount: readState.issueCount,
+            }}
+          >
+            <SpreadsheetView
+              displayProperties={displayProperties}
+              displayFilters={displayFilters}
+              handleDisplayFilterUpdate={handleDisplayFiltersUpdate}
+              issueIds={issueIds}
+              quickActions={renderQuickActions}
+              updateIssue={updateIssue}
+              canEditProperties={canEditProperties}
+              canLoadMoreIssues={nextPageResults}
+              loadMoreIssues={() => void readState.fetchNextIssues()}
+              isWorkspaceLevel
+            />
+          </IssueLayoutHOC>
+        </IssueListViewProvider>
+      )}
+    </EstimateCatalogueBoundary>
   );
-});
+}

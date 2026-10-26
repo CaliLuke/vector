@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -181,7 +182,7 @@ const activityWorkspaceExpansion = `(SELECT jsonb_build_object('id',w.id,'name',
 
 var activityProjectExpansion = `(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'description',p.description,'cover_image',p.cover_image,'cover_image_url',` + fileAssetURLSQL("p.cover_image_asset_id", "p.cover_image") + `,'emoji',p.emoji,'icon_prop',p.icon_prop,'archived_at',p.archived_at) FROM projects p WHERE p.id=a.project_id)`
 
-const activityIssueExpansion = `(SELECT jsonb_build_object('id',i.id,'assignees',COALESCE((SELECT jsonb_agg(x.assignee_id ORDER BY x.created_at DESC) FROM issue_assignees x WHERE x.issue_id=i.id AND x.deleted_at IS NULL),'[]'::jsonb),'labels',COALESCE((SELECT jsonb_agg(x.label_id ORDER BY x.created_at DESC) FROM issue_labels x WHERE x.issue_id=i.id AND x.deleted_at IS NULL),'[]'::jsonb),'type',i.type_id,'type_id',i.type_id,'created_at',i.created_at,'updated_at',i.updated_at,'created_by',i.created_by_id,'updated_by',i.updated_by_id,'deleted_at',i.deleted_at,'project',i.project_id,'workspace',i.workspace_id,'parent',i.parent_id,'state',i.state_id,'point',i.point,'estimate_point',i.estimate_point_id,'name',i.name,'description_html',i.description_html,'description_binary',CASE WHEN i.description_binary IS NULL THEN NULL ELSE replace(encode(i.description_binary,'base64'),E'\n','') END,'priority',i.priority,'start_date',i.start_date,'target_date',i.target_date,'sequence_id',i.sequence_id,'sort_order',i.sort_order,'completed_at',i.completed_at,'archived_at',i.archived_at,'is_draft',i.is_draft,'external_source',i.external_source,'external_id',i.external_id) FROM issues i WHERE i.id=a.issue_id)`
+var activityIssueExpansion = `(SELECT jsonb_build_object('id',i.id,'assignees',COALESCE((SELECT jsonb_agg(x.assignee_id ORDER BY x.created_at DESC) FROM issue_assignees x WHERE x.issue_id=i.id AND x.deleted_at IS NULL),'[]'::jsonb),'labels',COALESCE((SELECT jsonb_agg(x.label_id ORDER BY x.created_at DESC) FROM issue_labels x WHERE ` + issuequery.LiveIssueLabelPredicate("i", "x") + `),'[]'::jsonb),'type',i.type_id,'type_id',i.type_id,'created_at',i.created_at,'updated_at',i.updated_at,'created_by',i.created_by_id,'updated_by',i.updated_by_id,'deleted_at',i.deleted_at,'project',i.project_id,'workspace',i.workspace_id,'parent',i.parent_id,'state',i.state_id,'point',i.point,'estimate_point',i.estimate_point_id,'name',i.name,'description_html',i.description_html,'description_binary',CASE WHEN i.description_binary IS NULL THEN NULL ELSE replace(encode(i.description_binary,'base64'),E'\n','') END,'priority',i.priority,'start_date',i.start_date,'target_date',i.target_date,'sequence_id',i.sequence_id,'sort_order',i.sort_order,'completed_at',i.completed_at,'archived_at',i.archived_at,'is_draft',i.is_draft,'external_source',i.external_source,'external_id',i.external_id) FROM issues i WHERE i.id=a.issue_id)`
 
 var activityAPISerializerExpansions = map[string]string{
 	"actor":     activityActorExpansion,

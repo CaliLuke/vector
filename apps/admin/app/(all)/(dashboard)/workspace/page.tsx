@@ -4,74 +4,38 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
-import Link from "next/link";
-import useSWR from "swr";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { instanceWorkspacesOptions } from "@/queries/workspaces";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { instanceConfigurationsOptions, updateConfigurationsOptions } from "@/queries/instance";
+import { notifyConfigurationSave } from "@/helpers/configuration-save";
+import { Link } from "react-router";
 import { Loader as LoaderIcon } from "lucide-react";
 // types
 import { Button, getButtonStyling } from "@plane/propel/button";
-import { setPromiseToast } from "@plane/propel/toast";
 import type { TInstanceConfigurationKeys } from "@plane/types";
 import { Loader, ToggleSwitch } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { PageWrapper } from "@/components/common/page-wrapper";
 import { WorkspaceListItem } from "@/components/workspace/list-item";
 // hooks
-import { useInstance, useWorkspace } from "@/hooks/store";
 // types
 import type { Route } from "./+types/page";
 
-const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props: Route.ComponentProps) {
+const WorkspaceManagementPage = function WorkspaceManagementPage(_props: Route.ComponentProps) {
   // states
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  // store
-  const { formattedConfig, fetchInstanceConfigurations, updateInstanceConfigurations } = useInstance();
-  const {
-    workspaceIds,
-    loader: workspaceLoader,
-    paginationInfo,
-    fetchWorkspaces,
-    fetchNextWorkspaces,
-  } = useWorkspace();
-  // derived values
+  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
+  const queryClient = useQueryClient();
+  const { mutateAsync: updateInstanceConfigurations, isPending: isSubmitting } = useMutation(
+    updateConfigurationsOptions(queryClient)
+  );
+  const workspacesQuery = useInfiniteQuery(instanceWorkspacesOptions);
+  const workspaces = workspacesQuery.data?.pages.flatMap((page) => page.results) ?? [];
   const disableWorkspaceCreation = formattedConfig?.DISABLE_WORKSPACE_CREATION ?? "";
-  const hasNextPage = paginationInfo?.next_page_results && paginationInfo?.next_cursor !== undefined;
 
-  // fetch data
-  useSWR("INSTANCE_CONFIGURATIONS", () => fetchInstanceConfigurations());
-  useSWR("INSTANCE_WORKSPACES", () => fetchWorkspaces());
-
-  const updateConfig = async (key: TInstanceConfigurationKeys, value: string) => {
-    setIsSubmitting(true);
-
-    const payload = {
-      [key]: value,
-    };
-
-    const updateConfigPromise = updateInstanceConfigurations(payload);
-
-    setPromiseToast(updateConfigPromise, {
-      loading: "Saving configuration",
-      success: {
-        title: "Success",
-        message: () => "Configuration saved successfully",
-      },
-      error: {
-        title: "Error",
-        message: () => "Failed to save configuration",
-      },
-    });
-
-    await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsSubmitting(false);
-      });
+  const updateConfig = (key: TInstanceConfigurationKeys, value: string) => {
+    notifyConfigurationSave(updateInstanceConfigurations({ [key]: value }));
   };
 
   return (
@@ -82,6 +46,18 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
       }}
     >
       <div className="space-y-3">
+        {workspacesQuery.isError && (
+          <div role="alert">
+            Unable to load workspaces.{" "}
+            <Button
+              onClick={() => {
+                void workspacesQuery.refetch();
+              }}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
         {formattedConfig ? (
           <div className={cn("flex w-full items-center gap-14 rounded-sm")}>
             <div className="flex grow items-center gap-4">
@@ -97,7 +73,7 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
                 <ToggleSwitch
                   value={Boolean(parseInt(disableWorkspaceCreation))}
                   onChange={() => {
-                    if (Boolean(parseInt(disableWorkspaceCreation)) === true) {
+                    if (parseInt(disableWorkspaceCreation)) {
                       updateConfig("DISABLE_WORKSPACE_CREATION", "0");
                     } else {
                       updateConfig("DISABLE_WORKSPACE_CREATION", "1");
@@ -114,15 +90,13 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
             <Loader.Item height="50px" width="100%" />
           </Loader>
         )}
-        {workspaceLoader !== "init-loader" ? (
+        {!workspacesQuery.isPending ? (
           <>
             <div className="flex items-center justify-between gap-2 pt-6">
               <div className="flex flex-col items-start gap-x-2">
                 <div className="flex items-center gap-2 text-16 font-medium">
-                  All workspaces on this instance <span className="text-tertiary">• {workspaceIds.length}</span>
-                  {workspaceLoader && ["mutation", "pagination"].includes(workspaceLoader) && (
-                    <LoaderIcon className="h-4 w-4 animate-spin" />
-                  )}
+                  All workspaces on this instance <span className="text-tertiary">• {workspaces.length}</span>
+                  {workspacesQuery.isFetching && <LoaderIcon className="h-4 w-4 animate-spin" />}
                 </div>
                 <div className={cn("text-11 leading-5 font-regular text-tertiary")}>
                   You can&apos;t yet delete workspaces and you can only go to the workspace if you are an Admin or a
@@ -130,26 +104,28 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Link href="/workspace/create" className={getButtonStyling("primary", "base")}>
+                <Link to="/workspace/create" className={getButtonStyling("primary", "base")}>
                   Create workspace
                 </Link>
               </div>
             </div>
             <div className="flex flex-col gap-4 py-2">
-              {workspaceIds.map((workspaceId) => (
-                <WorkspaceListItem key={workspaceId} workspaceId={workspaceId} />
+              {workspaces.map((workspace) => (
+                <WorkspaceListItem key={workspace.id} workspace={workspace} />
               ))}
             </div>
-            {hasNextPage && (
+            {workspacesQuery.hasNextPage && (
               <div className="flex justify-center">
                 <Button
                   variant="link"
                   size="lg"
-                  onClick={() => fetchNextWorkspaces()}
-                  disabled={workspaceLoader === "pagination"}
+                  onClick={() => {
+                    void workspacesQuery.fetchNextPage();
+                  }}
+                  disabled={workspacesQuery.isFetchingNextPage}
                 >
                   Load more
-                  {workspaceLoader === "pagination" && <LoaderIcon className="h-3 w-3 animate-spin" />}
+                  {workspacesQuery.isFetchingNextPage && <LoaderIcon className="h-3 w-3 animate-spin" />}
                 </Button>
               </div>
             )}
@@ -165,7 +141,7 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
       </div>
     </PageWrapper>
   );
-});
+};
 
 export const meta: Route.MetaFunction = () => [{ title: "Workspace Management - God Mode" }];
 

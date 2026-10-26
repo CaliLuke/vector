@@ -8,48 +8,42 @@ import { useCallback } from "react";
 
 import { Star, StarOff } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import { copyTextToClipboard } from "@plane/utils";
+import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useUser } from "@/hooks/store/user";
+import { EUserProjectRoles } from "@plane/types";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useFavorites } from "@/hooks/use-favorites";
 import { useParams } from "@tanstack/react-router";
 
 export const usePowerKCycleContextBasedActions = (): TPowerKCommandConfig[] => {
   // navigation
-  const { workspaceSlug, cycleId } = useParams({ strict: false });
+  const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
   // store
-  const {
-    permission: { allowPermissions },
-  } = useUser();
-  const { getCycleById, addCycleToFavorites, removeCycleFromFavorites } = useCycle();
+  const { cycle: cycleDetails } = useCycleDetails(workspaceSlug, projectId, cycleId);
   // derived values
-  const cycleDetails = cycleId ? getCycleById(cycleId.toString()) : null;
-  const isFavorite = !!cycleDetails?.is_favorite;
+  const { favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug?.toString());
+  const isFavorite = favoritesByEntity?.has(`cycle:${cycleDetails?.id}`) ?? false;
   // permission
-  const isEditingAllowed =
-    allowPermissions([EUserPermissions.ADMIN, EUserPermissions.MEMBER], EUserPermissionsLevel.PROJECT) &&
-    !cycleDetails?.archived_at;
+  const { can } = useProjectPermissions(workspaceSlug?.toString(), cycleDetails?.project_id);
+  const isEditingAllowed = can([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]) && !cycleDetails?.archived_at;
   // translation
   const { t } = useTranslation();
 
-  const toggleFavorite = useCallback(() => {
+  const toggleCycleFavorite = useCallback(() => {
     if (!workspaceSlug || !cycleDetails || !cycleDetails.project_id) return;
-    try {
-      if (isFavorite) removeCycleFromFavorites(workspaceSlug.toString(), cycleDetails.project_id, cycleDetails.id);
-      else addCycleToFavorites(workspaceSlug.toString(), cycleDetails.project_id, cycleDetails.id);
-    } catch {
+    void toggleFavorite("cycle", cycleDetails.id, cycleDetails.project_id).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Some error occurred",
       });
-    }
-  }, [addCycleToFavorites, removeCycleFromFavorites, workspaceSlug, cycleDetails, isFavorite]);
+    });
+  }, [toggleFavorite, workspaceSlug, cycleDetails]);
 
   const copyCycleUrlToClipboard = useCallback(() => {
     const url = new URL(window.location.href);
@@ -79,7 +73,7 @@ export const usePowerKCycleContextBasedActions = (): TPowerKCommandConfig[] => {
       group: "contextual",
       contextType: "cycle",
       type: "action",
-      action: toggleFavorite,
+      action: toggleCycleFavorite,
       modifierShortcut: "shift+f",
       isEnabled: () => isEditingAllowed,
       isVisible: () => isEditingAllowed,

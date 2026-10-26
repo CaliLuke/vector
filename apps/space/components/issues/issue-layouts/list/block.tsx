@@ -4,51 +4,44 @@
  * See the LICENSE file for details.
  */
 
+import type { IPublicIssue } from "@plane/types";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
+import { Link, useParams, useSearchParams } from "react-router";
 import { useRef } from "react";
-import { observer } from "mobx-react";
-import { Link } from "react-router";
-import { useParams, useSearchParams } from "next/navigation";
+
 // plane types
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueDisplayProperties } from "@plane/types";
 // plane ui
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // helpers
-import { queryParamGenerator } from "@/helpers/query-param-generator";
+
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
+
 //
 import { IssueProperties } from "../properties/all-properties";
 
 interface IssueBlockProps {
-  issueId: string;
-  groupId: string;
+  issue: IPublicIssue;
   displayProperties: IIssueDisplayProperties | undefined;
 }
 
-export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
+export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
   const { anchor } = useParams();
-  const { issueId, displayProperties } = props;
-  const searchParams = useSearchParams();
+  const { issue, displayProperties } = props;
+  const [searchParams] = useSearchParams();
   // query params
-  const board = searchParams.get("board");
   // ref
   const issueRef = useRef<HTMLDivElement | null>(null);
   // hooks
-  const { project_details } = usePublish(anchor.toString());
-  const { getIsIssuePeeked, setPeekId, getIssueById } = useIssueDetails();
-
-  const handleIssuePeekOverview = () => {
-    setPeekId(issueId);
-  };
-
-  const { queryParam } = queryParamGenerator(board ? { board, peekId: issueId } : { peekId: issueId });
-
-  const issue = getIssueById(issueId);
-
-  if (!issue) return null;
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { project_details } = publishSettings ?? {};
+  const query = new URLSearchParams(searchParams);
+  query.set("peekId", issue.id);
+  const queryParam = query.toString();
+  const isPeeked = searchParams.get("peekId") === issue.id;
 
   const projectIdentifier = project_details?.identifier;
 
@@ -58,8 +51,8 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
       className={cn(
         "group/list-block relative flex min-h-11 flex-col gap-3 border border-transparent border-b-subtle p-3 pl-1.5 text-13 transition-colors hover:bg-layer-transparent-hover md:flex-row md:items-center",
         {
-          "border-accent-strong!": getIsIssuePeeked(issue.id),
-          "last:border-b-transparent": !getIsIssuePeeked(issue.id),
+          "border-accent-strong!": isPeeked,
+          "last:border-b-transparent": !isPeeked,
         }
       )}
     >
@@ -76,7 +69,6 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
           <Link
             id={`issue-${issue.id}`}
             to={`?${queryParam}`}
-            onClick={handleIssuePeekOverview}
             className="w-full cursor-pointer truncate text-13 text-primary"
           >
             <Tooltip tooltipContent={issue.name} position="top-start">
@@ -94,4 +86,4 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
       </div>
     </div>
   );
-});
+};

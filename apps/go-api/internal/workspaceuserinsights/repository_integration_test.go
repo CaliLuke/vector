@@ -38,20 +38,20 @@ func startWorkspaceUserInsightsDB(t *testing.T) (*pgx.Conn, context.Context) {
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (
   id uuid PRIMARY KEY, slug text NOT NULL, name text NOT NULL,
-  logo_asset_id uuid, logo text
+  logo_asset_id uuid, logo text, deleted_at timestamptz
 );
 CREATE TABLE workspace_members (
   workspace_id uuid NOT NULL, member_id uuid NOT NULL, role integer NOT NULL,
-  is_active boolean NOT NULL
+  is_active boolean NOT NULL, deleted_at timestamptz
 );
 CREATE TABLE projects (
   id uuid PRIMARY KEY, workspace_id uuid NOT NULL, identifier text NOT NULL,
   name text NOT NULL, cover_image text, cover_image_asset_id uuid,
   description text, logo_props jsonb NOT NULL DEFAULT '{}'::jsonb,
-  archived_at timestamptz
+  archived_at timestamptz, deleted_at timestamptz, guest_view_all_features boolean NOT NULL DEFAULT false
 );
 CREATE TABLE project_members (
-  project_id uuid NOT NULL, member_id uuid NOT NULL, is_active boolean NOT NULL
+  project_id uuid NOT NULL, member_id uuid NOT NULL, is_active boolean NOT NULL, workspace_id uuid, role integer NOT NULL DEFAULT 15, deleted_at timestamptz
 );
 CREATE TABLE users (
   id uuid PRIMARY KEY, email text, first_name text, last_name text, avatar text,
@@ -59,7 +59,7 @@ CREATE TABLE users (
   cover_image text, cover_image_asset_id uuid, user_timezone text, date_joined timestamptz
 );
 CREATE TABLE issues (
-  id uuid PRIMARY KEY, project_id uuid, state_id uuid, created_by_id uuid, completed_at timestamptz,
+  id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, state_id uuid, created_by_id uuid, completed_at timestamptz,
   deleted_at timestamptz, archived_at timestamptz, name text, description_json jsonb, description_html text,
   priority text, start_date date, target_date date, sequence_id integer,
   sort_order numeric, is_draft boolean
@@ -89,11 +89,13 @@ INSERT INTO projects(id,workspace_id,identifier,name) VALUES
 INSERT INTO project_members(project_id,member_id,is_active) VALUES
   ('`+insightsProject1ID+`','`+insightsRequesterID+`',true),
   ('`+insightsProject2ID+`','`+insightsRequesterID+`',true);
+UPDATE project_members SET workspace_id='`+insightsWorkspaceID+`';
 INSERT INTO users(id,email,first_name,last_name,avatar,is_bot,display_name,cover_image,user_timezone,date_joined) VALUES
   ('`+insightsTargetID+`','target@example.test','Target','User','',false,'Target User','', 'UTC','2026-01-01T00:00:00Z');
 INSERT INTO issues(id,project_id,name,description_json,description_html,priority,sequence_id,sort_order,is_draft) VALUES
   ('`+insightsIssue1ID+`','`+insightsProject1ID+`','First issue','{}','', 'high',1,1,false),
   ('`+insightsIssue2ID+`','`+insightsProject2ID+`','Second issue','{}','', 'low',2,2,false);
+UPDATE issues SET workspace_id='`+insightsWorkspaceID+`';
 INSERT INTO issue_activities(id,created_at,updated_at,workspace_id,project_id,issue_id,verb,field,actor_id,attachments,epoch) VALUES
   ('`+insightsActivity1ID+`','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z','`+insightsWorkspaceID+`','`+insightsProject1ID+`','`+insightsIssue1ID+`','updated','state','`+insightsTargetID+`','[]',1),
   ('`+insightsActivity2ID+`','2026-01-02T00:00:00Z','2026-01-02T00:00:00Z','`+insightsWorkspaceID+`','`+insightsProject2ID+`','`+insightsIssue2ID+`','updated','priority','`+insightsTargetID+`','[]',2);

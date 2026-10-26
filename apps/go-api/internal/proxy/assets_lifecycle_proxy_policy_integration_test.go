@@ -45,8 +45,10 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(operations) != assetsLifecycleProxyOperationCount {
-		t.Fatalf("assets_lifecycle OpenAPI operation count=%d, want %d", len(operations), assetsLifecycleProxyOperationCount)
+	// The migration inventory is frozen; Vector's workspace draft association
+	// route is an additional operation served by the same Go-only API policy.
+	if len(operations) != assetsLifecycleProxyOperationCount+1 {
+		t.Fatalf("assets_lifecycle OpenAPI operation count=%d, want %d", len(operations), assetsLifecycleProxyOperationCount+1)
 	}
 	inventory, err := routing.LoadFile(filepath.Join(root, "apps/go-api/internal/routing/route-inventory.json"))
 	if err != nil {
@@ -54,8 +56,16 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 	}
 	family := make(map[string]routing.Operation, len(operations))
 	byPath := make(map[string][]routing.Operation)
+	draftAssociationFound := false
 	for _, operation := range operations {
 		key := operation.Method + " " + operation.Path
+		if key == "POST /api/assets/v2/workspaces/{slug}/{entity_id}/bulk/" {
+			if operation.ID != "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk" {
+				t.Fatalf("unexpected draft association operation ID %q", operation.ID)
+			}
+			draftAssociationFound = true
+			continue
+		}
 		for _, candidate := range inventory.Operations {
 			if candidate.Method == operation.Method && candidate.Path == operation.Path {
 				if candidate.OperationID != operation.ID {
@@ -66,6 +76,9 @@ func TestAssetsLifecycleGoOnlyProductionProxyPolicy(t *testing.T) {
 				break
 			}
 		}
+	}
+	if !draftAssociationFound {
+		t.Fatal("workspace draft association operation is absent")
 	}
 	if len(family) != assetsLifecycleProxyOperationCount {
 		t.Fatalf("route inventory covers %d of %d assets_lifecycle operations", len(family), assetsLifecycleProxyOperationCount)

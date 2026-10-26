@@ -10,7 +10,7 @@ import { XCircle } from "lucide-react";
 import { PROFILE_SETTINGS_TRACKER_ELEMENTS } from "@plane/constants";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IApiToken } from "@plane/types";
-import { renderFormattedDate, calculateTimeAgo, renderFormattedTime } from "@plane/utils";
+import { renderFormattedDate, calculateTimeAgo, renderFormattedTime } from "@plane/utils/datetime";
 // components
 import { DeleteApiTokenModal } from "@/components/api-token/delete-token-modal";
 // hooks
@@ -33,8 +33,10 @@ export function ApiTokenListItem(props: Props) {
       <div className="group relative flex flex-col justify-center border-b border-subtle py-3">
         <Tooltip tooltipContent="Delete token" isMobile={isMobile}>
           <button
+            type="button"
+            aria-label="Delete token"
             onClick={() => setDeleteModalOpen(true)}
-            className="absolute right-4 hidden place-items-center group-hover:grid"
+            className="absolute right-4 grid place-items-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
             data-ph-element={PROFILE_SETTINGS_TRACKER_ELEMENTS.LIST_ITEM_DELETE_ICON}
           >
             <XCircle className="h-4 w-4 text-danger-primary" />

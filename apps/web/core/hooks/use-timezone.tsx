@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import type { TTimezoneObject } from "@plane/types";
 // services
 import timezoneService from "@/services/timezone.service";
@@ -38,12 +38,10 @@ const useTimezone = () => {
     data: timezones,
     isLoading: timezoneIsLoading,
     error: timezonesError,
-  } = useSWR("TIMEZONES_LIST", () => timezoneService.fetch(), {
-    refreshInterval: 0,
-  });
+  } = useQuery({ queryKey: ["TIMEZONES_LIST"], queryFn: () => timezoneService.fetch(), refetchInterval: 0 });
 
   // derived values
-  const isDisabled = timezoneIsLoading || timezonesError || !timezones;
+  const isDisabled = timezoneIsLoading || !!timezonesError || !timezones;
 
   const getTimeZoneLabel = (timezone: TTimezoneObject | undefined) => {
     if (!timezone) return undefined;

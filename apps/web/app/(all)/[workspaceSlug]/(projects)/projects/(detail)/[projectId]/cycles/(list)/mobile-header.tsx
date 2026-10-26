@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type React from "react";
-import { observer } from "mobx-react";
+
 // ui
 import type { ISvgIcons } from "@plane/propel/icons";
 import { TimelineLayoutIcon, GridLayoutIcon, ListLayoutIcon } from "@plane/propel/icons";
@@ -13,8 +14,7 @@ import { TimelineLayoutIcon, GridLayoutIcon, ListLayoutIcon } from "@plane/prope
 import type { TCycleLayoutOptions } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
 // hooks
-import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
-import { useProject } from "@/hooks/store/use-project";
+import { useCycleCataloguePreferences } from "@/providers/cycle-module-preferences";
 
 const CYCLE_VIEW_LAYOUTS: {
   key: TCycleLayoutOptions;
@@ -38,10 +38,10 @@ const CYCLE_VIEW_LAYOUTS: {
   },
 ];
 
-export const CyclesListMobileHeader = observer(function CyclesListMobileHeader() {
-  const { currentProjectDetails } = useProject();
+export const CyclesListMobileHeader = function CyclesListMobileHeader() {
   // hooks
-  const { updateDisplayFilters } = useCycleFilter();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const preferences = useCycleCataloguePreferences(workspaceSlug, projectId);
   return (
     <div className="flex justify-center sm:hidden">
       <CustomMenu
@@ -63,8 +63,11 @@ export const CyclesListMobileHeader = observer(function CyclesListMobileHeader()
             <CustomMenu.MenuItem
               key={layout.key}
               onClick={() => {
-                updateDisplayFilters(currentProjectDetails!.id, {
-                  layout: layout.key,
+                preferences.update({
+                  display: {
+                    ...preferences.display,
+                    layout: layout.key,
+                  },
                 });
               }}
               className="flex items-center gap-2"
@@ -77,4 +80,4 @@ export const CyclesListMobileHeader = observer(function CyclesListMobileHeader()
       </CustomMenu>
     </div>
   );
-});
+};

@@ -20,75 +20,68 @@ export class AnalyticsService extends APIService {
     super(API_BASE_URL);
   }
 
-  async getAdvanceAnalytics<T extends IAnalyticsResponse>(
-    workspaceSlug: string,
-    tab: TAnalyticsTabsBase,
-    params?: TAnalyticsFilterParams,
-    isPeekView?: boolean
-  ): Promise<T> {
-    return this.get(this.processUrl<TAnalyticsTabsBase>("advance-analytics", workspaceSlug, tab, params, isPeekView), {
-      params: {
-        tab,
-        ...params,
-      },
-    })
+  private getAnalyticsData<T>(url: string, params: object, signal?: AbortSignal): Promise<T> {
+    return this.get(url, { params, signal })
       .then((res) => res?.data)
       .catch((err) => {
         throw err?.response?.data;
       });
+  }
+
+  async getAdvanceAnalytics<T extends IAnalyticsResponse>(
+    workspaceSlug: string,
+    tab: TAnalyticsTabsBase,
+    params?: TAnalyticsFilterParams,
+    isPeekView?: boolean,
+    signal?: AbortSignal
+  ): Promise<T> {
+    return this.getAnalyticsData<T>(
+      this.processUrl("advance-analytics", workspaceSlug, tab, params, isPeekView),
+      {
+        tab,
+        ...params,
+      },
+      signal
+    );
   }
 
   async getAdvanceAnalyticsStats<T>(
     workspaceSlug: string,
     tab: Exclude<TAnalyticsTabsBase, "overview">,
     params?: TAnalyticsFilterParams,
-    isPeekView?: boolean
+    isPeekView?: boolean,
+    signal?: AbortSignal
   ): Promise<T> {
-    const processedUrl = this.processUrl<Exclude<TAnalyticsTabsBase, "overview">>(
-      "advance-analytics-stats",
-      workspaceSlug,
-      tab,
-      params,
-      isPeekView
-    );
-    return this.get(processedUrl, {
-      params: {
+    const processedUrl = this.processUrl("advance-analytics-stats", workspaceSlug, tab, params, isPeekView);
+    return this.getAnalyticsData<T>(
+      processedUrl,
+      {
         type: tab,
         ...params,
       },
-    })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+      signal
+    );
   }
 
   async getAdvanceAnalyticsCharts<T>(
     workspaceSlug: string,
     tab: TAnalyticsGraphsBase,
     params?: TAnalyticsFilterParams,
-    isPeekView?: boolean
+    isPeekView?: boolean,
+    signal?: AbortSignal
   ): Promise<T> {
-    const processedUrl = this.processUrl<TAnalyticsGraphsBase>(
-      "advance-analytics-charts",
-      workspaceSlug,
-      tab,
-      params,
-      isPeekView
-    );
-    return this.get(processedUrl, {
-      params: {
+    const processedUrl = this.processUrl("advance-analytics-charts", workspaceSlug, tab, params, isPeekView);
+    return this.getAnalyticsData<T>(
+      processedUrl,
+      {
         type: tab,
         ...params,
       },
-    })
-      .then((res) => res?.data)
-      .catch((err) => {
-        throw err?.response?.data;
-      });
+      signal
+    );
   }
 
-  processUrl<_T extends string>(
+  processUrl(
     endpoint: string,
     workspaceSlug: string,
     tab: TAnalyticsGraphsBase | TAnalyticsTabsBase,

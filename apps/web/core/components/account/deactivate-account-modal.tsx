@@ -5,7 +5,6 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { useState } from "react";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { Button } from "@plane/propel/button";
@@ -13,7 +12,7 @@ import { TrashIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useDeactivateAccount } from "@/hooks/use-current-user";
 
 type Props = {
   isOpen: boolean;
@@ -25,19 +24,14 @@ export function DeactivateAccountModal(props: Props) {
   const { isOpen, onClose } = props;
   // hooks
   const { t } = useTranslation();
-  const { deactivateAccount, signOut } = useUser();
-
-  // states
-  const [isDeactivating, setIsDeactivating] = useState(false);
+  const { mutateAsync: deactivateAccount, isPending: isDeactivating } = useDeactivateAccount();
 
   const handleClose = () => {
-    setIsDeactivating(false);
+    if (isDeactivating) return;
     onClose();
   };
 
   const handleDeleteAccount = async () => {
-    setIsDeactivating(true);
-
     await deactivateAccount()
       .then(() => {
         setToast({
@@ -45,7 +39,6 @@ export function DeactivateAccountModal(props: Props) {
           title: "Success!",
           message: "Account deactivated successfully.",
         });
-        signOut();
         void router.navigate({ href: "/" });
         handleClose();
         return;
@@ -56,8 +49,7 @@ export function DeactivateAccountModal(props: Props) {
           title: "Error!",
           message: err?.error,
         });
-      })
-      .finally(() => setIsDeactivating(false));
+      });
   };
 
   return (
@@ -81,10 +73,10 @@ export function DeactivateAccountModal(props: Props) {
         </div>
       </div>
       <div className="mb-2 flex items-center justify-end gap-2 p-4 sm:px-6">
-        <Button variant="secondary" size="lg" onClick={handleClose}>
+        <Button variant="secondary" size="lg" onClick={handleClose} disabled={isDeactivating}>
           {t("cancel")}
         </Button>
-        <Button variant="error-fill" size="lg" onClick={handleDeleteAccount}>
+        <Button variant="error-fill" size="lg" onClick={handleDeleteAccount} disabled={isDeactivating}>
           {isDeactivating ? t("deactivating") : t("confirm")}
         </Button>
       </div>

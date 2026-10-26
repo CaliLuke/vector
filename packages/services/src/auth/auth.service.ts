@@ -5,6 +5,7 @@
  */
 
 import { API_BASE_URL } from "@plane/constants";
+import type { AxiosInstance } from "axios";
 // types
 import type { ICsrfTokenData, IEmailCheckData, IEmailCheckResponse } from "@plane/types";
 // services
@@ -20,8 +21,8 @@ export class AuthService extends APIService {
    * Creates an instance of AuthService
    * Initializes with the base API URL
    */
-  constructor(BASE_URL?: string) {
-    super(BASE_URL || API_BASE_URL);
+  constructor(BASE_URL?: string, configureAxiosInstance?: (instance: AxiosInstance) => void) {
+    super(BASE_URL || API_BASE_URL, configureAxiosInstance);
   }
 
   /**
@@ -36,6 +37,18 @@ export class AuthService extends APIService {
       .catch((error) => {
         throw error;
       });
+  }
+
+  /** Submit a browser authentication form only after obtaining a fresh CSRF token. */
+  async submitForm(form: HTMLFormElement | null): Promise<void> {
+    if (!form) throw new Error("Authentication form is unavailable");
+    const { csrf_token } = await this.requestCSRFToken();
+    if (!csrf_token) throw new Error("CSRF token not found");
+    if (!form.isConnected) throw new Error("Authentication form was closed");
+    const input = form.querySelector<HTMLInputElement>('input[name="csrfmiddlewaretoken"]');
+    if (!input) throw new Error("CSRF field not found");
+    input.value = csrf_token;
+    form.submit();
   }
 
   /**
@@ -85,18 +98,11 @@ export class AuthService extends APIService {
       });
   }
 
-  /**
-   * Generates a unique code for magic link authentication
-   * @param {{ email: string }} data - Object containing the email address
-   * @returns {Promise<any>} Response containing the generated unique code
-   * @throws {Error} Throws response data if the request fails
-   */
-  async generateUniqueCode(data: { email: string }): Promise<any> {
-    return this.post("/auth/magic-generate/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  /** Request an email code without exposing authentication response data to callers. */
+  async generateUniqueCode(data: { email: string }): Promise<void> {
+    await this.post("/auth/magic-generate/", data, { headers: {} }).catch((error) => {
+      throw error?.response?.data;
+    });
   }
 
   /**

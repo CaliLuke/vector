@@ -6,7 +6,6 @@
 
 import { Link } from "@tanstack/react-router";
 import { Fragment } from "react";
-import { observer } from "mobx-react";
 
 // icons
 import { CirclePlus, LogOut, Mails } from "lucide-react";
@@ -18,14 +17,17 @@ import { ChevronDownIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspace } from "@plane/types";
 import { Loader } from "@plane/ui";
-import { orderWorkspacesList, cn } from "@plane/utils";
+import { orderWorkspacesList } from "@plane/utils/workspace";
+import { cn } from "@plane/utils/common";
 // helpers
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser, useUserProfile } from "@/hooks/store/user";
-import { useInstance } from "@/hooks/store/use-instance";
+import { useSidebarActions } from "@/providers/sidebar-state";
+import { useCurrentUser, useSignOut } from "@/hooks/use-current-user";
+import { useCurrentWorkspace, useWorkspaces } from "@/hooks/use-workspaces";
+import { useUpdateUserProfile } from "@/hooks/use-current-user-profile";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 // components
 import { WorkspaceLogo } from "../logo";
 import SidebarDropdownItem from "./dropdown-item";
@@ -35,23 +37,32 @@ type WorkspaceMenuRootProps = {
   variant: "sidebar" | "top-navigation";
 };
 
-export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: WorkspaceMenuRootProps) {
+export function WorkspaceMenuRoot(props: WorkspaceMenuRootProps) {
   const { variant } = props;
   // store hooks
-  const { toggleSidebar, toggleAnySidebarDropdown } = useAppTheme();
-  const { config } = useInstance();
-  const { data: currentUser } = useUser();
-  const { signOut } = useUser();
-  const { updateUserProfile } = useUserProfile();
-  const { currentWorkspace: activeWorkspace, workspaces } = useWorkspace();
+  const { toggleSidebar, toggleAnySidebarDropdown } = useSidebarActions();
+  const { data: config } = useQuery(instanceConfigOptions);
+  const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: signOut } = useSignOut();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
+  const { data: activeWorkspace } = useCurrentWorkspace();
+  const workspacesQuery = useWorkspaces();
   // derived values
   const isWorkspaceCreationDisabled = config?.is_workspace_creation_disabled ?? false;
   // translation
   const { t } = useTranslation();
-  const handleWorkspaceNavigation = (workspace: IWorkspace) => updateUserProfile({ last_workspace_id: workspace?.id });
+  const handleWorkspaceNavigation = (workspace: IWorkspace) => {
+    void updateUserProfile({ last_workspace_id: workspace.id }).catch(() =>
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Could not save your workspace preference",
+        message: "You can continue using this workspace. Your last workspace preference was not saved.",
+      })
+    );
+  };
 
-  const handleSignOut = async () => {
-    await signOut().catch(() =>
+  const handleSignOut = () => {
+    void signOut().catch(() =>
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t("auth.sign_out.toast.error.title"),
@@ -65,7 +76,7 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
       toggleSidebar();
     }
   };
-  const workspacesList = orderWorkspacesList(Object.values(workspaces ?? {}));
+  const workspacesList = orderWorkspacesList(workspacesQuery.data ?? []);
   // TODO: fix workspaces list scroll
 
   return (
@@ -148,7 +159,7 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
                     <span className="sticky top-0 z-21 h-full w-full flex-shrink-0 truncate rounded-md bg-surface-1 px-4 pt-3 pb-1 text-left text-13 font-medium text-placeholder">
                       {currentUser?.email}
                     </span>
-                    {workspacesList ? (
+                    {!workspacesQuery.isPending ? (
                       <div className="flex size-full flex-col items-start justify-start">
                         {(activeWorkspace
                           ? [
@@ -160,7 +171,7 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
                           <SidebarDropdownItem
                             key={workspace.id}
                             workspace={workspace}
-                            activeWorkspace={activeWorkspace}
+                            activeWorkspace={activeWorkspace ?? null}
                             handleItemClick={handleItemClick}
                             handleWorkspaceNavigation={handleWorkspaceNavigation}
                             handleClose={close}
@@ -219,4 +230,4 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
       }}
     </Menu>
   );
-});
+}

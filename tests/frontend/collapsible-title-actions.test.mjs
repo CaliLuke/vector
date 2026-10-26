@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
-import { React, createReactDomTestEnvironment, webRequire } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();

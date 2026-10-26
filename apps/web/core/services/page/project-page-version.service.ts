@@ -16,34 +16,32 @@ export class ProjectPageVersionService extends APIService {
     super(API_BASE_URL);
   }
 
-  async fetchAllVersions(workspaceSlug: string, projectId: string, pageId: string): Promise<TPageVersion[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/pages/${pageId}/versions/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async fetchAllVersions(
+    workspaceSlug: string,
+    projectId: string,
+    pageId: string,
+    signal?: AbortSignal
+  ): Promise<TPageVersion[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/pages/${pageId}/versions/`, {
+      signal,
+    }).then((response) => response?.data);
   }
 
   async fetchVersionById(
     workspaceSlug: string,
     projectId: string,
     pageId: string,
-    versionId: string
+    versionId: string,
+    signal?: AbortSignal
   ): Promise<TPageVersion> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/pages/${pageId}/versions/${versionId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/pages/${pageId}/versions/${versionId}/`, {
+      signal,
+    }).then((response) => response?.data);
   }
 
   async restoreVersion(workspaceSlug: string, projectId: string, pageId: string, versionId: string): Promise<void> {
     return this.post(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/pages/${pageId}/versions/${versionId}/restore/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    ).then((response) => response?.data);
   }
 }

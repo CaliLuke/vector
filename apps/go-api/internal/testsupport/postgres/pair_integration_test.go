@@ -1,0 +1,110 @@
+//go:build integration
+
+package postgres
+
+import (
+	"context"
+	"net/url"
+	"testing"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+)
+
+func TestOpenSQLInstallsItsSchemaBeforeReturningAConnection(t *testing.T) {
+	ctx, connection := OpenSQL(t, `CREATE TABLE fixture_probe(value text); INSERT INTO fixture_probe VALUES('ready')`)
+	var value string
+	if err := connection.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&value); err != nil {
+		t.Fatal(err)
+	}
+	if value != "ready" || ctx.Err() != nil {
+		t.Fatalf("fixture value=%q context error=%v", value, ctx.Err())
+	}
+}
+
+func TestPairResetRestoresIndependentClonesFromTheSeed(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	pair, err := Start(ctx, func(ctx context.Context, databaseURL string) error {
+		connection, err := pgx.Connect(ctx, databaseURL)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = connection.Close(context.WithoutCancel(ctx)) }()
+		_, err = connection.Exec(ctx, `CREATE TABLE fixture_probe(value int); INSERT INTO fixture_probe VALUES(10)`)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if closeErr := pair.Close(); closeErr != nil {
+			t.Error(closeErr)
+		}
+	})
+	source, err := pgx.Connect(ctx, pair.SourceURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = source.Close(context.WithoutCancel(ctx)) }()
+	target, err := pgx.Connect(ctx, pair.TargetURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = target.Close(context.WithoutCancel(ctx)) }()
+	if _, err = source.Exec(ctx, `UPDATE fixture_probe SET value=20`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = target.Exec(ctx, `DELETE FROM fixture_probe`); err != nil {
+		t.Fatal(err)
+	}
+	if err = pair.Reset(ctx); err != nil {
+		t.Fatal(err)
+	}
+	restoredSource, err := pgx.Connect(ctx, pair.SourceURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = restoredSource.Close(context.WithoutCancel(ctx)) }()
+	restoredTarget, err := pgx.Connect(ctx, pair.TargetURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = restoredTarget.Close(context.WithoutCancel(ctx)) }()
+	var sourceValue, targetValue int
+	if err = restoredSource.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&sourceValue); err != nil {
+		t.Fatal(err)
+	}
+	if err = restoredTarget.QueryRow(ctx, `SELECT value FROM fixture_probe`).Scan(&targetValue); err != nil {
+		t.Fatal(err)
+	}
+	if sourceValue != 10 || targetValue != 10 {
+		t.Fatalf("reset clones contain source=%d target=%d", sourceValue, targetValue)
+	}
+	if pair.SeedURL() == "" || pair.ContainerID() == "" {
+		t.Fatal("fixture lost its seed or disposable container identity")
+	}
+	for _, read := range []struct {
+		name    string
+		address func() (string, error)
+		want    string
+	}{
+		{"seed", pair.SeedSidecarURL, "/plane_parity_seed"},
+		{"source", pair.SourceSidecarURL, "/plane_parity_source"},
+		{"target", pair.TargetSidecarURL, "/plane_parity_target"},
+	} {
+		t.Run(read.name, func(t *testing.T) {
+			address, err := read.address()
+			if err != nil {
+				t.Fatal(err)
+			}
+			parsed, err := url.Parse(address)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if parsed.Host != "127.0.0.1:5432" || parsed.Path != read.want {
+				t.Fatalf("sidecar host=%q database=%q", parsed.Host, parsed.Path)
+			}
+		})
+	}
+}

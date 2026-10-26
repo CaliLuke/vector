@@ -5,16 +5,15 @@
  */
 
 import React, { useState } from "react";
-import { xor } from "lodash-es";
-import { observer } from "mobx-react";
+import xor from "lodash-es/xor.js";
 import { useTranslation } from "@plane/i18n";
 // hooks
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 // ui
 // helpers
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 // types
 import type { TIssueOperations } from "./root";
 
@@ -27,17 +26,14 @@ type TIssueModuleSelect = {
   disabled?: boolean;
 };
 
-export const IssueModuleSelect = observer(function IssueModuleSelect(props: TIssueModuleSelect) {
+export const IssueModuleSelect = function IssueModuleSelect(props: TIssueModuleSelect) {
   const { className = "", workspaceSlug, projectId, issueId, issueOperations, disabled = false } = props;
   const { t } = useTranslation();
   // states
   const [isUpdating, setIsUpdating] = useState(false);
   // store hooks
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
+  const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId);
   // derived values
-  const issue = getIssueById(issueId);
   const disableSelect = disabled || isUpdating;
 
   const handleIssueModuleChange = async (moduleIds: string[]) => {
@@ -81,4 +77,4 @@ export const IssueModuleSelect = observer(function IssueModuleSelect(props: TIss
       />
     </div>
   );
-});
+};

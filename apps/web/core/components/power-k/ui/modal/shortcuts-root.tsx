@@ -11,7 +11,7 @@ import { CloseIcon, SearchIcon } from "@plane/propel/icons";
 import { ScrollArea } from "@plane/propel/scrollarea";
 import { Input } from "@plane/ui";
 // hooks
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { usePowerKCommandRegistry } from "@/hooks/use-power-k-command-registry";
 // local imports
 import { ShortcutRenderer } from "../renderer/shortcut";
 
@@ -25,7 +25,7 @@ export function ShortcutsModal(props: Props) {
   // states
   const [query, setQuery] = useState("");
   // store hooks
-  const { commandRegistry } = usePowerK();
+  const { commandRegistry } = usePowerKCommandRegistry();
 
   // Get all commands from registry
   const allCommandsWithShortcuts = commandRegistry.getAllCommandsWithShortcuts();

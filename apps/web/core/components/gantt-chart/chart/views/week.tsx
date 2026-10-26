@@ -4,18 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
 //
 import { HEADER_HEIGHT, SIDEBAR_WIDTH } from "../../constants";
-import type { IWeekBlock } from "../../views";
 
-export const WeekChartView = observer(function WeekChartView(_props: any) {
-  const { currentViewData, renderView } = useTimeLineChartStore();
-  const weekBlocks: IWeekBlock[] = renderView;
+export function WeekChartView() {
+  const { viewData: currentViewData, renderData } = useGanttChartState();
+  if (renderData.kind !== "week") return null;
+  const weekBlocks = renderData.data;
 
   return (
     <div className={`absolute top-0 left-0 flex h-max min-h-full w-max`}>
@@ -93,4 +92,4 @@ export const WeekChartView = observer(function WeekChartView(_props: any) {
         ))}
     </div>
   );
-});
+}

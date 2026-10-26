@@ -5,11 +5,11 @@
  */
 
 import { useCallback, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 // plane imports
 import type { TDescriptionVersionDetails, TDescriptionVersionsListResponse } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // local imports
 import { DescriptionVersionsDropdown } from "./dropdown";
 import { DescriptionVersionsModal } from "./modal";
@@ -33,23 +33,27 @@ type Props = {
   workspaceSlug: string;
 };
 
-export const DescriptionVersionsRoot = observer(function DescriptionVersionsRoot(props: Props) {
+export function DescriptionVersionsRoot(props: Props) {
   const { className, entityInformation, fetchHandlers, handleRestore, projectId, workspaceSlug } = props;
+  const { membersById, memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   // derived values
   const entityId = entityInformation.id;
   // fetch versions list
-  const { data: versionsListResponse } = useSWR(
-    entityId ? `DESCRIPTION_VERSIONS_LIST_${entityId}` : null,
-    entityId ? () => fetchHandlers.listDescriptionVersions(entityId) : null
-  );
+  const { data: versionsListResponse } = useQuery({
+    queryKey: ["DESCRIPTION_VERSIONS_LIST", workspaceSlug, projectId, entityId],
+    queryFn: entityId ? () => fetchHandlers.listDescriptionVersions(entityId) : skipToken,
+  });
   // fetch active version details
-  const { data: activeVersionResponse } = useSWR(
-    entityId && activeVersionId ? `DESCRIPTION_VERSION_DETAILS_${activeVersionId}` : null,
-    entityId && activeVersionId ? () => fetchHandlers.retrieveDescriptionVersion(entityId, activeVersionId) : null
-  );
+  const { data: activeVersionResponse } = useQuery({
+    queryKey: ["DESCRIPTION_VERSION_DETAILS", workspaceSlug, projectId, entityId, activeVersionId],
+    queryFn:
+      entityId && activeVersionId
+        ? () => fetchHandlers.retrieveDescriptionVersion(entityId, activeVersionId)
+        : skipToken,
+  });
   const versions = Array.isArray(versionsListResponse?.results) ? versionsListResponse.results : undefined;
   const versionsCount = versions?.length ?? 0;
   const activeVersionDetails = versions?.find((version) => version.id === activeVersionId);
@@ -87,6 +91,7 @@ export const DescriptionVersionsRoot = observer(function DescriptionVersionsRoot
         isOpen={isModalOpen}
         isPrevDisabled={activeVersionIndex === 0}
         isRestoreDisabled={entityInformation.isRestoreDisabled}
+        versionCreator={memberById(activeVersionDetails?.owned_by)?.member}
         projectId={projectId}
         workspaceSlug={workspaceSlug}
       />
@@ -94,6 +99,7 @@ export const DescriptionVersionsRoot = observer(function DescriptionVersionsRoot
         <DescriptionVersionsDropdown
           disabled={versionsCount === 0}
           entityInformation={entityInformation}
+          membersById={membersById}
           onVersionClick={(versionId) => {
             setIsModalOpen(true);
             setActiveVersionId(versionId);
@@ -103,4 +109,4 @@ export const DescriptionVersionsRoot = observer(function DescriptionVersionsRoot
       </div>
     </>
   );
-});
+}

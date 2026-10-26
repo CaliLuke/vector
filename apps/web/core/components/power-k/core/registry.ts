@@ -4,16 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { action, observable, makeObservable } from "mobx";
-import { computedFn } from "mobx-utils";
 import type { TPowerKCommandConfig, TPowerKContext, TPowerKCommandGroup } from "./types";
 
 export interface IPowerKCommandRegistry {
-  // observables
-  commands: Map<string, TPowerKCommandConfig>;
-  // Registration
-  register(command: TPowerKCommandConfig): void;
-  registerMultiple(commands: TPowerKCommandConfig[]): void;
+  // Registered commands
+  readonly commands: ReadonlyMap<string, TPowerKCommandConfig>;
   // Retrieval
   getCommand(id: string): TPowerKCommandConfig | undefined;
   getAllCommands(): TPowerKCommandConfig[];
@@ -27,39 +22,17 @@ export interface IPowerKCommandRegistry {
   findByShortcut(ctx: TPowerKContext, key: string): TPowerKCommandConfig | undefined;
   findByKeySequence(ctx: TPowerKContext, sequence: string): TPowerKCommandConfig | undefined;
   findByModifierShortcut(ctx: TPowerKContext, shortcut: string): TPowerKCommandConfig | undefined;
-  // Utility
-  clear(): void;
 }
 
 /**
  * Stores commands and provides lookup by shortcuts, search, etc.
  */
 export class PowerKCommandRegistry implements IPowerKCommandRegistry {
-  // observables
-  commands = new Map<string, TPowerKCommandConfig>();
+  readonly commands: ReadonlyMap<string, TPowerKCommandConfig>;
 
-  constructor() {
-    makeObservable(this, {
-      // observables
-      commands: observable,
-      // actions
-      register: action,
-      registerMultiple: action,
-      clear: action,
-    });
+  constructor(commands: readonly TPowerKCommandConfig[] = []) {
+    this.commands = new Map(commands.map((command) => [command.id, command]));
   }
-
-  // ============================================================================
-  // Registration
-  // ============================================================================
-
-  register: IPowerKCommandRegistry["register"] = action((command) => {
-    this.commands.set(command.id, command);
-  });
-
-  registerMultiple: IPowerKCommandRegistry["registerMultiple"] = action((commands) => {
-    commands.forEach((command) => this.register(command));
-  });
 
   // ============================================================================
   // Retrieval
@@ -74,19 +47,17 @@ export class PowerKCommandRegistry implements IPowerKCommandRegistry {
       (command) => command.shortcut || command.keySequence || command.modifierShortcut
     );
 
-  getVisibleCommands: IPowerKCommandRegistry["getVisibleCommands"] = computedFn((ctx) =>
-    Array.from(this.commands.values()).filter((command) => this.isCommandVisible(command, ctx))
-  );
+  getVisibleCommands: IPowerKCommandRegistry["getVisibleCommands"] = (ctx) =>
+    Array.from(this.commands.values()).filter((command) => this.isCommandVisible(command, ctx));
 
-  getCommandsByGroup: IPowerKCommandRegistry["getCommandsByGroup"] = computedFn((group, ctx) =>
-    this.getVisibleCommands(ctx).filter((command) => command.group === group)
-  );
+  getCommandsByGroup: IPowerKCommandRegistry["getCommandsByGroup"] = (group, ctx) =>
+    this.getVisibleCommands(ctx).filter((command) => command.group === group);
 
   // ============================================================================
   // Shortcut Lookup
   // ============================================================================
 
-  getShortcutMap: IPowerKCommandRegistry["getShortcutMap"] = computedFn((ctx) => {
+  getShortcutMap: IPowerKCommandRegistry["getShortcutMap"] = (ctx) => {
     const shortcutMap = new Map<string, string>();
     this.getVisibleCommands(ctx).forEach((command) => {
       if (command.shortcut) {
@@ -94,9 +65,9 @@ export class PowerKCommandRegistry implements IPowerKCommandRegistry {
       }
     });
     return shortcutMap;
-  });
+  };
 
-  getKeySequenceMap: IPowerKCommandRegistry["getKeySequenceMap"] = computedFn((ctx) => {
+  getKeySequenceMap: IPowerKCommandRegistry["getKeySequenceMap"] = (ctx) => {
     const keySequenceMap = new Map<string, string>();
     this.getVisibleCommands(ctx).forEach((command) => {
       if (command.keySequence) {
@@ -104,9 +75,9 @@ export class PowerKCommandRegistry implements IPowerKCommandRegistry {
       }
     });
     return keySequenceMap;
-  });
+  };
 
-  getModifierShortcutMap: IPowerKCommandRegistry["getModifierShortcutMap"] = computedFn((ctx) => {
+  getModifierShortcutMap: IPowerKCommandRegistry["getModifierShortcutMap"] = (ctx) => {
     const modifierShortcutMap = new Map<string, string>();
     this.getVisibleCommands(ctx).forEach((command) => {
       if (command.modifierShortcut) {
@@ -114,30 +85,22 @@ export class PowerKCommandRegistry implements IPowerKCommandRegistry {
       }
     });
     return modifierShortcutMap;
-  });
+  };
 
-  findByShortcut: IPowerKCommandRegistry["findByShortcut"] = computedFn((ctx, key) => {
+  findByShortcut: IPowerKCommandRegistry["findByShortcut"] = (ctx, key) => {
     const commandId = this.getShortcutMap(ctx).get(key.toLowerCase());
     return commandId ? this.commands.get(commandId) : undefined;
-  });
+  };
 
-  findByKeySequence: IPowerKCommandRegistry["findByKeySequence"] = computedFn((ctx, sequence) => {
+  findByKeySequence: IPowerKCommandRegistry["findByKeySequence"] = (ctx, sequence) => {
     const commandId = this.getKeySequenceMap(ctx).get(sequence.toLowerCase());
     return commandId ? this.commands.get(commandId) : undefined;
-  });
+  };
 
-  findByModifierShortcut: IPowerKCommandRegistry["findByModifierShortcut"] = computedFn((ctx, shortcut) => {
+  findByModifierShortcut: IPowerKCommandRegistry["findByModifierShortcut"] = (ctx, shortcut) => {
     const commandId = this.getModifierShortcutMap(ctx).get(shortcut.toLowerCase());
     return commandId ? this.commands.get(commandId) : undefined;
-  });
-
-  // ============================================================================
-  // Utility
-  // ============================================================================
-
-  clear: IPowerKCommandRegistry["clear"] = action(() => {
-    this.commands.clear();
-  });
+  };
 
   // ============================================================================
   // Private Helpers

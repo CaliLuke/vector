@@ -22,7 +22,8 @@
     "fix:lint": "oxlint --fix .",
     "fix:format": "oxfmt .",
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "dev:build": "tsdown --no-clean"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "catalog:",
@@ -36,6 +37,7 @@
     "@plane/utils": "workspace:*",
     "@popperjs/core": "catalog:",
     "@radix-ui/react-scroll-area": "catalog:",
+    "@tanstack/react-form": "catalog:",
     "clsx": "catalog:",
     "lodash-es": "catalog:",
     "lucide-react": "catalog:",

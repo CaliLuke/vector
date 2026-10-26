@@ -744,6 +744,45 @@ paths:
             x-plane-permission-classes:
                 - rest_framework.permissions.IsAuthenticated
             x-plane-view: plane.app.views.asset.v2.WorkspaceFileAssetEndpoint
+    /api/assets/v2/workspaces/{slug}/{entity_id}/bulk/:
+        post:
+            tags:
+                - PlaneInternalDjangoMigrationAPI
+            summary: PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk PlaneInternalDjangoMigrationAPI
+            description: Associate completed uploads with an active private draft owned by the current user.
+            operationId: post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathEntityID'
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RestFrameworkSerializersFileassetbulkrequestRequestRequest'
+            responses:
+                "204":
+                    $ref: '#/components/responses/NoContentResponse'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404: Not Found response.'
+                "409":
+                    $ref: '#/components/responses/ConflictError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409: Conflict response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
     /api/assets/v2/workspaces/{slug}/check/{asset_id}/:
         get:
             description: Endpoint to check if an asset exists.

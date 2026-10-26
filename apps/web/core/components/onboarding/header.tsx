@@ -4,16 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { PlaneLockup, ChevronLeftIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TOnboardingStep } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
-import { useUser } from "@/hooks/store/user";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // local imports
 import { SwitchAccountDropdown } from "./switch-account-dropdown";
 
@@ -23,11 +23,11 @@ type OnboardingHeaderProps = {
   hasInvitations: boolean;
 };
 
-export const OnboardingHeader = observer(function OnboardingHeader(props: OnboardingHeaderProps) {
+export function OnboardingHeader(props: OnboardingHeaderProps) {
   const { currentStep, updateCurrentStep, hasInvitations } = props;
   // store hooks
-  const { data: user } = useUser();
-  const { config: instanceConfig } = useInstance();
+  const { data: user } = useCurrentUser();
+  const { data: instanceConfig } = useQuery(instanceConfigOptions);
   const isSelfManaged = instanceConfig?.is_self_managed;
 
   // handle step back
@@ -89,4 +89,4 @@ export const OnboardingHeader = observer(function OnboardingHeader(props: Onboar
       </div>
     </div>
   );
-});
+}

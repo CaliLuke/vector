@@ -1,20 +1,18 @@
+import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
-import test from "node:test";
-import { React, act, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "@/hooks/store/estimates") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const useProjectEstimates = () => ({ createEstimate: async () => {} });")}`,
-      };
-    }
-    return nextResolve(specifier, context);
-  },
+import test from "node:test";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
+
+registerWebTestModules({}, (specifier, context, nextResolve) => {
+  if (specifier === "@/hooks/use-estimates") {
+    return {
+      shortCircuit: true,
+      url: `data:text/javascript,${encodeURIComponent("export const useEstimateEditorKey=(workspace,project)=>workspace+'/'+project; export const useEstimateMutations = () => ({ mutation: { mutateAsync: async () => {} } });")}`,
+    };
+  }
+  return nextResolve(specifier, context);
 });
 
 test("estimate modal Escape closes from a radio and restores its trigger focus", async (t) => {

@@ -5,7 +5,7 @@
  */
 
 import { Eye, EyeOff } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { Input } from "../form-fields/input";
 import { cn } from "../utils";
 
@@ -22,13 +22,14 @@ export function AuthInput({
   label,
   error,
   showPasswordToggle = false,
-  errorClassName = "",
-  className = "",
+  errorClassName,
+  className,
   type = "text",
   autoComplete = "off",
   ...props
 }: TAuthInputProps) {
-  const { id } = props;
+  const generatedId = useId();
+  const id = props.id ?? generatedId;
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordType = type === "password";
 
@@ -44,7 +45,10 @@ export function AuthInput({
       <div className={cn("relative flex items-center rounded-md border border-strong px-3 py-2 transition-all")}>
         <Input
           {...props}
+          id={id}
           type={inputType}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : props["aria-describedby"]}
           autoComplete={autoComplete}
           className={cn(
             "h-6 w-full rounded-md border-none p-0 disable-autofill-style placeholder:text-14 placeholder:text-placeholder",
@@ -57,6 +61,9 @@ export function AuthInput({
         {showPasswordToggle && isPasswordType && (
           <button
             type="button"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            disabled={props.disabled}
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
           >
@@ -65,7 +72,17 @@ export function AuthInput({
         )}
       </div>
 
-      {error && <p className={cn("text-13 text-danger-primary", errorClassName)}>{error}</p>}
+      {error && (
+        <p id={`${id}-error`} role="alert" className={cn("text-13 text-danger-primary", errorClassName)}>
+          {error}
+        </p>
+      )}
     </div>
+  );
+}
+
+export function AuthEmailInput(props: Omit<TAuthInputProps, "type">) {
+  return (
+    <AuthInput name="email" label="Email" placeholder="name@company.com" autoComplete="email" {...props} type="email" />
   );
 }

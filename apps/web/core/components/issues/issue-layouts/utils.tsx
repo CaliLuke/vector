@@ -7,7 +7,8 @@
 
 import type { CSSProperties } from "react";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { clone, isNil, pull, uniq, concat } from "lodash-es";
+import clone from "lodash-es/clone.js";
+import isNil from "lodash-es/isNil.js";
 import scrollIntoView from "smooth-scroll-into-view-if-needed";
 import type { FC } from "react";
 import { CalendarDays, LayersIcon, Paperclip } from "lucide-react";
@@ -35,24 +36,30 @@ import type {
   IGroupByColumn,
   TCycleGroups,
   IIssueDisplayProperties,
+  TIssueStandardDisplayProperty,
   IPragmaticDropPayload,
   TIssue,
   TIssueGroupByOptions,
   IIssueFilterOptions,
   IIssueFilters,
-  TGroupedIssues,
   IIssueDisplayFilterOptions,
   TGetColumns,
+  IWorkspaceMember,
+  IIssueLabel,
+  IState,
+  IProject,
+  ICycle,
+  IModule,
   TSpreadsheetColumn,
 } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
 // plane ui
 import { Avatar } from "@plane/ui";
-import { renderFormattedDate, getFileURL } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 // store
-import { store } from "@/lib/store-context";
-import { ISSUE_FILTER_DEFAULT_DATA } from "@/store/issue/helpers/base-issues.store";
-import { DEFAULT_DISPLAY_PROPERTIES } from "@/store/issue/issue-details/sub_issues_filter.store";
+import { ISSUE_FILTER_DEFAULT_DATA } from "@/helpers/issue-list/properties";
+import { DEFAULT_SUB_WORK_ITEM_DISPLAY_PROPERTIES } from "@/helpers/sub-work-item-preferences";
 // constants
 import { ISSUE_GROUP_BY_OPTIONS } from "@plane/constants";
 // components
@@ -99,15 +106,18 @@ export const isWorkspaceLevel = (type: EIssuesStoreType) =>
     EIssuesStoreType.TEAM,
     EIssuesStoreType.TEAM_VIEW,
     EIssuesStoreType.TEAM_PROJECT_WORK_ITEMS,
-    EIssuesStoreType.WORKSPACE_DRAFT,
   ].includes(type)
     ? true
     : false;
 
+export function isSubscribedProfileRequest(requestInput: unknown) {
+  if (typeof requestInput !== "object" || requestInput === null || !("kind" in requestInput)) return false;
+  return requestInput.kind === "profile" && "view" in requestInput && requestInput.view === "subscribed";
+}
+
 type TGetGroupByColumns = {
   groupBy: GroupByColumnTypes | null;
   includeNone: boolean;
-  isWorkspaceLevel: boolean;
   isEpic?: boolean;
   projectId?: string;
 };
@@ -115,13 +125,35 @@ type TGetGroupByColumns = {
 // NOTE: Type of groupBy is different compared to what's being passed from the components.
 // We are using `as` to typecast it to the expected type.
 // It can break the includeNone logic if not handled properly.
+type TGetGroupByColumnsWithIdentity = TGetGroupByColumns & {
+  assigneeIds: readonly string[];
+  creatorIds: readonly string[];
+  membersById: ReadonlyMap<string, IWorkspaceMember> | undefined;
+  joinedProjectIds: readonly string[];
+  labels: readonly IIssueLabel[] | undefined;
+  typeColumns?: IGroupByColumn[];
+  states?: readonly IState[];
+  projects?: readonly Pick<IProject, "id" | "name" | "logo_props">[];
+  cycles?: readonly ICycle[];
+  modules?: readonly IModule[];
+};
+
 export const getGroupByColumns = ({
   groupBy,
   includeNone,
-  isWorkspaceLevel,
   isEpic = false,
   projectId,
-}: TGetGroupByColumns): IGroupByColumn[] | undefined => {
+  assigneeIds,
+  creatorIds,
+  membersById,
+  joinedProjectIds,
+  labels,
+  typeColumns,
+  states,
+  projects,
+  cycles,
+  modules,
+}: TGetGroupByColumnsWithIdentity): IGroupByColumn[] | undefined => {
   // If no groupBy is specified and includeNone is true, return "All Issues" group
   if (!groupBy && includeNone) {
     return [
@@ -138,61 +170,47 @@ export const getGroupByColumns = ({
   if (!groupBy) return undefined;
 
   // Map of group by options to their corresponding column getter functions
-  const groupByColumnMap: Record<
-    GroupByColumnTypes,
-    ({ isWorkspaceLevel, projectId }: TGetColumns) => IGroupByColumn[] | undefined
-  > = {
-    project: getProjectColumns,
-    cycle: getCycleColumns,
-    module: getModuleColumns,
-    state: getStateColumns,
-    "state_detail.group": getStateGroupColumns,
-    priority: getPriorityColumns,
-    labels: getLabelsColumns,
-    assignees: getAssigneeColumns,
-    created_by: getCreatedByColumns,
-    team_project: getTeamProjectColumns,
+  const groupByColumnMap: Record<GroupByColumnTypes, () => IGroupByColumn[] | undefined> = {
+    type_id: () => typeColumns,
+    project: () => getProjectColumns(projects, joinedProjectIds),
+    cycle: () => getCycleColumns(cycles),
+    module: () => getModuleColumns(modules),
+    state: () => getStateColumns({ projectId, states }),
+    "state_detail.group": () => getStateGroupColumns(),
+    priority: () => getPriorityColumns(),
+    labels: () => getLabelsColumns(labels),
+    assignees: () => getMemberColumns(assigneeIds, membersById, "assignees"),
+    created_by: () => getMemberColumns(creatorIds, membersById, "created_by"),
+    team_project: () => getTeamProjectColumns(),
   };
 
   // Get and return the columns for the specified group by option
-  return groupByColumnMap[groupBy]?.({ isWorkspaceLevel, projectId });
+  return groupByColumnMap[groupBy]?.();
 };
 
-const getProjectColumns = (): IGroupByColumn[] | undefined => {
-  const { joinedProjectIds: projectIds, projectMap } = store.projectRoot.project;
-  // Return undefined if no project ids
-  if (!projectIds) return;
-  // Map project ids to project columns
-  return projectIds
-    .map((projectId: string) => {
-      const project = projectMap[projectId];
-      if (!project) return;
-      return {
-        id: project.id,
-        name: project.name,
-        icon: (
-          <div className="grid h-6 w-6 flex-shrink-0 place-items-center">
-            <Logo logo={project.logo_props} />
-          </div>
-        ),
-        payload: { project_id: project.id },
-      };
-    })
-    .filter((column) => column !== undefined) as IGroupByColumn[];
-};
+const getProjectColumns = (
+  projects: readonly Pick<IProject, "id" | "name" | "logo_props">[] | undefined,
+  projectIds: readonly string[]
+): IGroupByColumn[] | undefined =>
+  projects
+    ?.filter((project) => projectIds.includes(project.id))
+    .map((project) => ({
+      id: project.id,
+      name: project.name,
+      icon: (
+        <div className="grid h-6 w-6 flex-shrink-0 place-items-center">
+          <Logo logo={project.logo_props} />
+        </div>
+      ),
+      payload: { project_id: project.id },
+    }));
 
-const getCycleColumns = (): IGroupByColumn[] | undefined => {
-  const { currentProjectDetails } = store.projectRoot.project;
-  // Check for the current project details
-  if (!currentProjectDetails || !currentProjectDetails?.id) return;
-  const { getProjectCycleDetails } = store.cycle;
-  // Get the cycle details for the current project
-  const cycleDetails = currentProjectDetails?.id ? getProjectCycleDetails(currentProjectDetails?.id) : undefined;
-  // Map the cycle details to the group by columns
+const getCycleColumns = (cycleDetails: readonly ICycle[] | undefined): IGroupByColumn[] | undefined => {
+  if (!cycleDetails) return undefined;
   const cycles: IGroupByColumn[] = [];
   cycleDetails?.map((cycle) => {
     const cycleStatus = cycle.status ? (cycle.status.toLocaleLowerCase() as TCycleGroups) : "draft";
-    const isDropDisabled = cycleStatus === "completed";
+    const isDropDisabled = cycleStatus === "completed" || Boolean(cycle.archived_at);
     cycles.push({
       id: cycle.id,
       name: cycle.name,
@@ -211,15 +229,8 @@ const getCycleColumns = (): IGroupByColumn[] | undefined => {
   return cycles;
 };
 
-const getModuleColumns = (): IGroupByColumn[] | undefined => {
-  // get current project details
-  const { currentProjectDetails } = store.projectRoot.project;
-  if (!currentProjectDetails || !currentProjectDetails?.id) return;
-  // get project module ids and module details
-  const { getProjectModuleDetails } = store.module;
-  // get module details
-  const moduleDetails = currentProjectDetails?.id ? getProjectModuleDetails(currentProjectDetails?.id) : undefined;
-  // map module details to group by columns
+const getModuleColumns = (moduleDetails: readonly IModule[] | undefined): IGroupByColumn[] | undefined => {
+  if (!moduleDetails) return undefined;
   const modules: IGroupByColumn[] = [];
   moduleDetails?.map((module) => {
     modules.push({
@@ -227,6 +238,8 @@ const getModuleColumns = (): IGroupByColumn[] | undefined => {
       name: module.name,
       icon: <ModuleIcon className="h-3.5 w-3.5" />,
       payload: { module_ids: [module.id] },
+      isDropDisabled: Boolean(module.archived_at),
+      dropErrorMessage: module.archived_at ? "Work items cannot be moved to archived modules" : undefined,
     });
   });
   modules.push({
@@ -238,9 +251,11 @@ const getModuleColumns = (): IGroupByColumn[] | undefined => {
   return modules;
 };
 
-const getStateColumns = ({ projectId }: TGetColumns): IGroupByColumn[] | undefined => {
-  const { getProjectStates, projectStates } = store.state;
-  const _states = projectId ? getProjectStates(projectId) : projectStates;
+const getStateColumns = ({
+  projectId,
+  states,
+}: TGetColumns & { states?: readonly IState[] }): IGroupByColumn[] | undefined => {
+  const _states = projectId ? states?.filter((state) => state.project_id === projectId) : states;
   if (!_states) return;
   // map project states to group by columns
   return _states.map((state) => ({
@@ -281,13 +296,8 @@ const getPriorityColumns = (): IGroupByColumn[] => {
   }));
 };
 
-const getLabelsColumns = ({ isWorkspaceLevel }: TGetColumns): IGroupByColumn[] => {
-  const { workspaceLabels, projectLabels } = store.label;
-  // map labels to group by columns
-  const labels = [
-    ...(isWorkspaceLevel ? workspaceLabels || [] : projectLabels || []),
-    { id: "None", name: "None", color: "#666" },
-  ];
+const getLabelsColumns = (nativeLabels: readonly IIssueLabel[] | undefined): IGroupByColumn[] => {
+  const labels = [...(nativeLabels ?? []), { id: "None", name: "None", color: "#666" }];
   // map labels to group by columns
   return labels.map((label) => ({
     id: label.id,
@@ -299,64 +309,24 @@ const getLabelsColumns = ({ isWorkspaceLevel }: TGetColumns): IGroupByColumn[] =
   }));
 };
 
-const getAssigneeColumns = ({ isWorkspaceLevel, projectId }: TGetColumns): IGroupByColumn[] | undefined => {
-  // store values
-  const { getUserDetails } = store.memberRoot;
-  // derived values
-  const { memberIds, includeNone } = getScopeMemberIds({ isWorkspaceLevel, projectId });
-  const assigneeColumns: IGroupByColumn[] = [];
-
-  if (!memberIds) return [];
-
-  memberIds.forEach((memberId) => {
-    const member = getUserDetails(memberId);
-    if (!member) return;
-    assigneeColumns.push({
+const getMemberColumns = (
+  memberIds: readonly string[],
+  membersById: ReadonlyMap<string, IWorkspaceMember> | undefined,
+  kind: "assignees" | "created_by"
+): IGroupByColumn[] => {
+  const columns: IGroupByColumn[] = [];
+  for (const memberId of memberIds) {
+    const member = membersById?.get(memberId)?.member;
+    if (!member) continue;
+    columns.push({
       id: memberId,
-      name: member?.display_name || "",
-      icon: <Avatar name={member?.display_name} src={getFileURL(member?.avatar_url ?? "")} size="md" />,
-      payload: { assignee_ids: [memberId] },
+      name: member.display_name || "",
+      icon: <Avatar name={member.display_name} src={getFileURL(member.avatar_url ?? "")} size="md" />,
+      payload: kind === "assignees" ? { assignee_ids: [memberId] } : {},
     });
-  });
-  if (includeNone) {
-    assigneeColumns.push({ id: "None", name: "None", icon: <Avatar size="md" />, payload: {} });
   }
-
-  return assigneeColumns;
-};
-
-const getCreatedByColumns = (): IGroupByColumn[] | undefined => {
-  const {
-    project: { projectMemberIds },
-    getUserDetails,
-  } = store.memberRoot;
-  if (!projectMemberIds) return;
-  // Map project member ids to group by created by columns
-  return projectMemberIds.map((memberId) => {
-    const member = getUserDetails(memberId);
-    return {
-      id: memberId,
-      name: member?.display_name || "",
-      icon: <Avatar name={member?.display_name} src={getFileURL(member?.avatar_url ?? "")} size="md" />,
-      payload: {},
-    };
-  });
-};
-
-export const getDisplayPropertiesCount = (
-  displayProperties: IIssueDisplayProperties,
-  ignoreFields?: (keyof IIssueDisplayProperties)[]
-) => {
-  const propertyKeys = Object.keys(displayProperties) as (keyof IIssueDisplayProperties)[];
-
-  let count = 0;
-
-  for (const propertyKey of propertyKeys) {
-    if (ignoreFields && ignoreFields.includes(propertyKey)) continue;
-    if (displayProperties[propertyKey]) count++;
-  }
-
-  return count;
+  if (kind === "assignees") columns.push({ id: "None", name: "None", icon: <Avatar size="md" />, payload: {} });
+  return columns;
 };
 
 /**
@@ -535,6 +505,14 @@ const getGroupId = (groupId: string) => {
   return [groupId];
 };
 
+function moveGroupValue(value: TIssue[keyof TIssue], sourceId: string, destinationId: string) {
+  if (!Array.isArray(value)) return destinationId === "None" ? null : destinationId;
+
+  const nextValues = value.filter((entry): entry is string => typeof entry === "string" && entry !== sourceId);
+  if (destinationId !== "None" && !nextValues.includes(destinationId)) nextValues.push(destinationId);
+  return nextValues;
+}
+
 export const handleGroupDragDrop = async (
   source: GroupDropLocation,
   destination: GroupDropLocation,
@@ -575,16 +553,7 @@ export const handleGroupDragDrop = async (
   // update updatedIssue values based on the source and destination groupIds
   if (source.groupId && destination.groupId && source.groupId !== destination.groupId && groupBy) {
     const groupKey = ISSUE_FILTER_DEFAULT_DATA[groupBy];
-    let groupValue: any = clone(sourceIssue[groupKey]);
-
-    // If groupValues is an array, remove source groupId and add destination groupId
-    if (Array.isArray(groupValue)) {
-      pull(groupValue, source.groupId);
-      if (destination.groupId !== "None") groupValue = uniq(concat(groupValue, [destination.groupId]));
-    } // else just update the groupValue based on destination groupId
-    else {
-      groupValue = destination.groupId === "None" ? null : destination.groupId;
-    }
+    const groupValue = moveGroupValue(sourceIssue[groupKey], source.groupId, destination.groupId);
 
     // keep track of updates on what was added and what was removed
     issueUpdates[groupKey] = { ADD: getGroupId(destination.groupId), REMOVE: getGroupId(source.groupId) };
@@ -595,16 +564,7 @@ export const handleGroupDragDrop = async (
   // update updatedIssue values based on the source and destination subGroupIds
   if (subGroupBy && source.subGroupId && destination.subGroupId && source.subGroupId !== destination.subGroupId) {
     const subGroupKey = ISSUE_FILTER_DEFAULT_DATA[subGroupBy];
-    let subGroupValue: any = clone(sourceIssue[subGroupKey]);
-
-    // If subGroupValue is an array, remove source subGroupId and add destination subGroupId
-    if (Array.isArray(subGroupValue)) {
-      pull(subGroupValue, source.subGroupId);
-      if (destination.subGroupId !== "None") subGroupValue = uniq(concat(subGroupValue, [destination.subGroupId]));
-    } // else just update the subGroupValue based on destination subGroupId
-    else {
-      subGroupValue = destination.subGroupId === "None" ? null : destination.subGroupId;
-    }
+    const subGroupValue = moveGroupValue(sourceIssue[subGroupKey], source.subGroupId, destination.subGroupId);
 
     // keep track of updates on what was added and what was removed
     issueUpdates[subGroupKey] = { ADD: getGroupId(destination.subGroupId), REMOVE: getGroupId(source.subGroupId) };
@@ -623,23 +583,6 @@ export const handleGroupDragDrop = async (
  */
 export const removeNillKeys = <T,>(obj: T) =>
   Object.fromEntries(Object.entries(obj ?? {}).filter(([key, value]) => key && !isNil(value)));
-
-/**
- * This Method returns if the grouped values are subGrouped
- * @param groupedIssueIds
- * @returns
- */
-export const isSubGrouped = (groupedIssueIds: TGroupedIssues) => {
-  if (!groupedIssueIds || Array.isArray(groupedIssueIds)) {
-    return false;
-  }
-
-  if (Array.isArray(groupedIssueIds[Object.keys(groupedIssueIds)[0]])) {
-    return false;
-  }
-
-  return true;
-};
 
 /**
  * This Method returns if the issue is new or not
@@ -666,14 +609,15 @@ export function getApproximateCardHeight(displayProperties: IIssueDisplayPropert
 
   const clonedProperties = clone(displayProperties);
 
-  // key adds the height for key
-  if (clonedProperties.key) {
+  // The key and type share one header row.
+  if ([clonedProperties.key, clonedProperties.issue_type].some(Boolean)) {
     cardHeight += 24;
   }
 
   // Ignore smaller dimension properties
   const ignoredProperties: (keyof IIssueDisplayProperties)[] = [
     "key",
+    "issue_type",
     "sub_issue_count",
     "link",
     "attachment_count",
@@ -689,7 +633,7 @@ export function getApproximateCardHeight(displayProperties: IIssueDisplayPropert
 
   // count the remaining properties
   (Object.keys(clonedProperties) as (keyof IIssueDisplayProperties)[]).forEach((key: keyof IIssueDisplayProperties) => {
-    if (clonedProperties[key]) {
+    if (!key.startsWith("customproperty_") && clonedProperties[key]) {
       propertyCount++;
     }
   });
@@ -757,7 +701,7 @@ export function SpreadSheetPropertyIcon(props: ISvgIcons & { iconKey: string }) 
  * @returns
  */
 export const isDisplayFiltersApplied = (filters: Partial<IIssueFilters>): boolean => {
-  const isDisplayPropertiesApplied = Object.keys(DEFAULT_DISPLAY_PROPERTIES).some(
+  const isDisplayPropertiesApplied = Object.keys(DEFAULT_SUB_WORK_ITEM_DISPLAY_PROPERTIES).some(
     (key) => !filters.displayProperties?.[key as keyof IIssueDisplayProperties]
   );
 
@@ -800,37 +744,9 @@ export const calculateIdentifierWidth = (projectIdentifierLength: number, maxSeq
   return projectIdentifierLength * 7 + 7 + sequenceDigits * 7; // project identifier chars + dash + sequence digits
 };
 
-export type TGetScopeMemberIdsResult = {
-  memberIds: string[];
-  includeNone: boolean;
-};
-
-export const getScopeMemberIds = ({ isWorkspaceLevel, projectId }: TGetColumns): TGetScopeMemberIdsResult => {
-  // store values
-  const { workspaceMemberIds } = store.memberRoot.workspace;
-  const { projectMemberIds } = store.memberRoot.project;
-  // derived values
-  const memberIds = workspaceMemberIds;
-
-  if (isWorkspaceLevel) {
-    return { memberIds: memberIds ?? [], includeNone: true };
-  }
-
-  if (projectId || (projectMemberIds && projectMemberIds.length > 0)) {
-    const { getProjectMemberIds } = store.memberRoot.project;
-    const _projectMemberIds = projectId ? getProjectMemberIds(projectId, false) : projectMemberIds;
-    return {
-      memberIds: _projectMemberIds ?? [],
-      includeNone: true,
-    };
-  }
-
-  return { memberIds: [], includeNone: true };
-};
-
 export const getTeamProjectColumns = (): IGroupByColumn[] | undefined => undefined;
 
-export const SpreadSheetPropertyIconMap: Record<string, FC<ISvgIcons>> = {
+const SpreadSheetPropertyIconMap: Record<string, FC<ISvgIcons>> = {
   MembersPropertyIcon: MembersPropertyIcon,
   CalenderDays: CalendarDays,
   DueDatePropertyIcon: DueDatePropertyIcon,
@@ -846,7 +762,7 @@ export const SpreadSheetPropertyIconMap: Record<string, FC<ISvgIcons>> = {
   LayersIcon: LayersIcon,
 };
 
-export const SPREADSHEET_COLUMNS: { [key in keyof IIssueDisplayProperties]: TSpreadsheetColumn } = {
+export const SPREADSHEET_COLUMNS: { [key in TIssueStandardDisplayProperty]?: TSpreadsheetColumn } = {
   assignee: SpreadsheetAssigneeColumn,
   created_on: SpreadsheetCreatedOnColumn,
   due_date: SpreadsheetDueDateColumn,

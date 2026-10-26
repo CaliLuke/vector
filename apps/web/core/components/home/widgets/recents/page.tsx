@@ -10,10 +10,12 @@ import { PageIcon } from "@plane/propel/icons";
 // plane import
 import type { TActivityEntityData, TPageEntityData } from "@plane/types";
 import { Avatar } from "@plane/ui";
-import { calculateTimeAgo, getFileURL, getPageName } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
+import { getPageName } from "@plane/utils/page";
 import { ListItem } from "@/components/core/list";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 type BlockProps = {
   activity: TActivityEntityData;
@@ -26,13 +28,13 @@ export function RecentPage(props: BlockProps) {
   // router
   const router = useRouter();
   // store hooks
-  const { getUserDetails } = useMember();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
   const pageDetails = activity.entity_data as TPageEntityData;
 
   if (!pageDetails) return <></>;
 
-  const ownerDetails = getUserDetails(pageDetails?.owned_by);
+  const ownerDetails = memberById(pageDetails.owned_by)?.member;
   const pageLink = pageDetails.project_id
     ? `/${workspaceSlug}/projects/${pageDetails.project_id}/pages/${pageDetails.id}`
     : `/${workspaceSlug}/pages/${pageDetails.id}`;
@@ -41,7 +43,7 @@ export function RecentPage(props: BlockProps) {
     <ListItem
       key={activity.id}
       itemLink={pageLink}
-      title={getPageName(pageDetails?.name)}
+      title={getPageName(pageDetails.name)}
       prependTitleElement={
         <div className="flex flex-shrink-0 items-center gap-2">
           <div className="grid size-8 flex-shrink-0 place-items-center rounded-sm bg-layer-2">

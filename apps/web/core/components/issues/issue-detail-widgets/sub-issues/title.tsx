@@ -4,38 +4,39 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 import { CircularProgressIndicator, CollapsibleButton } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemSubItems } from "@/hooks/use-work-item-detail";
 
 type Props = {
   isOpen: boolean;
   parentIssueId: string;
+  workspaceSlug: string;
+  projectId: string;
   issueServiceType?: TIssueServiceType;
 };
 
-export const SubIssuesCollapsibleTitle = observer(function SubIssuesCollapsibleTitle(props: Props) {
-  const { isOpen, parentIssueId, issueServiceType = EIssueServiceType.ISSUES } = props;
+export const SubIssuesCollapsibleTitle = function SubIssuesCollapsibleTitle(props: Props) {
+  const { isOpen, parentIssueId, workspaceSlug, projectId, issueServiceType = EIssueServiceType.ISSUES } = props;
   // translation
   const { t } = useTranslation();
   // store hooks
-  const {
-    subIssues: { subIssuesByIssueId, stateDistributionByIssueId },
-  } = useIssueDetail(issueServiceType);
-  // derived values
-  const subIssuesDistribution = stateDistributionByIssueId(parentIssueId);
-  const subIssues = subIssuesByIssueId(parentIssueId);
+  const { subItems, stateDistribution } = useWorkItemSubItems(
+    workspaceSlug,
+    projectId,
+    parentIssueId,
+    issueServiceType
+  );
+  const completedCount = stateDistribution?.completed?.length ?? 0;
+  const totalCount = subItems?.length ?? 0;
   // if there are no sub-issues, return null
-  if (!subIssues) return null;
+  if (!subItems) return null;
 
   // calculate percentage of completed sub-issues
-  const completedCount = subIssuesDistribution?.completed?.length ?? 0;
-  const totalCount = subIssues.length;
   const percentage = completedCount && totalCount ? (completedCount / totalCount) * 100 : 0;
 
   return (
@@ -52,4 +53,4 @@ export const SubIssuesCollapsibleTitle = observer(function SubIssuesCollapsibleT
       }
     />
   );
-});
+};

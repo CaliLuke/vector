@@ -50,6 +50,11 @@ func TestAssetsGeneratedOperationsMatchFamilyManifest(t *testing.T) {
 	if manifest.OperationCount != 81 || len(manifest.Operations) != 81 {
 		t.Fatalf("assets manifest has operation_count=%d and %d operation entries; want 81", manifest.OperationCount, len(manifest.Operations))
 	}
+	// Vector adds draft association beyond the frozen source migration inventory.
+	manifest.Operations["post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk"] = assetsOperation{
+		Method: "POST", Path: "/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/",
+		OperationID: "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk",
+	}
 	generation := make(map[string]assetsRoute, len(manifest.Operations))
 	for path, methods := range generated.Paths {
 		for method, operation := range methods {
@@ -62,8 +67,8 @@ func TestAssetsGeneratedOperationsMatchFamilyManifest(t *testing.T) {
 			generation[operation.OperationID] = assetsRoute{method: strings.ToUpper(method), path: path}
 		}
 	}
-	if len(generation) != 81 {
-		t.Fatalf("generated assets OpenAPI has %d operations; want 81", len(generation))
+	if len(generation) != len(manifest.Operations) {
+		t.Fatalf("generated assets OpenAPI has %d operations; want %d", len(generation), len(manifest.Operations))
 	}
 	for operationID, operation := range manifest.Operations {
 		if operation.OperationID != operationID {

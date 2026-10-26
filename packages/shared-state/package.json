@@ -18,16 +18,14 @@
     "check:format": "oxfmt --check .",
     "fix:lint": "oxlint --fix .",
     "fix:format": "oxfmt .",
-    "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
+    "dev:build": "tsdown --no-clean"
   },
   "dependencies": {
     "@plane/constants": "workspace:*",
     "@plane/types": "workspace:*",
     "@plane/utils": "workspace:*",
-    "lodash-es": "catalog:",
-    "mobx": "catalog:",
-    "mobx-utils": "catalog:",
-    "uuid": "catalog:"
+    "lodash-es": "catalog:"
   },
   "devDependencies": {
     "@plane/typescript-config": "workspace:*",

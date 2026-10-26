@@ -5,23 +5,19 @@
  */
 
 import { Tooltip } from "@plane/propel/tooltip";
-import { generateWorkItemLink } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type TIssueLink = {
-  activityId: string;
+  activity: TIssueActivity;
 };
 
 export function IssueLink(props: TIssueLink) {
-  const { activityId } = props;
+  const { activity } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
   const { isMobile } = usePlatformOS();
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
 

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { ParentIssuePreferencesProvider } from "@/providers/parent-issue-preferences";
 // components
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
@@ -12,13 +13,19 @@ import { ModuleIssuesHeader } from "./header";
 import { ModuleIssuesMobileHeader } from "./mobile-header";
 
 function ProjectModuleIssuesLayout(): React.JSX.Element | null {
+  const { workspaceSlug, projectId, moduleId } = Route.useParams();
   return (
-    <>
+    <ParentIssuePreferencesProvider
+      domain="module"
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      parentId={moduleId}
+    >
       <AppHeader header={<ModuleIssuesHeader />} mobileHeader={<ModuleIssuesMobileHeader />} />
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-    </>
+    </ParentIssuePreferencesProvider>
   );
 }
 

@@ -5,66 +5,103 @@
  */
 
 import React from "react";
-import { isEmpty } from "lodash-es";
-import { observer } from "mobx-react";
+import isEmpty from "lodash-es/isEmpty.js";
+
 import { SquareUser } from "lucide-react";
 // plane types
-import { EEstimateSystem } from "@plane/constants";
+import { EEstimateSystem } from "@plane/types";
 import { useTranslation } from "@plane/i18n";
 import { MembersPropertyIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { ICycle } from "@plane/types";
 // plane ui
 import { Avatar, AvatarGroup, TextArea } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useMember } from "@/hooks/store/use-member";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // plane web constants
 
 type Props = {
+  workspaceSlug: string;
   projectId: string;
   cycleDetails: ICycle;
 };
 
-export const CycleSidebarDetails = observer(function CycleSidebarDetails(props: Props) {
-  const { projectId, cycleDetails } = props;
+function formatCycleCount(
+  completed: number | undefined,
+  total: number | undefined,
+  translate: (key: string) => string
+) {
+  if (total === 0) return `0 ${translate("common.work_item")}`;
+  return `${completed ?? 0}/${total ?? 0}`;
+}
+
+function getCycleIssueCount(cycle: ICycle, isCompleted: boolean, translate: (key: string) => string) {
+  const snapshot = cycle.progress_snapshot;
+  if (isCompleted && !isEmpty(snapshot))
+    return formatCycleCount(
+      snapshot.total_issues === 0 ? 0 : snapshot.completed_issues,
+      snapshot.total_issues,
+      translate
+    );
+  return formatCycleCount(cycle.completed_issues, cycle.total_issues, translate);
+}
+
+function hasCycleEstimatePoints(
+  cycle: ICycle,
+  estimateType: ReturnType<typeof useProjectEstimates>["activeEstimate"] | undefined
+) {
+  if (isEmpty(cycle.progress_snapshot || {})) return estimateType?.type === EEstimateSystem.POINTS;
+  return !isEmpty(cycle.progress_snapshot?.estimate_distribution || {});
+}
+
+function getCycleEstimatePointCount(cycle: ICycle, isCompleted: boolean, translate: (key: string) => string) {
+  const snapshot = cycle.progress_snapshot;
+  if (isCompleted && !isEmpty(snapshot))
+    return formatCycleCount(
+      snapshot.total_issues === 0 ? 0 : snapshot.completed_estimate_points,
+      snapshot.total_estimate_points,
+      translate
+    );
+  return formatCycleCount(cycle.completed_estimate_points, cycle.total_estimate_points, translate);
+}
+
+function CycleEstimatePointsRow(props: { visible: boolean; count: string; translate: (key: string) => string }) {
+  const { visible, count, translate } = props;
+  if (!visible) return null;
+
+  return (
+    <div className="flex items-center justify-start gap-1">
+      <div className="flex w-2/5 items-center justify-start gap-2 text-tertiary">
+        <WorkItemsIcon className="h-4 w-4" />
+        <span className="text-14">{translate("points")}</span>
+      </div>
+      <div className="flex w-3/5 items-center">
+        <span className="px-1.5 text-13 text-tertiary">{count}</span>
+      </div>
+    </div>
+  );
+}
+
+export const CycleSidebarDetails = function CycleSidebarDetails(props: Props) {
+  const { workspaceSlug, projectId, cycleDetails } = props;
   // hooks
-  const { getUserDetails } = useMember();
-  const { areEstimateEnabledByProjectId, currentActiveEstimateId, estimateById } = useProjectEstimates();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { isEnabled: areEstimateEnabled, activeEstimate: estimateDetails } = useProjectEstimates(
+    workspaceSlug,
+    projectId
+  );
   const { t } = useTranslation();
 
-  const areEstimateEnabled = projectId && areEstimateEnabledByProjectId(projectId.toString());
   const cycleStatus = cycleDetails?.status?.toLocaleLowerCase();
   const isCompleted = cycleStatus === "completed";
 
-  const issueCount =
-    isCompleted && !isEmpty(cycleDetails?.progress_snapshot)
-      ? cycleDetails?.progress_snapshot?.total_issues === 0
-        ? `0 ${t("common.work_item")}`
-        : `${cycleDetails?.progress_snapshot?.completed_issues}/${cycleDetails?.progress_snapshot?.total_issues}`
-      : cycleDetails?.total_issues === 0
-        ? `0 ${t("common.work_item")}`
-        : `${cycleDetails?.completed_issues}/${cycleDetails?.total_issues}`;
-  const estimateType = areEstimateEnabled && currentActiveEstimateId && estimateById(currentActiveEstimateId);
-  const cycleOwnerDetails = cycleDetails ? getUserDetails(cycleDetails.owned_by_id) : undefined;
-
-  const isEstimatePointValid = isEmpty(cycleDetails?.progress_snapshot || {})
-    ? estimateType && estimateType?.type == EEstimateSystem.POINTS
-      ? true
-      : false
-    : isEmpty(cycleDetails?.progress_snapshot?.estimate_distribution || {})
-      ? false
-      : true;
-
-  const issueEstimatePointCount =
-    isCompleted && !isEmpty(cycleDetails?.progress_snapshot)
-      ? cycleDetails?.progress_snapshot.total_issues === 0
-        ? `0 ${t("common.work_item")}`
-        : `${cycleDetails?.progress_snapshot.completed_estimate_points}/${cycleDetails?.progress_snapshot.total_estimate_points}`
-      : cycleDetails?.total_issues === 0
-        ? `0 ${t("common.work_item")}`
-        : `${cycleDetails?.completed_estimate_points}/${cycleDetails?.total_estimate_points}`;
+  const estimateType = areEstimateEnabled ? estimateDetails : undefined;
+  const cycleOwnerDetails = memberById(cycleDetails.owned_by_id)?.member;
+  const issueCount = getCycleIssueCount(cycleDetails, isCompleted, t);
+  const isEstimatePointValid = hasCycleEstimatePoints(cycleDetails, estimateType);
+  const issueEstimatePointCount = getCycleEstimatePointCount(cycleDetails, isCompleted, t);
   return (
     <div className="flex w-full flex-col gap-5">
       {cycleDetails?.description && (
@@ -100,10 +137,10 @@ export const CycleSidebarDetails = observer(function CycleSidebarDetails(props: 
                 <>
                   <AvatarGroup showTooltip>
                     {cycleDetails.assignee_ids.map((member) => {
-                      const memberDetails = getUserDetails(member);
+                      const memberDetails = memberById(member)?.member;
                       return (
                         <Avatar
-                          key={memberDetails?.id}
+                          key={member}
                           name={memberDetails?.display_name ?? ""}
                           src={getFileURL(memberDetails?.avatar_url ?? "")}
                           showTooltip={false}
@@ -129,21 +166,12 @@ export const CycleSidebarDetails = observer(function CycleSidebarDetails(props: 
           </div>
         </div>
 
-        {/**
-         * NOTE: Render this section when estimate points of he projects is enabled and the estimate system is points
-         */}
-        {isEstimatePointValid && !isCompleted && (
-          <div className="flex items-center justify-start gap-1">
-            <div className="flex w-2/5 items-center justify-start gap-2 text-tertiary">
-              <WorkItemsIcon className="h-4 w-4" />
-              <span className="text-14">{t("points")}</span>
-            </div>
-            <div className="flex w-3/5 items-center">
-              <span className="px-1.5 text-13 text-tertiary">{issueEstimatePointCount}</span>
-            </div>
-          </div>
-        )}
+        <CycleEstimatePointsRow
+          visible={isEstimatePointValid && !isCompleted}
+          count={issueEstimatePointCount}
+          translate={t}
+        />
       </div>
     </div>
   );
-});
+};

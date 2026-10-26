@@ -6,9 +6,8 @@
 
 // components
 import { useParams, useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { TopNavPowerK } from "@/components/navigation";
 import { HelpMenuRoot } from "@/components/workspace/sidebar/help-section/root";
 import { UserMenuRoot } from "@/components/workspace/sidebar/user-menu-root";
@@ -17,24 +16,22 @@ import { useAppRailPreferences } from "@/hooks/use-navigation-preferences";
 import { Tooltip } from "@plane/propel/tooltip";
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 import { InboxIcon } from "@plane/propel/icons";
-import useSWR from "swr";
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useQuery } from "@tanstack/react-query";
+import { emptyNotificationCounts, notificationCountOptions } from "@/queries/notifications";
 
-export const TopNavigationRoot = observer(function TopNavigationRoot() {
+export const TopNavigationRoot = function TopNavigationRoot() {
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const pathname = useLocation({ select: (location) => location.pathname });
 
   // store hooks
-  const { unreadNotificationsCount, getUnreadNotificationsCount } = useWorkspaceNotifications();
   const { preferences } = useAppRailPreferences();
 
   const showLabel = preferences.displayMode === "icon_with_label";
 
   // Fetch notification count
-  useSWR(
-    workspaceSlug ? "WORKSPACE_UNREAD_NOTIFICATION_COUNT" : null,
-    workspaceSlug ? () => getUnreadNotificationsCount(workspaceSlug.toString()) : null
+  const { data: unreadNotificationsCount = emptyNotificationCounts } = useQuery(
+    notificationCountOptions(workspaceSlug)
   );
 
   // Calculate notification count
@@ -83,4 +80,4 @@ export const TopNavigationRoot = observer(function TopNavigationRoot() {
       </div>
     </div>
   );
-});
+};

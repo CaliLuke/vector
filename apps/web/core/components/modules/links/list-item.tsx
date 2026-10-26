@@ -4,8 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
+import { createElement } from "react";
 import { MODULE_TRACKER_ELEMENTS } from "@plane/constants";
 import { CopyIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
 // plane types
@@ -13,47 +12,49 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { ILinkDetails } from "@plane/types";
 // plane ui
-import { getIconForLink, copyTextToClipboard, calculateTimeAgo } from "@plane/utils";
+import { getIconForLink } from "@plane/utils/get-icon-for-link";
+import { copyTextToClipboard } from "@plane/utils/string";
+import { calculateTimeAgo } from "@plane/utils/datetime";
 // helpers
 //
 // hooks
-import { useMember } from "@/hooks/store/use-member";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 type Props = {
   handleDeleteLink: () => void;
   handleEditLink: () => void;
   isEditingAllowed: boolean;
   link: ILinkDetails;
+  workspaceSlug: string | undefined;
 };
 
-export const ModulesLinksListItem = observer(function ModulesLinksListItem(props: Props) {
-  const { handleDeleteLink, handleEditLink, isEditingAllowed, link } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
+function copyToClipboard(text: string) {
+  copyTextToClipboard(text).then(() =>
+    setToast({
+      type: TOAST_TYPE.SUCCESS,
+      title: "Copied to clipboard",
+      message: "The URL has been successfully copied to your clipboard",
+    })
+  );
+}
+
+export const ModulesLinksListItem = function ModulesLinksListItem(props: Props) {
+  const { handleDeleteLink, handleEditLink, isEditingAllowed, link, workspaceSlug } = props;
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   // derived values
-  const createdByDetails = getUserDetails(link.created_by);
+  const createdByDetails = memberById(link.created_by)?.member;
   // platform os
   const { isMobile } = usePlatformOS();
 
   const Icon = getIconForLink(link.url);
-
-  const copyToClipboard = (text: string) => {
-    copyTextToClipboard(text).then(() =>
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Copied to clipboard",
-        message: "The URL has been successfully copied to your clipboard",
-      })
-    );
-  };
 
   return (
     <div className="relative flex flex-col rounded-md bg-layer-3 p-2.5">
       <div className="flex w-full items-start justify-between gap-2">
         <div className="flex items-start gap-2 truncate">
           <span className="py-1">
-            <Icon className="size-3 shrink-0 stroke-2 text-tertiary group-hover:text-primary" />
+            {createElement(Icon, { className: "size-3 shrink-0 stroke-2 text-tertiary group-hover:text-primary" })}
           </span>
           <Tooltip tooltipContent={link.title && link.title !== "" ? link.title : link.url} isMobile={isMobile}>
             <a href={link.url} target="_blank" rel="noopener noreferrer" className="cursor-pointer truncate text-11">
@@ -110,4 +111,4 @@ export const ModulesLinksListItem = observer(function ModulesLinksListItem(props
       </div>
     </div>
   );
-});
+};

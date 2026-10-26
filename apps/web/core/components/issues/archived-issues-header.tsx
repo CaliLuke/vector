@@ -5,7 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { EIssueFilterType, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
@@ -18,17 +17,19 @@ import { ArchiveTabsList } from "@/components/archives";
 import { DisplayFiltersSelection, FiltersDropdown } from "@/components/issues/issue-layouts/filters";
 import { WorkItemFiltersToggle } from "@/components/work-item-filters/filters-toggle";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
+import { useLocalIssuePreferences } from "@/providers/local-issue-preferences";
+import { useRouteProject } from "@/hooks/use-projects";
 
-export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
+export function ArchivedIssuesHeader() {
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const { currentProjectDetails } = useProject();
-  const {
-    issuesFilter: { issueFilters, updateFilters },
-  } = useIssues(EIssuesStoreType.ARCHIVED);
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const preferences = useLocalIssuePreferences();
+  if (!preferences || preferences.domain !== EIssuesStoreType.ARCHIVED)
+    throw new Error("Archived issue preferences are not mounted for this route.");
+  const { issueFilters, updateFilters } = preferences;
   // i18n
   const { t } = useTranslation();
   // for archived issues list layout is the only option
@@ -37,8 +38,8 @@ export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
   const handleDisplayFiltersUpdate = (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
     if (!workspaceSlug || !projectId) return;
 
-    updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, {
-      ...issueFilters?.displayFilters,
+    void updateFilters(EIssueFilterType.DISPLAY_FILTERS, {
+      ...issueFilters.displayFilters,
       ...updatedDisplayFilter,
     });
   };
@@ -46,7 +47,7 @@ export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
   const handleDisplayPropertiesUpdate = (property: Partial<IIssueDisplayProperties>) => {
     if (!workspaceSlug || !projectId) return;
 
-    updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_PROPERTIES, property);
+    void updateFilters(EIssueFilterType.DISPLAY_PROPERTIES, property);
   };
 
   if (!workspaceSlug || !projectId) return null;
@@ -56,7 +57,7 @@ export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
         <ArchiveTabsList />
       </Header.LeftItem>
       <Header.RightItem className="items-center">
-        <WorkItemFiltersToggle entityType={EIssuesStoreType.ARCHIVED} entityId={projectId} />
+        <WorkItemFiltersToggle />
         <FiltersDropdown title={t("common.display")} placement="bottom-end">
           <DisplayFiltersSelection
             displayFilters={issueFilters?.displayFilters || {}}
@@ -73,4 +74,4 @@ export const ArchivedIssuesHeader = observer(function ArchivedIssuesHeader() {
       </Header.RightItem>
     </Header>
   );
-});
+}

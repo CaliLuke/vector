@@ -6,7 +6,6 @@
 
 import { BarChart2, Briefcase, FileText, Home, Inbox, Layers, PenSquare, Settings } from "lucide-react";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
 import { ArchiveIcon, UserActivityIcon, LayersIcon, ContrastIcon, DiceIcon, Intake } from "@plane/propel/icons";
 import type { ICycle, IModule, IPartialProject, IProjectView, IWorkspace } from "@plane/types";
 import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
@@ -14,8 +13,10 @@ import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
 import type { TPowerKCommandConfig, TPowerKContext } from "@/components/power-k/core/types";
 import { handlePowerKNavigate } from "@/components/power-k/utils/navigation";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useParams } from "@tanstack/react-router";
+import { useProjectPermissions, useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export type TPowerKNavigationCommandKeys =
   | "open_workspace"
@@ -52,29 +53,25 @@ export type TPowerKNavigationCommandKeys =
  */
 export const usePowerKNavigationCommandsRecord = (): Record<TPowerKNavigationCommandKeys, TPowerKCommandConfig> => {
   // store hooks
-  const {
-    data: currentUser,
-    permission: { allowPermissions },
-  } = useUser();
-  const { getPartialProjectById } = useProject();
+  const { data: currentUser } = useCurrentUser();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug?.toString());
+  const { can: canProject } = useProjectPermissions(workspaceSlug?.toString(), projectId?.toString());
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
   // derived values
   const hasWorkspaceMemberLevelPermissions = (ctx: TPowerKContext) =>
-    allowPermissions(
-      [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
-      EUserPermissionsLevel.WORKSPACE,
-      ctx.params.workspaceSlug?.toString()
-    );
+    ctx.params.workspaceSlug?.toString() === workspaceSlug?.toString() &&
+    canWorkspace([EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER]);
   const hasProjectMemberLevelPermissions = (ctx: TPowerKContext) =>
-    allowPermissions(
-      [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-      EUserPermissionsLevel.PROJECT,
-      ctx.params.workspaceSlug?.toString(),
-      ctx.params.projectId?.toString()
-    );
+    ctx.params.workspaceSlug?.toString() === workspaceSlug?.toString() &&
+    ctx.params.projectId?.toString() === projectId?.toString() &&
+    canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
   const baseWorkspaceConditions = (ctx: TPowerKContext) => Boolean(ctx.params.workspaceSlug?.toString());
   const baseProjectConditions = (ctx: TPowerKContext) =>
     Boolean(ctx.params.workspaceSlug?.toString() && ctx.params.projectId?.toString());
-  const getContextProject = (ctx: TPowerKContext) => getPartialProjectById(ctx.params.projectId?.toString());
+  const getContextProject = (ctx: TPowerKContext) =>
+    projectRows?.find((project) => project.id === ctx.params.projectId?.toString());
 
   return {
     open_workspace: {

@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // components
 import type { TPowerKPageType } from "@/components/power-k/core/types";
 // local imports
@@ -19,7 +19,7 @@ type Props = {
   handleSelection: (data: unknown) => void;
 };
 
-export const PowerKAccountPreferencesPages = observer(function PowerKAccountPreferencesPages(props: Props) {
+export const PowerKAccountPreferencesPages = function PowerKAccountPreferencesPages(props: Props) {
   const { activePage, handleSelection } = props;
 
   return (
@@ -30,4 +30,4 @@ export const PowerKAccountPreferencesPages = observer(function PowerKAccountPref
       {activePage === "update-language" && <PowerKPreferencesLanguagesMenu onSelect={handleSelection} />}
     </>
   );
-});
+};

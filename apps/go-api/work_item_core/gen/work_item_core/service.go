@@ -3,7 +3,8 @@
 // WorkItemCore service
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package workitemcore
 
@@ -908,7 +909,9 @@ type GetAPIWorkspacesBySlugProjectsByProjectIDIssuesPayload struct {
 // type of the WorkItemCore service
 // GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues method.
 type GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload struct {
-	ProjectID string `json:"project_id"`
+	ProjectID   string  `json:"project_id"`
+	TypeID      *string `json:"type_id,omitzero"`
+	ChildTypeID *string `json:"child_type_id,omitzero"`
 	// A search term.
 	Search *string `json:"search,omitzero"`
 	Slug   string  `json:"slug"`

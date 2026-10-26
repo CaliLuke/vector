@@ -6,7 +6,6 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // plane ui
 import { WorkItemsIcon } from "@plane/propel/icons";
@@ -15,33 +14,34 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { IssueDetailQuickActions } from "@/components/issues/issue-detail/issue-detail-quick-actions";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const WorkItemDetailsHeader = observer(function WorkItemDetailsHeader() {
+export const WorkItemDetailsHeader = function WorkItemDetailsHeader() {
   // router
   const router = useRouter();
   const { workspaceSlug, workItem } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/browse/$workItem" });
   // store hooks
-  const { getProjectById, loader } = useProject();
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail();
-  // derived values
-  const issueId = getIssueIdByIdentifier(workItem?.toString());
-  const issueDetails = issueId ? getIssueById(issueId.toString()) : undefined;
-  const projectId = issueDetails ? issueDetails?.project_id : undefined;
-  const projectDetails = projectId ? getProjectById(projectId?.toString()) : undefined;
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const loader = projectCatalogue.isPending;
+  const [projectIdentifier, sequenceId] = workItem.split("-");
+  const projectIdFromCatalogue = projectRows?.find((project) => project.identifier === projectIdentifier)?.id;
+  const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequenceId, projectIdFromCatalogue);
+  const issueDetails = detail.issue;
+  const issueId = issueDetails?.id;
+  const projectId = issueDetails?.project_id;
+  const projectDetails = projectId ? projectRows?.find((project) => project.id === projectId) : undefined;
 
   if (!workspaceSlug || !projectId || !issueId) return null;
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
-          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+        <Breadcrumbs onBack={router.history.back} isLoading={loader}>
+          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
           <Breadcrumbs.Item
             component={
               <BreadcrumbLink
@@ -61,14 +61,8 @@ export const WorkItemDetailsHeader = observer(function WorkItemDetailsHeader() {
         </Breadcrumbs>
       </Header.LeftItem>
       <Header.RightItem>
-        {projectId && issueId && (
-          <IssueDetailQuickActions
-            workspaceSlug={workspaceSlug?.toString()}
-            projectId={projectId?.toString()}
-            issueId={issueId?.toString()}
-          />
-        )}
+        <IssueDetailQuickActions workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} />
       </Header.RightItem>
     </Header>
   );
-});
+};

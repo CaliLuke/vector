@@ -5,7 +5,7 @@
  */
 
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   name: string;

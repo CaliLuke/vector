@@ -5,15 +5,13 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
-import { observer } from "mobx-react";
+import { useState } from "react";
 
 // plane imports
-import { EIssueFilterType, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
+import { ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { ChevronDownIcon } from "@plane/propel/icons";
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
-import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
+import { EIssueLayoutTypes } from "@plane/types";
 // components
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
 import {
@@ -22,51 +20,27 @@ import {
   MobileLayoutSelection,
 } from "@/components/issues/issue-layouts/filters";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectIssueDisplayPreferences } from "@/hooks/use-project-issue-display-preferences";
+import { useRouteProject } from "@/hooks/use-projects";
 
-export const ProjectIssuesMobileHeader = observer(function ProjectIssuesMobileHeader() {
+export const ProjectIssuesMobileHeader = function ProjectIssuesMobileHeader() {
   // i18n
   const { t } = useTranslation();
   const [analyticsModal, setAnalyticsModal] = useState(false);
   const { workspaceSlug, projectId } = useParams({
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues",
   });
-  const { currentProjectDetails } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
 
   // store hooks
-  const {
-    issuesFilter: { issueFilters, updateFilters },
-  } = useIssues(EIssuesStoreType.PROJECT);
-  const activeLayout = issueFilters?.displayFilters?.layout;
-
-  const handleLayoutChange = useCallback(
-    (layout: EIssueLayoutTypes) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, { layout: layout });
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
-
-  const handleDisplayFilters = useCallback(
-    (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter);
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
-
-  const handleDisplayProperties = useCallback(
-    (property: Partial<IIssueDisplayProperties>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_PROPERTIES, property);
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
+  const { issueFilters, activeLayout, handleLayoutChange, handleDisplayFilters, handleDisplayProperties } =
+    useProjectIssueDisplayPreferences({ workspaceSlug, projectId });
 
   return (
     <>
       <WorkItemsModal
+        workspaceSlug={workspaceSlug}
         isOpen={analyticsModal}
         onClose={() => setAnalyticsModal(false)}
         projectDetails={currentProjectDetails ?? undefined}
@@ -110,4 +84,4 @@ export const ProjectIssuesMobileHeader = observer(function ProjectIssuesMobileHe
       </div>
     </>
   );
-});
+};

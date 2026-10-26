@@ -8,22 +8,21 @@ import { Link, useParams, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { attachInstruction, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { observer } from "mobx-react";
+import { treeDropPositionTarget } from "@/helpers/tree-drop-position";
 
 import { Pin, PinOff } from "lucide-react";
 // plane imports
 import type { IWorkspaceSidebarNavigationItem } from "@plane/constants";
-import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Tooltip } from "@plane/propel/tooltip";
 import { DropIndicator } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions } from "@/providers/sidebar-state";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWorkspaceNavigationPreferences } from "@/hooks/use-navigation-preferences";
 // local imports
 import { getSidebarNavigationItemIcon } from "./helper";
@@ -41,7 +40,7 @@ type TExtendedSidebarItemProps = {
   isLastChild: boolean;
 };
 
-export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: TExtendedSidebarItemProps) {
+export function ExtendedSidebarItem(props: TExtendedSidebarItemProps) {
   const { item, handleOnNavigationItemDrop, disableDrag = false, disableDrop = false, isLastChild } = props;
   const { t } = useTranslation();
   // states
@@ -55,9 +54,9 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
   const pathname = useLocation({ select: (location) => location.pathname });
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { toggleExtendedSidebar } = useAppTheme();
-  const { data } = useUser();
-  const { allowPermissions } = useUserPermissions();
+  const { toggleExtendedSidebar } = useSidebarActions();
+  const { data } = useCurrentUser();
+  const { can } = useWorkspacePermissions(workspaceSlug);
   const { preferences: workspacePreferences, toggleWorkspaceItem } = useWorkspaceNavigationPreferences();
 
   // derived values
@@ -88,50 +87,7 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
         element,
         canDrop: ({ source }) =>
           !disableDrop && source?.data?.id !== item.key && source?.data?.dragInstanceId === "NAVIGATION",
-        // oxlint-disable-next-line no-shadow
-        getData: ({ input, element }) => {
-          // oxlint-disable-next-line no-shadow
-          const data = { id: item.key };
-
-          // attach instruction for last in list
-          return attachInstruction(data, {
-            input,
-            element,
-            currentLevel: 0,
-            indentPerLevel: 0,
-            mode: isLastChild ? "last-in-group" : "standard",
-          });
-        },
-        onDrag: ({ self }) => {
-          const extractedInstruction = extractInstruction(self?.data)?.type;
-          // check if the highlight is to be shown above or below
-          setInstruction(
-            extractedInstruction
-              ? extractedInstruction === "reorder-below" && isLastChild
-                ? "DRAG_BELOW"
-                : "DRAG_OVER"
-              : undefined
-          );
-        },
-        onDragLeave: () => {
-          setInstruction(undefined);
-        },
-        onDrop: ({ self, source }) => {
-          setInstruction(undefined);
-          const extractedInstruction = extractInstruction(self?.data)?.type;
-          const currentInstruction = extractedInstruction
-            ? extractedInstruction === "reorder-below" && isLastChild
-              ? "DRAG_BELOW"
-              : "DRAG_OVER"
-            : undefined;
-          if (!currentInstruction) return;
-
-          const sourceId = source?.data?.id as string | undefined;
-          const destinationId = self?.data?.id as string | undefined;
-
-          if (handleOnNavigationItemDrop)
-            handleOnNavigationItemDrop(sourceId, destinationId, currentInstruction === "DRAG_BELOW");
-        },
+        ...treeDropPositionTarget(item.key, isLastChild, setInstruction, handleOnNavigationItemDrop),
       })
     );
   }, [isLastChild, handleOnNavigationItemDrop, disableDrag, disableDrop, item.key]);
@@ -152,7 +108,7 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
 
   const icon = getSidebarNavigationItemIcon(item.key);
 
-  if (!allowPermissions(item.access as any, EUserPermissionsLevel.WORKSPACE, workspaceSlug.toString())) {
+  if (!can(item.access)) {
     return null;
   }
 
@@ -216,4 +172,4 @@ export const ExtendedSidebarItem = observer(function ExtendedSidebarItem(props: 
       {isLastChild && <DropIndicator isVisible={instruction === "DRAG_BELOW"} />}
     </div>
   );
-});
+}

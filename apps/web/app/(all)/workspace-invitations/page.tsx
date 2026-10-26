@@ -5,9 +5,8 @@
  */
 
 import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Boxes, Share2, User2 } from "lucide-react";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 // components
@@ -18,11 +17,19 @@ import { WORKSPACE_INVITATION } from "@plane/constants";
 // helpers
 import { EPageTypes } from "@/helpers/authentication.helper";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 // wrappers
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 import { WorkspaceService } from "@/services/workspace.service";
+import {
+  captureIdentityScope,
+  currentUserOptions,
+  getCurrentUserId,
+  getIdentitySessionGeneration,
+  isIdentityScopeCurrent,
+} from "@/queries/identity";
+import { workspaceKeys } from "@/queries/workspaces";
 // services
 
 // service initialization
@@ -31,48 +38,60 @@ const workspaceService = new WorkspaceService();
 function WorkspaceInvitationPage(): React.JSX.Element | null {
   // router
   const router = useRouter();
+  const queryClient = useQueryClient();
   // query params
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const invitation_id = searchParams.get("invitation_id");
   const slug = searchParams.get("slug");
   const token = searchParams.get("token");
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
 
-  const { data: invitationDetail, error } = useSWR(
-    invitation_id && slug && WORKSPACE_INVITATION(invitation_id.toString()),
-    invitation_id && slug
-      ? () => workspaceService.getWorkspaceInvitation(slug.toString(), invitation_id.toString())
-      : null
-  );
+  const { data: invitationDetail, error } = useQuery({
+    queryKey: WORKSPACE_INVITATION(slug ?? undefined, invitation_id ?? undefined),
+    queryFn:
+      invitation_id && slug
+        ? () => workspaceService.getWorkspaceInvitation(slug.toString(), invitation_id.toString())
+        : skipToken,
+  });
 
-  const handleAccept = () => {
-    if (!invitationDetail) return;
-    workspaceService
-      .joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
-        accepted: true,
-        token: token,
-      })
-      .then(() => {
-        if (invitationDetail.email === currentUser?.email) {
-          return void router.navigate({ href: `/${invitationDetail.workspace.slug}` });
-        } else {
-          return void router.navigate({ href: "/" });
-        }
-      })
-      .catch((err: unknown) => console.error(err));
+  const respondToInvitation = async (accepted: boolean) => {
+    if (!invitationDetail || (!accepted && !token)) return;
+    const identityScope = captureIdentityScope(queryClient, currentUser?.id);
+    const session = {
+      generation: getIdentitySessionGeneration(queryClient),
+      userId: getCurrentUserId(queryClient),
+      userQuery: queryClient.getQueryCache().find({ queryKey: currentUserOptions().queryKey, exact: true }),
+      routeHref: router.state.location.href,
+    };
+    const isCurrentIdentitySession = () =>
+      session.generation === getIdentitySessionGeneration(queryClient) &&
+      session.userId === getCurrentUserId(queryClient) &&
+      session.userQuery ===
+        queryClient.getQueryCache().find({ queryKey: currentUserOptions().queryKey, exact: true }) &&
+      (!session.userId || isIdentityScopeCurrent(queryClient, identityScope));
+    const isCurrentFlow = () => isCurrentIdentitySession() && session.routeHref === router.state.location.href;
+    if (!isCurrentFlow()) throw new Error("The invitation route changed.");
+
+    await workspaceService.joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
+      accepted,
+      token,
+    });
+    if (!isCurrentIdentitySession()) throw new Error("The account session changed.");
+
+    if (accepted && session.userId) {
+      await queryClient.invalidateQueries({ queryKey: workspaceKeys.list(session.userId), exact: true });
+      if (!isCurrentIdentitySession()) throw new Error("The account session changed.");
+    }
+    if (!isCurrentFlow()) throw new Error("The invitation route changed.");
+
+    const destination =
+      accepted && invitationDetail.email === currentUser?.email ? `/${invitationDetail.workspace.slug}` : "/";
+    await router.navigate({ href: destination });
   };
 
-  const handleReject = () => {
-    if (!invitationDetail || !token) return;
-    void workspaceService
-      .joinWorkspace(invitationDetail.workspace.slug, invitationDetail.id, {
-        accepted: false,
-        token: token,
-      })
-      .then(() => void router.navigate({ href: "/" }))
-      .catch((err: unknown) => console.error(err));
-  };
+  const handleAccept = () => void respondToInvitation(true).catch((cause: unknown) => console.error(cause));
+  const handleReject = () => void respondToInvitation(false).catch((cause: unknown) => console.error(cause));
 
   return (
     <AuthenticationWrapper pageType={EPageTypes.PUBLIC}>
@@ -128,5 +147,5 @@ function WorkspaceInvitationPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/workspace-invitations/")({
-  component: observer(WorkspaceInvitationPage),
+  component: WorkspaceInvitationPage,
 });

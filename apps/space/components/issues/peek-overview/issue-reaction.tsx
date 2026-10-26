@@ -4,36 +4,38 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { IPublicIssue } from "@plane/types";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
 // components
 import { IssueEmojiReactions } from "@/components/issues/reactions/issue-emoji-reactions";
 import { IssueVotes } from "@/components/issues/reactions/issue-vote-reactions";
 // hooks
-import { usePublish } from "@/hooks/store/publish";
 import useIsInIframe from "@/hooks/use-is-in-iframe";
 
 type Props = {
   anchor: string;
+  issue: IPublicIssue;
 };
 
-export const IssueReactions = observer(function IssueReactions(props: Props) {
-  const { anchor } = props;
-  // store hooks
-  const { canVote, canReact } = usePublish(anchor);
+export const IssueReactions = function IssueReactions(props: Props) {
+  const { anchor, issue } = props;
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { is_votes_enabled: canVote, is_reactions_enabled: canReact } = publishSettings ?? {};
   const isInIframe = useIsInIframe();
 
   return (
     <div className="mt-4 flex items-center gap-3">
       {canVote && (
         <div className="flex items-center gap-2">
-          <IssueVotes anchor={anchor} />
+          <IssueVotes issue={issue} anchor={anchor} />
         </div>
       )}
       {!isInIframe && canReact && (
         <div className="flex items-center gap-2">
-          <IssueEmojiReactions anchor={anchor} />
+          <IssueEmojiReactions issue={issue} anchor={anchor} />
         </div>
       )}
     </div>
   );
-});
+};

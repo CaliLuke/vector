@@ -5,7 +5,8 @@
  */
 
 import { useEditorState, useEditor as useTiptapEditor } from "@tiptap/react";
-import { useImperativeHandle, useEffect } from "react";
+import { useImperativeHandle, useEffect, useLayoutEffect, useMemo } from "react";
+import type { EditorState } from "@tiptap/pm/state";
 import type { MarkdownStorage } from "tiptap-markdown";
 // extensions
 import { CoreEditorExtensions } from "@/extensions";
@@ -22,13 +23,15 @@ declare module "@tiptap/core" {
   }
 }
 
+const emptyEditorProps: NonNullable<TEditorHookProps["editorProps"]> = {};
+
 export const useEditor = (props: TEditorHookProps) => {
   const {
     autofocus = false,
     disabledExtensions,
     editable = true,
     editorClassName = "",
-    editorProps = {},
+    editorProps = emptyEditorProps,
     enableHistory,
     extendedEditorProps,
     extensions = [],
@@ -52,6 +55,17 @@ export const useEditor = (props: TEditorHookProps) => {
     value,
   } = props;
 
+  const currentEditorProps = useMemo(() => {
+    const defaults = CoreEditorProps({ editorClassName });
+    return {
+      ...defaults,
+      ...editorProps,
+      attributes: (state: EditorState) => ({
+        ...(typeof defaults.attributes === "function" ? defaults.attributes(state) : defaults.attributes),
+        ...(typeof editorProps.attributes === "function" ? editorProps.attributes(state) : editorProps.attributes),
+      }),
+    };
+  }, [editorClassName, editorProps]);
   const editor = useTiptapEditor(
     {
       editable,
@@ -59,12 +73,7 @@ export const useEditor = (props: TEditorHookProps) => {
       shouldRerenderOnTransaction: false,
       autofocus,
       parseOptions: { preserveWhitespace: true },
-      editorProps: {
-        ...CoreEditorProps({
-          editorClassName,
-        }),
-        ...editorProps,
-      },
+      editorProps: currentEditorProps,
       extensions: [
         ...CoreEditorExtensions({
           disabledExtensions,
@@ -99,12 +108,29 @@ export const useEditor = (props: TEditorHookProps) => {
     [editable]
   );
 
-  // Effect for syncing SWR data
+  // Refresh field labels/errors without recreating the editor or its undo history.
+  useLayoutEffect(() => {
+    if (editor && !editor.isDestroyed) editor.setOptions({ editorProps: currentEditorProps });
+  }, [editor, currentEditorProps]);
+
+  // Extensions and plugins outlive React renders. Keep their identity callbacks
+  // in editor storage and update them only after the new props commit.
+  useLayoutEffect(() => {
+    if (editor && !editor.isDestroyed) {
+      editor.commands.updateIdentityHandlers({ getEditorMetaData, mentionHandler });
+    }
+  }, [editor, getEditorMetaData, mentionHandler]);
+
+  useLayoutEffect(() => {
+    if (editor && !editor.isDestroyed) editor.commands.updateFileHandler(fileHandler);
+  }, [editor, fileHandler]);
+
+  // Effect for syncing query data
   useEffect(() => {
     // value is null when intentionally passed where syncing is not yet
-    // supported and value is undefined when the data from swr is not populated
+    // supported and value is undefined when the query data is not populated
     if (value == null) return;
-    if (editor) {
+    if (editor && !editor.isDestroyed) {
       const { uploadInProgress: isUploadInProgress } = editor.storage.utility;
       if (!editor.isDestroyed && !isUploadInProgress) {
         try {
@@ -126,7 +152,7 @@ export const useEditor = (props: TEditorHookProps) => {
 
   // update assets upload status
   useEffect(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
     const assetsUploadStatus = fileHandler.assetsUploadStatus;
     editor.commands.updateAssetsUploadStatus?.(assetsUploadStatus);
   }, [editor, fileHandler.assetsUploadStatus]);

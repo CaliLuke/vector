@@ -4,30 +4,30 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 // plane types
 import type { ICycle, TIssue } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // components
 import { PowerKCyclesMenu } from "@/components/power-k/menus/cycles";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 type Props = {
   handleSelect: (cycle: ICycle) => void;
   workItemDetails: TIssue;
 };
 
-export const PowerKWorkItemCyclesMenu = observer(function PowerKWorkItemCyclesMenu(props: Props) {
+export const PowerKWorkItemCyclesMenu = function PowerKWorkItemCyclesMenu(props: Props) {
   const { handleSelect, workItemDetails } = props;
-  // store hooks
-  const { getProjectCycleIds, getCycleById } = useCycle();
-  // derived values
-  const projectCycleIds = workItemDetails.project_id ? getProjectCycleIds(workItemDetails.project_id) : undefined;
-  const cyclesList = projectCycleIds ? projectCycleIds.map((cycleId) => getCycleById(cycleId)) : undefined;
-  const filteredCyclesList = cyclesList ? cyclesList.filter((cycle) => !!cycle) : undefined;
-
-  if (!filteredCyclesList) return <Spinner />;
+  const { workspaceSlug } = useParams({ strict: false });
+  const catalogue = useProjectCycles(workspaceSlug, workItemDetails.project_id ?? undefined);
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="cycles" retry={catalogue.retry} />;
+  if (!catalogue.cycles) return <Spinner />;
+  const filteredCyclesList = catalogue.cycles;
 
   return <PowerKCyclesMenu cycles={filteredCyclesList} onSelect={handleSelect} value={workItemDetails.cycle_id} />;
-});
+};

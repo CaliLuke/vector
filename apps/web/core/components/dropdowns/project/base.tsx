@@ -4,20 +4,21 @@
  * See the LICENSE file for details.
  */
 
+import { DropdownOption } from "@/components/dropdowns/dropdown-option";
+
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { usePopper } from "react-popper";
-import { Combobox } from "@headlessui/react";
+import { useRef } from "react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Logo } from "@plane/propel/emoji-icon-picker";
-import { CheckIcon, SearchIcon, ProjectIcon, ChevronDownIcon } from "@plane/propel/icons";
+import { ProjectIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { ComboDropDown } from "@plane/ui";
-import { cn, sortBySelectedFirst } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { sortBySelectedFirst } from "@plane/utils/array";
 // components
 // hooks
-import { useDropdown } from "@/hooks/use-dropdown";
+import { useSearchableDropdown } from "../searchable-options";
 // plane web imports
 import type { TProject } from "@plane/types";
 // local imports
@@ -48,7 +49,7 @@ type Props = TDropdownProps & {
       }
   );
 
-export const ProjectDropdownBase = observer(function ProjectDropdownBase(props: Props) {
+export const ProjectDropdownBase = function ProjectDropdownBase(props: Props) {
   const {
     button,
     buttonClassName,
@@ -75,27 +76,9 @@ export const ProjectDropdownBase = observer(function ProjectDropdownBase(props: 
   } = props;
   // refs
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  // popper-js refs
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-  // states
-  const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  // plane hooks
   const { t } = useTranslation();
-  // popper-js init
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: placement ?? "bottom-start",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
-  });
+  const dropdown = useSearchableDropdown(placement, onClose);
+  const { query, setReferenceElement } = dropdown;
   // store hooks
   const options = projectIds?.map((projectId) => {
     const projectDetails = getProjectById(projectId);
@@ -123,21 +106,6 @@ export const ProjectDropdownBase = observer(function ProjectDropdownBase(props: 
     )?.filter((o): o is NonNullable<typeof o> => o !== undefined),
     value
   );
-
-  const { handleClose, handleKeyDown, handleOnClick, searchInputKeyDown } = useDropdown({
-    dropdownRef,
-    inputRef,
-    isOpen,
-    onClose,
-    query,
-    setIsOpen,
-    setQuery,
-  });
-
-  const dropdownOnChange = (val: string & string[]) => {
-    onChange(val);
-    if (!multiple) handleClose();
-  };
 
   const getDisplayName = (value: string | string[] | null, placeholder: string = "") => {
     if (Array.isArray(value)) {
@@ -174,120 +142,85 @@ export const ProjectDropdownBase = observer(function ProjectDropdownBase(props: 
     }
   };
 
-  const comboButton = button ? (
-    <button
-      ref={setReferenceElement}
-      type="button"
-      className={cn("clickable block h-full w-full outline-none", buttonContainerClassName)}
-      onClick={handleOnClick}
-      disabled={disabled}
-    >
-      {button}
-    </button>
-  ) : (
-    <button
-      ref={setReferenceElement}
-      type="button"
-      className={cn(
-        "clickable block h-full max-w-full outline-none",
-        {
-          "cursor-not-allowed text-secondary": disabled,
-          "cursor-pointer": !disabled,
-        },
-        buttonContainerClassName
-      )}
-      onClick={handleOnClick}
-      disabled={disabled}
-    >
-      <DropdownButton
-        className={buttonClassName}
-        isActive={isOpen}
-        tooltipHeading="Project"
-        tooltipContent={value?.length ? `${value.length} project${value.length !== 1 ? "s" : ""}` : placeholder}
-        showTooltip={showTooltip}
-        variant={buttonVariant}
-        renderToolTipByDefault={renderByDefault}
+  const comboButton = ({ open }: { open: boolean }) =>
+    button ? (
+      <button
+        ref={setReferenceElement}
+        type="button"
+        className={cn("clickable block h-full w-full outline-none", buttonContainerClassName)}
+        disabled={disabled}
       >
-        {!hideIcon && getProjectIcon(value)}
-        {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
-          <span className="max-w-40 truncate">{getDisplayName(value, placeholder)}</span>
+        {button}
+      </button>
+    ) : (
+      <button
+        ref={setReferenceElement}
+        type="button"
+        className={cn(
+          "clickable block h-full max-w-full outline-none",
+          {
+            "cursor-not-allowed text-secondary": disabled,
+            "cursor-pointer": !disabled,
+          },
+          buttonContainerClassName
         )}
-        {dropdownArrow && (
-          <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
-        )}
-      </DropdownButton>
-    </button>
-  );
+        disabled={disabled}
+      >
+        <DropdownButton
+          className={buttonClassName}
+          isActive={open}
+          tooltipHeading="Project"
+          tooltipContent={value?.length ? `${value.length} project${value.length !== 1 ? "s" : ""}` : placeholder}
+          showTooltip={showTooltip}
+          variant={buttonVariant}
+          renderToolTipByDefault={renderByDefault}
+        >
+          {!hideIcon && getProjectIcon(value)}
+          {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
+            <span className="max-w-40 truncate">{getDisplayName(value, placeholder)}</span>
+          )}
+          {dropdownArrow && (
+            <ChevronDownIcon className={cn("h-2.5 w-2.5 flex-shrink-0", dropdownArrowClassName)} aria-hidden="true" />
+          )}
+        </DropdownButton>
+      </button>
+    );
 
-  return (
-    <ComboDropDown
+  const children = dropdown.renderOptions(<ProjectOptions options={filteredOptions} />, t("search"));
+
+  const dropdownProps = {
+    ref: dropdownRef,
+    tabIndex,
+    className: cn("h-full", className),
+    disabled,
+    onClose: dropdown.onClose,
+    onOpen: dropdown.onOpen,
+    button: comboButton,
+    renderByDefault,
+    children,
+  };
+
+  return multiple ? (
+    <ComboDropDown<string, true> {...dropdownProps} as="div" multiple value={value} onChange={onChange} />
+  ) : (
+    <ComboDropDown<string | null>
+      {...dropdownProps}
       as="div"
-      ref={dropdownRef}
-      tabIndex={tabIndex}
-      className={cn("h-full", className)}
       value={value}
-      onChange={dropdownOnChange}
-      disabled={disabled}
-      onKeyDown={handleKeyDown}
-      button={comboButton}
-      renderByDefault={renderByDefault}
-      multiple={multiple}
-    >
-      {isOpen && (
-        <Combobox.Options modal={false} className="fixed z-10" static>
-          <div
-            className="my-1 w-48 rounded-sm border-[0.5px] border-strong bg-surface-1 px-2 py-2.5 text-11 shadow-raised-200 focus:outline-none"
-            ref={setPopperElement}
-            style={styles.popper}
-            {...attributes.popper}
-          >
-            <div className="flex items-center gap-1.5 rounded-sm border border-subtle bg-surface-2 px-2">
-              <SearchIcon className="h-3.5 w-3.5 text-placeholder" strokeWidth={1.5} />
-              <Combobox.Input
-                as="input"
-                ref={inputRef}
-                className="w-full bg-transparent py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("search")}
-                displayValue={(assigned: any) => assigned?.name}
-                onKeyDown={searchInputKeyDown}
-              />
-            </div>
-            <div className="mt-2 max-h-48 space-y-1 overflow-y-scroll">
-              {filteredOptions ? (
-                filteredOptions.length > 0 ? (
-                  filteredOptions.map((option) => {
-                    if (!option) return;
-                    return (
-                      <Combobox.Option
-                        key={option.value}
-                        value={option.value}
-                        className={({ active, selected }) =>
-                          `flex w-full cursor-pointer items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none ${
-                            active ? "bg-layer-transparent-hover" : ""
-                          } ${selected ? "text-primary" : "text-secondary"}`
-                        }
-                      >
-                        {({ selected }) => (
-                          <>
-                            <span className="flex-grow truncate">{option.content}</span>
-                            {selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
-                          </>
-                        )}
-                      </Combobox.Option>
-                    );
-                  })
-                ) : (
-                  <p className="px-1.5 py-1 text-placeholder italic">{t("no_matching_results")}</p>
-                )
-              ) : (
-                <p className="px-1.5 py-1 text-placeholder italic">{t("loading")}</p>
-              )}
-            </div>
-          </div>
-        </Combobox.Options>
-      )}
-    </ComboDropDown>
+      onChange={(selected) => {
+        if (selected !== null) onChange(selected);
+      }}
+    />
   );
-});
+};
+
+function ProjectOptions({ options }: { options: { value: string; content: ReactNode }[] | undefined }) {
+  const { t } = useTranslation();
+  if (!options) return <p className="px-1.5 py-1 text-placeholder italic">{t("loading")}</p>;
+  if (!options.length) return <p className="px-1.5 py-1 text-placeholder italic">{t("no_matching_results")}</p>;
+  return options.map((option) => (
+    <DropdownOption key={option.value} value={option.value}>
+      {option.content}
+    </DropdownOption>
+  ));
+}

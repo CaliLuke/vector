@@ -5,9 +5,9 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import useSWR, { mutate } from "swr";
+import { useQuery, skipToken, useQueryClient } from "@tanstack/react-query";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IWorkspaceIntegration } from "@plane/types";
+import type { IGithubRepository, IWorkspaceIntegration } from "@plane/types";
 // assets
 import GithubLogo from "@/app/assets/logos/github-square.png?url";
 import SlackLogo from "@/app/assets/services/slack.png?url";
@@ -23,7 +23,7 @@ type Props = {
   integration: IWorkspaceIntegration;
 };
 
-const integrationDetails: { [key: string]: any } = {
+const integrationDetails: Record<string, { logo: string; description: string }> = {
   github: {
     logo: GithubLogo,
     description: "Select GitHub repository to enable sync.",
@@ -36,50 +36,50 @@ const integrationDetails: { [key: string]: any } = {
 
 // services
 const projectService = new ProjectService();
+type SyncedGithubRepository = { repo_detail: { owner: string; name: string } };
 
 export function IntegrationCard({ integration }: Props) {
+  const queryClient = useQueryClient();
   const { workspaceSlug, projectId } = useParams({ strict: false });
 
-  const { data: syncedGithubRepository } = useSWR(projectId ? PROJECT_GITHUB_REPOSITORY(projectId) : null, () =>
-    workspaceSlug && projectId && integration
-      ? projectService.getProjectGithubRepository(workspaceSlug, projectId, integration.id)
-      : null
-  );
+  const { data: syncedGithubRepository } = useQuery<SyncedGithubRepository[]>({
+    queryKey: PROJECT_GITHUB_REPOSITORY(workspaceSlug, projectId, integration.id),
+    queryFn:
+      workspaceSlug && projectId
+        ? () => projectService.getProjectGithubRepository(workspaceSlug, projectId, integration.id)
+        : skipToken,
+  });
 
-  const handleChange = (repo: any) => {
-    if (!workspaceSlug || !projectId || !integration) return;
+  const handleChange = async (repo: IGithubRepository | undefined) => {
+    if (!workspaceSlug || !projectId || !repo) return;
+    const separatorIndex = repo.full_name.indexOf("/");
+    if (separatorIndex < 1 || separatorIndex === repo.full_name.length - 1) return;
+    const owner = repo.full_name.slice(0, separatorIndex);
+    const name = repo.full_name.slice(separatorIndex + 1);
 
-    const {
-      html_url,
-      owner: { login },
-      id,
-      name,
-    } = repo;
-
-    projectService
-      .syncGithubRepository(workspaceSlug, projectId, integration.id, {
+    try {
+      await projectService.syncGithubRepository(workspaceSlug, projectId, integration.id, {
         name,
-        owner: login,
-        repository_id: id,
-        url: html_url,
-      })
-      .then(() => {
-        mutate(PROJECT_GITHUB_REPOSITORY(projectId));
-
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: `${login}/${name} repository synced with the project successfully.`,
-        });
-      })
-      .catch((err) => {
-        console.error(err);
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Repository could not be synced with the project. Please try again.",
-        });
+        owner,
+        repository_id: repo.id,
+        url: repo.html_url,
       });
+      const queryKey = PROJECT_GITHUB_REPOSITORY(workspaceSlug, projectId, integration.id);
+      await queryClient.cancelQueries({ queryKey });
+      await queryClient.invalidateQueries({ queryKey });
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Success!",
+        message: `${owner}/${name} repository synced with the project successfully.`,
+      });
+    } catch (error) {
+      console.error(error);
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: "Repository could not be synced with the project. Please try again.",
+      });
+    }
   };
 
   return (
@@ -114,7 +114,7 @@ export function IntegrationCard({ integration }: Props) {
                   ? `${syncedGithubRepository[0].repo_detail.owner}/${syncedGithubRepository[0].repo_detail.name}`
                   : "Select Repository"
               }
-              onChange={handleChange}
+              onChange={(repository) => void handleChange(repository)}
             />
           )}
           {integration.integration_detail.provider === "slack" && <SelectChannel integration={integration} />}

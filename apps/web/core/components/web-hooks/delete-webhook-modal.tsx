@@ -1,64 +1,70 @@
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
- * See the LICENSE file for details.
+ * See the LICENSE file in the project root for details.
  */
 
-import { useParams, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-
-// ui
+import { useRouter } from "@tanstack/react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore } from "@plane/ui";
-// hooks
-import { useWebhook } from "@/hooks/store/use-webhook";
+import { deleteWebhookMutationOptions } from "@/queries/webhooks";
 
-interface IDeleteWebhook {
+type Props = {
   isOpen: boolean;
+  workspaceSlug: string;
+  webhookId: string;
   onClose: () => void;
-}
+};
 
-export function DeleteWebhookModal(props: IDeleteWebhook) {
-  const { isOpen, onClose } = props;
-  // states
-  const [isDeleting, setIsDeleting] = useState(false);
-  // router
+export function DeleteWebhookModal({ isOpen, onClose, workspaceSlug, webhookId }: Props) {
   const router = useRouter();
-  // store hooks
-  const { removeWebhook } = useWebhook();
+  const queryClient = useQueryClient();
+  const deleteWebhook = useMutation(deleteWebhookMutationOptions(queryClient, workspaceSlug, webhookId));
+  const activeScope = useRef({ isOpen, workspaceSlug, webhookId });
 
-  const { workspaceSlug, webhookId } = useParams({ strict: false });
+  useEffect(() => {
+    activeScope.current = { isOpen, workspaceSlug, webhookId };
+    return () => {
+      activeScope.current = { isOpen: false, workspaceSlug, webhookId };
+    };
+  }, [isOpen, workspaceSlug, webhookId]);
 
-  const handleClose = () => {
-    onClose();
+  const isCurrentDialog = () => {
+    const current = activeScope.current;
+    return current.isOpen && current.workspaceSlug === workspaceSlug && current.webhookId === webhookId;
   };
 
-  const handleDelete = async () => {
-    if (!workspaceSlug || !webhookId) return;
-    setIsDeleting(true);
-    try {
-      await removeWebhook(workspaceSlug.toString(), webhookId.toString());
-      void router.navigate({ href: `/${workspaceSlug}/settings/webhooks/`, replace: true });
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Webhook deleted successfully.",
-      });
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Webhook could not be deleted. Please try again.",
-      });
-    }
-    setIsDeleting(false);
+  const handleDelete = () => {
+    deleteWebhook.mutate(undefined, {
+      onSuccess: (_result, _variables, context) => {
+        if (!context?.sessionCurrent || !isCurrentDialog()) return;
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Success!",
+          message: "Webhook deleted successfully.",
+        });
+        void router.navigate({ href: `/${workspaceSlug}/settings/webhooks/`, replace: true });
+      },
+      onError: () => {
+        if (!isCurrentDialog()) return;
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Error!",
+          message: "Webhook could not be deleted. Please try again.",
+        });
+      },
+    });
   };
 
   return (
     <AlertModalCore
-      handleClose={handleClose}
+      handleClose={() => {
+        if (!deleteWebhook.isPending) onClose();
+      }}
       handleSubmit={handleDelete}
-      isSubmitting={isDeleting}
+      isSubmitting={deleteWebhook.isPending}
       isOpen={isOpen}
       title="Delete webhook"
       content={

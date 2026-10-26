@@ -5,11 +5,11 @@
  */
 
 import { Fragment, forwardRef } from "react";
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 // plane ui
 import { Row } from "@plane/ui";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { getRandomInt, getRandomLength } from "../utils";
 
 export const ListLoaderItemRow = forwardRef(function ListLoaderItemRow(

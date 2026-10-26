@@ -6,7 +6,8 @@
 
 import { Download } from "lucide-react";
 import type { IExportData } from "@plane/types";
-import { getDate, getFileURL, renderFormattedDate } from "@plane/utils";
+import { getDate, renderFormattedDate } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 
 type RowData = IExportData;
 const checkExpiry = (inputDateString: string) => {

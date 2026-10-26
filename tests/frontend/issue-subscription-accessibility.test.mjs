@@ -1,120 +1,145 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act, webRequire } from "./helpers/react.mjs";
+import { settleQuery } from "./helpers/query-router.mjs";
+import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 
+const state = { toasts: [] };
+globalThis.subscriptionTestState = state;
 registerWebModuleHooks();
-
-const packageStubs = {
-  "mobx-react": "export const observer = component => component;",
-  "lodash-es": "export const isNil = value => value == null;",
-  "lucide-react": "export const Bell = () => null; export const BellOff = () => null;",
-  "@plane/constants":
-    "export const EUserPermissions = { ADMIN: 'admin', MEMBER: 'member' }; export const EUserPermissionsLevel = { PROJECT: 'project' };",
-  "@plane/i18n": `export const useTranslation = () => ({ t: key => ({ "common.actions.subscribe": "Subscribe", "common.actions.unsubscribe": "Unsubscribe", "common.loading": "Loading", "toast.success": "Success", "toast.error": "Error", "issue.subscription.actions.subscribed": "Subscribed", "issue.subscription.actions.unsubscribed": "Unsubscribed", "common.error.message": "Error" })[key] ?? key });`,
-  "@plane/propel/toast":
-    "export const TOAST_TYPE = { SUCCESS: 'success', ERROR: 'error' }; export const setToast = () => {};",
-  "@plane/types": "export const EIssueServiceType = { ISSUES: 'issues' };",
-  "@plane/ui": "export const Loader = Object.assign(({ children }) => children, { Item: () => null });",
-  "@/hooks/store/use-issue-detail": "export const useIssueDetail = () => globalThis.__subscriptionIssueDetail;",
-  "@/hooks/store/user":
-    "export const useUserPermissions = () => ({ allowPermissions: () => globalThis.__subscriptionEditable });",
-};
-
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === "@plane/propel/button") {
-      const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
-      return nextResolve(pathToFileURL(path.join(repositoryRoot, "packages/propel/src/button/index.ts")).href, context);
-    }
-    if (Object.hasOwn(packageStubs, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(packageStubs[specifier])}` };
-    }
-    return nextResolve(specifier, context);
+    return resolvePackageStub(
+      specifier,
+      {
+        "@plane/i18n": `export const useTranslation=()=>({t:key=>({"common.actions.subscribe":"Subscribe","common.actions.unsubscribe":"Unsubscribe","common.loading":"Loading"})[key]??key});`,
+        "@plane/propel/toast": `export const TOAST_TYPE={SUCCESS:'success',ERROR:'error'};export const setToast=toast=>globalThis.subscriptionTestState.toasts.push(toast);`,
+        "@plane/ui": "export const Loader=Object.assign(({children})=>children,{Item:()=>null});",
+      },
+      context,
+      nextResolve
+    );
   },
 });
-
-const subscriptions = [];
-let subscribed = false;
-let pendingAction;
-globalThis.__subscriptionEditable = true;
-globalThis.__subscriptionIssueDetail = {
-  subscription: { getSubscriptionByIssueId: () => subscribed },
-  createSubscription: (...args) => {
-    subscriptions.push(["subscribe", ...args]);
-    return pendingAction ?? Promise.resolve();
-  },
-  removeSubscription: (...args) => {
-    subscriptions.push(["unsubscribe", ...args]);
-    return pendingAction ?? Promise.resolve();
-  },
+const { IssueSubscription } = await import("../../apps/web/core/components/issues/issue-detail/subscription.tsx");
+const { IssueService } = await import("../../apps/web/core/services/issue/issue.service.ts");
+const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
+const { issueSubscriptionOptions } = await import("../../apps/web/core/queries/issue-subscription.ts");
+const { EIssueServiceType } = webRequire("@plane/types");
+const scope = {
+  userId: "alice",
+  workspaceSlug: "default",
+  projectId: "project-id",
+  issueId: "issue-id",
+  serviceType: EIssueServiceType.ISSUES,
 };
 
-const { IssueSubscription } = await import("../../apps/web/core/components/issues/issue-detail/subscription.tsx");
-
-function renderSubscription(environment) {
-  return environment.render(
-    React.createElement(IssueSubscription, {
-      workspaceSlug: "default",
-      projectId: "project-id",
-      issueId: "issue-id",
-    })
-  );
+async function fixture(t, projectRole = webRequire("@plane/types").EUserProjectRoles.ADMIN) {
+  state.toasts = [];
+  const environment = await createReactDomTestEnvironment();
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } },
+  });
+  client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
+  await seedPermissionQueries(client, {
+    userId: "alice",
+    workspaceSlug: "default",
+    projectRoles: { "project-id": projectRole },
+  });
+  client.setQueryData(issueSubscriptionOptions(scope).queryKey, false);
+  t.after(async () => {
+    await environment.render(null);
+    await client.cancelQueries();
+    client.clear();
+    await environment.unmount();
+  });
+  const render = (issueId = "issue-id") =>
+    environment.render(
+      React.createElement(
+        QueryClientProvider,
+        { client },
+        React.createElement(IssueSubscription, { ...scope, issueId })
+      )
+    );
+  await render();
+  return { environment, client, render };
 }
 
-test("issue subscription buttons keep translated accessible names in both states", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
-  subscriptions.length = 0;
-  subscribed = false;
-  await renderSubscription(environment);
-
+await test("issue subscription buttons keep accessible names after native Query updates", async (t) => {
+  const subscribe = t.mock.method(IssueService.prototype, "subscribeToIssueNotifications", async () => {});
+  const unsubscribe = t.mock.method(IssueService.prototype, "unsubscribeFromIssueNotifications", async () => {});
+  const { environment, client } = await fixture(t);
   let button = environment.container.querySelector("button");
-  assert.ok(button);
   assert.equal(button.getAttribute("aria-label"), "Subscribe");
   assert.equal(button.tabIndex, 0);
-  await React.act(async () => button.click());
-  assert.deepEqual(subscriptions, [["subscribe", "default", "project-id", "issue-id"]]);
-
-  subscribed = true;
-  await renderSubscription(environment);
+  await act(async () => button.click());
+  await settleQuery();
   button = environment.container.querySelector("button");
   assert.equal(button.getAttribute("aria-label"), "Unsubscribe");
-  await React.act(async () => button.click());
-  assert.deepEqual(subscriptions[1], ["unsubscribe", "default", "project-id", "issue-id"]);
+  assert.equal(client.getQueryData(issueSubscriptionOptions(scope).queryKey), true);
+  await act(async () => button.click());
+  await settleQuery();
+  assert.equal(client.getQueryData(issueSubscriptionOptions(scope).queryKey), false);
+  assert.deepEqual(subscribe.mock.calls[0].arguments, ["default", "project-id", "issue-id"]);
+  assert.deepEqual(unsubscribe.mock.calls[0].arguments, ["default", "project-id", "issue-id"]);
 });
 
-test("subscription action becomes disabled while saving and when the user cannot edit", async (t) => {
-  const environment = await createReactDomTestEnvironment();
-  t.after(() => environment.unmount());
-  subscriptions.length = 0;
-  subscribed = false;
-  let resolveAction;
-  pendingAction = new Promise((resolve) => {
-    resolveAction = resolve;
-  });
-  await renderSubscription(environment);
-
+await test("subscription action stays disabled during persistence and for a reader", async (t) => {
+  const pending = Promise.withResolvers();
+  const subscribe = t.mock.method(IssueService.prototype, "subscribeToIssueNotifications", () => pending.promise);
+  const { environment, client } = await fixture(t);
+  await act(async () => environment.container.querySelector("button").click());
+  await settleQuery();
   let button = environment.container.querySelector("button");
-  await React.act(async () => {
-    button.focus();
-    button.click();
-    await Promise.resolve();
-  });
-  button = environment.container.querySelector("button");
   assert.equal(button.disabled, true);
-  assert.equal(button.getAttribute("aria-label"), "Subscribe");
   assert.equal(button.textContent, "Loading");
-
-  await React.act(async () => resolveAction());
-  pendingAction = undefined;
-  globalThis.__subscriptionEditable = false;
-  await renderSubscription(environment);
+  await act(async () => pending.resolve());
+  await settleQuery();
+  await seedPermissionQueries(client, {
+    userId: "alice",
+    workspaceSlug: "default",
+    workspaceRole: webRequire("@plane/types").EUserWorkspaceRoles.MEMBER,
+    projectRoles: { "project-id": webRequire("@plane/types").EUserProjectRoles.GUEST },
+  });
+  await settleQuery();
   button = environment.container.querySelector("button");
   assert.equal(button.disabled, true);
-  await React.act(async () => button.click());
-  assert.equal(subscriptions.length, 1, "disabled controls do not trigger another subscription request");
+  await act(async () => button.click());
+  assert.equal(subscribe.mock.callCount(), 1);
+});
+
+await test("failed subscriptions retain confirmed state and allow retry", async (t) => {
+  const subscribe = t.mock.method(IssueService.prototype, "subscribeToIssueNotifications", async () => {
+    throw new Error("offline");
+  });
+  const { environment, client } = await fixture(t);
+  await act(async () => environment.container.querySelector("button").click());
+  await settleQuery();
+  assert.equal(client.getQueryData(issueSubscriptionOptions(scope).queryKey), false);
+  assert.equal(environment.container.querySelector("button").disabled, false);
+  assert.equal(state.toasts.at(-1).type, "error");
+  subscribe.mock.mockImplementation(async () => {});
+  await act(async () => environment.container.querySelector("button").click());
+  await settleQuery();
+  assert.equal(client.getQueryData(issueSubscriptionOptions(scope).queryKey), true);
+});
+
+await test("a late subscription response cannot toast in a replacement work item", async (t) => {
+  const pending = Promise.withResolvers();
+  t.mock.method(IssueService.prototype, "subscribeToIssueNotifications", () => pending.promise);
+  const { environment, client, render } = await fixture(t);
+  await act(async () => environment.container.querySelector("button").click());
+  await settleQuery();
+  client.setQueryData(issueSubscriptionOptions({ ...scope, issueId: "next" }).queryKey, false);
+  await render("next");
+  await act(async () => pending.resolve());
+  await settleQuery();
+  assert.equal(state.toasts.length, 0);
+  assert.equal(client.getQueryData(issueSubscriptionOptions({ ...scope, issueId: "next" }).queryKey), false);
+  assert.equal(environment.container.querySelector("button").getAttribute("aria-label"), "Subscribe");
 });

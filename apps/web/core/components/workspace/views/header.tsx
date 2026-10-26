@@ -6,40 +6,34 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import { DEFAULT_GLOBAL_VIEWS_LIST, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { DEFAULT_GLOBAL_VIEWS_LIST, EUserPermissions } from "@plane/constants";
 import { PlusIcon } from "@plane/propel/icons";
-import type { TStaticViewTypes } from "@plane/types";
+import type { IWorkspaceView, TStaticViewTypes } from "@plane/types";
 import { Header, EHeaderVariant } from "@plane/ui";
 // hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useWorkspaceViews } from "@/hooks/use-workspace-views";
 // local imports
 import { DefaultWorkspaceViewQuickActions } from "./default-view-quick-action";
 import { CreateUpdateWorkspaceViewModal } from "./modal";
 import { WorkspaceViewQuickActions } from "./quick-action";
 
-const ViewTab = observer(function ViewTab(props: { viewId: string }) {
-  const { viewId } = props;
+function ViewTab(props: { view: IWorkspaceView }) {
+  const { view } = props;
   // refs
   const parentRef = useRef<HTMLDivElement>(null);
   // router
   const { workspaceSlug, globalViewId } = useParams({ strict: false });
-  // store hooks
-  const { getViewDetailsById } = useGlobalView();
-
-  const view = getViewDetailsById(viewId);
-
-  if (!view || !workspaceSlug || !globalViewId) return null;
+  if (!workspaceSlug || !globalViewId) return null;
 
   return (
     <div ref={parentRef} className="relative">
       <WorkspaceViewQuickActions workspaceSlug={workspaceSlug?.toString()} view={view} />
     </div>
   );
-});
+}
 
 function DefaultViewTab(props: {
   tab: {
@@ -61,15 +55,14 @@ function DefaultViewTab(props: {
   );
 }
 
-export const GlobalViewsHeader = observer(function GlobalViewsHeader() {
+export function GlobalViewsHeader() {
   // states
   const [createViewModal, setCreateViewModal] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   // router
-  const { globalViewId } = useParams({ strict: false });
-  // store hooks
-  const { currentWorkspaceViews } = useGlobalView();
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug, globalViewId } = useParams({ strict: false });
+  const { views: currentWorkspaceViews } = useWorkspaceViews(workspaceSlug);
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
 
   // bring the active view to the centre of the header
   useEffect(() => {
@@ -84,10 +77,7 @@ export const GlobalViewsHeader = observer(function GlobalViewsHeader() {
     }
   }, [globalViewId, currentWorkspaceViews, containerRef]);
 
-  const isAuthorizedUser = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorizedUser = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <Header variant={EHeaderVariant.SECONDARY} className="z-[12] min-h-[44px] bg-surface-1">
@@ -96,12 +86,12 @@ export const GlobalViewsHeader = observer(function GlobalViewsHeader() {
         ref={containerRef}
         className="horizontal-scrollbar flex scrollbar-sm h-full w-full items-center overflow-x-auto overflow-y-hidden"
       >
-        {DEFAULT_GLOBAL_VIEWS_LIST.map((tab, index) => (
-          <DefaultViewTab key={`${tab.key}-${index}`} tab={tab} />
+        {DEFAULT_GLOBAL_VIEWS_LIST.map((tab) => (
+          <DefaultViewTab key={tab.key} tab={tab} />
         ))}
 
-        {currentWorkspaceViews?.map((viewId) => (
-          <ViewTab key={viewId} viewId={viewId} />
+        {currentWorkspaceViews?.map((view) => (
+          <ViewTab key={view.id} view={view} />
         ))}
       </div>
 
@@ -118,4 +108,4 @@ export const GlobalViewsHeader = observer(function GlobalViewsHeader() {
       )}
     </Header>
   );
-});
+}

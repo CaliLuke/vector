@@ -5,10 +5,7 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { observer } from "mobx-react";
 
-// store hooks
 // icons
 import {
   TagIcon,
@@ -34,88 +31,14 @@ import {
   RelatedIcon,
   WorkItemsIcon,
 } from "@plane/propel/icons";
-import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueActivity } from "@plane/types";
-import { renderFormattedDate, generateWorkItemLink, capitalizeFirstLetter } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { capitalizeFirstLetter } from "@plane/utils/string";
 // helpers
-import { useLabel } from "@/hooks/store/use-label";
-import { usePlatformOS } from "@/hooks/use-platform-os";
-// types
-
-export function IssueLink({ activity }: { activity: IIssueActivity }) {
-  // router params
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { isMobile } = usePlatformOS();
-
-  const workItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug?.toString() ?? activity.workspace_detail?.slug,
-    projectId: activity?.project,
-    issueId: activity?.issue,
-    projectIdentifier: activity?.project_detail?.identifier,
-    sequenceId: activity?.issue_detail?.sequence_id,
-  });
-
-  return (
-    <Tooltip
-      tooltipContent={activity?.issue_detail ? activity.issue_detail.name : "This work item has been deleted"}
-      isMobile={isMobile}
-    >
-      {activity?.issue_detail ? (
-        <a
-          aria-disabled={activity.issue === null}
-          href={workItemLink}
-          target={activity.issue === null ? "_self" : "_blank"}
-          rel={activity.issue === null ? "" : "noopener noreferrer"}
-          className="inline items-center gap-1 font-medium text-primary hover:underline"
-        >
-          <span className="whitespace-nowrap">{`${activity.project_detail.identifier}-${activity.issue_detail.sequence_id}`}</span>{" "}
-          <span className="font-regular break-all">{activity.issue_detail?.name}</span>
-        </a>
-      ) : (
-        <span className="inline-flex items-center gap-1 font-medium whitespace-nowrap text-primary">
-          {" a work item"}{" "}
-        </span>
-      )}
-    </Tooltip>
-  );
-}
-
-function UserLink({ activity }: { activity: IIssueActivity }) {
-  // router params
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-
-  return (
-    <a
-      href={`/${workspaceSlug ?? activity.workspace_detail?.slug}/profile/${
-        activity.new_identifier ?? activity.old_identifier
-      }`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center font-medium text-primary hover:underline"
-    >
-      {activity.new_value && activity.new_value !== "" ? activity.new_value : activity.old_value}
-    </a>
-  );
-}
-
-const LabelPill = observer(function LabelPill({ labelId, workspaceSlug }: { labelId: string; workspaceSlug: string }) {
-  // store hooks
-  const { workspaceLabels, fetchWorkspaceLabels } = useLabel();
-
-  useEffect(() => {
-    if (!workspaceLabels) fetchWorkspaceLabels(workspaceSlug);
-  }, [fetchWorkspaceLabels, workspaceLabels, workspaceSlug]);
-
-  return (
-    <span
-      className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
-      style={{
-        backgroundColor: workspaceLabels?.find((l) => l.id === labelId)?.color ?? "#000000",
-      }}
-      aria-hidden="true"
-    />
-  );
-});
+import { IssueLink, UserLink } from "./activity-links";
+export { IssueLink } from "./activity-links";
+import { ActivityLabelPill } from "./activity-label-pill";
+import { propertyActivityDetails } from "./activity-property";
 
 const inboxActivityMessage = {
   declined: {
@@ -157,6 +80,7 @@ const activityDetails: {
     icon: React.ReactNode;
   };
 } = {
+  ...propertyActivityDetails,
   assignees: {
     message: (activity, showIssue) => {
       if (activity.old_value === "")
@@ -328,7 +252,7 @@ const activityDetails: {
           <span className="overflow-hidden">
             added a new label{" "}
             <span className="inline-flex items-center gap-2 rounded-full border border-strong px-2 py-0.5 text-11">
-              <LabelPill labelId={activity.new_identifier ?? ""} workspaceSlug={workspaceSlug} />
+              <ActivityLabelPill labelId={activity.new_identifier ?? ""} workspaceSlug={workspaceSlug} />
               <span className="line-clamp-1 flex-shrink font-medium break-all text-primary">{activity.new_value}</span>
             </span>
             {showIssue && (
@@ -344,7 +268,7 @@ const activityDetails: {
           <>
             removed the label{" "}
             <span className="inline-flex items-center gap-2 rounded-full border border-strong px-2 py-0.5 text-11">
-              <LabelPill labelId={activity.old_identifier ?? ""} workspaceSlug={workspaceSlug} />
+              <ActivityLabelPill labelId={activity.old_identifier ?? ""} workspaceSlug={workspaceSlug} />
               <span className="line-clamp-1 flex-shrink font-medium break-all text-primary">{activity.old_value}</span>
             </span>
             {showIssue && (

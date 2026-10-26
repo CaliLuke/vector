@@ -6,24 +6,20 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { SquareUser } from "lucide-react";
 // Vector imports
-import { MODULE_STATUS, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { MODULE_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IModule } from "@plane/types";
-import { FavoriteStar } from "@plane/ui";
-import { renderFormattedPayloadDate, getDate } from "@plane/utils";
 // components
-import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 import { ModuleQuickActions } from "@/components/modules";
+import { ModuleDateRangeField } from "@/components/modules/module-date-range-field";
 import { ModuleStatusDropdown } from "@/components/modules/module-status-dropdown";
 import { useModuleActions } from "@/components/modules/use-module-actions";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUserPermissions } from "@/hooks/store/user";
+import { AuthorizedFavoriteStar } from "@/components/common/authorized-favorite-star";
 import { ButtonAvatars } from "../dropdowns/member/avatar";
 
 type Props = {
@@ -32,15 +28,21 @@ type Props = {
   parentRef: React.RefObject<HTMLDivElement | null>;
 };
 
-export const ModuleListItemAction = observer(function ModuleListItemAction(props: Props) {
+export const ModuleListItemAction = function ModuleListItemAction(props: Props) {
   const { moduleId, moduleDetails, parentRef } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { projectId } = useParams({ strict: false });
   //   store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { getUserDetails } = useMember();
-  const { handleAddToFavorites, handleRemoveFromFavorites, handleModuleDetailsChange } = useModuleActions({
+  const {
+    handleAddToFavorites,
+    handleRemoveFromFavorites,
+    handleModuleDetailsChange,
+    isFavorite,
+    isFavoritesReady,
+    isEditingAllowed,
+    getUserDetails,
+  } = useModuleActions({
     moduleId,
     workspaceSlug,
     projectId,
@@ -51,39 +53,19 @@ export const ModuleListItemAction = observer(function ModuleListItemAction(props
   // derived values
 
   const moduleStatus = MODULE_STATUS.find((status) => status.value === moduleDetails.status);
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
   const isDisabled = !isEditingAllowed || !!moduleDetails?.archived_at;
-  const renderIcon = Boolean(moduleDetails.start_date) || Boolean(moduleDetails.target_date);
 
   // handlers
   const moduleLeadDetails = moduleDetails.lead_id ? getUserDetails(moduleDetails.lead_id) : undefined;
 
   return (
     <>
-      <DateRangeDropdown
-        buttonContainerClassName={`h-6 w-full flex ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"} items-center gap-1.5 text-tertiary border-[0.5px] border-strong rounded-sm text-11`}
-        buttonVariant="transparent-with-text"
-        className="h-7"
-        value={{
-          from: getDate(moduleDetails.start_date),
-          to: getDate(moduleDetails.target_date),
-        }}
-        onSelect={(val) => {
-          handleModuleDetailsChange({
-            start_date: val?.from ? renderFormattedPayloadDate(val.from) : null,
-            target_date: val?.to ? renderFormattedPayloadDate(val.to) : null,
-          });
-        }}
+      <ModuleDateRangeField
+        moduleDetails={moduleDetails}
+        isDisabled={isDisabled}
+        handleModuleDetailsChange={handleModuleDetailsChange}
         mergeDates
-        placeholder={{
-          from: t("start_date"),
-          to: t("end_date"),
-        }}
-        disabled={isDisabled}
-        hideIcon={{ from: renderIcon ?? true, to: renderIcon }}
+        placeholder={{ from: t("start_date"), to: t("end_date") }}
       />
 
       {moduleStatus && (
@@ -96,7 +78,7 @@ export const ModuleListItemAction = observer(function ModuleListItemAction(props
 
       {moduleLeadDetails ? (
         <span className="cursor-default">
-          <ButtonAvatars showTooltip={false} userIds={moduleLeadDetails?.id} />
+          <ButtonAvatars showTooltip={false} userIds={moduleLeadDetails?.id} workspaceSlug={workspaceSlug} />
         </span>
       ) : (
         <Tooltip tooltipContent="No lead">
@@ -104,18 +86,18 @@ export const ModuleListItemAction = observer(function ModuleListItemAction(props
         </Tooltip>
       )}
 
-      {isEditingAllowed && !moduleDetails.archived_at && (
-        <FavoriteStar
-          onClick={(e) => {
-            if (moduleDetails.is_favorite) handleRemoveFromFavorites(e);
-            else handleAddToFavorites(e);
-          }}
-          selected={moduleDetails.is_favorite}
-        />
-      )}
+      <AuthorizedFavoriteStar
+        canFavorite={isEditingAllowed}
+        isReady={isFavoritesReady}
+        disabled={!!moduleDetails.archived_at}
+        onAdd={handleAddToFavorites}
+        onRemove={handleRemoveFromFavorites}
+        selected={isFavorite}
+      />
       {workspaceSlug && projectId && (
         <div className="hidden md:block">
           <ModuleQuickActions
+            module={moduleDetails}
             parentRef={parentRef}
             moduleId={moduleId}
             projectId={projectId.toString()}
@@ -125,4 +107,4 @@ export const ModuleListItemAction = observer(function ModuleListItemAction(props
       )}
     </>
   );
-});
+};

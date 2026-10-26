@@ -4,38 +4,44 @@
  * See the LICENSE file for details.
  */
 
+import { SitesFileService } from "@plane/services";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
+import { publishSettingsOptions } from "@/queries/publishing";
 import React, { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+
+import { useForm, useStore } from "@tanstack/react-form";
 import { MessageSquare, MoreVertical } from "lucide-react";
 import { Menu, Transition } from "@headlessui/react";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 import type { TIssuePublicComment } from "@plane/types";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text-editor";
 import { CommentReactions } from "@/components/issues/peek-overview/comment/comment-reactions";
 // helpers
 import { timeAgo } from "@/helpers/date-time.helper";
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
-import { useUser } from "@/hooks/store/use-user";
+import { commentMutationOptions } from "@/queries/issue-actions";
+import { EFileAssetType } from "@plane/types";
 import useIsInIframe from "@/hooks/use-is-in-iframe";
+
+const fileService = new SitesFileService();
 
 type Props = {
   anchor: string;
+  issueId: string;
   comment: TIssuePublicComment;
 };
 
-export const CommentCard = observer(function CommentCard(props: Props) {
-  const { anchor, comment } = props;
-  // store hooks
-  const { peekId, deleteIssueComment, updateIssueComment, uploadCommentAsset } = useIssueDetails();
-  const { data: currentUser } = useUser();
-  const { workspace: workspaceID } = usePublish(anchor);
+export const CommentCard = function CommentCard(props: Props) {
+  const { anchor, issueId, comment } = props;
+  const mutation = useMutation(commentMutationOptions(useQueryClient(), anchor, issueId));
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { workspace: workspaceID } = publishSettings ?? {};
   const isInIframe = useIsInIframe();
 
   // states
@@ -43,32 +49,33 @@ export const CommentCard = observer(function CommentCard(props: Props) {
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   const showEditorRef = useRef<EditorRefApi>(null);
-  // form info
-  const {
-    control,
-    formState: { isSubmitting },
-    handleSubmit,
-  } = useForm<TIssuePublicComment>({
+  const form = useForm({
     defaultValues: { comment_html: comment.comment_html },
+    onSubmit: async ({ value, formApi }) => {
+      if (!anchor || !issueId) return;
+      await mutation.mutateAsync({ kind: "update", id: comment.id, data: value });
+      formApi.reset(value);
+      setIsEditing(false);
+      showEditorRef.current?.setEditorValue(value.comment_html);
+    },
   });
-
-  const handleDelete = () => {
-    if (!anchor || !peekId) return;
-    deleteIssueComment(anchor, peekId, comment.id);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const submit = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    void form.handleSubmit().catch(() => {
+      // The mutation already reported the failed comment update.
+    });
   };
 
-  const handleCommentUpdate = async (formData: TIssuePublicComment) => {
-    if (!anchor || !peekId) return;
-    updateIssueComment(anchor, peekId, comment.id, formData);
-    setIsEditing(false);
-    editorRef.current?.setEditorValue(formData.comment_html);
-    showEditorRef.current?.setEditorValue(formData.comment_html);
+  const handleDelete = () => {
+    if (!anchor || !issueId) return;
+    mutation.mutate({ kind: "delete", id: comment.id });
   };
 
   return (
     <div className="relative flex items-start space-x-3">
       <div className="relative px-1">
-        {comment.actor_detail.avatar_url && comment.actor_detail.avatar_url !== "" ? (
+        {comment.actor_detail.avatar_url ? (
           <img
             src={getFileURL(comment.actor_detail.avatar_url)}
             alt={
@@ -102,29 +109,28 @@ export const CommentCard = observer(function CommentCard(props: Props) {
           </p>
         </div>
         <div className="issue-comments-section p-0">
-          <form
-            onSubmit={handleSubmit(handleCommentUpdate)}
-            className={`flex-col gap-2 ${isEditing ? "flex" : "hidden"}`}
-          >
+          <form onSubmit={submit} className={`flex-col gap-2 ${isEditing ? "flex" : "hidden"}`}>
             <div>
-              <Controller
-                control={control}
-                name="comment_html"
-                render={({ field: { onChange, value } }) => (
+              <form.Field name="comment_html">
+                {(field) => (
                   <LiteTextEditor
                     editable
                     anchor={anchor}
                     workspaceId={workspaceID?.toString() ?? ""}
-                    onEnterKeyPress={handleSubmit(handleCommentUpdate)}
+                    onEnterKeyPress={submit}
                     ref={editorRef}
                     id={comment.id}
-                    initialValue={value}
+                    initialValue={field.state.value}
                     value={null}
-                    onChange={(comment_json, comment_html) => onChange(comment_html)}
+                    onChange={(comment_json, comment_html) => field.handleChange(comment_html)}
                     isSubmitting={isSubmitting}
                     showSubmitButton={false}
                     uploadFile={async (blockId, file) => {
-                      const { asset_id } = await uploadCommentAsset(file, anchor, comment.id);
+                      const { asset_id } = await fileService.uploadAsset(
+                        anchor,
+                        { entity_identifier: comment.id, entity_type: EFileAssetType.COMMENT_DESCRIPTION },
+                        file
+                      );
                       return asset_id;
                     }}
                     displayConfig={{
@@ -132,7 +138,7 @@ export const CommentCard = observer(function CommentCard(props: Props) {
                     }}
                   />
                 )}
-              />
+              </form.Field>
             </div>
             <div className="flex gap-1 self-end">
               <button
@@ -144,6 +150,7 @@ export const CommentCard = observer(function CommentCard(props: Props) {
               </button>
               <button
                 type="button"
+                disabled={isSubmitting}
                 className="group shadow-md rounded-sm border border-danger-strong bg-danger-primary p-2 duration-300 hover:bg-danger-primary-hover"
                 onClick={() => setIsEditing(false)}
               >
@@ -163,7 +170,7 @@ export const CommentCard = observer(function CommentCard(props: Props) {
                 fontSize: "small-font",
               }}
             />
-            <CommentReactions anchor={anchor} commentId={comment.id} />
+            <CommentReactions anchor={anchor} issueId={issueId} comment={comment} />
           </div>
         </div>
       </div>
@@ -193,6 +200,8 @@ export const CommentCard = observer(function CommentCard(props: Props) {
                     <button
                       type="button"
                       onClick={() => {
+                        form.reset({ comment_html: comment.comment_html });
+                        editorRef.current?.setEditorValue(comment.comment_html);
                         setIsEditing(true);
                       }}
                       className={`w-full truncate rounded-sm px-1 py-1.5 text-left text-secondary select-none hover:bg-layer-transparent-hover ${
@@ -209,6 +218,7 @@ export const CommentCard = observer(function CommentCard(props: Props) {
                   <div className="py-1">
                     <button
                       type="button"
+                      disabled={mutation.isPending}
                       onClick={handleDelete}
                       className={`w-full truncate rounded-sm px-1 py-1.5 text-left text-secondary select-none hover:bg-layer-transparent-hover ${
                         active ? "bg-layer-transparent-hover" : ""
@@ -225,4 +235,4 @@ export const CommentCard = observer(function CommentCard(props: Props) {
       )}
     </div>
   );
-});
+};

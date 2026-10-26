@@ -4,15 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 import type { IEditorPropsExtended } from "@plane/editor";
 import type { TSearchEntityRequestPayload, TSearchResponse } from "@plane/types";
-import type { TPageInstance } from "@/store/pages/base-page";
-import type { EPageStoreType } from "@/hooks/store";
 
 export type TExtendedEditorExtensionsHookParams = {
   workspaceSlug: string;
-  page: TPageInstance;
-  storeType: EPageStoreType;
+  page: TPage;
   fetchEntity: (payload: TSearchEntityRequestPayload) => Promise<TSearchResponse>;
   getRedirectionLink: (pageId?: string) => string;
   extensionHandlers?: Map<string, unknown>;

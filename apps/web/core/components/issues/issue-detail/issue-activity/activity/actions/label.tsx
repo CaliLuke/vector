@@ -4,25 +4,22 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 import { LabelPropertyIcon } from "@plane/propel/icons";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useLabel } from "@/hooks/store/use-label";
+import type { TIssueActivity } from "@plane/types";
+import { useProjectLabels } from "@/hooks/use-labels";
 // components
 import { IssueActivityBlockComponent, IssueLink, LabelActivityChip } from "./";
 
-type TIssueLabelActivity = { activityId: string; showIssue?: boolean; ends: "top" | "bottom" | undefined };
+type TIssueLabelActivity = { activity: TIssueActivity; showIssue?: boolean; ends: "top" | "bottom" | undefined };
 
-export const IssueLabelActivity = observer(function IssueLabelActivity(props: TIssueLabelActivity) {
-  const { activityId, showIssue = true, ends } = props;
+export const IssueLabelActivity = function IssueLabelActivity(props: TIssueLabelActivity) {
+  const { activity, showIssue = true, ends } = props;
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-  const { getLabelById } = useLabel();
+  const { getLabelById } = useProjectLabels(workspaceSlug, projectId);
 
-  const activity = getActivityById(activityId);
   const oldLabelColor = getLabelById(activity?.old_identifier ?? "")?.color;
   const newLabelColor = getLabelById(activity?.new_identifier ?? "")?.color;
 
@@ -30,7 +27,7 @@ export const IssueLabelActivity = observer(function IssueLabelActivity(props: TI
   return (
     <IssueActivityBlockComponent
       icon={<LabelPropertyIcon height={14} width={14} className="text-secondary" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
@@ -40,8 +37,8 @@ export const IssueLabelActivity = observer(function IssueLabelActivity(props: TI
           color={activity.old_value === "" ? newLabelColor : oldLabelColor}
         />
         {showIssue && (activity.old_value === "" ? ` to ` : ` from `)}
-        {showIssue && <IssueLink activityId={activityId} />}
+        {showIssue && <IssueLink activity={activity} />}
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

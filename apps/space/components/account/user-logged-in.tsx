@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
 import { PlaneLockup } from "@plane/propel/icons";
 // assets
 import UserLoggedInImage from "@/app/assets/user-logged-in.svg?url";
@@ -12,11 +13,9 @@ import UserLoggedInImage from "@/app/assets/user-logged-in.svg?url";
 import { PoweredBy } from "@/components/common/powered-by";
 import { UserAvatar } from "@/components/issues/navbar/user-avatar";
 // hooks
-import { useUser } from "@/hooks/store/use-user";
 
-export const UserLoggedIn = observer(function UserLoggedIn() {
-  // store hooks
-  const { data: user } = useUser();
+export const UserLoggedIn = function UserLoggedIn() {
+  const { data: user } = useQuery(currentUserOptions);
 
   if (!user) return null;
 
@@ -44,4 +43,4 @@ export const UserLoggedIn = observer(function UserLoggedIn() {
       <PoweredBy />
     </div>
   );
-});
+};

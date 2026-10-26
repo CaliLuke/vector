@@ -4,25 +4,31 @@
  * See the LICENSE file for details.
  */
 
+import type { CommentActions } from "@/components/comments/types";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
 import { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 // plane imports
 import { EIssueCommentAccessSpecifier } from "@plane/constants";
+import { EFileAssetType } from "@plane/types";
 import type { EditorRefApi } from "@plane/editor";
-import type { TIssueComment, TCommentsOperations } from "@plane/types";
-import { cn, isCommentEmpty } from "@plane/utils";
+
+import { cn } from "@plane/utils/common";
+import { isCommentEmpty } from "@plane/utils/string";
+import { FormErrors } from "@plane/ui";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
 // services
 import { FileService } from "@/services/file.service";
 
 type TCommentCreate = {
+  canSubmit?: boolean;
   entityId: string;
   workspaceSlug: string;
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   showToolbarInitially?: boolean;
   projectId?: string;
   onSubmitCallback?: (elementId: string) => void;
@@ -31,8 +37,9 @@ type TCommentCreate = {
 // services
 const fileService = new FileService();
 
-export const CommentCreate = observer(function CommentCreate(props: TCommentCreate) {
+export const CommentCreate = function CommentCreate(props: TCommentCreate) {
   const {
+    canSubmit = true,
     workspaceSlug,
     entityId,
     activityOperations,
@@ -40,119 +47,123 @@ export const CommentCreate = observer(function CommentCreate(props: TCommentCrea
     projectId,
     onSubmitCallback,
   } = props;
+  const scopeIsCurrent = useCommittedScope(JSON.stringify([workspaceSlug, projectId, entityId]));
   // states
   const [uploadedAssetIds, setUploadedAssetIds] = useState<string[]>([]);
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   // store hooks
-  const workspaceStore = useWorkspace();
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
   // derived values
-  const workspaceId = workspaceStore.getWorkspaceBySlug(workspaceSlug)?.id as string;
-  // form info
-  const {
-    handleSubmit,
-    control,
-    watch,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<Partial<TIssueComment>>({
-    defaultValues: {
-      comment_html: "<p></p>",
+  const workspaceId = workspaceDetails?.id ?? "";
+  const attachmentRequest = (assetIds: string[]) => ({
+    assetIds,
+    workspaceSlug,
+    projectId,
+    entityId,
+    isVerified: activityOperations.isVerified,
+    isCurrent: () => scopeIsCurrent() && activityOperations.isCurrent(),
+  });
+  const attachments = useMutation({
+    mutationFn: async (request: ReturnType<typeof attachmentRequest>) => {
+      if (!request.isVerified()) throw new Error("Reload your access before saving comment attachments.");
+      if (request.projectId)
+        await fileService.updateBulkProjectAssetsUploadStatus(
+          request.workspaceSlug,
+          request.projectId,
+          request.entityId,
+          { asset_ids: request.assetIds }
+        );
+      else
+        await fileService.updateBulkWorkspaceAssetsUploadStatus(request.workspaceSlug, request.entityId, {
+          asset_ids: request.assetIds,
+        });
+      return request;
+    },
+    onSuccess: (request) => {
+      if (request.isCurrent()) setUploadedAssetIds((current) => current.filter((id) => !request.assetIds.includes(id)));
     },
   });
-
-  const onSubmit = async (formData: Partial<TIssueComment>) => {
-    try {
-      const comment = await activityOperations.createComment(formData);
-      if (comment?.id) onSubmitCallback?.(comment.id);
-      if (uploadedAssetIds.length > 0) {
-        if (projectId) {
-          await fileService.updateBulkProjectAssetsUploadStatus(workspaceSlug, projectId.toString(), entityId, {
-            asset_ids: uploadedAssetIds,
-          });
-        } else {
-          await fileService.updateBulkWorkspaceAssetsUploadStatus(workspaceSlug, entityId, {
-            asset_ids: uploadedAssetIds,
-          });
-        }
-        setUploadedAssetIds([]);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      reset({
-        comment_html: "<p></p>",
-      });
-      editorRef.current?.clearEditor();
-    }
+  const retryAttachments = () => {
+    if (attachments.variables) attachments.mutate(attachmentRequest(attachments.variables.assetIds));
   };
-
-  const commentHTML = watch("comment_html");
-  const isEmpty = isCommentEmpty(commentHTML ?? undefined);
+  const form = useForm({
+    defaultValues: { comment_html: "<p></p>", access: EIssueCommentAccessSpecifier.INTERNAL },
+    onSubmit: async ({ value, formApi }) => {
+      if (!canSubmit || !editorRef.current?.isEditorReadyToDiscard() || attachments.isPending || attachments.isError)
+        throw new Error("Finish the comment editor and attachment operation before sending.");
+      const comment = await activityOperations.createComment(value);
+      if (!comment?.id) throw new Error("Comment creation did not return a saved comment.");
+      if (!scopeIsCurrent() || !activityOperations.isCurrent()) return;
+      formApi.reset();
+      editorRef.current?.clearEditor();
+      onSubmitCallback?.(comment.id);
+      if (uploadedAssetIds.length) attachments.mutate(attachmentRequest([...uploadedAssetIds]));
+    },
+  });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   return (
-    <div
-      className={cn("sticky bottom-0 z-[4] bg-surface-1 sm:static")}
-      onKeyDown={(e) => {
-        if (
-          e.key === "Enter" &&
-          !e.shiftKey &&
-          !e.ctrlKey &&
-          !e.metaKey &&
-          !isEmpty &&
-          !isSubmitting &&
-          editorRef.current?.isEditorReadyToDiscard()
-        )
-          handleSubmit(onSubmit)(e);
-      }}
-    >
-      <Controller
-        name="access"
-        control={control}
-        render={({ field: { onChange: onAccessChange, value: accessValue } }) => (
-          <Controller
+    <div className={cn("sticky bottom-0 z-[4] bg-surface-1 sm:static")}>
+      {attachments.isError && (
+        <div role="alert">
+          Your comment was posted, but its attachments could not be saved.
+          <button type="button" onClick={retryAttachments}>
+            Retry attachments
+          </button>
+        </div>
+      )}
+      <form.Field name="access">
+        {(access) => (
+          <form.Field
             name="comment_html"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <LiteTextEditor
-                editable
-                workspaceId={workspaceId}
-                id={"add_comment_" + entityId}
-                value={"<p></p>"}
-                workspaceSlug={workspaceSlug}
-                projectId={projectId}
-                onEnterKeyPress={(e) => {
-                  if (!isEmpty && !isSubmitting) {
-                    handleSubmit(onSubmit)(e);
-                  }
-                }}
-                ref={editorRef}
-                initialValue={value ?? "<p></p>"}
-                containerClassName="min-h-min"
-                onChange={(comment_json, comment_html) => onChange(comment_html)}
-                accessSpecifier={accessValue ?? EIssueCommentAccessSpecifier.INTERNAL}
-                handleAccessChange={onAccessChange}
-                isSubmitting={isSubmitting}
-                uploadFile={async (blockId, file) => {
-                  const { asset_id } = await activityOperations.uploadCommentAsset(blockId, file);
-                  setUploadedAssetIds((prev) => [...prev, asset_id]);
-                  return asset_id;
-                }}
-                duplicateFile={async (assetId: string) => {
-                  const { asset_id } = await activityOperations.duplicateCommentAsset(assetId);
-                  setUploadedAssetIds((prev) => [...prev, asset_id]);
-                  return asset_id;
-                }}
-                showToolbarInitially={showToolbarInitially}
-                parentClassName="p-2"
-                displayConfig={{
-                  fontSize: "small-font",
-                }}
-              />
+            validators={{
+              onSubmit: ({ value }) => {
+                if (!canSubmit) return "Reload the discussion before sending.";
+                if (isCommentEmpty(value)) return "Enter a comment before sending.";
+                if (!editorRef.current?.isEditorReadyToDiscard()) return "Comment editor is still loading.";
+                if (attachments.isPending || attachments.isError)
+                  return "Finish the comment attachment operation first.";
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <>
+                <LiteTextEditor
+                  editable
+                  workspaceId={workspaceId}
+                  id={"add_comment_" + entityId}
+                  value={"<p></p>"}
+                  workspaceSlug={workspaceSlug}
+                  projectId={projectId}
+                  onEnterKeyPress={(e) => {
+                    e?.preventDefault();
+                    form.setErrorMap({ onSubmit: undefined });
+                    void form.handleSubmit().catch(() => {});
+                  }}
+                  ref={editorRef}
+                  initialValue={field.state.value}
+                  containerClassName="min-h-min"
+                  onChange={(_comment_json, comment_html) => field.handleChange(comment_html)}
+                  accessSpecifier={access.state.value}
+                  handleAccessChange={access.handleChange}
+                  isSubmitting={!canSubmit || isSubmitting || attachments.isPending || attachments.isError}
+                  fileAsset={{ entity_identifier: "", entity_type: EFileAssetType.COMMENT_DESCRIPTION }}
+                  onAssetUpload={(assetId) => setUploadedAssetIds((prev) => [...prev, assetId])}
+
+                  showToolbarInitially={showToolbarInitially}
+                  parentClassName="p-2"
+                  displayConfig={{
+                    fontSize: "small-font",
+                  }}
+                />
+                <FormErrors errors={field.state.meta.errors} />
+              </>
             )}
-          />
+          </form.Field>
         )}
-      />
+      </form.Field>
     </div>
   );
-});
+};

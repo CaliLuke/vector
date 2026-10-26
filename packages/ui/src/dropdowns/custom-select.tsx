@@ -75,12 +75,14 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
     const handleKeyDown = useDropdownKeyDown(openDropdown, closeDropdown, isOpen);
     useOutsideClickDetector(dropdownRef, closeDropdown);
 
-    const toggleDropdown = useCallback(
-      (headlessOpen = isOpen) => {
+    const handleButtonClick = useCallback(
+      (event: React.MouseEvent<HTMLButtonElement>, headlessOpen: boolean) => {
+        // Headless UI handles pointer activation; only synthesize non-pointer clicks here.
+        if (event.detail > 0) return;
         if (headlessOpen) closeDropdown();
         else openDropdown();
       },
-      [closeDropdown, isOpen, openDropdown]
+      [closeDropdown, openDropdown]
     );
 
     const handleCustomButtonKeyDown = useDropdownButtonKeyDown(
@@ -116,7 +118,7 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
                     ref={setButtonRef}
                     type="button"
                     className={customButtonClassName}
-                    onClick={() => toggleDropdown(open)}
+                    onClick={(event) => handleButtonClick(event, open)}
                     onKeyDown={handleCustomButtonKeyDown}
                     disabled={customButtonDisabled}
                   >
@@ -132,7 +134,7 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
                           ? "cursor-not-allowed text-secondary"
                           : "cursor-pointer hover:bg-layer-transparent-hover"
                       } ${customButtonClassName}`}
-                      onClick={() => toggleDropdown(open)}
+                      onClick={(event) => handleButtonClick(event, open)}
                     >
                       {customButton}
                     </button>
@@ -153,7 +155,7 @@ const CustomSelect = React.forwardRef<HTMLButtonElement, ICustomSelectProps>(
                       },
                       buttonClassName
                     )}
-                    onClick={() => toggleDropdown(open)}
+                    onClick={(event) => handleButtonClick(event, open)}
                   >
                     {label}
                     {!noChevron && !disabled && <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />}

@@ -8,7 +8,7 @@ import { ListFilter } from "lucide-react";
 import { getButtonStyling } from "@plane/propel/button";
 // plane imports
 import { ChevronDownIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { FiltersDropdown } from "@/components/issues/issue-layouts/filters";
 // hooks

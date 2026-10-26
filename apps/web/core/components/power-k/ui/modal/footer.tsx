@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { ToggleSwitch } from "@plane/ui";
@@ -15,7 +14,7 @@ type Props = {
   onWorkspaceLevelChange: (value: boolean) => void;
 };
 
-export const PowerKModalFooter = observer(function PowerKModalFooter(props: Props) {
+export const PowerKModalFooter = function PowerKModalFooter(props: Props) {
   const { isWorkspaceLevel, projectId, onWorkspaceLevelChange } = props;
   // translation
   const { t } = useTranslation();
@@ -34,4 +33,4 @@ export const PowerKModalFooter = observer(function PowerKModalFooter(props: Prop
       </div>
     </div>
   );
-});
+};

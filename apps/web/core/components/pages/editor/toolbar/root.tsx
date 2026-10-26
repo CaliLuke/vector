@@ -4,34 +4,35 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
 import { PanelRight } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { PageToolbar } from "@/components/pages/editor/toolbar";
 // hooks
 import { usePageFilters } from "@/hooks/use-page-filters";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
+import { usePageRecord } from "@/components/pages/page-record-context";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type Props = {
   handleOpenNavigationPane: () => void;
   isNavigationPaneOpen: boolean;
-  page: TPageInstance;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageEditorToolbarRoot = observer(function PageEditorToolbarRoot(props: Props) {
-  const { handleOpenNavigationPane, isNavigationPaneOpen, page } = props;
+export function PageEditorToolbarRoot(props: Props) {
+  const { handleOpenNavigationPane, isNavigationPaneOpen, page, workspaceSlug } = props;
   // translation
   const { t } = useTranslation();
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
   // derived values
-  const {
-    isContentEditable,
-    editor: { editorRef },
-  } = page;
+  const { editorRef } = usePageRecord();
   // page filters
   const { isFullWidth, isStickyToolbarEnabled } = usePageFilters();
   // derived values
@@ -87,4 +88,4 @@ export const PageEditorToolbarRoot = observer(function PageEditorToolbarRoot(pro
       )}
     </>
   );
-});
+}

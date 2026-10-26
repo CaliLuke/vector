@@ -5,65 +5,52 @@
  */
 
 import { useMemo } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
 // components
-import { EUserPermissionsLevel } from "@plane/constants";
 import type { IState, TStateOperationsCallbacks } from "@plane/types";
 import { EUserProjectRoles } from "@plane/types";
 import { ProjectStateLoader, GroupList } from "@/components/project-states";
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 type TProjectState = {
   workspaceSlug: string;
   projectId: string;
 };
 
-export const ProjectStateRoot = observer(function ProjectStateRoot(props: TProjectState) {
+export function ProjectStateRoot(props: TProjectState) {
   const { workspaceSlug, projectId } = props;
   // hooks
-  const {
-    groupedProjectStates,
-    fetchProjectStates,
-    createState,
-    moveStatePosition,
-    updateState,
-    deleteState,
-    markStateAsDefault,
-  } = useProjectState();
-  const { allowPermissions } = useUserPermissions();
+  const stateQuery = useProjectStates(workspaceSlug, projectId);
+  const { groupedProjectStates, createState, moveStatePosition, updateState, deleteState, markStateAsDefault } =
+    stateQuery;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const isEditable = allowPermissions(
-    [EUserProjectRoles.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
-
-  // Fetching all project states
-  useSWR(
-    workspaceSlug && projectId ? `PROJECT_STATES_${workspaceSlug}_${projectId}` : null,
-    workspaceSlug && projectId ? () => fetchProjectStates(workspaceSlug.toString(), projectId.toString()) : null,
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
+  const isEditable = canProject([EUserProjectRoles.ADMIN]);
 
   // State operations callbacks
   const stateOperationsCallbacks: TStateOperationsCallbacks = useMemo(
     () => ({
-      createState: async (data: Partial<IState>) => createState(workspaceSlug, projectId, data),
-      updateState: async (stateId: string, data: Partial<IState>) =>
-        updateState(workspaceSlug, projectId, stateId, data),
-      deleteState: async (stateId: string) => deleteState(workspaceSlug, projectId, stateId),
-      moveStatePosition: async (stateId: string, data: Partial<IState>) =>
-        moveStatePosition(workspaceSlug, projectId, stateId, data),
-      markStateAsDefault: async (stateId: string) => markStateAsDefault(workspaceSlug, projectId, stateId),
+      createState: (data: Partial<IState>) => createState(data),
+      updateState: (stateId: string, data: Partial<IState>) => updateState(stateId, data),
+      deleteState: (stateId: string) => deleteState(stateId),
+      moveStatePosition: (stateId: string, data: Partial<IState>) => moveStatePosition(stateId, data),
+      markStateAsDefault: (stateId: string) => markStateAsDefault(stateId),
     }),
-    [workspaceSlug, projectId, createState, moveStatePosition, updateState, deleteState, markStateAsDefault]
+    [createState, moveStatePosition, updateState, deleteState, markStateAsDefault]
   );
 
   // Loader
+  if (stateQuery.isError) {
+    return (
+      <div role="alert" className="flex items-center gap-3">
+        <p>Unable to load project states.</p>
+        <button disabled={stateQuery.isFetching} onClick={() => void stateQuery.refetch()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
   if (!groupedProjectStates) return <ProjectStateLoader />;
 
   return (
@@ -74,4 +61,4 @@ export const ProjectStateRoot = observer(function ProjectStateRoot(props: TProje
       shouldTrackEvents
     />
   );
-});
+}

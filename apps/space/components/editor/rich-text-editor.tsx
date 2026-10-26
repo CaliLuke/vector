@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery } from "@tanstack/react-query";
 import { forwardRef } from "react";
 // plane imports
 import { RichTextEditorWithRef } from "@plane/editor";
@@ -12,10 +13,8 @@ import type { MakeOptional } from "@plane/types";
 // helpers
 import { getEditorFileHandlers } from "@/helpers/editor.helper";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { membersOptions } from "@/queries/lookups";
 import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
-// plane web imports
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
 // local imports
 import { EditorMentionsRoot } from "./embeds/mentions";
 
@@ -47,25 +46,22 @@ export const RichTextEditor = forwardRef(function RichTextEditor(
     disabledExtensions: additionalDisabledExtensions = [],
     ...rest
   } = props;
-  // store hooks
-  const { getMemberById } = useMember();
+  const { data: members = [] } = useQuery(membersOptions(anchor));
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
     anchor,
   });
-  // editor flaggings
-  const { richText: richTextEditorExtensions } = useEditorFlagging(anchor);
 
   return (
     <RichTextEditorWithRef
       mentionHandler={{
         renderComponent: (props) => <EditorMentionsRoot {...props} />,
         getMentionedEntityDetails: (id: string) => ({
-          display_name: getMemberById(id)?.member__display_name ?? "",
+          display_name: members.find((item) => item.member === id)?.member__display_name ?? "",
         }),
       }}
       ref={ref}
-      disabledExtensions={[...richTextEditorExtensions.disabled, ...additionalDisabledExtensions]}
+      disabledExtensions={additionalDisabledExtensions}
       editable={editable}
       fileHandler={getEditorFileHandlers({
         anchor,
@@ -73,7 +69,7 @@ export const RichTextEditor = forwardRef(function RichTextEditor(
         workspaceId,
       })}
       getEditorMetaData={getEditorMetaData}
-      flaggedExtensions={richTextEditorExtensions.flagged}
+      flaggedExtensions={[]}
       extendedEditorProps={{}}
       {...rest}
       containerClassName={containerClassName}

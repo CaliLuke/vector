@@ -4,88 +4,56 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 // components
-import type { TSupportedFilterTypeForUpdate } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { ChevronLeftIcon, ChevronRightIcon } from "@plane/propel/icons";
-import type { TSupportedFilterForUpdate } from "@plane/types";
+import type { IIssueDisplayFilterOptions } from "@plane/types";
 import { Row } from "@plane/ui";
 // icons
-import { useCalendarView } from "@/hooks/store/use-calendar-view";
-import type { ICycleIssuesFilter } from "@/store/issue/cycle";
-import type { IModuleIssuesFilter } from "@/store/issue/module";
-import type { IProjectIssuesFilter } from "@/store/issue/project";
-import type { IProjectViewIssuesFilter } from "@/store/issue/project-views";
+import type { TCalendarDates } from "@/providers/issue-layout-ui-state";
+import type { ICalendarWeek } from "@plane/types";
 import { CalendarMonthsDropdown, CalendarOptionsDropdown } from "./dropdowns";
+import type { TCalendarDisplayFilterUpdate } from "@/hooks/use-calendar-display-filter-update";
+import { shiftCalendarDate } from "./calendar-state";
 
 interface ICalendarHeader {
-  issuesFilterStore: IProjectIssuesFilter | IModuleIssuesFilter | ICycleIssuesFilter | IProjectViewIssuesFilter;
-  updateFilters?: (
-    projectId: string,
-    filterType: TSupportedFilterTypeForUpdate,
-    filters: TSupportedFilterForUpdate
-  ) => Promise<void>;
+  displayFilters: IIssueDisplayFilterOptions;
+  updateFilters: TCalendarDisplayFilterUpdate;
   setSelectedDate: (date: Date) => void;
+  activeMonthDate: Date;
+  activeWeekDate: Date;
+  activeWeek: ICalendarWeek | undefined;
+  updateCalendarDates: (filters: Partial<TCalendarDates>) => void;
 }
 
-export const CalendarHeader = observer(function CalendarHeader(props: ICalendarHeader) {
-  const { issuesFilterStore, updateFilters, setSelectedDate } = props;
+export const CalendarHeader = function CalendarHeader(props: ICalendarHeader) {
+  const {
+    displayFilters,
+    updateFilters,
+    setSelectedDate,
+    activeMonthDate,
+    activeWeekDate,
+    activeWeek,
+    updateCalendarDates,
+  } = props;
 
   const { t } = useTranslation();
 
-  const issueCalendarView = useCalendarView();
-
-  const calendarLayout = issuesFilterStore.issueFilters?.displayFilters?.calendar?.layout ?? "month";
-
-  const { activeMonthDate, activeWeekDate } = issueCalendarView.calendarFilters;
+  const calendarLayout = displayFilters.calendar?.layout ?? "month";
 
   const handlePrevious = () => {
     if (calendarLayout === "month") {
-      const previousMonthYear =
-        activeMonthDate.getMonth() === 0 ? activeMonthDate.getFullYear() - 1 : activeMonthDate.getFullYear();
-      const previousMonthMonth = activeMonthDate.getMonth() === 0 ? 11 : activeMonthDate.getMonth() - 1;
-
-      const previousMonthFirstDate = new Date(previousMonthYear, previousMonthMonth, 1);
-
-      issueCalendarView.updateCalendarFilters({
-        activeMonthDate: previousMonthFirstDate,
-      });
+      updateCalendarDates({ activeMonthDate: shiftCalendarDate(activeMonthDate, -1, "month") });
     } else {
-      const previousWeekDate = new Date(
-        activeWeekDate.getFullYear(),
-        activeWeekDate.getMonth(),
-        activeWeekDate.getDate() - 7
-      );
-
-      issueCalendarView.updateCalendarFilters({
-        activeWeekDate: previousWeekDate,
-      });
+      updateCalendarDates({ activeWeekDate: shiftCalendarDate(activeWeekDate, -1, "week") });
     }
   };
 
   const handleNext = () => {
     if (calendarLayout === "month") {
-      const nextMonthYear =
-        activeMonthDate.getMonth() === 11 ? activeMonthDate.getFullYear() + 1 : activeMonthDate.getFullYear();
-      const nextMonthMonth = (activeMonthDate.getMonth() + 1) % 12;
-
-      const nextMonthFirstDate = new Date(nextMonthYear, nextMonthMonth, 1);
-
-      issueCalendarView.updateCalendarFilters({
-        activeMonthDate: nextMonthFirstDate,
-      });
+      updateCalendarDates({ activeMonthDate: shiftCalendarDate(activeMonthDate, 1, "month") });
     } else {
-      const nextWeekDate = new Date(
-        activeWeekDate.getFullYear(),
-        activeWeekDate.getMonth(),
-        activeWeekDate.getDate() + 7
-      );
-
-      issueCalendarView.updateCalendarFilters({
-        activeWeekDate: nextWeekDate,
-      });
+      updateCalendarDates({ activeWeekDate: shiftCalendarDate(activeWeekDate, 1, "week") });
     }
   };
 
@@ -93,10 +61,7 @@ export const CalendarHeader = observer(function CalendarHeader(props: ICalendarH
     const today = new Date();
     const firstDayOfCurrentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    issueCalendarView.updateCalendarFilters({
-      activeMonthDate: firstDayOfCurrentMonth,
-      activeWeekDate: today,
-    });
+    updateCalendarDates({ activeMonthDate: firstDayOfCurrentMonth, activeWeekDate: today });
     setSelectedDate(today);
   };
 
@@ -109,7 +74,12 @@ export const CalendarHeader = observer(function CalendarHeader(props: ICalendarH
         <button type="button" className="grid place-items-center" onClick={handleNext}>
           <ChevronRightIcon height={16} width={16} strokeWidth={2} />
         </button>
-        <CalendarMonthsDropdown issuesFilterStore={issuesFilterStore} />
+        <CalendarMonthsDropdown
+          displayFilters={displayFilters}
+          activeMonthDate={activeMonthDate}
+          activeWeek={activeWeek}
+          updateCalendarDates={updateCalendarDates}
+        />
       </div>
       <div className="flex items-center gap-1.5">
         <button
@@ -119,8 +89,8 @@ export const CalendarHeader = observer(function CalendarHeader(props: ICalendarH
         >
           {t("common.today")}
         </button>
-        <CalendarOptionsDropdown issuesFilterStore={issuesFilterStore} updateFilters={updateFilters} />
+        <CalendarOptionsDropdown displayFilters={displayFilters} updateFilters={updateFilters} />
       </div>
     </Row>
   );
-});
+};

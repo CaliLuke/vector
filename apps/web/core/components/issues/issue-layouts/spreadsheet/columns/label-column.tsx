@@ -5,11 +5,11 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // types
 import type { TIssue } from "@plane/types";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
+import { useProjectLabels } from "@/hooks/use-labels";
 // components
 import { IssuePropertyLabels } from "../../properties";
 
@@ -20,10 +20,12 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetLabelColumn = observer(function SpreadsheetLabelColumn(props: Props) {
+export function SpreadsheetLabelColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
   // hooks
-  const { labelMap } = useLabel();
+  const { workspaceSlug } = useParams({ strict: false });
+  const { labelsById } = useProjectLabels(workspaceSlug, issue.project_id);
+  const labelMap = labelsById ?? {};
 
   const defaultLabelOptions =
     issue?.label_ids?.flatMap((id) => {
@@ -51,4 +53,4 @@ export const SpreadsheetLabelColumn = observer(function SpreadsheetLabelColumn(p
       />
     </div>
   );
-});
+}

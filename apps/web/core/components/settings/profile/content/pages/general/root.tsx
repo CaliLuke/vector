@@ -4,26 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 // components
 import { PageHead } from "@/components/core/page-title";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // local imports
 import { GeneralProfileSettingsForm } from "./form";
 
-export const GeneralProfileSettings = observer(function GeneralProfileSettings() {
+export function GeneralProfileSettings() {
   const { t } = useTranslation();
   // store hooks
-  const { data: currentUser, userProfile } = useUser();
+  const { data: currentUser } = useCurrentUser();
 
   if (!currentUser) return null;
 
   return (
     <>
       <PageHead title={`${t("profile.label")} - ${t("general_settings")}`} />
-      <GeneralProfileSettingsForm user={currentUser} profile={userProfile.data} />
+      <GeneralProfileSettingsForm key={currentUser.id} user={currentUser} />
     </>
   );
-});
+}

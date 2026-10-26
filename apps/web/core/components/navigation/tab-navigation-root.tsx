@@ -6,16 +6,15 @@
 
 import { useParams, useLocation, Link, useNavigate } from "@tanstack/react-router";
 import React, { useEffect } from "react";
-import { observer } from "mobx-react";
 
-import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TabNavigationList, TabNavigationItem } from "@plane/propel/tab-navigation";
 import type { EUserProjectRoles } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { LeaveProjectModal } from "../project/leave-project-modal";
 import { PublishProjectModal } from "../project/publish-project/modal";
@@ -47,7 +46,7 @@ type TTabNavigationRootProps = {
   projectId: string;
 };
 
-export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTabNavigationRootProps) {
+export const TabNavigationRoot = function TabNavigationRoot(props: TTabNavigationRootProps) {
   const { workspaceSlug, projectId } = props;
   const { workItem: workItemIdentifierFromRoute } = useParams({ strict: false });
   const location = useLocation();
@@ -56,11 +55,11 @@ export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTab
   const { t } = useTranslation();
 
   // Store hooks
-  const { getPartialProjectById } = useProject();
-  const { allowPermissions } = useUserPermissions();
-  const {
-    issue: { getIssueIdByIdentifier, getIssueById },
-  } = useIssueDetail();
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const [projectIdentifier, sequenceId] = (workItemIdentifierFromRoute?.toString() ?? "").split("-");
+  const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequenceId, projectId);
 
   // Tab preferences hook
   const { tabPreferences, handleToggleDefaultTab, handleHideTab, handleShowTab } = useTabPreferences(
@@ -69,18 +68,15 @@ export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTab
   );
 
   // Derived values
-  const workItemId = workItemIdentifierFromRoute
-    ? getIssueIdByIdentifier(workItemIdentifierFromRoute?.toString())
-    : undefined;
-  const workItem = workItemId ? getIssueById(workItemId) : undefined;
-  const project = getPartialProjectById(projectId);
+  const workItem = detail.issue;
+  const workItemId = workItem?.id;
+  const project = projectRows?.find((candidate) => candidate.id === projectId);
 
   // Navigation items hook
   const navigationItems = useNavigationItems({
     workspaceSlug,
     projectId,
     project,
-    allowPermissions,
   });
 
   // Active tab hook
@@ -152,19 +148,9 @@ export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTab
   if (!project) return null;
 
   // Permission checks
-  const isAdmin = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug.toString(),
-    project?.id
-  );
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
-  const isAuthorized = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug.toString(),
-    project?.id
-  );
+  const isAuthorized = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <>
@@ -255,4 +241,4 @@ export const TabNavigationRoot = observer(function TabNavigationRoot(props: TTab
       </div>
     </>
   );
-});
+};

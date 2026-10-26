@@ -5,18 +5,18 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // types
 import type { TIssue } from "@plane/types";
 // helpers
 import { Row } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 
 type Props = {
   issue: TIssue;
 };
 
-export const SpreadsheetCreatedOnColumn = observer(function SpreadsheetCreatedOnColumn(props: Props) {
+export const SpreadsheetCreatedOnColumn = function SpreadsheetCreatedOnColumn(props: Props) {
   const { issue } = props;
 
   return (
@@ -24,4 +24,4 @@ export const SpreadsheetCreatedOnColumn = observer(function SpreadsheetCreatedOn
       {renderFormattedDate(issue.created_at)}
     </Row>
   );
-});
+};

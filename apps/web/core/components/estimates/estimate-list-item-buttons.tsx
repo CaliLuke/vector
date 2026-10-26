@@ -4,20 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { PROJECT_SETTINGS_TRACKER_ELEMENTS } from "@plane/constants";
 import { TrashIcon } from "@plane/propel/icons";
 
 type TEstimateListItem = {
   estimateId: string;
   isAdmin: boolean;
-  isEstimateEnabled: boolean;
   isEditable: boolean;
-  onEditClick?: (estimateId: string) => void;
   onDeleteClick?: (estimateId: string) => void;
 };
 
-export const EstimateListItemButtons = observer(function EstimateListItemButtons(props: TEstimateListItem) {
+export function EstimateListItemButtons(props: TEstimateListItem) {
   const { estimateId, isAdmin, isEditable, onDeleteClick } = props;
 
   if (!isAdmin || !isEditable) return <></>;
@@ -32,4 +29,4 @@ export const EstimateListItemButtons = observer(function EstimateListItemButtons
       </button>
     </div>
   );
-});
+}

@@ -45,7 +45,10 @@ func (r *Repository) Get(ctx context.Context, user, id uuid.UUID) (json.RawMessa
 }
 func (r *Repository) Create(ctx context.Context, user uuid.UUID, label, description, token string, expiredAt *string) (json.RawMessage, error) {
 	var b []byte
-	err := r.database.QueryRow(ctx, `INSERT INTO api_tokens (label,description,user_id,token,user_type,created_by_id,expired_at) VALUES ($1,$2,$3,$4,(SELECT CASE WHEN is_bot THEN 1 ELSE 0 END FROM users WHERE id=$3),$3,$5) RETURNING `+tokenFullJSON, label, description, user, token, expiredAt).Scan(&b)
+	err := r.database.QueryRow(ctx, `INSERT INTO api_tokens
+ (id,created_at,updated_at,label,description,user_id,token,user_type,created_by_id,expired_at,is_active,is_service,allowed_rate_limit)
+ VALUES ($6,now(),now(),$1,$2,$3,$4,(SELECT CASE WHEN is_bot THEN 1 ELSE 0 END FROM users WHERE id=$3),$3,$5,true,false,'60/min')
+ RETURNING `+tokenFullJSON, label, description, user, token, expiredAt, uuid.New()).Scan(&b)
 	return b, err
 }
 func (r *Repository) Patch(ctx context.Context, user, id uuid.UUID, label, description *string) (json.RawMessage, error) {

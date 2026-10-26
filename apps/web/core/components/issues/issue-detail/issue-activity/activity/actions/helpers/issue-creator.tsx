@@ -6,21 +6,16 @@
 
 // hooks
 import { Link } from "@tanstack/react-router";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 
 type TIssueUser = {
-  activityId: string;
+  activity: TIssueActivity;
   customUserName?: string;
 };
 
 export function IssueCreatorDisplay(props: TIssueUser) {
-  const { activityId, customUserName } = props;
+  const { activity, customUserName } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
 

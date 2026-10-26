@@ -4,9 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo } from "react";
-import uniq from "lodash-es/uniq";
-import { observer } from "mobx-react";
+import { discussionOwnerKey } from "@/queries/issue-discussion";
+
 // plane package imports
 import type { TActivityFilters } from "@plane/constants";
 import { E_SORT_ORDER, defaultActivityFilters } from "@plane/constants";
@@ -14,13 +13,14 @@ import { useLocalStorage } from "@plane/hooks";
 // i18n
 import { useTranslation } from "@plane/i18n";
 //types
-import type { TFileSignedURLResponse, TIssueComment } from "@plane/types";
 // components
 import { CommentCreate } from "@/components/comments/comment-create";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail } from "@/hooks/use-projects";
 // local imports
 import { IssueActivityCommentRoot } from "./activity-comment-root";
+import { useIssueDiscussion } from "@/hooks/use-issue-discussion";
+import type { TIssueServiceType } from "@plane/types";
 import { useWorkItemCommentOperations } from "./helper";
 import { ActivitySortRoot } from "./sort-root";
 import { ActivityFilterRoot } from "./filter-root";
@@ -29,42 +29,36 @@ type TIssueActivity = {
   workspaceSlug: string;
   projectId: string;
   issueId: string;
+  serviceType?: TIssueServiceType;
   disabled?: boolean;
   isIntakeIssue?: boolean;
 };
 
-export type TActivityOperations = {
-  createComment: (data: Partial<TIssueComment>) => Promise<TIssueComment>;
-  updateComment: (commentId: string, data: Partial<TIssueComment>) => Promise<void>;
-  removeComment: (commentId: string) => Promise<void>;
-  uploadCommentAsset: (blockId: string, file: File, commentId?: string) => Promise<TFileSignedURLResponse>;
-};
-
-export const IssueActivity = observer(function IssueActivity(props: TIssueActivity) {
+export const IssueActivity = function IssueActivity(props: TIssueActivity) {
   const { workspaceSlug, projectId, issueId, disabled = false, isIntakeIssue = false } = props;
   // i18n
   const { t } = useTranslation();
   // hooks
   const { setValue: setFilterValue, storedValue: selectedFilters } = useLocalStorage(
-    "issue_activity_filters",
+    "issue_activitynextFilters",
     defaultActivityFilters
   );
   const { setValue: setSortOrder, storedValue: sortOrder } = useLocalStorage("activity_sort_order", E_SORT_ORDER.ASC);
 
-  const { getProjectById } = useProject();
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
 
   // toggle filter
   const toggleFilter = (filter: TActivityFilters) => {
     if (!selectedFilters) return;
-    let _filters = [];
+    let nextFilters = [];
     if (selectedFilters.includes(filter)) {
-      if (selectedFilters.length === 1) return selectedFilters; // Ensure at least one filter is applied
-      _filters = selectedFilters.filter((f) => f !== filter);
+      if (selectedFilters.length === 1) return; // Ensure at least one filter is applied
+      nextFilters = selectedFilters.filter((f) => f !== filter);
     } else {
-      _filters = [...selectedFilters, filter];
+      nextFilters = [...selectedFilters, filter];
     }
 
-    setFilterValue(uniq(_filters));
+    setFilterValue([...new Set(nextFilters)]);
   };
 
   const toggleSortOrder = () => {
@@ -72,25 +66,29 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
   };
 
   // helper hooks
-  const activityOperations = useWorkItemCommentOperations(workspaceSlug, projectId, issueId);
+  const discussion = useIssueDiscussion({ workspaceSlug, projectId, issueId, serviceType: props.serviceType });
+  const activityOperations = useWorkItemCommentOperations(workspaceSlug, projectId, issueId, discussion);
 
-  const project = getProjectById(projectId);
-  const renderCommentCreationBox = useMemo(
-    () => (
-      <CommentCreate
-        workspaceSlug={workspaceSlug}
-        entityId={issueId}
-        activityOperations={activityOperations}
-        showToolbarInitially
-        projectId={projectId}
-      />
-    ),
-    [workspaceSlug, issueId, activityOperations, projectId]
+  const project = projectQuery.data;
+  const canCompose = !disabled && Boolean(discussion.scope.accountId);
+  const renderCommentCreationBox = (
+    <CommentCreate
+      key={discussionOwnerKey(discussion.scope)}
+      canSubmit={!discussion.isPending && !discussion.isError}
+      workspaceSlug={workspaceSlug}
+      entityId={issueId}
+      activityOperations={activityOperations}
+      showToolbarInitially
+      projectId={projectId}
+    />
   );
-  if (!project) return <></>;
-
   return (
     <div className="space-y-4">
+      {projectQuery.isError && (
+        <button type="button" onClick={() => void projectQuery.retryAccess()}>
+          {t("retry")}
+        </button>
+      )}
       {/* header */}
       <div className="flex items-center justify-between">
         <div className="text-h5-medium text-primary">{t("common.activity")}</div>
@@ -109,22 +107,23 @@ export const IssueActivity = observer(function IssueActivity(props: TIssueActivi
       <div className="space-y-3">
         <div className="min-h-[200px]">
           <div className="space-y-3">
-            {!disabled && sortOrder === E_SORT_ORDER.DESC && renderCommentCreationBox}
+            {canCompose && sortOrder === E_SORT_ORDER.DESC && renderCommentCreationBox}
             <IssueActivityCommentRoot
+              discussion={discussion}
               projectId={projectId}
               workspaceSlug={workspaceSlug}
               isIntakeIssue={isIntakeIssue}
               issueId={issueId}
               selectedFilters={selectedFilters || defaultActivityFilters}
               activityOperations={activityOperations}
-              showAccessSpecifier={!!project.anchor}
+              showAccessSpecifier={!!project?.anchor}
               disabled={disabled}
               sortOrder={sortOrder || E_SORT_ORDER.ASC}
             />
-            {!disabled && sortOrder === E_SORT_ORDER.ASC && renderCommentCreationBox}
+            {canCompose && sortOrder === E_SORT_ORDER.ASC && renderCommentCreationBox}
           </div>
         </div>
       </div>
     </div>
   );
-});
+};

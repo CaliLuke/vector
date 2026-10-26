@@ -7,7 +7,6 @@
 export * from "./applied-filters";
 export * from "./dropdowns";
 export * from "./select";
-export * from "./sidebar-select";
 export * from "./delete-module-modal";
 export * from "./form";
 export * from "./gantt-chart";

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { Form } from "../form-fields/root";
 import { Dialog, Transition } from "@headlessui/react";
 import React, { Fragment } from "react";
 // constants
@@ -19,6 +20,28 @@ type Props = {
   width?: EModalWidth;
   className?: string;
 };
+
+type ModalFormProps = Omit<Props, "isOpen"> & {
+  busy: boolean;
+  onSubmit: () => Promise<void>;
+};
+
+export function ModalForm({ busy, onSubmit, handleClose, children, ...modalProps }: ModalFormProps) {
+  return (
+    <ModalCore
+      {...modalProps}
+      isOpen
+      handleClose={() => {
+        if (!busy) handleClose?.();
+      }}
+    >
+      <Form noValidate onSubmit={onSubmit}>
+        {children}
+      </Form>
+    </ModalCore>
+  );
+}
+
 export function ModalCore(props: Props) {
   const {
     children,

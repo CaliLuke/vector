@@ -995,3 +995,487 @@ func EncodeDescriptionVersionDetailError(encoder func(context.Context, http.Resp
 		}
 	}
 }
+
+// EncodePropertyHistoryResponse returns an encoder for responses returned by
+// the work_item_history property_history endpoint.
+func EncodePropertyHistoryResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*workitemhistory.WorkItemHistoryResponseMetadata)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_history", "*workitemhistory.WorkItemHistoryResponseMetadata", v)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", res.ContentType)
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+}
+
+// DecodePropertyHistoryRequest returns a decoder for requests sent to the
+// work_item_history property_history endpoint.
+func DecodePropertyHistoryRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*workitemhistory.PropertyHistoryPayload, error) {
+	return func(r *http.Request) (*workitemhistory.PropertyHistoryPayload, error) {
+		var payload *workitemhistory.PropertyHistoryPayload
+		var err error
+		var (
+			slug                         string
+			projectID                    string
+			workItemID                   string
+			planeSessionCookieCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		projectID = params["project_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		workItemID = params["work_item_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		{
+			c, cookieErr := r.Cookie("session-id")
+			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
+				return payload, cookieErr
+			}
+			var planeSessionCookieCredentialRaw string
+			planeSessionCookieCredentialPresent := c != nil
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredentialRaw = c.Value
+			}
+
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredential = &planeSessionCookieCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewPropertyHistoryPayload(slug, projectID, workItemID, planeSessionCookieCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodePropertyHistoryError returns an encoder for errors returned by the
+// property_history work_item_history endpoint.
+func EncodePropertyHistoryError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "status_400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "status_401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "status_403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "status_404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "status_500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodePropertyVersionsResponse returns an encoder for responses returned by
+// the work_item_history property_versions endpoint.
+func EncodePropertyVersionsResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*workitemhistory.WorkItemHistoryResponseMetadata)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_versions", "*workitemhistory.WorkItemHistoryResponseMetadata", v)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", res.ContentType)
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+}
+
+// DecodePropertyVersionsRequest returns a decoder for requests sent to the
+// work_item_history property_versions endpoint.
+func DecodePropertyVersionsRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*workitemhistory.PropertyVersionsPayload, error) {
+	return func(r *http.Request) (*workitemhistory.PropertyVersionsPayload, error) {
+		var payload *workitemhistory.PropertyVersionsPayload
+		var err error
+		var (
+			slug                         string
+			projectID                    string
+			workItemID                   string
+			propertyID                   string
+			before                       *string
+			planeSessionCookieCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		projectID = params["project_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		workItemID = params["work_item_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		propertyID = params["property_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("property_id", propertyID, loom.FormatUUID))
+		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
+		if queryErr != nil {
+			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			beforeRaw := qp.Get("before")
+			beforePresent := qp.Has("before")
+
+			if beforePresent {
+				before = &beforeRaw
+			}
+		}
+		{
+			c, cookieErr := r.Cookie("session-id")
+			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
+				return payload, cookieErr
+			}
+			var planeSessionCookieCredentialRaw string
+			planeSessionCookieCredentialPresent := c != nil
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredentialRaw = c.Value
+			}
+
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredential = &planeSessionCookieCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewPropertyVersionsPayload(slug, projectID, workItemID, propertyID, before, planeSessionCookieCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodePropertyVersionsError returns an encoder for errors returned by the
+// property_versions work_item_history endpoint.
+func EncodePropertyVersionsError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "status_400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "status_401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "status_403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "status_404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "status_500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
+// EncodePropertyVersionDetailResponse returns an encoder for responses
+// returned by the work_item_history property_version_detail endpoint.
+func EncodePropertyVersionDetailResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		res, ok := v.(*workitemhistory.WorkItemHistoryResponseMetadata)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_version_detail", "*workitemhistory.WorkItemHistoryResponseMetadata", v)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", res.ContentType)
+		w.WriteHeader(http.StatusOK)
+		return nil
+	}
+}
+
+// DecodePropertyVersionDetailRequest returns a decoder for requests sent to
+// the work_item_history property_version_detail endpoint.
+func DecodePropertyVersionDetailRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*workitemhistory.PropertyVersionDetailPayload, error) {
+	return func(r *http.Request) (*workitemhistory.PropertyVersionDetailPayload, error) {
+		var payload *workitemhistory.PropertyVersionDetailPayload
+		var err error
+		var (
+			slug                         string
+			projectID                    string
+			workItemID                   string
+			propertyID                   string
+			pk                           string
+			planeSessionCookieCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		projectID = params["project_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		workItemID = params["work_item_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		propertyID = params["property_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("property_id", propertyID, loom.FormatUUID))
+		pk = params["pk"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("pk", pk, loom.FormatUUID))
+		{
+			c, cookieErr := r.Cookie("session-id")
+			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
+				return payload, cookieErr
+			}
+			var planeSessionCookieCredentialRaw string
+			planeSessionCookieCredentialPresent := c != nil
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredentialRaw = c.Value
+			}
+
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredential = &planeSessionCookieCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewPropertyVersionDetailPayload(slug, projectID, workItemID, propertyID, pk, planeSessionCookieCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodePropertyVersionDetailError returns an encoder for errors returned by
+// the property_version_detail work_item_history endpoint.
+func EncodePropertyVersionDetailError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "status_400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "status_401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "status_403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "status_404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "status_500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(*workitemhistory.WorkItemHistoryErrorResponse)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			ctx = context.WithValue(ctx, loomhttp.ContentTypeKey, "application/json")
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res.Body
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}

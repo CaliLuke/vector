@@ -5,35 +5,11 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-// hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { ProjectIssueLayout } from "../../project-issue-layout";
 // local imports
-import { ProjectIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseListRoot } from "../base-list-root";
 
-export const ProfileIssuesListLayout = observer(function ProfileIssuesListLayout() {
-  // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+export function ProfileIssuesListLayout() {
   const { profileViewId } = useParams({ strict: false });
-  // store
-  const { allowPermissions } = useUserPermissions();
-
-  const canEditPropertiesBasedOnProject = (projectId: string) =>
-    allowPermissions(
-      [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-      EUserPermissionsLevel.PROJECT,
-      workspaceSlug.toString(),
-      projectId
-    );
-
-  return (
-    <BaseListRoot
-      QuickActions={ProjectIssueQuickActions}
-      canEditPropertiesBasedOnProject={canEditPropertiesBasedOnProject}
-      viewId={profileViewId?.toString()}
-    />
-  );
-});
+  return <ProjectIssueLayout Layout={BaseListRoot} viewId={profileViewId?.toString()} />;
+}

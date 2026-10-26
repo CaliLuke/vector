@@ -4,189 +4,141 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+import { useState } from "react";
+
+import { useForm, useStore } from "@tanstack/react-form";
 import { ImageIcon } from "lucide-react";
 // plane imports
-import { E_PASSWORD_STRENGTH } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IUser } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
-import { cn, getFileURL, getPasswordStrength, validatePersonName } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
+import { isPasswordConfirmationValid } from "@plane/utils/auth";
+import { validatePersonName } from "@plane/utils/validation";
 // components
 import { UserImageUploadModal } from "@/components/core/modals/user-image-upload-modal";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
-import { useUser, useUserProfile } from "@/hooks/store/user";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
+import { useCurrentUser, useUpdateCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateUserProfile } from "@/hooks/use-current-user-profile";
 // services
-import { AuthService } from "@/services/auth.service";
+import { authService } from "@/services/auth.service";
 // local components
 import { CommonOnboardingHeader } from "../common";
 import { MarketingConsent } from "./consent";
 import { SetPasswordRoot } from "./set-password";
 
 type Props = {
-  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => void;
+  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => Promise<void>;
 };
 
-export type TProfileSetupFormValues = {
-  first_name: string;
-  last_name: string;
-  avatar_url?: string | null;
-  password?: string;
-  confirm_password?: string;
-  role?: string;
-  use_case?: string[];
-  has_marketing_email_consent?: boolean;
-};
-
-const authService = new AuthService();
-
-const defaultValues: Partial<TProfileSetupFormValues> = {
-  first_name: "",
-  last_name: "",
-  avatar_url: "",
-  password: undefined,
-  confirm_password: undefined,
-  has_marketing_email_consent: true,
-};
-
-export const ProfileSetupStep = observer(function ProfileSetupStep({ handleStepChange }: Props) {
+export const ProfileSetupStep = function ProfileSetupStep({ handleStepChange }: Props) {
   // states
   const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState(false);
   // store hooks
-  const { data: user, updateCurrentUser } = useUser();
-  const { updateUserProfile } = useUserProfile();
-  const { config: instanceConfig } = useInstance();
-  // form info
-  const {
-    getValues,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting, isValid },
-  } = useForm<TProfileSetupFormValues>({
+  const { data: user } = useCurrentUser();
+  const { mutateAsync: updateCurrentUser } = useUpdateCurrentUser();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
+  const { data: instanceConfig } = useQuery(instanceConfigOptions);
+  const form = useForm({
     defaultValues: {
-      ...defaultValues,
-      first_name: user?.first_name,
-      last_name: user?.last_name,
-      avatar_url: user?.avatar_url,
+      first_name: user?.first_name ?? "",
+      last_name: user?.last_name ?? "",
+      avatar_url: user?.avatar_url ?? "",
+      password: "",
+      confirm_password: "",
+      has_marketing_email_consent: true,
     },
-    mode: "onChange",
-  });
-  // derived values
-  const userAvatar = watch("avatar_url");
-
-  const handleSetPassword = async (password: string) => {
-    const token = await authService.requestCSRFToken().then((data) => data?.csrf_token);
-    await authService.setPassword(token, { password });
-  };
-
-  const handleSubmitUserDetail = async (formData: TProfileSetupFormValues) => {
-    const userDetailsPayload: Partial<IUser> = {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      avatar_url: formData.avatar_url ?? undefined,
-    };
-    try {
-      await Promise.all([
-        updateCurrentUser(userDetailsPayload),
-        formData.password && handleSetPassword(formData.password),
-      ]);
-    } catch {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "User details update failed. Please try again!",
-      });
-    }
-  };
-
-  const onSubmit = async (formData: TProfileSetupFormValues) => {
-    if (!user) return;
-    updateUserProfile({
-      has_marketing_email_consent: formData.has_marketing_email_consent,
-    });
-    await handleSubmitUserDetail(formData);
-    handleStepChange(EOnboardingSteps.PROFILE_SETUP);
-  };
-
-  const handleDelete = (url: string | null | undefined) => {
-    if (!url) return;
-    setValue("avatar_url", "");
-  };
-
-  // derived values
-  const isPasswordAlreadySetup = !user?.is_password_autoset;
-  const currentPassword = watch("password") || undefined;
-  const currentConfirmPassword = watch("confirm_password") || undefined;
-
-  const isValidPassword = useMemo(() => {
-    if (currentPassword) {
-      if (
-        currentPassword === currentConfirmPassword &&
-        getPasswordStrength(currentPassword) === E_PASSWORD_STRENGTH.STRENGTH_VALID
-      ) {
-        return true;
-      } else {
-        return false;
+    validators: {
+      onChange: ({ value }) =>
+        user?.is_password_autoset &&
+        (value.password || value.confirm_password) &&
+        !isPasswordConfirmationValid(value.password, value.confirm_password)
+          ? "Use a strong password and matching confirmation."
+          : undefined,
+      onSubmit: () => (user ? undefined : "Profile information is still loading."),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      if (!user) return;
+      try {
+        await updateCurrentUser({
+          first_name: value.first_name,
+          last_name: value.last_name,
+          avatar_url: value.avatar_url,
+        });
+        await updateUserProfile({ has_marketing_email_consent: value.has_marketing_email_consent });
+        if (user.is_password_autoset && value.password) {
+          const { csrf_token } = await authService.requestCSRFToken();
+          if (!csrf_token) throw new Error("CSRF token not found");
+          await authService.setPassword(csrf_token, { password: value.password });
+          formApi.setFieldValue("password", "");
+          formApi.setFieldValue("confirm_password", "");
+        }
+        await handleStepChange(EOnboardingSteps.PROFILE_SETUP);
+      } catch (error) {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Error", message: "Profile setup failed. Please try again." });
+        throw error;
       }
-    } else {
-      return true;
-    }
-  }, [currentPassword, currentConfirmPassword]);
-
-  // Check for all available fields validation and if password field is available, then checks for password validation (strength + confirmation).
-  // Also handles the condition for optional password i.e if password field is optional it only checks for above validation if it's not empty.
-  const isButtonDisabled =
-    !isSubmitting && isValid ? (isPasswordAlreadySetup ? false : isValidPassword ? false : true) : true;
-
+    },
+  });
+  const { isSubmitting, canSubmit, values, errors } = useStore(form.store, (state) => ({
+    isSubmitting: state.isSubmitting,
+    canSubmit: state.canSubmit,
+    values: state.values,
+    errors: state.errors,
+  }));
+  const userAvatar = values.avatar_url;
+  const isPasswordAlreadySetup = !user?.is_password_autoset;
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit().catch(() => {
+          // The failed profile step is already reported with a toast.
+        });
+      }}
+      className="flex flex-col gap-10"
+    >
       {/* Header */}
       <CommonOnboardingHeader title="Create your profile." description="This is how you will appear in Vector." />
 
       {/* Profile Picture Section */}
-      <Controller
-        control={control}
-        name="avatar_url"
-        render={({ field: { onChange, value } }) => (
+      <form.Field name="avatar_url">
+        {(field) => (
           <UserImageUploadModal
             isOpen={isImageUploadModalOpen}
             onClose={() => setIsImageUploadModalOpen(false)}
-            handleRemove={async () => handleDelete(getValues("avatar_url"))}
+            handleRemove={async () => field.handleChange("")}
             onSuccess={(url) => {
-              onChange(url);
-              setIsImageUploadModalOpen(false);
+              field.handleChange(url);
             }}
-            value={value && value.trim() !== "" ? value : null}
+            value={field.state.value || null}
           />
         )}
-      />
+      </form.Field>
       <div className="flex items-center gap-4">
         <button
           className="flex size-12 items-center justify-center rounded-full bg-accent-primary text-18 font-semibold text-on-color"
           type="button"
+          disabled={isSubmitting}
           onClick={() => setIsImageUploadModalOpen(true)}
         >
           {userAvatar ? (
             <img
               src={getFileURL(userAvatar ?? "")}
-              onClick={() => setIsImageUploadModalOpen(true)}
               alt={user?.display_name}
               className="h-full w-full rounded-full object-cover"
             />
           ) : (
-            <>{watch("first_name")[0] ?? "R"}</>
+            <>{values.first_name[0] ?? "R"}</>
           )}
         </button>
-        <input type="file" className="hidden" id="profile-image-input" />
         <button
           className="flex items-center gap-1.5 px-2 py-1 text-13 text-tertiary hover:text-secondary"
           type="button"
+          disabled={isSubmitting}
           onClick={() => setIsImageUploadModalOpen(true)}
         >
           <ImageIcon className="size-4" />
@@ -203,63 +155,82 @@ export const ProfileSetupStep = observer(function ProfileSetupStep({ handleStepC
           >
             Name
           </label>
-          <Controller
-            control={control}
+          <form.Field
             name="first_name"
-            rules={{
-              required: "Name is required",
-              validate: validatePersonName,
-              maxLength: {
-                value: 50,
-                message: "Name must be within 50 characters.",
+            validators={{
+              onChange: ({ value }) => {
+                if (!value.trim()) return "Name is required";
+                if (value.length > 50) return "Name must be within 50 characters.";
+                const valid = validatePersonName(value);
+                return valid === true ? undefined : valid;
               },
             }}
-            render={({ field: { value, onChange, ref } }) => (
-              <input
-                ref={ref}
-                id="first_name"
-                name="first_name"
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                autoFocus
-                className={cn(
-                  "w-full rounded-md border border-strong bg-surface-1 px-3 py-2 text-secondary transition-all duration-200 placeholder:text-placeholder focus:border-transparent focus:ring-2 focus:ring-accent-strong focus:outline-none",
-                  {
-                    "border-strong": !errors.first_name,
-                    "border-danger-strong": errors.first_name,
-                  }
-                )}
-                placeholder="Enter your full name"
-                autoComplete="on"
-              />
+          >
+            {(field) => (
+              <>
+                <input
+                  id={field.name}
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  disabled={isSubmitting}
+                  autoFocus
+                  className={cn(
+                    "w-full rounded-md border border-strong bg-surface-1 px-3 py-2 text-secondary placeholder:text-placeholder focus:ring-2 focus:ring-accent-strong focus:outline-none",
+                    { "border-danger-strong": field.state.meta.errors.length > 0 }
+                  )}
+                  placeholder="Enter your full name"
+                  autoComplete="name"
+                />
+                {field.state.meta.errors.map((error) => (
+                  <span key={String(error)} role="alert" className="text-13 text-danger-primary">
+                    {error}
+                  </span>
+                ))}
+              </>
             )}
-          />
-          {errors.first_name && <span className="text-13 text-danger-primary">{errors.first_name.message}</span>}
+          </form.Field>
         </div>
 
         {/* setting up password for the first time */}
         {!isPasswordAlreadySetup && (
           <SetPasswordRoot
-            onPasswordChange={(password) => setValue("password", password)}
-            onConfirmPasswordChange={(confirm_password) => setValue("confirm_password", confirm_password)}
+            password={values.password}
+            confirmPassword={values.confirm_password}
+            disabled={isSubmitting}
+            onPasswordChange={(password) => form.setFieldValue("password", password)}
+            onConfirmPasswordChange={(confirm_password) => form.setFieldValue("confirm_password", confirm_password)}
           />
         )}
       </div>
+      {errors.map((error) => (
+        <p key={error} role="alert" className="text-13 text-danger-primary">
+          {error}
+        </p>
+      ))}
       {/* Continue Button */}
-      <Button variant="primary" type="submit" className="w-full" size="xl" disabled={isButtonDisabled}>
+      <Button
+        variant="primary"
+        type="submit"
+        className="w-full"
+        size="xl"
+        loading={isSubmitting}
+        disabled={!canSubmit || isSubmitting || !values.first_name.trim()}
+      >
         Continue
       </Button>
 
       {/* Marketing Consent */}
       {!instanceConfig?.is_self_managed && (
         <MarketingConsent
-          isChecked={!!watch("has_marketing_email_consent")}
+          disabled={isSubmitting}
+          isChecked={values.has_marketing_email_consent}
           handleChange={(has_marketing_email_consent) =>
-            setValue("has_marketing_email_consent", has_marketing_email_consent)
+            form.setFieldValue("has_marketing_email_consent", has_marketing_email_consent)
           }
         />
       )}
     </form>
   );
-});
+};

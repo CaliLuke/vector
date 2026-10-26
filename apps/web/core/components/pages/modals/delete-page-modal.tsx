@@ -4,41 +4,38 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 import { useParams, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 // ui
 
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { AlertModalCore } from "@plane/ui";
-import { getPageName } from "@plane/utils";
+import { getPageName } from "@plane/utils/page";
 // constants
 // plane web hooks
 
-import type { EPageStoreType } from "@/hooks/store";
-import { usePageStore } from "@/hooks/store";
+import { useDeleteProjectPage } from "@/hooks/use-project-pages";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type TConfirmPageDeletionProps = {
   isOpen: boolean;
   onClose: () => void;
-  page: TPageInstance;
-  storeType: EPageStoreType;
+  page: TPage;
+  projectId?: string;
+  workspaceSlug: string;
 };
 
-export const DeletePageModal = observer(function DeletePageModal(props: TConfirmPageDeletionProps) {
-  const { isOpen, onClose, page, storeType } = props;
+export function DeletePageModal(props: TConfirmPageDeletionProps) {
+  const { isOpen, onClose, page, projectId, workspaceSlug } = props;
   // states
-  const [isDeleting, setIsDeleting] = useState(false);
   // store hooks
-  const { removePage } = usePageStore(storeType);
+  const remove = useDeleteProjectPage(workspaceSlug, projectId ?? page.project_ids?.[0], page.id);
 
   // derived values
   const { id: pageId, name } = page;
 
   const handleClose = () => {
-    setIsDeleting(false);
     onClose();
   };
 
@@ -47,29 +44,22 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
 
   const handleDelete = async () => {
     if (!pageId) return;
-    setIsDeleting(true);
-    await removePage({ pageId })
-      .then(() => {
-        handleClose();
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "Page deleted successfully.",
-        });
-
-        if (routePageId) {
-          router.history.back();
-        }
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Page could not be deleted. Please try again.",
-        });
+    try {
+      await remove.mutateAsync();
+      handleClose();
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Success!",
+        message: "Page deleted successfully.",
       });
-
-    setIsDeleting(false);
+      if (routePageId) router.history.back();
+    } catch {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: "Page could not be deleted. Please try again.",
+      });
+    }
   };
 
   if (!page || !page.id) return null;
@@ -78,7 +68,7 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
     <AlertModalCore
       handleClose={handleClose}
       handleSubmit={handleDelete}
-      isSubmitting={isDeleting}
+      isSubmitting={remove.isPending}
       isOpen={isOpen}
       title="Delete page"
       content={
@@ -90,4 +80,4 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
       }
     />
   );
-});
+}

@@ -67,8 +67,10 @@ import { Route as allChar91workspaceSlugChar93projectsWorkspaceViewsChar91global
 import { Route as allChar91workspaceSlugChar93settingsSettingsworkspacePageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/billing/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/exports/page";
+import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/hierarchy/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/members/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/webhooks/page";
+import { Route as allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/(workspace)/work-item-types/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/layout";
 import { Route as allSettingsProfileChar91profileTabIdChar93PageRouteImport } from "./(all)/settings/profile/[profileTabId]/page";
@@ -90,7 +92,9 @@ import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91proj
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/estimates/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/labels/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/members/page";
+import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/releases/page";
 import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/states/page";
+import { Route as allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRouteImport } from "./(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/work-item-types/page";
 import { Route as allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93ArchivesCyclesLayoutRouteImport } from "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/archives/cycles/layout";
 import { Route as allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93ArchivesIssueslistLayoutRouteImport } from "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/archives/issues/(list)/layout";
 import { Route as allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93ArchivesModulesLayoutRouteImport } from "./(all)/[workspaceSlug]/(projects)/projects/(detail)/[projectId]/archives/modules/layout";
@@ -482,6 +486,15 @@ const allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute =
         allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute,
     } as any,
   );
+const allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute =
+  allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRouteImport.update(
+    {
+      id: "/hierarchy",
+      path: "/hierarchy",
+      getParentRoute: () =>
+        allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute,
+    } as any,
+  );
 const allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute =
   allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRouteImport.update(
     {
@@ -496,6 +509,15 @@ const allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute =
     {
       id: "/webhooks",
       path: "/webhooks",
+      getParentRoute: () =>
+        allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute,
+    } as any,
+  );
+const allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute =
+  allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRouteImport.update(
+    {
+      id: "/work-item-types",
+      path: "/work-item-types",
       getParentRoute: () =>
         allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute,
     } as any,
@@ -684,11 +706,29 @@ const allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93M
         allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute,
     } as any,
   );
+const allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute =
+  allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRouteImport.update(
+    {
+      id: "/releases",
+      path: "/releases",
+      getParentRoute: () =>
+        allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute,
+    } as any,
+  );
 const allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute =
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRouteImport.update(
     {
       id: "/states",
       path: "/states",
+      getParentRoute: () =>
+        allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute,
+    } as any,
+  );
+const allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute =
+  allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRouteImport.update(
+    {
+      id: "/work-item-types",
+      path: "/work-item-types",
       getParentRoute: () =>
         allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute,
     } as any,
@@ -1008,8 +1048,10 @@ export interface FileRoutesByFullPath {
   "/$workspaceSlug/workspace-views/$globalViewId": typeof allChar91workspaceSlugChar93projectsWorkspaceViewsChar91globalViewIdChar93PageRoute;
   "/$workspaceSlug/settings/billing": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute;
   "/$workspaceSlug/settings/exports": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute;
+  "/$workspaceSlug/settings/hierarchy": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute;
   "/$workspaceSlug/settings/members": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute;
   "/$workspaceSlug/settings/webhooks": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute;
+  "/$workspaceSlug/settings/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute;
   "/$workspaceSlug/settings/projects/$projectId": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRouteWithChildren;
   "/$workspaceSlug/analytics/$tabId/": typeof allChar91workspaceSlugChar93projectsAnalyticsChar91tabIdChar93PageRoute;
   "/$workspaceSlug/browse/$workItem/": typeof allChar91workspaceSlugChar93projectsBrowseChar91workItemChar93PageRoute;
@@ -1029,7 +1071,9 @@ export interface FileRoutesByFullPath {
   "/$workspaceSlug/settings/projects/$projectId/estimates": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/labels": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/members": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute;
+  "/$workspaceSlug/settings/projects/$projectId/releases": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/states": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute;
+  "/$workspaceSlug/settings/projects/$projectId/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute;
   "/$workspaceSlug/projects/$projectId/cycles/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93CycleslistPageRoute;
   "/$workspaceSlug/projects/$projectId/intake/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IntakePageRoute;
   "/$workspaceSlug/projects/$projectId/issues/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IssueslistPageRoute;
@@ -1095,8 +1139,10 @@ export interface FileRoutesByTo {
   "/$workspaceSlug/workspace-views/$globalViewId": typeof allChar91workspaceSlugChar93projectsWorkspaceViewsChar91globalViewIdChar93PageRoute;
   "/$workspaceSlug/settings/billing": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute;
   "/$workspaceSlug/settings/exports": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute;
+  "/$workspaceSlug/settings/hierarchy": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute;
   "/$workspaceSlug/settings/members": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute;
   "/$workspaceSlug/settings/webhooks": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute;
+  "/$workspaceSlug/settings/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute;
   "/$workspaceSlug/analytics/$tabId": typeof allChar91workspaceSlugChar93projectsAnalyticsChar91tabIdChar93PageRoute;
   "/$workspaceSlug/browse/$workItem": typeof allChar91workspaceSlugChar93projectsBrowseChar91workItemChar93PageRoute;
   "/$workspaceSlug/profile/$userId": typeof allChar91workspaceSlugChar93projectsProfileChar91userIdChar93PageRoute;
@@ -1108,7 +1154,9 @@ export interface FileRoutesByTo {
   "/$workspaceSlug/settings/projects/$projectId/estimates": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/labels": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/members": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute;
+  "/$workspaceSlug/settings/projects/$projectId/releases": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute;
   "/$workspaceSlug/settings/projects/$projectId/states": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute;
+  "/$workspaceSlug/settings/projects/$projectId/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute;
   "/$workspaceSlug/projects/$projectId/cycles": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93CycleslistPageRoute;
   "/$workspaceSlug/projects/$projectId/intake": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IntakePageRoute;
   "/$workspaceSlug/projects/$projectId/issues": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IssueslistPageRoute;
@@ -1193,8 +1241,10 @@ export interface FileRoutesById {
   "/_authenticated/$workspaceSlug/_projects/workspace-views/$globalViewId": typeof allChar91workspaceSlugChar93projectsWorkspaceViewsChar91globalViewIdChar93PageRoute;
   "/_authenticated/$workspaceSlug/settings/_workspace/billing": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute;
   "/_authenticated/$workspaceSlug/settings/_workspace/exports": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute;
+  "/_authenticated/$workspaceSlug/settings/_workspace/hierarchy": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute;
   "/_authenticated/$workspaceSlug/settings/_workspace/members": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute;
   "/_authenticated/$workspaceSlug/settings/_workspace/webhooks": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute;
+  "/_authenticated/$workspaceSlug/settings/_workspace/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute;
   "/_authenticated/$workspaceSlug/settings/projects/$projectId": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRouteWithChildren;
   "/_authenticated/$workspaceSlug/_projects/analytics/$tabId/": typeof allChar91workspaceSlugChar93projectsAnalyticsChar91tabIdChar93PageRoute;
   "/_authenticated/$workspaceSlug/_projects/browse/$workItem/": typeof allChar91workspaceSlugChar93projectsBrowseChar91workItemChar93PageRoute;
@@ -1214,7 +1264,9 @@ export interface FileRoutesById {
   "/_authenticated/$workspaceSlug/settings/projects/$projectId/estimates": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRoute;
   "/_authenticated/$workspaceSlug/settings/projects/$projectId/labels": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute;
   "/_authenticated/$workspaceSlug/settings/projects/$projectId/members": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute;
+  "/_authenticated/$workspaceSlug/settings/projects/$projectId/releases": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute;
   "/_authenticated/$workspaceSlug/settings/projects/$projectId/states": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute;
+  "/_authenticated/$workspaceSlug/settings/projects/$projectId/work-item-types": typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute;
   "/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93CycleslistPageRoute;
   "/_authenticated/$workspaceSlug/_projects/projects/$projectId/intake/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IntakePageRoute;
   "/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues/": typeof allChar91workspaceSlugChar93projectsProjectsdetailChar91projectIdChar93IssueslistPageRoute;
@@ -1304,8 +1356,10 @@ export interface FileRouteTypes {
     | "/$workspaceSlug/workspace-views/$globalViewId"
     | "/$workspaceSlug/settings/billing"
     | "/$workspaceSlug/settings/exports"
+    | "/$workspaceSlug/settings/hierarchy"
     | "/$workspaceSlug/settings/members"
     | "/$workspaceSlug/settings/webhooks"
+    | "/$workspaceSlug/settings/work-item-types"
     | "/$workspaceSlug/settings/projects/$projectId"
     | "/$workspaceSlug/analytics/$tabId/"
     | "/$workspaceSlug/browse/$workItem/"
@@ -1325,7 +1379,9 @@ export interface FileRouteTypes {
     | "/$workspaceSlug/settings/projects/$projectId/estimates"
     | "/$workspaceSlug/settings/projects/$projectId/labels"
     | "/$workspaceSlug/settings/projects/$projectId/members"
+    | "/$workspaceSlug/settings/projects/$projectId/releases"
     | "/$workspaceSlug/settings/projects/$projectId/states"
+    | "/$workspaceSlug/settings/projects/$projectId/work-item-types"
     | "/$workspaceSlug/projects/$projectId/cycles/"
     | "/$workspaceSlug/projects/$projectId/intake/"
     | "/$workspaceSlug/projects/$projectId/issues/"
@@ -1391,8 +1447,10 @@ export interface FileRouteTypes {
     | "/$workspaceSlug/workspace-views/$globalViewId"
     | "/$workspaceSlug/settings/billing"
     | "/$workspaceSlug/settings/exports"
+    | "/$workspaceSlug/settings/hierarchy"
     | "/$workspaceSlug/settings/members"
     | "/$workspaceSlug/settings/webhooks"
+    | "/$workspaceSlug/settings/work-item-types"
     | "/$workspaceSlug/analytics/$tabId"
     | "/$workspaceSlug/browse/$workItem"
     | "/$workspaceSlug/profile/$userId"
@@ -1404,7 +1462,9 @@ export interface FileRouteTypes {
     | "/$workspaceSlug/settings/projects/$projectId/estimates"
     | "/$workspaceSlug/settings/projects/$projectId/labels"
     | "/$workspaceSlug/settings/projects/$projectId/members"
+    | "/$workspaceSlug/settings/projects/$projectId/releases"
     | "/$workspaceSlug/settings/projects/$projectId/states"
+    | "/$workspaceSlug/settings/projects/$projectId/work-item-types"
     | "/$workspaceSlug/projects/$projectId/cycles"
     | "/$workspaceSlug/projects/$projectId/intake"
     | "/$workspaceSlug/projects/$projectId/issues"
@@ -1488,8 +1548,10 @@ export interface FileRouteTypes {
     | "/_authenticated/$workspaceSlug/_projects/workspace-views/$globalViewId"
     | "/_authenticated/$workspaceSlug/settings/_workspace/billing"
     | "/_authenticated/$workspaceSlug/settings/_workspace/exports"
+    | "/_authenticated/$workspaceSlug/settings/_workspace/hierarchy"
     | "/_authenticated/$workspaceSlug/settings/_workspace/members"
     | "/_authenticated/$workspaceSlug/settings/_workspace/webhooks"
+    | "/_authenticated/$workspaceSlug/settings/_workspace/work-item-types"
     | "/_authenticated/$workspaceSlug/settings/projects/$projectId"
     | "/_authenticated/$workspaceSlug/_projects/analytics/$tabId/"
     | "/_authenticated/$workspaceSlug/_projects/browse/$workItem/"
@@ -1509,7 +1571,9 @@ export interface FileRouteTypes {
     | "/_authenticated/$workspaceSlug/settings/projects/$projectId/estimates"
     | "/_authenticated/$workspaceSlug/settings/projects/$projectId/labels"
     | "/_authenticated/$workspaceSlug/settings/projects/$projectId/members"
+    | "/_authenticated/$workspaceSlug/settings/projects/$projectId/releases"
     | "/_authenticated/$workspaceSlug/settings/projects/$projectId/states"
+    | "/_authenticated/$workspaceSlug/settings/projects/$projectId/work-item-types"
     | "/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/"
     | "/_authenticated/$workspaceSlug/_projects/projects/$projectId/intake/"
     | "/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues/"
@@ -1973,6 +2037,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRouteImport;
       parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute;
     };
+    "/_authenticated/$workspaceSlug/settings/_workspace/hierarchy": {
+      id: "/_authenticated/$workspaceSlug/settings/_workspace/hierarchy";
+      path: "/hierarchy";
+      fullPath: "/$workspaceSlug/settings/hierarchy";
+      preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRouteImport;
+      parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute;
+    };
     "/_authenticated/$workspaceSlug/settings/_workspace/members": {
       id: "/_authenticated/$workspaceSlug/settings/_workspace/members";
       path: "/members";
@@ -1985,6 +2056,13 @@ declare module "@tanstack/react-router" {
       path: "/webhooks";
       fullPath: "/$workspaceSlug/settings/webhooks";
       preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRouteImport;
+      parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute;
+    };
+    "/_authenticated/$workspaceSlug/settings/_workspace/work-item-types": {
+      id: "/_authenticated/$workspaceSlug/settings/_workspace/work-item-types";
+      path: "/work-item-types";
+      fullPath: "/$workspaceSlug/settings/work-item-types";
+      preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRouteImport;
       parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRoute;
     };
     "/_authenticated/$workspaceSlug/settings/projects/": {
@@ -2134,11 +2212,25 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRouteImport;
       parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute;
     };
+    "/_authenticated/$workspaceSlug/settings/projects/$projectId/releases": {
+      id: "/_authenticated/$workspaceSlug/settings/projects/$projectId/releases";
+      path: "/releases";
+      fullPath: "/$workspaceSlug/settings/projects/$projectId/releases";
+      preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRouteImport;
+      parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute;
+    };
     "/_authenticated/$workspaceSlug/settings/projects/$projectId/states": {
       id: "/_authenticated/$workspaceSlug/settings/projects/$projectId/states";
       path: "/states";
       fullPath: "/$workspaceSlug/settings/projects/$projectId/states";
       preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRouteImport;
+      parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute;
+    };
+    "/_authenticated/$workspaceSlug/settings/projects/$projectId/work-item-types": {
+      id: "/_authenticated/$workspaceSlug/settings/projects/$projectId/work-item-types";
+      path: "/work-item-types";
+      fullPath: "/$workspaceSlug/settings/projects/$projectId/work-item-types";
+      preLoaderRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRouteImport;
       parentRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LayoutRoute;
     };
     "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/cycles": {
@@ -2825,8 +2917,10 @@ interface allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRouteChildr
   allChar91workspaceSlugChar93settingsSettingsworkspacePageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspacePageRoute;
   allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute;
   allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute;
+  allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute;
   allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute;
   allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute;
+  allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute;
   allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksChar91webhookIdChar93PageRoute: typeof allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksChar91webhookIdChar93PageRoute;
 }
 
@@ -2838,10 +2932,14 @@ const allChar91workspaceSlugChar93settingsSettingsworkspaceLayoutRouteChildren: 
       allChar91workspaceSlugChar93settingsSettingsworkspaceBillingPageRoute,
     allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute:
       allChar91workspaceSlugChar93settingsSettingsworkspaceExportsPageRoute,
+    allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute:
+      allChar91workspaceSlugChar93settingsSettingsworkspaceHierarchyPageRoute,
     allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute:
       allChar91workspaceSlugChar93settingsSettingsworkspaceMembersPageRoute,
     allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute:
       allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksPageRoute,
+    allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute:
+      allChar91workspaceSlugChar93settingsSettingsworkspaceWorkItemTypesPageRoute,
     allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksChar91webhookIdChar93PageRoute:
       allChar91workspaceSlugChar93settingsSettingsworkspaceWebhooksChar91webhookIdChar93PageRoute,
   };
@@ -2872,7 +2970,9 @@ interface allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdCha
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93EstimatesPageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute;
+  allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute;
+  allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesCyclesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesCyclesPageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesIntakePageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesIntakePageRoute;
   allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesModulesPageRoute: typeof allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesModulesPageRoute;
@@ -2892,8 +2992,12 @@ const allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93L
       allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93LabelsPageRoute,
     allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute:
       allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93MembersPageRoute,
+    allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute:
+      allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93ReleasesPageRoute,
     allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute:
       allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93StatesPageRoute,
+    allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute:
+      allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93WorkItemTypesPageRoute,
     allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesCyclesPageRoute:
       allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesCyclesPageRoute,
     allChar91workspaceSlugChar93settingsSettingsProjectsChar91projectIdChar93FeaturesIntakePageRoute:

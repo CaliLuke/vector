@@ -53,9 +53,9 @@ export type TNotification = {
   receiver: string | undefined;
   triggered_by: string | undefined;
   triggered_by_details: IUserLite | undefined;
-  read_at: string | undefined;
-  archived_at: string | undefined;
-  snoozed_till: string | undefined;
+  read_at: string | null | undefined;
+  archived_at: string | null | undefined;
+  snoozed_till: string | null | undefined;
   is_inbox_issue: boolean | undefined;
   is_mentioned_notification: boolean | undefined;
   workspace: string | undefined;

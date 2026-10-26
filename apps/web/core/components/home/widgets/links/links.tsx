@@ -4,10 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // computed
 import { ContentOverflowWrapper } from "@/components/core/content-overflow-HOC";
-import { useHome } from "@/hooks/store/use-home";
+import { useQuery } from "@tanstack/react-query";
+import type { TLink } from "@plane/types";
+import { homeLinksOptions } from "@/queries/home";
 import { LinksEmptyState } from "../empty-states/links";
 import { EWidgetKeys, WidgetLoader } from "../loaders";
 import { ProjectLinkDetail } from "./link-detail";
@@ -18,17 +19,29 @@ export type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
 export type TProjectLinkList = {
   linkOperations: TLinkOperationsModal;
   workspaceSlug: string;
+  onEdit: (link: TLink) => void;
 };
 
-export const ProjectLinkList = observer(function ProjectLinkList(props: TProjectLinkList) {
+export const ProjectLinkList = function ProjectLinkList(props: TProjectLinkList) {
   // props
-  const { linkOperations, workspaceSlug } = props;
+  const { linkOperations, workspaceSlug, onEdit } = props;
   // hooks
-  const {
-    quickLinks: { getLinksByWorkspaceId },
-  } = useHome();
-
-  const links = getLinksByWorkspaceId(workspaceSlug);
+  const query = useQuery(homeLinksOptions(workspaceSlug));
+  const links = query.data;
+  if (query.isError)
+    return (
+      <div role="alert">
+        Unable to load links.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void query.refetch();
+          }}
+        >
+          Try again
+        </button>
+      </div>
+    );
 
   if (links === undefined) return <WidgetLoader widgetKey={EWidgetKeys.QUICK_LINKS} />;
 
@@ -43,11 +56,11 @@ export const ProjectLinkList = observer(function ProjectLinkList(props: TProject
         buttonClassName="bg-surface-2/20"
       >
         <div className="mb-2 flex flex-1 flex-wrap gap-2">
-          {links.map((linkId) => (
-            <ProjectLinkDetail key={linkId} linkId={linkId} linkOperations={linkOperations} />
+          {links.map((link) => (
+            <ProjectLinkDetail key={link.id} linkDetail={link} linkOperations={linkOperations} onEdit={onEdit} />
           ))}
         </div>
       </ContentOverflowWrapper>
     </div>
   );
-});
+};

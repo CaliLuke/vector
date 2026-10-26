@@ -20,12 +20,28 @@ import (
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	timeout, err := bootstrapTimeout(os.Getenv("BOOTSTRAP_TIMEOUT"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	if err := run(ctx, os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+}
+
+func bootstrapTimeout(value string) (time.Duration, error) {
+	if value == "" {
+		return time.Hour, nil
+	}
+	timeout, err := time.ParseDuration(value)
+	if err != nil || timeout <= 0 {
+		return 0, fmt.Errorf("BOOTSTRAP_TIMEOUT must be a positive Go duration, for example 2h")
+	}
+	return timeout, nil
 }
 
 func run(ctx context.Context, args []string) error {

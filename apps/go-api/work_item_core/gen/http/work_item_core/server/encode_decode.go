@@ -3,7 +3,8 @@
 // WorkItemCore HTTP server encoders and decoders
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package server
 
@@ -16438,9 +16439,11 @@ func DecodeGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesRequest(mux loom
 		var payload *workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload
 		var err error
 		var (
-			slug      string
-			projectID string
-			search    *string
+			slug        string
+			projectID   string
+			typeID      *string
+			childTypeID *string
+			search      *string
 
 			params = mux.Vars(r)
 		)
@@ -16450,6 +16453,28 @@ func DecodeGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesRequest(mux loom
 		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
 		if queryErr != nil {
 			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			typeIDRaw := qp.Get("type_id")
+			typeIDPresent := qp.Has("type_id")
+
+			if typeIDPresent {
+				typeID = &typeIDRaw
+				if typeID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("type_id", *typeID, loom.FormatUUID))
+				}
+			}
+		}
+		{
+			childTypeIDRaw := qp.Get("child_type_id")
+			childTypeIDPresent := qp.Has("child_type_id")
+
+			if childTypeIDPresent {
+				childTypeID = &childTypeIDRaw
+				if childTypeID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("child_type_id", *childTypeID, loom.FormatUUID))
+				}
+			}
 		}
 		{
 			searchRaw := qp.Get("search")
@@ -16462,7 +16487,7 @@ func DecodeGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesRequest(mux loom
 		if err != nil {
 			return payload, err
 		}
-		payload = NewGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(slug, projectID, search)
+		payload = NewGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(slug, projectID, typeID, childTypeID, search)
 
 		return payload, nil
 	}

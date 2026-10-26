@@ -4,32 +4,35 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { CommentActions } from "@/components/comments/types";
 // plane imports
-import type { E_SORT_ORDER, TActivityFilters, EActivityFilterType } from "@plane/constants";
-import { BASE_ACTIVITY_FILTER_TYPES, filterActivityOnSelectedFilters } from "@plane/constants";
-import type { TCommentsOperations } from "@plane/types";
+import type { E_SORT_ORDER, TActivityFilters } from "@plane/constants";
+import { filterActivityOnSelectedFilters } from "@plane/constants";
+
 // components
 import { CommentCard } from "@/components/comments/card/root";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { useIssueDiscussion } from "@/hooks/use-issue-discussion";
+import { EActivityFilterType as ActivityType } from "@plane/constants";
+import orderBy from "lodash-es/orderBy.js";
 // local imports
 import { IssueActivityItem } from "./activity/activity-list";
 import { IssueActivityLoader } from "./loader";
 
 type TIssueActivityCommentRoot = {
+  discussion: ReturnType<typeof useIssueDiscussion>;
   workspaceSlug: string;
   projectId: string;
   isIntakeIssue: boolean;
   issueId: string;
   selectedFilters: TActivityFilters[];
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   showAccessSpecifier?: boolean;
   disabled?: boolean;
   sortOrder: E_SORT_ORDER;
 };
 
-export const IssueActivityCommentRoot = observer(function IssueActivityCommentRoot(props: TIssueActivityCommentRoot) {
+export const IssueActivityCommentRoot = function IssueActivityCommentRoot(props: TIssueActivityCommentRoot) {
   const {
     workspaceSlug,
     isIntakeIssue,
@@ -41,15 +44,43 @@ export const IssueActivityCommentRoot = observer(function IssueActivityCommentRo
     disabled,
     sortOrder,
   } = props;
-  // store hooks
-  const {
-    activity: { getActivityAndCommentsByIssueId },
-    comment: { getCommentById },
-  } = useIssueDetail();
-  // derived values
-  const activityAndComments = getActivityAndCommentsByIssueId(issueId, sortOrder);
-
-  if (!activityAndComments) return <IssueActivityLoader />;
+  const { discussion } = props;
+  if (discussion.isError)
+    return (
+      <div role="alert">
+        Could not load discussion.{" "}
+        <button type="button" onClick={() => void discussion.retry().catch(() => {})}>
+          Retry
+        </button>
+      </div>
+    );
+  if (discussion.isPending || !discussion.activity.isSuccess || !discussion.comments.isSuccess)
+    return <IssueActivityLoader />;
+  const activities = discussion.activity.data;
+  const comments = discussion.comments.data;
+  const activityAndComments = orderBy(
+    [
+      ...activities.map((activity) => ({
+        id: activity.id,
+        created_at: activity.created_at,
+        activity_type:
+          activity.field === "state"
+            ? ActivityType.STATE
+            : activity.field === "assignees"
+              ? ActivityType.ASSIGNEE
+              : activity.field === null
+                ? ActivityType.DEFAULT
+                : ActivityType.ACTIVITY,
+      })),
+      ...comments.map((comment) => ({
+        id: comment.id,
+        created_at: comment.created_at,
+        activity_type: ActivityType.COMMENT,
+      })),
+    ],
+    (item) => new Date(item.created_at || 0),
+    sortOrder
+  );
 
   if (activityAndComments.length <= 0) return null;
 
@@ -58,8 +89,9 @@ export const IssueActivityCommentRoot = observer(function IssueActivityCommentRo
   return (
     <div>
       {filteredActivityAndComments.map((activityComment, index) => {
-        const comment = getCommentById(activityComment.id);
-        return activityComment.activity_type === "COMMENT" ? (
+        const comment = comments.find((item) => item.id === activityComment.id);
+        const activity = activities.find((item) => item.id === activityComment.id);
+        return comment ? (
           <CommentCard
             key={activityComment.id}
             workspaceSlug={workspaceSlug}
@@ -71,16 +103,15 @@ export const IssueActivityCommentRoot = observer(function IssueActivityCommentRo
             showCopyLinkOption={!isIntakeIssue}
             disabled={disabled}
             projectId={projectId}
-            enableReplies
           />
-        ) : BASE_ACTIVITY_FILTER_TYPES.includes(activityComment.activity_type as EActivityFilterType) ? (
+        ) : activity ? (
           <IssueActivityItem
             key={activityComment.id}
-            activityId={activityComment.id}
+            activity={activity}
             ends={index === 0 ? "top" : index === filteredActivityAndComments.length - 1 ? "bottom" : undefined}
           />
         ) : null;
       })}
     </div>
   );
-});
+};

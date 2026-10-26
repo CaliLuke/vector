@@ -1,83 +1,168 @@
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
- * See the LICENSE file for details.
+ * See the LICENSE file in the project root for details.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EUserPermissions } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWebhook } from "@plane/types";
-// ui
-// components
+import { csvDownload } from "@plane/utils/file";
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { PageHead } from "@/components/core/page-title";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { DeleteWebhookModal, WebhookDeleteSection, WebhookForm } from "@/components/web-hooks";
-// hooks
-import { useWebhook } from "@/hooks/store/use-webhook";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
-// local imports
-import { WebhookDetailsWorkspaceSettingsHeader } from "./header";
+import {
+  regenerateWebhookSecretMutationOptions,
+  updateWebhookMutationOptions,
+  webhookDetailsOptions,
+  webhookKeys,
+  type IWebhookRecord,
+} from "@/queries/webhooks";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { getCurrentHookAsCSV } from "@/components/web-hooks/utils";
+import { WebhooksWorkspaceSettingsHeader } from "../header";
 
 function WebhookDetailsPage(): React.JSX.Element | null {
-  // states
-  const [deleteWebhookModal, setDeleteWebhookModal] = useState(false);
-  // router
   const { workspaceSlug, webhookId } = Route.useParams();
-  // mobx store
-  const { currentWebhook, fetchWebhookById, updateWebhook } = useWebhook();
-  const { currentWorkspace } = useWorkspace();
-  const { allowPermissions } = useUserPermissions();
+  return (
+    <WebhookDetailsPageContent
+      key={`${workspaceSlug}/${webhookId}`}
+      workspaceSlug={workspaceSlug}
+      webhookId={webhookId}
+    />
+  );
+}
 
-  // TODO: fix this error
-  // useEffect(() => {
-  //   if (isCreated !== "true") clearSecretKey();
-  // }, [clearSecretKey, isCreated]);
-  // derived values
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+function WebhookDetailsPageContent({
+  workspaceSlug,
+  webhookId,
+}: {
+  workspaceSlug: string;
+  webhookId: string;
+}): React.JSX.Element | null {
+  const [deleteWebhookModal, setDeleteWebhookModal] = useState(false);
+  const [revealedSecret, setRevealedSecret] = useState<{ scope: string; value: string } | null>(null);
+  const queryClient = useQueryClient();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const {
+    can: canWorkspace,
+    isPending: permissionPending,
+    isError: permissionError,
+  } = useWorkspacePermissions(workspaceSlug);
+  const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
+  const detailsQuery = useQuery(webhookDetailsOptions(workspaceSlug, webhookId, isAdmin));
+  const updateWebhook = useMutation(updateWebhookMutationOptions(queryClient, workspaceSlug, webhookId));
+  const regenerateSecret = useMutation(regenerateWebhookSecretMutationOptions(queryClient, workspaceSlug, webhookId));
+  const secretScope = `${workspaceSlug}/${webhookId}`;
+  const secretKey = revealedSecret?.scope === secretScope ? revealedSecret.value : null;
+  const regenerateGeneration = useRef(0);
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Webhook` : undefined;
 
-  useSWR(
-    isAdmin ? `WEBHOOK_DETAILS_${workspaceSlug}_${webhookId}` : null,
-    isAdmin ? () => fetchWebhookById(workspaceSlug, webhookId) : null
-  );
-
-  const handleUpdateWebhook = async (formData: IWebhook) => {
-    if (!formData || !formData.id) return;
-
-    const payload = {
-      url: formData.url,
-      is_active: formData.is_active,
-      project: formData.project,
-      cycle: formData.cycle,
-      module: formData.module,
-      issue: formData.issue,
-      issue_comment: formData.issue_comment,
+  useEffect(() => {
+    let generation = ++regenerateGeneration.current;
+    const detailKey = webhookKeys.detail(workspaceSlug, webhookId);
+    let detailQuery = queryClient.getQueryCache().find({ queryKey: detailKey, exact: true });
+    const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+      const currentQuery = queryClient.getQueryCache().find({ queryKey: detailKey, exact: true });
+      if (currentQuery !== detailQuery) {
+        detailQuery = currentQuery;
+        generation = ++regenerateGeneration.current;
+        setRevealedSecret(null);
+      }
+    });
+    return () => {
+      unsubscribe();
+      if (regenerateGeneration.current === generation) regenerateGeneration.current += 1;
     };
+  }, [queryClient, workspaceSlug, webhookId]);
 
+  const handleUpdateWebhook = async (payload: Partial<IWebhook>) => {
+    const generation = regenerateGeneration.current;
+    const detailKey = webhookKeys.detail(workspaceSlug, webhookId);
+    const detailQuery = queryClient.getQueryCache().find({ queryKey: detailKey, exact: true });
     try {
-      await updateWebhook(workspaceSlug, formData.id, payload);
+      const savedWebhook = await updateWebhook.mutateAsync(payload);
+      if (
+        regenerateGeneration.current !== generation ||
+        !detailQuery ||
+        queryClient.getQueryCache().find({ queryKey: detailKey, exact: true }) !== detailQuery
+      ) {
+        return savedWebhook;
+      }
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success!",
         message: "Webhook updated successfully.",
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: error?.error ?? "Something went wrong. Please try again.",
-      });
+      return savedWebhook;
+    } catch (error: unknown) {
+      if (
+        regenerateGeneration.current !== generation ||
+        !detailQuery ||
+        queryClient.getQueryCache().find({ queryKey: detailKey, exact: true }) !== detailQuery
+      ) {
+        throw error;
+      }
+      const message =
+        error && typeof error === "object" && "error" in error && typeof error.error === "string"
+          ? error.error
+          : "Something went wrong. Please try again.";
+      setToast({ type: TOAST_TYPE.ERROR, title: "Error!", message });
+      throw error;
     }
   };
 
-  if (!isAdmin)
+  const handleRegenerateSecret = async (): Promise<boolean | "stale"> => {
+    const generation = regenerateGeneration.current;
+    const submittedScope = secretScope;
+    const detailKey = webhookKeys.detail(workspaceSlug, webhookId);
+    const detailQuery = queryClient.getQueryCache().find({ queryKey: detailKey, exact: true });
+    let downloaded = true;
+    await regenerateSecret.mutateAsync({
+      exposeSecret: (secret, webhook) => {
+        if (
+          !secret ||
+          regenerateGeneration.current !== generation ||
+          submittedScope !== secretScope ||
+          !detailQuery ||
+          queryClient.getQueryCache().find({ queryKey: detailKey, exact: true }) !== detailQuery
+        )
+          return;
+        setRevealedSecret({ scope: secretScope, value: secret });
+        try {
+          csvDownload(
+            getCurrentHookAsCSV(currentWorkspace ?? null, webhook, secret),
+            `webhook-secret-key-${Date.now()}`
+          );
+        } catch {
+          downloaded = false;
+        }
+      },
+    });
+    if (
+      regenerateGeneration.current !== generation ||
+      submittedScope !== secretScope ||
+      !detailQuery ||
+      queryClient.getQueryCache().find({ queryKey: detailKey, exact: true }) !== detailQuery
+    ) {
+      return "stale";
+    }
+    return downloaded;
+  };
+
+  if (permissionPending)
+    return (
+      <div className="grid h-full w-full place-items-center p-4">
+        <LogoSpinner />
+      </div>
+    );
+
+  if (permissionError || !isAdmin)
     return (
       <>
         <PageHead title={pageTitle} />
@@ -87,27 +172,52 @@ function WebhookDetailsPage(): React.JSX.Element | null {
       </>
     );
 
-  if (!currentWebhook)
+  if (detailsQuery.isPending)
     return (
       <div className="grid h-full w-full place-items-center p-4">
         <LogoSpinner />
       </div>
     );
 
+  if (detailsQuery.isError || !detailsQuery.data)
+    return (
+      <div className="grid h-full w-full place-items-center p-4">
+        <div className="space-y-3 text-center" role="alert">
+          <p className="text-13 text-danger-primary">Webhook details could not be loaded.</p>
+          <button type="button" className="text-13 text-accent-primary" onClick={() => void detailsQuery.refetch()}>
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+
+  const webhook: IWebhookRecord = detailsQuery.data;
   return (
-    <SettingsContentWrapper header={<WebhookDetailsWorkspaceSettingsHeader />}>
+    <SettingsContentWrapper header={<WebhooksWorkspaceSettingsHeader />}>
       <PageHead title={pageTitle} />
-      <DeleteWebhookModal isOpen={deleteWebhookModal} onClose={() => setDeleteWebhookModal(false)} />
+      <DeleteWebhookModal
+        key={`${secretScope}/${deleteWebhookModal}`}
+        isOpen={deleteWebhookModal}
+        workspaceSlug={workspaceSlug}
+        webhookId={webhookId}
+        onClose={() => setDeleteWebhookModal(false)}
+      />
       <div className="w-full space-y-8 overflow-y-auto">
         <div>
-          <WebhookForm onSubmit={handleUpdateWebhook} data={currentWebhook} />
+          <WebhookForm
+            key={secretScope}
+            onSubmit={handleUpdateWebhook}
+            data={webhook}
+            secretKey={secretKey}
+            onRegenerate={handleRegenerateSecret}
+          />
         </div>
-        {currentWebhook && <WebhookDeleteSection openDeleteModal={() => setDeleteWebhookModal(true)} />}
+        <WebhookDeleteSection openDeleteModal={() => setDeleteWebhookModal(true)} />
       </div>
     </SettingsContentWrapper>
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/webhooks/$webhookId")({
-  component: observer(WebhookDetailsPage),
+  component: WebhookDetailsPage,
 });

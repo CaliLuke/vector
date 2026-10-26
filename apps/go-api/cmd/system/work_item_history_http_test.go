@@ -46,6 +46,9 @@ func TestWorkItemHistoryGeneratedHTTPMountCarriesAuthenticatedRequests(t *testin
 		{"version detail", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/issues/" + historyHTTPIssueID + "/versions/" + historyHTTPVersionID + "/", "version_detail", nil},
 		{"description versions", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/work-items/" + historyHTTPIssueID + "/description-versions/", "description_versions", url.Values{"cursor": {"10:1:0"}}},
 		{"description version detail", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/work-items/" + historyHTTPIssueID + "/description-versions/" + historyHTTPVersionID + "/", "description_version_detail", nil},
+		{"property history", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/work-items/" + historyHTTPIssueID + "/property-history/", "property_history", nil},
+		{"property versions", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/work-items/" + historyHTTPIssueID + "/properties/" + historyHTTPVersionID + "/versions/", "property_versions", url.Values{"before": {historyHTTPVersionID}}},
+		{"property version detail", "/api/workspaces/demo/projects/" + historyHTTPProjectID + "/work-items/" + historyHTTPIssueID + "/properties/" + historyHTTPVersionID + "/versions/" + historyHTTPVersionID + "/", "property_version_detail", nil},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -78,6 +81,12 @@ func TestWorkItemHistoryGeneratedHTTPMountCarriesAuthenticatedRequests(t *testin
 			}
 			if got.Cursor != nil && test.query.Get("cursor") != *got.Cursor {
 				t.Fatalf("cursor = %q, want %q", *got.Cursor, test.query.Get("cursor"))
+			}
+			if strings.HasPrefix(test.operation, "property_version") && got.PropertyID.String() != historyHTTPVersionID {
+				t.Fatalf("wrong property: %+v", got)
+			}
+			if test.operation == "property_versions" && (got.BeforeID == nil || got.BeforeID.String() != historyHTTPVersionID) {
+				t.Fatalf("missing revision cursor: %+v", got)
 			}
 			if test.operation == "history" && (got.CreatedAtGT == nil || *got.CreatedAtGT != "2026-10-01" || got.ActivityType == nil || *got.ActivityType != "comment") {
 				t.Fatalf("history filters = created_at__gt %v activity_type %v", got.CreatedAtGT, got.ActivityType)
@@ -164,7 +173,7 @@ func TestWorkItemHistoryProtocolAuthScopeHeadAndOptions(t *testing.T) {
 }
 
 func TestWorkItemHistoryOptionsMetadataMatchesSourceViews(t *testing.T) {
-	names := []string{"Issue Activity Endpoint", "Issue Meta Endpoint", "Issue Version Endpoint", "Issue Version Endpoint", "Work Item Description Version Endpoint", "Work Item Description Version Endpoint"}
+	names := []string{"Issue Activity Endpoint", "Issue Meta Endpoint", "Issue Version Endpoint", "Issue Version Endpoint", "Work Item Description Version Endpoint", "Work Item Description Version Endpoint", "Work Item Property History Endpoint", "Work Item Property History Endpoint", "Work Item Property History Endpoint"}
 	sessions := &cycleMiddlewareSessions{recorder: &cycleMiddlewareRecorder{}, userTimezone: "UTC"}
 	repository := &workItemHistoryHTTPRepository{allowed: true}
 	service, err := systemapi.NewWorkItemHistory(repository, sessions)
@@ -174,7 +183,7 @@ func TestWorkItemHistoryOptionsMetadataMatchesSourceViews(t *testing.T) {
 	handler := extensionHTTPHandler(pendingReplacementEndpoints{workItemHistory: workitemhistoryapi.NewEndpoints(service), workItemHistoryMetadata: service.(sessionResourceProtocolAuthorizer), readServicesSession: sessions, readServicesCookie: djangoSessionCookieConfig{Name: "session-id", Configured: true}})
 	for i, pattern := range workItemHistoryPaths {
 		t.Run(names[i]+pattern, func(t *testing.T) {
-			path := strings.NewReplacer("{slug}", "demo", "{project_id}", historyHTTPProjectID, "{issue_id}", historyHTTPIssueID, "{work_item_id}", historyHTTPIssueID, "{pk}", historyHTTPVersionID).Replace(pattern)
+			path := strings.NewReplacer("{slug}", "demo", "{project_id}", historyHTTPProjectID, "{issue_id}", historyHTTPIssueID, "{work_item_id}", historyHTTPIssueID, "{pk}", historyHTTPVersionID, "{property_id}", historyHTTPVersionID).Replace(pattern)
 			request := httptest.NewRequest(http.MethodOptions, path, nil)
 			request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid-session"})
 			response := httptest.NewRecorder()

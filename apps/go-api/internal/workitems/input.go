@@ -17,8 +17,8 @@ import (
 )
 
 type issueValidation struct {
-	API, Partial, AllowTriage, Draft bool
-	ProjectID, WorkspaceID, Timezone string
+	API, Partial, AllowTriage, Draft          bool
+	ProjectID, WorkspaceID, Timezone, ActorID string
 }
 type issueChanges struct {
 	values                  map[string]any
@@ -180,7 +180,7 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 	if options.API {
 		fieldsToRelations = append(fieldsToRelations, [][3]string{{"type_id", "type_id", "issue_types"}, {"type", "type_id", "issue_types"}, {"state", "state_id", "states"}, {"parent", "parent_id", "issues"}, {"created_by", "created_by_id", "users"}}...)
 	} else {
-		fieldsToRelations = append([][3]string{{"state_id", "state_id", "states"}, {"parent_id", "parent_id", "issues"}}, append(fieldsToRelations, [][3]string{{"type", "type_id", "issue_types"}, {"state", "state_id", "states"}, {"parent", "parent_id", "issues"}}...)...)
+		fieldsToRelations = append([][3]string{{"type_id", "type_id", "issue_types"}, {"state_id", "state_id", "states"}, {"parent_id", "parent_id", "issues"}}, append(fieldsToRelations, [][3]string{{"type", "type_id", "issue_types"}, {"state", "state_id", "states"}, {"parent", "parent_id", "issues"}}...)...)
 	}
 	for _, relation := range fieldsToRelations {
 		field, column, table := relation[0], relation[1], relation[2]
@@ -192,7 +192,14 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 			changes.values[column] = nil
 			continue
 		}
-		id, messages, err := r.primaryKey(ctx, value, table, field == "state_id" && !options.Draft)
+		var id string
+		var messages []string
+		var err error
+		if column == "parent_id" {
+			id, messages, err = r.parentKey(ctx, value, options)
+		} else {
+			id, messages, err = r.primaryKey(ctx, value, table, field == "state_id" && !options.Draft)
+		}
 		if err != nil {
 			return changes, err
 		}
@@ -290,7 +297,7 @@ func (r *Repository) validateIssue(ctx context.Context, input djangoinput.Input,
 		}
 		changes.labels = ids
 	}
-	for _, relation := range [][3]string{{"state_id", "states", "State is not valid please pass a valid state_id"}, {"parent_id", "issues", "Parent is not valid issue_id please pass a valid issue_id"}, {"estimate_point_id", "estimate_points", "Estimate point is not valid please pass a valid estimate_point_id"}} {
+	for _, relation := range [][3]string{{"state_id", "states", "State is not valid please pass a valid state_id"}, {"estimate_point_id", "estimate_points", "Estimate point is not valid please pass a valid estimate_point_id"}} {
 		id, present := changes.values[relation[0]]
 		if !present || id == nil {
 			continue

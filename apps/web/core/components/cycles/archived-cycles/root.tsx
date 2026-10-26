@@ -6,44 +6,34 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import type { TCycleFilters } from "@plane/types";
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
 // components
 import { CycleModuleListLayoutLoader } from "@/components/ui/loader/cycle-module-list-loader";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useCycleCataloguePreferences } from "@/providers/cycle-module-preferences";
 // local imports
 import { CycleAppliedFiltersList } from "../applied-filters";
 import { ArchivedCyclesView } from "./view";
 
-export const ArchivedCycleLayoutRoot = observer(function ArchivedCycleLayoutRoot() {
+export const ArchivedCycleLayoutRoot = function ArchivedCycleLayoutRoot() {
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { fetchArchivedCycles, currentProjectArchivedCycleIds, loader } = useCycle();
+  const catalogue = useProjectCycles(workspaceSlug, projectId, true);
   // cycle filters hook
-  const { clearAllFilters, currentProjectArchivedFilters, updateFilters } = useCycleFilter();
+  const preferences = useCycleCataloguePreferences(workspaceSlug, projectId);
+  const { archivedFilters: currentProjectArchivedFilters } = preferences;
   // derived values
-  const totalArchivedCycles = currentProjectArchivedCycleIds?.length ?? 0;
-
-  useSWR(
-    workspaceSlug && projectId ? `ARCHIVED_CYCLES_${workspaceSlug.toString()}_${projectId.toString()}` : null,
-    async () => {
-      if (workspaceSlug && projectId) {
-        await fetchArchivedCycles(workspaceSlug.toString(), projectId.toString());
-      }
-    },
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
+  const totalArchivedCycles = catalogue.cycles?.length ?? 0;
 
   const handleRemoveFilter = (key: keyof TCycleFilters, value: string | null) => {
     if (!projectId) return;
@@ -52,12 +42,14 @@ export const ArchivedCycleLayoutRoot = observer(function ArchivedCycleLayoutRoot
     if (!value) newValues = [];
     else newValues = newValues.filter((val) => val !== value);
 
-    updateFilters(projectId.toString(), { [key]: newValues }, "archived");
+    preferences.update({ archivedFilters: { ...currentProjectArchivedFilters, [key]: newValues } });
   };
 
   if (!workspaceSlug || !projectId) return <></>;
 
-  if (loader || !currentProjectArchivedCycleIds) {
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="cycles" retry={catalogue.retry} />;
+  if (catalogue.isPending) {
     return <CycleModuleListLayoutLoader />;
   }
 
@@ -67,7 +59,7 @@ export const ArchivedCycleLayoutRoot = observer(function ArchivedCycleLayoutRoot
         <div className="border-b border-subtle px-5 py-3">
           <CycleAppliedFiltersList
             appliedFilters={currentProjectArchivedFilters ?? {}}
-            handleClearAllFilters={() => clearAllFilters(projectId.toString(), "archived")}
+            handleClearAllFilters={() => preferences.update({ archivedFilters: {} })}
             handleRemoveFilter={handleRemoveFilter}
           />
         </div>
@@ -87,4 +79,4 @@ export const ArchivedCycleLayoutRoot = observer(function ArchivedCycleLayoutRoot
       )}
     </>
   );
-});
+};

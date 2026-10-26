@@ -4,33 +4,40 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
+import React, { useRef, useState } from "react";
+import { useParams } from "@tanstack/react-router";
 // icons
 import { ListFilter } from "lucide-react";
 import { useOutsideClickDetector } from "@plane/hooks";
 import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 // plane helpers
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectView } from "@/hooks/store/use-project-view";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectViewListFilters } from "@/providers/project-view-list-filters";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 import { FiltersDropdown } from "../issues/issue-layouts/filters";
 import { ViewFiltersSelection } from "./filters/filter-selection";
 import { ViewOrderByDropdown } from "./filters/order-by";
 import { IconButton } from "@plane/propel/icon-button";
 
-export const ViewListHeader = observer(function ViewListHeader() {
+export function ViewListHeader() {
   // states
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchRequested, setIsSearchOpen] = useState(false);
   // refs
   const inputRef = useRef<HTMLInputElement>(null);
   // store hooks
-  const { filters, updateFilters } = useProjectView();
-  const {
-    project: { projectMemberIds },
-  } = useMember();
+  const { filters, updateFilters } = useProjectViewListFilters();
+  const isSearchOpen = searchRequested || filters.searchQuery.trim() !== "";
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { data: currentUser } = useCurrentUser();
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const projectMemberIds = projectId
+    ? projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false)
+    : undefined;
 
   // handlers
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -48,10 +55,6 @@ export const ViewListHeader = observer(function ViewListHeader() {
   useOutsideClickDetector(inputRef, () => {
     if (isSearchOpen && filters?.searchQuery.trim() === "") setIsSearchOpen(false);
   });
-
-  useEffect(() => {
-    if (filters?.searchQuery.trim() !== "") setIsSearchOpen(true);
-  }, [filters?.searchQuery]);
 
   return (
     <div className="flex h-full items-center gap-2">
@@ -118,9 +121,10 @@ export const ViewListHeader = observer(function ViewListHeader() {
             filters={filters}
             handleFiltersUpdate={updateFilters}
             memberIds={projectMemberIds ?? undefined}
+            workspaceSlug={workspaceSlug}
           />
         </FiltersDropdown>
       </div>
     </div>
   );
-});
+}

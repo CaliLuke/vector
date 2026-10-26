@@ -5,8 +5,7 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useMutation } from "@tanstack/react-query";
 
 import { AlertTriangle } from "lucide-react";
 // types
@@ -15,8 +14,8 @@ import type { IUserLite } from "@plane/types";
 // ui
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type Props = {
   data: Partial<IUserLite>;
@@ -25,33 +24,31 @@ type Props = {
   onClose: () => void;
 };
 
-export const ConfirmProjectMemberRemove = observer(function ConfirmProjectMemberRemove(props: Props) {
+export const ConfirmProjectMemberRemove = function ConfirmProjectMemberRemove(props: Props) {
   const { data, onSubmit, isOpen, onClose } = props;
   // router
   const { projectId } = useParams({ strict: false });
-  // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const removal = useMutation({ mutationFn: onSubmit, retry: false });
+  const isDeleteLoading = removal.isPending;
   // store hooks
-  const { data: currentUser } = useUser();
-  const { getProjectById } = useProject();
+  const { data: currentUser } = useCurrentUser();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   const handleClose = () => {
+    if (isDeleteLoading) return;
     onClose();
-    setIsDeleteLoading(false);
   };
 
-  const handleDeletion = async () => {
-    setIsDeleteLoading(true);
-
-    await onSubmit();
-
-    handleClose();
+  const handleDeletion = () => {
+    if (isDeleteLoading) return;
+    removal.mutate(undefined, { onSuccess: onClose });
   };
 
   if (!projectId) return <></>;
 
   const isCurrentUser = currentUser?.id === data?.id;
-  const currentProjectDetails = getProjectById(projectId.toString());
+  const currentProjectDetails = projectRows?.find((candidate) => candidate.id === projectId);
 
   return (
     <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
@@ -79,17 +76,28 @@ export const ConfirmProjectMemberRemove = observer(function ConfirmProjectMember
                 )}
               </p>
             </div>
+            {removal.isError && (
+              <p role="alert" className="mt-3 text-13 text-danger-primary">
+                {isCurrentUser ? "Unable to leave the project." : "Unable to remove the member."} Please try again.
+              </p>
+            )}
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 p-4 sm:px-6">
-        <Button variant="secondary" size="lg" onClick={handleClose}>
+        <Button variant="secondary" size="lg" onClick={handleClose} disabled={isDeleteLoading}>
           Cancel
         </Button>
-        <Button variant="error-fill" size="lg" tabIndex={1} onClick={handleDeletion} loading={isDeleteLoading}>
+        <Button
+          variant="error-fill"
+          size="lg"
+          onClick={handleDeletion}
+          loading={isDeleteLoading}
+          disabled={isDeleteLoading}
+        >
           {isCurrentUser ? (isDeleteLoading ? "Leaving..." : "Leave") : isDeleteLoading ? "Removing..." : "Remove"}
         </Button>
       </div>
     </ModalCore>
   );
-});
+};

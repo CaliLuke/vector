@@ -4,15 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { EstimatePropertyIcon } from "@plane/propel/icons";
 import { EEstimateSystem } from "@plane/types";
-import { cn, convertMinutesToHoursMinutesString } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { convertMinutesToHoursMinutesString } from "@plane/utils/datetime";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useEstimate } from "@/hooks/store/estimates/use-estimate";
+import { useProjectEstimates } from "@/hooks/use-estimates";
 
 export type TReadonlyEstimateProps = {
   className?: string;
@@ -23,17 +21,19 @@ export type TReadonlyEstimateProps = {
   workspaceSlug: string;
 };
 
-export const ReadonlyEstimate = observer(function ReadonlyEstimate(props: TReadonlyEstimateProps) {
+export const ReadonlyEstimate = function ReadonlyEstimate(props: TReadonlyEstimateProps) {
   const { className, hideIcon = false, value, placeholder, projectId, workspaceSlug } = props;
 
   const { t } = useTranslation();
-  const { currentActiveEstimateIdByProjectId, getEstimateById, getProjectEstimates } = useProjectEstimates();
-
-  const currentActiveEstimateId = projectId ? currentActiveEstimateIdByProjectId(projectId) : undefined;
-  const currentActiveEstimate = currentActiveEstimateId ? getEstimateById(currentActiveEstimateId) : undefined;
-  const { estimatePointById } = useEstimate(currentActiveEstimateId);
-
-  const estimatePoint = value ? estimatePointById(value) : null;
+  const {
+    activeEstimate: currentActiveEstimate,
+    points,
+    isPending,
+    isError,
+    isAccessDenied,
+    retry,
+  } = useProjectEstimates(workspaceSlug, projectId);
+  const estimatePoint = points?.find((point) => point.id === value);
 
   const displayValue = estimatePoint
     ? currentActiveEstimate?.type === EEstimateSystem.TIME
@@ -41,16 +41,28 @@ export const ReadonlyEstimate = observer(function ReadonlyEstimate(props: TReado
       : estimatePoint.value
     : null;
 
-  useEffect(() => {
-    if (projectId) {
-      getProjectEstimates(workspaceSlug, projectId);
-    }
-  }, [projectId, workspaceSlug]);
-
   return (
     <div className={cn("flex items-center gap-1 text-body-xs-regular", className)}>
       {!hideIcon && <EstimatePropertyIcon className="size-4 flex-shrink-0" />}
-      <span className="flex-grow truncate">{displayValue ?? placeholder ?? t("common.none")}</span>
+      <span className="flex-grow truncate">
+        {isError || isAccessDenied ? (
+          <span role="alert">
+            Estimate unavailable.{" "}
+            <button
+              type="button"
+              onClick={() => {
+                void retry();
+              }}
+            >
+              Retry
+            </button>
+          </span>
+        ) : isPending ? (
+          t("common.loading")
+        ) : (
+          (displayValue ?? placeholder ?? t("common.none"))
+        )}
+      </span>
     </div>
   );
-});
+};

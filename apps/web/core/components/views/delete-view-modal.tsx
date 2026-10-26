@@ -4,18 +4,14 @@
  * See the LICENSE file for details.
  */
 
+import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
-// types
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IProjectView } from "@plane/types";
-// ui
 import { AlertModalCore } from "@plane/ui";
-// hooks
-import { useProjectView } from "@/hooks/store/use-project-view";
+import { useProjectViewMutations } from "@/hooks/use-project-views";
 
 type Props = {
   data: IProjectView;
@@ -23,26 +19,34 @@ type Props = {
   onClose: () => void;
 };
 
-export const DeleteProjectViewModal = observer(function DeleteProjectViewModal(props: Props) {
-  const { data, isOpen, onClose } = props;
-  // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
-  // router
+export function DeleteProjectViewModal(props: Props) {
+  if (!props.isOpen) return null;
+  return <DeleteProjectViewModalContent key={props.data.id} {...props} />;
+}
+
+function DeleteProjectViewModalContent(props: Props) {
+  const { data, onClose } = props;
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const router = useRouter();
-  // store hooks
-  const { deleteView } = useProjectView();
+  const { remove } = useProjectViewMutations(workspaceSlug?.toString(), projectId?.toString());
   const { t } = useTranslation();
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
   const handleClose = () => {
     onClose();
-    setIsDeleteLoading(false);
   };
 
   const handleDeleteView = async () => {
-    if (!workspaceSlug || !projectId) return;
+    if (!workspaceSlug || !projectId || remove.isPending) return;
     try {
-      setIsDeleteLoading(true);
-      await deleteView(workspaceSlug.toString(), projectId.toString(), data.id);
+      await remove.mutateAsync(data.id);
+      if (!mounted.current) return;
       handleClose();
       void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views` });
       setToast({
@@ -51,23 +55,24 @@ export const DeleteProjectViewModal = observer(function DeleteProjectViewModal(p
         message: "View deleted successfully.",
       });
     } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "View could not be deleted. Please try again.",
-      });
+      if (mounted.current) {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Error!",
+          message: "View could not be deleted. Please try again.",
+        });
+      }
     }
-    setIsDeleteLoading(false);
   };
 
   return (
     <AlertModalCore
       handleClose={handleClose}
       handleSubmit={handleDeleteView}
-      isSubmitting={isDeleteLoading}
-      isOpen={isOpen}
+      isSubmitting={remove.isPending}
+      isOpen
       title={t("project_views.delete_view.title")}
       content={<>{t("project_views.delete_view.content")}</>}
     />
   );
-});
+}

@@ -4,101 +4,104 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
+import { publishSettingsOptions } from "@/queries/publishing";
 import React, { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { useForm, Controller } from "react-hook-form";
+
+import { useForm, useStore } from "@tanstack/react-form";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { SitesFileService } from "@plane/services";
-import type { TIssuePublicComment } from "@plane/types";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // editor components
 import { LiteTextEditor } from "@/components/editor/lite-text-editor";
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
-import { useUser } from "@/hooks/store/use-user";
+import { commentMutationOptions } from "@/queries/issue-actions";
+import { EFileAssetType } from "@plane/types";
 // services
 const fileService = new SitesFileService();
 
-const defaultValues: Partial<TIssuePublicComment> = {
+const defaultValues = {
   comment_html: "",
 };
 
 type Props = {
   anchor: string;
+  issueId: string;
   disabled?: boolean;
 };
 
-export const AddComment = observer(function AddComment(props: Props) {
-  const { anchor } = props;
+export const AddComment = function AddComment(props: Props) {
+  const { anchor, issueId } = props;
   // states
   const [uploadedAssetIds, setUploadAssetIds] = useState<string[]>([]);
   // refs
   const editorRef = useRef<EditorRefApi>(null);
-  // store hooks
-  const { peekId: issueId, addIssueComment, uploadCommentAsset } = useIssueDetails();
-  const { data: currentUser } = useUser();
-  const { workspace: workspaceID } = usePublish(anchor);
-  // form info
-  const {
-    handleSubmit,
-    control,
-    watch,
-    formState: { isSubmitting },
-    reset,
-  } = useForm<TIssuePublicComment>({ defaultValues });
+  const mutation = useMutation(commentMutationOptions(useQueryClient(), anchor, issueId));
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { workspace: workspaceID } = publishSettings ?? {};
+  const attachmentMutation = useMutation({
+    mutationFn: ({ commentId, assetIds }: { commentId: string; assetIds: string[] }) =>
+      fileService.updateBulkAssetsUploadStatus(anchor, commentId, { asset_ids: assetIds }),
+    onSuccess: () => setUploadAssetIds([]),
+    onError: () =>
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Attachments could not be saved",
+        message: "Your comment was posted. Retry saving its attachments.",
+      }),
+  });
 
-  const onSubmit = async (formData: TIssuePublicComment) => {
-    if (!anchor || !issueId || isSubmitting || !formData.comment_html) return;
+  const form = useForm({
+    defaultValues,
+    onSubmit: async ({ value, formApi }) => {
+      if (!currentUser || attachmentMutation.isPending || attachmentMutation.isError || !value.comment_html) return;
+      const comment = await mutation.mutateAsync({ kind: "add", data: value });
+      formApi.reset();
+      editorRef.current?.clearEditor();
+      if (comment && uploadedAssetIds.length > 0) {
+        attachmentMutation.mutate({ commentId: comment.id, assetIds: uploadedAssetIds });
+      }
+    },
+  });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
-    await addIssueComment(anchor, issueId, formData)
-      .then(async (res) => {
-        reset(defaultValues);
-        editorRef.current?.clearEditor();
-        if (uploadedAssetIds.length > 0) {
-          await fileService.updateBulkAssetsUploadStatus(anchor, res.id, {
-            asset_ids: uploadedAssetIds,
-          });
-          setUploadAssetIds([]);
-        }
-      })
-      .catch(() =>
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Comment could not be posted. Please try again.",
-        })
-      );
-  };
-
-  // TODO: on click if he user is not logged in redirect to login page
   return (
     <div>
+      {attachmentMutation.isError && (
+        <div role="alert">
+          Your comment was posted, but its attachments could not be saved.
+          <button onClick={() => attachmentMutation.mutate(attachmentMutation.variables)}>Retry attachments</button>
+        </div>
+      )}
       <div className="issue-comments-section">
-        <Controller
-          name="comment_html"
-          control={control}
-          render={({ field: { value, onChange } }) => (
+        <form.Field name="comment_html">
+          {(field) => (
             <LiteTextEditor
               editable
               onEnterKeyPress={(e) => {
-                if (currentUser) handleSubmit(onSubmit)(e);
+                e.preventDefault();
+                if (currentUser)
+                  void form.handleSubmit().catch(() => {
+                    // The mutation already reported the failed comment save.
+                  });
               }}
               anchor={anchor}
               workspaceId={workspaceID?.toString() ?? ""}
               ref={editorRef}
               id="peek-overview-add-comment"
-              initialValue={
-                !value || value === "" || (typeof value === "object" && Object.keys(value).length === 0)
-                  ? watch("comment_html")
-                  : value
-              }
-              onChange={(comment_json, comment_html) => onChange(comment_html)}
-              isSubmitting={isSubmitting}
+              initialValue={field.state.value}
+              onChange={(comment_json, comment_html) => field.handleChange(comment_html)}
+              isSubmitting={isSubmitting || attachmentMutation.isPending || attachmentMutation.isError}
               placeholder="Add comment..."
               uploadFile={async (blockId, file) => {
-                const { asset_id } = await uploadCommentAsset(file, anchor);
+                const { asset_id } = await fileService.uploadAsset(
+                  anchor,
+                  { entity_identifier: "", entity_type: EFileAssetType.COMMENT_DESCRIPTION },
+                  file
+                );
                 setUploadAssetIds((prev) => [...prev, asset_id]);
                 return asset_id;
               }}
@@ -107,8 +110,8 @@ export const AddComment = observer(function AddComment(props: Props) {
               }}
             />
           )}
-        />
+        </form.Field>
       </div>
     </div>
   );
-});
+};

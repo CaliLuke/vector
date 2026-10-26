@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/instancemail"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
@@ -257,7 +258,7 @@ func (store *analyticsExportStore) rows(ctx context.Context, slug string, raw js
 	}
 	joins := ` LEFT JOIN states state ON state.id=issue.state_id LEFT JOIN estimate_points estimate_point ON estimate_point.id=issue.estimate_point_id`
 	if xAxis == "labels__id" || segment == "labels__id" {
-		joins += ` LEFT JOIN issue_labels label_link ON label_link.issue_id=issue.id AND label_link.deleted_at IS NULL LEFT JOIN labels label ON label.id=label_link.label_id`
+		joins += ` LEFT JOIN issue_labels label_link ON ` + issuequery.LiveIssueLabelPredicate("issue", "label_link") + ` LEFT JOIN labels label ON label.id=label_link.label_id`
 	}
 	if xAxis == "assignees__id" || segment == "assignees__id" {
 		joins += ` LEFT JOIN issue_assignees assignee_link ON assignee_link.issue_id=issue.id AND assignee_link.deleted_at IS NULL LEFT JOIN users assignee ON assignee.id=assignee_link.assignee_id`

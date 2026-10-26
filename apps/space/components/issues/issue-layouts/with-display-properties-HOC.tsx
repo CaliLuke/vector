@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import type { IIssueDisplayProperties } from "@plane/types";
 
@@ -15,21 +14,15 @@ interface IWithDisplayPropertiesHOC {
   children: React.ReactNode;
 }
 
-export const WithDisplayPropertiesHOC = observer(function WithDisplayPropertiesHOC({
+export const WithDisplayPropertiesHOC = function WithDisplayPropertiesHOC({
   displayProperties,
   shouldRenderProperty,
   displayPropertyKey,
   children,
 }: IWithDisplayPropertiesHOC) {
-  let shouldDisplayPropertyFromFilters = false;
-  if (Array.isArray(displayPropertyKey))
-    shouldDisplayPropertyFromFilters = displayPropertyKey.every((key) => !!displayProperties[key]);
-  else shouldDisplayPropertyFromFilters = !!displayProperties[displayPropertyKey];
-
-  const renderProperty =
-    shouldDisplayPropertyFromFilters && (shouldRenderProperty ? shouldRenderProperty(displayProperties) : true);
-
-  if (!renderProperty) return null;
+  const keys = Array.isArray(displayPropertyKey) ? displayPropertyKey : [displayPropertyKey];
+  if (!keys.every((key) => displayProperties[key])) return null;
+  if (shouldRenderProperty && !shouldRenderProperty(displayProperties)) return null;
 
   return <>{children}</>;
-});
+};

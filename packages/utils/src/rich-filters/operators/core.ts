@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { get } from "lodash-es";
+import get from "lodash-es/get.js";
 // plane imports
 import { DATE_OPERATOR_LABELS_MAP, EMPTY_OPERATOR_LABEL, OPERATOR_LABELS_MAP } from "@plane/constants";
 import type {

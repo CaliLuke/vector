@@ -4,47 +4,48 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // Vector
 import { Row } from "@plane/ui";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { BLOCK_HEIGHT } from "@/components/gantt-chart/constants";
 import { ModuleGanttSidebarBlock } from "@/components/modules";
 // helpers
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
+import { daysFromGanttWidth } from "../../state";
+import { GanttSidebarDuration } from "../common";
 
 type Props = {
   blockId: string;
   isDragging: boolean;
 };
 
-export const ModulesSidebarBlock = observer(function ModulesSidebarBlock(props: Props) {
+export const ModulesSidebarBlock = function ModulesSidebarBlock(props: Props) {
   const { blockId, isDragging } = props;
   // store hooks
-  const { getBlockById, updateActiveBlockId, isBlockActive, getNumberOfDaysFromPosition } = useTimeLineChartStore();
-  const block = getBlockById(blockId);
+  const { blocksById, activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
+  const block = blocksById[blockId];
 
   if (!block) return <></>;
 
   const isBlockComplete = !!block.start_date && !!block.target_date;
-  const duration = isBlockComplete ? getNumberOfDaysFromPosition(block?.position?.width) : undefined;
+  const duration = isBlockComplete ? daysFromGanttWidth(viewData, block?.position?.width) : undefined;
 
   return (
     <div
       className={cn({
         "rounded-sm bg-layer-1": isDragging,
       })}
-      onMouseEnter={() => updateActiveBlockId(block.id)}
-      onMouseLeave={() => updateActiveBlockId(null)}
+      onMouseEnter={() => setActiveBlockId(block.id)}
+      onMouseLeave={() => setActiveBlockId(null)}
     >
       <Row
         id={`sidebar-block-${block.id}`}
         className={cn(
           "group flex w-full items-center gap-2 bg-layer-transparent pr-4 hover:bg-layer-transparent-hover",
           {
-            "bg-transparent-hover": isBlockActive(block.id),
+            "bg-transparent-hover": activeBlockId === block.id,
           }
         )}
         style={{
@@ -53,15 +54,11 @@ export const ModulesSidebarBlock = observer(function ModulesSidebarBlock(props: 
       >
         <div className="flex h-full flex-grow items-center justify-between gap-2 truncate">
           <div className="flex-grow truncate">
-            <ModuleGanttSidebarBlock moduleId={block.data.id} />
+            <ModuleGanttSidebarBlock module={block.data} />
           </div>
-          {duration !== undefined && (
-            <div className="flex-shrink-0 text-13 text-secondary">
-              {duration} day{duration > 1 ? "s" : ""}
-            </div>
-          )}
+          {duration !== undefined && <GanttSidebarDuration days={duration} />}
         </div>
       </Row>
     </div>
   );
-});
+};

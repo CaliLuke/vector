@@ -6,11 +6,10 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { isEmpty } from "lodash-es";
-import { observer } from "mobx-react";
+import isEmpty from "lodash-es/isEmpty.js";
 
 // plane imports
-import { EUserPermissionsLevel, WORK_ITEM_TRACKER_ELEMENTS } from "@plane/constants";
+import { WORK_ITEM_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -18,13 +17,14 @@ import type { ISearchIssueResponse } from "@plane/types";
 import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // components
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-work-item-filter-instance";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkItemFilterUi } from "@/providers/work-item-filter-ui";
+import { FilteredIssuesEmptyState } from "./filtered-issues";
 
-export const CycleEmptyState = observer(function CycleEmptyState() {
+export function CycleEmptyState() {
   // router
   const { workspaceSlug, projectId, cycleId } = useParams({ strict: false });
   // states
@@ -32,27 +32,23 @@ export const CycleEmptyState = observer(function CycleEmptyState() {
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { getCycleById } = useCycle();
-  const { issues } = useIssues(EIssuesStoreType.CYCLE);
+  const { cycle: cycleDetails } = useCycleDetails(workspaceSlug, projectId, cycleId);
+  const actions = useIssuesActions(EIssuesStoreType.CYCLE);
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { state: filterUi } = useWorkItemFilterUi();
   // derived values
-  const cycleWorkItemFilter = useWorkItemFilterInstance(EIssuesStoreType.CYCLE, cycleId);
-  const cycleDetails = cycleId ? getCycleById(cycleId) : undefined;
   const isCompletedCycleSnapshotAvailable = !isEmpty(cycleDetails?.progress_snapshot ?? {});
   const isCompletedAndEmpty = isCompletedCycleSnapshotAvailable || cycleDetails?.status?.toLowerCase() === "completed";
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canPerformEmptyStateActions = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
 
   const handleAddIssuesToCycle = async (data: ISearchIssueResponse[]) => {
     if (!workspaceSlug || !projectId || !cycleId) return;
 
     const issueIds = data.map((i) => i.id);
 
-    await issues
-      .addIssueToCycle(workspaceSlug.toString(), projectId.toString(), cycleId.toString(), issueIds)
+    await actions
+      .addIssuesToCycle(projectId, cycleId, issueIds)
       .then(() =>
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -87,19 +83,11 @@ export const CycleEmptyState = observer(function CycleEmptyState() {
             title={t("project_cycles.empty_state.completed_no_issues.title")}
             description={t("project_cycles.empty_state.completed_no_issues.description")}
           />
-        ) : cycleWorkItemFilter?.hasActiveFilters ? (
-          <EmptyStateDetailed
-            assetKey="search"
-            title={t("common_empty_state.search.title")}
-            description={t("common_empty_state.search.description")}
-            actions={[
-              {
-                label: "Clear filters",
-                onClick: cycleWorkItemFilter?.clearFilters,
-                disabled: !canPerformEmptyStateActions || !cycleWorkItemFilter,
-                variant: "secondary",
-              },
-            ]}
+        ) : filterUi.hasActiveFilters ? (
+          <FilteredIssuesEmptyState
+            clearFilters={filterUi.clearFilters}
+            canClearFilters={canPerformEmptyStateActions}
+            clearFiltersLabel="Clear filters"
           />
         ) : (
           <EmptyStateDetailed
@@ -129,4 +117,4 @@ export const CycleEmptyState = observer(function CycleEmptyState() {
       </div>
     </div>
   );
-});
+}

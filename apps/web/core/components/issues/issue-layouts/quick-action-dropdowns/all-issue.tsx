@@ -5,27 +5,22 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { omit } from "lodash-es";
-import { observer } from "mobx-react";
 
 // plane imports
 import { ARCHIVABLE_STATE_GROUPS } from "@plane/constants";
-import type { TIssue } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
-import { QuickActionMenu } from "./quick-action-menu";
+import { QuickActionMenu } from "@/components/common/quick-action-menu";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 // helper
-import { ArchiveIssueModal } from "../../archive-issue-modal";
-import { DeleteIssueModal } from "../../delete-issue-modal";
-import { CreateUpdateIssueModal } from "../../issue-modal/modal";
+import { IssueQuickActionModals } from "./issue-quick-action-modals";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
 import { useAllIssueMenuItems } from "./helper";
+import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
-export const AllIssueQuickActions = observer(function AllIssueQuickActions(props: IQuickActionProps) {
+export const AllIssueQuickActions = function AllIssueQuickActions(props: IQuickActionProps) {
   const {
     issue,
     handleDelete,
@@ -38,47 +33,33 @@ export const AllIssueQuickActions = observer(function AllIssueQuickActions(props
     parentRef,
   } = props;
   // states
-  const [createUpdateIssueModal, setCreateUpdateIssueModal] = useState(false);
-  const [issueToEdit, setIssueToEdit] = useState<TIssue | undefined>(undefined);
-  const [deleteIssueModal, setDeleteIssueModal] = useState(false);
-  const [archiveIssueModal, setArchiveIssueModal] = useState(false);
-  const [_, setDuplicateWorkItemModal] = useState(false);
+  const modals = useIssueQuickActionModals(issue);
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { getStateById } = useProjectState();
-  const { getProjectIdentifierById } = useProject();
+  const { getStateById } = useRouteProjectStates(issue.project_id);
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // derived values
   const stateDetails = getStateById(issue.state_id);
   const isEditingAllowed = !readOnly;
-  const projectIdentifier = getProjectIdentifierById(issue?.project_id);
+  const projectIdentifier = projectRows?.find((project) => project.id === issue?.project_id)?.identifier ?? "";
   // auth
   const isArchivingAllowed = handleArchive && isEditingAllowed;
   const isInArchivableGroup = !!stateDetails && ARCHIVABLE_STATE_GROUPS.includes(stateDetails?.group);
-
-  const duplicateIssuePayload = omit(
-    {
-      ...issue,
-      name: `${issue.name} (copy)`,
-      sourceIssueId: issue.id,
-    },
-    ["id"]
-  );
 
   // Menu items and modals using helper
   const menuItemProps: MenuItemFactoryProps = {
     issue,
     workspaceSlug: workspaceSlug?.toString(),
     projectIdentifier,
-    activeLayout: "Global issues",
     isEditingAllowed,
     isArchivingAllowed,
     isDeletingAllowed: isEditingAllowed,
     isInArchivableGroup,
-    setIssueToEdit,
-    setCreateUpdateIssueModal,
-    setDeleteIssueModal,
-    setArchiveIssueModal,
-    setDuplicateWorkItemModal,
+    setIssueToEdit: modals.setIssueToEdit,
+    setCreateUpdateIssueModal: modals.setCreateUpdateIssueModal,
+    setDeleteIssueModal: modals.setDeleteIssueModal,
+    setArchiveIssueModal: modals.setArchiveIssueModal,
     handleDelete,
     handleUpdate,
     handleArchive,
@@ -89,29 +70,12 @@ export const AllIssueQuickActions = observer(function AllIssueQuickActions(props
 
   return (
     <>
-      {/* Modals */}
-      <ArchiveIssueModal
-        data={issue}
-        isOpen={archiveIssueModal}
-        handleClose={() => setArchiveIssueModal(false)}
-        onSubmit={handleArchive}
-      />
-      <DeleteIssueModal
-        data={issue}
-        isOpen={deleteIssueModal}
-        handleClose={() => setDeleteIssueModal(false)}
-        onSubmit={handleDelete}
-      />
-      <CreateUpdateIssueModal
-        isOpen={createUpdateIssueModal}
-        onClose={() => {
-          setCreateUpdateIssueModal(false);
-          setIssueToEdit(undefined);
-        }}
-        data={issueToEdit ?? duplicateIssuePayload}
-        onSubmit={async (data) => {
-          if (issueToEdit && handleUpdate) await handleUpdate(data);
-        }}
+      <IssueQuickActionModals
+        issue={issue}
+        handleDelete={handleDelete}
+        handleUpdate={handleUpdate}
+        handleArchive={handleArchive}
+        modals={modals}
         storeType={EIssuesStoreType.GLOBAL}
       />
 
@@ -131,4 +95,4 @@ export const AllIssueQuickActions = observer(function AllIssueQuickActions(props
       />
     </>
   );
-});
+};

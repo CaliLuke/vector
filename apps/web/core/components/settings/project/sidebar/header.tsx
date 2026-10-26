@@ -4,37 +4,36 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "@tanstack/react-router";
+import { useParams, useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ROLE_DETAILS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { IconButton } from "@plane/propel/icon-button";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
-import { useProject } from "@/hooks/store/use-project";
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 
 type Props = {
   projectId: string;
 };
 
-export const ProjectSettingsSidebarHeader = observer(function ProjectSettingsSidebarHeader(props: Props) {
+export const ProjectSettingsSidebarHeader = function ProjectSettingsSidebarHeader(props: Props) {
   const { projectId } = props;
   // router
   const router = useRouter();
   // store hooks
-  const { getProjectRoleByWorkspaceSlugAndProjectId } = useUserPermissions();
-  const { currentWorkspace } = useWorkspace();
-  const { getPartialProjectById } = useProject();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const { projectRole: currentProjectRole } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const projectDetails = getPartialProjectById(projectId);
-  const currentProjectRole = currentWorkspace?.slug
-    ? getProjectRoleByWorkspaceSlugAndProjectId(currentWorkspace.slug, projectId)
-    : undefined;
+  const projectDetails = projectRows?.find((project) => project.id === projectId);
   // translation
   const { t } = useTranslation();
 
@@ -62,4 +61,4 @@ export const ProjectSettingsSidebarHeader = observer(function ProjectSettingsSid
       </div>
     </div>
   );
-});
+};

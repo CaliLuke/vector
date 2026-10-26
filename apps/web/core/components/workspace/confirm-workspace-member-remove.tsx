@@ -4,15 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
 // ui
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export type Props = {
   isOpen: boolean;
@@ -24,26 +23,40 @@ export type Props = {
   };
 };
 
-export const ConfirmWorkspaceMemberRemove = observer(function ConfirmWorkspaceMemberRemove(props: Props) {
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error && typeof error === "object" && "error" in error && typeof error.error === "string") return error.error;
+  if (error instanceof Error && error.message) return error.message;
+  return error ? fallback : null;
+}
+
+function getActionLabel(
+  isSelf: boolean,
+  isRemoving: boolean,
+  labels: { leave: string; leaving: string; remove: string; removing: string }
+) {
+  if (isSelf) return isRemoving ? labels.leaving : labels.leave;
+  return isRemoving ? labels.removing : labels.remove;
+}
+
+export function ConfirmWorkspaceMemberRemove(props: Props) {
   const { isOpen, onClose, onSubmit, userDetails } = props;
-  // states
-  const [isRemoving, setIsRemoving] = useState(false);
+  const removal = useMutation({ mutationFn: onSubmit, retry: false });
+  const isRemoving = removal.isPending;
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   const { t } = useTranslation();
+  const isSelf = currentUser?.id === userDetails.id;
 
   const handleClose = () => {
+    if (isRemoving) return;
     onClose();
-    setIsRemoving(false);
   };
 
-  const handleDeletion = async () => {
-    setIsRemoving(true);
-
-    await onSubmit();
-
-    handleClose();
+  const handleDeletion = () => {
+    if (isRemoving) return;
+    void removal.mutateAsync().then(onClose, () => undefined);
   };
+  const errorMessage = getErrorMessage(removal.error, t("something_went_wrong_please_try_again"));
 
   return (
     <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
@@ -54,10 +67,10 @@ export const ConfirmWorkspaceMemberRemove = observer(function ConfirmWorkspaceMe
           </div>
           <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
             <h3 className="text-h5-medium leading-6 text-primary">
-              {currentUser?.id === userDetails.id ? "Leave workspace?" : `Remove ${userDetails?.display_name}?`}
+              {isSelf ? "Leave workspace?" : `Remove ${userDetails.display_name}?`}
             </h3>
             <div className="mt-2">
-              {currentUser?.id === userDetails.id ? (
+              {isSelf ? (
                 <p className="text-body-xs-regular text-secondary">
                   {t("workspace_settings.settings.members.leave_confirmation")}
                 </p>
@@ -69,23 +82,27 @@ export const ConfirmWorkspaceMemberRemove = observer(function ConfirmWorkspaceMe
                 </p>
               )}
             </div>
+            {errorMessage && (
+              <p role="alert" className="mt-3 text-body-xs-regular text-danger-primary">
+                {errorMessage}
+              </p>
+            )}
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 p-4 sm:px-6">
-        <Button variant="secondary" size="lg" onClick={handleClose}>
+        <Button variant="secondary" size="lg" onClick={handleClose} disabled={isRemoving}>
           {t("cancel")}
         </Button>
-        <Button variant="error-fill" size="lg" tabIndex={1} onClick={handleDeletion} loading={isRemoving}>
-          {currentUser?.id === userDetails.id
-            ? isRemoving
-              ? t("leaving")
-              : t("leave")
-            : isRemoving
-              ? t("removing")
-              : t("remove")}
+        <Button variant="error-fill" size="lg" onClick={handleDeletion} loading={isRemoving} disabled={isRemoving}>
+          {getActionLabel(isSelf, isRemoving, {
+            leave: t("leave"),
+            leaving: t("leaving"),
+            remove: t("remove"),
+            removing: t("removing"),
+          })}
         </Button>
       </div>
     </ModalCore>
   );
-});
+}

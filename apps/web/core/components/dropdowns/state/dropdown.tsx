@@ -4,50 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
-
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 // local imports
-import type { TWorkItemStateDropdownBaseProps } from "./base";
+import type { StateDropdownProps } from "../state/types";
 import { WorkItemStateDropdownBase } from "./base";
 
-type TWorkItemStateDropdownProps = Omit<
-  TWorkItemStateDropdownBaseProps,
-  "stateIds" | "getStateById" | "onDropdownOpen" | "isInitializing"
-> & {
-  stateIds?: string[];
-};
-
-export const StateDropdown = observer(function StateDropdown(props: TWorkItemStateDropdownProps) {
+export function StateDropdown(props: StateDropdownProps) {
   const { projectId, stateIds: propsStateIds } = props;
-  // router params
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // states
-  const [stateLoader, setStateLoader] = useState(false);
-  // store hooks
-  const { fetchProjectStates, getProjectStateIds, getStateById } = useProjectState();
+  // state query
+  const stateQuery = useRouteProjectStates(projectId);
   // derived values
-  const stateIds = propsStateIds ?? getProjectStateIds(projectId);
-
-  // fetch states if not provided
-  const onDropdownOpen = async () => {
-    if ((stateIds === undefined || stateIds.length === 0) && workspaceSlug && projectId) {
-      setStateLoader(true);
-      await fetchProjectStates(workspaceSlug.toString(), projectId);
-      setStateLoader(false);
-    }
-  };
+  const stateIds = propsStateIds ?? stateQuery.getProjectStateIds(projectId);
 
   return (
     <WorkItemStateDropdownBase
       {...props}
-      getStateById={getStateById}
-      isInitializing={stateLoader}
+      getStateById={stateQuery.getStateById}
+      isInitializing={stateQuery.isPending}
       stateIds={stateIds ?? []}
-      onDropdownOpen={onDropdownOpen}
     />
   );
-});
+}

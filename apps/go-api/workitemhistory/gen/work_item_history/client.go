@@ -22,12 +22,15 @@ type Client struct {
 	VersionDetailEndpoint            loom.Endpoint
 	DescriptionVersionsEndpoint      loom.Endpoint
 	DescriptionVersionDetailEndpoint loom.Endpoint
+	PropertyHistoryEndpoint          loom.Endpoint
+	PropertyVersionsEndpoint         loom.Endpoint
+	PropertyVersionDetailEndpoint    loom.Endpoint
 }
 
 // NewClient initializes a "work_item_history" service client given the
 // endpoints.
-func NewClient(history, meta, versions, versionDetail, descriptionVersions, descriptionVersionDetail loom.Endpoint) *Client {
-	return &Client{HistoryEndpoint: history, MetaEndpoint: meta, VersionsEndpoint: versions, VersionDetailEndpoint: versionDetail, DescriptionVersionsEndpoint: descriptionVersions, DescriptionVersionDetailEndpoint: descriptionVersionDetail}
+func NewClient(history, meta, versions, versionDetail, descriptionVersions, descriptionVersionDetail, propertyHistory, propertyVersions, propertyVersionDetail loom.Endpoint) *Client {
+	return &Client{HistoryEndpoint: history, MetaEndpoint: meta, VersionsEndpoint: versions, VersionDetailEndpoint: versionDetail, DescriptionVersionsEndpoint: descriptionVersions, DescriptionVersionDetailEndpoint: descriptionVersionDetail, PropertyHistoryEndpoint: propertyHistory, PropertyVersionsEndpoint: propertyVersions, PropertyVersionDetailEndpoint: propertyVersionDetail}
 }
 
 // History calls the "history" endpoint of the "work_item_history" service.
@@ -138,5 +141,62 @@ func (c *Client) DescriptionVersionDetail(ctx context.Context, p *DescriptionVer
 		return
 	}
 	o := ires.(*DescriptionVersionDetailResponseData)
+	return o.Result, o.Body, nil
+}
+
+// PropertyHistory calls the "property_history" endpoint of the
+// "work_item_history" service.
+// PropertyHistory may return the following errors:
+// - "status_400" (type *WorkItemHistoryErrorResponse)
+// - "status_401" (type *WorkItemHistoryErrorResponse)
+// - "status_403" (type *WorkItemHistoryErrorResponse)
+// - "status_404" (type *WorkItemHistoryErrorResponse)
+// - "status_500" (type *WorkItemHistoryErrorResponse)
+// - error: internal error
+func (c *Client) PropertyHistory(ctx context.Context, p *PropertyHistoryPayload) (res *WorkItemHistoryResponseMetadata, resp io.ReadCloser, err error) {
+	var ires any
+	ires, err = c.PropertyHistoryEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	o := ires.(*PropertyHistoryResponseData)
+	return o.Result, o.Body, nil
+}
+
+// PropertyVersions calls the "property_versions" endpoint of the
+// "work_item_history" service.
+// PropertyVersions may return the following errors:
+// - "status_400" (type *WorkItemHistoryErrorResponse)
+// - "status_401" (type *WorkItemHistoryErrorResponse)
+// - "status_403" (type *WorkItemHistoryErrorResponse)
+// - "status_404" (type *WorkItemHistoryErrorResponse)
+// - "status_500" (type *WorkItemHistoryErrorResponse)
+// - error: internal error
+func (c *Client) PropertyVersions(ctx context.Context, p *PropertyVersionsPayload) (res *WorkItemHistoryResponseMetadata, resp io.ReadCloser, err error) {
+	var ires any
+	ires, err = c.PropertyVersionsEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	o := ires.(*PropertyVersionsResponseData)
+	return o.Result, o.Body, nil
+}
+
+// PropertyVersionDetail calls the "property_version_detail" endpoint of the
+// "work_item_history" service.
+// PropertyVersionDetail may return the following errors:
+// - "status_400" (type *WorkItemHistoryErrorResponse)
+// - "status_401" (type *WorkItemHistoryErrorResponse)
+// - "status_403" (type *WorkItemHistoryErrorResponse)
+// - "status_404" (type *WorkItemHistoryErrorResponse)
+// - "status_500" (type *WorkItemHistoryErrorResponse)
+// - error: internal error
+func (c *Client) PropertyVersionDetail(ctx context.Context, p *PropertyVersionDetailPayload) (res *WorkItemHistoryResponseMetadata, resp io.ReadCloser, err error) {
+	var ires any
+	ires, err = c.PropertyVersionDetailEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	o := ires.(*PropertyVersionDetailResponseData)
 	return o.Result, o.Body, nil
 }

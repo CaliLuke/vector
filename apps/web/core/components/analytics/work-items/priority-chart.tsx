@@ -4,12 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { observer } from "mobx-react";
 
 import { useTheme } from "next-themes";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane package imports
 import { Download } from "lucide-react";
 import type { ChartXAxisDateGrouping } from "@plane/constants";
@@ -22,12 +20,13 @@ import type { TBarItem, TChart, TChartDatum, ChartXAxisProperty, ChartYAxisMetri
 // plane web components
 import { generateExtendedColors, parseChartData } from "@/components/chart/utils";
 // hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { AnalyticsService } from "@/services/analytics.service";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { useWorkspaceStates } from "@/hooks/use-project-states";
+import { analyticsChartOptions } from "@/queries/analytics";
 import { exportCSV } from "../export";
 import { DataTable } from "../insight-table/data-table";
 import { ChartLoader } from "../loaders";
+import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
 import { generateBarColor } from "./utils";
 import type { AnalyticsColumnDef, AnalyticsTable } from "../insight-table/table-features";
 
@@ -38,36 +37,20 @@ interface Props {
   x_axis_date_grouping?: ChartXAxisDateGrouping;
 }
 
-const analyticsService = new AnalyticsService();
-const PriorityChart = observer(function PriorityChart(props: Props) {
+function PriorityChart(props: Props) {
   const { x_axis, y_axis, group_by } = props;
   const { t } = useTranslation();
   // store hooks
-  const { selectedDuration, selectedProjects, selectedCycle, selectedModule, isPeekView, isEpic } = useAnalytics();
-  const { workspaceStates } = useProjectState();
+  const { scope, requestFilters, isPeekView } = useAnalyticsState();
+  const { workspaceStates } = useWorkspaceStates(scope.workspaceSlug);
   const { resolvedTheme } = useTheme();
   // router
-  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const workspaceSlug = params.workspaceSlug.toString();
 
-  const { data: priorityChartData, isLoading: priorityChartLoading } = useSWR(
-    `customized-insights-chart-${workspaceSlug}-${selectedDuration}-
-    ${selectedProjects}-${selectedCycle}-${selectedModule}-${props.x_axis}-${props.y_axis}-${props.group_by}-${isPeekView}-${isEpic}`,
-    () =>
-      analyticsService.getAdvanceAnalyticsCharts<TChart>(
-        workspaceSlug,
-        "custom-work-items",
-        {
-          // date_filter: selectedDuration,
-          ...(selectedProjects?.length > 0 && { project_ids: selectedProjects?.join(",") }),
-          ...(selectedCycle ? { cycle_id: selectedCycle } : {}),
-          ...(selectedModule ? { module_id: selectedModule } : {}),
-          ...(isEpic ? { epic: true } : {}),
-          ...props,
-        },
-        isPeekView
-      )
+  const query = useQuery(
+    analyticsChartOptions<TChart>(scope, "custom-work-items", { ...requestFilters, ...props }, isPeekView)
   );
+  const { data: priorityChartData, isLoading: priorityChartLoading } = query;
+  const canRead = isPeekView ? scope.hasProjectChartAccess : scope.hasWorkspaceAnalyticsAccess;
   const parsedData = useMemo(
     () =>
       priorityChartData && parseChartData(priorityChartData, props.x_axis, props.group_by, props.x_axis_date_grouping),
@@ -188,7 +171,11 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
 
   return (
     <div className="flex flex-col gap-12">
-      {priorityChartLoading ? (
+      {!canRead ? (
+        <AnalyticsAccessDenied />
+      ) : query.isError ? (
+        <AnalyticsQueryError onRetry={() => void query.refetch()} />
+      ) : priorityChartLoading ? (
         <ChartLoader />
       ) : parsedData?.data && parsedData.data.length > 0 ? (
         <>
@@ -219,7 +206,9 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
               <Button
                 variant="secondary"
                 prependIcon={<Download className="h-3.5 w-3.5" />}
-                onClick={() => exportCSV(table.getRowModel().rows, [...defaultColumns, ...columns], workspaceSlug)}
+                onClick={() =>
+                  exportCSV(table.getRowModel().rows, [...defaultColumns, ...columns], scope.workspaceSlug ?? "")
+                }
               >
                 <div>{t("exporter.csv.short_description")}</div>
               </Button>
@@ -236,6 +225,6 @@ const PriorityChart = observer(function PriorityChart(props: Props) {
       )}
     </div>
   );
-});
+}
 
 export default PriorityChart;

@@ -5,44 +5,36 @@
  */
 
 import { useParams, Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { ROLE } from "@plane/constants";
 import { Popover } from "@plane/propel/popover";
 import { Avatar } from "@plane/ui";
-import { cn, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUser } from "@/hooks/store/user";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type Props = {
   id: string;
 };
 
-export const EditorUserMention = observer(function EditorUserMention(props: Props) {
+export const EditorUserMention = function EditorUserMention(props: Props) {
   const { id } = props;
   // router
-  const { projectId } = useParams({ strict: false });
-  // params
-  const { workspaceSlug } = useParams({ strict: false });
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const { data: currentUser } = useUser();
-  const {
-    getUserDetails,
-    project: { getProjectMemberDetails },
-  } = useMember();
+  const { data: currentUser } = useCurrentUser();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { membershipsByMemberId } = useProjectMemberRoster(workspaceSlug, projectId);
   // derived values
-  const userDetails = getUserDetails(id);
-  const roleDetails = projectId ? getProjectMemberDetails(id, projectId.toString())?.role : null;
+  const userDetails = memberById(id)?.member;
+  const roleDetails = membershipsByMemberId?.get(id)?.role;
   const profileLink = `/${workspaceSlug}/profile/${id}`;
 
   if (!userDetails) {
-    return (
-      <div className="not-prose inline rounded-sm bg-layer-1 px-1 py-0.5 text-tertiary no-underline">
-        @suspended user
-      </div>
-    );
+    return <div className="not-prose inline rounded-sm bg-layer-1 px-1 py-0.5 text-tertiary no-underline">@user</div>;
   }
 
   return (
@@ -82,4 +74,4 @@ export const EditorUserMention = observer(function EditorUserMention(props: Prop
       </Popover>
     </div>
   );
-});
+};

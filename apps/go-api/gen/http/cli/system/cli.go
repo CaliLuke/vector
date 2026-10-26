@@ -1427,6 +1427,7 @@ type commandLine struct {
 	WorkspaceFavorites struct {
 		List struct {
 			Slug      string `help:"" name:"slug" required:""`
+			All       string `help:"" name:"all"`
 			SessionID string `help:"" name:"session-id"`
 		} `cmd:"" help:"List implements list." name:"list"`
 		Create struct {
@@ -2544,6 +2545,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		userPropertiesModulePatchSessionIDFlag                        *string
 		userSettingsGetSessionIDFlag                                  *string
 		workspaceFavoritesListSlugFlag                                *string
+		workspaceFavoritesListAllFlag                                 *string
 		workspaceFavoritesListSessionIDFlag                           *string
 		workspaceFavoritesCreateBodyFlag                              *string
 		workspaceFavoritesCreateSlugFlag                              *string
@@ -3563,6 +3565,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		userPropertiesModulePatchSessionIDFlag = &command.UserProperties.ModulePatch.SessionID
 		userSettingsGetSessionIDFlag = &command.UserSettings.Get.SessionID
 		workspaceFavoritesListSlugFlag = &command.WorkspaceFavorites.List.Slug
+		workspaceFavoritesListAllFlag = &command.WorkspaceFavorites.List.All
 		workspaceFavoritesListSessionIDFlag = &command.WorkspaceFavorites.List.SessionID
 		workspaceFavoritesCreateBodyFlag = &command.WorkspaceFavorites.Create.Body
 		workspaceFavoritesCreateSlugFlag = &command.WorkspaceFavorites.Create.Slug
@@ -5204,7 +5207,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 			switch epn {
 			case "list":
 				endpoint = c.List()
-				data, err = workspacefavoritesc.BuildListPayload(*workspaceFavoritesListSlugFlag, *workspaceFavoritesListSessionIDFlag)
+				data, err = workspacefavoritesc.BuildListPayload(*workspaceFavoritesListSlugFlag, *workspaceFavoritesListAllFlag, *workspaceFavoritesListSessionIDFlag)
 			case "create":
 				endpoint = c.Create()
 				data, err = workspacefavoritesc.BuildCreatePayload(*workspaceFavoritesCreateBodyFlag, *workspaceFavoritesCreateSlugFlag, *workspaceFavoritesCreateSessionIDFlag)
@@ -10743,6 +10746,7 @@ func workspaceFavoritesListUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] workspace-favorites list", os.Args[0])
 	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -all BOOL")
 	fmt.Fprint(os.Stderr, " -session-id STRING")
 	fmt.Fprintln(os.Stderr)
 
@@ -10752,11 +10756,12 @@ func workspaceFavoritesListUsage() {
 
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -all BOOL: ")
 	fmt.Fprintln(os.Stderr, "    -session-id STRING: ")
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-favorites list --slug \"Sunt consectetur nulla consectetur ea minima ut.\" --session-id \"Dolor dicta quo blanditiis eaque.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "workspace-favorites list --slug \"Sunt consectetur nulla consectetur ea minima ut.\" --all false --session-id \"Dicta quo blanditiis eaque.\"")
 }
 func workspaceFavoritesCreateUsage() {
 	// Header with flags

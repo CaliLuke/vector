@@ -5,10 +5,9 @@
  */
 
 import React, { useState } from "react";
-import { cn } from "@plane/utils";
-import { AuthInput } from "./auth-input";
+import { AuthPasswordInput } from "./auth-password-input";
 
-export type TAuthConfirmPasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+type TAuthConfirmPasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   password: string;
   label?: string;
   error?: string;
@@ -16,7 +15,6 @@ export type TAuthConfirmPasswordInputProps = React.InputHTMLAttributes<HTMLInput
   containerClassName?: string;
   labelClassName?: string;
   errorClassName?: string;
-  onPasswordMatchChange?: (matches: boolean) => void;
 };
 
 export function AuthConfirmPasswordInput({
@@ -25,11 +23,7 @@ export function AuthConfirmPasswordInput({
   error,
   showPasswordToggle = true,
   containerClassName = "",
-  errorClassName = "",
-  className = "",
   value = "",
-  onChange,
-  onPasswordMatchChange,
   ...props
 }: TAuthConfirmPasswordInputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -39,20 +33,6 @@ export function AuthConfirmPasswordInput({
   const showMatchError =
     confirmPassword.length > 0 && !passwordsMatch && (!isFocused || confirmPassword.length >= password.length);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newConfirmPassword = e.target.value;
-    onChange?.(e);
-    onPasswordMatchChange?.(password === newConfirmPassword && password.length > 0);
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-  };
-
   const getError = () => {
     if (error) return error;
     if (showMatchError) return "Passwords don't match";
@@ -60,20 +40,23 @@ export function AuthConfirmPasswordInput({
   };
 
   return (
-    <div className={cn("space-y-2", containerClassName)}>
-      <AuthInput
+    <div className="space-y-2">
+      <AuthPasswordInput
         {...props}
-        type="password"
+        containerClassName={containerClassName}
+        showPasswordStrength={false}
+        onFocus={(event) => {
+          setIsFocused(true);
+          props.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setIsFocused(false);
+          props.onBlur?.(event);
+        }}
         label={label}
         error={getError()}
         showPasswordToggle={showPasswordToggle}
-        errorClassName={errorClassName}
-        className={className}
         value={value}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        autoComplete="off"
       />
       {confirmPassword && passwordsMatch && <p className="text-13 text-success-primary">Passwords match</p>}
     </div>

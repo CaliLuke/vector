@@ -5,8 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
 // types
 import { PROJECT_ERROR_MESSAGES } from "@plane/constants";
@@ -14,10 +12,12 @@ import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IModule } from "@plane/types";
 // ui
-import { AlertModalCore } from "@plane/ui";
+import { CatalogueDeleteConfirmation } from "@/components/cycles-modules/catalogue-delete-confirmation";
 // constants
 // hooks
-import { useModule } from "@/hooks/store/use-module";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { isAuthorizationError } from "@/queries/authorization-errors";
 
 type Props = {
   data: IModule;
@@ -26,65 +26,51 @@ type Props = {
   onDeleteSuccess: (module: IModule) => void;
 };
 
-export const DeleteModuleModal = observer(function DeleteModuleModal(props: Props) {
+export function DeleteModuleModal(props: Props) {
+  return props.isOpen ? <ModuleDeleteDialog key={props.data.id} {...props} /> : null;
+}
+function ModuleDeleteDialog(props: Props) {
   const { data, isOpen, onClose, onDeleteSuccess } = props;
   // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const { deleteModule } = useModule();
+  const { mutation, scope } = useProjectModules(workspaceSlug, projectId);
+  const mounted = useCommittedScope(
+    JSON.stringify([scope.accountId, scope.sessionGeneration, workspaceSlug, projectId, data.id, isOpen])
+  );
   const { t } = useTranslation();
 
-  const handleClose = () => {
-    onClose();
-    setIsDeleteLoading(false);
-  };
-
+  const handleClose = () => onClose();
   const handleDeletion = async () => {
-    if (!workspaceSlug || !projectId) return;
-
-    setIsDeleteLoading(true);
-
-    await deleteModule(workspaceSlug.toString(), projectId.toString(), data.id)
-      .then(() => {
-        onDeleteSuccess(data);
-        handleClose();
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "Module deleted successfully.",
-        });
-        return null;
-      })
-      .catch((errors) => {
-        const isPermissionError = errors?.error === "You don't have the required permissions.";
-        const currentError = isPermissionError
-          ? PROJECT_ERROR_MESSAGES.permissionError
-          : PROJECT_ERROR_MESSAGES.moduleDeleteError;
-        setToast({
-          title: t(currentError.i18n_title),
-          type: TOAST_TYPE.ERROR,
-          message: currentError.i18n_message && t(currentError.i18n_message),
-        });
-      })
-      .finally(() => handleClose());
+    if (!mounted() || !workspaceSlug || !projectId) return;
+    try {
+      const result = await mutation.mutateAsync({ type: "delete", id: data.id });
+      if (!mounted() || !result.captured.isCurrent()) return;
+      onDeleteSuccess(data);
+      onClose();
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "Module deleted successfully." });
+    } catch (error) {
+      if (!mounted()) return;
+      const message = isAuthorizationError(error)
+        ? PROJECT_ERROR_MESSAGES.permissionError
+        : PROJECT_ERROR_MESSAGES.moduleDeleteError;
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t(message.i18n_title),
+        message: message.i18n_message && t(message.i18n_message),
+      });
+    }
   };
 
   return (
-    <AlertModalCore
+    <CatalogueDeleteConfirmation
+      entity="module"
+      itemName={data?.name}
       handleClose={handleClose}
       handleSubmit={handleDeletion}
-      isSubmitting={isDeleteLoading}
+      isSubmitting={mutation.isPending}
       isOpen={isOpen}
-      title="Delete module"
-      content={
-        <>
-          Are you sure you want to delete module-{" "}
-          <span className="font-medium break-all text-primary">{data?.name}</span>? All of the data related to the
-          module will be permanently removed. This action cannot be undone.
-        </>
-      }
     />
   );
-});
+}

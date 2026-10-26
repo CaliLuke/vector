@@ -4,42 +4,36 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect, useMemo } from "react";
-import { observer } from "mobx-react";
+import React, { useMemo } from "react";
+
 // plane imports
 import type {
-  IFilterOption,
   TFilterProperty,
+  TFilterValue,
   TSingleSelectFilterFieldConfig,
   TFilterConditionNodeForDisplay,
 } from "@plane/types";
 import { CustomSearchSelect } from "@plane/ui";
 // local imports
+import { useFilterSelectOptions } from "./use-options";
 import { SelectedOptionsDisplay } from "./selected-options-display";
-import { getCommonCustomSearchSelectProps, getFormattedOptions, loadOptions } from "./shared";
+import { getCommonCustomSearchSelectProps, getFormattedOptions } from "./shared";
 
 type TSingleSelectFilterValueInputProps<P extends TFilterProperty> = {
-  config: TSingleSelectFilterFieldConfig<string>;
-  condition: TFilterConditionNodeForDisplay<P, string>;
+  config: TSingleSelectFilterFieldConfig<TFilterValue>;
+  condition: TFilterConditionNodeForDisplay<P, TFilterValue>;
   isDisabled?: boolean;
-  onChange: (value: string | null) => void;
+  onChange: (value: TFilterValue) => void;
 };
 
-export const SingleSelectFilterValueInput = observer(function SingleSelectFilterValueInput<P extends TFilterProperty>(
+export const SingleSelectFilterValueInput = function SingleSelectFilterValueInput<P extends TFilterProperty>(
   props: TSingleSelectFilterValueInputProps<P>
 ) {
   const { config, condition, onChange, isDisabled } = props;
-  // states
-  const [options, setOptions] = useState<IFilterOption<string>[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  // derived values
-  const formattedOptions = useMemo(() => getFormattedOptions<string>(options), [options]);
+  const { options, loading, error } = useFilterSelectOptions(config);
+  const formattedOptions = useMemo(() => getFormattedOptions(options), [options]);
 
-  useEffect(() => {
-    loadOptions({ config, setOptions, setLoading });
-  }, [config]);
-
-  const handleSelectChange = (value: string) => {
+  const handleSelectChange = (value: TFilterValue) => {
     if (value === condition.value) {
       onChange(null);
     } else {
@@ -50,15 +44,13 @@ export const SingleSelectFilterValueInput = observer(function SingleSelectFilter
   return (
     <CustomSearchSelect
       {...getCommonCustomSearchSelectProps(isDisabled)}
-      value={condition.value}
+      value={condition.value ?? null}
       onChange={handleSelectChange}
       options={formattedOptions}
       multiple={false}
-      disabled={loading || isDisabled}
-      customButton={
-        <SelectedOptionsDisplay<string> selectedValue={condition.value} options={options} displayCount={1} />
-      }
-      defaultOpen={!condition.value}
+      disabled={loading || error || isDisabled}
+      customButton={<SelectedOptionsDisplay selectedValue={condition.value} options={options} displayCount={1} />}
+      defaultOpen={condition.value === null || condition.value === undefined}
     />
   );
-});
+};

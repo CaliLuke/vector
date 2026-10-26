@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { orderBy } from "lodash-es";
+import orderBy from "lodash-es/orderBy.js";
 // plane imports
 import type { IPaymentProduct, TProductSubscriptionType, TSubscriptionPrice } from "@plane/types";
 import { EProductSubscriptionEnum } from "@plane/types";

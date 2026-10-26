@@ -6,7 +6,6 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
 
 // plane imports
 import type { IWorkspaceSearchResults } from "@plane/types";
@@ -21,7 +20,7 @@ type Props = {
   results: IWorkspaceSearchResults;
 };
 
-export const PowerKModalSearchResults = observer(function PowerKModalSearchResults(props: Props) {
+export function PowerKModalSearchResults(props: Props) {
   const { closePalette, results } = props;
   // router
   const router = useRouter();
@@ -38,7 +37,7 @@ export const PowerKModalSearchResults = observer(function PowerKModalSearchResul
         if (section.length <= 0) return null;
 
         return (
-          <Command.Group key={key} heading={currentSection.title}>
+          <Command.Group key={key} heading={currentSection.title} forceMount>
             {section.map((item) => {
               let value = `${key}-${item?.id}-${item.name}`;
 
@@ -53,17 +52,12 @@ export const PowerKModalSearchResults = observer(function PowerKModalSearchResul
               return (
                 <PowerKModalCommandItem
                   key={item.id}
+                  forceMount
                   label={currentSection.itemName(item)}
                   icon={currentSection.icon}
                   onSelect={() => {
                     closePalette();
                     void router.navigate({ href: currentSection.path(item, projectId) });
-                    // const itemProjectId =
-                    //   item?.project_id ||
-                    //   (Array.isArray(item?.project_ids) && item?.project_ids?.length > 0
-                    //     ? item?.project_ids[0]
-                    //     : undefined);
-                    // if (itemProjectId) openProjectAndScrollToSidebar(itemProjectId);
                   }}
                   value={value}
                 />
@@ -74,4 +68,4 @@ export const PowerKModalSearchResults = observer(function PowerKModalSearchResul
       })}
     </>
   );
-});
+}

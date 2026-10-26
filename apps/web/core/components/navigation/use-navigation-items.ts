@@ -6,29 +6,24 @@
 
 import { useMemo, useCallback } from "react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
-import type { EUserProjectRoles, IPartialProject } from "@plane/types";
+import type { IPartialProject } from "@plane/types";
 import type { TNavigationItem } from "@/components/navigation/tab-navigation-root";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 type UseNavigationItemsProps = {
   workspaceSlug: string;
   projectId: string;
   project?: IPartialProject;
-  allowPermissions: (
-    access: EUserPermissions[] | EUserProjectRoles[],
-    level: EUserPermissionsLevel,
-    workspaceSlug: string,
-    projectId: string
-  ) => boolean;
 };
 
 export const useNavigationItems = ({
   workspaceSlug,
   projectId,
   project,
-  allowPermissions,
 }: UseNavigationItemsProps): TNavigationItem[] => {
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // Base navigation items
   const baseNavigation = useCallback(
     // oxlint-disable-next-line no-shadow
@@ -104,14 +99,14 @@ export const useNavigationItems = ({
     // Filter by permissions and shouldRender
     const filteredItems = navItems.filter((item) => {
       if (!item.shouldRender) return false;
-      const hasAccess = allowPermissions(item.access, EUserPermissionsLevel.PROJECT, workspaceSlug, project?.id ?? "");
+      const hasAccess = canProject(item.access);
       return hasAccess;
     });
 
     // Sort by sortOrder
     // oxlint-disable-next-line unicorn/no-array-sort
     return filteredItems.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  }, [workspaceSlug, projectId, baseNavigation, allowPermissions, project?.id]);
+  }, [workspaceSlug, projectId, baseNavigation, canProject]);
 
   return navigationItems;
 };

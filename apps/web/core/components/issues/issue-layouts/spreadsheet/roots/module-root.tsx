@@ -6,15 +6,14 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
-// mobx store
+// hooks
 // components
 import { ModuleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseSpreadsheetRoot } from "../base-spreadsheet-root";
 
-export const ModuleSpreadsheetLayout = observer(function ModuleSpreadsheetLayout() {
+export const ModuleSpreadsheetLayout = function ModuleSpreadsheetLayout() {
   const { moduleId } = useParams({ strict: false });
 
   return <BaseSpreadsheetRoot QuickActions={ModuleIssueQuickActions} viewId={moduleId?.toString()} />;
-});
+};

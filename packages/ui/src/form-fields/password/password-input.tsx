@@ -7,7 +7,7 @@
 import { Eye, EyeClosed } from "lucide-react";
 import { useState } from "react";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TPasswordInputProps = {
   id: string;

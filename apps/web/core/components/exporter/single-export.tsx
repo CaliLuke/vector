@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Button } from "@plane/propel/button";
 import type { IExportData } from "@plane/types";
 // helpers
-import { getDate, renderFormattedDate } from "@plane/utils";
+import { getDate, renderFormattedDate } from "@plane/utils/datetime";
 // types
 
 type Props = {

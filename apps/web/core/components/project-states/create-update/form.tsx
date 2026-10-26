@@ -4,109 +4,125 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
+import { Form } from "@plane/ui";
+import { FormErrors } from "@plane/ui";
+import { useEffect, useRef } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 import { TwitterPicker } from "react-color";
 import { Button } from "@plane/propel/button";
 import type { IState } from "@plane/types";
 import { Popover, Input, TextArea } from "@plane/ui";
 
-type TStateForm = {
+type Props = {
   data: Partial<IState>;
-  onSubmit: (formData: Partial<IState>) => Promise<{ status: string }>;
+  onSubmit: (draft: Partial<IState>) => Promise<void>;
   onCancel: () => void;
-  buttonDisabled: boolean;
   buttonTitle: string;
 };
-
-function PopoverButton({ color }: { color?: string }) {
-  return (
-    <div
-      className="group inline-flex h-5 w-5 items-center rounded-sm text-14 font-medium transition-all focus:outline-none"
-      style={{
-        backgroundColor: color ?? "black",
-      }}
-    />
-  );
-}
-
-export function StateForm(props: TStateForm) {
-  const { data, onSubmit, onCancel, buttonDisabled, buttonTitle } = props;
-  // states
-  const [formData, setFromData] = useState<Partial<IState> | undefined>(undefined);
-  const [errors, setErrors] = useState<Partial<Record<keyof IState, string>> | undefined>(undefined);
-
+export function StateForm({ data, onSubmit, onCancel, buttonTitle }: Props) {
+  const nameInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (data && !formData) setFromData(data);
-  }, [data, formData]);
-
-  const handleFormData = <T extends keyof IState>(key: T, value: IState[T]) => {
-    setFromData((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => ({ ...prev, [key]: "" }));
-  };
-
-  const formSubmit = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    event.preventDefault();
-
-    const name = formData?.name || undefined;
-    if (!formData || !name) {
-      let currentErrors: Partial<Record<keyof IState, string>> = {};
-      if (!name) currentErrors = { ...currentErrors, name: "Name is required" };
-      setErrors(currentErrors);
-      return;
-    }
-
-    try {
-      await onSubmit(formData);
-    } catch (error) {
-      console.log("error", error);
-    }
-  };
-
+    nameInput.current?.focus();
+  }, []);
+  const form = useForm({
+    defaultValues: { name: data.name ?? "", description: data.description ?? "", color: data.color ?? "#000000" },
+    onSubmit: async ({ value }) => onSubmit({ ...value, name: value.name.trim() }),
+  });
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
   return (
-    <div className="relative flex space-x-2 rounded-sm bg-surface-1 p-3">
-      {/* color */}
-      <div className="mt-2 h-full flex-shrink-0">
-        <Popover button={<PopoverButton color={formData?.color} />} panelClassName="mt-4 -ml-3">
-          <TwitterPicker color={formData?.color} onChange={(value) => handleFormData("color", value.hex)} />
-        </Popover>
-      </div>
-
-      <div className="w-full space-y-2">
-        {/* title */}
-        <Input
-          id="name"
-          type="text"
-          name="name"
-          placeholder="Name"
-          value={formData?.name ?? ""}
-          onChange={(e) => handleFormData("name", e.target.value)}
-          hasError={(errors && Boolean(errors.name)) || false}
-          className="w-full"
-          maxLength={100}
-          // oxlint-disable-next-line jsx_a11y/no-autofocus -- This explicit create/edit form starts keyboard entry in the Name field.
-          autoFocus
-        />
-
-        {/* description */}
-        <TextArea
-          id="description"
-          name="description"
-          placeholder="Describe this state for your members."
-          value={formData?.description}
-          onChange={(e) => handleFormData("description", e.target.value)}
-          hasError={(errors && Boolean(errors.description)) || false}
-          className="min-h-14 w-full resize-none text-13"
-        />
-
-        <div className="flex items-center space-x-2">
-          <Button onClick={formSubmit} variant="primary" size="lg" disabled={buttonDisabled}>
-            {buttonTitle}
-          </Button>
-          <Button type="button" variant="secondary" size="lg" disabled={buttonDisabled} onClick={onCancel}>
-            Cancel
-          </Button>
+    <Form
+      onSubmit={() => {
+        form.setErrorMap({ onSubmit: undefined });
+        return form.handleSubmit().catch((error: unknown) => {
+          form.setErrorMap({
+            onSubmit: {
+              form: error instanceof Error ? error.message : "Could not save this state. Please try again.",
+              fields: {},
+            },
+          });
+        });
+      }}
+      noValidate
+    >
+      <fieldset disabled={busy} inert={busy} className="relative flex space-x-2 rounded-sm bg-surface-1 p-3">
+        <form.Field name="color">
+          {(field) => (
+            <div className="mt-2 h-full shrink-0">
+              <Popover
+                button={
+                  <span
+                    aria-label="State color"
+                    className="inline-flex size-5 rounded-sm"
+                    style={{ backgroundColor: field.state.value }}
+                  />
+                }
+                panelClassName="mt-4 -ml-3"
+              >
+                <TwitterPicker color={field.state.value} onChange={(value) => field.handleChange(value.hex)} />
+              </Popover>
+            </div>
+          )}
+        </form.Field>
+        <div className="w-full space-y-2">
+          <form.Field
+            name="name"
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? "Name is required"
+                  : value.length > 100
+                    ? "Name must be at most 100 characters."
+                    : undefined,
+            }}
+          >
+            {(field) => (
+              <>
+                <Input
+                  ref={nameInput}
+                  type="text"
+                  name={field.name}
+                  aria-label="State name"
+                  placeholder="Name"
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  hasError={!field.state.meta.isValid}
+                  className="w-full"
+                  maxLength={100}
+                />
+                <FormErrors errors={field.state.meta.errors} className="text-13 text-danger-primary" />
+              </>
+            )}
+          </form.Field>
+          <form.Field name="description">
+            {(field) => (
+              <TextArea
+                name={field.name}
+                aria-label="State description"
+                placeholder="Describe this state for your members."
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                className="min-h-14 w-full resize-none text-13"
+              />
+            )}
+          </form.Field>
+          {formError && (
+            <p role="alert" className="text-13 text-danger-primary">
+              {typeof formError === "string" ? formError : "Could not save this state. Please try again."}
+            </p>
+          )}
+          <div className="flex items-center space-x-2">
+            <Button type="submit" variant="primary" size="lg" disabled={busy} loading={busy}>
+              {buttonTitle}
+            </Button>
+            <Button type="button" variant="secondary" size="lg" disabled={busy} onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+      </fieldset>
+    </Form>
   );
 }

@@ -9,7 +9,7 @@ import { GithubIcon } from "@plane/propel/icons";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { usePowerK } from "@/hooks/use-power-k";
 
 /**
  * Help commands - Help related commands

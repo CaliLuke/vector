@@ -5,14 +5,18 @@
  */
 
 import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
-import { copyUrlToClipboard } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { captureIssueDetailReconciliation } from "@/queries/issue-details";
+import { currentIssueListMutationOwner, issueListMutation, patchIssueMutation } from "@/queries/issue-list-mutations";
 
 export type TRelationIssueOperations = {
   copyLink: (path: string) => void;
@@ -21,9 +25,14 @@ export type TRelationIssueOperations = {
 };
 
 export const useRelationOperations = (
+  workspaceSlug: string,
+  projectId: string,
+  issueId: string,
   issueServiceType: TIssueServiceType = EIssueServiceType.ISSUES
 ): TRelationIssueOperations => {
-  const { updateIssue, removeIssue } = useIssueDetail(issueServiceType);
+  const client = useQueryClient();
+  const access = useWorkItemDetailScope(workspaceSlug, projectId, issueServiceType, issueId);
+  const mutationScopeIsCurrent = useCommittedScope(JSON.stringify(access.scope));
   const { t } = useTranslation();
   // derived values
   const entityName = issueServiceType === EIssueServiceType.ISSUES ? "Work item" : "Epic";
@@ -38,9 +47,18 @@ export const useRelationOperations = (
           message: t("entity.link_copied_to_clipboard", { entity: entityName }),
         });
       },
-      update: async (workspaceSlug, projectId, issueId, data) => {
+      update: async (targetWorkspaceSlug, targetProjectId, targetIssueId, data) => {
         try {
-          await updateIssue(workspaceSlug, projectId, issueId, data);
+          const detailOwner = captureIssueDetailReconciliation(client, access.scope, [targetIssueId]);
+          const listOwner = currentIssueListMutationOwner(
+            client,
+            targetWorkspaceSlug,
+            targetProjectId,
+            issueServiceType,
+            mutationScopeIsCurrent
+          );
+          const receipt = await patchIssueMutation(client, listOwner, targetIssueId, data);
+          await detailOwner.reconcile(receipt);
           setToast({
             title: t("toast.success"),
             type: TOAST_TYPE.SUCCESS,
@@ -54,11 +72,20 @@ export const useRelationOperations = (
           });
         }
       },
-      remove: async (workspaceSlug, projectId, issueId) => {
-        return removeIssue(workspaceSlug, projectId, issueId);
+      remove: async (targetWorkspaceSlug, targetProjectId, targetIssueId) => {
+        const detailOwner = captureIssueDetailReconciliation(client, access.scope, [targetIssueId]);
+        const listOwner = currentIssueListMutationOwner(
+          client,
+          targetWorkspaceSlug,
+          targetProjectId,
+          issueServiceType,
+          mutationScopeIsCurrent
+        );
+        await issueListMutation(client, listOwner, { kind: "delete", issueId: targetIssueId });
+        detailOwner.remove();
       },
     }),
-    [entityName, removeIssue, t, updateIssue]
+    [access.scope, client, entityName, issueServiceType, mutationScopeIsCurrent, t]
   );
 
   return issueOperations;

@@ -4,12 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // helpers
-import { getValidKeysFromObject } from "@plane/utils";
+import { getValidKeysFromObject } from "@plane/utils/array";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 import { useTimeLineRelationOptions } from "@/components/relations";
+import { IssuePropertyActivity } from "./actions/property";
 // local components
 import {
   IssueDefaultActivity,
@@ -21,8 +21,7 @@ import {
   IssueEstimateActivity,
   IssueParentActivity,
   IssueRelationActivity,
-  IssueStartDateActivity,
-  IssueTargetDateActivity,
+  IssueDateActivity,
   IssueCycleActivity,
   IssueModuleActivity,
   IssueLabelActivity,
@@ -33,24 +32,19 @@ import {
 } from "./actions";
 
 type TIssueActivityItem = {
-  activityId: string;
+  activity: TIssueActivity;
   ends: "top" | "bottom" | undefined;
 };
 
-export const IssueActivityItem = observer(function IssueActivityItem(props: TIssueActivityItem) {
-  const { activityId, ends } = props;
+export const IssueActivityItem = function IssueActivityItem(props: TIssueActivityItem) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-    // oxlint-disable-next-line no-empty-pattern
-    comment: {},
-  } = useIssueDetail();
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
   const activityRelations = getValidKeysFromObject(ISSUE_RELATION_OPTIONS);
 
-  const componentDefaultProps = { activityId, ends };
+  const componentDefaultProps = { activity, ends };
 
-  const activityField = getActivityById(activityId)?.field;
+  const activityField = activity.field;
   switch (activityField) {
     case null: // default issue creation
       return <IssueDefaultActivity {...componentDefaultProps} />;
@@ -73,9 +67,8 @@ export const IssueActivityItem = observer(function IssueActivityItem(props: TIss
     case activityRelations.find((field) => field === activityField):
       return <IssueRelationActivity {...componentDefaultProps} />;
     case "start_date":
-      return <IssueStartDateActivity {...componentDefaultProps} showIssue={false} />;
     case "target_date":
-      return <IssueTargetDateActivity {...componentDefaultProps} showIssue={false} />;
+      return <IssueDateActivity {...componentDefaultProps} showIssue={false} />;
     case "cycles":
       return <IssueCycleActivity {...componentDefaultProps} />;
     case "modules":
@@ -92,6 +85,6 @@ export const IssueActivityItem = observer(function IssueActivityItem(props: TIss
     case "inbox":
       return <IssueInboxActivity {...componentDefaultProps} />;
     default:
-      return null;
+      return <IssuePropertyActivity {...componentDefaultProps} />;
   }
-});
+};

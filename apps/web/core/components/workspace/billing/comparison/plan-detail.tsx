@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import {
   SUBSCRIPTION_REDIRECTION_URLS,
@@ -15,7 +14,7 @@ import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import type { TBillingFrequency } from "@plane/types";
 import { EProductSubscriptionEnum } from "@plane/types";
-import { getSubscriptionName } from "@plane/utils";
+import { getSubscriptionName } from "@plane/utils/subscription";
 // components
 import { DiscountInfo } from "@/components/license/modal/card/discount-info";
 import type { TPlanDetail } from "@/components/workspace/billing/comparison/plans";
@@ -29,7 +28,7 @@ type TPlanDetailProps = {
   setBillingFrequency: (frequency: TBillingFrequency) => void;
 };
 
-export const PlanDetail = observer(function PlanDetail(props: TPlanDetailProps) {
+export const PlanDetail = function PlanDetail(props: TPlanDetailProps) {
   const { subscriptionType, planDetail, billingFrequency, setBillingFrequency } = props;
   // plane hooks
   const { t } = useTranslation();
@@ -106,4 +105,4 @@ export const PlanDetail = observer(function PlanDetail(props: TPlanDetailProps) 
       </div>
     </div>
   );
-});
+};

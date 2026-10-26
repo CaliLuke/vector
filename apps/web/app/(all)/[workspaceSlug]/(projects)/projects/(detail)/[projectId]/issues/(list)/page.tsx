@@ -5,24 +5,25 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // i18n
 import { useTranslation } from "@plane/i18n";
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ProjectLayoutRoot } from "@/components/issues/issue-layouts/roots/project-layout-root";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 function ProjectIssuesPage(): React.JSX.Element | null {
   const { projectId } = Route.useParams();
   // i18n
   const { t } = useTranslation();
   // store
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectRows?.find((candidate) => candidate.id === projectId);
   const pageTitle = project?.name ? `${project?.name} - ${t("issue.label", { count: 2 })}` : undefined; // Count is for pluralization
 
   return (
@@ -36,5 +37,5 @@ function ProjectIssuesPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/issues/")({
-  component: observer(ProjectIssuesPage),
+  component: ProjectIssuesPage,
 });

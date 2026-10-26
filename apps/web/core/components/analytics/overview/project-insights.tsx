@@ -4,22 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import type { TChartData } from "@plane/types";
-// hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-// services
-import { AnalyticsService } from "@/services/analytics.service";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { analyticsChartOptions } from "@/queries/analytics";
 // plane web components
 import AnalyticsSectionWrapper from "../analytics-section-wrapper";
 import { ProjectInsightsLoader } from "../loaders";
+import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
 
 const RadarChart = lazy(function RadarChart() {
   return import("@plane/propel/charts/radar-chart").then((mod) => ({
@@ -27,30 +24,14 @@ const RadarChart = lazy(function RadarChart() {
   }));
 });
 
-const analyticsService = new AnalyticsService();
-
-const ProjectInsights = observer(function ProjectInsights() {
-  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
+const ProjectInsights = function ProjectInsights() {
   const { t } = useTranslation();
-  const workspaceSlug = params.workspaceSlug.toString();
-  const { selectedDuration, selectedDurationLabel, selectedProjects, selectedCycle, selectedModule, isPeekView } =
-    useAnalytics();
-
-  const { data: projectInsightsData, isLoading: isLoadingProjectInsight } = useSWR(
-    `radar-chart-project-insights-${workspaceSlug}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isPeekView}`,
-    () =>
-      analyticsService.getAdvanceAnalyticsCharts<TChartData<string, string>[]>(
-        workspaceSlug,
-        "projects",
-        {
-          // date_filter: selectedDuration,
-          ...(selectedProjects?.length > 0 && { project_ids: selectedProjects?.join(",") }),
-          ...(selectedCycle ? { cycle_id: selectedCycle } : {}),
-          ...(selectedModule ? { module_id: selectedModule } : {}),
-        },
-        isPeekView
-      )
+  const { scope, requestFilters, selectedDurationLabel, isPeekView } = useAnalyticsState();
+  const query = useQuery(
+    analyticsChartOptions<TChartData<string, string>[]>(scope, "projects", requestFilters, isPeekView)
   );
+  const { data: projectInsightsData, isLoading: isLoadingProjectInsight } = query;
+  const canRead = isPeekView ? scope.hasProjectChartAccess : scope.hasWorkspaceAnalyticsAccess;
 
   return (
     <AnalyticsSectionWrapper
@@ -58,7 +39,11 @@ const ProjectInsights = observer(function ProjectInsights() {
       subtitle={selectedDurationLabel}
       className="md:col-span-3"
     >
-      {isLoadingProjectInsight ? (
+      {!canRead ? (
+        <AnalyticsAccessDenied />
+      ) : query.isError ? (
+        <AnalyticsQueryError onRetry={() => void query.refetch()} />
+      ) : isLoadingProjectInsight ? (
         <ProjectInsightsLoader />
       ) : projectInsightsData && projectInsightsData?.length == 0 ? (
         <EmptyStateCompact
@@ -108,7 +93,6 @@ const ProjectInsights = observer(function ProjectInsights() {
                 <div key={item.key} className="flex items-center justify-between text-13 text-primary">
                   <div>{item.name}</div>
                   <div className="flex items-center gap-1">
-                    {/* <TrendPiece key={item.key} size='xs' /> */}
                     <div className="text-secondary">{item.count}</div>
                   </div>
                 </div>
@@ -119,6 +103,6 @@ const ProjectInsights = observer(function ProjectInsights() {
       )}
     </AnalyticsSectionWrapper>
   );
-});
+};
 
 export default ProjectInsights;

@@ -6,11 +6,10 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
-import useSWR, { mutate } from "swr";
+import { useQuery, skipToken, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle } from "lucide-react";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -23,8 +22,8 @@ import SlackLogo from "@/app/assets/services/slack.png?url";
 // constants
 import { WORKSPACE_INTEGRATIONS } from "@plane/constants";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
-import { useUserPermissions } from "@/hooks/store/user";
+import { instanceConfigOptions } from "@/queries/instance";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import useIntegrationPopup from "@/hooks/use-integration-popup";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // services
@@ -50,16 +49,17 @@ const integrationDetails: { [key: string]: any } = {
 // services
 const integrationService = new IntegrationService();
 
-export const SingleIntegrationCard = observer(function SingleIntegrationCard({ integration }: Props) {
+export const SingleIntegrationCard = function SingleIntegrationCard({ integration }: Props) {
+  const queryClient = useQueryClient();
   // states
   const [deletingIntegration, setDeletingIntegration] = useState(false);
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { config } = useInstance();
-  const { allowPermissions } = useUserPermissions();
+  const { data: config } = useQuery(instanceConfigOptions);
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
 
-  const isUserAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isUserAdmin = canWorkspace([EUserPermissions.ADMIN]);
   const { isMobile } = usePlatformOS();
   const { startAuth, isConnecting: isInstalling } = useIntegrationPopup({
     provider: integration.provider,
@@ -67,9 +67,10 @@ export const SingleIntegrationCard = observer(function SingleIntegrationCard({ i
     slack_client_id: config?.slack_client_id || "",
   });
 
-  const { data: workspaceIntegrations } = useSWR(workspaceSlug ? WORKSPACE_INTEGRATIONS(workspaceSlug) : null, () =>
-    workspaceSlug ? integrationService.getWorkspaceIntegrationsList(workspaceSlug) : null
-  );
+  const { data: workspaceIntegrations } = useQuery({
+    queryKey: WORKSPACE_INTEGRATIONS(workspaceSlug),
+    queryFn: workspaceSlug ? () => integrationService.getWorkspaceIntegrationsList(workspaceSlug) : skipToken,
+  });
 
   const handleRemoveIntegration = async () => {
     if (!workspaceSlug || !integration || !workspaceIntegrations) return;
@@ -82,12 +83,12 @@ export const SingleIntegrationCard = observer(function SingleIntegrationCard({ i
 
     await integrationService
       .deleteWorkspaceIntegration(workspaceSlug, workspaceIntegrationId ?? "")
-      .then(() => {
-        mutate<IWorkspaceIntegration[]>(
-          WORKSPACE_INTEGRATIONS(workspaceSlug),
-          (prevData) => prevData?.filter((i) => i.id !== workspaceIntegrationId),
-          false
+      .then(async () => {
+        await queryClient.cancelQueries({ queryKey: WORKSPACE_INTEGRATIONS(workspaceSlug) });
+        queryClient.setQueryData<IWorkspaceIntegration[]>(WORKSPACE_INTEGRATIONS(workspaceSlug), (prevData) =>
+          prevData?.filter((i) => i.id !== workspaceIntegrationId)
         );
+        await queryClient.invalidateQueries({ queryKey: WORKSPACE_INTEGRATIONS(workspaceSlug) });
         setDeletingIntegration(false);
 
         setToast({
@@ -184,4 +185,4 @@ export const SingleIntegrationCard = observer(function SingleIntegrationCard({ i
       )}
     </div>
   );
-});
+};

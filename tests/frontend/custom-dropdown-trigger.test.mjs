@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { after, afterEach, test } from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { createModuleStub, resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
@@ -529,4 +530,92 @@ void test("CustomSelect preserves an explicit null-valued option", async (t) => 
   assert.deepEqual(changes, [null]);
   await waitForFocus(environment.container.querySelector("button"));
   await React.act(waitForAnimationFramesInCurrentAct);
+});
+
+async function activateWithPointer(trigger, pointerType = "mouse") {
+  await React.act(async () => {
+    const event = new MouseEvent("pointerdown", { bubbles: true, cancelable: true, button: 0 });
+    Object.defineProperty(event, "pointerType", { value: pointerType });
+    if (trigger.dispatchEvent(event)) {
+      trigger.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 }));
+    }
+  });
+  await React.act(async () => {
+    trigger.dispatchEvent(new MouseEvent("pointerup", { bubbles: true, button: 0 }));
+    trigger.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, button: 0 }));
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+  });
+}
+
+for (const kind of ["search", "select"]) {
+  for (const pointerType of ["mouse", "touch"]) {
+    void test(`${kind} trigger closes on the second ${pointerType} activation`, async (t) => {
+      assertNoConsoleErrors(t);
+      const trigger = await renderDropdown(kind);
+      await activateWithPointer(trigger, pointerType);
+      assert.equal(trigger.getAttribute("aria-expanded"), "true");
+      assert.equal(document.querySelectorAll('[role="listbox"]').length, 1);
+      await activateWithPointer(trigger, pointerType);
+      assert.equal(trigger.getAttribute("aria-expanded"), "false");
+      assert.equal(document.querySelectorAll('[role="listbox"]').length, 0);
+      await activateWithPointer(trigger, pointerType);
+      assert.equal(trigger.getAttribute("aria-expanded"), "true");
+      assert.equal(document.querySelectorAll('[role="listbox"]').length, 1);
+    });
+  }
+}
+
+void test("switching filter triggers leaves only the newly opened menu visible", async (t) => {
+  assertNoConsoleErrors(t);
+  const { CustomSearchSelect, CustomSelect } = await loadDropdowns();
+  const options = [{ value: "one", query: "one", content: "One" }];
+  await environment.render(
+    React.createElement(
+      React.Fragment,
+      null,
+      React.createElement(CustomSearchSelect, { label: "Property", options, value: "one", onChange() {} }),
+      React.createElement(CustomSearchSelect, { label: "Value", options, value: "one", onChange() {} }),
+      React.createElement(
+        CustomSelect,
+        { label: "Operator", value: "one", onChange() {} },
+        React.createElement(CustomSelect.Option, { value: "one" }, "One")
+      )
+    )
+  );
+  const [property, value, operator] = environment.container.querySelectorAll("button");
+  await activateWithPointer(property);
+  await activateWithPointer(property);
+  await activateWithPointer(value);
+  assert.equal(document.querySelectorAll('[role="listbox"]').length, 1);
+  assert.equal(property.getAttribute("aria-expanded"), "false");
+  assert.equal(value.getAttribute("aria-expanded"), "true");
+  await activateWithPointer(operator);
+  assert.equal(document.querySelectorAll('[role="listbox"]').length, 1);
+  assert.equal(value.getAttribute("aria-expanded"), "false");
+  assert.equal(operator.getAttribute("aria-expanded"), "true");
+  await activateWithPointer(property);
+  assert.equal(document.querySelectorAll('[role="listbox"]').length, 1);
+  assert.equal(operator.getAttribute("aria-expanded"), "false");
+  assert.equal(property.getAttribute("aria-expanded"), "true");
+});
+
+void test("search trigger participates in the tab sequence when its search input is closed", async () => {
+  const trigger = await renderDropdown("search", {
+    customButton: React.createElement("button", { tabIndex: 0 }, "Search properties"),
+  });
+  assert.equal(trigger.tabIndex, 0);
+});
+
+void test("search keyboard selection restores focus to its trigger", async () => {
+  const changes = [];
+  const trigger = await renderDropdown("search", { onChange: (value) => changes.push(value) });
+  assert.equal(trigger.tabIndex, 0);
+  await activateWithKeyboard(trigger, "Enter");
+  const input = document.querySelector("input[placeholder='Search']");
+  await waitForFocus(input);
+  await React.act(() => keyDown(input, "ArrowDown"));
+  await React.act(() => keyDown(input, "Enter"));
+  assert.deepEqual(changes, ["one"]);
+  await waitForFocus(trigger);
+  assert.equal(document.querySelector("[role=listbox]"), null);
 });

@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { PriorityIcon, StateGroupIcon } from "@plane/propel/icons";
 import type { TIssue, TStateGroups } from "@plane/types";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // local imports
@@ -26,13 +25,14 @@ type Props = {
   workItem: Pick<TIssue, "id" | "name" | "sequence_id" | "priority" | "start_date" | "target_date" | "type_id">;
 };
 
-export const WorkItemPreviewCard = observer(function WorkItemPreviewCard(props: Props) {
+export const WorkItemPreviewCard = function WorkItemPreviewCard(props: Props) {
   const { projectId, stateDetails, workItem } = props;
   // store hooks
-  const { getProjectIdentifierById } = useProject();
-  const { getStateById } = useProjectState();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const { getStateById } = useRouteProjectStates(projectId);
   // derived values
-  const projectIdentifier = getProjectIdentifierById(projectId);
+  const projectIdentifier = projectRows?.find((project) => project.id === projectId)?.identifier ?? "";
   const fallbackStateDetails = stateDetails.id ? getStateById(stateDetails.id) : undefined;
   const stateGroup = stateDetails?.group ?? fallbackStateDetails?.group ?? "backlog";
   const stateName = stateDetails?.name ?? fallbackStateDetails?.name;
@@ -66,4 +66,4 @@ export const WorkItemPreviewCard = observer(function WorkItemPreviewCard(props: 
       </div>
     </div>
   );
-});
+};

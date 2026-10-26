@@ -9,11 +9,11 @@ import { CircleArrowUp, CornerDownRight, RefreshCcw, Sparkles } from "lucide-rea
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { RichTextEditor } from "@/components/editor/rich-text";
 // helpers
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
 
 type Props = {
   handleInsertText: (insertOnNextLine: boolean) => void;
@@ -28,9 +28,9 @@ export function AskPiMenu(props: Props) {
   // states
   const [query, setQuery] = useState("");
   // store hooks
-  const { getWorkspaceBySlug } = useWorkspace();
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
   // derived values
-  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
+  const workspaceId = workspaceDetails?.id ?? "";
 
   return (
     <>

@@ -87,3 +87,43 @@ func NewDescriptionVersionDetailPayload(slug string, projectID string, workItemI
 
 	return v
 }
+
+// NewPropertyHistoryPayload builds a work_item_history service
+// property_history endpoint payload.
+func NewPropertyHistoryPayload(slug string, projectID string, workItemID string, planeSessionCookieCredential *string) *workitemhistory.PropertyHistoryPayload {
+	v := &workitemhistory.PropertyHistoryPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v
+}
+
+// NewPropertyVersionsPayload builds a work_item_history service
+// property_versions endpoint payload.
+func NewPropertyVersionsPayload(slug string, projectID string, workItemID string, propertyID string, before *string, planeSessionCookieCredential *string) *workitemhistory.PropertyVersionsPayload {
+	v := &workitemhistory.PropertyVersionsPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PropertyID = propertyID
+	v.Before = before
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v
+}
+
+// NewPropertyVersionDetailPayload builds a work_item_history service
+// property_version_detail endpoint payload.
+func NewPropertyVersionDetailPayload(slug string, projectID string, workItemID string, propertyID string, pk string, planeSessionCookieCredential *string) *workitemhistory.PropertyVersionDetailPayload {
+	v := &workitemhistory.PropertyVersionDetailPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PropertyID = propertyID
+	v.Pk = pk
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v
+}

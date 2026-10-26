@@ -6,11 +6,11 @@
 
 import type { RefObject } from "react";
 import React from "react";
-import { observer } from "mobx-react";
+
 // hooks
 import type { IGanttBlock } from "@plane/types";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { LeftResizable } from "./blockResizables/left-resizable";
 import { RightResizable } from "./blockResizables/right-resizable";
@@ -27,7 +27,7 @@ type Props = {
   ganttContainerRef: RefObject<HTMLDivElement | null>;
 };
 
-export const ChartDraggable = observer(function ChartDraggable(props: Props) {
+export const ChartDraggable = function ChartDraggable(props: Props) {
   const {
     block,
     blockToRender,
@@ -64,4 +64,4 @@ export const ChartDraggable = observer(function ChartDraggable(props: Props) {
       />
     </div>
   );
-});
+};

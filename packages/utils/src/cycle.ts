@@ -4,8 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { startOfToday, format } from "date-fns";
-import { isEmpty, orderBy, sortBy, uniqBy } from "lodash-es";
+import { startOfToday } from "date-fns/startOfToday";
+import { format } from "date-fns/format";
+import isEmpty from "lodash-es/isEmpty.js";
+import orderBy from "lodash-es/orderBy.js";
+import sortBy from "lodash-es/sortBy.js";
+import uniqBy from "lodash-es/uniqBy.js";
 // plane imports
 import type { ICycle, TCycleFilters, TProgressSnapshot } from "@plane/types";
 // local imports

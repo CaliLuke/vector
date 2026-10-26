@@ -6,9 +6,14 @@
 
 import type {
   SingleOrArray,
+  TFilterConditionNode,
   TFilterConditionNodeForDisplay,
+  TFilterConfig,
+  TFilterExpression,
   TFilterProperty,
   TFilterValue,
+  TLogicalOperator,
+  TSupportedOperators,
   TSupportedFilterFieldConfigs,
 } from "@plane/types";
 
@@ -21,4 +26,38 @@ export type TFilterValueInputProps<P extends TFilterProperty, V extends TFilterV
   filterFieldConfig: TSupportedFilterFieldConfigs<V>;
   isDisabled?: boolean;
   onChange: (values: SingleOrArray<V>) => void;
+};
+
+export type TFilterExpressionEditor<P extends TFilterProperty> = {
+  expression: TFilterExpression<P> | null;
+  conditions: TFilterConditionNode<P, TFilterValue>[];
+  displayConditions: TFilterConditionNodeForDisplay<P, TFilterValue>[];
+  configs: TFilterConfig<P>[];
+  isConfigReady: boolean;
+  conversionError: string | null;
+  editingError: string | null;
+  hasActiveFilters: boolean;
+  hasChanges: boolean;
+  isVisible: boolean;
+  clearLabel?: string;
+  saveLabel?: string;
+  updateLabel?: string;
+  canClear: boolean;
+  canSave: boolean;
+  canUpdate: boolean;
+  onToggleVisibility: (visible?: boolean) => void;
+  onAddCondition: (property: P, operator: TSupportedOperators, isNegation: boolean) => void;
+  onUpdateConditionProperty: (
+    conditionId: string,
+    property: P,
+    operator: TSupportedOperators,
+    isNegation: boolean
+  ) => void;
+  onUpdateConditionOperator: (conditionId: string, operator: TSupportedOperators, isNegation: boolean) => void;
+  onUpdateConditionValue: (conditionId: string, value: SingleOrArray<TFilterValue>) => void;
+  onRemoveCondition: (conditionId: string) => void;
+  onUpdateGroupOperator: (groupId: string, operator: Exclude<TLogicalOperator, "not">) => void;
+  onClear: () => Promise<void>;
+  onSave: () => Promise<void>;
+  onUpdate: () => Promise<void>;
 };

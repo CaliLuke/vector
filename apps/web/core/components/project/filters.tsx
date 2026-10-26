@@ -5,21 +5,14 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback } from "react";
-import { observer } from "mobx-react";
 
-import { ListFilter } from "lucide-react";
 // plane imports
-import { useTranslation } from "@plane/i18n";
-import type { TProjectFilters } from "@plane/types";
-import { cn, calculateTotalFilters } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
-import { FiltersDropdown } from "@/components/issues/issue-layouts/filters";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectFilter } from "@/hooks/store/use-project-filter";
+import { useProjectListFilters } from "@/hooks/use-project-list-filters";
 // local imports
-import { ProjectFiltersSelection } from "./dropdowns/filters";
+import { ProjectFiltersDropdown } from "./dropdowns/filters/project-filters-dropdown";
 import { ProjectOrderByDropdown } from "./dropdowns/order-by";
 
 type Props = {
@@ -29,48 +22,10 @@ type Props = {
   isMobile?: boolean;
 };
 
-const HeaderFilters = observer(function HeaderFilters({
-  filterMenuButton,
-  isMobile,
-  classname = "",
-  filterClassname = "",
-}: Props) {
-  // i18n
-  const { t } = useTranslation();
+function HeaderFilters({ filterMenuButton, isMobile, classname = "", filterClassname = "" }: Props) {
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const {
-    currentWorkspaceDisplayFilters: displayFilters,
-    currentWorkspaceFilters: filters,
-    updateFilters,
-    updateDisplayFilters,
-  } = useProjectFilter();
-  const {
-    workspace: { workspaceMemberIds },
-  } = useMember();
-  const handleFilters = useCallback(
-    (key: keyof TProjectFilters, value: string | string[]) => {
-      if (!workspaceSlug) return;
-      let newValues = filters?.[key] ?? [];
-      if (Array.isArray(value)) {
-        if (key === "created_at" && newValues.find((v) => v.includes("custom"))) newValues = [];
-        value.forEach((val) => {
-          if (!newValues.includes(val)) newValues.push(val);
-          else newValues.splice(newValues.indexOf(val), 1);
-        });
-      } else {
-        if (filters?.[key]?.includes(value)) newValues.splice(newValues.indexOf(value), 1);
-        else {
-          if (key === "created_at") newValues = [value];
-          else newValues.push(value);
-        }
-      }
-
-      updateFilters(workspaceSlug.toString(), { [key]: newValues });
-    },
-    [filters, updateFilters, workspaceSlug]
-  );
-  const isFiltersApplied = calculateTotalFilters(filters ?? {}) !== 0;
+  const { displayFilters, updateDisplayFilters } = useProjectListFilters();
 
   return (
     <div className={cn("flex gap-3", classname)}>
@@ -78,33 +33,16 @@ const HeaderFilters = observer(function HeaderFilters({
         value={displayFilters?.order_by}
         onChange={(val) => {
           if (!workspaceSlug || val === displayFilters?.order_by) return;
-          updateDisplayFilters(workspaceSlug.toString(), {
+          updateDisplayFilters({
             order_by: val,
           });
         }}
         isMobile={isMobile}
       />
       <div className={cn(filterClassname)}>
-        <FiltersDropdown
-          icon={<ListFilter className="h-3 w-3" />}
-          title={t("common.filters")}
-          placement="bottom-end"
-          isFiltersApplied={isFiltersApplied}
-          menuButton={filterMenuButton || null}
-        >
-          <ProjectFiltersSelection
-            displayFilters={displayFilters ?? {}}
-            filters={filters ?? {}}
-            handleFiltersUpdate={handleFilters}
-            handleDisplayFiltersUpdate={(val) => {
-              if (!workspaceSlug) return;
-              updateDisplayFilters(workspaceSlug.toString(), val);
-            }}
-            memberIds={workspaceMemberIds ?? undefined}
-          />
-        </FiltersDropdown>
+        <ProjectFiltersDropdown menuButton={filterMenuButton || null} />
       </div>
     </div>
   );
-});
+}
 export default HeaderFilters;

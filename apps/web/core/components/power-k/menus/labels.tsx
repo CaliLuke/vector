@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { IIssueLabel } from "@plane/types";
 // local imports
@@ -17,7 +17,7 @@ type Props = {
   value?: string[];
 };
 
-export const PowerKLabelsMenu = observer(function PowerKLabelsMenu({ labels, onSelect, value }: Props) {
+export const PowerKLabelsMenu = function PowerKLabelsMenu({ labels, onSelect, value }: Props) {
   return (
     <PowerKMenuBuilder
       items={labels}
@@ -34,4 +34,4 @@ export const PowerKLabelsMenu = observer(function PowerKLabelsMenu({ labels, onS
       emptyText="No labels found"
     />
   );
-});
+};

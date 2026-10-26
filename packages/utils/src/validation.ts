@@ -163,7 +163,7 @@ export const validateCompanyName = (companyName: string, required: boolean = fal
  * validateWorkspaceName("Acme_Corp-123") // returns true
  * validateWorkspaceName("Acme{Corp}") // returns error message
  */
-export const validateWorkspaceName = (workspaceName: string, required: boolean = false): boolean | string => {
+export const validateWorkspaceName = (workspaceName: string, required: boolean = false): true | string => {
   if (!workspaceName || workspaceName.trim() === "") {
     return required ? "Workspace name is required" : true;
   }
@@ -196,7 +196,7 @@ export const validateWorkspaceName = (workspaceName: string, required: boolean =
  * validateSlug("my_workspace_123") // returns true
  * validateSlug("my workspace") // returns error message (spaces not allowed)
  */
-export const validateSlug = (slug: string): boolean | string => {
+export const validateSlug = (slug: string): true | string => {
   if (!slug || slug.trim() === "") {
     return "Slug is required";
   }

@@ -8,7 +8,7 @@
 import { Link } from "@tanstack/react-router";
 import type { TPageNavigationTabs } from "@plane/types";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TPageTabNavigation = {
   workspaceSlug: string;

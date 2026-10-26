@@ -6,7 +6,7 @@
 
 // plane imports
 import type { TLogoProps } from "@plane/types";
-import { sanitizeHTML } from "@plane/utils";
+import { sanitizeHTML } from "@plane/utils/string";
 // types
 import type { TCalloutBlockAttributes, TCalloutBlockEmojiAttributes, TCalloutBlockIconAttributes } from "./types";
 import { ECalloutAttributeNames } from "./types";

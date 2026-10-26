@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ContrastIcon } from "@plane/propel/icons";
 import type { ICycle } from "@plane/types";
@@ -18,7 +18,7 @@ type Props = {
   value?: string | null;
 };
 
-export const PowerKCyclesMenu = observer(function PowerKCyclesMenu({ cycles, onSelect, value }: Props) {
+export const PowerKCyclesMenu = function PowerKCyclesMenu({ cycles, onSelect, value }: Props) {
   return (
     <PowerKMenuBuilder
       items={cycles}
@@ -31,4 +31,4 @@ export const PowerKCyclesMenu = observer(function PowerKCyclesMenu({ cycles, onS
       emptyText="No cycles found"
     />
   );
-});
+};

@@ -1,91 +1,97 @@
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
- * See the LICENSE file for details.
+ * See the LICENSE file in the project root for details.
  */
 
-import React, { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+import React from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 import { WORKSPACE_SETTINGS_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import type { IWebhook, TWebhookEventTypes } from "@plane/types";
-// hooks
-import {
-  WebhookIndividualEventOptions,
-  WebhookInput,
-  WebhookOptions,
-  WebhookSecretKey,
-  WebhookToggle,
-} from "@/components/web-hooks";
-import { useWebhook } from "@/hooks/store/use-webhook";
-// components
-// ui
-// types
+import type { TWebhookEventTypes } from "@plane/types";
+import type { IWebhookRecord } from "@/queries/webhooks";
+import { WebhookIndividualEventOptions, type WebhookEvents } from "./individual-event-options";
+import { WebhookInput } from "./input";
+import { WebhookOptions } from "./event-types";
+import { WebhookSecretKey } from "./secret-key";
+import { WebhookToggle } from "./toggle";
 
 type Props = {
-  data?: Partial<IWebhook>;
-  onSubmit: (data: IWebhook, webhookEventType: TWebhookEventTypes) => Promise<void>;
+  data?: Partial<IWebhookRecord>;
+  secretKey?: string | null;
+  onRegenerate?: () => Promise<boolean | "stale" | void>;
+  onSubmit: (data: Partial<IWebhookRecord>) => Promise<IWebhookRecord | void>;
   handleClose?: () => void;
 };
 
-const initialWebhookPayload: Partial<IWebhook> = {
-  cycle: true,
-  issue: true,
-  issue_comment: true,
-  module: true,
-  project: true,
-  url: "",
-};
+type WebhookValues = WebhookEvents & { url: string; is_active: boolean; eventType: TWebhookEventTypes };
 
-export const WebhookForm = observer(function WebhookForm(props: Props) {
-  const { data, onSubmit, handleClose } = props;
-  // states
-  const [webhookEventType, setWebhookEventType] = useState<TWebhookEventTypes>("all");
-  const [serverError, setServerError] = useState<string | null>(null);
-  // store hooks
-  const { webhookSecretKey } = useWebhook();
-  const { t } = useTranslation();
-  // use form
-  const {
-    handleSubmit,
-    control,
-    setError,
-    clearErrors,
-    formState: { isSubmitting, errors },
-  } = useForm<IWebhook>({
-    defaultValues: { ...initialWebhookPayload, ...data },
-  });
+function webhookDefaults({
+  project = true,
+  cycle = true,
+  module = true,
+  issue = true,
+  issue_comment = true,
+  url = "",
+  is_active = true,
+}: Partial<IWebhookRecord> = {}): WebhookValues {
+  const events = { project, cycle, module, issue, issue_comment };
+  return { ...events, url, is_active, eventType: Object.values(events).every(Boolean) ? "all" : "individual" };
+}
 
-  const handleFormSubmit = async (formData: IWebhook) => {
-    clearErrors("url");
-    setServerError(null);
-    try {
-      await onSubmit(formData, webhookEventType);
-    } catch (error) {
-      const payload = error as { url?: unknown; error?: unknown; detail?: unknown };
-      const urlError = Array.isArray(payload?.url) ? payload.url[0] : payload?.url;
-      const message =
-        (typeof urlError === "string" && urlError) ||
-        (typeof payload?.error === "string" && payload.error) ||
-        (typeof payload?.detail === "string" && payload.detail) ||
-        t("workspace_settings.settings.webhooks.toasts.not_created.message");
+function errorProperty(error: unknown, key: string): unknown {
+  return error && typeof error === "object" && key in error ? Reflect.get(error, key) : undefined;
+}
 
-      if (urlError) setError("url", { type: "server", message });
-      else setServerError(message);
-    }
+function webhookSubmissionError(error: unknown, fallback: string) {
+  const urlValue = errorProperty(error, "url");
+  const urlError = Array.isArray(urlValue) ? urlValue[0] : urlValue;
+  return {
+    urlError,
+    message:
+      [urlError, errorProperty(error, "error"), errorProperty(error, "detail")].find(
+        (value): value is string => typeof value === "string"
+      ) ?? fallback,
   };
+}
 
-  useEffect(() => {
-    if (!data) return;
-
-    if (data.project && data.cycle && data.module && data.issue && data.issue_comment) setWebhookEventType("all");
-    else setWebhookEventType("individual");
-  }, [data]);
+export function WebhookForm({ data, onSubmit, handleClose, secretKey, onRegenerate }: Props) {
+  const { t } = useTranslation();
+  const form = useForm({
+    defaultValues: webhookDefaults(data),
+    onSubmit: async ({ value, formApi }) => {
+      const { eventType, ...payload } = value;
+      if (eventType === "all") {
+        payload.project = payload.cycle = payload.module = payload.issue = payload.issue_comment = true;
+      }
+      try {
+        const savedWebhook = await onSubmit(payload);
+        formApi.reset(webhookDefaults(savedWebhook ?? payload));
+      } catch (error) {
+        const { urlError, message } = webhookSubmissionError(
+          error,
+          t("workspace_settings.settings.webhooks.toasts.not_created.message")
+        );
+        if (urlError)
+          formApi.setFieldMeta("url", (meta) => ({ ...meta, errorMap: { ...meta.errorMap, onChange: message } }));
+        else formApi.setErrorMap({ onSubmit: { form: message, fields: {} } });
+        throw error;
+      }
+    },
+  });
+  const values = useStore(form.store, (state) => state.values);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch(() => undefined);
+      }}
+    >
       <div className="space-y-5">
         <div className="text-18 font-medium text-secondary">
           {data
@@ -94,41 +100,68 @@ export const WebhookForm = observer(function WebhookForm(props: Props) {
         </div>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Controller
-              control={control}
+            <form.Field
               name="url"
-              rules={{
-                required: t("workspace_settings.settings.webhooks.modal.error"),
+              validators={{
+                onChange: ({ value }) =>
+                  value.trim() ? undefined : t("workspace_settings.settings.webhooks.modal.error"),
               }}
-              render={({ field: { onChange, value } }) => (
-                <WebhookInput value={value} onChange={onChange} hasError={Boolean(errors.url)} />
+            >
+              {(field) => (
+                <>
+                  <WebhookInput
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    hasError={!field.state.meta.isValid}
+                    disabled={isSubmitting}
+                  />
+                  {!field.state.meta.isValid && (
+                    <div className="text-11 text-danger-primary" role="alert">
+                      {field.state.meta.errors.join(" ")}
+                    </div>
+                  )}
+                </>
               )}
-            />
-            {errors.url && (
-              <div className="text-11 text-danger-primary" role="alert">
-                {errors.url.message}
-              </div>
-            )}
+            </form.Field>
           </div>
-          {data && <WebhookToggle control={control} />}
-          <WebhookOptions value={webhookEventType} onChange={(val) => setWebhookEventType(val)} />
+          {data && (
+            <WebhookToggle
+              value={values.is_active}
+              onChange={(value) => form.setFieldValue("is_active", value)}
+              disabled={isSubmitting}
+            />
+          )}
+          <WebhookOptions
+            value={values.eventType}
+            onChange={(value) => form.setFieldValue("eventType", value)}
+            disabled={isSubmitting}
+          />
         </div>
         <div className="mt-4">
-          {webhookEventType === "individual" && <WebhookIndividualEventOptions control={control} />}
+          {values.eventType === "individual" && (
+            <WebhookIndividualEventOptions
+              value={values}
+              onChange={(key, value) => form.setFieldValue(key, value)}
+              disabled={isSubmitting}
+            />
+          )}
         </div>
-        {serverError && (
+        {formError && (
           <div className="text-11 text-danger-primary" role="alert">
-            {serverError}
+            {typeof formError === "string"
+              ? formError
+              : t("workspace_settings.settings.webhooks.toasts.not_created.message")}
           </div>
         )}
       </div>
       {data ? (
         <div className="space-y-5 pt-0">
-          <WebhookSecretKey data={data} />
+          <WebhookSecretKey data={data} secretKey={secretKey ?? null} onRegenerate={onRegenerate} />
           <Button
             size="lg"
             type="submit"
             loading={isSubmitting}
+            disabled={isSubmitting}
             data-ph-element={WORKSPACE_SETTINGS_TRACKER_ELEMENTS.WEBHOOK_UPDATE_BUTTON}
           >
             {isSubmitting ? t("updating") : t("update")}
@@ -136,16 +169,21 @@ export const WebhookForm = observer(function WebhookForm(props: Props) {
         </div>
       ) : (
         <div className="flex items-center justify-end gap-2 border-t-[0.5px] border-subtle px-5 py-4">
-          <Button variant="secondary" size="lg" onClick={handleClose}>
+          <Button variant="secondary" type="button" size="lg" onClick={handleClose} disabled={isSubmitting}>
             {t("cancel")}
           </Button>
-          {!webhookSecretKey && (
-            <Button type="submit" variant="primary" size="lg" loading={isSubmitting} className="capitalize">
-              {isSubmitting ? t("common.creating") : t("common.create")}
-            </Button>
-          )}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            className="capitalize"
+          >
+            {isSubmitting ? t("common.creating") : t("common.create")}
+          </Button>
         </div>
       )}
     </form>
   );
-});
+}

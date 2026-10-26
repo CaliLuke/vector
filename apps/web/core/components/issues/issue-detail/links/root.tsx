@@ -4,15 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { PlusIcon } from "@plane/propel/icons";
 // plane imports
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssueLink } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useLinkOperations } from "@/hooks/use-issue-link-operations";
 // local imports
 import { IssueLinkCreateUpdateModal } from "./create-update-link-modal";
 import { IssueLinkList } from "./links";
@@ -34,7 +34,7 @@ export function IssueLinkRoot(props: TIssueLinkRoot) {
   // props
   const { workspaceSlug, projectId, issueId, disabled = false } = props;
   // hooks
-  const { toggleIssueLinkModal: toggleIssueLinkModalStore, createLink, updateLink, removeLink } = useIssueDetail();
+  const { toggleIssueLinkModal: toggleIssueLinkModalStore } = useIssueDetailUiState();
   // state
   const [isIssueLinkModal, setIsIssueLinkModal] = useState(false);
   const toggleIssueLinkModal = useCallback(
@@ -45,71 +45,14 @@ export function IssueLinkRoot(props: TIssueLinkRoot) {
     [toggleIssueLinkModalStore]
   );
 
-  const handleLinkOperations: TLinkOperations = useMemo(
-    () => ({
-      create: async (data: Partial<TIssueLink>) => {
-        try {
-          if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing required fields");
-          await createLink(workspaceSlug, projectId, issueId, data);
-          setToast({
-            message: "The link has been successfully created",
-            type: TOAST_TYPE.SUCCESS,
-            title: "Link created",
-          });
-          toggleIssueLinkModal(false);
-        } catch (error: any) {
-          setToast({
-            message: error?.data?.error ?? "The link could not be created",
-            type: TOAST_TYPE.ERROR,
-            title: "Link not created",
-          });
-          throw error;
-        }
-      },
-      update: async (linkId: string, data: Partial<TIssueLink>) => {
-        try {
-          if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing required fields");
-          await updateLink(workspaceSlug, projectId, issueId, linkId, data);
-          setToast({
-            message: "The link has been successfully updated",
-            type: TOAST_TYPE.SUCCESS,
-            title: "Link updated",
-          });
-          toggleIssueLinkModal(false);
-        } catch (error) {
-          setToast({
-            message: "The link could not be updated",
-            type: TOAST_TYPE.ERROR,
-            title: "Link not updated",
-          });
-          throw error;
-        }
-      },
-      remove: async (linkId: string) => {
-        try {
-          if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing required fields");
-          await removeLink(workspaceSlug, projectId, issueId, linkId);
-          setToast({
-            message: "The link has been successfully removed",
-            type: TOAST_TYPE.SUCCESS,
-            title: "Link removed",
-          });
-          toggleIssueLinkModal(false);
-        } catch {
-          setToast({
-            message: "The link could not be removed",
-            type: TOAST_TYPE.ERROR,
-            title: "Link not removed",
-          });
-        }
-      },
-    }),
-    [workspaceSlug, projectId, issueId, createLink, updateLink, removeLink, toggleIssueLinkModal]
+  const handleOnClose = useCallback(() => toggleIssueLinkModal(false), [toggleIssueLinkModal]);
+  const handleLinkOperations = useLinkOperations(
+    workspaceSlug,
+    projectId,
+    issueId,
+    EIssueServiceType.ISSUES,
+    handleOnClose
   );
-
-  const handleOnClose = () => {
-    toggleIssueLinkModal(false);
-  };
 
   return (
     <>
@@ -138,7 +81,13 @@ export function IssueLinkRoot(props: TIssueLinkRoot) {
         </div>
 
         <div>
-          <IssueLinkList issueId={issueId} linkOperations={handleLinkOperations} disabled={disabled} />
+          <IssueLinkList
+            issueId={issueId}
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
+            linkOperations={handleLinkOperations}
+            disabled={disabled}
+          />
         </div>
       </div>
     </>

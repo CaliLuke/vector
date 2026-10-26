@@ -5,7 +5,22 @@
  */
 
 import React from "react";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+
+type FormProps = Omit<React.ComponentProps<"form">, "onSubmit"> & { onSubmit: () => Promise<void> };
+
+export function Form({ onSubmit, ...props }: FormProps) {
+  return (
+    <form
+      {...props}
+      onSubmit={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        void onSubmit();
+      }}
+    />
+  );
+}
 
 // Reusable Label Component
 interface LabelProps {
@@ -64,5 +79,17 @@ export function ValidationMessage({ type, message, className }: ValidationMessag
     >
       {message}
     </p>
+  );
+}
+
+export function FormErrors({ errors, className }: { errors: readonly (string | undefined)[]; className?: string }) {
+  const messages = [...new Set(errors.filter((error): error is string => Boolean(error)))];
+  if (!messages.length) return null;
+  return (
+    <div role="alert" className={cn("text-13 text-danger-primary", className)}>
+      {messages.map((message) => (
+        <p key={message}>{message}</p>
+      ))}
+    </div>
   );
 }

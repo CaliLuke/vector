@@ -4,17 +4,20 @@
  * See the LICENSE file for details.
  */
 
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import type { TNameDescriptionLoader } from "@plane/types";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
+import { captureIdentityScope, isIdentityScopeCurrent } from "@/queries/identity";
+import { EUserPermissions } from "@plane/constants";
+import { useTextSaveStatus } from "@/components/issues/use-text-save-status";
 // components
 import { ContentWrapper } from "@plane/ui";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useIntakeDetail } from "@/hooks/use-intake";
+import type { TInboxIssueCurrentTab } from "@plane/types";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 // local imports
 import { InboxIssueActionsHeader } from "./inbox-issue-header";
@@ -28,9 +31,10 @@ type TInboxContentRoot = {
   setIsMobileSidebar: (value: boolean) => void;
   isNotificationEmbed?: boolean;
   embedRemoveCurrentNotification?: () => void;
+  navigation?: { tab: TInboxIssueCurrentTab; issueIds: string[] };
 };
 
-export const InboxContentRoot = observer(function InboxContentRoot(props: TInboxContentRoot) {
+export const InboxContentRoot = function InboxContentRoot(props: TInboxContentRoot) {
   const {
     workspaceSlug,
     projectId,
@@ -41,50 +45,53 @@ export const InboxContentRoot = observer(function InboxContentRoot(props: TInbox
     embedRemoveCurrentNotification,
   } = props;
   /// router
-  const router = useRouter();
   // states
-  const [isSubmitting, setIsSubmitting] = useState<TNameDescriptionLoader>("saved");
+  const {
+    status: isSubmitting,
+    setTitleStatus,
+    setDescriptionStatus,
+  } = useTextSaveStatus(`${workspaceSlug}/${projectId}/${inboxIssueId}`);
   // hooks
-  const { data: currentUser } = useUser();
-  const { currentTab, fetchInboxIssueById, getIssueInboxByIssueId, getIsIssueAvailable } = useProjectInbox();
-  const inboxIssue = getIssueInboxByIssueId(inboxIssueId);
-  const { allowPermissions, getProjectRoleByWorkspaceSlugAndProjectId } = useUserPermissions();
+  const { data: currentUser } = useCurrentUser();
+  const client = useQueryClient();
+  const router = useRouter();
+  const generation = useIdentityGeneration(client);
+  const scopeKey = JSON.stringify([
+    currentUser?.id,
+    generation,
+    workspaceSlug,
+    projectId,
+    inboxIssueId,
+    props.navigation?.tab,
+    isNotificationEmbed,
+  ]);
+  const mounted = useCommittedScope(scopeKey);
+  const identity = captureIdentityScope(client, currentUser?.id);
+  const onDeleteAccepted = () => {
+    if (!mounted() || !isIdentityScopeCurrent(client, identity) || isNotificationEmbed) return;
+    void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/intake` });
+  };
+  const detail = useIntakeDetail(workspaceSlug, projectId, inboxIssueId);
+  const inboxIssue = detail.data;
+  const { can: canProject, projectRole } = useProjectPermissions(workspaceSlug, projectId);
 
-  // derived values
-  const isIssueAvailable = getIsIssueAvailable(inboxIssueId?.toString() || "");
+  if (detail.isError)
+    return (
+      <div role="alert">
+        Could not load the intake work item.{" "}
+        <button type="button" onClick={() => void detail.retry()}>
+          Retry
+        </button>
+      </div>
+    );
+  if (detail.accessDenied) return <div>This intake work item is unavailable.</div>;
+  if (!inboxIssue) return <div>Loading intake work item…</div>;
 
-  useEffect(() => {
-    if (!isIssueAvailable && inboxIssueId && !isNotificationEmbed) {
-      void router.navigate({
-        href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}`,
-        replace: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isIssueAvailable, isNotificationEmbed]);
+  const isOwner = Boolean(currentUser?.id && inboxIssue.issue.created_by === currentUser.id);
+  const isEditable = canProject([EUserPermissions.ADMIN]) || isOwner;
 
-  useSWR(
-    workspaceSlug && projectId && inboxIssueId
-      ? `PROJECT_INBOX_ISSUE_DETAIL_${workspaceSlug}_${projectId}_${inboxIssueId}`
-      : null,
-    workspaceSlug && projectId && inboxIssueId
-      ? () => fetchInboxIssueById(workspaceSlug, projectId, inboxIssueId)
-      : null,
-    {
-      revalidateOnFocus: false,
-      revalidateIfStale: false,
-    }
-  );
-
-  const isEditable =
-    allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId) ||
-    inboxIssue?.issue.created_by === currentUser?.id;
-
-  const isGuest = getProjectRoleByWorkspaceSlugAndProjectId(workspaceSlug, projectId) === EUserPermissions.GUEST;
-  const isOwner = inboxIssue?.issue.created_by === currentUser?.id;
+  const isGuest = projectRole === EUserPermissions.GUEST;
   const readOnly = !isOwner && isGuest;
-
-  if (!inboxIssue) return <></>;
 
   const isIssueDisabled = [-1, 1, 2].includes(inboxIssue.status);
 
@@ -93,13 +100,15 @@ export const InboxContentRoot = observer(function InboxContentRoot(props: TInbox
       <div className="relative flex h-full w-full flex-col overflow-hidden">
         <div className="z-[11] min-h-[52px] flex-shrink-0">
           <InboxIssueActionsHeader
+            navigation={props.navigation}
+            onDeleteAccepted={onDeleteAccepted}
             setIsMobileSidebar={setIsMobileSidebar}
             isMobileSidebar={isMobileSidebar}
             workspaceSlug={workspaceSlug}
             projectId={projectId}
             inboxIssue={inboxIssue}
             isSubmitting={isSubmitting}
-            isNotificationEmbed={isNotificationEmbed || false}
+            isNotificationEmbed={isNotificationEmbed}
             embedRemoveCurrentNotification={embedRemoveCurrentNotification}
           />
         </div>
@@ -109,11 +118,11 @@ export const InboxContentRoot = observer(function InboxContentRoot(props: TInbox
             projectId={projectId}
             inboxIssue={inboxIssue}
             isEditable={isEditable && !isIssueDisabled && !readOnly}
-            isSubmitting={isSubmitting}
-            setIsSubmitting={setIsSubmitting}
+            setTitleStatus={setTitleStatus}
+            setDescriptionStatus={setDescriptionStatus}
           />
         </ContentWrapper>
       </div>
     </>
   );
-});
+};

@@ -5,16 +5,15 @@
  */
 
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
+import { useState } from "react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { IModule } from "@plane/types";
 import { ComboDropDown } from "@plane/ui";
-import { cn } from "@plane/utils";
+import type { TComboDropDownRenderProps } from "@plane/ui";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useDropdown } from "@/hooks/use-dropdown";
-import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { DropdownButton } from "../buttons";
 import { BUTTON_VARIANTS_WITHOUT_TEXT } from "../constants";
@@ -26,11 +25,11 @@ type TModuleDropdownBaseProps = TDropdownProps & {
   button?: ReactNode;
   dropdownArrow?: boolean;
   dropdownArrowClassName?: string;
-  getModuleById: (moduleId: string) => IModule | null;
+  modules: readonly IModule[] | undefined;
+  isError: boolean;
+  retry: () => Promise<unknown>;
   itemClassName?: string;
-  moduleIds?: string[];
   onClose?: () => void;
-  onDropdownOpen?: () => void;
   projectId: string | undefined;
   renderByDefault?: boolean;
   showCount?: boolean;
@@ -47,7 +46,7 @@ type TModuleDropdownBaseProps = TDropdownProps & {
       }
   );
 
-export const ModuleDropdownBase = observer(function ModuleDropdownBase(props: TModuleDropdownBaseProps) {
+export const ModuleDropdownBase = function ModuleDropdownBase(props: TModuleDropdownBaseProps) {
   const {
     button,
     buttonClassName,
@@ -57,10 +56,11 @@ export const ModuleDropdownBase = observer(function ModuleDropdownBase(props: TM
     disabled = false,
     dropdownArrow = false,
     dropdownArrowClassName = "",
-    getModuleById,
+    modules,
+    isError,
+    retry,
     hideIcon = false,
     itemClassName = "",
-    moduleIds,
     multiple,
     onChange,
     onClose,
@@ -76,122 +76,96 @@ export const ModuleDropdownBase = observer(function ModuleDropdownBase(props: TM
   // i18n
   const { t } = useTranslation();
   // states
-  const [isOpen, setIsOpen] = useState(false);
-  // refs
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
   // popper-js refs
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  // store hooks
-  const { isMobile } = usePlatformOS();
 
-  const { handleClose, handleKeyDown, handleOnClick } = useDropdown({
-    dropdownRef,
-    inputRef,
-    isOpen,
-    onClose,
-    setIsOpen,
-  });
-
-  const dropdownOnChange = (val: string & string[]) => {
-    onChange(val);
-    if (!multiple) handleClose();
-  };
-
-  const comboboxProps = {
-    value,
-    onChange: dropdownOnChange,
-    disabled,
-    multiple,
-  };
-
-  useEffect(() => {
-    if (isOpen && inputRef.current && !isMobile) {
-      inputRef.current.focus();
-    }
-  }, [isOpen, isMobile]);
-
-  const comboButton = button ? (
-    <button
-      ref={setReferenceElement}
-      type="button"
-      className={cn("clickable block h-full w-full outline-none hover:bg-layer-1", buttonContainerClassName)}
-      onClick={handleOnClick}
-      disabled={disabled}
-      tabIndex={tabIndex}
-    >
-      {button}
-    </button>
-  ) : (
-    <button
-      ref={setReferenceElement}
-      type="button"
-      className={cn(
-        "clickable block h-full max-w-full outline-none hover:bg-layer-1",
-        {
-          "cursor-not-allowed text-secondary": disabled,
-          "cursor-pointer": !disabled,
-        },
-        buttonContainerClassName
-      )}
-      onClick={handleOnClick}
-      disabled={disabled}
-      tabIndex={tabIndex}
-    >
-      <DropdownButton
-        className={buttonClassName}
-        isActive={isOpen}
-        tooltipHeading={t("common.module")}
-        tooltipContent={
-          Array.isArray(value)
-            ? `${value
-                .map((moduleId) => getModuleById(moduleId)?.name)
-                .toString()
-                .replaceAll(",", ", ")}`
-            : ""
-        }
-        showTooltip={showTooltip}
-        variant={buttonVariant}
-        renderToolTipByDefault={renderByDefault}
+  const comboButton = ({ open }: { open: boolean }) =>
+    button ? (
+      <button
+        ref={setReferenceElement}
+        type="button"
+        className={cn("clickable block h-full w-full outline-none hover:bg-layer-1", buttonContainerClassName)}
+        disabled={disabled}
+        tabIndex={tabIndex}
       >
-        <ModuleButtonContent
-          disabled={disabled}
-          dropdownArrow={dropdownArrow}
-          dropdownArrowClassName={dropdownArrowClassName}
-          hideIcon={hideIcon}
-          hideText={BUTTON_VARIANTS_WITHOUT_TEXT.includes(buttonVariant)}
-          placeholder={placeholder}
-          showCount={showCount}
+        {button}
+      </button>
+    ) : (
+      <button
+        ref={setReferenceElement}
+        type="button"
+        className={cn(
+          "clickable block h-full max-w-full outline-none hover:bg-layer-1",
+          {
+            "cursor-not-allowed text-secondary": disabled,
+            "cursor-pointer": !disabled,
+          },
+          buttonContainerClassName
+        )}
+        disabled={disabled}
+        tabIndex={tabIndex}
+      >
+        <DropdownButton
+          className={buttonClassName}
+          isActive={open}
+          tooltipHeading={t("common.module")}
+          tooltipContent={
+            Array.isArray(value)
+              ? `${value
+                  .map((moduleId) => modules?.find((module) => module.id === moduleId)?.name)
+                  .toString()
+                  .replaceAll(",", ", ")}`
+              : ""
+          }
           showTooltip={showTooltip}
-          value={value}
-          onChange={onChange as any}
-          className={itemClassName}
-        />
-      </DropdownButton>
-    </button>
-  );
+          variant={buttonVariant}
+          renderToolTipByDefault={renderByDefault}
+        >
+          <ModuleButtonContent
+            modules={modules}
+            dropdownArrow={dropdownArrow}
+            dropdownArrowClassName={dropdownArrowClassName}
+            hideIcon={hideIcon}
+            hideText={BUTTON_VARIANTS_WITHOUT_TEXT.includes(buttonVariant)}
+            placeholder={placeholder}
+            showCount={showCount}
+            showTooltip={showTooltip}
+            value={value}
+            className={itemClassName}
+          />
+        </DropdownButton>
+      </button>
+    );
 
-  return (
-    <ComboDropDown
-      as="div"
-      ref={dropdownRef}
-      className={cn("h-full", className)}
-      onKeyDown={handleKeyDown}
-      button={comboButton}
-      renderByDefault={renderByDefault}
-      {...comboboxProps}
-    >
-      {isOpen && projectId && (
-        <ModuleOptions
-          isOpen={isOpen}
-          placement={placement}
-          referenceElement={referenceElement}
-          multiple={multiple}
-          getModuleById={getModuleById}
-          moduleIds={moduleIds}
-          value={value}
-        />
-      )}
-    </ComboDropDown>
+  const children = ({ open, restoreButtonFocusOnClose }: TComboDropDownRenderProps) =>
+    open &&
+    projectId && (
+      <ModuleOptions
+        placement={placement}
+        referenceElement={referenceElement}
+        multiple={multiple}
+        modules={modules}
+        isError={isError}
+        retry={retry}
+        value={value}
+        restoreButtonFocusOnClose={restoreButtonFocusOnClose}
+      />
+    );
+
+  const dropdownProps = {
+    as: "div" as const,
+    className: cn("h-full", className),
+    disabled,
+    tabIndex,
+    button: comboButton,
+    onClose,
+    renderByDefault,
+    children,
+  };
+
+  return multiple ? (
+    <ComboDropDown<string, true> {...dropdownProps} multiple value={value ?? []} onChange={onChange} />
+  ) : (
+    <ComboDropDown<string | null> {...dropdownProps} value={value} onChange={onChange} />
   );
-});
+};

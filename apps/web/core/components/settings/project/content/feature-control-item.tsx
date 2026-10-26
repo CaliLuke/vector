@@ -4,15 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
-import { setPromiseToast } from "@plane/propel/toast";
+import { notifyProjectFeatureUpdate } from "@/components/project/settings/feature-update-toast";
 import type { IProject } from "@plane/types";
 import { ToggleSwitch } from "@plane/ui";
 // components
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectMutations } from "@/hooks/use-projects";
 
 type Props = {
   description?: React.ReactNode;
@@ -24,43 +23,43 @@ type Props = {
   workspaceSlug: string;
 };
 
-export const ProjectSettingsFeatureControlItem = observer(function ProjectSettingsFeatureControlItem(props: Props) {
+export function ProjectSettingsFeatureControlItem(props: Props) {
   const { description, disabled, featureProperty, projectId, title, value, workspaceSlug } = props;
-  // store hooks
-  const { getProjectById, updateProject } = useProject();
-  // derived values
-  const currentProjectDetails = getProjectById(projectId);
+  const projectMutation = useProjectMutations(workspaceSlug, projectId);
 
   const handleSubmit = () => {
-    if (!workspaceSlug || !projectId || !currentProjectDetails) return;
+    if (!workspaceSlug || !projectId) return;
 
     // making the request to update the project feature
     const settingsPayload = {
-      [featureProperty]: !currentProjectDetails?.[featureProperty],
+      [featureProperty]: !value,
     };
-    const updateProjectPromise = updateProject(workspaceSlug, projectId, settingsPayload);
+    const updateProjectPromise = projectMutation
+      .mutateAsync({
+        type: "update",
+        projectId,
+        data: settingsPayload,
+      })
+      .then((result) => {
+        if (!result.project) throw new Error("The server did not return the updated project.");
+        return result.project;
+      });
 
-    setPromiseToast(updateProjectPromise, {
-      loading: "Updating project feature...",
-      success: {
-        title: "Success!",
-        message: () => "Project feature updated successfully.",
-      },
-      error: {
-        title: "Error!",
-        message: () => "Something went wrong while updating project feature. Please try again.",
-      },
-    });
-    void updateProjectPromise.then(() => {
-      return undefined;
-    });
+    notifyProjectFeatureUpdate(updateProjectPromise);
   };
 
   return (
     <SettingsBoxedControlItem
       title={title}
       description={description}
-      control={<ToggleSwitch value={value} onChange={handleSubmit} disabled={disabled} size="sm" />}
+      control={
+        <ToggleSwitch
+          value={value}
+          onChange={handleSubmit}
+          disabled={disabled || projectMutation.isPending}
+          size="sm"
+        />
+      }
     />
   );
-});
+}

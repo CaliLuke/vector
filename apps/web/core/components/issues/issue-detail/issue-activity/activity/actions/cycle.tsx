@@ -4,30 +4,24 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // hooks
 import { CycleIcon } from "@plane/propel/icons";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent } from "./";
 // icons
 
-type TIssueCycleActivity = { activityId: string; ends: "top" | "bottom" | undefined };
+type TIssueCycleActivity = { activity: TIssueActivity; ends: "top" | "bottom" | undefined };
 
-export const IssueCycleActivity = observer(function IssueCycleActivity(props: TIssueCycleActivity) {
-  const { activityId, ends } = props;
+export const IssueCycleActivity = function IssueCycleActivity(props: TIssueCycleActivity) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
       icon={<CycleIcon className="h-4 w-4 flex-shrink-0 text-secondary" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
@@ -71,4 +65,4 @@ export const IssueCycleActivity = observer(function IssueCycleActivity(props: TI
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

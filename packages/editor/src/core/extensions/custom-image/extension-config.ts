@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { ImageOptions } from "@tiptap/extension-image";
 import { mergeAttributes } from "@tiptap/core";
 import { Image as BaseImageExtension } from "@tiptap/extension-image";
 // constants
@@ -11,7 +12,6 @@ import { CORE_EXTENSIONS } from "@/constants/extension";
 // local imports
 import { ECustomImageAttributeNames } from "./types";
 import type {
-  CustomImageExtensionOptions,
   TCustomImageAttributes,
   CustomImageExtensionType,
   CustomImageExtensionStorage,
@@ -31,7 +31,7 @@ declare module "@tiptap/core" {
 }
 
 export const CustomImageExtensionConfig: CustomImageExtensionType = BaseImageExtension.extend<
-  CustomImageExtensionOptions,
+  ImageOptions,
   CustomImageExtensionStorage
 >({
   name: CORE_EXTENSIONS.CUSTOM_IMAGE,

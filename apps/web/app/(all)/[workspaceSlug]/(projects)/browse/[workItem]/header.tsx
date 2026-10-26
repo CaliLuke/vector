@@ -5,33 +5,32 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { Header, Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { AppHeader } from "@/components/core/app-header";
 import { TabNavigationRoot } from "@/components/navigation";
 import { AppSidebarToggleButton } from "@/components/sidebar/sidebar-toggle-button";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useSidebarCollapsed } from "@/providers/sidebar-state";
 import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferences";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 // local components
 import { WorkItemDetailsHeader } from "./work-item-header";
 
-export const ProjectWorkItemDetailsHeader = observer(function ProjectWorkItemDetailsHeader() {
+export const ProjectWorkItemDetailsHeader = function ProjectWorkItemDetailsHeader() {
   // router
   const { workspaceSlug, workItem } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/browse/$workItem" });
   // store hooks
-  const { sidebarCollapsed } = useAppTheme();
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail();
-  // derived values
-  const issueId = getIssueIdByIdentifier(workItem?.toString());
-  const issueDetails = issueId ? getIssueById(issueId?.toString()) : undefined;
+  const sidebarCollapsed = useSidebarCollapsed();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const [projectIdentifier, sequenceId] = (workItem?.toString() ?? "").split("-");
+  const projectId = projectCatalogue.projects?.find((project) => project.identifier === projectIdentifier)?.id;
+  const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequenceId, projectId);
+  const issueDetails = detail.issue;
   // preferences
   const { preferences: projectPreferences } = useProjectNavigationPreferences();
 
@@ -63,4 +62,4 @@ export const ProjectWorkItemDetailsHeader = observer(function ProjectWorkItemDet
       <AppHeader header={<WorkItemDetailsHeader />} />
     </>
   );
-});
+};

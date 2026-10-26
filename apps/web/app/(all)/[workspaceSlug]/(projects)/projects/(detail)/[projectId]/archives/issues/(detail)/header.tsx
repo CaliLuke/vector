@@ -5,9 +5,8 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 // ui
 import { ArchiveIcon, WorkItemsIcon } from "@plane/propel/icons";
 import { Breadcrumbs, Header } from "@plane/ui";
@@ -15,9 +14,8 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { IssueDetailQuickActions } from "@/components/issues/issue-detail/issue-detail-quick-actions";
 // constants
-import { ISSUE_DETAILS } from "@plane/constants";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useRouteProject } from "@/hooks/use-projects";
 // plane web
 import { ProjectBreadcrumb } from "@/components/breadcrumbs/project";
 // services
@@ -25,25 +23,28 @@ import { IssueService } from "@/services/issue";
 
 const issueService = new IssueService();
 
-export const ProjectArchivedIssueDetailsHeader = observer(function ProjectArchivedIssueDetailsHeader() {
+export const ProjectArchivedIssueDetailsHeader = function ProjectArchivedIssueDetailsHeader() {
   // router
   const { workspaceSlug, projectId, archivedIssueId } = useParams({
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/$archivedIssueId",
   });
   // store hooks
-  const { currentProjectDetails, loader } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const loader = routeProjectQuery.isPending;
 
-  const { data: issueDetails } = useSWR(
-    workspaceSlug && projectId && archivedIssueId ? ISSUE_DETAILS(archivedIssueId.toString()) : null,
-    workspaceSlug && projectId && archivedIssueId
-      ? () => issueService.retrieve(workspaceSlug.toString(), projectId.toString(), archivedIssueId.toString())
-      : null
-  );
+  const { data: issueDetails } = useQuery({
+    queryKey: ["ISSUE_DETAILS", workspaceSlug, projectId, archivedIssueId],
+    queryFn:
+      workspaceSlug && projectId && archivedIssueId
+        ? () => issueService.retrieve(workspaceSlug.toString(), projectId.toString(), archivedIssueId.toString())
+        : skipToken,
+  });
 
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs isLoading={loader === "init-loader"}>
+        <Breadcrumbs isLoading={loader}>
           <ProjectBreadcrumb workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
           <Breadcrumbs.Item
             component={
@@ -85,4 +86,4 @@ export const ProjectArchivedIssueDetailsHeader = observer(function ProjectArchiv
       </Header.RightItem>
     </Header>
   );
-});
+};

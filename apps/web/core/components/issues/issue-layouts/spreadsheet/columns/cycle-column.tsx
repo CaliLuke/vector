@@ -6,14 +6,14 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 // types
 import type { TIssue } from "@plane/types";
 // components
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 // hooks
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 
 type Props = {
   issue: TIssue;
@@ -21,22 +21,20 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetCycleColumn = observer(function SpreadsheetCycleColumn(props: Props) {
+export function SpreadsheetCycleColumn(props: Props) {
   const { issue, disabled, onClose } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
-  const {
-    issues: { addCycleToIssue, removeCycleFromIssue },
-  } = useIssuesStore();
+  const actions = useIssuesActions(useIssueListType());
 
   const handleCycle = useCallback(
     async (cycleId: string | null) => {
       if (!workspaceSlug || !issue || !issue.project_id || issue.cycle_id === cycleId) return;
-      if (cycleId) await addCycleToIssue(workspaceSlug.toString(), issue.project_id, cycleId, issue.id);
-      else await removeCycleFromIssue(workspaceSlug.toString(), issue.project_id, issue.id);
+      if (cycleId) await actions.addCycleToIssue(issue.project_id, cycleId, issue.id);
+      else if (issue.cycle_id) await actions.removeCycleFromIssue(issue.project_id, issue.cycle_id, issue.id);
     },
-    [workspaceSlug, issue, addCycleToIssue, removeCycleFromIssue]
+    [workspaceSlug, issue, actions]
   );
 
   return (
@@ -54,4 +52,4 @@ export const SpreadsheetCycleColumn = observer(function SpreadsheetCycleColumn(p
       />
     </div>
   );
-});
+}

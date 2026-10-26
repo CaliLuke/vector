@@ -9,6 +9,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	workspacefavorites "github.com/CaliLuke/go-plane/gen/workspace_favorites"
@@ -58,6 +59,11 @@ func EncodeListRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.
 				return loomhttp.ErrEncodingError("workspace_favorites", "list", err)
 			}
 		}
+		values := req.URL.Query()
+		if p.All != nil {
+			values.Add("all", fmt.Sprintf("%v", *p.All))
+		}
+		req.URL.RawQuery = values.Encode()
 		return nil
 	}
 }

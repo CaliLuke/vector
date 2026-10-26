@@ -4,30 +4,24 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // icons
 import { MembersPropertyIcon } from "@plane/propel/icons";
 // hooks;
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent, IssueLink } from "./";
 
-type TIssueAssigneeActivity = { activityId: string; showIssue?: boolean; ends: "top" | "bottom" | undefined };
+type TIssueAssigneeActivity = { activity: TIssueActivity; showIssue?: boolean; ends: "top" | "bottom" | undefined };
 
-export const IssueAssigneeActivity = observer(function IssueAssigneeActivity(props: TIssueAssigneeActivity) {
-  const { activityId, ends, showIssue = true } = props;
+export const IssueAssigneeActivity = function IssueAssigneeActivity(props: TIssueAssigneeActivity) {
+  const { activity, ends, showIssue = true } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
       icon={<MembersPropertyIcon className="h-3.5 w-3.5 flex-shrink-0 text-secondary" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
@@ -41,8 +35,8 @@ export const IssueAssigneeActivity = observer(function IssueAssigneeActivity(pro
           {activity.new_value && activity.new_value !== "" ? activity.new_value : activity.old_value}
         </a>
         {showIssue && (activity.old_value === "" ? ` to ` : ` from `)}
-        {showIssue && <IssueLink activityId={activityId} />}.
+        {showIssue && <IssueLink activity={activity} />}.
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

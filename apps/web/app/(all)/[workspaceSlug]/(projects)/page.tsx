@@ -5,35 +5,37 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // components
 import { useTranslation } from "@plane/i18n";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { PageHead } from "@/components/core/page-title";
+import { HomeProvider } from "@/components/home/provider";
 import { WorkspaceHomeView } from "@/components/home";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 // local components
 import { WorkspaceDashboardHeader } from "./header";
 
 function WorkspaceDashboardPage(): React.JSX.Element | null {
-  const { currentWorkspace } = useWorkspace();
+  const { workspaceSlug } = Route.useParams();
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const { t } = useTranslation();
   // derived values
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace?.name} - ${t("home.title")}` : undefined;
 
   return (
-    <>
+    <HomeProvider key={workspaceSlug}>
       <AppHeader header={<WorkspaceDashboardHeader />} />
       <ContentWrapper>
         <PageHead title={pageTitle} />
         <WorkspaceHomeView />
       </ContentWrapper>
-    </>
+    </HomeProvider>
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/")({
-  component: observer(WorkspaceDashboardPage),
+  component: WorkspaceDashboardPage,
 });

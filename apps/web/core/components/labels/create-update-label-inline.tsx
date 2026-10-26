@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import React, { forwardRef, useEffect } from "react";
-import { observer } from "mobx-react";
+import { forwardRef, useEffect, useRef, useState } from "react";
+import type { Dispatch, SetStateAction, ForwardedRef } from "react";
 import { TwitterPicker } from "react-color";
-import type { SubmitHandler } from "react-hook-form";
-import { Controller, useForm } from "react-hook-form";
-import { Popover, Transition } from "@headlessui/react";
-// plane imports
+import { useForm, useStore } from "@tanstack/react-form";
+import { Popover } from "@headlessui/react";
 import { getRandomLabelColor, LABEL_COLOR_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -18,238 +16,161 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IIssueLabel } from "@plane/types";
 import { Input } from "@plane/ui";
 
-// error codes
-const errorCodes = {
-  LABEL_NAME_ALREADY_EXISTS: "LABEL_NAME_ALREADY_EXISTS",
-};
-
 export type TLabelOperationsCallbacks = {
   createLabel: (data: Partial<IIssueLabel>) => Promise<IIssueLabel>;
   updateLabel: (labelId: string, data: Partial<IIssueLabel>) => Promise<IIssueLabel>;
 };
-
-type TCreateUpdateLabelInlineProps = {
+type Props = {
   labelForm: boolean;
-  setLabelForm: React.Dispatch<React.SetStateAction<boolean>>;
+  setLabelForm: Dispatch<SetStateAction<boolean>>;
   isUpdating: boolean;
   labelOperationsCallbacks: TLabelOperationsCallbacks;
   labelToUpdate?: IIssueLabel;
-  onClose?: () => void;
+  onClose?: () => boolean | void;
 };
 
-const defaultValues: Partial<IIssueLabel> = {
-  name: "",
-  color: "var(--text-color-secondary)",
-};
+export const CreateUpdateLabelInline = forwardRef(function CreateUpdateLabelInline(
+  props: Props,
+  ref: ForwardedRef<HTMLDivElement>
+) {
+  return props.labelForm ? <LabelForm key={props.labelToUpdate?.id ?? "new"} {...props} containerRef={ref} /> : null;
+});
 
-export const CreateUpdateLabelInline = observer(
-  forwardRef(function CreateUpdateLabelInline(
-    props: TCreateUpdateLabelInlineProps,
-    ref: React.ForwardedRef<HTMLDivElement>
-  ) {
-    const { labelForm, setLabelForm, isUpdating, labelOperationsCallbacks, labelToUpdate, onClose } = props;
-    // form info
-    const {
-      handleSubmit,
-      control,
-      reset,
-      formState: { errors, isSubmitting },
-      watch,
-      setValue,
-      setFocus,
-    } = useForm<IIssueLabel>({
-      defaultValues,
-    });
-
-    const { t } = useTranslation();
-
-    const handleClose = () => {
-      setLabelForm(false);
-      reset(defaultValues);
-      if (onClose) onClose();
+function LabelForm({
+  setLabelForm,
+  isUpdating,
+  labelOperationsCallbacks,
+  labelToUpdate,
+  onClose,
+  containerRef,
+}: Props & { containerRef: ForwardedRef<HTMLDivElement> }) {
+  const { t } = useTranslation();
+  const lifecycleRef = useRef(false);
+  useEffect(() => {
+    lifecycleRef.current = true;
+    return () => {
+      lifecycleRef.current = false;
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const getErrorMessage = (error: any, operation: "create" | "update"): string => {
-      const errorData = error ?? {};
-
-      const labelError = errorData.name?.includes(errorCodes.LABEL_NAME_ALREADY_EXISTS);
-      if (labelError) {
-        return t("label.create.already_exists");
+  }, []);
+  const [defaultValues] = useState(() => ({
+    name: labelToUpdate?.name ?? "",
+    color: labelToUpdate?.color || getRandomLabelColor(),
+  }));
+  const close = () => {
+    if (!lifecycleRef.current || onClose?.() === false) return;
+    setLabelForm(false);
+  };
+  const form = useForm({
+    defaultValues,
+    validators: {
+      onSubmit: ({ value }) => {
+        if (!value.name.trim()) return t("project_settings.labels.label_title_is_required");
+        if (value.name.length > 255) return t("project_settings.labels.label_max_char");
+        if (isUpdating && !labelToUpdate) return t("common.something_went_wrong");
+        return undefined;
+      },
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const payload = { ...value, name: value.name.trim() };
+        if (isUpdating) {
+          if (!labelToUpdate) throw new Error("Cannot update a label without a target.");
+          await labelOperationsCallbacks.updateLabel(labelToUpdate.id, payload);
+        } else await labelOperationsCallbacks.createLabel(payload);
+        close();
+      } catch (error) {
+        if (!lifecycleRef.current) throw error;
+        const data = error && typeof error === "object" ? error : {};
+        const duplicate =
+          "name" in data &&
+          (typeof data.name === "string" || Array.isArray(data.name)) &&
+          data.name.includes("LABEL_NAME_ALREADY_EXISTS");
+        const message = duplicate
+          ? t("label.create.already_exists")
+          : "detail" in data && typeof data.detail === "string"
+            ? data.detail
+            : "error" in data && typeof data.error === "string"
+              ? data.error
+              : t("common.something_went_wrong");
+        setToast({ type: TOAST_TYPE.ERROR, title: t("error"), message });
+        throw error;
       }
-
-      // Fallback to general error messages
-      if (operation === "create") {
-        return errorData?.detail ?? errorData?.error ?? t("common.something_went_wrong");
-      }
-
-      return errorData?.error ?? t("project_settings.labels.toast.error");
-    };
-
-    const handleLabelCreate: SubmitHandler<IIssueLabel> = async (formData) => {
-      if (isSubmitting) return;
-
-      await labelOperationsCallbacks
-        .createLabel(formData)
-        .then((_res) => {
-          handleClose();
-          reset(defaultValues);
-        })
-        .catch((error) => {
-          const errorMessage = getErrorMessage(error, "create");
-          setToast({
-            title: "Error!",
-            type: TOAST_TYPE.ERROR,
-            message: errorMessage,
-          });
-          reset(formData);
-        });
-    };
-
-    const handleLabelUpdate: SubmitHandler<IIssueLabel> = async (formData) => {
-      if (!labelToUpdate?.id || isSubmitting) return;
-
-      await labelOperationsCallbacks
-        .updateLabel(labelToUpdate.id, formData)
-        .then((_res) => {
-          reset(defaultValues);
-          handleClose();
-        })
-        .catch((error) => {
-          const errorMessage = getErrorMessage(error, "update");
-          setToast({
-            title: "Oops!",
-            type: TOAST_TYPE.ERROR,
-            message: errorMessage,
-          });
-          reset(formData);
-        });
-    };
-
-    const handleFormSubmit = (formData: IIssueLabel) => {
-      if (isUpdating) {
-        handleLabelUpdate(formData);
-      } else {
-        handleLabelCreate(formData);
-      }
-    };
-
-    /**
-     * For settings focus on name input
-     */
-    useEffect(() => {
-      setFocus("name");
-    }, [setFocus, labelForm]);
-
-    useEffect(() => {
-      if (!labelToUpdate) return;
-
-      setValue("name", labelToUpdate.name);
-      setValue("color", labelToUpdate.color && labelToUpdate.color !== "" ? labelToUpdate.color : "#000");
-    }, [labelToUpdate, setValue]);
-
-    useEffect(() => {
-      if (labelToUpdate) {
-        setValue("color", labelToUpdate.color && labelToUpdate.color !== "" ? labelToUpdate.color : "#000");
-        return;
-      }
-
-      setValue("color", getRandomLabelColor());
-    }, [labelToUpdate, setValue]);
-
-    return (
-      <>
-        <div
-          ref={ref}
-          className={`flex w-full scroll-m-8 items-center gap-2 bg-surface-1 ${labelForm ? "" : "hidden"}`}
-        >
-          <div className="flex-shrink-0">
-            <Popover className="relative z-10 flex h-full w-full items-center justify-center">
-              {({ open }) => (
-                <>
-                  <Popover.Button
-                    className={`group inline-flex items-center text-14 font-medium focus:outline-none ${
-                      open ? "text-primary" : "text-secondary"
-                    }`}
-                  >
-                    <span
-                      className="h-4 w-4 rounded-full"
-                      style={{
-                        backgroundColor: watch("color"),
-                      }}
-                    />
-                  </Popover.Button>
-
-                  <Transition
-                    as={React.Fragment}
-                    enter="transition ease-out duration-200"
-                    enterFrom="opacity-0 translate-y-1"
-                    enterTo="opacity-100 translate-y-0"
-                    leave="transition ease-in duration-150"
-                    leaveFrom="opacity-100 translate-y-0"
-                    leaveTo="opacity-0 translate-y-1"
-                  >
-                    <Popover.Panel className="absolute top-full left-0 z-20 mt-3 w-screen max-w-xs px-2 sm:px-0">
-                      <Controller
-                        name="color"
-                        control={control}
-                        render={({ field: { value, onChange } }) => (
-                          <TwitterPicker
-                            colors={LABEL_COLOR_OPTIONS}
-                            color={value}
-                            onChange={(value) => onChange(value.hex)}
-                          />
-                        )}
-                      />
-                    </Popover.Panel>
-                  </Transition>
-                </>
-              )}
-            </Popover>
-          </div>
-          <div className="flex flex-1 flex-col justify-center">
-            <Controller
-              control={control}
-              name="name"
-              rules={{
-                required: t("project_settings.labels.label_title_is_required"),
-                maxLength: {
-                  value: 255,
-                  message: t("project_settings.labels.label_max_char"),
-                },
-              }}
-              render={({ field: { value, onChange, ref } }) => (
-                <Input
-                  id="labelName"
-                  name="name"
-                  type="text"
-                  autoFocus
-                  value={value}
-                  onChange={onChange}
-                  ref={ref}
-                  hasError={Boolean(errors.name)}
-                  placeholder={t("project_settings.labels.label_title")}
-                  className="w-full"
+    },
+  });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  return (
+    <div ref={containerRef} className="w-full scroll-m-8 bg-surface-1">
+      <form
+        className="flex w-full items-start gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.setErrorMap({ onSubmit: undefined });
+          void form.handleSubmit().catch(() => {});
+        }}
+      >
+        <form.Field name="color">
+          {(field) => (
+            <Popover className="relative z-10 flex h-full shrink-0 items-center justify-center">
+              <Popover.Button type="button" disabled={isSubmitting} aria-label="Label color" className="p-2">
+                <span className="block h-4 w-4 rounded-full" style={{ backgroundColor: field.state.value }} />
+              </Popover.Button>
+              <Popover.Panel className="absolute top-full left-0 z-20 mt-3 w-screen max-w-xs px-2 sm:px-0">
+                <TwitterPicker
+                  colors={LABEL_COLOR_OPTIONS}
+                  color={field.state.value}
+                  onChange={(color) => {
+                    if (!isSubmitting) field.handleChange(color.hex);
+                  }}
                 />
-              )}
-            />
-          </div>
-          <Button variant="secondary" onClick={() => handleClose()}>
-            {t("cancel")}
-          </Button>
-          <Button
-            variant="primary"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSubmit(handleFormSubmit)();
-            }}
-            loading={isSubmitting}
-          >
-            {isUpdating ? (isSubmitting ? t("updating") : t("update")) : isSubmitting ? t("adding") : t("add")}
-          </Button>
-        </div>
-        {errors.name?.message && <p className="p-0.5 pl-8 text-13 text-danger-primary">{errors.name?.message}</p>}
-      </>
-    );
-  })
-);
+              </Popover.Panel>
+            </Popover>
+          )}
+        </form.Field>
+        <form.Field
+          name="name"
+          validators={{
+            onChange: ({ value }) =>
+              !value.trim()
+                ? t("project_settings.labels.label_title_is_required")
+                : value.length > 255
+                  ? t("project_settings.labels.label_max_char")
+                  : undefined,
+            onSubmit: ({ value }) =>
+              !value.trim()
+                ? t("project_settings.labels.label_title_is_required")
+                : value.length > 255
+                  ? t("project_settings.labels.label_max_char")
+                  : undefined,
+          }}
+        >
+          {(field) => (
+            <div className="flex flex-1 flex-col">
+              <Input
+                name={field.name}
+                autoFocus
+                disabled={isSubmitting}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                hasError={field.state.meta.errors.length > 0}
+                placeholder={t("project_settings.labels.label_title")}
+                className="w-full"
+              />
+              {field.state.meta.errors.map((error) => (
+                <p key={error} role="alert" className="text-13 text-danger-primary">
+                  {error}
+                </p>
+              ))}
+            </div>
+          )}
+        </form.Field>
+        <Button type="button" variant="secondary" disabled={isSubmitting} onClick={close}>
+          {t("cancel")}
+        </Button>
+        <Button type="submit" variant="primary" loading={isSubmitting}>
+          {isUpdating ? (isSubmitting ? t("updating") : t("update")) : isSubmitting ? t("adding") : t("add")}
+        </Button>
+      </form>
+    </div>
+  );
+}

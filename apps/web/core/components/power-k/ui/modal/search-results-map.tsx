@@ -14,7 +14,7 @@ import type {
   IWorkspaceProjectSearchResult,
   IWorkspaceSearchResult,
 } from "@plane/types";
-import { generateWorkItemLink } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import type { TPowerKSearchResultsKeys } from "@/components/power-k/core/types";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
@@ -40,15 +40,23 @@ export const POWER_K_SEARCH_RESULTS_GROUPS_MAP: Record<TPowerKSearchResultsKeys,
   },
   issue: {
     itemName: (workItem: IWorkspaceIssueSearchResult) => (
-      <div className="flex gap-2">
-        <IssueIdentifier
-          projectId={workItem.project_id}
-          issueTypeId={workItem.type_id}
-          projectIdentifier={workItem.project__identifier}
-          issueSequenceId={workItem.sequence_id}
-          size="xs"
-        />{" "}
-        {workItem.name}
+      <div className="min-w-0 py-0.5">
+        <div className="flex items-center gap-2">
+          <IssueIdentifier
+            projectId={workItem.project_id}
+            issueTypeId={workItem.type_id}
+            projectIdentifier={workItem.project__identifier}
+            issueSequenceId={workItem.sequence_id}
+            size="xs"
+          />
+          <span className="truncate">{workItem.name}</span>
+        </div>
+        {workItem.custom_property_match && (
+          <p className="mt-1 line-clamp-2 text-11 text-tertiary">
+            <span className="font-medium">{workItem.custom_property_match.property_title}: </span>
+            {workItem.custom_property_match.text}
+          </p>
+        )}
       </div>
     ),
     path: (workItem: IWorkspaceIssueSearchResult) =>

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useMutation } from "@tanstack/react-query";
 // components
 import type { TLabelOperations } from "../root";
 import { IssueLabelSelect } from "./label-select";
@@ -20,9 +21,11 @@ type TIssueLabelSelectRoot = {
 export function IssueLabelSelectRoot(props: TIssueLabelSelectRoot) {
   const { workspaceSlug, projectId, issueId, values, labelOperations } = props;
 
-  const handleLabel = async (_labelIds: string[]) => {
-    await labelOperations.updateIssue(workspaceSlug, projectId, issueId, { label_ids: _labelIds });
-  };
+  const selection = useMutation({
+    mutationFn: async (_labelIds: string[]) => {
+      await labelOperations.updateIssue(workspaceSlug, projectId, issueId, { label_ids: _labelIds });
+    },
+  });
 
   return (
     <IssueLabelSelect
@@ -30,7 +33,7 @@ export function IssueLabelSelectRoot(props: TIssueLabelSelectRoot) {
       projectId={projectId}
       issueId={issueId}
       values={values}
-      onSelect={handleLabel}
+      onSelect={selection.mutate}
       onAddLabel={labelOperations.createLabel}
     />
   );

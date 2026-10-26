@@ -14,7 +14,7 @@ import { CopyIcon } from "@plane/propel/icons";
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // types
 import type { TCodeBlockAttributes } from "./types";
 import { ECodeBlockAttributeNames } from "./types";

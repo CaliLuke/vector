@@ -5,14 +5,14 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState, useRef } from "react";
-import { observer } from "mobx-react";
+import { useEffect, useRef, useState } from "react";
 
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IIssueLabel } from "@plane/types";
 import { Loader } from "@plane/ui";
 import type { TLabelOperationsCallbacks } from "@/components/labels";
@@ -23,36 +23,63 @@ import {
   ProjectSettingLabelItem,
 } from "@/components/labels";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectLabelMutations } from "@/hooks/use-labels";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { SettingsHeading } from "../settings/heading";
 
-export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelList() {
+export function ProjectSettingsLabelList() {
   // router
   const { workspaceSlug, projectId } = useParams({
     from: "/_authenticated/$workspaceSlug/settings/projects/$projectId",
   });
-  // refs
+  const { data: currentUser } = useCurrentUser();
+  return (
+    <ProjectLabelSettings
+      key={JSON.stringify([currentUser?.id, workspaceSlug, projectId])}
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+    />
+  );
+}
+
+function ProjectLabelSettings({ workspaceSlug, projectId }: { workspaceSlug: string; projectId: string }) {
   const scrollToRef = useRef<HTMLDivElement>(null);
-  // states
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [showLabelForm, setLabelForm] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectDeleteLabel, setSelectDeleteLabel] = useState<IIssueLabel | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<IIssueLabel | null>(null);
+  const [labelFormGeneration, setLabelFormGeneration] = useState(0);
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { projectLabels, updateLabelPosition, projectLabelsTree, createLabel, updateLabel } = useLabel();
-  const { allowPermissions } = useUserPermissions();
+  const {
+    labels: projectLabels,
+    updateLabelPosition,
+    labelTree: projectLabelsTree,
+    createLabel,
+    updateLabel,
+    isError: labelsError,
+    isFetching: labelsFetching,
+    refetch: refetchLabels,
+  } = useProjectLabelMutations(workspaceSlug, projectId);
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const isEditable = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
+  const isEditable = canProject([EUserPermissions.ADMIN]);
   const labelOperationsCallbacks: TLabelOperationsCallbacks = {
-    createLabel: (data: Partial<IIssueLabel>) => createLabel(workspaceSlug?.toString(), projectId?.toString(), data),
-    updateLabel: (labelId: string, data: Partial<IIssueLabel>) =>
-      updateLabel(workspaceSlug?.toString(), projectId?.toString(), labelId, data),
+    createLabel,
+    updateLabel,
   };
 
   const newLabel = () => {
+    setLabelFormGeneration((generation) => generation + 1);
     setIsUpdating(false);
     setLabelForm(true);
   };
@@ -64,25 +91,34 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
     dropAtEndOfList: boolean
   ) => {
     if (workspaceSlug && projectId) {
-      updateLabelPosition(
-        workspaceSlug?.toString(),
-        projectId?.toString(),
+      void updateLabelPosition({
         draggingLabelId,
         droppedParentId,
         droppedLabelId,
-        dropAtEndOfList
-      );
+        dropAtEndOfList,
+      }).catch((error) => {
+        if (!mounted.current) return;
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Error!",
+          message: error?.error ?? "Label order could not be saved. Please try again.",
+        });
+      });
       return;
     }
   };
 
   return (
     <>
-      <DeleteLabelModal
-        isOpen={!!selectDeleteLabel}
-        data={selectDeleteLabel ?? null}
-        onClose={() => setSelectDeleteLabel(null)}
-      />
+      {deleteDialog && (
+        <DeleteLabelModal
+          key={deleteDialog.id}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          data={deleteDialog}
+          onClose={() => setDeleteDialog(null)}
+        />
+      )}
       <SettingsHeading
         title={t("project_settings.labels.heading")}
         description={t("project_settings.labels.description")}
@@ -98,6 +134,7 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
         {showLabelForm && (
           <div className="my-2 w-full rounded-sm border border-subtle px-3.5 py-2">
             <CreateUpdateLabelInline
+              key={labelFormGeneration}
               labelForm={showLabelForm}
               setLabelForm={setLabelForm}
               isUpdating={isUpdating}
@@ -106,11 +143,12 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
               onClose={() => {
                 setLabelForm(false);
                 setIsUpdating(false);
+                return true;
               }}
             />
           </div>
         )}
-        {projectLabels ? (
+        {projectLabels !== undefined ? (
           projectLabels.length === 0 && !showLabelForm ? (
             <EmptyStateCompact
               assetKey="label"
@@ -136,7 +174,7 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
                     key={label.id}
                     label={label}
                     labelChildren={label.children || []}
-                    handleLabelDelete={(label: IIssueLabel) => setSelectDeleteLabel(label)}
+                    handleLabelDelete={setDeleteDialog}
                     isUpdating={isUpdating}
                     setIsUpdating={setIsUpdating}
                     isLastChild={index === projectLabelsTree.length - 1}
@@ -151,7 +189,7 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
                   label={label}
                   key={label.id}
                   setIsUpdating={setIsUpdating}
-                  handleLabelDelete={(label) => setSelectDeleteLabel(label)}
+                  handleLabelDelete={setDeleteDialog}
                   isChild={false}
                   isLastChild={index === projectLabelsTree.length - 1}
                   onDrop={onDrop}
@@ -162,16 +200,24 @@ export const ProjectSettingsLabelList = observer(function ProjectSettingsLabelLi
             })
           )
         ) : (
-          !showLabelForm && (
+          !showLabelForm &&
+          (labelsError ? (
+            <div role="alert" className="flex items-center gap-3 py-8">
+              <p>Unable to load project labels.</p>
+              <Button variant="primary" size="sm" disabled={labelsFetching} onClick={() => void refetchLabels()}>
+                Retry
+              </Button>
+            </div>
+          ) : (
             <Loader className="space-y-5">
               <Loader.Item height="42px" />
               <Loader.Item height="42px" />
               <Loader.Item height="42px" />
               <Loader.Item height="42px" />
             </Loader>
-          )
+          ))
         )}
       </div>
     </>
   );
-});
+}

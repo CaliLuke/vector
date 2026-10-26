@@ -6,7 +6,9 @@
 
 import React from "react";
 // plane utils
-import { calculateTimeAgo, cn, getIconForLink } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { cn } from "@plane/utils/common";
+import { getIconForLink } from "@plane/utils/get-icon-for-link";
 // plane ui
 import type { TContextMenuItem } from "../dropdowns/context-menu/root";
 import { CustomMenu } from "../dropdowns/custom-menu";

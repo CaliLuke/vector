@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 import { getRandomInt } from "../utils";
 
 function CalendarDay() {

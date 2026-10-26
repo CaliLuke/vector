@@ -68,14 +68,16 @@ export class IssueAttachmentService extends APIService {
       });
   }
 
-  async getIssueAttachments(workspaceSlug: string, projectId: string, issueId: string): Promise<TIssueAttachment[]> {
+  async getIssueAttachments(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<TIssueAttachment[]> {
     return this.get(
-      `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/`
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+      `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/attachments/`,
+      { signal: options?.signal }
+    ).then((response) => response?.data);
   }
 
   async deleteIssueAttachment(

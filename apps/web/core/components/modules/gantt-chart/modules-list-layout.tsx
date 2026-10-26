@@ -5,40 +5,61 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // PLane
-import { GANTT_TIMELINE_TYPE } from "@plane/types";
+import { EUserPermissions, GANTT_TIMELINE_TYPE } from "@plane/types";
 import type { IBlockUpdateData, IBlockUpdateDependencyData, IModule } from "@plane/types";
 // components
 import { GanttChartRoot, ModuleGanttSidebar } from "@/components/gantt-chart";
 import { TimeLineTypeContext } from "@/components/gantt-chart/contexts";
 import { ModuleGanttBlock } from "@/components/modules";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
-import { useModuleFilter } from "@/hooks/store/use-module-filter";
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useFavorites } from "@/hooks/use-favorites";
+import { visibleModules } from "@/queries/cycle-module-selectors";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useModuleCataloguePreferences } from "@/providers/cycle-module-preferences";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
-export const ModulesListGanttChartView = observer(function ModulesListGanttChartView() {
+const renderModuleSidebar = (props: Parameters<typeof ModuleGanttSidebar>[0]) => <ModuleGanttSidebar {...props} />;
+const renderModuleBlock = (data: IModule) => <ModuleGanttBlock module={data} />;
+
+export const ModulesListGanttChartView = function ModulesListGanttChartView() {
   // router
   const { workspaceSlug, projectId } = useParams({
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
   });
   // store
-  const { currentProjectDetails } = useProject();
-  const { getFilteredModuleIds, updateModuleDetails } = useModule();
-  const { currentProjectDisplayFilters: displayFilters } = useModuleFilter();
+  const { can } = useProjectPermissions(workspaceSlug, projectId);
+  const catalogue = useProjectModules(workspaceSlug, projectId);
+  const favorites = useFavorites(workspaceSlug);
+  const preferences = useModuleCataloguePreferences(workspaceSlug, projectId);
+  const { display: displayFilters } = preferences;
 
   // derived values
-  const filteredModuleIds = projectId ? getFilteredModuleIds(projectId.toString()) : undefined;
+  const rows = visibleModules(
+    catalogue.modules,
+    preferences.display,
+    preferences.filters,
+    preferences.search,
+    new Set(
+      favorites.favorites?.flatMap((row) =>
+        row.entity_type === "module" && row.entity_identifier ? [row.entity_identifier] : []
+      ) ?? []
+    )
+  );
+  const filteredModuleIds = rows?.map((row) => row.id);
 
   const handleModuleUpdate = async (module: IModule, data: IBlockUpdateData) => {
     if (!workspaceSlug || !module) return;
 
-    const payload: any = { ...data };
-    if (data.sort_order) payload.sort_order = data.sort_order.newSortOrder;
+    const payload: Partial<IModule> = {
+      ...(data.start_date !== undefined ? { start_date: data.start_date } : {}),
+      ...(data.target_date !== undefined ? { target_date: data.target_date } : {}),
+      ...(data.sort_order ? { sort_order: data.sort_order.newSortOrder } : {}),
+    };
 
-    await updateModuleDetails(workspaceSlug.toString(), module.project_id, module.id, payload);
+    await catalogue.mutation.mutateAsync({ type: "patch", id: module.id, data: payload });
   };
 
   const updateBlockDates = async (blockUpdates: IBlockUpdateDependencyData[]) => {
@@ -51,12 +72,15 @@ export const ModulesListGanttChartView = observer(function ModulesListGanttChart
     if (blockUpdate.start_date) payload.start_date = blockUpdate.start_date;
     if (blockUpdate.target_date) payload.target_date = blockUpdate.target_date;
 
-    await updateModuleDetails(workspaceSlug.toString(), projectId.toString(), blockUpdate.id, payload);
+    await catalogue.mutation.mutateAsync({ type: "patch", id: blockUpdate.id, data: payload });
   };
 
-  const isAllowed = currentProjectDetails?.member_role === 20 || currentProjectDetails?.member_role === 15;
+  const isAllowed = can([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  if (!filteredModuleIds) return null;
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="modules" retry={catalogue.retry} />;
+  if (!filteredModuleIds || (displayFilters.favorites && favorites.favorites === undefined))
+    return <output>Loading modules…</output>;
 
   return (
     <TimeLineTypeContext.Provider value={GANTT_TIMELINE_TYPE.MODULE}>
@@ -64,9 +88,10 @@ export const ModulesListGanttChartView = observer(function ModulesListGanttChart
         title="Modules"
         loaderTitle="Modules"
         blockIds={filteredModuleIds}
-        sidebarToRender={(props) => <ModuleGanttSidebar {...props} />}
+        blockItems={rows ?? []}
+        sidebarToRender={renderModuleSidebar}
         blockUpdateHandler={(block, payload) => handleModuleUpdate(block, payload)}
-        blockToRender={(data: IModule) => <ModuleGanttBlock moduleId={data.id} />}
+        blockToRender={renderModuleBlock}
         enableBlockLeftResize={isAllowed}
         enableBlockRightResize={isAllowed}
         enableBlockMove={isAllowed}
@@ -77,4 +102,4 @@ export const ModulesListGanttChartView = observer(function ModulesListGanttChart
       />
     </TimeLineTypeContext.Provider>
   );
-});
+};

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
 import { Button } from "@plane/propel/button";
 // assets
@@ -16,7 +15,7 @@ const handleRetry = () => {
   window.location.reload();
 };
 
-export const InstanceFailureView = observer(function InstanceFailureView() {
+export const InstanceFailureView = function InstanceFailureView() {
   const { resolvedTheme } = useTheme();
 
   const instanceImage = resolvedTheme === "dark" ? InstanceFailureDarkImage : InstanceFailureImage;
@@ -42,4 +41,4 @@ export const InstanceFailureView = observer(function InstanceFailureView() {
       </div>
     </>
   );
-});
+};

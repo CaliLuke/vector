@@ -80,11 +80,3 @@ export type TEstimateUpdateStageKeys =
   | EEstimateUpdateStages.CREATE
   | EEstimateUpdateStages.EDIT
   | EEstimateUpdateStages.SWITCH;
-
-export type TEstimateTypeErrorObject = {
-  oldValue: string;
-  newValue: string;
-  message: string | undefined;
-};
-
-export type TEstimateTypeError = Record<number, TEstimateTypeErrorObject> | undefined;

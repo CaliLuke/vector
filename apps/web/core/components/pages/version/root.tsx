@@ -6,15 +6,12 @@
 
 import { useRouter, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import type { TPageVersion } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import { useQueryParams } from "@/hooks/use-query-params";
 // plane web imports
-import type { EPageStoreType } from "@/hooks/store";
 // local imports
 import { PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM, PAGE_NAVIGATION_PANE_WIDTH } from "../navigation-pane";
 import type { TVersionEditorProps } from "./editor";
@@ -22,15 +19,13 @@ import { PageVersionsMainContent } from "./main-content";
 
 type Props = {
   editorComponent: React.FC<TVersionEditorProps>;
-  fetchVersionDetails: (pageId: string, versionId: string) => Promise<TPageVersion | undefined>;
   handleRestore: (descriptionHTML: string) => Promise<void>;
   pageId: string;
   restoreEnabled: boolean;
-  storeType: EPageStoreType;
 };
 
-export const PageVersionsOverlay = observer(function PageVersionsOverlay(props: Props) {
-  const { editorComponent, fetchVersionDetails, handleRestore, pageId, restoreEnabled, storeType } = props;
+export function PageVersionsOverlay(props: Props) {
+  const { editorComponent, handleRestore, pageId, restoreEnabled } = props;
   // navigation
   const router = useRouter();
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
@@ -62,13 +57,12 @@ export const PageVersionsOverlay = observer(function PageVersionsOverlay(props: 
       <PageVersionsMainContent
         activeVersion={activeVersion}
         editorComponent={editorComponent}
-        fetchVersionDetails={fetchVersionDetails}
+
         handleClose={handleClose}
         handleRestore={handleRestore}
         pageId={pageId}
         restoreEnabled={restoreEnabled}
-        storeType={storeType}
       />
     </div>
   );
-});
+}

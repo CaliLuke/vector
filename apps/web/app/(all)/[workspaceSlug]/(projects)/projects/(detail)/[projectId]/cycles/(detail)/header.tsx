@@ -6,52 +6,45 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
-import { observer } from "mobx-react";
 
 // icons
 import { ChartNoAxesColumn, PanelRight, SlidersHorizontal } from "lucide-react";
 // plane imports
-import {
-  EIssueFilterType,
-  EUserPermissions,
-  EUserPermissionsLevel,
-  ISSUE_DISPLAY_FILTERS_BY_PAGE,
-  WORK_ITEM_TRACKER_ELEMENTS,
-} from "@plane/constants";
+import { EUserPermissions, WORK_ITEM_TRACKER_ELEMENTS } from "@plane/constants";
 import { usePlatformOS } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { IconButton } from "@plane/propel/icon-button";
 import { CycleIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { ICustomSearchSelectOption, IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
 import { Breadcrumbs, BreadcrumbNavigationSearchDropdown, Header } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { WorkItemsModal } from "@/components/analytics/work-items/modal";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { SwitcherLabel } from "@/components/common/switcher-label";
 import { CycleQuickActions } from "@/components/cycles/quick-actions";
 import {
-  DisplayFiltersSelection,
   FiltersDropdown,
-  LayoutSelection,
-  MobileLayoutSelection,
+  ParentIssueResponsiveLayoutSelection,
+  persistParentIssueLayout,
 } from "@/components/issues/issue-layouts/filters";
 import { WorkItemFiltersToggle } from "@/components/work-item-filters/filters-toggle";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useProjectCycles, useCycleDetails } from "@/hooks/use-cycles";
+import { useParentIssuePreferences } from "@/providers/parent-issue-preferences";
+import { ParentIssueDisplaySelection } from "@/components/issues/issue-layouts/filters/header/display-filters/parent-issue-display-selection";
+import { useIssueListCount } from "@/hooks/use-issue-list-count";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
+export function CycleIssuesHeader() {
   // refs
   const parentRef = useRef<HTMLDivElement>(null);
   // states
@@ -64,74 +57,49 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
   // i18n
   const { t } = useTranslation();
   // store hooks
-  const {
-    issuesFilter: { issueFilters, updateFilters },
-    issues: { getGroupIssueCount },
-  } = useIssues(EIssuesStoreType.CYCLE);
-  const { currentProjectCycleIds, getCycleById } = useCycle();
+  const { count: workItemsCount } = useIssueListCount(EIssuesStoreType.CYCLE);
+  const preferences = useParentIssuePreferences();
+  const issueFilters = preferences.filters;
+  const { cycle: cycleDetails } = useCycleDetails(workspaceSlug, projectId, cycleId);
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { currentProjectDetails, loader } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const loader = routeProjectQuery.isPending;
   const { isMobile } = usePlatformOS();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
   const activeLayout = issueFilters?.displayFilters?.layout;
 
-  const { setValue, storedValue } = useLocalStorage("cycle_sidebar_collapsed", false);
+  const chart = useParentChartPreferences("cycle", workspaceSlug, projectId, cycleId);
 
-  const isSidebarCollapsed = storedValue === true;
+  const isSidebarCollapsed = chart.sidebarCollapsed;
   const toggleSidebar = () => {
-    setValue(!isSidebarCollapsed);
+    chart.update({ sidebarCollapsed: !isSidebarCollapsed });
   };
 
   const handleLayoutChange = useCallback(
     (layout: EIssueLayoutTypes) => {
       if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, { layout: layout }, cycleId);
+      void persistParentIssueLayout(preferences.setDisplay, layout);
     },
-    [workspaceSlug, projectId, cycleId, updateFilters]
-  );
-
-  const handleDisplayFilters = useCallback(
-    (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter, cycleId);
-    },
-    [workspaceSlug, projectId, cycleId, updateFilters]
-  );
-
-  const handleDisplayProperties = useCallback(
-    (property: Partial<IIssueDisplayProperties>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_PROPERTIES, property, cycleId);
-    },
-    [workspaceSlug, projectId, cycleId, updateFilters]
+    [workspaceSlug, projectId, preferences]
   );
 
   // derived values
-  const cycleDetails = cycleId ? getCycleById(cycleId.toString()) : undefined;
   const isCompletedCycle = cycleDetails?.status?.toLocaleLowerCase() === "completed";
-  const canUserCreateIssue = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canUserCreateIssue = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  const switcherOptions = currentProjectCycleIds
-    ?.map((id) => {
-      const _cycle = id === cycleId ? cycleDetails : getCycleById(id);
-      if (!_cycle) return;
-      return {
-        value: _cycle.id,
-        query: _cycle.name,
-        content: <SwitcherLabel name={_cycle.name} LabelIcon={CycleIcon} />,
-      };
-    })
-    .filter((option) => option !== undefined) as ICustomSearchSelectOption[];
-
-  const workItemsCount = getGroupIssueCount(undefined, undefined, false);
+  const switcherOptions = catalogue.cycles?.map((item) => ({
+    value: item.id,
+    query: item.name,
+    content: <SwitcherLabel name={item.name} LabelIcon={CycleIcon} />,
+  }));
 
   return (
     <>
       <WorkItemsModal
+        workspaceSlug={workspaceSlug}
         projectDetails={currentProjectDetails}
         isOpen={analyticsModal}
         onClose={() => setAnalyticsModal(false)}
@@ -140,8 +108,8 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
       <Header>
         <Header.LeftItem>
           <div className="flex items-center gap-2">
-            <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
-              <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+            <Breadcrumbs onBack={router.history.back} isLoading={loader}>
+              <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
               <Breadcrumbs.Item
                 component={
                   <BreadcrumbLink
@@ -155,7 +123,7 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
                 component={
                   <BreadcrumbNavigationSearchDropdown
                     selectedItem={cycleId}
-                    navigationItems={switcherOptions}
+                    navigationItems={switcherOptions ?? []}
                     onChange={(value: string) => {
                       void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/cycles/${value}` });
                     }}
@@ -188,50 +156,14 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
         </Header.LeftItem>
         <Header.RightItem className="items-center">
           <div className="hidden items-center gap-2 md:flex">
-            <div className="hidden @4xl:flex">
-              <LayoutSelection
-                layouts={[
-                  EIssueLayoutTypes.LIST,
-                  EIssueLayoutTypes.KANBAN,
-                  EIssueLayoutTypes.CALENDAR,
-                  EIssueLayoutTypes.SPREADSHEET,
-                  EIssueLayoutTypes.GANTT,
-                ]}
-                onChange={(layout) => handleLayoutChange(layout)}
-                selectedLayout={activeLayout}
-              />
-            </div>
-            <div className="flex @4xl:hidden">
-              <MobileLayoutSelection
-                layouts={[
-                  EIssueLayoutTypes.LIST,
-                  EIssueLayoutTypes.KANBAN,
-                  EIssueLayoutTypes.CALENDAR,
-                  EIssueLayoutTypes.SPREADSHEET,
-                  EIssueLayoutTypes.GANTT,
-                ]}
-                onChange={(layout) => handleLayoutChange(layout)}
-                activeLayout={activeLayout}
-              />
-            </div>
-            <WorkItemFiltersToggle entityType={EIssuesStoreType.CYCLE} entityId={cycleId} />
+            <ParentIssueResponsiveLayoutSelection activeLayout={activeLayout} onChange={handleLayoutChange} />
+            <WorkItemFiltersToggle />
             <FiltersDropdown
               title={t("common.display")}
               placement="bottom-end"
               miniIcon={<SlidersHorizontal className="size-3.5" />}
             >
-              <DisplayFiltersSelection
-                layoutDisplayFiltersOptions={
-                  activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[activeLayout] : undefined
-                }
-                displayFilters={issueFilters?.displayFilters ?? {}}
-                handleDisplayFiltersUpdate={handleDisplayFilters}
-                displayProperties={issueFilters?.displayProperties ?? {}}
-                handleDisplayPropertiesUpdate={handleDisplayProperties}
-                ignoreGroupedFilters={["cycle"]}
-                cycleViewDisabled={!currentProjectDetails?.cycle_view}
-                moduleViewDisabled={!currentProjectDetails?.module_view}
-              />
+              <ParentIssueDisplaySelection project={currentProjectDetails} />
             </FiltersDropdown>
 
             {canUserCreateIssue && (
@@ -265,16 +197,19 @@ export const CycleIssuesHeader = observer(function CycleIssuesHeader() {
                 "bg-accent-subtle text-accent-primary": !isSidebarCollapsed,
               })}
             />
-            <CycleQuickActions
-              parentRef={parentRef}
-              cycleId={cycleId}
-              projectId={projectId}
-              workspaceSlug={workspaceSlug}
-              customClassName="flex-shrink-0 flex items-center justify-center size-[26px] bg-layer-1/70 rounded-sm"
-            />
+            {cycleDetails && (
+              <CycleQuickActions
+                cycle={cycleDetails}
+                parentRef={parentRef}
+                cycleId={cycleId}
+                projectId={projectId}
+                workspaceSlug={workspaceSlug}
+                customClassName="flex-shrink-0 flex items-center justify-center size-[26px] bg-layer-1/70 rounded-sm"
+              />
+            )}
           </div>
         </Header.RightItem>
       </Header>
     </>
   );
-});
+}

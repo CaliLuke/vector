@@ -11,7 +11,16 @@ export const processAssetDuplication = (htmlContent: string): { processedHtml: s
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = htmlContent;
 
-  let processedHtml = htmlContent;
+  // Legacy private images need the custom node's duplication lifecycle too.
+  for (const image of tempDiv.querySelectorAll("img[src]")) {
+    const src = image.getAttribute("src") ?? "";
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(src)) continue;
+    const replacement = document.createElement("image-component");
+    for (const attribute of image.attributes) replacement.setAttribute(attribute.name, attribute.value);
+    image.replaceWith(replacement);
+  }
+  // Match serialized tags consistently regardless of the source's quote style.
+  let processedHtml = tempDiv.innerHTML;
 
   // Process each registered component type
   for (const [componentName, handler] of Object.entries(assetDuplicationHandlers)) {

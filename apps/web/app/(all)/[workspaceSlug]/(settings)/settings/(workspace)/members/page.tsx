@@ -6,15 +6,14 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 // types
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { SearchIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspaceBulkInviteFormData } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { CountChip } from "@/components/common/count-chip";
@@ -24,36 +23,80 @@ import { WorkspaceMembersList } from "@/components/workspace/settings/members-li
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SendWorkspaceInvitationModal } from "@/components/workspace/members";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useInviteWorkspaceMembers } from "@/hooks/use-member-roster-mutations";
+import type { IMemberFilters } from "@/helpers/member-ordering";
 // local imports
 import { MembersWorkspaceSettingsHeader } from "./header";
 
-const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsPage(): React.JSX.Element | null {
-  // states
-  const [inviteModal, setInviteModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+function WorkspaceMembersSettingsPage(): React.JSX.Element | null {
   // router
   const { workspaceSlug } = Route.useParams();
-  // store hooks
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const {
-    workspace: { workspaceMemberIds, inviteMembersToWorkspace, filtersStore },
-  } = useMember();
-  const { currentWorkspace } = useWorkspace();
+  const [filtersByWorkspace, setFiltersByWorkspace] = useState<Record<string, IMemberFilters>>({});
+  const filters = filtersByWorkspace[workspaceSlug] ?? {};
+
+  const handleRoleFilterUpdate = (role: string) => {
+    setFiltersByWorkspace((current) => {
+      const currentFilters = current[workspaceSlug] ?? {};
+      const currentRoles = currentFilters.roles ?? [];
+      const updatedRoles = currentRoles.includes(role)
+        ? currentRoles.filter((currentRole) => currentRole !== role)
+        : [...currentRoles, role];
+      return {
+        ...current,
+        [workspaceSlug]: { ...currentFilters, roles: updatedRoles.length > 0 ? updatedRoles : undefined },
+      };
+    });
+  };
+
+  const handleDisplayFilterUpdate = (updates: Partial<IMemberFilters>) => {
+    setFiltersByWorkspace((current) => {
+      const currentFilters = current[workspaceSlug];
+      return {
+        ...current,
+        [workspaceSlug]: { ...currentFilters, ...updates },
+      };
+    });
+  };
+
+  return (
+    <WorkspaceMembersSettingsContent
+      key={workspaceSlug}
+      workspaceSlug={workspaceSlug}
+      filters={filters}
+      onRoleFilterUpdate={handleRoleFilterUpdate}
+      onDisplayFilterUpdate={handleDisplayFilterUpdate}
+    />
+  );
+}
+
+function WorkspaceMembersSettingsContent(props: {
+  workspaceSlug: string;
+  filters: IMemberFilters;
+  onRoleFilterUpdate: (role: string) => void;
+  onDisplayFilterUpdate: (updates: Partial<IMemberFilters>) => void;
+}): React.JSX.Element | null {
+  // Invitation and search drafts are owned by this workspace-keyed subtree.
+  const { workspaceSlug, filters, onRoleFilterUpdate, onDisplayFilterUpdate } = props;
+  const [inviteModal, setInviteModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const permissions = useWorkspacePermissions(workspaceSlug);
+  const { can: canWorkspace, isPending, isError, membershipQuery } = permissions;
+  const roster = useWorkspaceMemberRoster(workspaceSlug);
+  const inviteMembers = useInviteWorkspaceMembers(workspaceSlug);
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const { t } = useTranslation();
+  const workspaceMemberCount = roster.members?.filter((member) => !member.member.is_bot).length ?? 0;
 
   // derived values
-  const canPerformWorkspaceAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
-  const canPerformWorkspaceMemberActions = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canPerformWorkspaceAdminActions = canWorkspace([EUserPermissions.ADMIN]);
+  const canPerformWorkspaceMemberActions = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const handleWorkspaceInvite = async (data: IWorkspaceBulkInviteFormData) => {
     try {
-      await inviteMembersToWorkspace(workspaceSlug, data);
+      await inviteMembers.mutateAsync(data);
 
       setInviteModal(false);
 
@@ -78,23 +121,25 @@ const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsP
     }
   };
 
-  // Handler for role filter updates
-  const handleRoleFilterUpdate = (role: string) => {
-    const currentFilters = filtersStore.filters;
-    const currentRoles = currentFilters?.roles || [];
-    const updatedRoles = currentRoles.includes(role) ? currentRoles.filter((r) => r !== role) : [...currentRoles, role];
-
-    filtersStore.updateFilters({
-      roles: updatedRoles.length > 0 ? updatedRoles : undefined,
-    });
-  };
-
   // derived values
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Members` : undefined;
-  const appliedRoleFilters = filtersStore.filters?.roles || [];
+  const appliedRoleFilters = filters.roles || [];
 
   // if user is not authorized to view this page
-  if (workspaceUserInfo && !canPerformWorkspaceMemberActions) {
+  if (isPending) return null;
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center gap-3 p-8" role="alert">
+        <span>{t("something_went_wrong_please_try_again")}</span>
+        <Button variant="secondary" size="lg" onClick={() => void membershipQuery.refetch()}>
+          {t("retry")}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!canPerformWorkspaceMemberActions) {
     return <NotAuthorizedView section="settings" className="h-auto" />;
   }
 
@@ -114,9 +159,7 @@ const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsP
         <div className="flex items-center justify-between gap-4 pb-3.5">
           <h4 className="flex items-center gap-2.5 text-h3-medium">
             {t("workspace_settings.settings.members.title")}
-            {workspaceMemberIds && workspaceMemberIds.length > 0 && (
-              <CountChip count={workspaceMemberIds.length} className="m-auto h-5" />
-            )}
+            {workspaceMemberCount > 0 && <CountChip count={workspaceMemberCount} className="m-auto h-5" />}
           </h4>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-md border border-subtle bg-surface-1 px-2.5 py-1.5">
@@ -132,7 +175,7 @@ const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsP
             </div>
             <MemberListFiltersDropdown
               appliedFilters={appliedRoleFilters}
-              handleUpdate={handleRoleFilterUpdate}
+              handleUpdate={onRoleFilterUpdate}
               memberType="workspace"
             />
             {canPerformWorkspaceAdminActions && (
@@ -142,11 +185,16 @@ const WorkspaceMembersSettingsPage = observer(function WorkspaceMembersSettingsP
             )}
           </div>
         </div>
-        <WorkspaceMembersList searchQuery={searchQuery} isAdmin={canPerformWorkspaceAdminActions} />
+        <WorkspaceMembersList
+          searchQuery={searchQuery}
+          isAdmin={canPerformWorkspaceAdminActions}
+          filters={filters}
+          onFilterUpdate={onDisplayFilterUpdate}
+        />
       </section>
     </SettingsContentWrapper>
   );
-});
+}
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/members")({
   component: WorkspaceMembersSettingsPage,

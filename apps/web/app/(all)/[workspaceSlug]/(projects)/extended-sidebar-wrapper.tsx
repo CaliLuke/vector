@@ -5,13 +5,12 @@
  */
 
 import React, { useEffect } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { EXTENDED_SIDEBAR_WIDTH, SIDEBAR_WIDTH } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarCollapsed } from "@/providers/sidebar-state";
 // hooks
 import useExtendedSidebarOutsideClickDetector from "@/hooks/use-extended-sidebar-overview-outside-click";
 
@@ -24,10 +23,10 @@ type Props = {
   excludedElementId: string;
 };
 
-export const ExtendedSidebarWrapper = observer(function ExtendedSidebarWrapper(props: Props) {
+export function ExtendedSidebarWrapper(props: Props) {
   const { className, children, extendedSidebarRef, isExtendedSidebarOpened, handleClose, excludedElementId } = props;
   // store hooks
-  const { sidebarCollapsed } = useAppTheme();
+  const sidebarCollapsed = useSidebarCollapsed();
   // local storage
   const { storedValue } = useLocalStorage("sidebarWidth", SIDEBAR_WIDTH);
 
@@ -59,4 +58,4 @@ export const ExtendedSidebarWrapper = observer(function ExtendedSidebarWrapper(p
       {children}
     </div>
   );
-});
+}

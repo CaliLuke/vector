@@ -28,6 +28,10 @@ func BuildAppIssueFilters(filters map[string]string, present map[string]bool, wh
 
 // App issue filters share the characterized pure filter algebra used by module lists.
 func appFilters(options issuequery.Options, where []string, args []any) ([]string, []any, error) {
+	return appFiltersWithTypes(options, where, args, nil)
+}
+
+func appFiltersWithTypes(options issuequery.Options, where []string, args []any, typeIDs map[string]bool) ([]string, []any, error) {
 	estimatePoints, validEstimatePoints := issuequery.NormalizeLegacyUUIDList(options.EstimatePoint)
 	if !validEstimatePoints {
 		return nil, args, failure(400, "error", "Please provide valid detail")
@@ -42,7 +46,7 @@ func appFilters(options issuequery.Options, where []string, args []any) ([]strin
 	if !validIntakeStatus || !validInboxStatus {
 		return nil, args, fmt.Errorf("invalid intake status")
 	}
-	complexFilter, err := issuequery.BuildComplexFilter(options.Filters, &args)
+	complexFilter, err := issuequery.BuildComplexFilterWithTypes(options.Filters, &args, typeIDs)
 	if err != nil {
 		return nil, args, err
 	}
@@ -65,7 +69,6 @@ func appFilters(options issuequery.Options, where []string, args []any) ([]strin
 		table   string
 	}{
 		{options.AssigneesSet, "issue_assignees"},
-		{options.LabelsSet, "issue_labels"},
 		{options.CycleSet, "cycle_issues"},
 		{options.ModuleSet, "module_issues"},
 		{options.SubscriberSet, "issue_subscribers"},
@@ -85,9 +88,9 @@ func appFilters(options issuequery.Options, where []string, args []any) ([]strin
 	add(assignees, "EXISTS (SELECT 1 FROM issue_assignees filter_assignee WHERE filter_assignee.issue_id = issue.id AND filter_assignee.deleted_at IS NULL AND filter_assignee.assignee_id::text = ANY(string_to_array($%d, ',')))")
 	labels, unlabeled := issuequery.ValidUUIDFilter(options.Labels, true)
 	if unlabeled {
-		where = append(where, "NOT EXISTS (SELECT 1 FROM issue_labels filter_label WHERE filter_label.issue_id = issue.id)")
+		where = append(where, "NOT EXISTS (SELECT 1 FROM issue_labels filter_label WHERE "+issuequery.LiveIssueLabelPredicate("issue", "filter_label")+")")
 	}
-	add(labels, "EXISTS (SELECT 1 FROM issue_labels filter_label WHERE filter_label.issue_id = issue.id AND filter_label.deleted_at IS NULL AND filter_label.label_id::text = ANY(string_to_array($%d, ',')))")
+	add(labels, "EXISTS (SELECT 1 FROM issue_labels filter_label WHERE "+issuequery.LiveIssueLabelPredicate("issue", "filter_label")+" AND filter_label.label_id::text = ANY(string_to_array($%d, ',')))")
 	projects, _ := issuequery.ValidUUIDFilter(options.Project, false)
 	add(projects, "issue.project_id::text = ANY(string_to_array($%d, ','))")
 	loggedBy, anonymousLogger := issuequery.ValidUUIDFilter(options.LoggedBy, true)
@@ -149,4 +152,13 @@ func appFilters(options issuequery.Options, where []string, args []any) ([]strin
 	}
 
 	return where, args, nil
+}
+
+// V2 has no legacy query-filter contract. Explicit structured filters must still
+// be compiled (including errors), never silently ignored based on their fields.
+func listFilterOptions(options issuequery.Options, v2 bool) issuequery.Options {
+	if v2 {
+		return issuequery.Options{Filters: options.Filters}
+	}
+	return options
 }

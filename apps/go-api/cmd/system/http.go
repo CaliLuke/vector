@@ -31,6 +31,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	workitemtypesapi "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	accountauthapi "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	accountauthsvr "github.com/CaliLuke/go-plane/accountauthentication/gen/http/account_authentication/server"
@@ -297,10 +299,6 @@ func newHTTPHandlerWithWorkspaceContent(ctx context.Context, systemEndpoints *sy
 	return buildHTTPHandlerWithServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints...)
 }
 
-func newHTTPHandlerWithWorkspaceReplacements(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
-	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, nil, nil, favoriteEndpoints...)
-}
-
 func newHTTPHandlerWithWorkspaceReplacementsAndLastVisited(ctx context.Context, systemEndpoints *system.Endpoints, dbg bool, stickyEndpoints *sticky.Endpoints, authenticate security.AuthAPIKeyFunc, workspaceEndpoints *workspaceslugcheck.Endpoints, instanceWorkspaceEndpoints *instanceworkspaceslugcheck.Endpoints, userInstanceAdminEndpoints *userinstanceadmin.Endpoints, userProfileFlagsEndpoints *userprofileflags.Endpoints, notificationEndpoints *usernotificationpreferences.Endpoints, userAccountsEndpoints *useraccounts.Endpoints, userAPITokensEndpoints *userapitokens.Endpoints, instanceAdminSessionEndpoints *instanceadminsession.Endpoints, quickLinkEndpoints *workspacequicklinks.Endpoints, themeEndpoints *workspacethemes.Endpoints, homePreferenceEndpoints *workspacehomepreferences.Endpoints, memberMeEndpoints *workspacememberme.Endpoints, analyticViewEndpoints *analyticviews.Endpoints, recentVisitEndpoints *workspacerecentvisits.Endpoints, lastVisitedEndpoints *lastvisitedworkspace.Endpoints, favoriteEndpoints ...*workspacefavorites.Endpoints) http.Handler {
 	return buildHTTPHandlerWithReplacementServices(ctx, systemEndpoints, dbg, stickyEndpoints, authenticate, workspaceEndpoints, instanceWorkspaceEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, notificationEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, quickLinkEndpoints, themeEndpoints, homePreferenceEndpoints, memberMeEndpoints, analyticViewEndpoints, recentVisitEndpoints, lastVisitedEndpoints, nil, favoriteEndpoints...)
 }
@@ -335,6 +333,7 @@ type readServicesSessionLifecycle interface {
 }
 
 type pendingReplacementEndpoints struct {
+	workItemTypes                           *workitemtypesapi.Endpoints
 	workspaceLifecycle                      *workspaceLifecycleAPI.Endpoints
 	accountAuthentication                   *accountauthapi.Endpoints
 	accountAuthenticationMetadata           systemapi.SessionProtocolAuthorizer
@@ -460,6 +459,9 @@ type pendingReplacementEndpoints struct {
 }
 
 func (pending pendingReplacementEndpoints) hasReadServices() bool {
+	if pending.workItemTypes != nil {
+		return true
+	}
 	return pending.accountAuthentication != nil || pending.invitationsMembership != nil || pending.membershipLifecycle != nil || pending.workItemCore != nil || pending.projectLabelWrites != nil || pending.workspaceProjectReads != nil || pending.projectLifecycle != nil ||
 		pending.cycleReads != nil || pending.cycleLifecycle != nil || pending.moduleLifecycle != nil || pending.workspaceUserInsights != nil || pending.projectPublication != nil || pending.workItemHistory != nil ||
 		pending.moduleReads != nil ||
@@ -1018,6 +1020,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 		authorizer := labelSessionProtocolDispatch{userInsights: pending.workspaceUserInsightsMetadata}
 		sessionProtocolMiddleware = newSessionServiceProtocolMiddleware(notificationProtocolMetadata, authorizer, readServicesCORSPolicy, stack, pending.readServicesCookie, dbg, options)
 	}
+	mountWorkItemTypes(mux, pending, readServicesCORSPolicy, errorHandler)
 	if pending.accountAuthentication != nil || pending.invitationsMembership != nil || pending.assetsLifecycle != nil || pending.membershipLifecycle != nil || pending.notifications != nil || pending.notificationActions != nil || pending.projectLabelWrites != nil || pending.userAccountWrites != nil || pending.workspaceLifecycle != nil || pending.workspaceExports != nil || pending.personalDashboard != nil || pending.workspaceAnalytics != nil || pending.workspaceSearch != nil || pending.externalIntegrations != nil || pending.projectMemberPreferences != nil || pending.projectIntakeWrites != nil || pending.projectConfiguration != nil || pending.customViewCreation != nil || pending.workspaceWebhooks != nil || pending.cycleLifecycle != nil || pending.moduleLifecycle != nil || pending.projectLifecycle != nil || pending.projectPublication != nil || pending.workItemHistory != nil || pending.pageReadsMetadata != nil || stateProtocol != nil {
 		options := apiV1CompatibilityOptions{activityLogger: pending.activityReadsActivity, activitySecret: pending.activityReadsSecret, bodySizeLimit: pending.activityReadsBodyLimit}
 		sessionStack := sessionServiceMiddlewareStack(options, pending.readServicesSession, pending.readServicesCookie)
@@ -1140,6 +1143,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			server.Use(stack)
 			useraccountwritessvr.Mount(mux, server)
 		}
+
 		if pending.projectMemberPreferences != nil {
 			server := preferencessvr.New(pending.projectMemberPreferences, mux, loomhttp.RequestDecoder, loomhttp.ResponseEncoder, errorHandler, nil, readServicesCORSPolicy)
 			server.Use(stack)
@@ -1446,7 +1450,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 			sessionStack := sessionServiceMiddlewareStack(*activityOptions, pending.readServicesSession, pending.readServicesCookie)
 			server.Use(func(next http.Handler) http.Handler {
 				api := apiStack(next)
-				session := sessionStack(assetDuplicateThrottleMiddleware(pending.assetsDuplicateThrottle)(assetsSessionPermissionMiddleware(pending.assetsSessionMetadata)(next)))
+				session := sessionStack(assetDuplicateThrottleMiddleware(pending.assetsDuplicateThrottle)(assetsSessionPermissionMiddleware(pending.assetsSessionMetadata)(draftAssetCSRFMiddleware(pending.accountAuthenticationCSRFTrustedOrigins)(next))))
 				return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 					if strings.HasPrefix(request.URL.Path, "/api/v1/") {
 						api.ServeHTTP(response, request)
@@ -1552,6 +1556,7 @@ func buildHTTPHandlerWithReplacementServicesAndPending(ctx context.Context, syst
 	if dbg {
 		handler = debug.HTTP()(handler)
 	}
+	handler = logHTTPServerErrors(handler)
 	handler = log.HTTP(
 		ctx, log.WithDisableRequestID(), log.WithPathFilter(publicMetadataCompatibilityPathPattern),
 	)(handler)
@@ -1716,6 +1721,9 @@ var readServiceProtocols = append(append(append(append(append(append(invitations
 	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/"),
 	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/"),
 	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/"),
+	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/"),
+	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/"),
+	newWorkItemHistoryProtocol("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/"),
 	userAccountMeWriteProtocol(),
 	newSessionServiceProtocol("/api/users/me/email/", "PATCH, OPTIONS", "User Endpoint", false),
 	userAccountEmailCodeProtocol(),

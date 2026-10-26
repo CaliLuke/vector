@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import type { TIssue, TPaginationData } from "@plane/types";
 // components
-import { renderFormattedPayloadDate } from "@plane/utils";
+import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 // helpers
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
+import { useIssueListView } from "@/providers/issue-list-view";
 import type { TRenderQuickActions } from "../list/list-view-types";
 import { CalendarIssueBlockRoot } from "./issue-block-root";
 import { CalendarQuickAddIssueActions } from "./quick-add-issue-actions";
@@ -27,14 +26,14 @@ type Props = {
   enableQuickIssueCreate?: boolean;
   disableIssueCreation?: boolean;
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
-  addIssuesToView?: (issueIds: string[]) => Promise<any>;
+  addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   readOnly?: boolean;
   isMobileView?: boolean;
   canEditProperties: (projectId: string | undefined) => boolean;
   isEpic?: boolean;
 };
 
-export const CalendarIssueBlocks = observer(function CalendarIssueBlocks(props: Props) {
+export function CalendarIssueBlocks(props: Props) {
   const {
     date,
     issueIdList,
@@ -53,15 +52,13 @@ export const CalendarIssueBlocks = observer(function CalendarIssueBlocks(props: 
   const formattedDatePayload = renderFormattedPayloadDate(date);
   const { t } = useTranslation();
 
-  const {
-    issues: { getGroupIssueCount, getPaginationData, getIssueLoader },
-  } = useIssuesStore();
+  const { countForGroup, paginationForGroup, isLoadingNextPage } = useIssueListView();
 
   if (!formattedDatePayload) return null;
 
-  const dayIssueCount = getGroupIssueCount(formattedDatePayload, undefined, false);
-  const nextPageResults = getPaginationData(formattedDatePayload, undefined)?.nextPageResults;
-  const isPaginating = !!getIssueLoader(formattedDatePayload);
+  const dayIssueCount = countForGroup(formattedDatePayload, undefined, false);
+  const nextPageResults = paginationForGroup(formattedDatePayload, undefined)?.nextPageResults;
+  const isPaginating = isLoadingNextPage(formattedDatePayload);
 
   const shouldLoadMore =
     nextPageResults === undefined && dayIssueCount !== undefined
@@ -114,4 +111,4 @@ export const CalendarIssueBlocks = observer(function CalendarIssueBlocks(props: 
       )}
     </>
   );
-});
+}

@@ -4,229 +4,144 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-// types
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IFormattedInstanceConfiguration, TInstanceEmailConfigurationKeys } from "@plane/types";
-// ui
-import { CustomSelect } from "@plane/ui";
-// components
-import type { TControllerInputFormField } from "@/components/common/controller-input";
-import { ControllerInput } from "@/components/common/controller-input";
-// hooks
-import { useInstance } from "@/hooks/store";
-// local components
+import type { IFormattedInstanceConfiguration } from "@plane/types";
+import { useSettingsForm, requiredField, SettingsForm } from "@/components/common/settings-form";
+import { updateConfigurationsOptions } from "@/queries/instance";
 import { SendTestEmailModal } from "./test-email-modal";
 
-type IInstanceEmailForm = {
-  config: IFormattedInstanceConfiguration;
-};
+type Props = { config: Partial<IFormattedInstanceConfiguration> };
+const emailFields = [
+  { key: "EMAIL_HOST", label: "Host", placeholder: "smtp.example.com", type: "text", required: true },
+  { key: "EMAIL_PORT", label: "Port", placeholder: "587", type: "text", required: true },
+  {
+    key: "EMAIL_FROM",
+    label: "Sender's email address",
+    placeholder: "no-reply@example.com",
+    type: "text",
+    required: true,
+  },
+  { key: "EMAIL_HOST_USER", label: "Username", placeholder: "support@example.com", type: "text", required: false },
+  { key: "EMAIL_HOST_PASSWORD", label: "Password", placeholder: "Password", type: "password", required: false },
+] as const;
 
-type EmailFormValues = Record<TInstanceEmailConfigurationKeys, string>;
+function emailValues(config: Props["config"]) {
+  return {
+    EMAIL_HOST: config.EMAIL_HOST ?? "",
+    EMAIL_PORT: config.EMAIL_PORT ?? "",
+    EMAIL_FROM: config.EMAIL_FROM ?? "",
+    EMAIL_HOST_USER: config.EMAIL_HOST_USER ?? "",
+    EMAIL_HOST_PASSWORD: config.EMAIL_HOST_PASSWORD ?? "",
+    security: config.EMAIL_USE_TLS === "1" ? "tls" : config.EMAIL_USE_SSL === "1" ? "ssl" : "none",
+  };
+}
 
-type TEmailSecurityKeys = "EMAIL_USE_TLS" | "EMAIL_USE_SSL" | "NONE";
+function validatePort({ value }: { value: string }) {
+  return /^\d+$/.test(value) && Number(value) >= 1 && Number(value) <= 65535
+    ? undefined
+    : "Enter a port between 1 and 65535.";
+}
 
-const EMAIL_SECURITY_OPTIONS: { [key in TEmailSecurityKeys]: string } = {
-  EMAIL_USE_TLS: "TLS",
-  EMAIL_USE_SSL: "SSL",
-  NONE: "No email security",
-};
-
-export function InstanceEmailForm(props: IInstanceEmailForm) {
-  const { config } = props;
-  // states
-  const [isSendTestEmailModalOpen, setIsSendTestEmailModalOpen] = useState(false);
-  // store hooks
-  const { updateInstanceConfigurations } = useInstance();
-  // form data
-  const {
-    handleSubmit,
-    watch,
-    setValue,
-    control,
-    formState: { errors, isValid, isDirty, isSubmitting },
-  } = useForm<EmailFormValues>({
-    defaultValues: {
-      EMAIL_HOST: config["EMAIL_HOST"],
-      EMAIL_PORT: config["EMAIL_PORT"],
-      EMAIL_HOST_USER: config["EMAIL_HOST_USER"],
-      EMAIL_HOST_PASSWORD: config["EMAIL_HOST_PASSWORD"],
-      EMAIL_USE_TLS: config["EMAIL_USE_TLS"],
-      EMAIL_USE_SSL: config["EMAIL_USE_SSL"],
-      EMAIL_FROM: config["EMAIL_FROM"],
-      ENABLE_SMTP: config["ENABLE_SMTP"],
-    },
-  });
-  const emailFormFields: TControllerInputFormField<EmailFormValues>[] = [
-    {
-      key: "EMAIL_HOST",
-      type: "text",
-      label: "Host",
-      placeholder: "email.google.com",
-      error: Boolean(errors.EMAIL_HOST),
-      required: true,
-    },
-    {
-      key: "EMAIL_PORT",
-      type: "text",
-      label: "Port",
-      placeholder: "8080",
-      error: Boolean(errors.EMAIL_PORT),
-      required: true,
-    },
-    {
-      key: "EMAIL_FROM",
-      type: "text",
-      label: "Sender's email address",
-      description:
-        "This is the email address your users will see when getting emails from this instance. You will need to verify this address.",
-      placeholder: "no-reply@example.com",
-      error: Boolean(errors.EMAIL_FROM),
-      required: true,
-    },
-  ];
-
-  const OptionalEmailFormFields: TControllerInputFormField<EmailFormValues>[] = [
-    {
-      key: "EMAIL_HOST_USER",
-      type: "text",
-      label: "Username",
-      placeholder: "support@example.com",
-      error: Boolean(errors.EMAIL_HOST_USER),
-      required: false,
-    },
-    {
-      key: "EMAIL_HOST_PASSWORD",
-      type: "password",
-      label: "Password",
-      placeholder: "Password",
-      error: Boolean(errors.EMAIL_HOST_PASSWORD),
-      required: false,
-    },
-  ];
-
-  const onSubmit = async (formData: EmailFormValues) => {
-    const payload: Partial<EmailFormValues> = { ...formData, ENABLE_SMTP: "1" };
-
-    await updateInstanceConfigurations(payload)
-      .then(() =>
+export function InstanceEmailForm({ config }: Props) {
+  const [testEmailOpen, setTestEmailOpen] = useState(false);
+  const client = useQueryClient();
+  const update = useMutation(updateConfigurationsOptions(client));
+  const form = useSettingsForm({
+    defaultValues: emailValues(config),
+    onSubmit: async ({ value, formApi }) => {
+      const { security, ...credentials } = value;
+      const payload = {
+        ...credentials,
+        ENABLE_SMTP: "1",
+        EMAIL_USE_TLS: security === "tls" ? "1" : "0",
+        EMAIL_USE_SSL: security === "ssl" ? "1" : "0",
+      };
+      try {
+        const response = await update.mutateAsync(payload);
+        const saved = { ...payload };
+        for (const item of response) if (item.key in saved) Object.assign(saved, { [item.key]: item.value });
+        formApi.reset(emailValues(saved));
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "Email Settings updated successfully",
-        })
-      )
-      .catch((err) => console.error(err));
-  };
-
-  const useTLSValue = watch("EMAIL_USE_TLS");
-  const useSSLValue = watch("EMAIL_USE_SSL");
-  const emailSecurityKey: TEmailSecurityKeys = useMemo(() => {
-    if (useTLSValue === "1") return "EMAIL_USE_TLS";
-    if (useSSLValue === "1") return "EMAIL_USE_SSL";
-    return "NONE";
-  }, [useTLSValue, useSSLValue]);
-
-  const handleEmailSecurityChange = (key: TEmailSecurityKeys) => {
-    if (key === "EMAIL_USE_SSL") {
-      setValue("EMAIL_USE_TLS", "0");
-      setValue("EMAIL_USE_SSL", "1");
-    }
-    if (key === "EMAIL_USE_TLS") {
-      setValue("EMAIL_USE_TLS", "1");
-      setValue("EMAIL_USE_SSL", "0");
-    }
-    if (key === "NONE") {
-      setValue("EMAIL_USE_TLS", "0");
-      setValue("EMAIL_USE_SSL", "0");
-    }
-  };
-
+          title: "Settings saved",
+          message: "Email settings updated successfully.",
+        });
+      } catch (error) {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Unable to save email settings",
+          message: "Your changes are still available. Please try again.",
+        });
+        throw error;
+      }
+    },
+  });
   return (
-    <div className="space-y-8">
-      <div>
-        <SendTestEmailModal isOpen={isSendTestEmailModalOpen} handleClose={() => setIsSendTestEmailModalOpen(false)} />
-        <div className="grid-col grid w-full max-w-4xl grid-cols-1 items-start justify-between gap-10 lg:grid-cols-2">
-          {emailFormFields.map((field) => (
-            <ControllerInput
-              key={field.key}
-              control={control}
-              type={field.type}
-              name={field.key}
-              label={field.label}
-              description={field.description}
-              placeholder={field.placeholder}
-              error={field.error}
-              required={field.required}
-            />
-          ))}
-          <div className="flex flex-col gap-1">
-            <h4 className="text-13 text-tertiary">Email security</h4>
-            <CustomSelect
-              value={emailSecurityKey}
-              label={EMAIL_SECURITY_OPTIONS[emailSecurityKey]}
-              onChange={handleEmailSecurityChange}
-              buttonClassName="rounded-md border-subtle"
-              input
+    <>
+      {testEmailOpen && <SendTestEmailModal handleClose={() => setTestEmailOpen(false)} />}
+      <SettingsForm onSubmit={() => form.handleSubmit()} className="space-y-8">
+        <fieldset
+          disabled={update.isPending}
+          className="grid w-full max-w-4xl grid-cols-1 items-start gap-10 lg:grid-cols-2"
+        >
+          {emailFields.map(({ key, ...input }) => (
+            <form.AppField
+              key={key}
+              name={key}
+              validators={{
+                onChange: key === "EMAIL_PORT" ? validatePort : input.required ? requiredField(input.label) : undefined,
+              }}
             >
-              {Object.entries(EMAIL_SECURITY_OPTIONS).map(([key, value]) => (
-                <CustomSelect.Option key={key} value={key} className="w-full">
-                  {value}
-                </CustomSelect.Option>
-              ))}
-            </CustomSelect>
-          </div>
-        </div>
-        <div className="my-6 flex flex-col gap-6 border-t border-subtle pt-4">
-          <div className="flex w-full max-w-xl flex-col gap-y-10 px-1">
-            <div className="mr-8 flex items-center gap-10 pt-4">
-              <div className="grow">
-                <div className="text-13 font-medium text-primary">Authentication</div>
-                <div className="text-11 font-regular text-tertiary">
-                  This is optional, but we recommend setting up a username and a password for your SMTP server.
-                </div>
+              {(field) => <field.TextField {...input} />}
+            </form.AppField>
+          ))}
+          <form.Field name="security">
+            {(field) => (
+              <div className="flex flex-col gap-1">
+                <label htmlFor="email-security" className="text-13 text-tertiary">
+                  Email security
+                </label>
+                <select
+                  id="email-security"
+                  name={field.name}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  className="rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13"
+                >
+                  <option value="tls">TLS</option>
+                  <option value="ssl">SSL</option>
+                  <option value="none">No email security</option>
+                </select>
               </div>
-            </div>
-          </div>
-          <div className="grid-col grid w-full max-w-4xl grid-cols-1 items-center justify-between gap-10 lg:grid-cols-2">
-            {OptionalEmailFormFields.map((field) => (
-              <ControllerInput
-                key={field.key}
-                control={control}
-                type={field.type}
-                name={field.key}
-                label={field.label}
-                description={field.description}
-                placeholder={field.placeholder}
-                error={field.error}
-                required={field.required}
-              />
-            ))}
-          </div>
+            )}
+          </form.Field>
+        </fieldset>
+        <p className="text-13 text-tertiary">
+          Save your settings before sending a test email. Username and password are optional.
+        </p>
+        <div className="flex max-w-4xl items-center gap-4 py-1">
+          <form.AppForm>
+            <form.SaveButton allowUnchanged={config.ENABLE_SMTP !== "1"} />
+          </form.AppForm>
+          <form.Subscribe selector={(state) => [state.isDefaultValue, state.isSubmitting]}>
+            {([isDefaultValue, isSubmitting]) => (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                onClick={() => setTestEmailOpen(true)}
+                disabled={!isDefaultValue || isSubmitting || config.ENABLE_SMTP !== "1"}
+              >
+                Send test email
+              </Button>
+            )}
+          </form.Subscribe>
         </div>
-      </div>
-      <div className="flex max-w-4xl items-center gap-4 py-1">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleSubmit(onSubmit)}
-          loading={isSubmitting}
-          disabled={!isValid || !isDirty}
-        >
-          {isSubmitting ? "Saving" : "Save changes"}
-        </Button>
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={() => setIsSendTestEmailModalOpen(true)}
-          loading={isSubmitting}
-          disabled={!isValid}
-        >
-          Send test email
-        </Button>
-      </div>
-    </div>
+      </SettingsForm>
+    </>
   );
 }

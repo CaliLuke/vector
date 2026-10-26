@@ -4,20 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { set } from "lodash-es";
+import set from "lodash-es/set.js";
 // plane imports
-import { DEFAULT_WORK_ITEM_FORM_VALUES } from "@plane/constants";
 import type { IPartialProject, ISearchIssueResponse, IState, TIssue } from "@plane/types";
-
-export const getUpdateFormDataForReset = (projectId: string | null | undefined, formData: Partial<TIssue>) => ({
-  ...DEFAULT_WORK_ITEM_FORM_VALUES,
-  project_id: projectId,
-  name: formData.name,
-  description_html: formData.description_html,
-  priority: formData.priority,
-  start_date: formData.start_date,
-  target_date: formData.target_date,
-});
 
 export const convertWorkItemDataToSearchResponse = (
   workspaceSlug: string,

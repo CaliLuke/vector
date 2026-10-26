@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import type { Ref } from "react";
-import React, { useEffect, useState, useRef, Fragment } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import type { Placement } from "@popperjs/core";
-import { Controller, useForm } from "react-hook-form"; // services
+import { useForm, useStore } from "@tanstack/react-form";
 import { usePopper } from "react-popper";
 import { AlertCircle } from "lucide-react";
 import { Popover, Transition } from "@headlessui/react";
@@ -19,26 +18,25 @@ import { Input } from "@plane/ui";
 // components
 import { RichTextEditor } from "@/components/editor/rich-text";
 // services
+import useKeypress from "@/hooks/use-keypress";
+import { getAiErrorMessage } from "@/helpers/ai-error.helper";
 import { AIService } from "@/services/ai.service";
 const aiService = new AIService();
 
 type Props = {
   isOpen: boolean;
   handleClose: () => void;
-  onResponse: (response: any) => void;
-  onError?: (error: any) => void;
+  onResponse: (response: string) => void;
+  onError?: (error: unknown) => void;
   placement?: Placement;
   prompt?: string;
   button: React.ReactNode;
+  onOpen: () => void;
+  disabled?: boolean;
   className?: string;
   workspaceId: string;
   workspaceSlug: string;
   projectId: string;
-};
-
-type FormData = {
-  prompt: string;
-  task: string;
 };
 
 export function GptAssistantPopover(props: Props) {
@@ -50,6 +48,8 @@ export function GptAssistantPopover(props: Props) {
     placement,
     prompt,
     button,
+    onOpen,
+    disabled,
     className = "",
     workspaceId,
     workspaceSlug,
@@ -59,7 +59,7 @@ export function GptAssistantPopover(props: Props) {
   const [response, setResponse] = useState("");
   const [invalidResponse, setInvalidResponse] = useState(false);
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>(null);
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   const responseRef = useRef<EditorRefApi>(null);
@@ -67,44 +67,33 @@ export function GptAssistantPopover(props: Props) {
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: placement ?? "auto",
   });
-  // form
-  const {
-    handleSubmit,
-    control,
-    reset,
-    setFocus,
-    formState: { isSubmitting },
-  } = useForm<FormData>({
-    defaultValues: {
-      prompt: prompt || "",
-      task: "",
+  const taskInput = useRef<HTMLInputElement>(null);
+  const form = useForm({
+    defaultValues: { task: "" },
+    validators: {
+      onSubmit: ({ value }) => (value.task.trim() ? undefined : "Please enter some task to get AI assistance."),
+    },
+    onSubmit: async ({ value }) => {
+      await callAIService(value);
     },
   });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
 
   const onClose = () => {
+    if (isSubmitting) return;
     handleClose();
     setResponse("");
     setInvalidResponse(false);
-    reset();
+    form.reset();
   };
 
-  const handleServiceError = (err: any) => {
-    const error = err?.data?.error;
-    const errorMessage =
-      err?.status === 429
-        ? error || "You have reached the maximum number of requests of 50 requests per month per user."
-        : error || "Some error occurred. Please try again.";
-
-    setToast({
-      type: TOAST_TYPE.ERROR,
-      title: "Error!",
-      message: errorMessage,
-    });
-
-    if (onError) onError(err);
+  const handleServiceError = (error: unknown) => {
+    setToast({ type: TOAST_TYPE.ERROR, title: "Error!", message: getAiErrorMessage(error) });
+    onError?.(error);
   };
 
-  const callAIService = async (formData: FormData) => {
+  const callAIService = async (formData: { task: string }) => {
     try {
       const res = await aiService.createGptTask(workspaceSlug.toString(), {
         prompt: prompt || "",
@@ -112,36 +101,18 @@ export function GptAssistantPopover(props: Props) {
       });
 
       setResponse(res.response_html);
-      setFocus("task");
+      taskInput.current?.focus();
 
       setInvalidResponse(res.response === "");
     } catch (err) {
       handleServiceError(err);
+      throw err;
     }
-  };
-
-  const handleInvalidTask = () => {
-    setToast({
-      type: TOAST_TYPE.ERROR,
-      title: "Error!",
-      message: "Please enter some task to get AI assistance.",
-    });
-  };
-
-  const handleAIResponse = async (formData: FormData) => {
-    if (!workspaceSlug) return;
-
-    if (formData.task === "") {
-      handleInvalidTask();
-      return;
-    }
-
-    await callAIService(formData);
   };
 
   useEffect(() => {
-    if (isOpen) setFocus("task");
-  }, [isOpen, setFocus]);
+    if (isOpen) taskInput.current?.focus();
+  }, [isOpen]);
 
   useEffect(() => {
     editorRef.current?.setEditorValue(prompt || "");
@@ -151,34 +122,14 @@ export function GptAssistantPopover(props: Props) {
     responseRef.current?.setEditorValue(`<p>${response}</p>`);
   }, [response, responseRef]);
 
-  useEffect(() => {
-    const handleEnterKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        handleSubmit(handleAIResponse)();
-      }
-    };
-
-    const handleEscapeKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener("keydown", handleEnterKeyPress);
-      window.addEventListener("keydown", handleEscapeKeyPress);
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleEnterKeyPress);
-      window.removeEventListener("keydown", handleEscapeKeyPress);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, handleSubmit, onClose]);
+  useKeypress("Escape", () => {
+    if (isOpen) onClose();
+  });
 
   const responseActionButton = response !== "" && (
     <Button
+      type="button"
+      disabled={isSubmitting}
       variant="primary"
       onClick={() => {
         onResponse(response);
@@ -197,10 +148,14 @@ export function GptAssistantPopover(props: Props) {
 
   return (
     <Popover as="div" className={`relative w-min text-left`}>
-      <Popover.Button as={Fragment}>
-        <button ref={setReferenceElement} className="flex items-center" tabIndex={-1}>
-          {button}
-        </button>
+      <Popover.Button
+        type="button"
+        ref={setReferenceElement}
+        className="flex items-center gap-1 rounded-sm bg-surface-2 px-1.5 py-1 text-caption-sm-regular hover:bg-layer-1"
+        disabled={disabled}
+        onClick={isOpen ? onClose : onOpen}
+      >
+        {button}
       </Popover.Button>
       <Transition
         show={isOpen}
@@ -215,7 +170,7 @@ export function GptAssistantPopover(props: Props) {
         <Popover.Panel
           as="div"
           className={`shadow fixed z-10 flex w-full max-w-full min-w-[50rem] flex-col space-y-4 overflow-hidden rounded-[10px] border border-subtle bg-surface-1 p-4 ${className}`}
-          ref={setPopperElement as Ref<HTMLDivElement>}
+          ref={setPopperElement}
           style={styles.popper}
           {...attributes.popper}
         >
@@ -256,25 +211,35 @@ export function GptAssistantPopover(props: Props) {
               </div>
             )}
           </div>
-          <Controller
-            control={control}
-            name="task"
-            render={({ field: { value, onChange, ref } }) => (
+          <form.Field name="task">
+            {(field) => (
               <Input
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    form.setErrorMap({ onSubmit: undefined });
+                    void form.handleSubmit().catch(() => {});
+                  }
+                }}
                 id="task"
-                name="task"
+                name={field.name}
                 type="text"
-                value={value}
-                onChange={onChange}
-                ref={ref}
-                placeholder={`${
-                  prompt && prompt !== "" ? "Tell AI what action to perform on this content..." : "Ask AI anything..."
-                }`}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                ref={taskInput}
+                disabled={isSubmitting}
+                placeholder={prompt ? "Tell AI what action to perform on this content..." : "Ask AI anything..."}
                 className="w-full"
-                autoFocus
               />
             )}
-          />
+          </form.Field>
+          {formError && (
+            <p role="alert" className="text-13 text-danger-primary">
+              {formError}
+            </p>
+          )}
           <div className="flex justify-between gap-2">
             {responseActionButton ? (
               <>{responseActionButton}</>
@@ -287,10 +252,18 @@ export function GptAssistantPopover(props: Props) {
               </>
             )}
             <div className="flex items-center gap-2">
-              <Button variant="secondary" onClick={onClose}>
+              <Button type="button" variant="secondary" disabled={isSubmitting} onClick={onClose}>
                 Close
               </Button>
-              <Button variant="primary" onClick={handleSubmit(handleAIResponse)} loading={isSubmitting}>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={() => {
+                  form.setErrorMap({ onSubmit: undefined });
+                  void form.handleSubmit().catch(() => {});
+                }}
+                loading={isSubmitting}
+              >
                 {generateResponseButtonText}
               </Button>
             </div>

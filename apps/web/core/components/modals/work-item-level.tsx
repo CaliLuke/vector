@@ -5,7 +5,6 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import type { TIssue } from "@plane/types";
@@ -15,29 +14,39 @@ import { BulkDeleteIssuesModal } from "@/components/core/modals/bulk-delete-issu
 import { DeleteIssueModal } from "@/components/issues/delete-issue-modal";
 import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useUser } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 
 import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier, useWorkItemSubItems } from "@/hooks/use-work-item-detail";
 
 export type TWorkItemLevelModalsProps = {
   workItemIdentifier: string | undefined;
 };
 
-export const WorkItemLevelModals = observer(function WorkItemLevelModals(props: TWorkItemLevelModalsProps) {
+export function WorkItemLevelModals(props: TWorkItemLevelModalsProps) {
   const { workItemIdentifier } = props;
   // router
   const { workspaceSlug, cycleId, moduleId } = useParams({ strict: false });
   const router = useRouter();
   // store hooks
-  const { data: currentUser } = useUser();
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail();
-  // derived values
-  const workItemId = workItemIdentifier ? getIssueIdByIdentifier(workItemIdentifier) : undefined;
-  const workItemDetails = workItemId ? getIssueById(workItemId) : undefined;
+  const projects = useWorkspaceProjectDetails(workspaceSlug?.toString());
+  const [projectIdentifier, sequenceId] = (workItemIdentifier ?? "").split("-");
+  const identifierProjectId = projects.projects?.find((project) => project.identifier === projectIdentifier)?.id;
+  const workItemQuery = useWorkItemByIdentifier(
+    workspaceSlug?.toString(),
+    projectIdentifier,
+    sequenceId,
+    identifierProjectId
+  );
+  const epicQuery = useWorkItemByIdentifier(
+    workspaceSlug?.toString(),
+    projectIdentifier,
+    sequenceId,
+    identifierProjectId,
+    EIssueServiceType.EPICS
+  );
+  const workItemDetails = workItemQuery.issue ?? epicQuery.issue;
 
   const { removeIssue: removeEpic } = useIssuesActions(EIssuesStoreType.EPIC);
   const { removeIssue: removeWorkItem } = useIssuesActions(EIssuesStoreType.PROJECT);
@@ -52,61 +61,109 @@ export const WorkItemLevelModals = observer(function WorkItemLevelModals(props: 
     createWorkItemAllowedProjectIds,
   } = useCommandPalette();
   // derived values
-  const { fetchSubIssues: fetchSubWorkItems } = useIssueDetail();
-  const { fetchSubIssues: fetchEpicSubWorkItems } = useIssueDetail(EIssueServiceType.EPICS);
-
-  // oxlint-disable-next-line no-shadow
-  const handleDeleteIssue = async (workspaceSlug: string, projectId: string, issueId: string) => {
-    try {
-      const isEpic = workItemDetails?.is_epic;
-      const deleteAction = isEpic ? removeEpic : removeWorkItem;
-      const redirectPath = `/${workspaceSlug}/projects/${projectId}/${isEpic ? "epics" : "issues"}`;
-
-      await deleteAction(projectId, issueId);
-      void router.navigate({ href: redirectPath });
-    } catch (error) {
-      console.error("Failed to delete issue:", error);
-    }
-  };
+  const parentSubItems = useWorkItemSubItems(
+    workspaceSlug?.toString(),
+    workItemDetails?.project_id ?? undefined,
+    workItemDetails?.id,
+    workItemDetails?.is_epic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
+  );
 
   const handleCreateIssueSubmit = async (newIssue: TIssue) => {
-    if (!workspaceSlug || !newIssue.project_id || !newIssue.id || newIssue.parent_id !== workItemDetails?.id) return;
+    if (!isCreatedSubItem(newIssue, workspaceSlug, workItemDetails?.id)) return;
 
-    const fetchAction = workItemDetails?.is_epic ? fetchEpicSubWorkItems : fetchSubWorkItems;
-    await fetchAction(workspaceSlug?.toString(), newIssue.project_id, workItemDetails.id);
+    await parentSubItems.query.refetch();
   };
-
-  const getCreateIssueModalData = () => {
-    if (cycleId) return { cycle_id: cycleId.toString() };
-    if (moduleId) return { module_ids: [moduleId.toString()] };
-    return undefined;
-  };
+  const deleteIssue = async (projectId: string, issueId: string) =>
+    deleteWorkItem({
+      workspaceSlug: workspaceSlug?.toString() ?? "",
+      projectId,
+      issueId,
+      isEpic: workItemDetails?.is_epic ?? false,
+      removeEpic,
+      removeWorkItem,
+      navigate: (href) => router.navigate({ href }),
+    });
 
   return (
     <>
       <CreateUpdateIssueModal
         isOpen={isCreateIssueModalOpen}
         onClose={() => toggleCreateIssueModal(false)}
-        data={getCreateIssueModalData()}
+        data={createIssueModalData(cycleId, moduleId)}
         onSubmit={handleCreateIssueSubmit}
         allowedProjectIds={createWorkItemAllowedProjectIds}
       />
-      {workspaceSlug && workItemId && workItemDetails && workItemDetails.project_id && (
-        <DeleteIssueModal
-          handleClose={() => toggleDeleteIssueModal(false)}
-          isOpen={isDeleteIssueModalOpen}
-          data={workItemDetails}
-          onSubmit={() =>
-            handleDeleteIssue(workspaceSlug.toString(), workItemDetails.project_id!, workItemId?.toString())
-          }
-          isEpic={workItemDetails?.is_epic}
-        />
-      )}
-      <BulkDeleteIssuesModal
-        isOpen={isBulkDeleteIssueModalOpen}
-        onClose={() => toggleBulkDeleteIssueModal(false)}
-        user={currentUser}
+      <WorkItemDeleteModal
+        workspaceSlug={workspaceSlug?.toString()}
+        workItem={workItemDetails}
+        isOpen={isDeleteIssueModalOpen}
+        onClose={() => toggleDeleteIssueModal(false)}
+        onDelete={deleteIssue}
       />
+      <BulkDeleteIssuesModal isOpen={isBulkDeleteIssueModalOpen} onClose={() => toggleBulkDeleteIssueModal(false)} />
     </>
   );
-});
+}
+
+function isCreatedSubItem(issue: TIssue, workspaceSlug: string | undefined, parentId: string | undefined) {
+  return !!workspaceSlug && !!issue.project_id && !!issue.id && issue.parent_id === parentId;
+}
+
+function WorkItemDeleteModal({
+  workspaceSlug,
+  workItem,
+  isOpen,
+  onClose,
+  onDelete,
+}: {
+  workspaceSlug: string | undefined;
+  workItem: ReturnType<typeof useWorkItemByIdentifier>["issue"];
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: (projectId: string, issueId: string) => Promise<void>;
+}) {
+  if (!workspaceSlug || !workItem?.id || !workItem.project_id) return null;
+  const { project_id: projectId, id: issueId } = workItem;
+
+  return (
+    <DeleteIssueModal
+      handleClose={onClose}
+      isOpen={isOpen}
+      data={workItem}
+      onSubmit={() => onDelete(projectId, issueId)}
+      isEpic={workItem.is_epic}
+    />
+  );
+}
+
+async function deleteWorkItem({
+  projectId,
+  workspaceSlug,
+  issueId,
+  isEpic,
+  removeEpic,
+  removeWorkItem,
+  navigate,
+}: {
+  projectId: string;
+  workspaceSlug: string;
+  issueId: string;
+  isEpic: boolean;
+  removeEpic: (projectId: string, issueId: string) => Promise<void>;
+  removeWorkItem: (projectId: string, issueId: string) => Promise<void>;
+  navigate: (href: string) => Promise<void>;
+}) {
+  const deleteAction = isEpic ? removeEpic : removeWorkItem;
+  try {
+    await deleteAction(projectId, issueId);
+    await navigate(`/${workspaceSlug}/projects/${projectId}/${isEpic ? "epics" : "issues"}`);
+  } catch (error) {
+    console.error("Failed to delete issue:", error);
+  }
+}
+
+function createIssueModalData(cycleId: string | undefined, moduleId: string | undefined) {
+  if (cycleId) return { cycle_id: cycleId };
+  if (moduleId) return { module_ids: [moduleId] };
+  return undefined;
+}

@@ -4,18 +4,21 @@
  * See the LICENSE file for details.
  */
 
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 import { FileText, FolderPlus, Layers, SquarePlus } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
 import { ContrastIcon, DiceIcon, LayersIcon } from "@plane/propel/icons";
 // components
-import { EUserProjectRoles } from "@plane/types";
+import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
 import type { TPowerKCommandConfig, TPowerKContext } from "@/components/power-k/core/types";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
-import { useInstance } from "@/hooks/store/use-instance";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useParams } from "@tanstack/react-router";
+import { useProjectPermissions, useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCreationPermissions } from "@/hooks/use-creation-permissions";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 
 export type TPowerKCreationCommandKeys =
   | "create_work_item"
@@ -31,12 +34,17 @@ export type TPowerKCreationCommandKeys =
  */
 export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommandKeys, TPowerKCommandConfig> => {
   // store
-  const { config } = useInstance();
-  const {
-    canPerformAnyCreateAction,
-    permission: { allowPermissions },
-  } = useUser();
-  const { workspaceProjectIds, getPartialProjectById } = useProject();
+  const { data: config } = useQuery(instanceConfigOptions);
+  const { canPerformAnyCreateAction } = useCreationPermissions();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug?.toString());
+  const { can: canProject } = useProjectPermissions(workspaceSlug?.toString(), projectId?.toString());
+  const { data: catalogueWorkspace } = useCurrentWorkspace();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const workspaceProjectIds = projectRows
+    ?.filter((project) => project.workspace === catalogueWorkspace?.id && !project.archived_at)
+    .map((project) => project.id);
   const {
     toggleCreateIssueModal,
     toggleCreateProjectModal,
@@ -47,21 +55,15 @@ export const usePowerKCreationCommandsRecord = (): Record<TPowerKCreationCommand
   } = useCommandPalette();
   // derived values
   const canCreateWorkItem = canPerformAnyCreateAction && workspaceProjectIds && workspaceProjectIds.length > 0;
-  const canCreateProject = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canCreateProject = canWorkspace([EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER]);
   const hasProjectMemberLevelPermissions = (ctx: TPowerKContext) =>
-    allowPermissions(
-      [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-      EUserPermissionsLevel.PROJECT,
-      ctx.params.workspaceSlug?.toString(),
-      ctx.params.projectId?.toString()
-    );
+    ctx.params.workspaceSlug?.toString() === workspaceSlug?.toString() &&
+    ctx.params.projectId?.toString() === projectId?.toString() &&
+    canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
   const isWorkspaceCreationDisabled = config?.is_workspace_creation_disabled ?? false;
 
   const getProjectDetails = (ctx: TPowerKContext) =>
-    ctx.params.projectId ? getPartialProjectById(ctx.params.projectId.toString()) : undefined;
+    ctx.params.projectId ? projectRows?.find((project) => project.id === ctx.params.projectId?.toString()) : undefined;
 
   return {
     create_work_item: {

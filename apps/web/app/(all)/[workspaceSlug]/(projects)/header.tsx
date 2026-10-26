@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Shapes } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -14,13 +13,13 @@ import { Breadcrumbs, Header } from "@plane/ui";
 // components
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 // hooks
-import { useHome } from "@/hooks/store/use-home";
+import { useHomeSettings } from "@/components/home/provider";
 
-export const WorkspaceDashboardHeader = observer(function WorkspaceDashboardHeader() {
+export const WorkspaceDashboardHeader = function WorkspaceDashboardHeader() {
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { toggleWidgetSettings } = useHome();
+  const { setShowWidgetSettings } = useHomeSettings();
 
   return (
     <>
@@ -40,7 +39,7 @@ export const WorkspaceDashboardHeader = observer(function WorkspaceDashboardHead
           <Button
             variant="secondary"
             size="lg"
-            onClick={() => toggleWidgetSettings(true)}
+            onClick={() => setShowWidgetSettings(true)}
             className="my-auto mb-0"
             prependIcon={<Shapes />}
           >
@@ -50,4 +49,4 @@ export const WorkspaceDashboardHeader = observer(function WorkspaceDashboardHead
       </Header>
     </>
   );
-});
+};

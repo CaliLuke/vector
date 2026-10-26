@@ -4,13 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useEffect, useRef } from "react";
+
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { ToggleSwitch } from "@plane/ui";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useProject } from "@/hooks/store/use-project";
+import { useEstimateMutations } from "@/hooks/use-estimates";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 // i18n
 type TEstimateDisableSwitch = {
   workspaceSlug: string;
@@ -18,13 +19,25 @@ type TEstimateDisableSwitch = {
   isAdmin: boolean;
 };
 
-export const EstimateDisableSwitch = observer(function EstimateDisableSwitch(props: TEstimateDisableSwitch) {
+export const EstimateDisableSwitch = function EstimateDisableSwitch(props: TEstimateDisableSwitch) {
   const { workspaceSlug, projectId, isAdmin } = props;
   // i18n
   const { t } = useTranslation();
   // hooks
-  const { updateProject, currentProjectDetails } = useProject();
-  const { currentActiveEstimateId } = useProjectEstimates();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const currentProjectDetails = projectRows?.find((project) => project.id === projectId);
+  const { activeEstimate, mutation, isPending, isError, isAccessDenied } = useEstimateMutations(
+    workspaceSlug,
+    projectId
+  );
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const currentProjectActiveEstimate = currentProjectDetails?.estimate || undefined;
 
@@ -32,9 +45,12 @@ export const EstimateDisableSwitch = observer(function EstimateDisableSwitch(pro
     if (!workspaceSlug || !projectId) return;
 
     try {
-      await updateProject(workspaceSlug, projectId, {
-        estimate: currentProjectActiveEstimate ? null : currentActiveEstimateId,
+      const result = await mutation.mutateAsync({
+        type: "select",
+        expectedId: currentProjectActiveEstimate ?? null,
+        estimateId: currentProjectActiveEstimate ? null : (activeEstimate?.id ?? null),
       });
+      if (!mounted.current || !result.captured.isCurrent()) return;
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: currentProjectActiveEstimate
@@ -45,6 +61,7 @@ export const EstimateDisableSwitch = observer(function EstimateDisableSwitch(pro
           : t("project_settings.estimates.toasts.enabled.success.message"),
       });
     } catch (_err) {
+      if (!mounted.current) return;
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t("project_settings.estimates.toasts.disabled.error.title"),
@@ -57,8 +74,8 @@ export const EstimateDisableSwitch = observer(function EstimateDisableSwitch(pro
     <ToggleSwitch
       value={Boolean(currentProjectActiveEstimate)}
       onChange={disableEstimate}
-      disabled={!isAdmin}
+      disabled={!isAdmin || mutation.isPending || isPending || isError || isAccessDenied || !activeEstimate}
       size="sm"
     />
   );
-});
+};

@@ -4,15 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { PanelLeft } from "lucide-react";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarActions, useSidebarPeek } from "@/providers/sidebar-state";
 import { IconButton } from "@plane/propel/icon-button";
 
-export const AppSidebarToggleButton = observer(function AppSidebarToggleButton() {
+export function AppSidebarToggleButton() {
   // store hooks
-  const { toggleSidebar, sidebarPeek, toggleSidebarPeek } = useAppTheme();
+  const sidebarPeek = useSidebarPeek();
+  const { toggleSidebar, toggleSidebarPeek } = useSidebarActions();
 
   return (
     <IconButton
@@ -25,4 +25,4 @@ export const AppSidebarToggleButton = observer(function AppSidebarToggleButton()
       }}
     />
   );
-});
+}

@@ -5,7 +5,7 @@
  */
 
 import type { MutableRefObject } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TIssue, IIssueDisplayProperties, IIssueMap } from "@plane/types";
 // local imports
@@ -18,7 +18,7 @@ interface IssueBlocksListProps {
   issuesMap: IIssueMap;
   issueIds: string[];
   displayProperties: IIssueDisplayProperties | undefined;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   canEditProperties: (projectId: string | undefined) => boolean;
   canDropOverIssue: boolean;
@@ -27,7 +27,7 @@ interface IssueBlocksListProps {
   isEpic?: boolean;
 }
 
-export const KanbanIssueBlocksList = observer(function KanbanIssueBlocksList(props: IssueBlocksListProps) {
+export const KanbanIssueBlocksList = function KanbanIssueBlocksList(props: IssueBlocksListProps) {
   const {
     sub_group_id,
     groupId,
@@ -78,4 +78,4 @@ export const KanbanIssueBlocksList = observer(function KanbanIssueBlocksList(pro
       ) : null}
     </>
   );
-});
+};

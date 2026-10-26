@@ -139,6 +139,11 @@ func PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmen
 	return fmt.Sprintf("/api/assets/v2/workspaces/%v/projects/%v/issues/%v/attachments/%v/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(issueID), loomhttp.EscapePathSegment(pk))
 }
 
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneInternalDjangoMigrationAPIPath returns the URL path to the PlaneInternalDjangoMigrationAPI service PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk HTTP endpoint.
+func PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneInternalDjangoMigrationAPIPath(slug string, entityID string) string {
+	return fmt.Sprintf("/api/assets/v2/workspaces/%v/%v/bulk/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(entityID))
+}
+
 // PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPlaneInternalDjangoMigrationAPIPath returns the URL path to the PlaneInternalDjangoMigrationAPI service PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk HTTP endpoint.
 func PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPlaneInternalDjangoMigrationAPIPath(slug string, projectID string, entityID string) string {
 	return fmt.Sprintf("/api/assets/v2/workspaces/%v/projects/%v/%v/bulk/", loomhttp.EscapePathSegment(slug), loomhttp.EscapePathSegment(projectID), loomhttp.EscapePathSegment(entityID))

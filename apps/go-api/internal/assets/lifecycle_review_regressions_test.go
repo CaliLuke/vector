@@ -33,17 +33,21 @@ type reviewUserAssetRepository struct {
 	duplicateLookup     bool
 }
 
+func (repository *reviewUserAssetRepository) AssetParentVisible(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error) {
+	return true, nil
+}
+
 func (repository *reviewUserAssetRepository) UserAssetByID(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error) {
 	return repository.asset, nil
 }
 
-func (repository *reviewUserAssetRepository) UpdateUserAsset(_ context.Context, _, _ uuid.UUID, attributes []byte, uploaded bool) error {
+func (repository *reviewUserAssetRepository) UpdateUserAsset(_ context.Context, _, _ uuid.UUID, attributes []byte, uploaded, _ bool) error {
 	repository.updatedAttributes = append([]byte(nil), attributes...)
 	repository.updatedUploaded = uploaded
 	return nil
 }
 
-func (repository *reviewUserAssetRepository) UpdateLegacyUserAsset(_ context.Context, _, _ uuid.UUID, attributes []byte) error {
+func (repository *reviewUserAssetRepository) UpdateLegacyUserAsset(_ context.Context, _, _ uuid.UUID, attributes []byte, _ bool) error {
 	repository.updatedLegacyAttrs = append([]byte(nil), attributes...)
 	return nil
 }
@@ -84,7 +88,7 @@ func (repository *reviewUserAssetRepository) CreateWorkspaceEntityUpload(_ conte
 	return nil
 }
 
-func (repository *reviewUserAssetRepository) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error) {
+func (repository *reviewUserAssetRepository) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, error) {
 	repository.duplicateLookup = true
 	return repository.asset, nil
 }
@@ -351,7 +355,14 @@ func TestDuplicateRejectsSoftDeletedExplicitProjectBeforeSourceLookup(t *testing
 
 func TestProjectCoverDuplicateAcceptsEntityOnlyProjectInWorkspace(t *testing.T) {
 	workspaceID, projectID := uuid.New(), uuid.New()
-	repository := &reviewUserAssetRepository{workspaceID: workspaceID, projectExists: true}
+	repository := &reviewUserAssetRepository{
+		workspaceID:   workspaceID,
+		projectExists: true,
+		asset: FileAsset{
+			ID:          uuid.NewString(),
+			WorkspaceID: &workspaceID,
+		},
+	}
 	service := &LifecycleService{assets: &Service{repository: repository}}
 	ctx := context.WithValue(context.Background(), assetUserKey{}, uuid.New())
 	body := io.NopCloser(strings.NewReader(`{"entity_type":"PROJECT_COVER","entity_id":"` + projectID.String() + `"}`))

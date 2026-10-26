@@ -4,12 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
-import { observer } from "mobx-react";
 // plane imports
 import type { TIssueServiceType, TWorkItemWidgets } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemDetail, useWorkItemSubItems } from "@/hooks/use-work-item-detail";
+import { useIssueLinks, useIssueRelations } from "@/hooks/use-issue-resources";
+import { countVisibleRelations } from "./relations/count";
+import { useAttachmentOperations } from "./attachments/helper";
 import { useTimeLineRelationOptions } from "@/components/relations";
 // local imports
 import { AttachmentsCollapsible } from "./attachments";
@@ -26,33 +27,87 @@ type Props = {
   hideWidgets?: TWorkItemWidgets[];
 };
 
-export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidgetCollapsibles(props: Props) {
+function getWidgetVisibility({
+  subIssueCount,
+  relationCount,
+  relationError,
+  linkCount,
+  linkError,
+  attachmentCount,
+  uploadCount,
+  attachmentError,
+  hiddenWidgets,
+}: {
+  subIssueCount: number;
+  relationCount: number;
+  relationError: boolean;
+  linkCount: number;
+  linkError: boolean;
+  attachmentCount: number;
+  uploadCount: number;
+  attachmentError: boolean;
+  hiddenWidgets: TWorkItemWidgets[] | undefined;
+}) {
+  const isVisible = (widget: TWorkItemWidgets) => !hiddenWidgets?.includes(widget);
+  return {
+    subIssues: subIssueCount > 0 && isVisible("sub-work-items"),
+    relations: (relationCount > 0 || relationError) && isVisible("relations"),
+    links: (linkCount > 0 || linkError) && isVisible("links"),
+    attachments: attachmentCount > 0 || ((uploadCount > 0 || attachmentError) && isVisible("attachments")),
+  };
+}
+
+function hasResourceError(denied: boolean, queryError: boolean, accessError = false) {
+  return !denied && (queryError || accessError);
+}
+
+export function IssueDetailWidgetCollapsibles(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, issueServiceType, hideWidgets } = props;
-  // store hooks
-  const {
-    issue: { getIssueById },
-    subIssues: { subIssuesByIssueId },
-    attachment: { getAttachmentsCountByIssueId, getAttachmentsUploadStatusByIssueId },
-    relation: { getRelationCountByIssueId },
-  } = useIssueDetail(issueServiceType);
-  // derived values
-  const issue = getIssueById(issueId);
-  const subIssues = subIssuesByIssueId(issueId);
+  const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId, issueServiceType);
+  const subItems = useWorkItemSubItems(workspaceSlug, projectId, issueId, issueServiceType);
+  const subIssues = subItems.subItems;
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
-  const issueRelationsCount = getRelationCountByIssueId(issueId, ISSUE_RELATION_OPTIONS);
-  // render conditions
-  const shouldRenderSubIssues = !!subIssues && subIssues.length > 0 && !hideWidgets?.includes("sub-work-items");
-  const shouldRenderRelations = issueRelationsCount > 0 && !hideWidgets?.includes("relations");
-  const shouldRenderLinks = !!issue?.link_count && issue?.link_count > 0 && !hideWidgets?.includes("links");
-  const attachmentUploads = getAttachmentsUploadStatusByIssueId(issueId);
-  const attachmentsCount = getAttachmentsCountByIssueId(issueId);
-  const shouldRenderAttachments =
-    attachmentsCount > 0 ||
-    (!!attachmentUploads && attachmentUploads.length > 0 && !hideWidgets?.includes("attachments"));
+  const attachmentHelpers = useAttachmentOperations(workspaceSlug, projectId, issueId, issueServiceType);
+  const {
+    relations,
+    query: relationsQuery,
+    isError: relationsAccessError,
+    isDenied: relationsDenied,
+  } = useIssueRelations({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
+  const {
+    links,
+    query: linksQuery,
+    isError: linksAccessError,
+    isDenied: linksDenied,
+  } = useIssueLinks({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
+  const issueRelationsCount = countVisibleRelations(relations, ISSUE_RELATION_OPTIONS);
+  const attachmentUploads = attachmentHelpers.snapshot.uploadStatus;
+  const attachmentsCount = attachmentHelpers.snapshot.attachments?.length ?? issue?.attachment_count ?? 0;
+  const visibleWidgets = getWidgetVisibility({
+    subIssueCount: subIssues?.length ?? 0,
+    relationCount: issueRelationsCount,
+    relationError: hasResourceError(relationsDenied, relationsQuery.isError, relationsAccessError),
+    linkCount: linksQuery.isSuccess ? (links?.length ?? 0) : (issue?.link_count ?? 0),
+    linkError: hasResourceError(linksDenied, linksQuery.isError, linksAccessError),
+    attachmentCount: attachmentsCount,
+    uploadCount: attachmentUploads?.length ?? 0,
+    attachmentError: hasResourceError(attachmentHelpers.snapshot.isDenied, attachmentHelpers.snapshot.isError),
+    hiddenWidgets: hideWidgets,
+  });
 
   return (
     <div className="flex flex-col">
-      {shouldRenderSubIssues && (
+      {visibleWidgets.subIssues && (
         <SubIssuesCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}
@@ -61,15 +116,16 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
           issueServiceType={issueServiceType}
         />
       )}
-      {shouldRenderRelations && (
+      {visibleWidgets.relations && (
         <RelationsCollapsible
           workspaceSlug={workspaceSlug}
+          projectId={projectId}
           issueId={issueId}
           disabled={disabled}
           issueServiceType={issueServiceType}
         />
       )}
-      {shouldRenderLinks && (
+      {visibleWidgets.links && (
         <LinksCollapsible
           workspaceSlug={workspaceSlug}
           projectId={projectId}
@@ -78,15 +134,15 @@ export const IssueDetailWidgetCollapsibles = observer(function IssueDetailWidget
           issueServiceType={issueServiceType}
         />
       )}
-      {shouldRenderAttachments && (
+      {visibleWidgets.attachments && (
         <AttachmentsCollapsible
           workspaceSlug={workspaceSlug}
-          projectId={projectId}
           issueId={issueId}
           disabled={disabled}
           issueServiceType={issueServiceType}
+          attachmentHelpers={attachmentHelpers}
         />
       )}
     </div>
   );
-});
+}

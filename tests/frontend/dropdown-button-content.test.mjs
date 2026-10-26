@@ -1,20 +1,18 @@
+import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
-import test from "node:test";
-import { React, act, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "@/hooks/use-platform-os") {
-      return {
-        shortCircuit: true,
-        url: "data:text/javascript,export const usePlatformOS = () => ({ isMobile: false });",
-      };
-    }
-    return nextResolve(specifier, context);
-  },
+import test from "node:test";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
+
+registerWebTestModules({}, (specifier, context, nextResolve) => {
+  if (specifier === "@/hooks/use-platform-os") {
+    return {
+      shortCircuit: true,
+      url: "data:text/javascript,export const usePlatformOS = () => ({ isMobile: false });",
+    };
+  }
+  return nextResolve(specifier, context);
 });
 
 for (const variant of [

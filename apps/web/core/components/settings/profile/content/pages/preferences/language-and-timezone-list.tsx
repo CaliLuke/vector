@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { SUPPORTED_LANGUAGES, useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -14,17 +13,16 @@ import { TimezoneSelect } from "@/components/global";
 import { StartOfWeekPreference } from "@/components/profile/start-of-week-preference";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
-import { useUser, useUserProfile } from "@/hooks/store/user";
+import { useCurrentUser, useUpdateCurrentUser } from "@/hooks/use-current-user";
+import { useCurrentUserProfile, useUpdateUserProfile } from "@/hooks/use-current-user-profile";
 
-export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
+export const ProfileSettingsLanguageAndTimezonePreferencesList =
   function ProfileSettingsLanguageAndTimezonePreferencesList() {
     // store hooks
-    const {
-      data: user,
-      updateCurrentUser,
-      userProfile: { data: profile },
-    } = useUser();
-    const { updateUserProfile } = useUserProfile();
+    const { data: user } = useCurrentUser();
+    const { mutateAsync: updateCurrentUser } = useUpdateCurrentUser();
+    const { data: profile } = useCurrentUserProfile();
+    const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
     // translation
     const { t } = useTranslation();
 
@@ -104,5 +102,4 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
         />
       </div>
     );
-  }
-);
+  };

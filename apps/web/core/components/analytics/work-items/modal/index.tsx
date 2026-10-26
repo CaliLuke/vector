@@ -4,17 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState } from "react";
-import { observer } from "mobx-react";
+import React, { useState } from "react";
 // plane package imports
 import { ModalPortal, EPortalWidth, EPortalPosition } from "@plane/propel/portal";
 import type { ICycle, IModule, IProject } from "@plane/types";
-import { useAnalytics } from "@/hooks/store/use-analytics";
+import { AnalyticsStateProvider } from "@/providers/analytics-state-provider";
 // plane web components
 import { WorkItemsModalMainContent } from "./content";
 import { WorkItemsModalHeader } from "./header";
 
 type Props = {
+  workspaceSlug: string | undefined;
   isOpen: boolean;
   onClose: () => void;
   projectDetails?: IProject | undefined;
@@ -23,19 +23,14 @@ type Props = {
   isEpic?: boolean;
 };
 
-export const WorkItemsModal = observer(function WorkItemsModal(props: Props) {
-  const { isOpen, onClose, projectDetails, moduleDetails, cycleDetails, isEpic } = props;
-  const { updateIsEpic, isPeekView } = useAnalytics();
+export const WorkItemsModal = function WorkItemsModal(props: Props) {
+  const { workspaceSlug, isOpen, onClose, projectDetails, moduleDetails, cycleDetails, isEpic } = props;
   const [fullScreen, setFullScreen] = useState(false);
 
   const handleClose = () => {
     setFullScreen(false);
     onClose();
   };
-
-  useEffect(() => {
-    updateIsEpic(isPeekView ? (isEpic ?? false) : false);
-  }, [isEpic, updateIsEpic, isPeekView]);
 
   return (
     <ModalPortal
@@ -58,14 +53,48 @@ export const WorkItemsModal = observer(function WorkItemsModal(props: Props) {
           cycle={cycleDetails}
           module={moduleDetails}
         />
-        <WorkItemsModalMainContent
-          fullScreen={fullScreen}
-          projectDetails={projectDetails}
-          cycleDetails={cycleDetails}
-          moduleDetails={moduleDetails}
-          isEpic={isEpic}
-        />
+        {isOpen && (
+          <WorkItemsModalContentScope
+            workspaceSlug={workspaceSlug}
+            projectId={projectDetails?.id}
+            cycleId={cycleDetails?.id}
+            moduleId={moduleDetails?.id}
+            isEpic={isEpic}
+            fullScreen={fullScreen}
+          />
+        )}
       </div>
     </ModalPortal>
   );
-});
+};
+
+function WorkItemsModalContentScope({
+  workspaceSlug,
+  projectId,
+  cycleId,
+  moduleId,
+  isEpic,
+  fullScreen,
+}: {
+  workspaceSlug: string | undefined;
+  projectId: string | undefined;
+  cycleId: string | undefined;
+  moduleId: string | undefined;
+  isEpic: boolean | undefined;
+  fullScreen: boolean;
+}) {
+  return (
+    <AnalyticsStateProvider
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      cycleId={cycleId}
+      moduleId={moduleId}
+      isPeekView
+      isEpic={isEpic}
+      isActive
+      instanceKey={`modal:${projectId ?? ""}:${cycleId ?? ""}:${moduleId ?? ""}:${isEpic ?? false}`}
+    >
+      <WorkItemsModalMainContent fullScreen={fullScreen} isEpic={isEpic} />
+    </AnalyticsStateProvider>
+  );
+}

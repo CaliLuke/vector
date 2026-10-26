@@ -4,15 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane package imports
 import { getButtonStyling } from "@plane/propel/button";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { ChevronDownIcon, ProjectIcon } from "@plane/propel/icons";
 import { CustomSearchSelect } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 type Props = {
   value: string[] | undefined;
@@ -20,12 +19,13 @@ type Props = {
   projectIds: string[] | undefined;
 };
 
-export const ProjectSelect = observer(function ProjectSelect(props: Props) {
+export const ProjectSelect = function ProjectSelect(props: Props) {
   const { value, onChange, projectIds } = props;
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   const options = projectIds?.map((projectId) => {
-    const projectDetails = getProjectById(projectId);
+    const projectDetails = projectRows?.find((project) => project.id === projectId);
 
     return {
       value: projectDetails?.id,
@@ -57,7 +57,7 @@ export const ProjectSelect = observer(function ProjectSelect(props: Props) {
             : value && value.length > 0
               ? projectIds
                   ?.filter((p) => value.includes(p))
-                  .map((p) => getProjectById(p)?.name)
+                  .map((p) => projectRows?.find((project) => project.id === p)?.name)
                   .join(", ")
               : "All projects"}
           <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />
@@ -67,4 +67,4 @@ export const ProjectSelect = observer(function ProjectSelect(props: Props) {
       multiple
     />
   );
-});
+};

@@ -5,12 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 import { PlusIcon } from "@plane/propel/icons";
 // plane imports
 import type { TIssueServiceType } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // components
 import { IssueDetailWidgetButton } from "../widget-button";
 
@@ -20,10 +20,10 @@ type Props = {
   issueServiceType: TIssueServiceType;
 };
 
-export const IssueLinksActionButton = observer(function IssueLinksActionButton(props: Props) {
+export const IssueLinksActionButton = function IssueLinksActionButton(props: Props) {
   const { customButton, disabled = false, issueServiceType } = props;
   // store hooks
-  const { toggleIssueLinkModal } = useIssueDetail(issueServiceType);
+  const { toggleIssueLinkModal } = useIssueDetailUiState(issueServiceType);
 
   // handlers
   const handleOnClick = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -53,4 +53,4 @@ export const IssueLinksActionButton = observer(function IssueLinksActionButton(p
       {customButton ?? <PlusIcon className="h-4 w-4" />}
     </button>
   );
-});
+};

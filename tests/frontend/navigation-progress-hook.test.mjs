@@ -1,17 +1,15 @@
+import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
-import test from "node:test";
-import { React, act, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "@plane/hooks") {
-      return nextResolve(new URL("../../packages/hooks/src/index.ts", import.meta.url).href, context);
-    }
-    return nextResolve(specifier, context);
-  },
+import test from "node:test";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
+
+registerWebTestModules({}, (specifier, context, nextResolve) => {
+  if (specifier === "@plane/hooks") {
+    return nextResolve(new URL("../../packages/hooks/src/index.ts", import.meta.url).href, context);
+  }
+  return nextResolve(specifier, context);
 });
 
 await test("navigation progress configures once, starts after a zero-delay timer, and completes on idle or unmount", async (t) => {

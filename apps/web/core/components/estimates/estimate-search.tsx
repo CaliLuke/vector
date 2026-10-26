@@ -4,11 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
-export const EstimateSearch = observer(function EstimateSearch() {
-  // hooks
-  const {} = {};
-
+export const EstimateSearch = function EstimateSearch() {
   return <div>Estimate Search</div>;
-});
+};

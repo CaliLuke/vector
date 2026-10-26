@@ -50,7 +50,7 @@ func TestListLazilyCreatesDjangoKeysAndDefaults(t *testing.T) {
 		t.Fatal(err)
 	}
 	query := db.queries[0]
-	for _, fragment := range []string{"'views'", "'active_cycles'", "'your_work'", "'stickies'", "row_number() OVER (ORDER BY m.idx)", "65535", "10000", "'drafts','your_work','stickies'", "json_object_agg"} {
+	for _, fragment := range []string{"'views'", "'active_cycles'", "'your_work'", "'stickies'", "row_number() OVER (ORDER BY m.idx)", "65535", "10000", "'drafts','your_work','stickies'"} {
 		if !strings.Contains(query, fragment) {
 			t.Errorf("list query missing %q", fragment)
 		}
@@ -60,6 +60,9 @@ func TestListLazilyCreatesDjangoKeysAndDefaults(t *testing.T) {
 	}
 	if strings.Contains(query, "created_by") {
 		t.Error("bulk-created Django preferences do not set created_by")
+	}
+	if len(db.queries) != 2 || !strings.Contains(db.queries[1], "json_object_agg") {
+		t.Fatalf("List() must insert defaults before selecting preferences, queries = %#v", db.queries)
 	}
 }
 
@@ -99,11 +102,11 @@ func TestPatchPreservesOmittedFieldsAndIgnoresUnknownKeys(t *testing.T) {
 	if _, err := repository.Patch(context.Background(), uuid.Nil(), "demo", []Patch{{IsPinned: &pinned}}); err != nil {
 		t.Fatal(err)
 	}
-	got, ok := db.args[1][2].([]byte)
+	got, ok := db.args[3][2].([]byte)
 	if !ok || !strings.Contains(string(got), `"key":""`) {
 		t.Fatalf("missing key should decode as an empty key for SQL filtering, got %s", got)
 	}
-	query := db.queries[0]
+	query := db.queries[3]
 	for _, fragment := range []string{"jsonb_array_elements", "item ? 'is_pinned'", "item ? 'sort_order'", "updates.key=p.key", "p.user_id=$1", "p.deleted_at IS NULL"} {
 		if !strings.Contains(query, fragment) {
 			t.Errorf("patch query missing %q", fragment)

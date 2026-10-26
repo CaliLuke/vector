@@ -5,8 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { Button } from "@plane/propel/button";
@@ -19,24 +18,20 @@ import { CountChip } from "@/components/common/count-chip";
 import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useWorkspaceDraftIssues } from "@/hooks/store/workspace-draft";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useParams } from "@tanstack/react-router";
+import { useWorkspaceDraftList } from "@/hooks/use-workspace-drafts";
 
-export const WorkspaceDraftHeader = observer(function WorkspaceDraftHeader() {
+export function WorkspaceDraftHeader() {
   // state
   const [isDraftIssueModalOpen, setIsDraftIssueModalOpen] = useState(false);
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { paginationInfo } = useWorkspaceDraftIssues();
-  const { joinedProjectIds } = useProject();
-
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { can } = useWorkspacePermissions(workspaceSlug);
+  const { paginationInfo } = useWorkspaceDraftList(workspaceSlug);
   const { t } = useTranslation();
   // check if user is authorized to create draft work item
-  const isAuthorizedUser = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorizedUser = can([EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST]);
 
   return (
     <>
@@ -65,19 +60,17 @@ export const WorkspaceDraftHeader = observer(function WorkspaceDraftHeader() {
         </Header.LeftItem>
 
         <Header.RightItem>
-          {joinedProjectIds && joinedProjectIds.length > 0 && (
-            <Button
-              variant="primary"
-              size="lg"
-              className="items-center gap-1"
-              onClick={() => setIsDraftIssueModalOpen(true)}
-              disabled={!isAuthorizedUser}
-            >
-              {t("workspace_draft_issues.draft_an_issue")}
-            </Button>
-          )}
+          <Button
+            variant="primary"
+            size="lg"
+            className="items-center gap-1"
+            onClick={() => setIsDraftIssueModalOpen(true)}
+            disabled={!isAuthorizedUser}
+          >
+            {t("workspace_draft_issues.draft_an_issue")}
+          </Button>
         </Header.RightItem>
       </Header>
     </>
   );
-});
+}

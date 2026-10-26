@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // helpers
 import { getCoverImageDisplayURL, DEFAULT_COVER_IMAGE_URL } from "@/helpers/cover-image.helper";
 
@@ -19,7 +19,7 @@ type TCoverImageProps = {
   showDefaultWhenEmpty?: boolean;
   /** Custom fallback URL to use instead of DEFAULT_COVER_IMAGE_URL */
   fallbackUrl?: string;
-} & React.ComponentProps<"img">;
+} & Omit<React.ComponentProps<"img">, "src">;
 
 /**
  * A reusable cover image component that handles:

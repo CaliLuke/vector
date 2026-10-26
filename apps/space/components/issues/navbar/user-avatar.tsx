@@ -4,10 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { Fragment, useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import { Link } from "react-router";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
+import { useTheme } from "next-themes";
+import { Link, useLocation, useSearchParams } from "react-router";
+import { Fragment, useRef, useState } from "react";
+
 import { usePopper } from "react-popper";
 import { LogOut } from "lucide-react";
 import { Popover, Transition } from "@headlessui/react";
@@ -16,17 +19,16 @@ import { API_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { AuthService } from "@plane/services";
 import { Avatar } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // helpers
 import { queryParamGenerator } from "@/helpers/query-param-generator";
 // hooks
-import { useUser } from "@/hooks/store/use-user";
 
 const authService = new AuthService();
 
-export const UserAvatar = observer(function UserAvatar() {
-  const pathName = usePathname();
-  const searchParams = useSearchParams();
+export const UserAvatar = function UserAvatar() {
+  const { pathname: pathName } = useLocation();
+  const [searchParams] = useSearchParams();
   // query params
   const board = searchParams.get("board") || undefined;
   const labels = searchParams.get("labels") || undefined;
@@ -34,16 +36,23 @@ export const UserAvatar = observer(function UserAvatar() {
   const priority = searchParams.get("priority") || undefined;
   const peekId = searchParams.get("peekId") || undefined;
   // hooks
-  const { data: currentUser, signOut } = useUser();
-  // states
-  const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const client = useQueryClient();
+  const { setTheme } = useTheme();
+  const formElement = useRef<HTMLFormElement>(null);
+  const form = useForm({
+    defaultValues: {},
+    validators: { onSubmit: (): string | undefined => undefined },
+    onSubmit: async () => {
+      await authService.submitForm(formElement.current);
+      client.clear();
+      setTheme("system");
+    },
+  });
+  const busy = useStore(form.store, (formState) => formState.isSubmitting);
+  const error = useStore(form.store, (formState) => formState.errorMap.onSubmit);
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (csrfToken === undefined)
-      authService.requestCSRFToken().then((data) => data?.csrf_token && setCsrfToken(data.csrf_token));
-  }, [csrfToken]);
 
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "bottom-end",
@@ -68,16 +77,16 @@ export const UserAvatar = observer(function UserAvatar() {
             <Popover.Button as={Fragment}>
               <button ref={setReferenceElement} className="flex items-center gap-2 rounded-sm border border-subtle p-2">
                 <Avatar
-                  name={currentUser?.display_name}
-                  src={getFileURL(currentUser?.avatar_url)}
+                  name={currentUser.display_name}
+                  src={getFileURL(currentUser.avatar_url)}
                   shape="square"
                   size="sm"
                   showTooltip={false}
                 />
                 <h6 className="text-11 font-medium text-secondary">
-                  {currentUser?.display_name ||
-                    `${currentUser?.first_name} ${currentUser?.first_name}` ||
-                    currentUser?.email ||
+                  {currentUser.display_name ||
+                    [currentUser.first_name, currentUser.last_name].filter(Boolean).join(" ") ||
+                    currentUser.email ||
                     "User"}
                 </h6>
               </button>
@@ -98,19 +107,36 @@ export const UserAvatar = observer(function UserAvatar() {
                   style={styles.popper}
                   {...attributes.popper}
                 >
-                  {csrfToken && (
-                    <form method="POST" action={`${API_BASE_URL}/auth/spaces/sign-out/`} onSubmit={signOut}>
-                      <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-                      <input type="hidden" name="next_path" value={`${pathName}?${queryParam}`} />
-                      <button
-                        type="submit"
-                        className="flex min-w-36 cursor-pointer items-center gap-2 rounded-sm p-2 text-13 whitespace-nowrap hover:bg-layer-transparent-hover"
-                      >
-                        <LogOut size={12} className="shrink-0 text-danger-primary" />
-                        <div>Sign out</div>
-                      </button>
-                    </form>
-                  )}
+                  <form
+                    ref={formElement}
+                    method="POST"
+                    action={`${API_BASE_URL}/auth/spaces/sign-out/`}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      form.setErrorMap({ onSubmit: undefined });
+                      void form.handleSubmit().catch(() =>
+                        form.setErrorMap({
+                          onSubmit: { form: "Could not sign out. Please try again.", fields: {} },
+                        })
+                      );
+                    }}
+                  >
+                    <input type="hidden" name="csrfmiddlewaretoken" value="" />
+                    <input type="hidden" name="next_path" value={`${pathName}?${queryParam}`} />
+                    <button
+                      type="submit"
+                      disabled={busy}
+                      className="flex min-w-36 cursor-pointer items-center gap-2 rounded-sm p-2 text-13 whitespace-nowrap hover:bg-layer-transparent-hover"
+                    >
+                      <LogOut size={12} className="shrink-0 text-danger-primary" />
+                      <div>Sign out</div>
+                    </button>
+                    {error && (
+                      <p role="alert" className="p-2 text-13 text-danger-primary">
+                        {error}
+                      </p>
+                    )}
+                  </form>
                 </div>
               </Popover.Panel>
             </Transition>
@@ -125,4 +151,4 @@ export const UserAvatar = observer(function UserAvatar() {
       )}
     </div>
   );
-});
+};

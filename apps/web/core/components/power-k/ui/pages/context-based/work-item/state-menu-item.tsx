@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { StateGroupIcon } from "@plane/propel/icons";
 import type { IState } from "@plane/types";
 // components
@@ -18,7 +17,7 @@ export type TPowerKProjectStatesMenuItemsProps = {
   workspaceSlug: string;
 };
 
-export const PowerKProjectStatesMenuItems = observer(function PowerKProjectStatesMenuItems(
+export const PowerKProjectStatesMenuItems = function PowerKProjectStatesMenuItems(
   props: TPowerKProjectStatesMenuItemsProps
 ) {
   const { handleSelect, selectedStateId, states } = props;
@@ -36,4 +35,4 @@ export const PowerKProjectStatesMenuItems = observer(function PowerKProjectState
       ))}
     </>
   );
-});
+};

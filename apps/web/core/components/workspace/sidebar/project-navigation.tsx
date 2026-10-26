@@ -6,9 +6,8 @@
 
 import { Link, useParams, useLocation } from "@tanstack/react-router";
 import React, { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
 
-import { EUserPermissionsLevel, EUserPermissions } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { EUserProjectRoles } from "@plane/types";
@@ -16,10 +15,10 @@ import type { EUserProjectRoles } from "@plane/types";
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions, useExtendedProjectSidebarOpen } from "@/providers/sidebar-state";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 
 export type TNavigationItem = {
   name: string;
@@ -38,25 +37,23 @@ type TProjectItemsProps = {
   additionalNavigationItems?: (workspaceSlug: string, projectId: string) => TNavigationItem[];
 };
 
-export const ProjectNavigation = observer(function ProjectNavigation(props: TProjectItemsProps) {
+export const ProjectNavigation = function ProjectNavigation(props: TProjectItemsProps) {
   const { workspaceSlug, projectId, additionalNavigationItems } = props;
   const { workItem: workItemIdentifierFromRoute } = useParams({ strict: false });
   // store hooks
   const { t } = useTranslation();
-  const { isExtendedProjectSidebarOpened, toggleExtendedProjectSidebar, toggleSidebar } = useAppTheme();
-  const { getPartialProjectById } = useProject();
-  const { allowPermissions } = useUserPermissions();
-  const {
-    issue: { getIssueIdByIdentifier, getIssueById },
-  } = useIssueDetail();
+  const isExtendedProjectSidebarOpened = useExtendedProjectSidebarOpen();
+  const { toggleExtendedProjectSidebar, toggleSidebar } = useSidebarActions();
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // pathname
   const pathname = useLocation({ select: (location) => location.pathname });
   // derived values
-  const workItemId = workItemIdentifierFromRoute
-    ? getIssueIdByIdentifier(workItemIdentifierFromRoute?.toString())
-    : undefined;
-  const workItem = workItemId ? getIssueById(workItemId) : undefined;
-  const project = getPartialProjectById(projectId);
+  const [projectIdentifier, sequenceId] = (workItemIdentifierFromRoute?.toString() ?? "").split("-");
+  const project = projectRows?.find((projectRow) => projectRow.id === projectId);
+  const workItemProjectId = projectIdentifier && project?.identifier === projectIdentifier ? projectId : undefined;
+  const workItem = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequenceId, workItemProjectId).issue;
   // handlers
   const handleProjectClick = () => {
     if (window.innerWidth < 768) {
@@ -157,9 +154,9 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
   const isActive = useCallback(
     (item: TNavigationItem) => {
       // work item condition
-      const workItemCondition = workItemId && workItem && !workItem?.is_epic && workItem?.project_id === projectId;
+      const workItemCondition = workItem && !workItem.is_epic && workItem.project_id === projectId;
       // epic condition
-      const epicCondition = workItemId && workItem && workItem?.is_epic && workItem?.project_id === projectId;
+      const epicCondition = workItem && workItem.is_epic && workItem.project_id === projectId;
       // is active
       const isWorkItemActive = item.key === "work_items" && workItemCondition;
       const isEpicActive = item.key === "epics" && epicCondition;
@@ -168,7 +165,7 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
       // return
       return isWorkItemActive || isEpicActive || isPathnameActive;
     },
-    [pathname, workItem, workItemId, projectId]
+    [pathname, workItem, projectId]
   );
 
   if (!project) return null;
@@ -178,7 +175,7 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
       {navigationItemsMemo.map((item) => {
         if (!item.shouldRender) return;
 
-        const hasAccess = allowPermissions(item.access, EUserPermissionsLevel.PROJECT, workspaceSlug, project.id);
+        const hasAccess = canProject(item.access);
         if (!hasAccess) return null;
 
         const shouldShowCount = item.key === "intake" && (project.intake_count ?? 0) > 0;
@@ -201,4 +198,4 @@ export const ProjectNavigation = observer(function ProjectNavigation(props: TPro
       })}
     </>
   );
-});
+};

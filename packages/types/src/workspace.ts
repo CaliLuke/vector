@@ -46,14 +46,14 @@ export interface IWorkspaceMemberInvitation {
   accepted: boolean;
   email: string;
   id: string;
-  message: string;
-  responded_at: Date;
+  message: string | null;
+  responded_at: string | null;
   role: TUserPermissions;
   token: string;
   invite_link: string;
   workspace: {
     id: string;
-    logo_url: string;
+    logo_url: string | null;
     name: string;
     slug: string;
   };
@@ -96,17 +96,23 @@ export interface IWorkspaceMember {
 
 export interface IWorkspaceMemberMe {
   company_role: string | null;
-  created_at: Date;
-  created_by: string;
-  default_props: IWorkspaceViewProps;
-  id: string;
-  member: string;
-  role: TUserPermissions | EUserWorkspaceRoles;
-  updated_at: Date;
-  updated_by: string;
-  view_props: IWorkspaceViewProps;
-  workspace: string;
-  draft_issue_count: number;
+  created_at?: string;
+  created_by: string | null;
+  default_props: IWorkspaceViewProps | null;
+  deleted_at: string | null;
+  draft_issue_count?: number;
+  explored_features: unknown;
+  getting_started_checklist: unknown;
+  id?: string | null;
+  is_active: boolean;
+  issue_props: unknown;
+  member: string | null;
+  role: EUserWorkspaceRoles | null;
+  tips: unknown;
+  updated_at?: string;
+  updated_by: string | null;
+  view_props: IWorkspaceViewProps | null;
+  workspace: string | null;
 }
 
 export interface ILastActiveWorkspaceDetails {
@@ -127,7 +133,14 @@ export interface IWorkspaceSearchResult {
   slug: string;
 }
 
+export type TWorkItemSearchMatch = {
+  property_id: string;
+  property_title: string;
+  text: string;
+};
+
 export interface IWorkspaceIssueSearchResult {
+  custom_property_match?: TWorkItemSearchMatch | null;
   id: string;
   name: string;
   project__identifier: string;

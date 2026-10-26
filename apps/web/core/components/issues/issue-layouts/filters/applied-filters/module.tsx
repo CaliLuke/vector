@@ -4,10 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 // hooks
 import { CloseIcon, ModuleIcon } from "@plane/propel/icons";
-import { useModule } from "@/hooks/store/use-module";
+import { useProjectModules } from "@/hooks/use-modules";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 // ui
 
 type Props = {
@@ -16,15 +18,19 @@ type Props = {
   editable: boolean | undefined;
 };
 
-export const AppliedModuleFilters = observer(function AppliedModuleFilters(props: Props) {
+export const AppliedModuleFilters = function AppliedModuleFilters(props: Props) {
   const { handleRemove, values, editable } = props;
   // store hooks
-  const { getModuleById } = useModule();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const catalogue = useProjectModules(workspaceSlug, projectId);
 
   return (
     <>
+      {(catalogue.isError || catalogue.isAccessDenied) && (
+        <CatalogueReadFailure label="modules" retry={catalogue.retry} />
+      )}
       {values.map((moduleId) => {
-        const moduleDetails = getModuleById(moduleId) ?? null;
+        const moduleDetails = catalogue.modules?.find((row) => row.id === moduleId) ?? null;
 
         if (!moduleDetails) return null;
 
@@ -46,4 +52,4 @@ export const AppliedModuleFilters = observer(function AppliedModuleFilters(props
       })}
     </>
   );
-});
+};

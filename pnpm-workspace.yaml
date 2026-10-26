@@ -127,9 +127,6 @@ catalog:
   "lowlight": "^3.0.0"
   "lucide-react": "1.61.0"
   "masonry-layout": "^4.2.2"
-  "mobx": "6.16.1"
-  "mobx-react": "9.2.2"
-  "mobx-utils": "6.1.1"
   "next-themes": "0.4.6"
   "oxfmt": "0.74.0"
   "oxlint": "1.89.0"
@@ -146,7 +143,6 @@ catalog:
   "react-dom": "19.3.1"
   "react-dropzone": "20.1.4"
   "react-fast-compare": "^3.2.2"
-  "react-hook-form": "7.90.0"
   "react-i18next": "17.1.0"
   "react-is": "^19.3.1"
   "react-markdown": "^10.1.0"
@@ -164,7 +160,7 @@ catalog:
   "sharp": "^0.35.5"
   "smooth-scroll-into-view-if-needed": "^2.0.2"
   "storybook": "10.6.3"
-  "swr": "2.5.1"
+  "@tanstack/react-query": "5.104.5"
   "tailwind-merge": "3.7.0"
   "tailwindcss": "4.3.3"
   "tippy.js": "^6.3.7"
@@ -185,8 +181,15 @@ catalog:
   "y-protocols": "^1.0.7"
   "yjs": "^13.6.33"
   "zod": "4.6.7"
+  "@tanstack/react-form": 1.33.5
 
 overrides:
+  # Form's devtools reconnect timer delays Node process exit; https://github.com/TanStack/form/issues/2132
+  # Remove after a Form release includes https://github.com/TanStack/form/pull/2410 (event-client >=0.5.0).
+  "@tanstack/form-core@1.33.5>@tanstack/devtools-event-client": 0.5.0
+  # 3.0.10 drops first text when block IDs append a transaction; https://github.com/ueberdosis/tiptap/issues/8584
+  # Remove after an upstream release passes the unique-id/collaboration regression.
+  "@tiptap/y-tiptap": 3.0.9
   "mdast-util-to-hast@^13": 13.2.1
   "valibot@^1": 1.4.2
   "glob@^11": 11.1.0

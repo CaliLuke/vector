@@ -4,12 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { ChevronDownIcon } from "@plane/propel/icons";
 import type { TRecentActivityFilterKeys } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 export type TFiltersDropdown = {
   className?: string;
@@ -18,23 +17,9 @@ export type TFiltersDropdown = {
   filters: { name: TRecentActivityFilterKeys; icon?: React.ReactNode; i18n_key: string }[];
 };
 
-export const FiltersDropdown = observer(function FiltersDropdown(props: TFiltersDropdown) {
+export const FiltersDropdown = function FiltersDropdown(props: TFiltersDropdown) {
   const { className, activeFilter, setActiveFilter, filters } = props;
   const { t } = useTranslation();
-
-  function DropdownOptions() {
-    return filters?.map((filter) => (
-      <CustomMenu.MenuItem
-        key={filter.name}
-        className="flex items-center gap-2 truncate text-secondary"
-        onClick={() => {
-          setActiveFilter(filter.name);
-        }}
-      >
-        <div className="truncate text-11 font-medium capitalize">{t(filter.i18n_key)}</div>
-      </CustomMenu.MenuItem>
-    ));
-  }
 
   const title = activeFilter ? filters?.find((filter) => filter.name === activeFilter)?.i18n_key : "";
   return (
@@ -52,7 +37,17 @@ export const FiltersDropdown = observer(function FiltersDropdown(props: TFilters
       customButtonClassName="flex justify-center"
       closeOnSelect
     >
-      <DropdownOptions />
+      {filters?.map((filter) => (
+        <CustomMenu.MenuItem
+          key={filter.name}
+          className="flex items-center gap-2 truncate text-secondary"
+          onClick={() => {
+            setActiveFilter(filter.name);
+          }}
+        >
+          <div className="truncate text-11 font-medium capitalize">{t(filter.i18n_key)}</div>
+        </CustomMenu.MenuItem>
+      ))}
     </CustomMenu>
   );
-});
+};

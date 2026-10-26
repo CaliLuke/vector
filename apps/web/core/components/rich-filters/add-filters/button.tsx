@@ -5,19 +5,17 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
 import { ListFilter } from "lucide-react";
 // plane imports
 import type { TButtonSize, TButtonVariant } from "@plane/propel/button";
 import { getButtonStyling } from "@plane/propel/button";
-import type { IFilterInstance } from "@plane/shared-state";
-import type { TExternalFilter, TFilterProperty, TSupportedOperators } from "@plane/types";
-import { LOGICAL_OPERATOR } from "@plane/types";
-import { cn } from "@plane/utils";
+import type { TFilterProperty, TSupportedOperators } from "@plane/types";
+import { cn } from "@plane/utils/common";
 // local imports
 import { AddFilterDropdown } from "./dropdown";
+import type { TFilterExpressionEditor } from "../shared";
 
-export type TAddFilterButtonProps<P extends TFilterProperty, E extends TExternalFilter> = {
+export type TAddFilterButtonProps<P extends TFilterProperty> = {
   buttonConfig?: {
     label: string | null;
     variant?: TButtonVariant;
@@ -30,14 +28,12 @@ export type TAddFilterButtonProps<P extends TFilterProperty, E extends TExternal
     };
     isDisabled?: boolean;
   };
-  filter: IFilterInstance<P, E>;
+  editor: TFilterExpressionEditor<P>;
   onFilterSelect?: (id: string) => void;
 };
 
-export const AddFilterButton = observer(function AddFilterButton<P extends TFilterProperty, E extends TExternalFilter>(
-  props: TAddFilterButtonProps<P, E>
-) {
-  const { filter, buttonConfig, onFilterSelect } = props;
+export const AddFilterButton = function AddFilterButton<P extends TFilterProperty>(props: TAddFilterButtonProps<P>) {
+  const { editor, buttonConfig, onFilterSelect } = props;
   const {
     variant = "secondary",
     size = "base",
@@ -50,15 +46,7 @@ export const AddFilterButton = observer(function AddFilterButton<P extends TFilt
   const FilterIcon = iconConfig.iconComponent || ListFilter;
 
   const handleFilterSelect = (property: P, operator: TSupportedOperators, isNegation: boolean) => {
-    filter.addCondition(
-      LOGICAL_OPERATOR.AND,
-      {
-        property,
-        operator,
-        value: undefined,
-      },
-      isNegation
-    );
+    editor.onAddCondition(property, operator, isNegation);
     onFilterSelect?.(property);
   };
 
@@ -79,4 +67,4 @@ export const AddFilterButton = observer(function AddFilterButton<P extends TFilt
       }
     />
   );
-});
+};

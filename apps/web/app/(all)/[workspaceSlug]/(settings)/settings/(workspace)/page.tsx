@@ -5,7 +5,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
@@ -13,13 +13,13 @@ import { PageHead } from "@/components/core/page-title";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { WorkspaceDetails } from "@/components/workspace/settings/workspace-details";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 // local imports
 import { GeneralWorkspaceSettingsHeader } from "./header";
 
 function GeneralWorkspaceSettingsPage(): React.JSX.Element | null {
   // store hooks
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const { t } = useTranslation();
   // derived values
   const pageTitle = currentWorkspace?.name
@@ -35,5 +35,5 @@ function GeneralWorkspaceSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/")({
-  component: observer(GeneralWorkspaceSettingsPage),
+  component: GeneralWorkspaceSettingsPage,
 });

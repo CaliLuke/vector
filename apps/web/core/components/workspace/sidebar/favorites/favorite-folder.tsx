@@ -15,7 +15,7 @@ import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/eleme
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
 
-import { orderBy } from "lodash-es";
+import orderBy from "lodash-es/orderBy.js";
 
 import { createRoot } from "react-dom/client";
 import { Star, MoreHorizontal, GripVertical } from "lucide-react";
@@ -28,9 +28,8 @@ import { Tooltip } from "@plane/propel/tooltip";
 import type { IFavorite, InstructionType } from "@plane/types";
 import { CustomMenu, DropIndicator, DragHandle } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useFavorite } from "@/hooks/store/use-favorite";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { FavoriteRoot } from "./favorite-items";
@@ -47,8 +46,6 @@ type Props = {
 
 export function FavoriteFolder(props: Props) {
   const { favorite, handleRemoveFromFavorites, isLastChild, handleDrop } = props;
-  // store hooks
-  const { fetchGroupedFavorites } = useFavorite();
   const { isMobile } = usePlatformOS();
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
@@ -63,20 +60,14 @@ export function FavoriteFolder(props: Props) {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (favorite.children === undefined && workspaceSlug) {
-      fetchGroupedFavorites(workspaceSlug.toString(), favorite.id);
-    }
-  }, [favorite.id, favorite.children, workspaceSlug, fetchGroupedFavorites]);
+    const rootElement = elementRef.current;
 
-  useEffect(() => {
-    const element = elementRef.current;
-
-    if (!element) return;
+    if (!rootElement) return;
     const initialData = { id: favorite.id, parentId: null, isGroup: true, isChild: false };
 
     return combine(
       draggable({
-        element,
+        element: rootElement,
         getInitialData: () => initialData,
         onDragStart: () => setIsDragging(true),
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
@@ -102,7 +93,7 @@ export function FavoriteFolder(props: Props) {
         }, // canDrag: () => isDraggable,
       }),
       dropTargetForElements({
-        element,
+        element: rootElement,
         canDrop: ({ source }) => getCanDrop(source, favorite, false),
         getData: ({ input, element }) => {
           const blockedStates: InstructionType[] = [];
@@ -120,8 +111,8 @@ export function FavoriteFolder(props: Props) {
           });
         },
         onDrag: ({ source, self, location }) => {
-          const instruction = getInstructionFromPayload(self, source, location);
-          setInstruction(instruction);
+          const nextInstruction = getInstructionFromPayload(self, source, location);
+          setInstruction(nextInstruction);
         },
         onDragLeave: () => {
           setInstruction(undefined);

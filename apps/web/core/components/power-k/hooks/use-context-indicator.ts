@@ -5,14 +5,14 @@
  */
 
 // plane imports
-import { getPageName } from "@plane/utils";
+import { getPageName } from "@plane/utils/page";
 // hooks
-import { EPageStoreType, usePageStore } from "@/hooks/store";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useModule } from "@/hooks/store/use-module";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useModuleDetails } from "@/hooks/use-modules";
 // local imports
 import type { TPowerKContextType } from "../core/types";
 import { useParams } from "@tanstack/react-router";
+import { useProjectPage } from "@/hooks/use-project-pages";
 
 type TArgs = {
   activeContext: TPowerKContextType | null;
@@ -21,11 +21,18 @@ type TArgs = {
 export const useContextIndicator = (args: TArgs): string | null => {
   const { activeContext } = args;
   // navigation
-  const { workItem: workItemIdentifier, cycleId, moduleId, pageId } = useParams({ strict: false });
+  const {
+    workspaceSlug,
+    projectId,
+    workItem: workItemIdentifier,
+    cycleId,
+    moduleId,
+    pageId,
+  } = useParams({ strict: false });
   // store hooks
-  const { getCycleById } = useCycle();
-  const { getModuleById } = useModule();
-  const { getPageById } = usePageStore(EPageStoreType.PROJECT);
+  const { cycle } = useCycleDetails(workspaceSlug, projectId, cycleId);
+  const { module } = useModuleDetails(workspaceSlug, projectId, moduleId);
+  const pageQuery = useProjectPage(workspaceSlug, projectId, activeContext === "page" ? pageId : undefined, false);
   let indicator: string | undefined | null = null;
 
   switch (activeContext) {
@@ -34,18 +41,17 @@ export const useContextIndicator = (args: TArgs): string | null => {
       break;
     }
     case "cycle": {
-      const cycleDetails = cycleId ? getCycleById(cycleId.toString()) : null;
+      const cycleDetails = cycleId ? cycle : null;
       indicator = cycleDetails?.name;
       break;
     }
     case "module": {
-      const moduleDetails = moduleId ? getModuleById(moduleId.toString()) : null;
+      const moduleDetails = moduleId ? module : null;
       indicator = moduleDetails?.name;
       break;
     }
     case "page": {
-      const pageInstance = pageId ? getPageById(pageId.toString()) : null;
-      indicator = getPageName(pageInstance?.name);
+      indicator = getPageName(pageQuery.data?.name);
       break;
     }
     default: {

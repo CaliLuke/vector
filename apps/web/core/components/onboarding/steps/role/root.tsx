@@ -4,23 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+import { FormErrors } from "@plane/ui";
+
+import { useForm, useStore } from "@tanstack/react-form";
 import { Box, PenTool, Rocket, Monitor, RefreshCw } from "lucide-react";
 // plane imports
-import { Button } from "@plane/propel/button";
 import { CheckIcon, ViewsIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TUserProfile } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
-// hooks
-import { useUserProfile } from "@/hooks/store/user";
 // local components
-import { CommonOnboardingHeader } from "../common";
-import type { TProfileSetupFormValues } from "../profile/root";
+import { CommonOnboardingHeader, OnboardingActions } from "../common";
+import { handleProfileSetupSubmit, saveProfileSetupStep, useProfileStepAccountData } from "../profile-setup-submit";
 
 type Props = {
-  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => void;
+  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => Promise<void>;
 };
 
 const ROLES = [
@@ -33,125 +29,89 @@ const ROLES = [
   { id: "others", label: "Others", icon: Box },
 ];
 
-const defaultValues = {
-  role: "",
-};
-
-export const RoleSetupStep = observer(function RoleSetupStep({ handleStepChange }: Props) {
+export const RoleSetupStep = function RoleSetupStep({ handleStepChange }: Props) {
   // store hooks
-  const { data: profile, updateUserProfile } = useUserProfile();
-  // form info
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting, isValid },
-  } = useForm<TProfileSetupFormValues>({
-    defaultValues: {
-      ...defaultValues,
-      role: profile?.role,
+  const { profile, updateUserProfile } = useProfileStepAccountData();
+  const form = useForm({
+    defaultValues: { role: profile?.role ?? "" },
+    validators: { onSubmit: () => (profile ? undefined : "Profile information is still loading.") },
+    onSubmit: async ({ value }) => {
+      if (!profile) return;
+      await saveProfileSetupStep(
+        () => updateUserProfile({ role: value.role }),
+        handleStepChange,
+        EOnboardingSteps.ROLE_SETUP
+      );
     },
-    mode: "onChange",
   });
-
-  // handle submit
-  const handleSubmitUserPersonalization = async (formData: TProfileSetupFormValues) => {
-    const profileUpdatePayload: Partial<TUserProfile> = {
-      role: formData.role,
-    };
-    try {
-      await Promise.all([
-        updateUserProfile(profileUpdatePayload),
-        // totalSteps > 2 && stepChange({ profile_complete: true }),
-      ]);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success",
-        message: "Profile setup completed!",
-      });
-    } catch {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Profile setup failed. Please try again!",
-      });
-    }
-  };
-
-  const onSubmit = async (formData: TProfileSetupFormValues) => {
-    if (!profile) return;
-    await handleSubmitUserPersonalization(formData);
-    handleStepChange(EOnboardingSteps.ROLE_SETUP);
-  };
-
-  const handleSkip = () => {
-    handleStepChange(EOnboardingSteps.ROLE_SETUP);
-  };
-
-  const isButtonDisabled = !isSubmitting && isValid ? false : true;
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const canSubmit = useStore(
+    form.store,
+    (state) => state.canSubmit && state.values.role.length > 0 && Boolean(profile)
+  );
+  const handleSkip = () => handleStepChange(EOnboardingSteps.ROLE_SETUP);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
+    <form
+      onSubmit={(event) => handleProfileSetupSubmit(event, () => form.handleSubmit())}
+      className="flex flex-col gap-10"
+    >
       {/* Header */}
       <CommonOnboardingHeader title="What's your role?" description="Let's set up Vector for how you work." />
       {/* Role Selection */}
       <div className="flex flex-col gap-3">
         <p className="text-body-sm-semibold text-placeholder">Select one</p>
-        <Controller
-          control={control}
+        <form.Field
           name="role"
-          rules={{
-            required: "This field is required",
-          }}
-          render={({ field: { value, onChange } }) => (
-            <div className="flex flex-col gap-3">
-              {ROLES.map((role) => {
-                const Icon = role.icon;
-                const isSelected = value === role.id;
+          validators={{ onChange: ({ value }) => (value.length > 0 ? undefined : "Please select an option.") }}
+        >
+          {(field) => (
+            <>
+              <div className="flex flex-col gap-3">
+                {ROLES.map((role) => {
+                  const Icon = role.icon;
+                  const isSelected = field.state.value === role.id;
 
-                return (
-                  <button
-                    key={role.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      onChange(role.id);
-                    }}
-                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 transition-all duration-200 ${
-                      isSelected
-                        ? "border-accent-strong bg-accent-subtle text-accent-primary"
-                        : "border-subtle text-tertiary hover:border-strong"
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Icon className="size-3.5" />
-                      <span className="text-body-sm-semibold">{role.label}</span>
-                    </div>
-                    {isSelected && (
-                      <>
-                        <button
-                          className={`border-blue-500 flex size-4 items-center justify-center rounded-sm border-2 bg-accent-primary`}
-                        >
-                          <CheckIcon className="h-3 w-3 text-on-color" />
-                        </button>
-                      </>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      disabled={isSubmitting}
+                      aria-pressed={isSelected}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        field.handleChange(role.id);
+                      }}
+                      className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 transition-all duration-200 ${
+                        isSelected
+                          ? "border-accent-strong bg-accent-subtle text-accent-primary"
+                          : "border-subtle text-tertiary hover:border-strong"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Icon className="size-3.5" />
+                        <span className="text-body-sm-semibold">{role.label}</span>
+                      </div>
+                      {isSelected && (
+                        <>
+                          <span
+                            className={`border-blue-500 flex size-4 items-center justify-center rounded-sm border-2 bg-accent-primary`}
+                          >
+                            <CheckIcon className="h-3 w-3 text-on-color" />
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <FormErrors errors={field.state.meta.errors} />
+            </>
           )}
-        />
-        {errors.role && <span className="text-13 text-danger-primary">{errors.role.message}</span>}
+        </form.Field>
       </div>
-      {/* Action Buttons */}
-      <div className="space-y-3">
-        <Button variant="primary" type="submit" className="w-full" size="xl" disabled={isButtonDisabled}>
-          Continue
-        </Button>
-        <Button variant="ghost" onClick={handleSkip} className="w-full text-tertiary" size="xl">
-          Skip
-        </Button>
-      </div>
+      <OnboardingActions isSubmitting={isSubmitting} canSubmit={canSubmit} onSkip={handleSkip} />
     </form>
   );
-});
+};

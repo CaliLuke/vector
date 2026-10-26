@@ -4,146 +4,74 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
-import { stringToEmoji } from "@plane/propel/emoji-icon-picker";
-import { EmojiReactionGroup, EmojiReactionPicker } from "@plane/propel/emoji-reaction";
-import type { EmojiReactionType } from "@plane/propel/emoji-reaction";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IUser } from "@plane/types";
 // hooks
 // ui
-import { cn } from "@plane/utils";
 // helpers
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
+import { discussionOwnerKey } from "@/queries/issue-discussion";
+import { useIssueReactions } from "@/hooks/use-issue-discussion";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import type { TIssueServiceType } from "@plane/types";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { ReactionPicker } from "./picker";
+import { buildReactionList } from "./data";
 // types
 
 export type TIssueReaction = {
   workspaceSlug: string;
   projectId: string;
+  serviceType?: TIssueServiceType;
   issueId: string;
-  currentUser: IUser;
   disabled?: boolean;
   className?: string;
 };
 
-export const IssueReaction = observer(function IssueReaction(props: TIssueReaction) {
-  const { workspaceSlug, projectId, issueId, currentUser, disabled = false, className = "" } = props;
-  // state
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  // hooks
-  const {
-    reaction: { getReactionsByIssueId, reactionsByUser, getReactionById },
-    createReaction,
-    removeReaction,
-  } = useIssueDetail();
-  const { getUserDetails } = useMember();
+export const IssueReaction = function IssueReaction(props: TIssueReaction) {
+  const { workspaceSlug, projectId, issueId, disabled = false, className = "" } = props;
+  const native = useIssueReactions({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: props.serviceType,
+  });
+  const current = useCommittedScope(discussionOwnerKey(native.scope));
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const rows = native.query.isSuccess ? native.query.data : [];
+  const react = async (reaction: string) => {
+    try {
+      const result = await native.mutation.mutateAsync({
+        kind: "toggle",
+        reaction,
+      });
+      if (current() && result.captured.isCurrent())
+        setToast({ title: "Success!", type: TOAST_TYPE.SUCCESS, message: "Reaction saved successfully" });
+    } catch {
+      if (current() && native.isCurrent())
+        setToast({ title: "Error!", type: TOAST_TYPE.ERROR, message: "Could not save reaction" });
+    }
+  };
 
-  const reactionIds = getReactionsByIssueId(issueId);
-  const userReactions = reactionsByUser(issueId, currentUser.id).map((r) => r.reaction);
-
-  const issueReactionOperations = useMemo(
-    () => ({
-      create: async (reaction: string) => {
-        try {
-          if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing fields");
-          await createReaction(workspaceSlug, projectId, issueId, reaction);
-          setToast({
-            title: "Success!",
-            type: TOAST_TYPE.SUCCESS,
-            message: "Reaction created successfully",
-          });
-        } catch (_error) {
-          setToast({
-            title: "Error!",
-            type: TOAST_TYPE.ERROR,
-            message: "Reaction creation failed",
-          });
-        }
-      },
-      remove: async (reaction: string) => {
-        try {
-          if (!workspaceSlug || !projectId || !issueId || !currentUser?.id) throw new Error("Missing fields");
-          await removeReaction(workspaceSlug, projectId, issueId, reaction, currentUser.id);
-          setToast({
-            title: "Success!",
-            type: TOAST_TYPE.SUCCESS,
-            message: "Reaction removed successfully",
-          });
-        } catch (_error) {
-          setToast({
-            title: "Error!",
-            type: TOAST_TYPE.ERROR,
-            message: "Reaction remove failed",
-          });
-        }
-      },
-      react: async (reaction: string) => {
-        if (userReactions.includes(reaction)) await issueReactionOperations.remove(reaction);
-        else await issueReactionOperations.create(reaction);
-      },
-    }),
-    [workspaceSlug, projectId, issueId, currentUser, createReaction, removeReaction, userReactions]
+  const reactions = buildReactionList(
+    rows,
+    native.scope.accountId,
+    (actorId) => membersById?.get(actorId)?.member.display_name
   );
 
-  const getReactionUsers = (reaction: string): string[] => {
-    const reactionUsers = (reactionIds?.[reaction] || [])
-      .map((reactionId) => {
-        const reactionDetails = getReactionById(reactionId);
-        return reactionDetails
-          ? getUserDetails(reactionDetails?.actor)?.display_name || reactionDetails?.display_name
-          : null;
-      })
-      .filter((displayName): displayName is string => !!displayName);
-
-    return reactionUsers;
-  };
-
-  // Transform reactions data to Propel EmojiReactionType format
-  const reactions: EmojiReactionType[] = useMemo(() => {
-    if (!reactionIds) return [];
-
-    return Object.keys(reactionIds)
-      .filter((reaction) => reactionIds[reaction]?.length > 0)
-      .map((reaction) => ({
-        emoji: stringToEmoji(reaction),
-        count: reactionIds[reaction].length,
-        reacted: userReactions.includes(reaction),
-        users: getReactionUsers(reaction),
-      }));
-  }, [reactionIds, userReactions]);
-
-  const handleReactionClick = (emoji: string) => {
-    if (disabled) return;
-    // Convert emoji back to decimal string format for the API
-    const emojiCodePoints = Array.from(emoji).map((char) => char.codePointAt(0));
-    const reactionString = emojiCodePoints.join("-");
-    issueReactionOperations.react(reactionString);
-  };
-
-  const handleEmojiSelect = (emoji: string) => {
-    // emoji is already in decimal string format from EmojiReactionPicker
-    issueReactionOperations.react(emoji);
-  };
-
+  if (native.isError)
+    return (
+      <div role="alert">
+        Could not load reactions.{" "}
+        <button type="button" onClick={() => void native.retry().catch(() => {})}>
+          Retry
+        </button>
+      </div>
+    );
   return (
-    <div className={cn("relative mt-4", className)}>
-      <EmojiReactionPicker
-        isOpen={isPickerOpen}
-        handleToggle={setIsPickerOpen}
-        onChange={handleEmojiSelect}
-        disabled={disabled}
-        label={
-          <EmojiReactionGroup
-            reactions={reactions}
-            onReactionClick={handleReactionClick}
-            showAddButton={!disabled}
-            onAddReaction={() => setIsPickerOpen(true)}
-          />
-        }
-        placement="bottom-start"
-      />
-    </div>
+    <ReactionPicker
+      reactions={reactions}
+      onReact={(reaction) => void react(reaction)}
+      disabled={disabled || native.isPending}
+      className={className}
+    />
   );
-});
+};

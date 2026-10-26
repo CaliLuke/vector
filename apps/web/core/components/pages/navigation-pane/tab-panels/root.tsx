@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 // components
-import type { TPageRootHandlers } from "@/components/pages/editor/page-root";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageNavigationPaneAssetsTabPanel } from "./assets";
 import { PageNavigationPaneInfoTabPanel } from "./info/root";
@@ -16,19 +16,18 @@ import { Tabs } from "@plane/propel/tabs";
 import { ORDERED_PAGE_NAVIGATION_TABS_LIST } from ".";
 
 type Props = {
-  page: TPageInstance;
-  versionHistory: Pick<TPageRootHandlers, "fetchAllVersions" | "fetchVersionDetails">;
+  page: TPage;
 };
 
 export function PageNavigationPaneTabPanelsRoot(props: Props) {
-  const { page, versionHistory } = props;
+  const { page } = props;
 
   return (
     <>
       {ORDERED_PAGE_NAVIGATION_TABS_LIST.map((tab) => (
         <Tabs.Content key={tab.key} value={tab.key} className="flex-1 overflow-hidden py-2">
-          {tab.key === "outline" && <PageNavigationPaneOutlineTabPanel page={page} />}
-          {tab.key === "info" && <PageNavigationPaneInfoTabPanel page={page} versionHistory={versionHistory} />}
+          {tab.key === "outline" && <PageNavigationPaneOutlineTabPanel />}
+          {tab.key === "info" && <PageNavigationPaneInfoTabPanel page={page} />}
           {tab.key === "assets" && <PageNavigationPaneAssetsTabPanel page={page} />}
         </Tabs.Content>
       ))}

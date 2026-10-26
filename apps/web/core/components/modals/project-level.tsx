@@ -4,23 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
 import { CycleCreateUpdateModal } from "@/components/cycles/modal";
 import { CreateUpdateModuleModal } from "@/components/modules";
 import { CreatePageModal } from "@/components/pages/modals/create-page-modal";
 import { CreateUpdateProjectViewModal } from "@/components/views/modal";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-// plane web hooks
-import { EPageStoreType } from "@/hooks/store";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 
 export type TProjectLevelModalsProps = {
   workspaceSlug: string;
   projectId: string;
 };
 
-export const ProjectLevelModals = observer(function ProjectLevelModals(props: TProjectLevelModalsProps) {
+export function ProjectLevelModals(props: TProjectLevelModalsProps) {
   const { workspaceSlug, projectId } = props;
   // store hooks
   const {
@@ -61,8 +58,7 @@ export const ProjectLevelModals = observer(function ProjectLevelModals(props: TP
         pageAccess={createPageModal.pageAccess}
         handleModalClose={() => toggleCreatePageModal({ isOpen: false })}
         redirectionEnabled
-        storeType={EPageStoreType.PROJECT}
       />
     </>
   );
-});
+}

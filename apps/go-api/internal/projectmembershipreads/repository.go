@@ -147,6 +147,7 @@ SELECT
     FROM workspace_members workspace_member
     JOIN workspaces workspace ON workspace.id = workspace_member.workspace_id
     WHERE workspace.slug = $2
+      AND workspace.deleted_at IS NULL
       AND workspace_member.member_id = $1
       AND workspace_member.is_active = true
       AND workspace_member.deleted_at IS NULL
@@ -155,12 +156,16 @@ SELECT
     SELECT json_object_agg(project_member.project_id::text, project_member.role)
     FROM project_members project_member
     JOIN workspaces workspace ON workspace.id = project_member.workspace_id
+    JOIN projects project ON project.id = project_member.project_id
+      AND project.workspace_id = workspace.id
+      AND project.deleted_at IS NULL
     JOIN workspace_members active_workspace_member
       ON active_workspace_member.workspace_id = workspace.id
       AND active_workspace_member.member_id = project_member.member_id
       AND active_workspace_member.is_active = true
       AND active_workspace_member.deleted_at IS NULL
     WHERE workspace.slug = $2
+      AND workspace.deleted_at IS NULL
       AND project_member.member_id = $1
       AND project_member.is_active = true
       AND project_member.deleted_at IS NULL

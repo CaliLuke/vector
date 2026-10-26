@@ -5,70 +5,129 @@
  */
 
 import { Combobox } from "@headlessui/react";
-import type { AriaRole, ElementType, KeyboardEventHandler, ReactNode, Ref } from "react";
-import React, { Fragment, forwardRef, useEffect, useRef, useState } from "react";
+import type { ComboboxInputProps, ComboboxProps } from "@headlessui/react";
+import type {
+  ChangeEvent,
+  Dispatch,
+  ElementType,
+  KeyboardEvent,
+  ReactNode,
+  Ref,
+  RefObject,
+  SetStateAction,
+} from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 
-type Props = {
-  as?: ElementType | undefined;
-  role?: AriaRole;
-  ref?: Ref<HTMLElement> | undefined;
-  tabIndex?: number | undefined;
-  className?: string | undefined;
-  value?: string | string[] | null;
-  onChange?: (value: any) => void;
-  disabled?: boolean | undefined;
-  onKeyDown?: KeyboardEventHandler<HTMLDivElement> | undefined;
-  multiple?: boolean;
-  renderByDefault?: boolean;
-  button: ReactNode;
-  children: ReactNode;
+export type TComboDropDownRenderProps = {
+  open: boolean;
+  restoreButtonFocusOnClose: () => void;
 };
 
-const ComboDropDown = forwardRef(function ComboDropDown(props: Props, ref) {
-  const { button, renderByDefault = true, children, ...rest } = props;
+type Renderable<T> = ReactNode | ((props: T) => ReactNode);
 
-  const dropDownButtonRef = useRef<HTMLDivElement | null>(null);
+type ComboSearchInputProps = Omit<ComboboxInputProps, "value" | "onChange" | "onKeyDown" | "displayValue"> & {
+  ref?: Ref<HTMLInputElement>;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onEscapeClose: () => void;
+  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void;
+};
 
-  const [shouldRender, setShouldRender] = useState(renderByDefault);
-
-  const onHover = () => {
-    setShouldRender(true);
+function ComboSearchInput({ query, onQueryChange, onEscapeClose, onKeyDown, ...inputProps }: ComboSearchInputProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Escape") {
+      if (query !== "") {
+        event.preventDefault();
+        event.stopPropagation();
+        onQueryChange("");
+        return;
+      }
+      onEscapeClose();
+    }
+    onKeyDown?.(event);
   };
 
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => onQueryChange(event.target.value);
+
+  return <Combobox.Input {...inputProps} value={query} onChange={handleChange} onKeyDown={handleKeyDown} />;
+}
+
+type Props<TValue, TMultiple extends boolean | undefined> = Omit<
+  ComboboxProps<TValue, TMultiple, "div">,
+  "as" | "children" | "onChange" | "onClose" | "value"
+> & {
+  as?: ElementType;
+  ref?: Ref<HTMLElement>;
+  value?: ComboboxProps<TValue, TMultiple, "div">["value"];
+  renderByDefault?: boolean;
+  onOpen?: () => void;
+  onClose?: () => void;
+  button: Renderable<TComboDropDownRenderProps>;
+  children: Renderable<TComboDropDownRenderProps>;
+} & Pick<ComboboxProps<TValue, TMultiple>, "onChange">;
+
+function OpenStateObserver({
+  open,
+  onOpen,
+  shouldRestoreButtonFocus,
+  clearRestoreButtonFocus,
+  buttonRef,
+}: {
+  open: boolean;
+  onOpen?: () => void;
+  shouldRestoreButtonFocus: boolean;
+  clearRestoreButtonFocus: Dispatch<SetStateAction<boolean>>;
+  buttonRef: RefObject<HTMLButtonElement | null>;
+}) {
+  const wasOpen = useRef(open);
+
   useEffect(() => {
-    const element = dropDownButtonRef.current as any;
+    if (open && !wasOpen.current) onOpen?.();
+    if (!open && wasOpen.current) {
+      if (shouldRestoreButtonFocus) buttonRef.current?.focus();
+      clearRestoreButtonFocus(false);
+    }
+    wasOpen.current = open;
+  }, [buttonRef, clearRestoreButtonFocus, onOpen, open, shouldRestoreButtonFocus]);
 
-    if (!element) return;
+  return null;
+}
 
-    element.addEventListener("mouseenter", onHover);
+function ComboDropDown<TValue, TMultiple extends boolean | undefined = false>(props: Props<TValue, TMultiple>) {
+  const { button, children, onOpen, onClose, ref, renderByDefault = true, ...comboboxProps } = props;
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [shouldRestoreButtonFocus, setShouldRestoreButtonFocus] = useState(false);
 
-    return () => {
-      element?.removeEventListener("mouseenter", onHover);
-    };
-  }, [dropDownButtonRef, shouldRender]);
-
-  if (!shouldRender) {
-    return (
-      <div ref={dropDownButtonRef} className="flex h-full items-center">
-        {button}
-      </div>
-    );
-  }
+  const renderProps = (open: boolean): TComboDropDownRenderProps => ({
+    open,
+    restoreButtonFocusOnClose: () => {
+      setShouldRestoreButtonFocus(true);
+    },
+  });
 
   return (
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    <Combobox {...rest} ref={ref}>
-      <Combobox.Button as={Fragment}>{button}</Combobox.Button>
-      {children}
+    <Combobox {...comboboxProps} ref={ref} onClose={onClose}>
+      {({ open }) => (
+        <>
+          <Combobox.Button as={Fragment} ref={buttonRef}>
+            {typeof button === "function" ? button(renderProps(open)) : button}
+          </Combobox.Button>
+          <OpenStateObserver
+            open={open}
+            onOpen={onOpen}
+            shouldRestoreButtonFocus={shouldRestoreButtonFocus}
+            clearRestoreButtonFocus={setShouldRestoreButtonFocus}
+            buttonRef={buttonRef}
+          />
+          {(renderByDefault || open) && (typeof children === "function" ? children(renderProps(open)) : children)}
+        </>
+      )}
     </Combobox>
   );
-});
+}
 
 const ComboOptions = Combobox.Options;
 const ComboOption = Combobox.Option;
 const ComboInput = Combobox.Input;
 
-ComboDropDown.displayName = "ComboDropDown";
-
-export { ComboDropDown, ComboOptions, ComboOption, ComboInput };
+export { ComboDropDown, ComboOptions, ComboOption, ComboInput, ComboSearchInput };

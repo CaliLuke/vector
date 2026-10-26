@@ -5,15 +5,15 @@
  */
 
 import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
+
 import { ArrowRight } from "lucide-react";
 // helpers
 import type { IBlockUpdateData, IGanttBlock } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../contexts/chart-state";
 //
 import { BLOCK_HEIGHT, SIDEBAR_WIDTH } from "../constants";
 import { ChartAddBlock } from "../helpers";
@@ -28,19 +28,27 @@ type Props = {
   ganttContainerRef: React.RefObject<HTMLDivElement | null>;
 };
 
-export const BlockRow = observer(function BlockRow(props: Props) {
-  const { blockId, showAllBlocks, blockUpdateHandler, handleScrollToBlock, enableAddBlock, selectionHelpers } = props;
+export const BlockRow = function BlockRow(props: Props) {
+  const {
+    blockId,
+    showAllBlocks,
+    blockUpdateHandler,
+    handleScrollToBlock,
+    enableAddBlock,
+    selectionHelpers,
+    ganttContainerRef,
+  } = props;
   // states
   const [isHidden, setIsHidden] = useState(false);
   const [isBlockHiddenOnLeft, setIsBlockHiddenOnLeft] = useState(false);
   // store hooks
-  const { getBlockById, updateActiveBlockId, isBlockActive } = useTimeLineChartStore();
-  const { getIsIssuePeeked } = useIssueDetail();
+  const { blocksById, activeBlockId, setActiveBlockId } = useGanttChartState();
+  const { getIsIssuePeeked } = useIssueDetailUiState();
 
-  const block = getBlockById(blockId);
+  const block = blocksById[blockId];
 
   useEffect(() => {
-    const intersectionRoot = document.querySelector("#gantt-container");
+    const intersectionRoot = ganttContainerRef.current;
     const timelineBlock = document.getElementById(`gantt-block-${block?.id}`);
     if (!timelineBlock || !intersectionRoot) return;
 
@@ -69,7 +77,7 @@ export const BlockRow = observer(function BlockRow(props: Props) {
     return () => {
       observer.unobserve(timelineBlock);
     };
-  }, [block]);
+  }, [ganttContainerRef, block]);
 
   // hide the block if it doesn't have start and target dates and showAllBlocks is false
   if (!block || !block.data || (!showAllBlocks && !(block.start_date && block.target_date))) return null;
@@ -77,13 +85,13 @@ export const BlockRow = observer(function BlockRow(props: Props) {
   const isBlockVisibleOnChart = block.start_date || block.target_date;
   const isBlockSelected = selectionHelpers.getIsEntitySelected(block.id);
   const isBlockFocused = selectionHelpers.getIsEntityActive(block.id);
-  const isBlockHoveredOn = isBlockActive(block.id);
+  const isBlockHoveredOn = activeBlockId === block.id;
 
   return (
     <div
       className="relative w-max min-w-full"
-      onMouseEnter={() => updateActiveBlockId(blockId)}
-      onMouseLeave={() => updateActiveBlockId(null)}
+      onMouseEnter={() => setActiveBlockId(blockId)}
+      onMouseLeave={() => setActiveBlockId(null)}
       style={{
         height: `${BLOCK_HEIGHT}px`,
       }}
@@ -118,4 +126,4 @@ export const BlockRow = observer(function BlockRow(props: Props) {
       </div>
     </div>
   );
-});
+};

@@ -27,11 +27,11 @@ export class SitesModuleService extends APIService {
    * @returns {Promise<TPublicModule[]>} The list of modules
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string): Promise<TPublicModule[]> {
-    return this.get(`/api/public/anchor/${anchor}/modules/`)
+  async list(anchor: string, signal?: AbortSignal): Promise<TPublicModule[]> {
+    return this.get(`/api/public/anchor/${anchor}/modules/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

@@ -4,11 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useState } from "react";
-import { observer } from "mobx-react";
-import { useDropzone } from "react-dropzone";
-// plane web hooks
-import { useFileSize } from "@/hooks/use-file-size";
+import { AttachmentUploadError } from "./upload-error";
+import { useAttachmentDropzone } from "./use-attachment-dropzone";
 // types
 import type { TAttachmentOperations } from "../issue-detail-widgets/attachments/helper";
 
@@ -20,53 +17,35 @@ type Props = {
   attachmentOperations: TAttachmentOperationsModal;
 };
 
-export const IssueAttachmentUpload = observer(function IssueAttachmentUpload(props: Props) {
+export const IssueAttachmentUpload = function IssueAttachmentUpload(props: Props) {
   const { workspaceSlug, disabled = false, attachmentOperations } = props;
-  // states
-  const [isLoading, setIsLoading] = useState(false);
-  // file size
-  const { maxFileSize } = useFileSize();
-
-  const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const currentFile: File = acceptedFiles[0];
-      if (!currentFile || !workspaceSlug) return;
-
-      setIsLoading(true);
-      attachmentOperations.create(currentFile).finally(() => setIsLoading(false));
-    },
-    [attachmentOperations, workspaceSlug]
-  );
-
-  const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections } = useDropzone({
-    onDrop,
-    maxSize: maxFileSize,
-    multiple: false,
-    disabled: isLoading || disabled,
-  });
-
-  const fileError =
-    fileRejections.length > 0 ? `Invalid file type or size (max ${maxFileSize / 1024 / 1024} MB)` : null;
+  const { getRootProps, getInputProps, isDragActive, isDragReject, isUploading, error, canRetry, retry } =
+    useAttachmentDropzone({
+      workspaceSlug,
+      create: attachmentOperations.create,
+      disabled,
+    });
 
   return (
-    <div
-      {...getRootProps()}
-      className={`flex h-[60px] items-center justify-center rounded-md border-2 border-dashed bg-accent-primary/5 px-4 text-11 text-accent-primary ${
-        isDragActive ? "border-accent-strong bg-accent-primary/10" : "border-subtle"
-      } ${isDragReject ? "bg-danger-subtle" : ""} ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
-    >
-      <input {...getInputProps()} />
-      <span className="flex items-center gap-2">
-        {isDragActive ? (
-          <p>Drop here...</p>
-        ) : fileError ? (
-          <p className="text-center text-danger-primary">{fileError}</p>
-        ) : isLoading ? (
-          <p className="text-center">Uploading...</p>
-        ) : (
-          <p className="text-center">Click or drag a file here</p>
-        )}
-      </span>
+    <div>
+      <div
+        {...getRootProps()}
+        className={`flex h-[60px] items-center justify-center rounded-md border-2 border-dashed bg-accent-primary/5 px-4 text-11 text-accent-primary ${
+          isDragActive ? "border-accent-strong bg-accent-primary/10" : "border-subtle"
+        } ${isDragReject ? "bg-danger-subtle" : ""} ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+      >
+        <input {...getInputProps()} />
+        <span className="flex items-center gap-2">
+          {isDragActive ? (
+            <p>Drop here...</p>
+          ) : isUploading ? (
+            <p className="text-center">Uploading...</p>
+          ) : (
+            <p className="text-center">Click or drag a file here</p>
+          )}
+        </span>
+      </div>
+      <AttachmentUploadError error={error} canRetry={canRetry} retry={retry} disabled={disabled || isUploading} />
     </div>
   );
-});
+};

@@ -4,22 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
-import { observer } from "mobx-react";
 import { CircleAlert } from "lucide-react";
 // plane imports
-import type { TExternalFilter, TFilterProperty } from "@plane/types";
+import type { TFilterProperty } from "@plane/types";
 // local imports
 import { FilterItemCloseButton } from "./close-button";
 import { FilterItemContainer } from "./container";
 import { FilterItemProperty } from "./property";
 import type { IFilterItemProps } from "./root";
 
-export const InvalidFilterItem = observer(function InvalidFilterItem<
-  P extends TFilterProperty,
-  E extends TExternalFilter,
->(props: IFilterItemProps<P, E>) {
-  const { condition, filter, isDisabled = false, showTransition = true } = props;
+export const InvalidFilterItem = function InvalidFilterItem<P extends TFilterProperty>(props: IFilterItemProps<P>) {
+  const { condition, editor, isDisabled = false, showTransition = true } = props;
 
   return (
     <FilterItemContainer
@@ -33,11 +28,14 @@ export const InvalidFilterItem = observer(function InvalidFilterItem<
         conditionId={condition.id}
         icon={CircleAlert}
         label="Invalid filter"
-        filter={filter}
+        editor={editor}
         isDisabled={isDisabled}
       />
+      <span className="max-w-64 truncate px-2 text-12" title={JSON.stringify(condition.value)}>
+        {condition.property} {condition.operator}: {JSON.stringify(condition.value)}
+      </span>
       {/* Remove button */}
-      {!isDisabled && <FilterItemCloseButton conditionId={condition.id} filter={filter} />}
+      {!isDisabled && <FilterItemCloseButton conditionId={condition.id} editor={editor} />}
     </FilterItemContainer>
   );
-});
+};

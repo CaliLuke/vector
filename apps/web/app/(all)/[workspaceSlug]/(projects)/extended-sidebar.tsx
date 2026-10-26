@@ -6,39 +6,37 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import { WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS, EUserPermissionsLevel } from "@plane/constants";
+import { WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS } from "@plane/constants";
 import type { EUserWorkspaceRoles } from "@plane/types";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions, useExtendedSidebarOpen } from "@/providers/sidebar-state";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useWorkspaceNavigationPreferences } from "@/hooks/use-navigation-preferences";
 // components
 import { ExtendedSidebarItem } from "@/components/workspace/sidebar/extended-sidebar-item";
 import { ExtendedSidebarWrapper } from "./extended-sidebar-wrapper";
 
-export const ExtendedAppSidebar = observer(function ExtendedAppSidebar() {
+export function ExtendedAppSidebar() {
   // refs
   const extendedSidebarRef = useRef<HTMLDivElement | null>(null);
   // routers
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects" });
   // store hooks
-  const { isExtendedSidebarOpened, toggleExtendedSidebar } = useAppTheme();
-  const { allowPermissions } = useUserPermissions();
+  const isExtendedSidebarOpened = useExtendedSidebarOpen();
+  const { toggleExtendedSidebar } = useSidebarActions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { preferences: workspacePreferences, updateWorkspaceItemSortOrder } = useWorkspaceNavigationPreferences();
 
   // derived values
   const currentWorkspaceNavigationPreferences = workspacePreferences.items;
 
   const sortedNavigationItems = useMemo(() => {
-    const slug = workspaceSlug.toString();
-
     return (
       WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS.filter((item) => {
         // Permission check
-        const hasPermission = allowPermissions(item.access, EUserPermissionsLevel.WORKSPACE, slug);
+        const hasPermission = canWorkspace(item.access);
 
         return hasPermission;
       })
@@ -61,7 +59,7 @@ export const ExtendedAppSidebar = observer(function ExtendedAppSidebar() {
           return a.sort_order - b.sort_order;
         })
     );
-  }, [workspaceSlug, currentWorkspaceNavigationPreferences, allowPermissions]);
+  }, [currentWorkspaceNavigationPreferences, canWorkspace]);
 
   const sortedNavigationItemsKeys = sortedNavigationItems.map((item) => item.key);
 
@@ -138,4 +136,4 @@ export const ExtendedAppSidebar = observer(function ExtendedAppSidebar() {
       ))}
     </ExtendedSidebarWrapper>
   );
-});
+}

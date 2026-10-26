@@ -5,21 +5,21 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
 import { PageHead } from "@/components/core/page-title";
 import { NotificationsRoot } from "@/components/workspace-notifications";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 
 function WorkspaceDashboardPage(): React.JSX.Element | null {
   const { workspaceSlug } = Route.useParams();
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
   // derived values
   const pageTitle = currentWorkspace?.name
     ? t("notification.page_label", { workspace: currentWorkspace?.name })
@@ -34,5 +34,5 @@ function WorkspaceDashboardPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/notifications/")({
-  component: observer(WorkspaceDashboardPage),
+  component: WorkspaceDashboardPage,
 });

@@ -7,8 +7,7 @@
 import { useParams, useRouter } from "@tanstack/react-router";
 import type { SyntheticEvent } from "react";
 import { useCallback, useMemo } from "react";
-import { xor } from "lodash-es";
-import { observer } from "mobx-react";
+import xor from "lodash-es/xor.js";
 
 // icons
 import { Paperclip } from "lucide-react";
@@ -18,13 +17,9 @@ import { LinkIcon, StartDatePropertyIcon, ViewsIcon, DueDatePropertyIcon } from 
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TIssue, IIssueDisplayProperties, TIssuePriorities } from "@plane/types";
 // ui
-import {
-  cn,
-  getDate,
-  renderFormattedPayloadDate,
-  generateWorkItemLink,
-  shouldHighlightIssueDueDate,
-} from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { generateWorkItemLink, shouldHighlightIssueDueDate } from "@plane/utils/work-item";
 // components
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 import { DateDropdown } from "@/components/dropdowns/date";
@@ -35,13 +30,13 @@ import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useLabel } from "@/hooks/store/use-label";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
 
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
 import { IssuePropertyLabels } from "./labels";
@@ -49,7 +44,7 @@ import { WithDisplayPropertiesHOC } from "./with-display-properties-HOC";
 
 export interface IIssueProperties {
   issue: TIssue;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   displayProperties: IIssueDisplayProperties | undefined;
   isReadOnly: boolean;
   className: string;
@@ -57,28 +52,24 @@ export interface IIssueProperties {
   isEpic?: boolean;
 }
 
-export const IssueProperties = observer(function IssueProperties(props: IIssueProperties) {
+export function IssueProperties(props: IIssueProperties) {
   const { issue, updateIssue, displayProperties, isReadOnly, className, isEpic = false } = props;
+  const { workspaceSlug } = useParams({ strict: false });
   // i18n
   const { t } = useTranslation();
   // store hooks
-  const { getProjectById } = useProject();
-  const { labelMap } = useLabel();
-  const storeType = useIssueStoreType();
-  const {
-    issues: { changeModulesInIssue },
-  } = useIssues(storeType);
-  const {
-    issues: { addCycleToIssue, removeCycleFromIssue },
-  } = useIssues(storeType);
-  const { areEstimateEnabledByProjectId } = useProjectEstimates();
-  const { getStateById } = useProjectState();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const { labelsById } = useProjectLabels(workspaceSlug, issue.project_id);
+  const storeType = useIssueListType();
+  const actions = useIssuesActions(storeType);
+  const { isEnabled: estimateEnabled } = useProjectEstimates(workspaceSlug, issue.project_id);
+  const { getStateById } = useProjectStates(workspaceSlug, issue.project_id);
   const { isMobile } = usePlatformOS();
-  const projectDetails = getProjectById(issue.project_id);
+  const projectDetails = projectRows?.find((project) => project.id === issue.project_id);
 
   // router
   const router = useRouter();
-  const { workspaceSlug, projectId } = useParams({ strict: false });
 
   // derived values
   const stateDetails = getStateById(issue.state_id);
@@ -88,22 +79,23 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
     () => ({
       addModulesToIssue: async (moduleIds: string[]) => {
         if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await changeModulesInIssue?.(workspaceSlug.toString(), issue.project_id, issue.id, moduleIds, []);
+        await actions.changeModulesInIssue(issue.project_id, issue.id, moduleIds, []);
       },
       removeModulesFromIssue: async (moduleIds: string[]) => {
         if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await changeModulesInIssue?.(workspaceSlug.toString(), issue.project_id, issue.id, [], moduleIds);
+        await actions.changeModulesInIssue(issue.project_id, issue.id, [], moduleIds);
       },
       addIssueToCycle: async (cycleId: string) => {
         if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await addCycleToIssue?.(workspaceSlug.toString(), issue.project_id, cycleId, issue.id);
+        await actions.addCycleToIssue(issue.project_id, cycleId, issue.id);
       },
       removeIssueFromCycle: async () => {
         if (!workspaceSlug || !issue.project_id || !issue.id) return;
-        await removeCycleFromIssue?.(workspaceSlug.toString(), issue.project_id, issue.id);
+        if (!issue.cycle_id) return;
+        await actions.removeCycleFromIssue(issue.project_id, issue.cycle_id, issue.id);
       },
     }),
-    [workspaceSlug, issue, changeModulesInIssue, addCycleToIssue, removeCycleFromIssue]
+    [workspaceSlug, issue, actions]
   );
 
   const handleState = async (stateId: string) => {
@@ -182,7 +174,7 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
 
   const defaultLabelOptions =
     issue?.label_ids?.flatMap((id) => {
-      const label = labelMap[id];
+      const label = labelsById?.[id];
       return label ? [label] : [];
     }) || [];
 
@@ -323,6 +315,7 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
         {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
         <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <MemberDropdown
+            workspaceSlug={workspaceSlug}
             projectId={issue?.project_id}
             value={issue?.assignee_ids}
             onChange={handleAssignee}
@@ -386,7 +379,7 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
       </>
 
       {/* estimates */}
-      {projectId && areEstimateEnabledByProjectId(projectId?.toString()) && (
+      {estimateEnabled && (
         <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="estimate">
           {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
           <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
@@ -403,89 +396,15 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
         </WithDisplayPropertiesHOC>
       )}
 
-      {/* extra render properties */}
-      {/* sub-issues */}
-      {!isEpic && (
-        <WithDisplayPropertiesHOC
-          displayProperties={displayProperties}
-          displayPropertyKey="sub_issue_count"
-          shouldRenderProperty={(properties) => !!properties.sub_issue_count && !!subIssueCount}
-        >
-          <Tooltip
-            tooltipHeading={t("common.sub_work_items")}
-            tooltipContent={`${subIssueCount}`}
-            isMobile={isMobile}
-            renderByDefault={false}
-          >
-            {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
-            <div
-              onFocus={handleEventPropagation}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                if (subIssueCount) redirectToIssueDetail();
-              }}
-              className={cn(
-                "flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1",
-                {
-                  "cursor-pointer hover:bg-layer-1": subIssueCount,
-                }
-              )}
-            >
-              <ViewsIcon className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
-              <div className="text-caption-sm-regular">{subIssueCount}</div>
-            </div>
-          </Tooltip>
-        </WithDisplayPropertiesHOC>
-      )}
-
-      {/* attachments */}
-      <WithDisplayPropertiesHOC
+      <IssueSummaryProperties
+        issue={issue}
         displayProperties={displayProperties}
-        displayPropertyKey="attachment_count"
-        shouldRenderProperty={(properties) => !!properties.attachment_count && !!issue.attachment_count}
-      >
-        <Tooltip
-          tooltipHeading={t("common.attachments")}
-          tooltipContent={`${issue.attachment_count}`}
-          isMobile={isMobile}
-          renderByDefault={false}
-        >
-          {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
-          <div
-            className="flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1"
-            onFocus={handleEventPropagation}
-            onClick={handleEventPropagation}
-          >
-            <Paperclip className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
-            <div className="text-caption-sm-regular">{issue.attachment_count}</div>
-          </div>
-        </Tooltip>
-      </WithDisplayPropertiesHOC>
-
-      {/* link */}
-      <WithDisplayPropertiesHOC
-        displayProperties={displayProperties}
-        displayPropertyKey="link"
-        shouldRenderProperty={(properties) => !!properties.link && !!issue.link_count}
-      >
-        <Tooltip
-          tooltipHeading={t("common.links")}
-          tooltipContent={`${issue.link_count}`}
-          isMobile={isMobile}
-          renderByDefault={false}
-        >
-          {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
-          <div
-            className="flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1"
-            onFocus={handleEventPropagation}
-            onClick={handleEventPropagation}
-          >
-            <LinkIcon className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
-            <div className="text-caption-sm-regular">{issue.link_count}</div>
-          </div>
-        </Tooltip>
-      </WithDisplayPropertiesHOC>
+        isEpic={isEpic}
+        isMobile={isMobile}
+        subIssueCount={subIssueCount}
+        onPropertyEvent={handleEventPropagation}
+        onOpenSubIssues={redirectToIssueDetail}
+      />
 
       {/* label */}
       <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="labels">
@@ -502,4 +421,101 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
       </WithDisplayPropertiesHOC>
     </div>
   );
-});
+}
+
+type IssueSummaryPropertiesProps = {
+  issue: TIssue;
+  displayProperties: IIssueDisplayProperties;
+  isEpic: boolean;
+  isMobile: boolean;
+  subIssueCount: number;
+  onPropertyEvent: (event: SyntheticEvent<HTMLDivElement>) => void;
+  onOpenSubIssues: () => void;
+};
+
+function IssueSummaryProperties(props: IssueSummaryPropertiesProps) {
+  const { issue, displayProperties, isEpic, isMobile, subIssueCount, onPropertyEvent, onOpenSubIssues } = props;
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {!isEpic && (
+        <WithDisplayPropertiesHOC
+          displayProperties={displayProperties}
+          displayPropertyKey="sub_issue_count"
+          shouldRenderProperty={(properties) => !!properties.sub_issue_count && !!subIssueCount}
+        >
+          <Tooltip
+            tooltipHeading={t("common.sub_work_items")}
+            tooltipContent={`${subIssueCount}`}
+            isMobile={isMobile}
+            renderByDefault={false}
+          >
+            {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
+            <div
+              onFocus={onPropertyEvent}
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                if (subIssueCount) onOpenSubIssues();
+              }}
+              className={cn(
+                "flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1",
+                { "cursor-pointer hover:bg-layer-1": subIssueCount }
+              )}
+            >
+              <ViewsIcon className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
+              <div className="text-caption-sm-regular">{subIssueCount}</div>
+            </div>
+          </Tooltip>
+        </WithDisplayPropertiesHOC>
+      )}
+
+      <WithDisplayPropertiesHOC
+        displayProperties={displayProperties}
+        displayPropertyKey="attachment_count"
+        shouldRenderProperty={(properties) => !!properties.attachment_count && !!issue.attachment_count}
+      >
+        <Tooltip
+          tooltipHeading={t("common.attachments")}
+          tooltipContent={`${issue.attachment_count}`}
+          isMobile={isMobile}
+          renderByDefault={false}
+        >
+          {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
+          <div
+            className="flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1"
+            onFocus={onPropertyEvent}
+            onClick={onPropertyEvent}
+          >
+            <Paperclip className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
+            <div className="text-caption-sm-regular">{issue.attachment_count}</div>
+          </div>
+        </Tooltip>
+      </WithDisplayPropertiesHOC>
+
+      <WithDisplayPropertiesHOC
+        displayProperties={displayProperties}
+        displayPropertyKey="link"
+        shouldRenderProperty={(properties) => !!properties.link && !!issue.link_count}
+      >
+        <Tooltip
+          tooltipHeading={t("common.links")}
+          tooltipContent={`${issue.link_count}`}
+          isMobile={isMobile}
+          renderByDefault={false}
+        >
+          {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
+          <div
+            className="flex h-5 flex-shrink-0 items-center justify-center gap-2 overflow-hidden rounded-sm border-[0.5px] border-strong px-2.5 py-1"
+            onFocus={onPropertyEvent}
+            onClick={onPropertyEvent}
+          >
+            <LinkIcon className="h-3 w-3 flex-shrink-0" strokeWidth={2} />
+            <div className="text-caption-sm-regular">{issue.link_count}</div>
+          </div>
+        </Tooltip>
+      </WithDisplayPropertiesHOC>
+    </>
+  );
+}

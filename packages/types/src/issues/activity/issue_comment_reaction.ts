@@ -17,11 +17,3 @@ export type TIssueCommentReaction = {
   updated_by: string;
   display_name: string;
 };
-
-export type TIssueCommentReactionMap = {
-  [reaction_id: string]: TIssueCommentReaction;
-};
-
-export type TIssueCommentReactionIdMap = {
-  [comment_id: string]: { [reaction: string]: string[] };
-};

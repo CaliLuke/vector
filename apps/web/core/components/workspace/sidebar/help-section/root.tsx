@@ -5,7 +5,6 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
 import { HelpCircle, User } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { PageIcon } from "@plane/propel/icons";
@@ -16,9 +15,9 @@ import { ProductUpdatesModal } from "@/components/global";
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 import { PlaneVersionNumber } from "@/components/global/version-number";
 // hooks
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { usePowerK } from "@/hooks/use-power-k";
 
-export const HelpMenuRoot = observer(function HelpMenuRoot() {
+export function HelpMenuRoot() {
   // store hooks
   const { t } = useTranslation();
   const { toggleShortcutsListModal } = usePowerK();
@@ -63,23 +62,11 @@ export const HelpMenuRoot = observer(function HelpMenuRoot() {
           </div>
         </CustomMenu.MenuItem>
         <div className="my-1 border-t border-subtle" />
-        <CustomMenu.MenuItem>
-          <button
-            type="button"
-            onClick={() => toggleShortcutsListModal(true)}
-            className="justify-sbg-layer-211 flex w-full items-center hover:bg-layer-1"
-          >
-            <span className="text-11">{t("keyboard_shortcuts")}</span>
-          </button>
+        <CustomMenu.MenuItem onClick={() => toggleShortcutsListModal(true)}>
+          <span className="text-11">{t("keyboard_shortcuts")}</span>
         </CustomMenu.MenuItem>
-        <CustomMenu.MenuItem>
-          <button
-            type="button"
-            onClick={() => setProductUpdatesModalOpen(true)}
-            className="justify-sbg-layer-211 flex w-full items-center hover:bg-layer-1"
-          >
-            <span className="text-11">{t("whats_new")}</span>
-          </button>
+        <CustomMenu.MenuItem onClick={() => setProductUpdatesModalOpen(true)}>
+          <span className="text-11">{t("whats_new")}</span>
         </CustomMenu.MenuItem>
         <CustomMenu.MenuItem
           onClick={() =>
@@ -96,4 +83,4 @@ export const HelpMenuRoot = observer(function HelpMenuRoot() {
       </CustomMenu>
     </>
   );
-});
+}

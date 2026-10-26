@@ -6,27 +6,27 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback, useRef, useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import { PlusIcon, SearchIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import { copyUrlToClipboard, orderJoinedProjects } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
 // components
 import { CreateProjectModal } from "@/components/project/create-project-modal";
 import { SidebarProjectsListItem } from "@/components/workspace/sidebar/projects-list-item";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
-import type { TProject } from "@plane/types";
+import { useSidebarActions, useExtendedProjectSidebarOpen } from "@/providers/sidebar-state";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
+import { useWorkspaceProjectReordering } from "@/hooks/use-workspace-project-reordering";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { ExtendedSidebarWrapper } from "./extended-sidebar-wrapper";
 
-export const ExtendedProjectSidebar = observer(function ExtendedProjectSidebar() {
+export const ExtendedProjectSidebar = function ExtendedProjectSidebar() {
   // refs
   const extendedProjectSidebarRef = useRef<HTMLDivElement | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -36,63 +36,37 @@ export const ExtendedProjectSidebar = observer(function ExtendedProjectSidebar()
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug/_projects" });
   // store hooks
   const { t } = useTranslation();
-  const { isExtendedProjectSidebarOpened, toggleExtendedProjectSidebar } = useAppTheme();
-  const { getPartialProjectById, joinedProjectIds: joinedProjects, updateProjectView } = useProject();
-  const { allowPermissions } = useUserPermissions();
-
-  const handleOnProjectDrop = (
-    sourceId: string | undefined,
-    destinationId: string | undefined,
-    shouldDropAtEnd: boolean
-  ) => {
-    if (!sourceId || !destinationId || !workspaceSlug) return;
-    if (sourceId === destinationId) return;
-
-    const joinedProjectsList: TProject[] = [];
-    joinedProjects.map((projectId) => {
-      const projectDetails = getPartialProjectById(projectId);
-      if (projectDetails) joinedProjectsList.push(projectDetails);
-    });
-
-    const sourceIndex = joinedProjects.indexOf(sourceId);
-    const destinationIndex = shouldDropAtEnd ? joinedProjects.length : joinedProjects.indexOf(destinationId);
-
-    if (joinedProjectsList.length <= 0) return;
-
-    const updatedSortOrder = orderJoinedProjects(sourceIndex, destinationIndex, sourceId, joinedProjectsList);
-    if (updatedSortOrder != undefined)
-      updateProjectView(workspaceSlug.toString(), sourceId, { sort_order: updatedSortOrder }).catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("something_went_wrong"),
-        });
-      });
-  };
+  const isExtendedProjectSidebarOpened = useExtendedProjectSidebarOpen();
+  const { toggleExtendedProjectSidebar } = useSidebarActions();
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const joinedProjects = useJoinedProjectIds(workspaceSlug);
+  const handleOnProjectDrop = useWorkspaceProjectReordering({ workspaceSlug, joinedProjectIds: joinedProjects });
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
 
   // filter projects based on search query
   const filteredProjects = joinedProjects.filter((projectId) => {
-    const project = getPartialProjectById(projectId);
+    const project = projectRows?.find((candidate) => candidate.id === projectId);
     if (!project) return false;
     return project.name.toLowerCase().includes(searchQuery.toLowerCase()) || project.identifier.includes(searchQuery);
   });
 
   // auth
-  const isAuthorizedUser = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorizedUser = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const handleClose = useCallback(() => toggleExtendedProjectSidebar(false), [toggleExtendedProjectSidebar]);
 
-  const handleCopyText = (projectId: string) => {
-    copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`).then(() => {
+  const handleCopyText = async (projectId: string) => {
+    try {
+      await copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`);
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t("link_copied"),
         message: t("project_link_copied_to_clipboard"),
       });
-    });
+    } catch {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Copy failed", message: "The project link could not be copied." });
+    }
   };
   return (
     <>
@@ -135,7 +109,6 @@ export const ExtendedProjectSidebar = observer(function ExtendedProjectSidebar()
               className="w-full max-w-[234px] border-none bg-transparent text-13 outline-none placeholder:text-placeholder"
               placeholder={t("search")}
               value={searchQuery}
-              autoFocus
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
@@ -156,7 +129,7 @@ export const ExtendedProjectSidebar = observer(function ExtendedProjectSidebar()
               <SidebarProjectsListItem
                 key={projectId}
                 projectId={projectId}
-                handleCopyText={() => handleCopyText(projectId)}
+                handleCopyText={() => void handleCopyText(projectId)}
                 projectListType={"JOINED"}
                 disableDrag={false}
                 disableDrop={false}
@@ -170,4 +143,4 @@ export const ExtendedProjectSidebar = observer(function ExtendedProjectSidebar()
       </ExtendedSidebarWrapper>
     </>
   );
-});
+};

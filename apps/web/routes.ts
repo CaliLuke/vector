@@ -138,6 +138,8 @@ export const routes = rootRoute("root.tsx", [
         layout("_workspace", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/layout.tsx", [
           index("(all)/[workspaceSlug]/(settings)/settings/(workspace)/page.tsx"),
           route("members", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/members/page.tsx"),
+          route("work-item-types", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/work-item-types/page.tsx"),
+          route("hierarchy", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/hierarchy/page.tsx"),
           route("billing", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/billing/page.tsx"),
           route("exports", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/exports/page.tsx"),
           route("webhooks", "(all)/[workspaceSlug]/(settings)/settings/(workspace)/webhooks/page.tsx"),
@@ -171,6 +173,11 @@ export const routes = rootRoute("root.tsx", [
               "features/intake",
               "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/features/intake/page.tsx"
             ),
+            route(
+              "work-item-types",
+              "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/work-item-types/page.tsx"
+            ),
+            route("releases", "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/releases/page.tsx"),
             route("states", "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/states/page.tsx"),
             route("labels", "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/labels/page.tsx"),
             route("estimates", "(all)/[workspaceSlug]/(settings)/settings/projects/[projectId]/estimates/page.tsx"),

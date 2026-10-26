@@ -4,30 +4,32 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // plane types
 import type { IIssueLabel, TIssue } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // components
 import { PowerKLabelsMenu } from "@/components/power-k/menus/labels";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
+import { useProjectLabels } from "@/hooks/use-labels";
 
 type Props = {
   handleSelect: (label: IIssueLabel) => void;
   workItemDetails: TIssue;
 };
 
-export const PowerKWorkItemLabelsMenu = observer(function PowerKWorkItemLabelsMenu(props: Props) {
+export function PowerKWorkItemLabelsMenu(props: Props) {
   const { handleSelect, workItemDetails } = props;
   // store hooks
-  const { getProjectLabelIds, getLabelById } = useLabel();
+  const { workspaceSlug } = useParams({ strict: false });
+  const { labels: projectLabels } = useProjectLabels(
+    workspaceSlug?.toString(),
+    workItemDetails.project_id ?? undefined
+  );
   // derived values
-  const projectLabelIds = workItemDetails.project_id ? getProjectLabelIds(workItemDetails.project_id) : undefined;
-  const labelsList = projectLabelIds ? projectLabelIds.map((labelId) => getLabelById(labelId)) : undefined;
-  const filteredLabelsList = labelsList ? labelsList.filter((label) => !!label) : undefined;
+  const filteredLabelsList = projectLabels;
 
   if (!filteredLabelsList) return <Spinner />;
 
   return <PowerKLabelsMenu labels={filteredLabelsList} onSelect={handleSelect} value={workItemDetails.label_ids} />;
-});
+}

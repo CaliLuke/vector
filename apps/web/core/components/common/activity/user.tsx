@@ -5,27 +5,24 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // types
 import type { TWorkspaceBaseActivity } from "@plane/types";
 // store hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceById } from "@/hooks/use-workspaces";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 type TUser = {
   activity: TWorkspaceBaseActivity;
   customUserName?: string;
 };
 
-export const User = observer(function User(props: TUser) {
+export const User = function User(props: TUser) {
   const { activity, customUserName } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
-  const { getWorkspaceById } = useWorkspace();
+  const { data: workspaceDetail } = useWorkspaceById(activity.workspace);
+  const { memberById } = useWorkspaceMemberRoster(workspaceDetail?.slug);
   // derived values
-  const actorDetail = getUserDetails(activity.actor);
-  const workspaceDetail = getWorkspaceById(activity.workspace);
+  const actorDetail = memberById(activity.actor)?.member;
 
   return (
     <>
@@ -42,4 +39,4 @@ export const User = observer(function User(props: TUser) {
       )}
     </>
   );
-});
+};

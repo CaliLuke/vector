@@ -5,13 +5,10 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import { Controller, useForm } from "react-hook-form";
 
 import { Disclosure } from "@headlessui/react";
 // plane imports
-import { ROLE, EUserPermissions, EUserPermissionsLevel, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
+import { ROLE, EUserPermissions, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
 import { TrashIcon, SuspendedUserIcon } from "@plane/propel/icons";
 import { Pill, EPillVariant, EPillSize } from "@plane/propel/pill";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -19,16 +16,13 @@ import type { IUser, IWorkspaceMember } from "@plane/types";
 // plane ui
 import { CustomSelect, PopoverMenu } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateWorkspaceMemberRole } from "@/hooks/use-member-roster-mutations";
 
-export interface RowData {
-  member: IWorkspaceMember;
-  role: EUserPermissions;
-  is_active: boolean;
-}
+export type RowData = IWorkspaceMember;
 
 type NameProps = {
   rowData: RowData;
@@ -113,24 +107,17 @@ export function NameColumn(props: NameProps) {
   );
 }
 
-export const AccountTypeColumn = observer(function AccountTypeColumn(props: AccountTypeProps) {
+export function AccountTypeColumn(props: AccountTypeProps) {
   const { rowData, workspaceSlug } = props;
-  // form info
-  const {
-    control,
-    formState: { errors },
-  } = useForm();
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
 
-  const {
-    workspace: { updateMember },
-  } = useMember();
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
+  const roleMutation = useUpdateWorkspaceMemberRole(workspaceSlug, rowData.member.id);
 
   // derived values
   const isCurrentUser = currentUser?.id === rowData.member.id;
-  const isAdminRole = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isAdminRole = canWorkspace([EUserPermissions.ADMIN]);
   const isRoleNonEditable = isCurrentUser || !isAdminRole;
   const isSuspended = rowData.is_active === false;
 
@@ -147,48 +134,38 @@ export const AccountTypeColumn = observer(function AccountTypeColumn(props: Acco
           <span>{ROLE[rowData.role]}</span>
         </div>
       ) : (
-        <Controller
-          name="role"
-          control={control}
-          rules={{ required: "Role is required." }}
-          render={({ field: { value } }) => (
-            <CustomSelect
-              value={value as EUserPermissions}
-              onChange={async (value: EUserPermissions) => {
-                if (!workspaceSlug) return;
-                try {
-                  await updateMember(workspaceSlug.toString(), rowData.member.id, {
-                    role: value as unknown as EUserPermissions,
-                  });
-                } catch (err: unknown) {
-                  const error = err as { error?: string | string[] };
-                  const errorString = Array.isArray(error?.error) ? error.error[0] : error?.error;
-
-                  setToast({
-                    type: TOAST_TYPE.ERROR,
-                    title: "Error!",
-                    message: errorString ?? "An error occurred while updating member role. Please try again.",
-                  });
-                }
-              }}
-              label={
-                <div className="flex">
-                  <span>{ROLE[rowData.role]}</span>
-                </div>
-              }
-              buttonClassName={`!px-0 !justify-start hover:bg-surface-1 ${errors.role ? "border-danger-strong" : "border-none"}`}
-              className="w-32 rounded-md p-0"
-              input
-            >
-              {Object.keys(ROLE).map((item) => (
-                <CustomSelect.Option key={item} value={item as unknown as EUserPermissions}>
-                  {ROLE[item as unknown as keyof typeof ROLE]}
-                </CustomSelect.Option>
-              ))}
-            </CustomSelect>
-          )}
-        />
+        <CustomSelect
+          value={rowData.role}
+          onChange={(value: EUserPermissions) =>
+            roleMutation.mutate(value, {
+              onError: (error: unknown) => {
+                const response = error as { error?: string | string[] };
+                const message = Array.isArray(response?.error) ? response.error[0] : response?.error;
+                setToast({
+                  type: TOAST_TYPE.ERROR,
+                  title: "Error!",
+                  message: message ?? "An error occurred while updating member role. Please try again.",
+                });
+              },
+            })
+          }
+          disabled={roleMutation.isPending}
+          label={
+            <div className="flex">
+              <span>{ROLE[rowData.role]}</span>
+            </div>
+          }
+          buttonClassName={`!px-0 !justify-start hover:bg-surface-1 ${roleMutation.isError ? "border-danger-strong" : "border-none"}`}
+          className="w-32 rounded-md p-0"
+          input
+        >
+          {Object.entries(ROLE).map(([role, label]) => (
+            <CustomSelect.Option key={role} value={Number(role)}>
+              {label}
+            </CustomSelect.Option>
+          ))}
+        </CustomSelect>
       )}
     </>
   );
-});
+}

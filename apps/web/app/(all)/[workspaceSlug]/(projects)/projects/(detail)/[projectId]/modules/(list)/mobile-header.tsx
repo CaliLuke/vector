@@ -4,18 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 import { MODULE_VIEW_LAYOUTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { ChevronDownIcon } from "@plane/propel/icons";
 import { CustomMenu, Row } from "@plane/ui";
 import { ModuleLayoutIcon } from "@/components/modules";
-import { useModuleFilter } from "@/hooks/store/use-module-filter";
-import { useProject } from "@/hooks/store/use-project";
+import { useModuleCataloguePreferences } from "@/providers/cycle-module-preferences";
 
-export const ModulesListMobileHeader = observer(function ModulesListMobileHeader() {
-  const { currentProjectDetails } = useProject();
-  const { updateDisplayFilters } = useModuleFilter();
+export const ModulesListMobileHeader = function ModulesListMobileHeader() {
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const preferences = useModuleCataloguePreferences(workspaceSlug, projectId);
   const { t } = useTranslation();
 
   return (
@@ -38,7 +38,7 @@ export const ModulesListMobileHeader = observer(function ModulesListMobileHeader
             <CustomMenu.MenuItem
               key={layout.key}
               onClick={() => {
-                updateDisplayFilters(currentProjectDetails!.id.toString(), { layout: layout.key });
+                preferences.update({ display: { ...preferences.display, layout: layout.key } });
               }}
               className="flex items-center gap-2"
             >
@@ -50,4 +50,4 @@ export const ModulesListMobileHeader = observer(function ModulesListMobileHeader
       </CustomMenu>
     </div>
   );
-});
+};

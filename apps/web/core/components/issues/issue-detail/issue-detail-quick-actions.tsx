@@ -6,7 +6,6 @@
 
 import { useRouter } from "@tanstack/react-router";
 import { useRef } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { CopyLinkIcon } from "@plane/propel/icons";
@@ -14,12 +13,15 @@ import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import { EIssuesStoreType } from "@plane/types";
-import { generateWorkItemLink, copyTextToClipboard } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils/work-item";
+import { copyTextToClipboard } from "@plane/utils/string";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { captureIssueDetailReconciliation } from "@/queries/issue-details";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
@@ -32,7 +34,7 @@ type Props = {
   issueId: string;
 };
 
-export const IssueDetailQuickActions = observer(function IssueDetailQuickActions(props: Props) {
+export function IssueDetailQuickActions(props: Props) {
   const { workspaceSlug, projectId, issueId } = props;
   const { t } = useTranslation();
 
@@ -43,26 +45,20 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
   const router = useRouter();
 
   // hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   const { isMobile } = usePlatformOS();
-  const { getProjectIdentifierById } = useProject();
-  const {
-    issue: { getIssueById },
-    removeIssue,
-    archiveIssue,
-  } = useIssueDetail();
-  const {
-    issues: { restoreIssue },
-  } = useIssues(EIssuesStoreType.ARCHIVED);
-  const {
-    issues: { removeIssue: removeArchivedIssue },
-  } = useIssues(EIssuesStoreType.ARCHIVED);
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const detail = useWorkItemDetail(workspaceSlug, projectId, issueId);
+  const queryClient = useQueryClient();
+  const projectActions = useIssuesActions(EIssuesStoreType.PROJECT);
+  const archivedActions = useIssuesActions(EIssuesStoreType.ARCHIVED);
 
   // derived values
-  const issue = getIssueById(issueId);
+  const issue = detail.issue;
   if (!issue) return <></>;
 
-  const projectIdentifier = getProjectIdentifierById(projectId);
+  const projectIdentifier = projectRows?.find((project) => project.id === projectId)?.identifier ?? "";
 
   const workItemLink = generateWorkItemLink({
     workspaceSlug: workspaceSlug,
@@ -91,40 +87,40 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
   };
 
   const handleDeleteIssue = async () => {
-    try {
-      const deleteIssue = issue?.archived_at ? removeArchivedIssue : removeIssue;
-      const redirectionPath = issue?.archived_at
-        ? `/${workspaceSlug}/projects/${projectId}/archives/issues`
-        : `/${workspaceSlug}/projects/${projectId}/issues`;
+    const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
+    const redirectionPath = issue?.archived_at
+      ? `/${workspaceSlug}/projects/${projectId}/archives/issues`
+      : `/${workspaceSlug}/projects/${projectId}/issues`;
 
-      await deleteIssue(workspaceSlug, projectId, issueId);
-      void router.navigate({ href: redirectionPath });
-    } catch (_error) {
+    if (issue?.archived_at) await archivedActions.removeIssue(projectId, issueId);
+    else await projectActions.removeIssue(projectId, issueId);
+    detailOwner.remove();
+    void router.navigate({ href: redirectionPath }).catch(() => {
       setToast({
         title: t("toast.error"),
+        message: "The work item was deleted, but the list could not be opened. Refresh to continue.",
         type: TOAST_TYPE.ERROR,
-        message: t("entity.delete.failed", { entity: t("issue.label", { count: 1 }) }),
       });
-    }
+    });
   };
 
   const handleArchiveIssue = async () => {
-    try {
-      await archiveIssue(workspaceSlug, projectId, issueId);
-      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/issues` });
-    } catch (_error) {
+    const detailOwner = captureIssueDetailReconciliation(queryClient, detail.scope, [issueId]);
+    await projectActions.archiveIssue?.(projectId, issueId);
+    void detailOwner.refresh();
+    void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/issues` }).catch(() => {
       setToast({
         title: t("toast.error"),
+        message: "The work item was archived, but the list could not be opened. Refresh to continue.",
         type: TOAST_TYPE.ERROR,
-        message: t("issue.archive.failed.message"),
       });
-    }
+    });
   };
 
   const handleRestore = async () => {
-    if (!workspaceSlug || !projectId || !issueId) return;
+    if (!workspaceSlug || !projectId || !issueId || !archivedActions.restoreIssue) return;
     try {
-      await restoreIssue(workspaceSlug.toString(), projectId.toString(), issueId.toString());
+      await archivedActions.restoreIssue(projectId, issueId);
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t("issue.restore.success.title"),
@@ -163,4 +159,4 @@ export const IssueDetailQuickActions = observer(function IssueDetailQuickActions
       </div>
     </>
   );
-});
+}

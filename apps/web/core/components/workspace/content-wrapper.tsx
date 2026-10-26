@@ -5,18 +5,14 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { AppRailRoot } from "@/components/navigation";
 import { useAppRailVisibility } from "@/lib/app-rail";
 import { TopNavigationRoot } from "@/components/navigation/top-navigation-root";
 
-export const WorkspaceContentWrapper = observer(function WorkspaceContentWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export const WorkspaceContentWrapper = function WorkspaceContentWrapper({ children }: { children: React.ReactNode }) {
   // Use the context to determine if app rail should render
   const { shouldRenderAppRail } = useAppRailVisibility();
 
@@ -39,4 +35,4 @@ export const WorkspaceContentWrapper = observer(function WorkspaceContentWrapper
       </div>
     </div>
   );
-});
+};

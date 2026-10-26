@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
-import { createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
+import { createPageIdentityFixture } from "./helpers/page-identity-fixture.mjs";
+import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
 
 registerWebModuleHooks();
 const emojiPickerSource = new URL("../../packages/propel/src/emoji-icon-picker/index.ts", import.meta.url).href;
@@ -22,7 +25,18 @@ const pageMenuStubs = {
   "@/hooks/use-page-flag": `export const usePageFlag = () => ({ isMovePageEnabled: false });`,
   "@/components/pages/modals/delete-page-modal": `export function DeletePageModal() { return null; }`,
   "@/components/pages/modals/export-page-modal": `export function ExportPageModal() { return null; }`,
+  "@/components/pages/page-record-context": `export const usePageRecord = () => ({ editorRef: null });`,
 };
+
+async function renderPageWithIdentity(environment, routerFixture, identityFixture, element) {
+  await seedPermissionQueries(identityFixture.client, {
+    userId: "owner",
+    workspaceSlug: "acme",
+    workspaceRole: 20,
+    projectRoles: { "project-1": 20 },
+  });
+  await routerFixture.render(environment, identityFixture.wrap(element));
+}
 registerHooks({
   resolve(specifier, context, nextResolve) {
     if (specifier === "@plane/propel/emoji-icon-picker") return nextResolve(emojiPickerSource, context);
@@ -61,13 +75,33 @@ let AvatarComponent;
 let TooltipComponent;
 let PageEditorHeaderRootComponent;
 
-async function renderPageIconPicker(environment, disabled = false) {
+async function renderPageIconPicker(t, environment, disabled = false) {
   const routerFixture = createRouterFixture("/workspace/");
+  const identityFixture = await createPageIdentityFixture(t);
+  await seedPermissionQueries(identityFixture.client, {
+    userId: "owner",
+    workspaceSlug: "acme",
+    workspaceRole: 20,
+    projectRoles: { "project-1": 20 },
+  });
   const { PageEditorHeaderRoot } = await import("../../apps/web/core/components/pages/editor/header/root.tsx");
-  await routerFixture.render(
+  await renderPageWithIdentity(
     environment,
+    routerFixture,
+    identityFixture,
     React.createElement(PageEditorHeaderRoot, {
-      page: { isContentEditable: !disabled, logo_props: undefined, name: "", updatePageLogo() {} },
+      page: {
+        id: "page-1",
+        project_ids: ["project-1"],
+        owned_by: disabled ? "another-user" : "owner",
+        access: 1,
+        archived_at: null,
+        is_locked: false,
+        logo_props: undefined,
+        name: "",
+      },
+      projectId: "project-1",
+      workspaceSlug: "acme",
     })
   );
 }
@@ -118,7 +152,7 @@ test("Avatar forwards the Tooltip trigger ref to its rendered element", async (t
 test("page editor icon picker opens, closes with Escape, and returns focus from search to the trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  await renderPageIconPicker(environment);
+  await renderPageIconPicker(t, environment);
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
   await React.act(() => trigger.click());
@@ -141,6 +175,7 @@ test("page editor icon picker opens, closes with Escape, and returns focus from 
 test("page editor icon picker has one button trigger", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
+  const identityFixture = await createPageIdentityFixture(t);
   t.after(() => environment.unmount());
   ({ PageEditorHeaderRoot: PageEditorHeaderRootComponent } =
     await import("../../apps/web/core/components/pages/editor/header/root.tsx"));
@@ -151,12 +186,21 @@ test("page editor icon picker has one button trigger", async (t) => {
     console.error = originalError;
   });
   const page = {
-    isContentEditable: true,
+    id: "page-1",
+    project_ids: ["project-1"],
+    owned_by: "owner",
+    access: 1,
+    archived_at: null,
+    is_locked: false,
     logo_props: undefined,
     name: "",
-    updatePageLogo() {},
   };
-  await routerFixture.render(environment, React.createElement(PageEditorHeaderRootComponent, { page }));
+  await renderPageWithIdentity(
+    environment,
+    routerFixture,
+    identityFixture,
+    React.createElement(PageEditorHeaderRootComponent, { page })
+  );
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
   assert.equal(trigger.querySelector("button"), null, "the label must not nest a button in Popover.Button");
@@ -169,7 +213,7 @@ test("page editor icon picker has one button trigger", async (t) => {
 test("page editor icon picker keeps a disabled trigger closed", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  await renderPageIconPicker(environment, true);
+  await renderPageIconPicker(t, environment, true);
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger);
   assert.equal(trigger.disabled, true);
@@ -180,6 +224,7 @@ test("page editor icon picker keeps a disabled trigger closed", async (t) => {
 test("page options menu uses one selectable button per toggle item", async (t) => {
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
+  const identityFixture = await createPageIdentityFixture(t);
   t.after(() => environment.unmount());
   globalThis.__pageActionsTest = {
     fullWidth: false,
@@ -199,20 +244,21 @@ test("page options menu uses one selectable button per toggle item", async (t) =
   const { PageOptionsDropdown } =
     await import("../../apps/web/core/components/pages/editor/toolbar/options-dropdown.tsx");
   const page = {
+    id: "page-1",
+    project_ids: ["project-1"],
+    owned_by: "owner",
     name: "Lifecycle page",
-    isContentEditable: true,
     access: 1,
     archived_at: null,
     is_locked: false,
-    canCurrentUserLockPage: false,
-    canCurrentUserChangeAccess: false,
-    canCurrentUserDuplicatePage: false,
-    canCurrentUserArchivePage: false,
-    canCurrentUserDeletePage: false,
-    canCurrentUserMovePage: false,
     editor: { editorRef: null },
   };
-  await routerFixture.render(environment, React.createElement(PageOptionsDropdown, { page, storeType: "project" }));
+  await renderPageWithIdentity(
+    environment,
+    routerFixture,
+    identityFixture,
+    React.createElement(PageOptionsDropdown, { page, workspaceSlug: "acme" })
+  );
   const trigger = environment.container.querySelector("button");
   assert.ok(trigger, "the page actions menu has a button trigger");
 

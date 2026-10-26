@@ -4,24 +4,24 @@
  * See the LICENSE file for details.
  */
 
+import { useEditorHandlers } from "@/hooks/editor/use-editor-handlers";
 import React, { useState } from "react";
 // plane constants
 import type { EIssueCommentAccessSpecifier } from "@plane/constants";
 // plane imports
 import { LiteTextEditorWithRef } from "@plane/editor";
-import type { EditorRefApi, ILiteTextEditorProps, TFileHandler } from "@plane/editor";
+import type { EditorRefApi, ILiteTextEditorProps } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
-import type { MakeOptional } from "@plane/types";
-import { cn, isCommentEmpty } from "@plane/utils";
+import type { TFileEntityInfo, MakeOptional } from "@plane/types";
+import { cn } from "@plane/utils/common";
+import { isCommentEmpty } from "@plane/utils/string";
 // components
-import { EditorMentionsRoot } from "@/components/editor/embeds/mentions";
+
 import { IssueCommentToolbar } from "@/components/editor/lite-text/toolbar";
 // hooks
-import { useEditorConfig, useEditorMention } from "@/hooks/editor";
-import { useMember } from "@/hooks/store/use-member";
-import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
+
 // plane web hooks
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
+import { DISABLED_EDITOR_EXTENSIONS } from "@/components/editor/extensions";
 // plane web service
 import { WorkspaceService } from "@/services/workspace.service";
 import { LiteToolbar } from "./lite-toolbar";
@@ -51,8 +51,8 @@ type LiteTextEditorWrapperProps = MakeOptional<
       }
     | {
         editable: true;
-        uploadFile: TFileHandler["upload"];
-        duplicateFile: TFileHandler["duplicate"];
+        fileAsset: TFileEntityInfo;
+        onAssetUpload?: (assetId: string) => void;
       }
   );
 
@@ -88,29 +88,11 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
   const isFullVariant = variant === "full";
   const [isFocused, setIsFocused] = useState(isFullVariant ? showToolbarInitially : true);
   const [editorRef, setEditorRef] = useState<EditorRefApi | null>(null);
-  // editor flaggings
-  const { liteText: liteTextEditorExtensions } = useEditorFlagging({
-    workspaceSlug,
-    projectId,
+  const { fileHandler, getEditorMetaData, mentionHandler } = useEditorHandlers({
+    ...props,
+    searchMentionCallback: async (payload) =>
+      workspaceService.searchEntity(workspaceSlug, { ...payload, project_id: projectId, issue_id }),
   });
-  // store hooks
-  const { getUserDetails } = useMember();
-  // parse content
-  const { getEditorMetaData } = useParseEditorContent({
-    projectId,
-    workspaceSlug,
-  });
-  // use editor mention
-  const { fetchMentions } = useEditorMention({
-    searchEntity: async (payload) =>
-      await workspaceService.searchEntity(workspaceSlug, {
-        ...payload,
-        project_id: projectId,
-        issue_id,
-      }),
-  });
-  // editor config
-  const { getEditorFileHandlers } = useEditorConfig();
   function isMutableRefObject<T>(ref: React.ForwardedRef<T>): ref is React.MutableRefObject<T | null> {
     return !!ref && typeof ref === "object" && "current" in ref;
   }
@@ -135,33 +117,17 @@ export const LiteTextEditor = React.forwardRef(function LiteTextEditor(
         <div className={cn(isLiteVariant && editable ? "min-w-0 flex-1" : "")}>
           <LiteTextEditorWithRef
             ref={ref}
-            disabledExtensions={[...liteTextEditorExtensions.disabled, ...additionalDisabledExtensions]}
+            disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, ...additionalDisabledExtensions]}
             editable={editable}
-            flaggedExtensions={liteTextEditorExtensions.flagged}
-            fileHandler={getEditorFileHandlers({
-              projectId,
-              uploadFile: editable ? props.uploadFile : async () => "",
-              duplicateFile: editable ? props.duplicateFile : async () => "",
-              workspaceId,
-              workspaceSlug,
-            })}
+            flaggedExtensions={[]}
+            fileHandler={fileHandler}
             getEditorMetaData={getEditorMetaData}
             handleEditorReady={(ready) => {
               if (ready) {
                 setEditorRef(isMutableRefObject<EditorRefApi>(ref) ? ref.current : null);
               }
             }}
-            mentionHandler={{
-              searchCallback: async (query) => {
-                const res = await fetchMentions(query);
-                if (!res) throw new Error("Failed in fetching mentions");
-                return res;
-              },
-              renderComponent: EditorMentionsRoot,
-              getMentionedEntityDetails: (id) => ({
-                display_name: getUserDetails(id)?.display_name ?? "",
-              }),
-            }}
+            mentionHandler={mentionHandler}
             placeholder={placeholder}
             showPlaceholderOnEmpty={showPlaceholderOnEmpty}
             containerClassName={cn(containerClassName, "relative", {

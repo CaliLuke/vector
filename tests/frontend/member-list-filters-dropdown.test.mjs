@@ -1,19 +1,11 @@
+import { registerDropdownSourceModules } from "./helpers/dropdown-source-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
 import test from "node:test";
-import { pathToFileURL } from "node:url";
-import { React, act, createReactDomTestEnvironment, webRequire } from "./helpers/react-dom.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
 
-const reactModules = Object.fromEntries(
-  ["react", "react/jsx-runtime", "react/jsx-dev-runtime"].map((name) => [
-    name,
-    pathToFileURL(webRequire.resolve(name)).href,
-  ])
-);
 const customMenuUrl = new URL("../../packages/ui/src/dropdowns/custom-menu.tsx", import.meta.url).href;
 const buttonUrl = new URL("../../packages/propel/src/button/index.ts", import.meta.url).href;
-const outsideClickUrl = new URL("../../packages/hooks/src/use-outside-click-detector.tsx", import.meta.url).href;
 const substitutes = {
   "@plane/ui": `export { CustomMenu } from ${JSON.stringify(customMenuUrl)};`,
   "@plane/propel/button": `export { Button } from ${JSON.stringify(buttonUrl)};`,
@@ -22,7 +14,8 @@ const substitutes = {
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
   "@plane/types":
     "export const EUserProjectRoles = { ADMIN: 20, MEMBER: 15, GUEST: 5 }; export const EUserWorkspaceRoles = { ADMIN: 20, MEMBER: 15, GUEST: 5 };",
-  "@plane/utils": "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
+  "@plane/utils/common":
+    "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
 };
 
 async function flushAnimationFrames() {
@@ -39,25 +32,7 @@ async function flushAnimationFrames() {
   });
 }
 
-registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "@plane/hooks") return { shortCircuit: true, url: outsideClickUrl };
-    if (specifier === "../utils" && context.parentURL?.endsWith("/dropdowns/custom-menu.tsx")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent(substitutes["@plane/utils"])}`,
-      };
-    }
-    if (Object.hasOwn(substitutes, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(substitutes[specifier])}` };
-    }
-    if (Object.hasOwn(reactModules, specifier)) {
-      return { shortCircuit: true, url: reactModules[specifier] };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+registerDropdownSourceModules("custom-menu.tsx", substitutes);
 
 test("member role filter uses one focusable trigger and Escape returns focus", async (t) => {
   const environment = await createReactDomTestEnvironment();

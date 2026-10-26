@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
+import type { TTranslationStore } from "@plane/i18n";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -459,3 +461,11 @@ export const passwordErrors = [
   EAuthenticationErrorCodes.PASSWORD_TOO_WEAK,
   EAuthenticationErrorCodes.INVALID_NEW_PASSWORD,
 ];
+
+export function showAuthenticationError(t: TTranslationStore["t"]) {
+  setToast({
+    type: TOAST_TYPE.ERROR,
+    title: t("common.errors.default.title"),
+    message: t("common.errors.default.message"),
+  });
+}

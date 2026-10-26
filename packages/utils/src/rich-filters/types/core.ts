@@ -6,6 +6,9 @@
 
 import type {
   TFilterAndGroupNode,
+  TFilterOrGroupNode,
+  TFilterBooleanGroupNode,
+  TFilterNotGroupNode,
   TFilterConditionNode,
   TFilterExpression,
   TFilterFieldType,
@@ -48,9 +51,8 @@ export const isAndGroupNode = <P extends TFilterProperty>(
  */
 export const hasChildrenProperty = <P extends TFilterProperty>(
   group: TFilterGroupNode<P>
-): group is TFilterAndGroupNode<P> => {
-  const groupWithChildren = group as { children?: unknown };
-  return "children" in group && Array.isArray(groupWithChildren.children);
+): group is TFilterBooleanGroupNode<P> => {
+  return "children" in group && Array.isArray(group.children);
 };
 
 /**
@@ -70,3 +72,9 @@ export const isDateFilterType = (
   type: TFilterFieldType
 ): type is typeof FILTER_FIELD_TYPE.DATE | typeof FILTER_FIELD_TYPE.DATE_RANGE =>
   type === FILTER_FIELD_TYPE.DATE || type === FILTER_FIELD_TYPE.DATE_RANGE;
+
+export const isNotGroupNode = <P extends TFilterProperty>(node: TFilterExpression<P>): node is TFilterNotGroupNode<P> =>
+  isGroupNode(node) && node.logicalOperator === LOGICAL_OPERATOR.NOT;
+
+export const isOrGroupNode = <P extends TFilterProperty>(group: TFilterGroupNode<P>): group is TFilterOrGroupNode<P> =>
+  group.logicalOperator === LOGICAL_OPERATOR.OR;

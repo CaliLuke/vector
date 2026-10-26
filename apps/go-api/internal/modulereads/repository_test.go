@@ -22,6 +22,10 @@ type moduleDatabaseStub struct {
 	rows    []pgx.Row
 }
 
+func (database *moduleDatabaseStub) Begin(context.Context) (pgx.Tx, error) {
+	return nil, errors.New("unexpected transaction")
+}
+
 func (database *moduleDatabaseStub) QueryRow(_ context.Context, query string, args ...any) pgx.Row {
 	database.queries = append(database.queries, query)
 	database.args = append(database.args, args)
@@ -578,8 +582,8 @@ func TestModuleIssueFilterCanonicalizationAndUngroupedM2MSubgroup(t *testing.T) 
 	for _, fragment := range []string{
 		"ungrouped_subgroup_axis.subgroup_key", "- 'label_ids'",
 		"issue.project_id::text", "issue.logged_by_id IS NULL",
-		"NOT EXISTS (SELECT 1 FROM issue_labels presence_relation",
-		"EXISTS (SELECT 1 FROM issue_labels presence_relation",
+		"live_label.project_id = issue.project_id",
+		"live_label.deleted_at IS NULL",
 	} {
 		if !strings.Contains(query, fragment) {
 			t.Errorf("ungrouped/filter query missing %q", fragment)
@@ -663,7 +667,7 @@ func TestRelatedOrderingUsesDjangoFilterAliases(t *testing.T) {
 	}
 }
 
-func TestUngroupedM2MSubgroupSeparatesPageMetadataFromExpandedItems(t *testing.T) {
+func TestUngroupedLabelSubgroupUsesCanonicalAxisForPageMetadata(t *testing.T) {
 	database := &moduleDatabaseStub{rows: []pgx.Row{moduleBoolRow(true), modulePageRow(`[]`, 1)}}
 	repository, _ := NewRepository(database)
 	_, err := repository.Issues(
@@ -674,13 +678,10 @@ func TestUngroupedM2MSubgroupSeparatesPageMetadataFromExpandedItems(t *testing.T
 		t.Fatal(err)
 	}
 	query := database.queries[1]
-	for _, fragment := range []string{
-		"subgroup_page_base AS", "FROM subgroup_page_base",
-		"page_relation.deleted_at IS NULL", "FROM filtered issue\n  CROSS JOIN LATERAL",
-		") page_slice",
-	} {
-		if !strings.Contains(query, fragment) {
-			t.Errorf("subgroup page query missing %q", fragment)
-		}
+	if strings.Contains(query, "subgroup_page_base AS") || strings.Contains(query, "FROM subgroup_page_base") {
+		t.Fatal("label subgroup paging must use the canonical axis over every filtered issue")
+	}
+	if !strings.Contains(query, "FROM filtered issue\n  CROSS JOIN LATERAL") || !strings.Contains(query, ") page_slice") {
+		t.Fatal("label subgroup query must expand its canonical axis and retain filtered-page metadata")
 	}
 }

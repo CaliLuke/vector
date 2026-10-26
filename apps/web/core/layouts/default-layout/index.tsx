@@ -5,7 +5,7 @@
  */
 
 import type { ReactNode } from "react";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   children: ReactNode;

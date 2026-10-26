@@ -4,20 +4,20 @@
  * See the LICENSE file for details.
  */
 
+import type { TEditableEditorProps } from "@/hooks/editor/use-editor-handlers";
+import { useEditorHandlers } from "@/hooks/editor/use-editor-handlers";
 import { forwardRef } from "react";
 // plane imports
 import { RichTextEditorWithRef } from "@plane/editor";
-import type { EditorRefApi, IRichTextEditorProps, TFileHandler } from "@plane/editor";
-import type { MakeOptional, TSearchEntityRequestPayload, TSearchResponse } from "@plane/types";
-import { cn } from "@plane/utils";
+import type { EditorRefApi, IRichTextEditorProps } from "@plane/editor";
+import type { MakeOptional } from "@plane/types";
+import { cn } from "@plane/utils/common";
 // components
-import { EditorMentionsRoot } from "@/components/editor/embeds/mentions";
+
 // hooks
-import { useEditorConfig, useEditorMention } from "@/hooks/editor";
-import { useMember } from "@/hooks/store/use-member";
-import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
+
 // plane web hooks
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
+import { DISABLED_EDITOR_EXTENSIONS } from "@/components/editor/extensions";
 
 type RichTextEditorWrapperProps = MakeOptional<
   Omit<IRichTextEditorProps, "fileHandler" | "mentionHandler" | "extendedEditorProps">,
@@ -27,17 +27,7 @@ type RichTextEditorWrapperProps = MakeOptional<
   workspaceId: string;
   projectId?: string;
   issueSequenceId?: number;
-} & (
-    | {
-        editable: false;
-      }
-    | {
-        editable: true;
-        searchMentionCallback: (payload: TSearchEntityRequestPayload) => Promise<TSearchResponse>;
-        uploadFile: TFileHandler["upload"];
-        duplicateFile: TFileHandler["duplicate"];
-      }
-  );
+} & TEditableEditorProps;
 
 export const RichTextEditor = forwardRef(function RichTextEditor(
   props: RichTextEditorWrapperProps,
@@ -52,50 +42,16 @@ export const RichTextEditor = forwardRef(function RichTextEditor(
     disabledExtensions: additionalDisabledExtensions = [],
     ...rest
   } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
-  // editor flaggings
-  const { richText: richTextEditorExtensions } = useEditorFlagging({
-    workspaceSlug,
-    projectId,
-  });
-  // use editor mention
-  const { fetchMentions } = useEditorMention({
-    searchEntity: editable ? async (payload) => await props.searchMentionCallback(payload) : async () => ({}),
-  });
-  // editor config
-  const { getEditorFileHandlers } = useEditorConfig();
-  // parse content
-  const { getEditorMetaData } = useParseEditorContent({
-    projectId,
-    workspaceSlug,
-  });
-
+  const { fileHandler, getEditorMetaData, mentionHandler } = useEditorHandlers(props);
   return (
     <RichTextEditorWithRef
       ref={ref}
-      disabledExtensions={[...richTextEditorExtensions.disabled, ...(additionalDisabledExtensions ?? [])]}
+      disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, ...(additionalDisabledExtensions ?? [])]}
       editable={editable}
-      flaggedExtensions={richTextEditorExtensions.flagged}
-      fileHandler={getEditorFileHandlers({
-        projectId,
-        uploadFile: editable ? props.uploadFile : async () => "",
-        duplicateFile: editable ? props.duplicateFile : async () => "",
-        workspaceId,
-        workspaceSlug,
-      })}
+      flaggedExtensions={[]}
+      fileHandler={fileHandler}
       getEditorMetaData={getEditorMetaData}
-      mentionHandler={{
-        searchCallback: async (query) => {
-          const res = await fetchMentions(query);
-          if (!res) throw new Error("Failed in fetching mentions");
-          return res;
-        },
-        renderComponent: EditorMentionsRoot,
-        getMentionedEntityDetails: (id) => ({
-          display_name: getUserDetails(id)?.display_name ?? "",
-        }),
-      }}
+      mentionHandler={mentionHandler}
       extendedEditorProps={{}}
       {...rest}
       containerClassName={cn("relative pb-3 pl-3", containerClassName)}

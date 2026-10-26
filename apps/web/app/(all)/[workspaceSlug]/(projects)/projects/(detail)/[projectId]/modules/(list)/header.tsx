@@ -5,10 +5,9 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, MODULE_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, MODULE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { Button } from "@plane/propel/button";
@@ -18,14 +17,14 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { ModuleViewHeader } from "@/components/modules";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const ModulesListHeader = observer(function ModulesListHeader() {
+export const ModulesListHeader = function ModulesListHeader() {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId } = useParams({
@@ -33,23 +32,21 @@ export const ModulesListHeader = observer(function ModulesListHeader() {
   });
   // store hooks
   const { toggleCreateModuleModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
-  const { loader } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const loader = routeProjectQuery.isPending;
 
   const { t } = useTranslation();
 
   // auth
-  const canUserCreateModule = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canUserCreateModule = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <Header>
       <Header.LeftItem>
         <div>
-          <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
+          <Breadcrumbs onBack={router.history.back} isLoading={loader}>
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={
@@ -85,4 +82,4 @@ export const ModulesListHeader = observer(function ModulesListHeader() {
       </Header.RightItem>
     </Header>
   );
-});
+};

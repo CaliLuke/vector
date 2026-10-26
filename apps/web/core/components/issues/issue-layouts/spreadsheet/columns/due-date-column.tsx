@@ -5,16 +5,18 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 import { DueDatePropertyIcon } from "@plane/propel/icons";
 // types
 import type { TIssue } from "@plane/types";
-import { cn, getDate, renderFormattedPayloadDate, shouldHighlightIssueDueDate } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { shouldHighlightIssueDueDate } from "@plane/utils/work-item";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 // helpers
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 
 type Props = {
   issue: TIssue;
@@ -23,10 +25,10 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetDueDateColumn = observer(function SpreadsheetDueDateColumn(props: Props) {
+export const SpreadsheetDueDateColumn = function SpreadsheetDueDateColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
   // store hooks
-  const { getStateById } = useProjectState();
+  const { getStateById } = useRouteProjectStates(issue.project_id);
   // derived values
   const stateDetails = getStateById(issue.state_id);
 
@@ -63,4 +65,4 @@ export const SpreadsheetDueDateColumn = observer(function SpreadsheetDueDateColu
       />
     </div>
   );
-});
+};

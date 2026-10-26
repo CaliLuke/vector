@@ -1,11 +1,10 @@
+import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
-import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { resolvePackageStub } from "./helpers/module-stubs.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-registerWebModuleHooks();
+import test from "node:test";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
+
 globalThis.React = React;
 globalThis.sharedDropdownFilterTest = {
   members: {
@@ -14,6 +13,8 @@ globalThis.sharedDropdownFilterTest = {
     me: { id: "me", display_name: "Zoe", avatar_url: "me.png" },
   },
   currentUserId: "me",
+  inboxFilters: { assignees: ["bob"] },
+  inboxUpdates: [],
 };
 
 const packageStubs = {
@@ -28,10 +29,20 @@ const packageStubs = {
     const LoaderComponent = ({ children }) => globalThis.React.createElement("div", null, children);
     LoaderComponent.Item = () => globalThis.React.createElement("div");
     export const Loader = LoaderComponent;`,
-  "@plane/utils": `export const getFileURL = value => value;
-    export const isInDateFormat = value => /^\\d{4}-\\d{2}-\\d{2}$/.test(value);`,
-  "@/hooks/store/use-member": `export const useMember = () => ({ getUserDetails: id => globalThis.sharedDropdownFilterTest.members[id] });`,
-  "@/hooks/store/user": `export const useUser = () => ({ data: { id: globalThis.sharedDropdownFilterTest.currentUserId } });`,
+  "@plane/utils/file": `export const getFileURL = value => value;`,
+  "@plane/utils/datetime": `export const isInDateFormat = value => /^\\d{4}-\\d{2}-\\d{2}$/.test(value);`,
+  "@/providers/intake-preferences": `export const useIntakePreferences = () => ({
+    filters: globalThis.sharedDropdownFilterTest.inboxFilters,
+    setFilter: (key, value) => {
+      globalThis.sharedDropdownFilterTest.inboxUpdates.push([key, value]);
+      if (value === undefined) delete globalThis.sharedDropdownFilterTest.inboxFilters[key];
+      else globalThis.sharedDropdownFilterTest.inboxFilters[key] = value;
+    },
+  });`,
+  "@/hooks/use-current-user": `export const useCurrentUser = () => ({ data: { id: globalThis.sharedDropdownFilterTest.currentUserId } });`,
+  "@/hooks/use-member-rosters": `export const useWorkspaceMemberRoster = () => ({
+    membersById: new Map(Object.entries(globalThis.sharedDropdownFilterTest.members).map(([id, member]) => [id, { member }])),
+  });`,
   "@/components/core/filters/date-filter-modal": `export function DateFilterModal({ title, isOpen, onSelect }) {
     if (!isOpen) return null;
     return globalThis.React.createElement("div", null,
@@ -39,14 +50,9 @@ const packageStubs = {
       globalThis.React.createElement("button", { type: "button", onClick: () => onSelect(["2024-01-05;after"]) }, "Apply custom date")
     );
   }`,
-  "mobx-react": `export const observer = component => component;`,
 };
 
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    return resolvePackageStub(specifier, packageStubs, context, nextResolve);
-  },
-});
+registerWebTestModules(packageStubs);
 
 await test("member filter wrappers retain titles, selected ordering, user label, and filtered selection", async (t) => {
   const environment = await createReactDomTestEnvironment();
@@ -102,13 +108,49 @@ await test("member filter wrappers retain titles, selected ordering, user label,
 
   await environment.render(React.createElement(FilterMembers, props));
   assert.match(environment.container.textContent, /Members \(1\)/);
+
+  const { FilterMember } = await import("../../apps/web/core/components/inbox/inbox-filter/filters/members.tsx");
+  globalThis.sharedDropdownFilterTest.inboxUpdates.length = 0;
+  await environment.render(
+    React.createElement(FilterMember, {
+      filterKey: "assignees",
+      label: "Assignees",
+      memberIds: ["alice", "bob", "me", "unknown"],
+      searchQuery: "ali",
+      workspaceSlug: "acme",
+    })
+  );
+  assert.match(environment.container.textContent, /Assignees \(1\)/);
+  assert.match(environment.container.textContent, /Alice/);
+  assert.doesNotMatch(environment.container.textContent, /Bob|You|unknown/);
+  const filteredAvatar = environment.container.querySelector('[data-avatar="Alice"]');
+  assert.ok(filteredAvatar, "inbox options retain the shared member avatar");
+  await React.act(async () => filteredAvatar.closest("button").click());
+  assert.deepEqual(globalThis.sharedDropdownFilterTest.inboxUpdates, [["assignees", ["bob", "alice"]]]);
+
+  await environment.render(
+    React.createElement(FilterMember, {
+      filterKey: "assignees",
+      label: "Assignees",
+      memberIds: ["alice", "bob", "me", "unknown"],
+      searchQuery: "",
+      workspaceSlug: "acme",
+    })
+  );
+  assert.match(environment.container.textContent, /You/);
+  assert.doesNotMatch(environment.container.textContent, /unknown/);
+  assert.equal(environment.container.querySelectorAll("[data-avatar]").length, 3);
+  const selectedBob = [...environment.container.querySelectorAll("button")].find((button) =>
+    button.textContent.includes("Bob")
+  );
+  await React.act(async () => selectedBob.click());
+  assert.deepEqual(globalThis.sharedDropdownFilterTest.inboxUpdates[1], ["assignees", ["alice"]]);
 });
 
 await test("date preset filter retains preset selection and opens the titled custom date flow", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  const { FilterTargetDate } = await import("../../apps/web/core/components/modules/dropdowns/filters/target-date.tsx");
-  const { FilterStartDate } = await import("../../apps/web/core/components/cycles/dropdowns/filters/start-date.tsx");
+  const { DatePresetFilter } = await import("../../apps/web/core/components/core/filters/date-preset-filter.tsx");
   const updates = [];
   const props = {
     appliedFilters: null,
@@ -116,7 +158,7 @@ await test("date preset filter retains preset selection and opens the titled cus
     searchQuery: "",
   };
 
-  await environment.render(React.createElement(FilterTargetDate, props));
+  await environment.render(React.createElement(DatePresetFilter, { ...props, title: "Due date" }));
   assert.match(environment.container.textContent, /Due date/);
   const preset = [...environment.container.querySelectorAll("button")].find((button) =>
     button.textContent.includes("1 week from now")
@@ -126,7 +168,7 @@ await test("date preset filter retains preset selection and opens the titled cus
   assert.deepEqual(updates, ["1_weeks;after;fromnow"]);
 
   await environment.render(
-    React.createElement(FilterTargetDate, { ...props, appliedFilters: ["1_weeks;after;fromnow"] })
+    React.createElement(DatePresetFilter, { ...props, title: "Due date", appliedFilters: ["1_weeks;after;fromnow"] })
   );
   const selectedPreset = [...environment.container.querySelectorAll("button")].find((button) =>
     button.textContent.includes("1 week from now")
@@ -145,6 +187,33 @@ await test("date preset filter retains preset selection and opens the titled cus
   await React.act(async () => applyCustomDate.click());
   assert.deepEqual(updates, ["1_weeks;after;fromnow", ["2024-01-05;after"]]);
 
-  await environment.render(React.createElement(FilterStartDate, props));
+  await environment.render(React.createElement(DatePresetFilter, { ...props, title: "Start date" }));
   assert.match(environment.container.textContent, /Start date/);
+});
+
+await test("single-choice date filters use their own searchable presets", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const { DatePresetFilter } = await import("../../apps/web/core/components/core/filters/date-preset-filter.tsx");
+  const updates = [];
+  const props = {
+    title: "Created date",
+    appliedFilters: ["today;custom;custom"],
+    options: [{ name: "Today", value: "today;custom;custom" }],
+    multiple: false,
+    handleUpdate: (value) => updates.push(value),
+    searchQuery: "",
+  };
+  await environment.render(React.createElement(DatePresetFilter, props));
+  const today = [...environment.container.querySelectorAll("button")].find((button) => button.textContent === "Today");
+  assert.ok(today);
+  assert.match(today.firstElementChild.className, /rounded-full/);
+  assert.match(today.firstElementChild.className, /bg-accent-primary/);
+  assert.doesNotMatch(environment.container.textContent, /week from now/);
+  await React.act(async () => today.click());
+  assert.deepEqual(updates, ["today;custom;custom"]);
+
+  await environment.render(React.createElement(DatePresetFilter, { ...props, searchQuery: "yesterday" }));
+  assert.match(environment.container.textContent, /No matches found/);
+  assert.deepEqual(updates, ["today;custom;custom"]);
 });

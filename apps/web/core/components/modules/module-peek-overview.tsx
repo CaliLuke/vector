@@ -5,15 +5,15 @@
  */
 
 import { useLocation, useRouter } from "@tanstack/react-router";
-import React, { useEffect } from "react";
-import { observer } from "mobx-react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 // hooks
-import { generateQueryParams } from "@plane/utils";
-import { useModule } from "@/hooks/store/use-module";
+import { useModuleDetails } from "@/hooks/use-modules";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
 
 // components
 import { ModuleAnalyticsSidebar } from "./";
+import { getModulePeekHref } from "./module-peek-navigation";
 
 type Props = {
   projectId: string;
@@ -21,31 +21,26 @@ type Props = {
   isArchived?: boolean;
 };
 
-export const ModulePeekOverview = observer(function ModulePeekOverview({
-  projectId,
-  workspaceSlug,
-  isArchived = false,
-}: Props) {
+export const ModulePeekOverview = function ModulePeekOverview({ projectId, workspaceSlug, isArchived = false }: Props) {
   // router
   const router = useRouter();
   const pathname = useLocation({ select: (location) => location.pathname });
-  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const searchStr = useLocation({ select: (location) => location.searchStr });
+  const searchParams = useMemo(() => new URLSearchParams(searchStr), [searchStr]);
   const peekModule = searchParams.get("peekModule");
+  const detail = useModuleDetails(workspaceSlug, projectId, peekModule ?? undefined, isArchived);
+  const current = useCommittedScope(JSON.stringify([detail.scope, peekModule]));
   // refs
   const ref = React.useRef(null);
   // store hooks
-  const { fetchModuleDetails, fetchArchivedModuleDetails } = useModule();
 
-  const handleClose = () => {
-    const query = generateQueryParams(searchParams, ["peekModule"]);
-    void router.navigate({ href: `${pathname}?${query}` });
-  };
+  const handleClose = useCallback(() => {
+    void router.navigate({ href: getModulePeekHref(pathname, searchStr) });
+  }, [pathname, router, searchStr]);
 
   useEffect(() => {
-    if (!peekModule) return;
-    if (isArchived) fetchArchivedModuleDetails(workspaceSlug, projectId, peekModule.toString());
-    else fetchModuleDetails(workspaceSlug, projectId, peekModule.toString());
-  }, [fetchArchivedModuleDetails, fetchModuleDetails, isArchived, peekModule, projectId, workspaceSlug]);
+    if (detail.module === null && current()) handleClose();
+  }, [detail.module, current, handleClose]);
 
   return (
     <>
@@ -59,6 +54,8 @@ export const ModulePeekOverview = observer(function ModulePeekOverview({
           }}
         >
           <ModuleAnalyticsSidebar
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
             moduleId={peekModule?.toString() ?? ""}
             handleClose={handleClose}
             isArchived={isArchived}
@@ -67,4 +64,4 @@ export const ModulePeekOverview = observer(function ModulePeekOverview({
       )}
     </>
   );
-});
+};

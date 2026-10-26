@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 // plane imports
@@ -18,8 +17,7 @@ import { KanbanLayoutLoader } from "@/components/ui/loader/layouts/kanban-layout
 import { ListLayoutLoader } from "@/components/ui/loader/layouts/list-layout-loader";
 import { SpreadsheetLayoutLoader } from "@/components/ui/loader/layouts/spreadsheet-layout-loader";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 // local imports
 import { IssueLayoutEmptyState } from "./empty-states";
 
@@ -44,26 +42,29 @@ function ActiveLoader(props: { layout: EIssueLayoutTypes }) {
 interface Props {
   children: string | React.ReactNode | React.ReactNode[];
   layout: EIssueLayoutTypes;
-  loadError?: boolean;
-  onRetry?: () => void;
+  readState: {
+    isPending: boolean;
+    isError: boolean;
+    issueCount: number;
+    retry: () => Promise<unknown>;
+  };
 }
 
-export const IssueLayoutHOC = observer(function IssueLayoutHOC(props: Props) {
-  const { layout, loadError = false, onRetry } = props;
+export function IssueLayoutHOC(props: Props) {
+  const { layout, readState } = props;
+  const retry = readState.retry;
   const { t } = useTranslation();
 
-  const storeType = useIssueStoreType();
-  const { issues } = useIssues(storeType);
+  const storeType = useIssueListType();
+  const issueCount = readState.issueCount;
 
-  const issueCount = issues.getGroupIssueCount(undefined, undefined, false);
-
-  if (loadError) {
+  if (readState.isError) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-center">
+      <div role="alert" className="flex h-full w-full flex-col items-center justify-center gap-3 text-center">
         <AlertTriangle className="size-8 text-tertiary" />
         <p className="text-14 text-secondary">{t("something_went_wrong")}</p>
-        {onRetry && (
-          <Button variant="secondary" size="sm" onClick={() => void onRetry()}>
+        {retry && (
+          <Button variant="secondary" size="sm" onClick={() => void retry()}>
             {t("common.retry")}
           </Button>
         )}
@@ -71,13 +72,16 @@ export const IssueLayoutHOC = observer(function IssueLayoutHOC(props: Props) {
     );
   }
 
-  if (issues?.getIssueLoader() === "init-loader" || issueCount === undefined) {
-    return <ActiveLoader layout={layout} />;
-  }
+  if (readState.isPending)
+    return (
+      <output aria-label="Loading work items">
+        <ActiveLoader layout={layout} />
+      </output>
+    );
 
-  if (issues.getGroupIssueCount(undefined, undefined, false) === 0 && layout !== EIssueLayoutTypes.CALENDAR) {
+  if (issueCount === 0 && layout !== EIssueLayoutTypes.CALENDAR) {
     return <IssueLayoutEmptyState storeType={storeType} />;
   }
 
   return <LayoutErrorBoundary key={layout}>{props.children}</LayoutErrorBoundary>;
-});
+}

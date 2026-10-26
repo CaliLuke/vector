@@ -801,6 +801,37 @@ func BuildPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAtta
 	return v, nil
 }
 
+// BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload builds the payload
+// for the PlaneInternalDjangoMigrationAPI
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint from CLI flags.
+func BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload(planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkSlug string, planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEntityID string, planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredential string) (*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload, error) {
+	var err error
+	var slug string
+	{
+		slug = planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkSlug
+	}
+	var entityID string
+	{
+		entityID = planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEntityID
+		err = loom.MergeErrors(err, loom.ValidateFormat("entity_id", entityID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var planeSessionCookieCredential *string
+	{
+		if planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredential != "" {
+			planeSessionCookieCredential = &planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredential
+		}
+	}
+	v := &planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload{}
+	v.Slug = slug
+	v.EntityID = entityID
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v, nil
+}
+
 // BuildPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPayload
 // builds the payload for the PlaneInternalDjangoMigrationAPI
 // PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk endpoint

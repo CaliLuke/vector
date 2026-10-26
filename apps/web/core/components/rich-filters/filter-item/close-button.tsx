@@ -4,26 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { CloseIcon } from "@plane/propel/icons";
-import type { IFilterInstance } from "@plane/shared-state";
-import type { TExternalFilter, TFilterProperty } from "@plane/types";
+import type { TFilterProperty } from "@plane/types";
+import type { TFilterExpressionEditor } from "../shared";
 
-interface FilterItemCloseButtonProps<P extends TFilterProperty, E extends TExternalFilter> {
+interface FilterItemCloseButtonProps<P extends TFilterProperty> {
   conditionId: string;
-  filter: IFilterInstance<P, E>;
+  editor: TFilterExpressionEditor<P>;
 }
 
-export const FilterItemCloseButton = observer(function FilterItemCloseButton<
-  P extends TFilterProperty,
-  E extends TExternalFilter,
->(props: FilterItemCloseButtonProps<P, E>) {
-  const { conditionId, filter } = props;
+export const FilterItemCloseButton = function FilterItemCloseButton<P extends TFilterProperty>(
+  props: FilterItemCloseButtonProps<P>
+) {
+  const { conditionId, editor } = props;
 
   const handleRemoveFilter = () => {
-    filter.removeCondition(conditionId);
+    editor.onRemoveCondition(conditionId);
   };
 
   return (
@@ -36,4 +33,4 @@ export const FilterItemCloseButton = observer(function FilterItemCloseButton<
       <CloseIcon className="size-3.5" />
     </button>
   );
-});
+};

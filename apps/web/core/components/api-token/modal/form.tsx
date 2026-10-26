@@ -5,25 +5,32 @@
  */
 
 import { useState } from "react";
-import { add } from "date-fns";
-import { Controller, useForm } from "react-hook-form";
+import { add } from "date-fns/add";
+import { useForm, useStore } from "@tanstack/react-form";
 import { Calendar } from "lucide-react";
 // types
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IApiToken } from "@plane/types";
 // ui
 import { CustomSelect, Input, TextArea, ToggleSwitch } from "@plane/ui";
-import { cn, renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate, renderFormattedTime } from "@plane/utils/datetime";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 // helpers
 type Props = {
   handleClose: () => void;
-  neverExpires: boolean;
-  toggleNeverExpires: () => void;
   onSubmit: (data: Partial<IApiToken>) => Promise<void>;
+};
+
+const getSubmissionErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object" && error !== null) {
+    if ("detail" in error && typeof error.detail === "string") return error.detail;
+    if ("message" in error && typeof error.message === "string") return error.message;
+  }
+  return "Could not create API token. Please try again.";
 };
 
 const EXPIRY_DATE_OPTIONS = [
@@ -49,131 +56,139 @@ const EXPIRY_DATE_OPTIONS = [
   },
 ];
 
-const defaultValues: Partial<IApiToken> = {
+const defaultValues = {
   label: "",
   description: "",
-  expired_at: null,
+  expired_at: "",
+  customDate: null as Date | null,
+  neverExpires: false,
 };
 
-const getExpiryDate = (val: string): Date | null | undefined => {
-  const today = new Date();
+const getExpiryDate = (val: string, today: Date): Date | null | undefined => {
   const dateToAdd = EXPIRY_DATE_OPTIONS.find((option) => option.key === val)?.value;
   if (dateToAdd) return add(today, dateToAdd);
   return null;
 };
 
-const getFormattedDate = (date: Date): Date => {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const seconds = now.getSeconds();
-  return add(date, { hours, minutes, seconds });
+const getFormattedDate = (date: Date, now: Date): Date => {
+  const expiry = new Date(date);
+  expiry.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), 0);
+  return expiry;
 };
 
-export function CreateApiTokenForm(props: Props) {
-  const { handleClose, neverExpires, toggleNeverExpires, onSubmit } = props;
-  // states
-  const [customDate, setCustomDate] = useState<Date | null>(null);
-  // form
-  const {
-    control,
-    formState: { errors, isSubmitting },
-    handleSubmit,
-    reset,
-    watch,
-  } = useForm<IApiToken>({ defaultValues });
-  // hooks
+export function CreateApiTokenForm({ handleClose, onSubmit }: Props) {
   const { t } = useTranslation();
-
-  const handleFormSubmit = async (data: IApiToken) => {
-    // if never expires is toggled off, and the user has not selected a custom date or a predefined date, show an error
-    if (!neverExpires && (!data.expired_at || (data.expired_at === "custom" && !customDate)))
-      return setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please select an expiration date.",
+  const form = useForm({
+    defaultValues,
+    validators: {
+      onSubmit: ({ value }): string | undefined => {
+        const expiration = value.neverExpires
+          ? null
+          : value.expired_at === "custom"
+            ? value.customDate && getFormattedDate(value.customDate, new Date())
+            : getExpiryDate(value.expired_at, new Date());
+        return !value.neverExpires && (!expiration || expiration.getTime() <= Date.now())
+          ? "Please select a future expiration date."
+          : undefined;
+      },
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const now = new Date();
+      const expiration = value.neverExpires
+        ? null
+        : value.expired_at === "custom"
+          ? value.customDate && getFormattedDate(value.customDate, now)
+          : getExpiryDate(value.expired_at, now);
+      await onSubmit({
+        label: value.label.trim(),
+        description: value.description,
+        expired_at: expiration?.toISOString() ?? null,
       });
-
-    const payload: Partial<IApiToken> = {
-      label: data.label,
-      description: data.description,
-    };
-
-    // if never expires is toggled on, set expired_at to null
-    if (neverExpires) payload.expired_at = null;
-    // if never expires is toggled off, and the user has selected a custom date, set expired_at to the custom date
-    else if (data.expired_at === "custom") {
-      payload.expired_at = customDate && getFormattedDate(customDate).toISOString();
-    }
-    // if never expires is toggled off, and the user has selected a predefined date, set expired_at to the predefined date
-    else {
-      const expiryDate = getExpiryDate(data.expired_at ?? "");
-      if (expiryDate) payload.expired_at = expiryDate.toISOString();
-    }
-
-    await onSubmit(payload).then(() => {
-      reset(defaultValues);
-      setCustomDate(null);
-    });
-  };
-
-  const today = new Date();
+      formApi.reset();
+    },
+  });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const { customDate, neverExpires, expired_at: expiredAt } = useStore(form.store, (state) => state.values);
+  const [today] = useState(() => new Date());
   const tomorrow = add(today, { days: 1 });
-  const expiredAt = watch("expired_at");
-  const expiryDate = getExpiryDate(expiredAt ?? "");
-  const customDateFormatted = customDate && getFormattedDate(customDate);
+  const expiryDate = getExpiryDate(expiredAt ?? "", today);
+  const customDateFormatted = customDate && getFormattedDate(customDate, today);
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)}>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch((error: unknown) => {
+          form.setErrorMap({
+            onSubmit: getSubmissionErrorMessage(error),
+          });
+        });
+      }}
+    >
       <div className="space-y-5 p-5">
         <h3 className="text-18 font-medium text-secondary">
           {t("workspace_settings.settings.api_tokens.create_token")}
         </h3>
         <div className="space-y-3">
+          {formError && (
+            <p role="alert" className="text-11 text-danger-primary">
+              {formError}
+            </p>
+          )}
           <div className="space-y-1">
-            <Controller
-              control={control}
+            <form.Field
               name="label"
-              rules={{
-                required: t("title_is_required"),
-                maxLength: {
-                  value: 255,
-                  message: t("title_should_be_less_than_255_characters"),
-                },
-                validate: (val) => val.trim() !== "" || t("title_is_required"),
+              validators={{
+                onChange: ({ value }) =>
+                  !value.trim()
+                    ? t("title_is_required")
+                    : value.length > 255
+                      ? t("title_should_be_less_than_255_characters")
+                      : undefined,
               }}
-              render={({ field: { value, onChange } }) => (
-                <Input
-                  type="text"
-                  value={value}
-                  onChange={onChange}
-                  hasError={Boolean(errors.label)}
-                  placeholder={t("title")}
-                  className="w-full text-14"
-                />
+            >
+              {(field) => (
+                <>
+                  <Input
+                    name={field.name}
+                    type="text"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    disabled={isSubmitting}
+                    hasError={field.state.meta.errors.length > 0}
+                    placeholder={t("title")}
+                    className="w-full text-14"
+                  />
+                  {field.state.meta.errors.map((error) => (
+                    <span key={error} role="alert" className="text-11 text-danger-primary">
+                      {error}
+                    </span>
+                  ))}
+                </>
               )}
-            />
-            {errors.label && <span className="text-11 text-danger-primary">{errors.label.message}</span>}
+            </form.Field>
           </div>
-          <Controller
-            control={control}
-            name="description"
-            render={({ field: { value, onChange } }) => (
+          <form.Field name="description">
+            {(field) => (
               <TextArea
-                value={value}
-                onChange={onChange}
-                hasError={Boolean(errors.description)}
+                name={field.name}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                disabled={isSubmitting}
                 placeholder={t("description")}
                 className="min-h-24 w-full resize-none text-14"
               />
             )}
-          />
+          </form.Field>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Controller
-                control={control}
-                name="expired_at"
-                render={({ field: { onChange, value } }) => {
+              <form.Field name="expired_at">
+                {(field) => {
+                  const value = field.state.value;
                   const selectedOption = EXPIRY_DATE_OPTIONS.find((option) => option.key === value);
 
                   return (
@@ -196,8 +211,8 @@ export function CreateApiTokenForm(props: Props) {
                         </div>
                       }
                       value={value}
-                      onChange={onChange}
-                      disabled={neverExpires}
+                      onChange={(selection: string | null) => field.handleChange(selection ?? "")}
+                      disabled={neverExpires || isSubmitting}
                     >
                       {EXPIRY_DATE_OPTIONS.map((option) => (
                         <CustomSelect.Option key={option.key} value={option.key}>
@@ -208,17 +223,17 @@ export function CreateApiTokenForm(props: Props) {
                     </CustomSelect>
                   );
                 }}
-              />
+              </form.Field>
               {expiredAt === "custom" && (
                 <div className="h-7">
                   <DateDropdown
                     value={customDate}
-                    onChange={(date) => setCustomDate(date)}
+                    onChange={(date) => form.setFieldValue("customDate", date)}
                     minDate={tomorrow}
                     icon={<Calendar className="h-3 w-3" />}
                     buttonVariant="border-with-text"
                     placeholder="Set date"
-                    disabled={neverExpires}
+                    disabled={neverExpires || isSubmitting}
                   />
                 </div>
               )}
@@ -238,14 +253,21 @@ export function CreateApiTokenForm(props: Props) {
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 border-t-[0.5px] border-subtle px-5 py-4">
-        <div className="flex cursor-pointer items-center gap-1.5" onClick={toggleNeverExpires}>
+        <label className="flex cursor-pointer items-center gap-1.5">
           <div className="flex cursor-pointer items-center justify-center">
-            <ToggleSwitch value={neverExpires} onChange={() => {}} size="sm" />
+            <ToggleSwitch
+              value={neverExpires}
+              onChange={() => {
+                if (!isSubmitting) form.setFieldValue("neverExpires", !neverExpires);
+              }}
+              disabled={isSubmitting}
+              size="sm"
+            />
           </div>
           <span className="text-11">{t("workspace_settings.settings.api_tokens.never_expires")}</span>
-        </div>
+        </label>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={handleClose}>
+          <Button type="button" variant="secondary" disabled={isSubmitting} onClick={handleClose}>
             {t("cancel")}
           </Button>
           <Button variant="primary" type="submit" loading={isSubmitting}>

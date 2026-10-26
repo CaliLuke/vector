@@ -4,50 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
-
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 // local imports
-import type { TWorkItemStateDropdownBaseProps } from "./base";
+import type { StateDropdownProps } from "../state/types";
 import { WorkItemStateDropdownBase } from "./base";
 
-type TWorkItemStateDropdownProps = Omit<
-  TWorkItemStateDropdownBaseProps,
-  "stateIds" | "getStateById" | "onDropdownOpen" | "isInitializing"
-> & {
-  stateIds?: string[];
-};
-
-export const IntakeStateDropdown = observer(function IntakeStateDropdown(props: TWorkItemStateDropdownProps) {
+export function IntakeStateDropdown(props: StateDropdownProps) {
   const { projectId, stateIds: propsStateIds } = props;
-  // router params
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // states
-  const [stateLoader, setStateLoader] = useState(false);
-  // store hooks
-  const { fetchProjectIntakeState, getProjectIntakeStateIds, getIntakeStateById } = useProjectState();
+  // state query
+  const stateQuery = useRouteProjectStates(projectId, true);
   // derived values
-  const stateIds = propsStateIds ?? getProjectIntakeStateIds(projectId);
-
-  // fetch states if not provided
-  const onDropdownOpen = async () => {
-    if ((stateIds === undefined || stateIds.length === 0) && workspaceSlug && projectId) {
-      setStateLoader(true);
-      await fetchProjectIntakeState(workspaceSlug.toString(), projectId);
-      setStateLoader(false);
-    }
-  };
+  const stateIds = propsStateIds ?? stateQuery.getProjectIntakeStateIds(projectId);
 
   return (
     <WorkItemStateDropdownBase
       {...props}
-      getStateById={getIntakeStateById}
-      isInitializing={stateLoader}
+      getStateById={stateQuery.getIntakeStateById}
+      isInitializing={stateQuery.intakeQuery.isPending}
       stateIds={stateIds ?? []}
-      onDropdownOpen={onDropdownOpen}
     />
   );
-});
+}

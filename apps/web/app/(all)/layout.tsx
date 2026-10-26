@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
+import { ProjectListFiltersProvider } from "@/hooks/use-project-list-filters";
 
 const meta = () => [
   { name: "robots", content: "noindex, nofollow" },
@@ -12,7 +13,12 @@ const meta = () => [
 ];
 
 function AppLayout(): React.JSX.Element | null {
-  return <Outlet />;
+  const { workspaceSlug } = useParams({ strict: false });
+  return (
+    <ProjectListFiltersProvider workspaceSlug={workspaceSlug ?? ""}>
+      <Outlet />
+    </ProjectListFiltersProvider>
+  );
 }
 
 export const Route = createFileRoute("/_authenticated")({

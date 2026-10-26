@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Combobox } from "@headlessui/react";
 // hooks
 import type { ISearchIssueResponse } from "@plane/types";
@@ -16,7 +15,7 @@ interface Props {
   canDeleteIssueIds: boolean;
 }
 
-export const BulkDeleteIssuesModalItem = observer(function BulkDeleteIssuesModalItem(props: Props) {
+export const BulkDeleteIssuesModalItem = function BulkDeleteIssuesModalItem(props: Props) {
   const { issue, canDeleteIssueIds } = props;
 
   const color = issue.state__color;
@@ -51,4 +50,4 @@ export const BulkDeleteIssuesModalItem = observer(function BulkDeleteIssuesModal
       </div>
     </Combobox.Option>
   );
-});
+};

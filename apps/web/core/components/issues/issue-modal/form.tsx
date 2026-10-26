@@ -1,517 +1,494 @@
-// oxlint-disable promise/always-return
-// oxlint-disable no-shadow
-// oxlint-disable jsx_a11y/prefer-tag-over-role
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
+import { useStore } from "@tanstack/react-form";
 import { useParams } from "@tanstack/react-router";
-import React, { useState, useRef, useEffect } from "react";
-import { observer } from "mobx-react";
+import React, { useState, useRef, useEffect, useEffectEvent } from "react";
 
-import { FormProvider, useForm } from "react-hook-form";
-// editor
-import { ETabIndices, DEFAULT_WORK_ITEM_FORM_VALUES } from "@plane/constants";
+import { ETabIndices } from "@plane/constants";
 import type { EditorRefApi } from "@plane/editor";
-// i18n
 import { useTranslation } from "@plane/i18n";
-import { Button } from "@plane/propel/button";
+import { IssueFormActions } from "./form-actions";
+import { FormErrors } from "@plane/ui";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TIssue, TWorkspaceDraftIssue } from "@plane/types";
-// hooks
-import { ToggleSwitch } from "@plane/ui";
-import {
-  convertWorkItemDataToSearchResponse,
-  getUpdateFormDataForReset,
-  cn,
-  getChangedIssuefields,
-  getTabIndex,
-} from "@plane/utils";
-// components
+import type { TIssue } from "@plane/types";
+import { convertWorkItemDataToSearchResponse } from "@plane/utils/work-item";
+import { getTabIndex } from "@plane/utils/tab-indices";
 import {
   IssueDefaultProperties,
   IssueDescriptionEditor,
   IssueParentTag,
   IssueProjectSelect,
   IssueTitleInput,
-} from "@/components/issues/issue-modal/components";
-// helpers
-// hooks
+} from "./components";
+import { IssueTypeSelect, IssueCustomFields } from "./components/type-fields";
+import { useItemTypeFields } from "./use-item-type-fields";
+import type { IssueDraftForm } from "./form-state";
+import { issueDraftDefaults, issueSubmissionPayload, useIssueDraftForm } from "./form-state";
 import { useIssueModal } from "@/hooks/context/use-issue-modal";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useWorkspaceDraftIssues } from "@/hooks/store/workspace-draft";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { issueFieldErrors, issueSaveError, issueSourceChanged } from "./issue-field-errors";
+import { ItemEditCancelled } from "./use-reviewed-item-edit";
+import { itemAssetReferences } from "./item-asset-references";
 import { usePlatformOS } from "@/hooks/use-platform-os";
-import { useProjectIssueProperties } from "@/hooks/use-project-issue-properties";
+import useKeypress from "@/hooks/use-keypress";
 
 export interface IssueFormProps {
   data?: Partial<TIssue>;
+  persistedData?: Partial<TIssue>;
+  sourceVersion?: string;
+  onReloadSource?: () => Promise<void>;
   issueTitleRef: React.MutableRefObject<HTMLInputElement | null>;
   isCreateMoreToggleEnabled: boolean;
   onAssetUpload: (assetId: string) => void;
   onCreateMoreToggleChange: (value: boolean) => void;
   onChange?: (formData: Partial<TIssue> | null) => void;
   onClose: () => void;
-  onSubmit: (values: Partial<TIssue>, is_draft_issue?: boolean) => Promise<void>;
-  projectId: string;
+  onSubmit: (
+    values: Partial<TIssue>,
+    is_draft_issue?: boolean,
+    assetReferences?: string[],
+    revision?: number,
+    editorDraft?: Partial<TIssue>,
+    sourceVersion?: string
+  ) => Promise<void>;
+  onPublish?: (
+    values: Partial<TIssue>,
+    assetReferences: string[],
+    revision?: number,
+    editorDraft?: Partial<TIssue>,
+    sourceVersion?: string
+  ) => Promise<void>;
+  projectId: string | null;
   isDraft: boolean;
   moveToIssue?: boolean;
   modalTitle?: string;
-  primaryButtonText?: {
-    default: string;
-    loading: string;
-  };
-  isDuplicateModalOpen: boolean;
-  handleDuplicateIssueModal: (isOpen: boolean) => void;
-  handleDraftAndClose?: () => void;
+  primaryButtonText?: { default: string; loading: string };
   isProjectSelectionDisabled?: boolean;
   showActionButtons?: boolean;
-  dataResetProperties?: any[];
+  readOnly?: boolean;
 }
 
-export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormProps) {
+export const IssueFormRoot = function IssueFormRoot(props: IssueFormProps) {
   const { t } = useTranslation();
+  const { data, persistedData, version: sourceVersion } = useFormSource(props);
+  const [sourceConflict, setSourceConflict] = useState(false);
+  const [reloading, setReloading] = useState(false);
   const {
-    data,
     issueTitleRef,
     onAssetUpload,
     onChange,
     onClose,
     onSubmit,
+    onPublish,
     projectId: defaultProjectId,
     isCreateMoreToggleEnabled,
     onCreateMoreToggleChange,
     isDraft,
     moveToIssue = false,
-    modalTitle = `${data?.id ? t("update") : isDraft ? t("create_a_draft") : t("create_new_issue")}`,
-    primaryButtonText = {
-      default: `${data?.id ? t("update") : isDraft ? t("save_to_drafts") : t("save")}`,
-      loading: `${data?.id ? t("updating") : t("saving")}`,
-    },
     isProjectSelectionDisabled = false,
     showActionButtons = true,
-    dataResetProperties = [],
+    readOnly = false,
   } = props;
-
-  // states
+  const { modalTitle, primaryButtonText } = issueFormPresentation(props, t);
+  const [publishing, setPublishing] = useState(false);
   const [gptAssistantModal, setGptAssistantModal] = useState(false);
-  const [isMoving, setIsMoving] = useState<boolean>(false);
-
-  // refs
+  const [defaults] = useState(() => issueDraftDefaults(defaultProjectId, data ?? {}));
   const editorRef = useRef<EditorRefApi>(null);
-  const submitBtnRef = useRef<HTMLButtonElement | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const modalContainerRef = useRef<HTMLDivElement | null>(null);
-
-  // router
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
+  const pendingFieldFocus = useRef<string | undefined>(undefined);
+  const formElement = useRef<HTMLFormElement>(null);
+  const fieldsRef = useRef<ReturnType<typeof useItemTypeFields> | undefined>(undefined);
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { projectId: routeProjectId } = useParams({ strict: false });
-
-  // store hooks
-  const { getProjectById } = useProject();
-  const {
-    workItemTemplateId,
-    isApplyingTemplate,
-    selectedParentIssue,
-    setWorkItemTemplateId,
-    setSelectedParentIssue,
-    getIssueTypeIdOnProjectChange,
-    getActiveAdditionalPropertiesLength,
-    handlePropertyValuesValidation,
-    handleCreateUpdatePropertyValues,
-    handleTemplateChange,
-  } = useIssueModal();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const { selectedParentIssue, setSelectedParentIssue } = useIssueModal();
   const { isMobile } = usePlatformOS();
-  const { moveIssue } = useWorkspaceDraftIssues();
-
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
-  const { fetchCycles } = useProjectIssueProperties();
-  const { getStateById } = useProjectState();
-
-  // form info
-  const methods = useForm<TIssue>({
-    defaultValues: { ...DEFAULT_WORK_ITEM_FORM_VALUES, project_id: defaultProjectId, ...data },
-    reValidateMode: "onChange",
-  });
-  const {
-    formState,
-    formState: { isDirty, isSubmitting, dirtyFields },
-    handleSubmit,
-    reset,
-    watch,
-    control,
-    getValues,
-    setValue,
-  } = methods;
-
-  const projectId = watch("project_id");
-  const activeAdditionalPropertiesLength = getActiveAdditionalPropertiesLength({
-    projectId: projectId,
-    workspaceSlug: workspaceSlug?.toString(),
-    watch: watch,
-  });
-
-  const isDisabled = isSubmitting || isApplyingTemplate;
-
   const { getIndex } = getTabIndex(ETabIndices.ISSUE_FORM, isMobile);
 
-  //reset few fields on projectId change
-  useEffect(() => {
-    if (isDirty) {
-      if (workItemTemplateId) {
-        // reset work item template id
-        setWorkItemTemplateId(null);
-        reset({ ...DEFAULT_WORK_ITEM_FORM_VALUES, project_id: projectId });
-        editorRef.current?.clearEditor();
-      } else {
-        reset(getUpdateFormDataForReset(projectId, getValues()));
-      }
-    }
-    if (projectId && routeProjectId !== projectId) fetchCycles(workspaceSlug?.toString(), projectId);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
-
-  // Reset form when data prop changes
-  useEffect(() => {
-    if (data) {
-      reset({ ...DEFAULT_WORK_ITEM_FORM_VALUES, project_id: projectId, ...data });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [...dataResetProperties]);
-
-  // Update the issue type id when the project id changes
-  useEffect(() => {
-    const issueTypeId = watch("type_id");
-
-    // if issue type id is present or project not available, return
-    if (issueTypeId || !projectId) return;
-
-    // get issue type id on project change
-    const issueTypeIdOnProjectChange = getIssueTypeIdOnProjectChange(projectId);
-    if (issueTypeIdOnProjectChange) setValue("type_id", issueTypeIdOnProjectChange, { shouldValidate: true });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, projectId]);
-
-  useEffect(() => {
-    if (workItemTemplateId && editorRef.current) {
-      handleTemplateChange({
-        workspaceSlug: workspaceSlug?.toString(),
-        reset,
-        editorRef,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workItemTemplateId]);
-
-  const handleFormSubmit = async (formData: Partial<TIssue>, is_draft_issue = false) => {
-    // Check if the editor is ready to discard
-    if (!editorRef.current?.isEditorReadyToDiscard()) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("editor_is_not_ready_to_discard_changes"),
-      });
-      return;
-    }
-
-    // check for required properties validation
+  const editorReady = () => {
     if (
-      !handlePropertyValuesValidation({
-        projectId: projectId,
-        workspaceSlug: workspaceSlug?.toString(),
-        watch: watch,
-      })
+      editorRef.current?.isEditorReadyToDiscard() &&
+      [...fields.editors.values()].every((editor) => editor.isEditorReadyToDiscard())
     )
-      return;
-
-    const submitData = !data?.id
-      ? formData
-      : {
-          ...getChangedIssuefields(formData, dirtyFields as { [key: string]: boolean | undefined }),
-          project_id: getValues<"project_id">("project_id"),
-          id: data.id,
-          description_html: formData.description_html ?? "<p></p>",
-          type_id: getValues<"type_id">("type_id"),
-        };
-
-    // this condition helps to move the issues from draft to project issues
-    if (formData.hasOwnProperty("is_draft")) submitData.is_draft = formData.is_draft;
-
-    await onSubmit(submitData, is_draft_issue)
-      .then(() => {
-        setGptAssistantModal(false);
-        if (isCreateMoreToggleEnabled && workItemTemplateId) {
-          handleTemplateChange({
-            workspaceSlug: workspaceSlug?.toString(),
-            reset,
-            editorRef,
-          });
-        } else {
-          reset({
-            ...DEFAULT_WORK_ITEM_FORM_VALUES,
-            ...(isCreateMoreToggleEnabled ? { ...data } : {}),
-            project_id: getValues<"project_id">("project_id"),
-            type_id: getValues<"type_id">("type_id"),
-            description_html: data?.description_html ?? "<p></p>",
-          });
-          editorRef?.current?.clearEditor();
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+      return true;
+    setToast({ type: TOAST_TYPE.ERROR, title: t("error"), message: t("editor_is_not_ready_to_discard_changes") });
+    return false;
   };
-
-  const handleMoveToProjects = async () => {
-    if (!data?.id || !data?.project_id || !data) return;
-    setIsMoving(true);
+  const form: IssueDraftForm = useIssueDraftForm(
+    defaults,
+    async (value, action, formApi, fieldMeta) => {
+      formApi.setErrorMap({ onSubmit: undefined });
+      const activeFields = fieldsRef.current;
+      if (!activeFields) throw new Error("Work item fields are not ready.");
+      activeFields.clearErrors();
+      try {
+        const dirtyFields = Object.fromEntries(
+          Object.entries(fieldMeta).map(([key, meta]) => [key, isDirtyFieldMeta(meta)])
+        );
+        const payload = issueSubmissionPayload(value, dirtyFields, data?.id, isDraft, activeFields.submitted());
+        const references = itemAssetReferences(value, activeFields.schema);
+        const outcome = await submitIssueDraftAction(action, {
+          data,
+          onPublish,
+          onSubmit,
+          payload,
+          isDraft,
+          references,
+          revision: activeFields.schema?.revision,
+          draft: value,
+          sourceVersion,
+        });
+        if (outcome === "published") return;
+        setGptAssistantModal(false);
+        formApi.reset(
+          issueDraftDefaults(value.project_id ?? defaultProjectId, {
+            ...(isCreateMoreToggleEnabled ? data : {}),
+            project_id: value.project_id,
+            type_id: value.type_id,
+          })
+        );
+        editorRef.current?.setEditorValue(value.description_html ?? "", false);
+        activeFields.syncEditorsAfterReset();
+        if (isCreateMoreToggleEnabled) issueTitleRef.current?.focus();
+      } catch (cause) {
+        if (cause instanceof ItemEditCancelled) return;
+        if (issueSourceChanged(cause)) setSourceConflict(true);
+        activeFields.recordError(cause);
+        const errors = issueFieldErrors(cause);
+        pendingFieldFocus.current = Object.keys(errors)[0];
+        formApi.setErrorMap({
+          onSubmit: {
+            form: issueSaveError(
+              cause,
+              action === "move"
+                ? "Failed to move work item to project. Please try again."
+                : "Failed to save work item. Your changes are still here; please try again."
+            ),
+            fields: errors,
+          },
+        });
+        throw cause;
+      }
+    },
+    () =>
+      fieldsRef.current?.validate() ??
+      (editorRef.current?.isEditorReadyToDiscard() ? undefined : t("editor_is_not_ready_to_discard_changes"))
+  );
+  const reloadSource = async () => {
+    if (!editorReady()) return;
+    setReloading(true);
     try {
-      await handleCreateUpdatePropertyValues({
-        issueId: data.id,
-        issueTypeId: data.type_id,
-        projectId: data.project_id,
-        workspaceSlug: workspaceSlug?.toString(),
-        isDraft: true,
-      });
-
-      await moveIssue(workspaceSlug.toString(), data.id, {
-        ...data,
-        ...getValues(),
-      } as TWorkspaceDraftIssue);
-    } catch {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Failed to move work item to project. Please try again.",
+      await props.onReloadSource?.();
+    } catch (cause) {
+      form.setErrorMap({
+        onSubmit: {
+          form: issueSaveError(cause, "Could not reload the saved work item. Your changes are still here."),
+          fields: {},
+        },
       });
     } finally {
-      setIsMoving(false);
+      setReloading(false);
     }
   };
-
-  const condition =
-    (watch("name") && watch("name") !== "") || (watch("description_html") && watch("description_html") !== "<p></p>");
-
-  const handleFormChange = () => {
-    if (!onChange) return;
-
-    if (isDirty && condition) onChange(watch());
-    else onChange(null);
-  };
-
-  // executing this useEffect when the parent_id coming from the component prop
+  const fields = useItemTypeFields(
+    form,
+    workspaceSlug,
+    data,
+    itemSchemaMode(publishing, isDraft, !!data?.id),
+    persistedData
+  );
   useEffect(() => {
-    const parentId = watch("parent_id") || undefined;
-    if (!parentId) return;
-    if (parentId === selectedParentIssue?.id || selectedParentIssue) return;
-
-    const issue = getIssueById(parentId);
-    if (!issue) return;
-
-    const projectDetails = getProjectById(issue.project_id);
-    if (!projectDetails) return;
-
-    const stateDetails = getStateById(issue.state_id);
-
-    setSelectedParentIssue(
-      convertWorkItemDataToSearchResponse(workspaceSlug?.toString(), issue, projectDetails, stateDetails)
-    );
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-  }, [watch, getIssueById, getProjectById, selectedParentIssue, getStateById]);
-
-  // executing this useEffect when isDirty changes
-  useEffect(() => {
-    if (!onChange) return;
-
-    if (isDirty && condition) onChange(watch());
-    else onChange(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDirty]);
-
-  useEffect(() => {
-    const formElement = formRef?.current;
-    const modalElement = modalContainerRef?.current;
-
-    if (!formElement || !modalElement) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      modalElement.style.maxHeight = `${formElement?.offsetHeight}px`;
-    });
-
-    resizeObserver.observe(formElement);
-
+    fieldsRef.current = fields;
     return () => {
-      resizeObserver.disconnect();
+      fieldsRef.current = undefined;
     };
-  }, [formRef, modalContainerRef]);
+  }, [fields]);
+  const values = useStore(form.store, (state) => state.values);
+  const parentDetail = useWorkItemDetail(
+    workspaceSlug,
+    parentDetailProjectId(values.project_id, defaultProjectId),
+    values.parent_id ?? undefined
+  );
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const submitError = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const formLocked = isSubmitting || reloading;
+  useEffect(() => {
+    if (isSubmitting || !pendingFieldFocus.current) return;
+    const field = pendingFieldFocus.current;
+    const container = formElement.current?.querySelector<HTMLElement>(`[data-issue-field="${field}"]`);
+    const control = container?.querySelector<HTMLElement>("input,button,[contenteditable=true],textarea") ?? container;
+    control?.focus();
+    pendingFieldFocus.current = undefined;
+  }, [isSubmitting]);
+  const projectId = values.project_id;
+  const { projectRole } = useProjectPermissions(workspaceSlug, projectId ?? undefined);
+  const { getStateById } = useProjectStates(workspaceSlug, projectId);
+  const notifyChange = useEffectEvent((value: typeof values, dirty: boolean) => {
+    onChange?.(dirty ? value : null);
+  });
+  useEffect(() => {
+    notifyChange(values, isDirty);
+  }, [values, isDirty]);
+  useEffect(() => {
+    issueTitleRef.current?.focus();
+  }, [issueTitleRef]);
+  useEffect(() => {
+    if (data?.description_html !== undefined && !form.getFieldMeta("description_html")?.isDirty) {
+      form.setFieldValue("description_html", data.description_html, { dontUpdateMeta: true });
+    }
+  }, [data?.description_html, form]);
+  useEffect(() => {
+    if (!values.parent_id || values.parent_id === selectedParentIssue?.id) return;
+    const issue = parentDetail.issue;
+    if (!issue) return;
+    const parentProject = projectRows?.find((projectRow) => projectRow.id === issue.project_id);
+    if (parentProject)
+      setSelectedParentIssue(
+        convertWorkItemDataToSearchResponse(workspaceSlug, issue, parentProject, getStateById(issue.state_id))
+      );
+  }, [
+    values.parent_id,
+    selectedParentIssue?.id,
+    parentDetail.issue,
+    projectRows,
+    getStateById,
+    setSelectedParentIssue,
+    workspaceSlug,
+  ]);
+
+  const changeProject = () => {
+    if (isDraft) return;
+    form.setFieldValue("state_id", "");
+    form.setFieldValue("assignee_ids", []);
+    form.setFieldValue("label_ids", []);
+    form.setFieldValue("cycle_id", null);
+    form.setFieldValue("module_ids", []);
+    form.setFieldValue("estimate_point", null);
+    form.setFieldValue("parent_id", null);
+    setSelectedParentIssue(null);
+  };
+  const close = () => {
+    if (!isSubmitting && editorReady()) onClose();
+  };
+  useKeypress(
+    "Escape",
+    (event) => {
+      if (isSubmitting || readOnly || gptAssistantModal) return;
+      event.preventDefault();
+      close();
+    },
+    formElement
+  );
 
   return (
-    <FormProvider {...methods}>
-      <div className="flex gap-2 bg-transparent">
-        <div className="w-full rounded-lg">
-          <form
-            ref={formRef}
-            onSubmit={handleSubmit((data) => handleFormSubmit(data))}
-            className="flex w-full flex-col"
-          >
-            <div className="rounded-t-lg bg-surface-1 p-5">
-              <h3 className="pb-2 text-h4-medium text-secondary">{modalTitle}</h3>
-              <div className="flex items-center justify-between pt-2 pb-4">
-                <div className="flex items-center gap-x-1">
-                  <IssueProjectSelect
-                    control={control}
-                    disabled={!!data?.id || !!data?.sourceIssueId || isProjectSelectionDisabled}
-                    handleFormChange={handleFormChange}
-                  />
-                </div>
-              </div>
-              {watch("parent_id") && selectedParentIssue && (
-                <div className="pb-4">
-                  <IssueParentTag
-                    control={control}
-                    selectedParentIssue={selectedParentIssue}
-                    handleFormChange={handleFormChange}
-                    setSelectedParentIssue={setSelectedParentIssue}
-                  />
-                </div>
-              )}
-              <div className="space-y-1">
-                <IssueTitleInput
-                  control={control}
-                  issueTitleRef={issueTitleRef}
-                  formState={formState}
-                  handleFormChange={handleFormChange}
-                />
-              </div>
+    <form
+      ref={formElement}
+      onSubmit={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit({ action: publishing ? "move" : "save" }).catch(() => {});
+      }}
+      className="flex w-full flex-col"
+    >
+      <fieldset disabled={formLocked} inert={formLocked} className="min-w-0">
+        <fieldset disabled={readOnly} inert={readOnly} className="min-w-0">
+          <div className="rounded-t-lg bg-surface-1 p-5">
+            <h3 className="pb-2 text-h4-medium text-secondary">{modalTitle}</h3>
+            <div className="flex flex-wrap items-start gap-3 pt-2 pb-4">
+              <IssueProjectSelect
+                form={form}
+                onProjectChange={changeProject}
+                beforeChange={editorReady}
+                disabled={projectSelectionDisabled(isSubmitting, isDraft, data, isProjectSelectionDisabled)}
+                allowEmpty={isDraft && !publishing}
+              />
+              <form.Field name="type_id">
+                {(field) => (
+                  <div data-issue-field="type_id" tabIndex={-1}>
+                    <IssueTypeSelect
+                      fields={fields}
+                      beforeChange={editorReady}
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                    />
+                    <FormErrors errors={field.state.meta.errors} className="mt-1 text-12 text-danger-primary" />
+                  </div>
+                )}
+              </form.Field>
             </div>
-            <div
-              className={cn(
-                "space-y-3 bg-surface-1 pb-4",
-                activeAdditionalPropertiesLength > 4 &&
-                  "vertical-scrollbar scrollbar-sm max-h-[45vh] overflow-hidden overflow-y-auto"
-              )}
-            >
-              <div className="px-5">
-                <IssueDescriptionEditor
-                  control={control}
-                  isDraft={isDraft}
-                  issueName={watch("name")}
-                  issueId={data?.id}
-                  descriptionHtmlData={data?.description_html}
-                  editorRef={editorRef}
-                  submitBtnRef={submitBtnRef}
-                  gptAssistantModal={gptAssistantModal}
-                  workspaceSlug={workspaceSlug?.toString()}
-                  projectId={projectId}
-                  handleFormChange={handleFormChange}
-                  handleDescriptionHTMLDataChange={(description_html) =>
-                    setValue<"description_html">("description_html", description_html)
-                  }
-                  setGptAssistantModal={setGptAssistantModal}
-                  handleGptAssistantClose={() => reset(getValues())}
-                  onAssetUpload={onAssetUpload}
-                  onClose={onClose}
-                />
-              </div>
-            </div>
-            <div
-              className={cn(
-                "rounded-b-lg border-t-[0.5px] border-subtle bg-surface-1 px-4 py-3",
-                activeAdditionalPropertiesLength > 0 && "shadow-raised-100"
-              )}
-            >
-              <div className="pb-3">
-                <IssueDefaultProperties
-                  control={control}
-                  id={data?.id}
-                  projectId={projectId}
-                  workspaceSlug={workspaceSlug?.toString()}
+            {values.parent_id && selectedParentIssue && (
+              <div className="pb-4">
+                <IssueParentTag
+                  form={form}
                   selectedParentIssue={selectedParentIssue}
-                  startDate={watch("start_date")}
-                  targetDate={watch("target_date")}
-                  parentId={watch("parent_id")}
-                  isDraft={isDraft}
-                  handleFormChange={handleFormChange}
                   setSelectedParentIssue={setSelectedParentIssue}
                 />
               </div>
-              {showActionButtons && (
-                <div
-                  className="flex items-center justify-end gap-4 border-t-[0.5px] border-subtle pt-6 pb-3"
-                  tabIndex={getIndex("create_more")}
-                >
-                  {!data?.id && (
-                    <div
-                      className="inline-flex cursor-pointer items-center gap-1.5"
-                      onClick={() => onCreateMoreToggleChange(!isCreateMoreToggleEnabled)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") onCreateMoreToggleChange(!isCreateMoreToggleEnabled);
-                      }}
-                      role="button"
-                    >
-                      <ToggleSwitch value={isCreateMoreToggleEnabled} onChange={() => {}} size="sm" />
-                      <span className="text-caption-sm-regular">{t("create_more")}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <div tabIndex={getIndex("discard_button")}>
-                      <Button
-                        variant="secondary"
-                        size="lg"
-                        onClick={() => {
-                          if (editorRef.current?.isEditorReadyToDiscard()) {
-                            onClose();
-                          } else {
-                            setToast({
-                              type: TOAST_TYPE.ERROR,
-                              title: "Error!",
-                              message: "Editor is still processing changes. Please wait before proceeding.",
-                            });
-                          }
-                        }}
-                      >
-                        {t("discard")}
-                      </Button>
-                    </div>
-                    <div tabIndex={isDraft ? getIndex("submit_button") : getIndex("draft_button")}>
-                      <Button
-                        variant={moveToIssue ? "secondary" : "primary"}
-                        size="lg"
-                        type="submit"
-                        ref={submitBtnRef}
-                        loading={isSubmitting}
-                        disabled={isDisabled}
-                      >
-                        {isSubmitting ? primaryButtonText.loading : primaryButtonText.default}
-                      </Button>
-                    </div>
-
-                    {moveToIssue && (
-                      <Button
-                        variant="primary"
-                        type="button"
-                        loading={isMoving}
-                        onClick={handleMoveToProjects}
-                        disabled={isMoving}
-                        size="lg"
-                      >
-                        {t("add_to_project")}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
+            )}
+            <IssueTitleInput form={form} issueTitleRef={issueTitleRef} required={!isDraft || publishing} />
+          </div>
+          <div className="space-y-3 bg-surface-1 px-5 pb-4">
+            <IssueDescriptionEditor
+              form={form}
+              isDraft={isDraft}
+              disabled={isSubmitting || readOnly}
+              issueName={values.name}
+              issueId={data?.id}
+              descriptionHtmlData={data?.description_html}
+              editorRef={editorRef}
+              submitBtnRef={submitBtnRef}
+              gptAssistantModal={gptAssistantModal}
+              workspaceSlug={workspaceSlug}
+              projectId={projectRole ? projectId : null}
+              setGptAssistantModal={setGptAssistantModal}
+              onAssetUpload={onAssetUpload}
+            />
+          </div>
+          <IssueCustomFields
+            form={form}
+            fields={fields}
+            values={values}
+            workspaceSlug={workspaceSlug}
+            isDraft={isDraft}
+            projectId={projectRole ? projectId : null}
+            disabled={isSubmitting || readOnly}
+            onAssetUpload={onAssetUpload}
+          />
+          <div className="border-t-[0.5px] border-subtle bg-surface-1 px-4 py-3">
+            <div className="pb-3">
+              <IssueDefaultProperties
+                form={form}
+                id={data?.id}
+                projectId={projectRole ? projectId : null}
+                workspaceSlug={workspaceSlug}
+                selectedParentIssue={selectedParentIssue}
+                startDate={values.start_date}
+                targetDate={values.target_date}
+                parentId={values.parent_id}
+                isDraft={isDraft}
+                setSelectedParentIssue={setSelectedParentIssue}
+              />
             </div>
-          </form>
-        </div>
-      </div>
-    </FormProvider>
+          </div>
+        </fieldset>
+        {sourceConflict && props.onReloadSource && (
+          <div className="bg-surface-1 px-4 pb-3">
+            <button type="button" className="text-13 text-accent-primary" onClick={() => void reloadSource()}>
+              {reloading ? "Reloading…" : "Discard changes and reload saved work item"}
+            </button>
+          </div>
+        )}
+        <IssueFormActions
+          form={form}
+          isNew={!data?.id}
+          submitError={submitError}
+          showActionButtons={showActionButtons}
+          isCreateMoreToggleEnabled={isCreateMoreToggleEnabled}
+          onCreateMoreToggleChange={onCreateMoreToggleChange}
+          close={close}
+          discardTabIndex={getIndex("discard_button")}
+          submitTabIndex={getIndex("submit_button")}
+          moveToIssue={moveToIssue}
+          publishing={publishing}
+          setPublishing={(next) => {
+            if (editorReady()) setPublishing(next);
+          }}
+          submitBtnRef={submitBtnRef}
+          isSubmitting={isSubmitting}
+          primaryButtonText={primaryButtonText}
+        />
+      </fieldset>
+    </form>
   );
-});
+};
+
+function projectSelectionDisabled(
+  submitting: boolean,
+  draft: boolean,
+  data: Partial<TIssue> | undefined,
+  disabled: boolean
+) {
+  return submitting || (!draft && (!!data?.id || !!data?.sourceIssueId)) || disabled;
+}
+
+function isDirtyFieldMeta(value: unknown): boolean {
+  return typeof value === "object" && value !== null && "isDirty" in value && value.isDirty === true;
+}
+
+function parentDetailProjectId(projectId: string | null | undefined, defaultProjectId: string | null | undefined) {
+  return projectId ?? defaultProjectId ?? undefined;
+}
+
+function useFormSource(props: IssueFormProps) {
+  const [initial] = useState(() => ({
+    data: props.data,
+    persistedData: props.persistedData,
+    version: props.sourceVersion,
+  }));
+  return initial.version ? initial : { data: props.data, persistedData: props.persistedData, version: initial.version };
+}
+
+async function publishIssueDraft(
+  data: IssueFormProps["data"],
+  publish: IssueFormProps["onPublish"],
+  payload: Partial<TIssue>,
+  references: string[],
+  revision: number | undefined,
+  draft: Partial<TIssue>,
+  sourceVersion: string | undefined
+) {
+  if (!data?.id || !publish) throw new Error("Select a draft to publish.");
+  await publish(payload, references, revision, draft, sourceVersion);
+}
+
+async function submitIssueDraftAction(
+  action: "move" | "save",
+  input: {
+    data: IssueFormProps["data"];
+    onPublish: IssueFormProps["onPublish"];
+    onSubmit: IssueFormProps["onSubmit"];
+    payload: Partial<TIssue>;
+    isDraft: boolean;
+    references: string[];
+    revision: number | undefined;
+    draft: Partial<TIssue>;
+    sourceVersion: string | undefined;
+  }
+): Promise<"published" | "saved"> {
+  const { data, onPublish, onSubmit, payload, isDraft, references, revision, draft, sourceVersion } = input;
+  if (action === "move") {
+    await publishIssueDraft(data, onPublish, payload, references, revision, draft, sourceVersion);
+    return "published";
+  }
+  await onSubmit(payload, isDraft, references, revision, draft, sourceVersion);
+  return "saved";
+}
+
+function issueFormPresentation(props: IssueFormProps, t: ReturnType<typeof useTranslation>["t"]) {
+  const updating = !!props.data?.id;
+  return {
+    modalTitle:
+      props.modalTitle ?? (updating ? t("update") : props.isDraft ? t("create_a_draft") : t("create_new_issue")),
+    primaryButtonText: props.primaryButtonText ?? {
+      default: updating ? t("update") : props.isDraft ? t("save_to_drafts") : t("save"),
+      loading: updating ? t("updating") : t("saving"),
+    },
+  };
+}
+function itemSchemaMode(
+  publishing: boolean,
+  isDraft: boolean,
+  existing: boolean
+): Parameters<typeof useItemTypeFields>[3] {
+  if (publishing) return "publish";
+  if (isDraft) return "draft";
+  return existing ? "edit" : "create";
+}

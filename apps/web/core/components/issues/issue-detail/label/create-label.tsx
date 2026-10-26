@@ -3,22 +3,15 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
-import { useState, Fragment, useEffect } from "react";
-import { TwitterPicker } from "react-color";
-import { Controller, useForm } from "react-hook-form";
-import { usePopper } from "react-popper";
-import { Loader } from "lucide-react";
-import { Popover } from "@headlessui/react";
+import { useState, useRef, useEffect } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { PlusIcon, CloseIcon } from "@plane/propel/icons";
+import { Input, InputColorPicker } from "@plane/ui";
 import type { IIssueLabel } from "@plane/types";
-// hooks
-import { Input } from "@plane/ui";
-// ui
-// types
 import type { TLabelOperations } from "./root";
 
-type ILabelCreate = {
+type Props = {
   workspaceSlug: string;
   projectId: string;
   issueId: string;
@@ -27,148 +20,127 @@ type ILabelCreate = {
   disabled?: boolean;
 };
 
-const defaultValues: Partial<IIssueLabel> = {
-  name: "",
-  color: "#ff0000",
-};
+export function LabelCreate(props: Props) {
+  const [open, setOpen] = useState(false);
+  return open ? (
+    <CreateLabelForm {...props} onClose={() => setOpen(false)} />
+  ) : (
+    <button
+      type="button"
+      disabled={props.disabled}
+      onClick={() => setOpen(true)}
+      className="flex items-center gap-1 rounded-full border border-subtle px-2 py-0.5 text-11 text-tertiary hover:bg-surface-2"
+    >
+      <PlusIcon className="size-2.5" /> New
+    </button>
+  );
+}
 
-export function LabelCreate(props: ILabelCreate) {
-  const { workspaceSlug, projectId, issueId, values, labelOperations, disabled = false } = props;
-  // state
-  const [isCreateToggle, setIsCreateToggle] = useState(false);
-  const handleIsCreateToggle = () => setIsCreateToggle(!isCreateToggle);
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-  // react hook form
-  const {
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-    control,
-    setFocus,
-  } = useForm<Partial<IIssueLabel>>({
-    defaultValues,
+function CreateLabelForm({
+  workspaceSlug,
+  projectId,
+  issueId,
+  values,
+  labelOperations,
+  disabled,
+  onClose,
+}: Props & { onClose: () => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const create = useMutation({
+    mutationFn: (draft: Pick<IIssueLabel, "name" | "color">) => labelOperations.createLabel(draft),
   });
-
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: "bottom-start",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
+  const form = useForm({
+    defaultValues: { name: "", color: "#ff0000" },
+    validators: {
+      onSubmit: ({ value }) => (value.name.trim() ? undefined : "Enter a label name."),
+    },
+    onSubmit: async ({ value }) => {
+      form.setErrorMap({ onSubmit: undefined });
+      try {
+        const label = create.data ?? (await create.mutateAsync(value));
+        await labelOperations.updateIssue(workspaceSlug, projectId, issueId, {
+          label_ids: [...new Set([...values, label.id])],
+        });
+        onClose();
+      } catch (cause) {
+        form.setErrorMap({ onSubmit: { form: "Could not add the label. Please try again.", fields: {} } });
+        throw cause;
+      }
+    },
   });
-
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const color = useStore(form.store, (state) => state.values.color);
+  const error = useStore(form.store, (state) => state.errorMap.onSubmit);
   useEffect(() => {
-    if (!isCreateToggle) return;
-
-    setFocus("name");
-    reset();
-  }, [isCreateToggle, reset, setFocus]);
-
-  const handleLabel = async (formData: Partial<IIssueLabel>) => {
-    if (!workspaceSlug || !projectId || isSubmitting) return;
-
-    const labelResponse = await labelOperations.createLabel(workspaceSlug, projectId, formData);
-    const currentLabels = [...(values || []), labelResponse.id];
-    await labelOperations.updateIssue(workspaceSlug, projectId, issueId, { label_ids: currentLabels });
-    handleIsCreateToggle();
-    reset(defaultValues);
-  };
-
+    input.current?.focus();
+  }, []);
+  const locked = disabled || busy || create.isSuccess;
   return (
-    <>
-      <div
-        className="relative flex flex-shrink-0 cursor-pointer items-center gap-1 rounded-full border border-subtle p-0.5 px-2 text-11 text-tertiary transition-all hover:bg-surface-2 hover:text-secondary"
-        onClick={handleIsCreateToggle}
+    <form
+      className="flex flex-wrap items-center gap-2 p-1"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch(() => {});
+      }}
+    >
+      <InputColorPicker
+        name="label-color"
+        placeholder="Color"
+        hasError={false}
+        value={color}
+        onChange={(value) => form.setFieldValue("color", value)}
+        disabled={locked}
+      />
+      <form.Field
+        name="name"
+        validators={{ onChange: ({ value }) => (value.trim() ? undefined : "Enter a label name.") }}
       >
-        <div className="flex-shrink-0">
-          {isCreateToggle ? <CloseIcon className="h-2.5 w-2.5" /> : <PlusIcon className="h-2.5 w-2.5" />}
-        </div>
-        <div className="flex-shrink-0">{isCreateToggle ? "Cancel" : "New"}</div>
-      </div>
-
-      {isCreateToggle && (
-        <form className="relative flex items-center gap-x-2 p-1" onSubmit={handleSubmit(handleLabel)}>
+        {(field) => (
           <div>
-            <Controller
-              name="color"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Popover>
-                  <>
-                    <Popover.Button as={Fragment}>
-                      <button type="button" ref={setReferenceElement} className="grid place-items-center outline-none">
-                        {value && value?.trim() !== "" && (
-                          <span
-                            className="h-5 w-5 rounded-sm"
-                            style={{
-                              backgroundColor: value ?? "black",
-                            }}
-                          />
-                        )}
-                      </button>
-                    </Popover.Button>
-                    <Popover.Panel className="fixed z-10">
-                      <div
-                        className="max-w-xs p-2 sm:px-0"
-                        ref={setPopperElement}
-                        style={styles.popper}
-                        {...attributes.popper}
-                      >
-                        <TwitterPicker triangle={"hide"} color={value} onChange={(value) => onChange(value.hex)} />
-                      </div>
-                    </Popover.Panel>
-                  </>
-                </Popover>
-              )}
+            <Input
+              ref={input}
+              name={field.name}
+              value={field.state.value}
+              onChange={(event) => field.handleChange(event.target.value)}
+              onBlur={field.handleBlur}
+              disabled={locked}
+              hasError={!field.state.meta.isValid}
+              placeholder="Title"
+              className="px-1.5 py-1 text-11"
             />
+            {field.state.meta.errors.map((message) => (
+              <p key={message} role="alert" className="text-11 text-danger-primary">
+                {message}
+              </p>
+            ))}
           </div>
-          <Controller
-            control={control}
-            name="name"
-            rules={{
-              required: "This is required",
-            }}
-            render={({ field: { value, onChange, ref } }) => (
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                value={value ?? ""}
-                onChange={onChange}
-                ref={ref}
-                hasError={Boolean(errors.name)}
-                placeholder="Title"
-                className="w-full px-1.5 py-1 text-11"
-                disabled={isSubmitting}
-              />
-            )}
-          />
-          <button
-            type="button"
-            className="grid place-items-center rounded-sm bg-danger-primary p-1"
-            onClick={() => setIsCreateToggle(false)}
-            disabled={disabled}
-          >
-            <CloseIcon className="h-3.5 w-3.5 text-on-color" />
-          </button>
-          <button
-            type="submit"
-            className="grid place-items-center rounded-sm bg-success-primary p-1"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader className="spin h-3.5 w-3.5 text-on-color" />
-            ) : (
-              <PlusIcon className="h-3.5 w-3.5 text-on-color" />
-            )}
-          </button>
-        </form>
+        )}
+      </form.Field>
+      <button
+        type="button"
+        aria-label="Cancel new label"
+        disabled={busy}
+        onClick={onClose}
+        className="rounded-sm bg-danger-primary p-1"
+      >
+        <CloseIcon className="size-3.5 text-on-color" />
+      </button>
+      <button
+        type="submit"
+        aria-label={busy ? "Adding label" : "Add label"}
+        disabled={busy || disabled}
+        className="rounded-sm bg-success-primary p-1"
+      >
+        <PlusIcon className="size-3.5 text-on-color" />
+      </button>
+      {error && (
+        <p role="alert" className="w-full text-11 text-danger-primary">
+          {error}
+        </p>
       )}
-    </>
+    </form>
   );
 }

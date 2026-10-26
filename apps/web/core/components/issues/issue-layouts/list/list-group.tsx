@@ -8,7 +8,7 @@ import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // plane imports
 import { DRAG_ALLOWED_GROUPS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -21,19 +21,21 @@ import type {
   TIssue,
   IIssueDisplayProperties,
   TIssueKanbanFilters,
+  TPaginationData,
+  TLoader,
 } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
 import { Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { ListLoaderItemRow } from "@/components/ui/loader/layouts/list-layout-loader";
 import { useWorkFlowFDragNDrop } from "@/components/workflow";
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 // local imports
+import { canQuickAddToGroup } from "../quick-add/grouping";
 import { GroupDragOverlay } from "../group-drag-overlay";
 import { ListQuickAddIssueButton, QuickAddIssueRoot } from "../quick-add";
 import type { GroupDropLocation } from "../utils";
@@ -54,7 +56,7 @@ interface Props {
   group_by: TIssueGroupByOptions | null;
   orderBy: TIssueOrderByOptions | undefined;
   getGroupIndex: (groupId: string | undefined) => number;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   displayProperties: IIssueDisplayProperties | undefined;
   enableIssueQuickAdd: boolean;
@@ -63,7 +65,7 @@ interface Props {
   quickAddCallback?: ((projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>) | undefined;
   handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
   disableIssueCreation?: boolean;
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   isCompletedCycle?: boolean;
   showEmptyGroup?: boolean;
   loadMoreIssues: (groupId?: string) => void;
@@ -71,9 +73,12 @@ interface Props {
   handleCollapsedGroups: (value: string) => void;
   collapsedGroups: TIssueKanbanFilters;
   isEpic?: boolean;
+  getGroupIssueCount: (groupId?: string, subGroupId?: string, cumulative?: boolean) => number | undefined;
+  getPaginationData: (groupId?: string, subGroupId?: string) => TPaginationData | undefined;
+  getIssueLoader: (groupId?: string, subGroupId?: string) => TLoader;
 }
 
-export const ListGroup = observer(function ListGroup(props: Props) {
+export function ListGroup(props: Props) {
   const {
     groupIssueIds = [],
     group,
@@ -98,6 +103,9 @@ export const ListGroup = observer(function ListGroup(props: Props) {
     handleCollapsedGroups,
     collapsedGroups,
     isEpic = false,
+    getGroupIssueCount,
+    getPaginationData,
+    getIssueLoader,
   } = props;
 
   const [isDraggingOverColumn, setIsDraggingOverColumn] = useState(false);
@@ -105,11 +113,8 @@ export const ListGroup = observer(function ListGroup(props: Props) {
   const isExpanded = !collapsedGroups?.group_by.includes(group.id);
   const groupRef = useRef<HTMLDivElement | null>(null);
   const { t } = useTranslation();
-  const projectState = useProjectState();
-
-  const {
-    issues: { getGroupIssueCount, getPaginationData, getIssueLoader },
-  } = useIssuesStore();
+  const { projectId } = useParams({ strict: false });
+  const { getProjectDefaultStateId } = useRouteProjectStates(projectId);
 
   const [intersectionElement, setIntersectionElement] = useState<HTMLDivElement | null>(null);
 
@@ -147,33 +152,10 @@ export const ListGroup = observer(function ListGroup(props: Props) {
     return true;
   };
 
-  const prePopulateQuickAddData = (groupByKey: string | null, value: any) => {
-    const defaultState = projectState.projectStates?.find((state) => state.default);
-    let preloadedData: object = { state_id: defaultState?.id };
-
-    if (groupByKey === null) {
-      preloadedData = { ...preloadedData };
-    } else {
-      if (groupByKey === "state") {
-        preloadedData = { ...preloadedData, state_id: value };
-      } else if (groupByKey === "priority") {
-        preloadedData = { ...preloadedData, priority: value };
-      } else if (groupByKey === "labels" && value != "None") {
-        preloadedData = { ...preloadedData, label_ids: [value] };
-      } else if (groupByKey === "assignees" && value != "None") {
-        preloadedData = { ...preloadedData, assignee_ids: [value] };
-      } else if (groupByKey === "cycle" && value != "None") {
-        preloadedData = { ...preloadedData, cycle_id: value };
-      } else if (groupByKey === "module" && value != "None") {
-        preloadedData = { ...preloadedData, module_ids: [value] };
-      } else if (groupByKey === "created_by") {
-        preloadedData = { ...preloadedData };
-      } else {
-        preloadedData = { ...preloadedData, [groupByKey]: value };
-      }
-    }
-
-    return preloadedData;
+  const prePopulateQuickAddData = (): Partial<TIssue> => {
+    const defaultStateId = getProjectDefaultStateId(projectId);
+    const groupPayload = group_by === "created_by" ? {} : group.payload;
+    return { state_id: defaultStateId, ...groupPayload };
   };
 
   useEffect(() => {
@@ -239,13 +221,17 @@ export const ListGroup = observer(function ListGroup(props: Props) {
     );
   }, [
     // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-    groupRef?.current,
     group,
     orderBy,
     getGroupIndex,
     setDragColumnOrientation,
     setIsDraggingOverColumn,
     isWorkflowDropDisabled,
+    handleOnDrop,
+    isExpanded,
+    handleWorkFlowState,
+    handleCollapsedGroups,
+    t,
   ]);
 
   const isDragAllowed = group_by ? DRAG_ALLOWED_GROUPS.includes(group_by) : true;
@@ -327,7 +313,7 @@ export const ListGroup = observer(function ListGroup(props: Props) {
               </>
             ))}
 
-          {enableIssueQuickAdd &&
+          {canQuickAddToGroup(enableIssueQuickAdd, group_by) &&
             !disableIssueCreation &&
             !isGroupByCreatedBy &&
             !isCompletedCycle &&
@@ -336,7 +322,7 @@ export const ListGroup = observer(function ListGroup(props: Props) {
                 <QuickAddIssueRoot
                   layout={EIssueLayoutTypes.LIST}
                   QuickAddButton={ListQuickAddIssueButton}
-                  prePopulatedData={prePopulateQuickAddData(group_by, group.id)}
+                  prePopulatedData={prePopulateQuickAddData()}
                   containerClassName="border-b border-t border-subtle bg-surface-1 "
                   quickAddCallback={quickAddCallback}
                   isEpic={isEpic}
@@ -347,4 +333,4 @@ export const ListGroup = observer(function ListGroup(props: Props) {
       )}
     </div>
   ) : null;
-});
+}

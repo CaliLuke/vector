@@ -5,7 +5,7 @@
  */
 
 import type { ChartDataType, IGanttBlock } from "@plane/types";
-import { addDaysToDate, findTotalDaysInRange, getDate } from "@plane/utils";
+import { addDaysToDate, findTotalDaysInRange, getDate } from "@plane/utils/datetime";
 import { DEFAULT_BLOCK_WIDTH } from "../constants";
 
 /**
@@ -117,7 +117,7 @@ export const getItemPositionWidth = (chartData: ChartDataType, itemData: IGanttB
   return { marginLeft: scrollPosition, width: scrollWidth };
 };
 
-export const getPositionFromDate = (chartData: ChartDataType, date: string | Date, offsetWidth: number) => {
+const getPositionFromDate = (chartData: ChartDataType, date: string | Date, offsetWidth: number) => {
   const currDate = getDate(date);
 
   const { startDate: chartStartDate } = chartData.data;

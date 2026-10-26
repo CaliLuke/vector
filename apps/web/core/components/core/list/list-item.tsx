@@ -10,7 +10,7 @@ import React from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 import { ControlLink, Row } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 
 interface IListItemProps {

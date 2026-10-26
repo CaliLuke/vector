@@ -6,23 +6,20 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
 // ui
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { EIssuesStoreType } from "@plane/types";
+import { EUserPermissions } from "@plane/constants";
 import { ContextMenu, CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { renderQuickActionMenuItems } from "@/components/common/quick-action-menu";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { DeleteIssueModal } from "../../delete-issue-modal";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
 import { useArchivedIssueMenuItems } from "./helper";
 
-export const ArchivedIssueQuickActions = observer(function ArchivedIssueQuickActions(props: IQuickActionProps) {
+export const ArchivedIssueQuickActions = function ArchivedIssueQuickActions(props: IQuickActionProps) {
   const {
     issue,
     handleDelete,
@@ -38,22 +35,16 @@ export const ArchivedIssueQuickActions = observer(function ArchivedIssueQuickAct
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug ?? undefined, issue.project_id ?? undefined);
 
-  const { issuesFilter } = useIssues(EIssuesStoreType.ARCHIVED);
-  // derived values
-  const activeLayout = `${issuesFilter.issueFilters?.displayFilters?.layout} layout`;
   // auth
-  const isEditingAllowed =
-    allowPermissions([EUserPermissions.ADMIN, EUserPermissions.MEMBER], EUserPermissionsLevel.PROJECT) && !readOnly;
-  const isRestoringAllowed =
-    handleRestore && allowPermissions([EUserPermissions.ADMIN, EUserPermissions.MEMBER], EUserPermissionsLevel.PROJECT);
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && !readOnly;
+  const isRestoringAllowed = handleRestore && canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   // Menu items and modals using helper
   const menuItemProps: MenuItemFactoryProps = {
     issue,
     workspaceSlug: workspaceSlug?.toString(),
-    activeLayout,
     isEditingAllowed,
     isDeletingAllowed: isEditingAllowed,
     isRestoringAllowed: !!isRestoringAllowed,
@@ -96,40 +87,8 @@ export const ArchivedIssueQuickActions = observer(function ArchivedIssueQuickAct
         useCaptureForOutsideClick
         closeOnSelect
       >
-        {MENU_ITEMS.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
+        {renderQuickActionMenuItems(MENU_ITEMS)}
       </CustomMenu>
     </>
   );
-});
+};

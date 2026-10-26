@@ -6,20 +6,23 @@
 
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { MoreHorizontal } from "lucide-react";
 // ui
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 // hooks
 import { useCycleMenuItems } from "@/components/common/quick-actions-helper";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import type { ICycle } from "@plane/types";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 // local imports
 import { ArchiveCycleModal } from "./archived-cycles/modal";
@@ -29,12 +32,13 @@ import { CycleCreateUpdateModal } from "./modal";
 type Props = {
   parentRef: React.RefObject<HTMLElement | null>;
   cycleId: string;
+  cycle: ICycle;
   projectId: string;
   workspaceSlug: string;
   customClassName?: string;
 };
 
-export const CycleQuickActions = observer(function CycleQuickActions(props: Props) {
+export const CycleQuickActions = function CycleQuickActions(props: Props) {
   const { parentRef, cycleId, projectId, workspaceSlug, customClassName } = props;
   // router
   const router = useRouter();
@@ -43,18 +47,14 @@ export const CycleQuickActions = observer(function CycleQuickActions(props: Prop
   const [archiveCycleModal, setArchiveCycleModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { getCycleById, restoreCycle } = useCycle();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { mutation, scope } = useProjectCycles(workspaceSlug, projectId, Boolean(props.cycle.archived_at));
+  const mounted = useCommittedScope(JSON.stringify([scope, cycleId]));
   const { t } = useTranslation();
   // derived values
-  const cycleDetails = getCycleById(cycleId);
+  const cycleDetails = props.cycle;
   // auth
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const cycleLink = `${workspaceSlug}/projects/${projectId}/cycles/${cycleId}`;
   const handleCopyText = () =>
@@ -68,24 +68,25 @@ export const CycleQuickActions = observer(function CycleQuickActions(props: Prop
     });
   const handleOpenInNewTab = () => window.open(`/${cycleLink}`, "_blank");
 
-  const handleRestoreCycle = async () =>
-    await restoreCycle(workspaceSlug, projectId, cycleId)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("project_cycles.action.restore.success.title"),
-          message: t("project_cycles.action.restore.success.description"),
-        });
-        void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/archives/cycles` });
-        return undefined;
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("project_cycles.action.restore.failed.title"),
-          message: t("project_cycles.action.restore.failed.description"),
-        });
+  const handleRestoreCycle = async () => {
+    try {
+      const result = await mutation.mutateAsync({ type: "restore", id: cycleId });
+      if (!mounted() || !result.captured.isCurrent()) return;
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: t("project_cycles.action.restore.success.title"),
+        message: t("project_cycles.action.restore.success.description"),
       });
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/archives/cycles` });
+    } catch {
+      if (!mounted()) return;
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t("project_cycles.action.restore.failed.title"),
+        message: t("project_cycles.action.restore.failed.description"),
+      });
+    }
+  };
 
   const menuResult = useCycleMenuItems({
     cycleDetails: cycleDetails ?? undefined,
@@ -186,4 +187,4 @@ export const CycleQuickActions = observer(function CycleQuickActions(props: Prop
       </CustomMenu>
     </>
   );
-});
+};

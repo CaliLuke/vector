@@ -18,7 +18,7 @@ import { WorkspaceSetupStep } from "./workspace";
 type Props = {
   currentStep: EOnboardingSteps;
   invitations: IWorkspaceMemberInvitation[];
-  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => void;
+  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => Promise<void>;
 };
 
 function OnboardingStepContent({ currentStep, invitations, handleStepChange }: Props) {

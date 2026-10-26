@@ -13,7 +13,7 @@ func TestAPIV1ProjectionPrecedesExpansionAndKeepsMetadataOpaque(t *testing.T) {
 	repository, _ := NewRepository(&databaseStub{})
 	metadata := map[string]any{"created_at": "2011-06-17T13:14:15Z"}
 	row := map[string]any{"id": "cycle-id", "name": "Sprint", "view_props": metadata, "project_id": "project-id"}
-	result, err := repository.apiSerialize(context.Background(), row, "cycle", "id,view_props", "id,project")
+	result, err := repository.apiSerialize(context.Background(), row, "cycle", "id,view_props", "id,project", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestAPIV1CurrentCyclesIgnoreMalformedPagination(t *testing.T) {
 func TestAPIV1NullEstimateExpansionUsesSerializerInitialFields(t *testing.T) {
 	repository, _ := NewRepository(&databaseStub{})
 	row := map[string]any{"id": "issue", "estimate_point_id": nil}
-	got, err := repository.apiSerialize(context.Background(), row, "issue", "id,estimate_point", "estimate_point")
+	got, err := repository.apiSerialize(context.Background(), row, "issue", "id,estimate_point", "estimate_point", "")
 	if err != nil {
 		t.Fatal(err)
 	}

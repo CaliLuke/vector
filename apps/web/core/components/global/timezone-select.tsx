@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { CustomSearchSelect } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import useTimezone from "@/hooks/use-timezone";
 
@@ -22,7 +21,7 @@ type TTimezoneSelect = {
   disabled?: boolean;
 };
 
-export const TimezoneSelect = observer(function TimezoneSelect(props: TTimezoneSelect) {
+export const TimezoneSelect = function TimezoneSelect(props: TTimezoneSelect) {
   // props
   const {
     value,
@@ -55,4 +54,4 @@ export const TimezoneSelect = observer(function TimezoneSelect(props: TTimezoneS
       />
     </div>
   );
-});
+};

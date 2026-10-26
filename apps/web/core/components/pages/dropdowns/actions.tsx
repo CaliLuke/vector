@@ -4,28 +4,26 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
 
-import { ArchiveRestoreIcon, FileOutput, LockKeyhole, LockKeyholeOpen } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { ArchiveRestoreIcon, LockKeyhole, LockKeyholeOpen } from "lucide-react";
 // constants
-import { EPageAccess } from "@plane/constants";
+import { EPageAccess } from "@plane/types";
 // plane editor
 import { LinkIcon, CopyIcon, LockIcon, NewTabIcon, ArchiveIcon, TrashIcon, GlobeIcon } from "@plane/propel/icons";
 // plane ui
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { DeletePageModal } from "@/components/pages/modals/delete-page-modal";
 // hooks
 import { usePageOperations } from "@/hooks/use-page-operations";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 // plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
-import { usePageFlag } from "@/hooks/use-page-flag";
 // store types
-import type { TPageInstance } from "@/store/pages/base-page";
 
 export type TPageActions =
   | "full-screen"
@@ -39,44 +37,38 @@ export type TPageActions =
   | "archive-restore"
   | "delete"
   | "version-history"
-  | "export"
-  | "move";
+  | "export";
 
 type Props = {
   extraOptions?: (TContextMenuItem & { key: TPageActions })[];
   optionsOrder: TPageActions[];
-  page: TPageInstance;
+  page: TPage;
   parentRef?: React.RefObject<HTMLElement | null>;
-  storeType: EPageStoreType;
+  projectId?: string;
+  workspaceSlug: string;
 };
 
-export const PageActions = observer(function PageActions(props: Props) {
-  const { extraOptions, optionsOrder, page, parentRef, storeType } = props;
+export function PageActions(props: Props) {
+  const { extraOptions, optionsOrder, page, parentRef, projectId, workspaceSlug } = props;
   // states
   const [deletePageModal, setDeletePageModal] = useState(false);
-  const [movePageModal, setMovePageModal] = useState(false);
   // params
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // page flag
-  const { isMovePageEnabled } = usePageFlag({
-    workspaceSlug: workspaceSlug?.toString() ?? "",
-  });
+  const permissions = usePagePermissions(page, workspaceSlug);
   // page operations
   const { pageOperations } = usePageOperations({
     page,
+    projectId,
+    workspaceSlug,
   });
   // derived values
+  const { access, archived_at, is_locked } = page;
   const {
-    access,
-    archived_at,
-    is_locked,
     canCurrentUserArchivePage,
     canCurrentUserChangeAccess,
     canCurrentUserDeletePage,
     canCurrentUserDuplicatePage,
     canCurrentUserLockPage,
-    canCurrentUserMovePage,
-  } = page;
+  } = permissions;
   // menu items
   const MENU_ITEMS = useMemo(
     function MENU_ITEMS() {
@@ -84,7 +76,7 @@ export const PageActions = observer(function PageActions(props: Props) {
         {
           key: "toggle-lock",
           action: () => {
-            pageOperations.toggleLock();
+            void pageOperations.toggleLock();
           },
           title: is_locked ? "Unlock" : "Lock",
           icon: is_locked ? LockKeyholeOpen : LockKeyhole,
@@ -93,7 +85,7 @@ export const PageActions = observer(function PageActions(props: Props) {
         {
           key: "toggle-access",
           action: () => {
-            pageOperations.toggleAccess();
+            void pageOperations.toggleAccess();
           },
           title: access === EPageAccess.PUBLIC ? "Make private" : "Make public",
           icon: access === EPageAccess.PUBLIC ? LockIcon : GlobeIcon,
@@ -108,7 +100,7 @@ export const PageActions = observer(function PageActions(props: Props) {
         },
         {
           key: "copy-link",
-          action: pageOperations.copyLink,
+          action: () => void pageOperations.copyLink(),
           title: "Copy link",
           icon: LinkIcon,
           shouldRender: true,
@@ -116,7 +108,7 @@ export const PageActions = observer(function PageActions(props: Props) {
         {
           key: "make-a-copy",
           action: () => {
-            pageOperations.duplicate();
+            void pageOperations.duplicate();
           },
           title: "Make a copy",
           icon: CopyIcon,
@@ -125,7 +117,7 @@ export const PageActions = observer(function PageActions(props: Props) {
         {
           key: "archive-restore",
           action: () => {
-            pageOperations.toggleArchive();
+            void pageOperations.toggleArchive();
           },
           title: archived_at ? "Restore" : "Archive",
           icon: archived_at ? ArchiveRestoreIcon : ArchiveIcon,
@@ -139,13 +131,6 @@ export const PageActions = observer(function PageActions(props: Props) {
           title: "Delete",
           icon: TrashIcon,
           shouldRender: canCurrentUserDeletePage && !!archived_at,
-        },
-        {
-          key: "move",
-          action: () => setMovePageModal(true),
-          title: "Move",
-          icon: FileOutput,
-          shouldRender: canCurrentUserMovePage && isMovePageEnabled,
         },
       ];
       if (extraOptions) {
@@ -163,8 +148,6 @@ export const PageActions = observer(function PageActions(props: Props) {
       canCurrentUserDuplicatePage,
       canCurrentUserArchivePage,
       canCurrentUserDeletePage,
-      canCurrentUserMovePage,
-      isMovePageEnabled,
       pageOperations,
     ]
   );
@@ -183,7 +166,8 @@ export const PageActions = observer(function PageActions(props: Props) {
         isOpen={deletePageModal}
         onClose={() => setDeletePageModal(false)}
         page={page}
-        storeType={storeType}
+        projectId={projectId}
+        workspaceSlug={workspaceSlug}
       />
       {parentRef && <ContextMenu parentRef={parentRef} items={arrangedOptions} />}
       <CustomMenu placement="bottom-end" optionsClassName="max-h-[90vh]" ellipsis closeOnSelect>
@@ -210,4 +194,4 @@ export const PageActions = observer(function PageActions(props: Props) {
       </CustomMenu>
     </>
   );
-});
+}

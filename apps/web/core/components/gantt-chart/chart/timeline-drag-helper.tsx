@@ -5,20 +5,19 @@
  */
 
 import type { RefObject } from "react";
-import { observer } from "mobx-react";
 // hooks
 import { useAutoScroller } from "@/hooks/use-auto-scroller";
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../contexts/chart-state";
 //
 import { HEADER_HEIGHT, SIDEBAR_WIDTH } from "../constants";
 
 type Props = {
   ganttContainerRef: RefObject<HTMLDivElement | null>;
 };
-export const TimelineDragHelper = observer(function TimelineDragHelper(props: Props) {
+export function TimelineDragHelper(props: Props) {
   const { ganttContainerRef } = props;
-  const { isDragging } = useTimeLineChartStore();
+  const { isDragging } = useGanttChartState();
 
   useAutoScroller(ganttContainerRef, isDragging, SIDEBAR_WIDTH, HEADER_HEIGHT);
   return <></>;
-});
+}

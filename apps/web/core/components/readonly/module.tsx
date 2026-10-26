@@ -4,14 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import { observer } from "mobx-react";
 import { Layers } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
+import { useProjectModules } from "@/hooks/use-modules";
 
 export type TReadonlyModuleProps = {
   className?: string;
@@ -24,7 +22,7 @@ export type TReadonlyModuleProps = {
   workspaceSlug: string;
 };
 
-export const ReadonlyModule = observer(function ReadonlyModule(props: TReadonlyModuleProps) {
+export const ReadonlyModule = function ReadonlyModule(props: TReadonlyModuleProps) {
   const {
     className,
     hideIcon = false,
@@ -37,16 +35,10 @@ export const ReadonlyModule = observer(function ReadonlyModule(props: TReadonlyM
   } = props;
 
   const { t } = useTranslation();
-  const { getModuleById, fetchModules } = useModule();
+  const { modules: catalogue } = useProjectModules(workspaceSlug, projectId);
 
   const moduleIds = Array.isArray(value) ? value : value ? [value] : [];
-  const modules = moduleIds.map((id) => getModuleById(id)).filter(Boolean);
-
-  useEffect(() => {
-    if (moduleIds.length > 0 && projectId) {
-      fetchModules(workspaceSlug, projectId);
-    }
-  }, [value, projectId, workspaceSlug]);
+  const modules = moduleIds.map((id) => catalogue?.find((row) => row.id === id)).filter(Boolean);
 
   if (modules.length === 0) {
     return (
@@ -76,4 +68,4 @@ export const ReadonlyModule = observer(function ReadonlyModule(props: TReadonlyM
       <span className="flex-grow truncate">{moduleItem?.name}</span>
     </div>
   );
-});
+};

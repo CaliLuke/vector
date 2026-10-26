@@ -17,32 +17,29 @@ export class WorkspaceDraftService extends APIService {
 
   async getIssues(
     workspaceSlug: string,
-    query: object = {}
+    query: object = {},
+    signal?: AbortSignal
   ): Promise<TWorkspaceDraftPaginationInfo<TWorkspaceDraftIssue> | undefined> {
-    return this.get(`/api/workspaces/${workspaceSlug}/draft-issues/`, { params: { ...query } })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.get(`/api/workspaces/${workspaceSlug}/draft-issues/`, { params: { ...query }, signal }).then(
+      (response) => response?.data
+    );
   }
 
-  async getIssueById(workspaceSlug: string, issueId: string): Promise<TWorkspaceDraftIssue | undefined> {
-    return this.get(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+  async getIssueById(
+    workspaceSlug: string,
+    issueId: string,
+    signal?: AbortSignal
+  ): Promise<TWorkspaceDraftIssue | undefined> {
+    return this.get(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`, { signal }).then(
+      (response) => response?.data
+    );
   }
 
   async createIssue(
     workspaceSlug: string,
     payload: Partial<TWorkspaceDraftIssue | TIssue>
   ): Promise<TWorkspaceDraftIssue | undefined> {
-    return this.post(`/api/workspaces/${workspaceSlug}/draft-issues/`, payload)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.post(`/api/workspaces/${workspaceSlug}/draft-issues/`, payload).then((response) => response?.data);
   }
 
   async updateIssue(
@@ -50,30 +47,12 @@ export class WorkspaceDraftService extends APIService {
     issueId: string,
     payload: Partial<TWorkspaceDraftIssue | TIssue>
   ): Promise<TWorkspaceDraftIssue | undefined> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`, payload)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.patch(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`, payload).then(
+      (response) => response?.data
+    );
   }
 
   async deleteIssue(workspaceSlug: string, issueId: string): Promise<void> {
-    return this.delete(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
-  }
-
-  async moveIssue(workspaceSlug: string, issueId: string, payload: Partial<TWorkspaceDraftIssue>): Promise<TIssue> {
-    return this.post(`/api/workspaces/${workspaceSlug}/draft-to-issue/${issueId}/`, payload)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
+    return this.delete(`/api/workspaces/${workspaceSlug}/draft-issues/${issueId}/`).then((response) => response?.data);
   }
 }
-
-const workspaceDraftService = new WorkspaceDraftService();
-
-export default workspaceDraftService;

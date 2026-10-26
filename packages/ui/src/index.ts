@@ -37,3 +37,6 @@ export * from "./tooltip";
 export * from "./typography";
 export * from "./utils";
 export * from "./oauth";
+export { AuthPasswordInput, AuthConfirmPasswordInput } from "./auth-form";
+export { EmailEntryForm } from "./auth-form/email-entry-form";
+export { AuthInput, AuthEmailInput } from "./auth-form/auth-input";

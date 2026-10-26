@@ -4,25 +4,23 @@
  * See the LICENSE file for details.
  */
 
+import { useSidebar } from "@/providers/sidebar";
 import { useEffect, useRef } from "react";
-import { observer } from "mobx-react";
 // plane helpers
 import { useOutsideClickDetector } from "@plane/hooks";
 // hooks
-import { useTheme } from "@/hooks/store";
 // components
 import { AdminSidebarDropdown } from "./sidebar-dropdown";
 import { AdminSidebarHelpSection } from "./sidebar-help-section";
 import { AdminSidebarMenu } from "./sidebar-menu";
 
-export const AdminSidebar = observer(function AdminSidebar() {
-  // store
-  const { isSidebarCollapsed, toggleSidebar } = useTheme();
+export const AdminSidebar = function AdminSidebar() {
+  const { isSidebarCollapsed, toggleSidebar } = useSidebar();
 
   const ref = useRef<HTMLDivElement>(null);
 
   useOutsideClickDetector(ref, () => {
-    if (isSidebarCollapsed === false) {
+    if (!isSidebarCollapsed) {
       if (window.innerWidth < 768) {
         toggleSidebar(!isSidebarCollapsed);
       }
@@ -53,4 +51,4 @@ export const AdminSidebar = observer(function AdminSidebar() {
       </div>
     </div>
   );
-});
+};

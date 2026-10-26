@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
 import { ThemeSwitcher } from "@/components/appearance";
 
-export const ProfileSettingsDefaultPreferencesList = observer(function ProfileSettingsDefaultPreferencesList() {
+export const ProfileSettingsDefaultPreferencesList = function ProfileSettingsDefaultPreferencesList() {
   return (
     <div className="flex flex-col gap-y-1">
       <ThemeSwitcher
@@ -20,4 +19,4 @@ export const ProfileSettingsDefaultPreferencesList = observer(function ProfileSe
       />
     </div>
   );
-});
+};

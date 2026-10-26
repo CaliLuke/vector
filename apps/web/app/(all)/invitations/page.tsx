@@ -5,29 +5,23 @@
  */
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useRef } from "react";
 
-import useSWR, { mutate } from "swr";
-import { CheckCircle2 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 // plane imports
-import { ROLE } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // types
-import { Button } from "@plane/propel/button";
 import { PlaneLogo } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IWorkspaceMemberInvitation } from "@plane/types";
-import { truncateText } from "@plane/utils";
 // assets
 import emptyInvitation from "@/app/assets/empty-state/invitation.svg?url";
 // components
+import { InvitationSelectionForm } from "@/components/workspace/invitation-selection-form";
 import { EmptyState } from "@/components/common/empty-state";
-import { WorkspaceLogo } from "@/components/workspace/logo";
-import { USER_WORKSPACES_LIST } from "@plane/constants";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser, useUserProfile } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateUserProfile } from "@/hooks/use-current-user-profile";
+import { workspacesOptions } from "@/queries/workspaces";
+import { captureIdentityScope, isIdentityScopeCurrent } from "@/queries/identity";
 
 // services
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
@@ -37,75 +31,39 @@ import { WorkspaceService } from "@/services/workspace.service";
 const workspaceService = new WorkspaceService();
 
 function UserInvitationsPage(): React.JSX.Element | null {
-  // states
-  const [invitationsRespond, setInvitationsRespond] = useState<string[]>([]);
-  const [isJoiningWorkspaces, setIsJoiningWorkspaces] = useState(false);
+  const queryClient = useQueryClient();
   // router
   const router = useRouter();
   // store hooks
   const { t } = useTranslation();
-  const { data: currentUser } = useUser();
-  const { updateUserProfile } = useUserProfile();
+  const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
+  const identityScope = captureIdentityScope(queryClient, currentUser?.id);
+  const routeHref = router.state.location.href;
+  const lastWorkspacePreferenceSaved = useRef<string | undefined>(undefined);
 
-  const { fetchWorkspaces } = useWorkspace();
+  const { data: invitations } = useQuery({
+    queryKey: ["USER_WORKSPACE_INVITATIONS"],
+    queryFn: () => workspaceService.userWorkspaceInvitations(),
+  });
 
-  const { data: invitations } = useSWR("USER_WORKSPACE_INVITATIONS", () => workspaceService.userWorkspaceInvitations());
-
-  const redirectWorkspaceSlug =
-    // currentUserSettings?.workspace?.last_workspace_slug ||
-    // currentUserSettings?.workspace?.fallback_workspace_slug ||
-    "";
-
-  const handleInvitation = (workspace_invitation: IWorkspaceMemberInvitation, action: "accepted" | "withdraw") => {
-    if (action === "accepted") {
-      setInvitationsRespond((prevData) => [...prevData, workspace_invitation.id]);
-    } else if (action === "withdraw") {
-      setInvitationsRespond((prevData) => prevData.filter((item: string) => item !== workspace_invitation.id));
+  const finishJoining = async (ids: string[]) => {
+    const isCurrentFlow = () =>
+      isIdentityScopeCurrent(queryClient, identityScope) && router.state.location.href === routeHref;
+    if (!isCurrentFlow()) throw new Error("The account session or invitations route changed.");
+    const destination = invitations?.find((invitation) => invitation.id === ids[0])?.workspace;
+    if (destination && currentUser?.id) {
+      const savedPreference = `${currentUser.id}:${destination.id}`;
+      if (lastWorkspacePreferenceSaved.current !== savedPreference) {
+        await updateUserProfile({ last_workspace_id: destination.id });
+        if (!isCurrentFlow()) throw new Error("The account session or invitations route changed.");
+        lastWorkspacePreferenceSaved.current = savedPreference;
+      }
+      if (!isCurrentFlow()) throw new Error("The account session or invitations route changed.");
+      await queryClient.fetchQuery({ ...workspacesOptions(currentUser.id), staleTime: 0 });
     }
-  };
-
-  const submitInvitations = () => {
-    if (invitationsRespond.length === 0) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("please_select_at_least_one_invitation"),
-      });
-      return;
-    }
-
-    setIsJoiningWorkspaces(true);
-
-    workspaceService
-      .joinWorkspaces({ invitations: invitationsRespond })
-      .then(() => {
-        mutate(USER_WORKSPACES_LIST);
-        const firstInviteId = invitationsRespond[0];
-        const redirectWorkspace = invitations?.find((i) => i.id === firstInviteId)?.workspace;
-        updateUserProfile({ last_workspace_id: redirectWorkspace?.id })
-          .then(() => {
-            setIsJoiningWorkspaces(false);
-            fetchWorkspaces().then(() => {
-              void router.navigate({ href: `/${redirectWorkspace?.slug}` });
-            });
-          })
-          .catch(() => {
-            setToast({
-              type: TOAST_TYPE.ERROR,
-              title: t("error"),
-              message: t("something_went_wrong_please_try_again"),
-            });
-            setIsJoiningWorkspaces(false);
-          });
-      })
-      .catch((_err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("something_went_wrong_please_try_again"),
-        });
-        setIsJoiningWorkspaces(false);
-      });
+    if (!isCurrentFlow()) throw new Error("The account session or invitations route changed.");
+    await router.navigate({ href: destination ? `/${destination.slug}` : "/" });
   };
 
   return (
@@ -129,55 +87,13 @@ function UserInvitationsPage(): React.JSX.Element | null {
               <div className="w-full space-y-10">
                 <h5 className="text-16">{t("we_see_that_someone_has_invited_you_to_join_a_workspace")}</h5>
                 <h4 className="text-20 font-semibold">{t("join_a_workspace")}</h4>
-                <div className="max-h-[37vh] space-y-4 overflow-y-auto md:w-3/5">
-                  {invitations.map((invitation) => {
-                    const isSelected = invitationsRespond.includes(invitation.id);
-
-                    return (
-                      <div
-                        key={invitation.id}
-                        className={`flex cursor-pointer items-center gap-2 rounded-sm border px-3.5 py-5 ${
-                          isSelected ? "border-accent-strong" : "border-subtle hover:bg-layer-1"
-                        }`}
-                        onClick={() => handleInvitation(invitation, isSelected ? "withdraw" : "accepted")}
-                      >
-                        <div className="flex-shrink-0">
-                          <WorkspaceLogo
-                            logo={invitation.workspace.logo_url}
-                            name={invitation.workspace.name}
-                            classNames="size-9 flex-shrink-0"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-13 font-medium">{truncateText(invitation.workspace.name, 30)}</div>
-                          <p className="text-11 text-secondary">{ROLE[invitation.role]}</p>
-                        </div>
-                        <span className={`flex-shrink-0 ${isSelected ? "text-accent-primary" : "text-secondary"}`}>
-                          <CheckCircle2 className="h-5 w-5" />
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    size="lg"
-                    onClick={submitInvitations}
-                    disabled={isJoiningWorkspaces || invitationsRespond.length === 0}
-                    loading={isJoiningWorkspaces}
-                  >
-                    {t("accept_and_join")}
-                  </Button>
-                  <Link to="/$workspaceSlug/" params={{ workspaceSlug: redirectWorkspaceSlug }}>
-                    <span>
-                      <Button variant="secondary" size="lg">
-                        {t("go_home")}
-                      </Button>
-                    </span>
-                  </Link>
-                </div>
+                <InvitationSelectionForm
+                  invitations={invitations}
+                  onJoined={finishJoining}
+                  onCancel={() => void router.navigate({ href: "/" })}
+                  submitLabel={t("accept_and_join")}
+                  cancelLabel={t("go_home")}
+                />
               </div>
             </div>
           ) : (
@@ -200,5 +116,5 @@ function UserInvitationsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/invitations/")({
-  component: observer(UserInvitationsPage),
+  component: UserInvitationsPage,
 });

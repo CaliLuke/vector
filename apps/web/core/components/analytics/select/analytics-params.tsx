@@ -5,31 +5,26 @@
  */
 
 import { useMemo } from "react";
-import { observer } from "mobx-react";
-import type { Control, UseFormSetValue } from "react-hook-form";
-import { Controller } from "react-hook-form";
 import { SlidersHorizontal } from "lucide-react";
 // plane package imports
 import { ANALYTICS_X_AXIS_VALUES, ANALYTICS_Y_AXIS_VALUES } from "@plane/constants";
 import { CalendarLayoutIcon } from "@plane/propel/icons";
 import type { IAnalyticsParams } from "@plane/types";
 import { ChartYAxisMetric } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // plane web components
 import { SelectXAxis } from "./select-x-axis";
 import { SelectYAxis } from "./select-y-axis";
 
 type Props = {
-  control: Control<IAnalyticsParams, unknown>;
-  setValue: UseFormSetValue<IAnalyticsParams>;
+  onChange: (value: Partial<IAnalyticsParams>) => void;
   params: IAnalyticsParams;
-  workspaceSlug: string;
   classNames?: string;
   isEpic?: boolean;
 };
 
-export const AnalyticsSelectParams = observer(function AnalyticsSelectParams(props: Props) {
-  const { control, params, classNames, isEpic } = props;
+export const AnalyticsSelectParams = function AnalyticsSelectParams(props: Props) {
+  const { onChange, params, classNames, isEpic } = props;
   const xAxisOptions = useMemo(
     () => ANALYTICS_X_AXIS_VALUES.filter((option) => option.value !== params.group_by),
     [params.group_by]
@@ -42,68 +37,50 @@ export const AnalyticsSelectParams = observer(function AnalyticsSelectParams(pro
   return (
     <div className={cn("flex w-full justify-between", classNames)}>
       <div className={`flex items-center gap-2`}>
-        <Controller
-          name="y_axis"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <SelectYAxis
-              value={value}
-              onChange={(val: ChartYAxisMetric | null) => {
-                onChange(val);
-              }}
-              options={ANALYTICS_Y_AXIS_VALUES}
-              hiddenOptions={[
-                ChartYAxisMetric.ESTIMATE_POINT_COUNT,
-                isEpic ? ChartYAxisMetric.WORK_ITEM_COUNT : ChartYAxisMetric.EPIC_WORK_ITEM_COUNT,
-              ]}
-            />
-          )}
+        <SelectYAxis
+          value={params.y_axis}
+          onChange={(val: ChartYAxisMetric | null) => {
+            if (val !== null) onChange({ y_axis: val });
+          }}
+          options={ANALYTICS_Y_AXIS_VALUES}
+          hiddenOptions={[
+            ChartYAxisMetric.ESTIMATE_POINT_COUNT,
+            isEpic ? ChartYAxisMetric.WORK_ITEM_COUNT : ChartYAxisMetric.EPIC_WORK_ITEM_COUNT,
+          ]}
         />
-        <Controller
-          name="x_axis"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <SelectXAxis
-              value={value}
-              onChange={(val) => {
-                onChange(val);
-              }}
-              label={
-                <div className="flex items-center gap-2">
-                  <CalendarLayoutIcon className="h-3 w-3" />
-                  <span className={cn("text-secondary", value && "text-primary")}>
-                    {xAxisOptions.find((v) => v.value === value)?.label || "Add Property"}
-                  </span>
-                </div>
-              }
-              options={xAxisOptions}
-            />
-          )}
+        <SelectXAxis
+          value={params.x_axis}
+          onChange={(val) => {
+            if (val !== null) onChange({ x_axis: val });
+          }}
+          label={
+            <div className="flex items-center gap-2">
+              <CalendarLayoutIcon className="h-3 w-3" />
+              <span className={cn("text-secondary", params.x_axis && "text-primary")}>
+                {xAxisOptions.find((v) => v.value === params.x_axis)?.label || "Add Property"}
+              </span>
+            </div>
+          }
+          options={xAxisOptions}
         />
-        <Controller
-          name="group_by"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <SelectXAxis
-              value={value}
-              onChange={(val) => {
-                onChange(val);
-              }}
-              label={
-                <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-3 w-3" />
-                  <span className={cn("text-secondary", value && "text-primary")}>
-                    {groupByOptions.find((v) => v.value === value)?.label || "Add Property"}
-                  </span>
-                </div>
-              }
-              options={groupByOptions}
-              placeholder="Group By"
-              allowNoValue
-            />
-          )}
+        <SelectXAxis
+          value={params.group_by}
+          onChange={(val) => {
+            onChange({ group_by: val ?? undefined });
+          }}
+          label={
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-3 w-3" />
+              <span className={cn("text-secondary", params.group_by && "text-primary")}>
+                {groupByOptions.find((v) => v.value === params.group_by)?.label || "Add Property"}
+              </span>
+            </div>
+          }
+          options={groupByOptions}
+          placeholder="Group By"
+          allowNoValue
         />
       </div>
     </div>
   );
-});
+};

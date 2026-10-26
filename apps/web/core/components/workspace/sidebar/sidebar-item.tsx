@@ -6,18 +6,17 @@
 
 import { Link, useParams, useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import type { IWorkspaceSidebarNavigationItem } from "@plane/constants";
-import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { joinUrlPath } from "@plane/utils";
+import { joinUrlPath } from "@plane/utils/string";
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions, useExtendedSidebarOpen } from "@/providers/sidebar-state";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { useWorkspaceNavigationPreferences } from "@/hooks/use-navigation-preferences";
 // plane web imports
 import { getSidebarNavigationItemIcon } from "@/components/workspace/sidebar/helper";
@@ -28,19 +27,16 @@ type Props = {
   additionalStaticItems?: string[];
 };
 
-export const SidebarItemBase = observer(function SidebarItemBase({
-  item,
-  additionalRender,
-  additionalStaticItems,
-}: Props) {
+export function SidebarItemBase({ item, additionalRender, additionalStaticItems }: Props) {
   const { t } = useTranslation();
   const pathname = useLocation({ select: (location) => location.pathname });
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { isWorkspaceItemPinned } = useWorkspaceNavigationPreferences();
-  const { data } = useUser();
+  const { data } = useCurrentUser();
 
-  const { toggleSidebar, isExtendedSidebarOpened, toggleExtendedSidebar } = useAppTheme();
+  const isExtendedSidebarOpened = useExtendedSidebarOpen();
+  const { toggleSidebar, toggleExtendedSidebar } = useSidebarActions();
 
   const handleLinkClick = () => {
     if (window.innerWidth < 768) toggleSidebar();
@@ -58,7 +54,7 @@ export const SidebarItemBase = observer(function SidebarItemBase({
   ];
   const slug = workspaceSlug?.toString() || "";
 
-  if (!allowPermissions(item.access, EUserPermissionsLevel.WORKSPACE, slug)) return null;
+  if (!canWorkspace(item.access)) return null;
 
   const isPinned = isWorkspaceItemPinned(item.key);
   if (!isPinned && !staticItems.includes(item.key)) return null;
@@ -78,4 +74,4 @@ export const SidebarItemBase = observer(function SidebarItemBase({
       </SidebarNavItem>
     </Link>
   );
-});
+}

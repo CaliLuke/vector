@@ -115,6 +115,7 @@ type GroupPayload struct {
 type ListPayload struct {
 	SessionID *string `json:"session_id,omitzero"`
 	Slug      string  `json:"slug"`
+	All       *bool   `json:"all,omitzero"`
 }
 
 // PatchCollectionPayload is the payload type of the workspace_favorites

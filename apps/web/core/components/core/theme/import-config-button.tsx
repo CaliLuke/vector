@@ -5,21 +5,15 @@
  */
 
 import { useRef } from "react";
-import { observer } from "mobx-react";
-import type { UseFormSetValue } from "react-hook-form";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { IUserTheme } from "@plane/types";
+import { parseThemeConfig, type CustomThemeConfig } from "./theme-config";
 
-type Props = {
-  handleUpdateTheme: (formData: IUserTheme) => Promise<void>;
-  setValue: UseFormSetValue<IUserTheme>;
-};
+type Props = { onImport: (value: CustomThemeConfig) => Promise<void>; disabled?: boolean };
 
-export const CustomThemeImportConfigButton = observer(function CustomThemeImportConfigButton(props: Props) {
-  const { handleUpdateTheme, setValue } = props;
+export function CustomThemeImportConfigButton({ onImport, disabled }: Props) {
   // refs
   const fileInputRef = useRef<HTMLInputElement>(null);
   // translation
@@ -31,50 +25,7 @@ export const CustomThemeImportConfigButton = observer(function CustomThemeImport
 
     try {
       const text = await file.text();
-      const config = JSON.parse(text) as IUserTheme;
-
-      // Validate required fields
-      if (!config.primary || !config.background) {
-        throw new Error("Missing required fields: primary and background");
-      }
-
-      // Validate hex color format
-      const hexPattern = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-      if (!hexPattern.test(config.primary)) {
-        throw new Error("Invalid brand color hex format");
-      }
-      if (!hexPattern.test(config.background)) {
-        throw new Error("Invalid neutral color hex format");
-      }
-
-      // Validate theme mode
-      const themeMode = config.darkPalette ?? false;
-      if (typeof themeMode !== "boolean") {
-        throw new Error("Invalid theme mode. Must be a boolean");
-      }
-
-      // Apply the configuration to form
-      const formData: IUserTheme = {
-        theme: "custom",
-        primary: config.primary,
-        background: config.background,
-        darkPalette: themeMode,
-      };
-
-      // Update form values
-      setValue("primary", formData.primary);
-      setValue("background", formData.background);
-      setValue("darkPalette", formData.darkPalette);
-      setValue("theme", "custom");
-
-      // Apply the theme
-      await handleUpdateTheme(formData);
-
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("success"),
-        message: "Theme configuration imported successfully",
-      });
+      await onImport(parseThemeConfig(text));
     } catch (error) {
       console.error("Failed to upload config:", error);
       setToast({
@@ -92,10 +43,23 @@ export const CustomThemeImportConfigButton = observer(function CustomThemeImport
 
   return (
     <>
-      <input ref={fileInputRef} type="file" accept=".json" onChange={handleUploadConfig} className="hidden" />
-      <Button variant="secondary" size="lg" type="button" onClick={() => fileInputRef.current?.click()}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        disabled={disabled}
+        accept=".json"
+        onChange={handleUploadConfig}
+        className="hidden"
+      />
+      <Button
+        disabled={disabled}
+        variant="secondary"
+        size="lg"
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+      >
         Import config
       </Button>
     </>
   );
-});
+}

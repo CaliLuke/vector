@@ -6,10 +6,9 @@
 
 import { Link } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { Tooltip } from "@plane/propel/tooltip";
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarActions } from "@/providers/sidebar-state";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type Props = {
@@ -18,10 +17,10 @@ type Props = {
   icon: React.ReactNode;
 };
 
-export const FavoriteItemTitle = observer(function FavoriteItemTitle(props: Props) {
+export function FavoriteItemTitle(props: Props) {
   const { href, title, icon } = props;
   // store hooks
-  const { toggleSidebar } = useAppTheme();
+  const { toggleSidebar } = useSidebarActions();
   const { isMobile } = usePlatformOS();
 
   const handleOnClick = () => {
@@ -36,4 +35,4 @@ export const FavoriteItemTitle = observer(function FavoriteItemTitle(props: Prop
       </Link>
     </Tooltip>
   );
-});
+}

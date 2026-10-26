@@ -5,10 +5,8 @@
  */
 
 import { useParams, useLocation, useRouter } from "@tanstack/react-router";
-import React, { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
+import React, { useMemo } from "react";
 
-import useSWR from "swr";
 // plane imports
 import { GLOBAL_VIEW_TRACKER_ELEMENTS, ISSUE_DISPLAY_FILTERS_BY_PAGE } from "@plane/constants";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
@@ -21,34 +19,30 @@ import { WorkspaceActiveLayout } from "@/components/views/helper";
 import { WorkspaceLevelWorkItemFiltersHOC } from "@/components/work-item-filters/filters-hoc/workspace-level";
 import { WorkItemFiltersRow } from "@/components/work-item-filters/filters-row";
 // hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
-import { useIssues } from "@/hooks/store/use-issues";
+import { useIssueListPaginationOptions } from "@/hooks/use-issue-list-pagination-options";
+import { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
+import { useWorkspaceIssuePreferences } from "@/providers/workspace-issue-preferences";
+import { getWorkspaceViewsLoadState, useWorkspaceView } from "@/hooks/use-workspace-views";
 
-import { IssuesStoreContext } from "@/hooks/use-issue-layout-store";
 import { useWorkspaceIssueProperties } from "@/hooks/use-workspace-issue-properties";
 
 type Props = {
   isDefaultView: boolean;
-  isLoading?: boolean;
-  toggleLoading: (value: boolean) => void;
 };
 
-export const AllIssueLayoutRoot = observer(function AllIssueLayoutRoot(props: Props) {
-  const { isDefaultView, isLoading = false, toggleLoading } = props;
+export function AllIssueLayoutRoot(props: Props) {
+  const { isDefaultView } = props;
   // router
   const router = useRouter();
   const { workspaceSlug, globalViewId } = useParams({ strict: false });
   // search params
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   // store hooks
-  const {
-    issuesFilter: { filters, fetchFilters, updateFilterExpression },
-    issues: { clear, groupedIssueIds, fetchIssues, fetchNextIssues },
-  } = useIssues(EIssuesStoreType.GLOBAL);
-  const { fetchAllGlobalViews, getViewDetailsById } = useGlobalView();
+  const viewsQuery = useWorkspaceView(workspaceSlug, globalViewId);
+  const preferences = useWorkspaceIssuePreferences();
   // Derived values
-  const viewDetails = globalViewId ? getViewDetailsById(globalViewId) : undefined;
-  const workItemFilters = globalViewId ? filters?.[globalViewId] : undefined;
+  const viewDetails = viewsQuery.view;
+  const workItemFilters = preferences?.issueFilters;
   const activeLayout: EIssueLayoutTypes | undefined = workItemFilters?.displayFilters?.layout;
   // Determine initial work item filters based on view type and availability
   const initialWorkItemFilters = useMemo(() => {
@@ -63,7 +57,7 @@ export const AllIssueLayoutRoot = observer(function AllIssueLayoutRoot(props: Pr
       displayFilters: workItemFilters?.displayFilters,
       displayProperties: workItemFilters?.displayProperties,
       kanbanFilters: workItemFilters?.kanbanFilters,
-      richFilters: viewDetails?.rich_filters ?? {},
+      richFilters: workItemFilters?.richFilters ?? {},
     };
   }, [globalViewId, viewDetails, workItemFilters]);
 
@@ -77,41 +71,33 @@ export const AllIssueLayoutRoot = observer(function AllIssueLayoutRoot(props: Pr
   });
 
   // Fetch next pages callback
-  const fetchNextPages = useCallback(() => {
-    if (workspaceSlug && globalViewId) fetchNextIssues(workspaceSlug, globalViewId);
-  }, [fetchNextIssues, workspaceSlug, globalViewId]);
-
-  // Fetch global views
-  const { isLoading: globalViewsLoading } = useSWR(
-    workspaceSlug ? `WORKSPACE_GLOBAL_VIEWS_${workspaceSlug}` : null,
-    async () => {
-      if (workspaceSlug) {
-        await fetchAllGlobalViews(workspaceSlug);
-      }
-    },
-    { revalidateIfStale: false, revalidateOnFocus: false }
+  // Canonical saved views and the scoped React draft supply the current filter inputs.
+  const { isLoading: globalViewsLoading, isError: viewLoadFailed } = getWorkspaceViewsLoadState(
+    viewsQuery,
+    !isDefaultView
   );
 
-  // Fetch issues
-  const { isLoading: issuesLoading } = useSWR(
-    workspaceSlug && globalViewId ? `WORKSPACE_GLOBAL_VIEW_ISSUES_${workspaceSlug}_${globalViewId}` : null,
-    async () => {
-      if (workspaceSlug && globalViewId) {
-        clear();
-        toggleLoading(true);
-        await fetchFilters(workspaceSlug, globalViewId);
-        await fetchIssues(workspaceSlug, globalViewId, groupedIssueIds ? "mutation" : "init-loader", {
-          canGroup: false,
-          perPageCount: 100,
-        });
-        toggleLoading(false);
-      }
-    },
-    { revalidateIfStale: false, revalidateOnFocus: false }
+  const paginationOptions = useIssueListPaginationOptions(EIssuesStoreType.GLOBAL, workItemFilters?.displayFilters);
+  const issueRead = useIssueListPresentation(
+    EIssuesStoreType.GLOBAL,
+    paginationOptions,
+    workItemFilters?.displayFilters
   );
+  const issuesLoading = issueRead.isPending;
+
+  if (viewLoadFailed) {
+    return (
+      <EmptyStateDetailed
+        title="Workspace views are unavailable"
+        description="We couldn't verify workspace access or load this view. Try again."
+        assetKey="view"
+        actions={[{ label: "Retry", onClick: () => void viewsQuery.retry(), variant: "primary" }]}
+      />
+    );
+  }
 
   // Empty state
-  if (!isLoading && !globalViewsLoading && !issuesLoading && !viewDetails && !isDefaultView) {
+  if (!globalViewsLoading && !viewDetails && !isDefaultView) {
     return (
       <EmptyStateDetailed
         title="View does not exist"
@@ -128,51 +114,57 @@ export const AllIssueLayoutRoot = observer(function AllIssueLayoutRoot(props: Pr
     );
   }
 
+  if (issueRead.isError)
+    return (
+      <EmptyStateDetailed
+        title="Work items are unavailable"
+        description="Work items could not be loaded. Try again."
+        assetKey="view"
+        actions={[{ label: "Retry", onClick: () => void issueRead.retry(), variant: "primary" }]}
+      />
+    );
+
   if (!workspaceSlug || !globalViewId) return null;
   return (
-    <IssuesStoreContext.Provider value={EIssuesStoreType.GLOBAL}>
-      <WorkspaceLevelWorkItemFiltersHOC
-        enableSaveView
-        saveViewOptions={{
-          label: "Save as",
-        }}
-        enableUpdateView
-        entityId={globalViewId}
-        entityType={EIssuesStoreType.GLOBAL}
-        filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.my_issues.filters}
-        initialWorkItemFilters={initialWorkItemFilters}
-        updateFilters={updateFilterExpression.bind(updateFilterExpression, workspaceSlug, globalViewId)}
-        workspaceSlug={workspaceSlug}
-      >
-        {({ filter: globalWorkItemsFilter }) => (
-          <div className="h-full overflow-hidden bg-surface-1">
-            <div className="flex h-full w-full flex-col border-b border-strong">
-              {globalWorkItemsFilter && (
-                <WorkItemFiltersRow
-                  filter={globalWorkItemsFilter}
-                  trackerElements={{
-                    saveView: GLOBAL_VIEW_TRACKER_ELEMENTS.HEADER_SAVE_VIEW_BUTTON,
-                  }}
-                />
-              )}
-              <WorkspaceActiveLayout
-                activeLayout={activeLayout}
-                isDefaultView={isDefaultView}
-                isLoading={isLoading}
-                toggleLoading={toggleLoading}
-                workspaceSlug={workspaceSlug}
-                globalViewId={globalViewId}
-                routeFilters={routeFilters}
-                fetchNextPages={fetchNextPages}
-                globalViewsLoading={globalViewsLoading}
-                issuesLoading={issuesLoading}
+    <WorkspaceLevelWorkItemFiltersHOC
+      enableSaveView
+      saveViewOptions={{
+        label: "Save as",
+      }}
+      enableUpdateView
+      entityId={globalViewId}
+      entityType={EIssuesStoreType.GLOBAL}
+      filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.my_issues.filters}
+      initialWorkItemFilters={initialWorkItemFilters}
+      updateFilters={(expression) => preferences?.updateExpression(expression)}
+      workspaceSlug={workspaceSlug}
+    >
+      {({ editor: globalWorkItemsFilter }) => (
+        <div className="h-full overflow-hidden bg-surface-1">
+          <div className="flex h-full w-full flex-col border-b border-strong">
+            {globalWorkItemsFilter && (
+              <WorkItemFiltersRow
+                editor={globalWorkItemsFilter}
+                trackerElements={{
+                  saveView: GLOBAL_VIEW_TRACKER_ELEMENTS.HEADER_SAVE_VIEW_BUTTON,
+                }}
               />
-            </div>
-            {/* peek overview */}
-            <IssuePeekOverview />
+            )}
+            <WorkspaceActiveLayout
+              activeLayout={activeLayout}
+              isDefaultView={isDefaultView}
+              isLoading={issuesLoading}
+              workspaceSlug={workspaceSlug}
+              globalViewId={globalViewId}
+              routeFilters={routeFilters}
+              readState={issueRead}
+              globalViewsLoading={globalViewsLoading}
+            />
           </div>
-        )}
-      </WorkspaceLevelWorkItemFiltersHOC>
-    </IssuesStoreContext.Provider>
+          {/* peek overview */}
+          <IssuePeekOverview />
+        </div>
+      )}
+    </WorkspaceLevelWorkItemFiltersHOC>
   );
-});
+}

@@ -59,7 +59,8 @@
     "fix:format": "oxfmt .",
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "dev:build": "tsdown --no-clean"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
@@ -87,6 +88,7 @@
     "@storybook/addon-designs": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/react-vite": "catalog:",
+    "@tanstack/react-form": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "storybook": "catalog:",

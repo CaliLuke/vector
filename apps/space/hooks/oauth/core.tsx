@@ -4,8 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { instanceInfoOptions } from "@/queries/session";
 // plane imports
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from "react-router";
 import { useTheme } from "next-themes";
 import { API_BASE_URL } from "@plane/constants";
 import type { TOAuthConfigs, TOAuthOption } from "@plane/types";
@@ -16,73 +18,41 @@ import githubDarkLogo from "@/app/assets/logos/github-dark.svg?url";
 import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
 import googleLogo from "@/app/assets/logos/google-logo.svg?url";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
 
 export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
   //router
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   // query params
   const next_path = searchParams.get("next_path");
   // theme
   const { resolvedTheme } = useTheme();
-  // store hooks
-  const { config } = useInstance();
+  const { data: instanceInfo } = useQuery(instanceInfoOptions);
+  const config = instanceInfo?.config;
   // derived values
-  const isOAuthEnabled =
-    (config &&
-      (config?.is_google_enabled ||
-        config?.is_github_enabled ||
-        config?.is_gitlab_enabled ||
-        config?.is_gitea_enabled)) ||
-    false;
-  const oAuthOptions: TOAuthOption[] = [
-    {
-      id: "google",
-      text: `${oauthActionText} with Google`,
-      icon: <img src={googleLogo} height={18} width={18} alt="Google Logo" />,
-      onClick: () => {
-        window.location.assign(`${API_BASE_URL}/auth/google/${next_path ? `?next_path=${next_path}` : ``}`);
-      },
-      enabled: config?.is_google_enabled,
-    },
+  const providers = [
+    { id: "google", name: "Google", logo: googleLogo, enabled: config?.is_google_enabled },
     {
       id: "github",
-      text: `${oauthActionText} with GitHub`,
-      icon: (
-        <img
-          src={resolvedTheme === "dark" ? githubLightLogo : githubDarkLogo}
-          height={18}
-          width={18}
-          alt="GitHub Logo"
-        />
-      ),
-      onClick: () => {
-        window.location.assign(`${API_BASE_URL}/auth/github/${next_path ? `?next_path=${next_path}` : ``}`);
-      },
+      name: "GitHub",
+      logo: resolvedTheme === "dark" ? githubLightLogo : githubDarkLogo,
       enabled: config?.is_github_enabled,
     },
-    {
-      id: "gitlab",
-      text: `${oauthActionText} with GitLab`,
-      icon: <img src={gitlabLogo} height={18} width={18} alt="GitLab Logo" />,
-      onClick: () => {
-        window.location.assign(`${API_BASE_URL}/auth/gitlab/${next_path ? `?next_path=${next_path}` : ``}`);
-      },
-      enabled: config?.is_gitlab_enabled,
-    },
-    {
-      id: "gitea",
-      text: `${oauthActionText} with Gitea`,
-      icon: <img src={giteaLogo} height={18} width={18} alt="Gitea Logo" />,
-      onClick: () => {
-        window.location.assign(`${API_BASE_URL}/auth/gitea/${next_path ? `?next_path=${next_path}` : ``}`);
-      },
-      enabled: config?.is_gitea_enabled,
-    },
+    { id: "gitlab", name: "GitLab", logo: gitlabLogo, enabled: config?.is_gitlab_enabled },
+    { id: "gitea", name: "Gitea", logo: giteaLogo, enabled: config?.is_gitea_enabled },
   ];
+  const oAuthOptions: TOAuthOption[] = providers.map(({ id, name, logo, enabled }) => ({
+    id,
+    text: `${oauthActionText} with ${name}`,
+    enabled,
+    icon: <img src={logo} height={18} width={18} alt={name} />,
+    onClick: () => {
+      const query = next_path ? `?${new URLSearchParams({ next_path })}` : "";
+      window.location.assign(`${API_BASE_URL}/auth/${id}/${query}`);
+    },
+  }));
 
   return {
-    isOAuthEnabled,
+    isOAuthEnabled: oAuthOptions.some((option) => option.enabled),
     oAuthOptions,
   };
 };

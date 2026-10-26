@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import { useTranslation } from "@plane/i18n";
 // plane imports
 import { LinkIcon, NewTabIcon } from "@plane/propel/icons";
@@ -14,7 +12,8 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TStaticViewTypes } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 // helpers
 type Props = {
   workspaceSlug: string;
@@ -24,7 +23,7 @@ type Props = {
   };
 };
 
-export const DefaultWorkspaceViewQuickActions = observer(function DefaultWorkspaceViewQuickActions(props: Props) {
+export const DefaultWorkspaceViewQuickActions = function DefaultWorkspaceViewQuickActions(props: Props) {
   const { workspaceSlug, view } = props;
 
   const { t } = useTranslation();
@@ -99,4 +98,4 @@ export const DefaultWorkspaceViewQuickActions = observer(function DefaultWorkspa
       </CustomMenu>
     </>
   );
-});
+};

@@ -4,58 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
-import { observer } from "mobx-react";
-// plane imports
 import { ISSUE_PRIORITY_FILTERS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PriorityIcon } from "@plane/propel/icons";
-// local imports
-import { FilterHeader } from "./helpers/filter-header";
-import { FilterOption } from "./helpers/filter-option";
-
-type Props = {
-  appliedFilters: string[] | null;
-  handleUpdate: (val: string) => void;
-  searchQuery: string;
-};
-
-export const FilterPriority = observer(function FilterPriority(props: Props) {
-  const { appliedFilters, handleUpdate, searchQuery } = props;
-
-  // hooks
+import { FilterSection } from "./helpers/filter-section";
+import type { FilterSelectionProps } from "./helpers/filter-section";
+export function FilterPriority(props: FilterSelectionProps) {
   const { t } = useTranslation();
-
-  const [previewEnabled, setPreviewEnabled] = useState(true);
-
-  const appliedFiltersCount = appliedFilters?.length ?? 0;
-
-  const filteredOptions = ISSUE_PRIORITY_FILTERS.filter((p) => p.key.includes(searchQuery.toLowerCase()));
-
-  return (
-    <>
-      <FilterHeader
-        title={`Priority${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
-        isPreviewEnabled={previewEnabled}
-        handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
-      />
-      {previewEnabled && (
-        <div>
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((priority) => (
-              <FilterOption
-                key={priority.key}
-                isChecked={appliedFilters?.includes(priority.key) ? true : false}
-                onClick={() => handleUpdate(priority.key)}
-                icon={<PriorityIcon priority={priority.key} className="h-3.5 w-3.5" />}
-                title={t(priority.titleTranslationKey)}
-              />
-            ))
-          ) : (
-            <p className="text-11 text-placeholder italic">{t("common.search.no_matches_found")}</p>
-          )}
-        </div>
-      )}
-    </>
-  );
-});
+  const options = ISSUE_PRIORITY_FILTERS.map((priority) => ({
+    id: priority.key,
+    name: t(priority.titleTranslationKey),
+    icon: <PriorityIcon priority={priority.key} className="size-3.5" />,
+  }));
+  return <FilterSection {...props} title="Priority" options={options} />;
+}

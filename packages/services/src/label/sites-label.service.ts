@@ -27,11 +27,11 @@ export class SitesLabelService extends APIService {
    * @returns {Promise<IIssueLabel[]>} The list of labels
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string): Promise<IIssueLabel[]> {
-    return this.get(`/api/public/anchor/${anchor}/labels/`)
+  async list(anchor: string, signal?: AbortSignal): Promise<IIssueLabel[]> {
+    return this.get(`/api/public/anchor/${anchor}/labels/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

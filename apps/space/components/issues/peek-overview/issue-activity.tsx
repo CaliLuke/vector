@@ -4,9 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import { Link } from "react-router";
-import { usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
+import { publishSettingsOptions } from "@/queries/publishing";
+import { Link, useLocation } from "react-router";
+
 import { Lock } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
@@ -14,28 +16,27 @@ import { Button } from "@plane/propel/button";
 import { AddComment } from "@/components/issues/peek-overview/comment/add-comment";
 import { CommentCard } from "@/components/issues/peek-overview/comment/comment-detail-card";
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
-import { useUser } from "@/hooks/store/use-user";
+import { commentsOptions } from "@/queries/issue-actions";
 import useIsInIframe from "@/hooks/use-is-in-iframe";
 // types
-import type { IIssue } from "@/types/issue";
+
+import type { IPublicIssue } from "@plane/types";
 
 type Props = {
   anchor: string;
-  issueDetails: IIssue;
+  issueDetails: IPublicIssue;
 };
 
-export const PeekOverviewIssueActivity = observer(function PeekOverviewIssueActivity(props: Props) {
-  const { anchor } = props;
+export const PeekOverviewIssueActivity = function PeekOverviewIssueActivity(props: Props) {
+  const { anchor, issueDetails } = props;
   // router
-  const pathname = usePathname();
-  // store hooks
-  const { details, peekId } = useIssueDetails();
-  const { data: currentUser } = useUser();
-  const { canComment } = usePublish(anchor);
+  const { pathname } = useLocation();
+  const commentsQuery = useQuery(commentsOptions(anchor, issueDetails.id));
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { is_comments_enabled: canComment } = publishSettings ?? {};
   // derived values
-  const comments = details[peekId || ""]?.comments || [];
+  const comments = commentsQuery.data ?? [];
   const isInIframe = useIsInIframe();
 
   return (
@@ -43,8 +44,13 @@ export const PeekOverviewIssueActivity = observer(function PeekOverviewIssueActi
       <h4 className="font-medium">Comments</h4>
       <div className="mt-4">
         <div className="space-y-4">
+          {commentsQuery.isError && (
+            <div role="alert">
+              Could not load comments. <button onClick={() => void commentsQuery.refetch()}>Retry</button>
+            </div>
+          )}
           {comments.map((comment) => (
-            <CommentCard key={comment.id} anchor={anchor} comment={comment} />
+            <CommentCard issueId={issueDetails.id} key={comment.id} anchor={anchor} comment={comment} />
           ))}
         </div>
         {!isInIframe &&
@@ -52,7 +58,7 @@ export const PeekOverviewIssueActivity = observer(function PeekOverviewIssueActi
             <>
               {canComment && (
                 <div className="mt-4">
-                  <AddComment anchor={anchor} disabled={!currentUser} />
+                  <AddComment key={issueDetails.id} issueId={issueDetails.id} anchor={anchor} disabled={!currentUser} />
                 </div>
               )}
             </>
@@ -70,4 +76,4 @@ export const PeekOverviewIssueActivity = observer(function PeekOverviewIssueActi
       </div>
     </div>
   );
-});
+};

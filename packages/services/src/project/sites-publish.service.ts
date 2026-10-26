@@ -27,11 +27,11 @@ export class SitesProjectPublishService extends APIService {
    * @returns {Promise<TProjectPublishSettings>} The publish settings
    * @throws {Error} If the API request fails
    */
-  async retrieveSettingsByAnchor(anchor: string): Promise<TProjectPublishSettings> {
-    return this.get(`/api/public/anchor/${anchor}/settings/`)
+  async retrieveSettingsByAnchor(anchor: string, signal?: AbortSignal): Promise<TProjectPublishSettings> {
+    return this.get(`/api/public/anchor/${anchor}/settings/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -46,7 +46,7 @@ export class SitesProjectPublishService extends APIService {
     return this.get(`/api/public/workspaces/${workspaceSlug}/projects/${projectID}/anchor/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 }

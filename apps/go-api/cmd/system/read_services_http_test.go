@@ -44,7 +44,7 @@ type readServiceMount struct {
 	pattern string
 }
 
-func TestReadServiceGeneratedMountsAccountForSelectedFiftySixRoutes(t *testing.T) {
+func TestReadServiceGeneratedMountsAccountForSelectedFiftyNineRoutes(t *testing.T) {
 	mux := loomhttp.NewMuxer()
 	var mounts []readServiceMount
 
@@ -90,65 +90,68 @@ func TestReadServiceGeneratedMountsAccountForSelectedFiftySixRoutes(t *testing.T
 	}
 
 	want := map[string]string{
-		"/api/users/me/workspaces/":                                                                                "workspace_project_reads",
-		"/api/workspaces/":                                                                                         "workspace_project_reads",
-		"/api/workspaces/{slug}/":                                                                                  "workspace_project_reads",
-		"/api/workspaces/{slug}/project-stats/":                                                                    "workspace_project_reads",
-		"/api/workspaces/{slug}/projects/":                                                                         "workspace_project_reads",
-		"/api/workspaces/{slug}/projects/details/":                                                                 "workspace_project_reads",
-		"/api/workspaces/{slug}/projects/{pk}/":                                                                    "workspace_project_reads",
-		"/api/workspaces/{slug}/cycles/":                                                                           "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/":                                            "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/":                                       "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/":                                                     "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/":                                "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/":                                  "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/":                             "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/{issue_id}/":                  "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/progress/":                                 "cycle_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/":                                                "cycle_reads",
-		"/api/workspaces/{slug}/modules/":                                                                          "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/":                                           "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/":                                      "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/":                                                    "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/":                                "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/":                                 "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/{issue_id}/":                      "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/":                           "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/":                      "module_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/":                                               "module_reads",
-		"/api/workspaces/{slug}/estimates/":                                                                        "estimate_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/estimates/":                                                  "estimate_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/":                                    "estimate_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/":                                              "page_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/":                                                      "page_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/":                                            "page_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/":                                "page_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/":                                   "page_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/{pk}/":                              "page_reads",
-		"/api/workspaces/{slug}/draft-issues/":                                                                     "intake_inbox_reads",
-		"/api/workspaces/{slug}/draft-issues/{pk}/":                                                                "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/":                                               "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/{pk}/":                                          "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/inboxes/":                                                    "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/":                                               "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intake-issues/":                                              "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intake-issues/{pk}/":                                         "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/":      "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/{pk}/": "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intakes/":                                                    "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/":                                               "intake_inbox_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/":                                      "deploy_board_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/":                                 "deploy_board_reads",
-		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/history/":                                  "work_item_history",
-		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/meta/":                                     "work_item_history",
-		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/":                                 "work_item_history",
-		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/":                            "work_item_history",
-		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/":             "work_item_history",
-		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/":        "work_item_history",
+		"/api/users/me/workspaces/":                                                                                      "workspace_project_reads",
+		"/api/workspaces/":                                                                                               "workspace_project_reads",
+		"/api/workspaces/{slug}/":                                                                                        "workspace_project_reads",
+		"/api/workspaces/{slug}/project-stats/":                                                                          "workspace_project_reads",
+		"/api/workspaces/{slug}/projects/":                                                                               "workspace_project_reads",
+		"/api/workspaces/{slug}/projects/details/":                                                                       "workspace_project_reads",
+		"/api/workspaces/{slug}/projects/{pk}/":                                                                          "workspace_project_reads",
+		"/api/workspaces/{slug}/cycles/":                                                                                 "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/":                                                  "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/archived-cycles/{pk}/":                                             "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/":                                                           "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/analytics/":                                      "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/archive/":                                        "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/":                                   "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/cycle-issues/{issue_id}/":                        "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{cycle_id}/progress/":                                       "cycle_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/cycles/{pk}/":                                                      "cycle_reads",
+		"/api/workspaces/{slug}/modules/":                                                                                "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/":                                                 "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/archived-modules/{pk}/":                                            "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/":                                                          "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/archive/":                                      "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/":                                       "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/issues/{issue_id}/":                            "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/":                                 "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{module_id}/module-links/{pk}/":                            "module_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/modules/{pk}/":                                                     "module_reads",
+		"/api/workspaces/{slug}/estimates/":                                                                              "estimate_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/estimates/":                                                        "estimate_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/estimates/{estimate_id}/":                                          "estimate_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages-summary/":                                                    "page_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages/":                                                            "page_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/":                                                  "page_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/description/":                                      "page_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/":                                         "page_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/pages/{page_id}/versions/{pk}/":                                    "page_reads",
+		"/api/workspaces/{slug}/draft-issues/":                                                                           "intake_inbox_reads",
+		"/api/workspaces/{slug}/draft-issues/{pk}/":                                                                      "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/":                                                     "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/inbox-issues/{pk}/":                                                "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/inboxes/":                                                          "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/inboxes/{pk}/":                                                     "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intake-issues/":                                                    "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intake-issues/{pk}/":                                               "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/":            "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intake-work-items/{work_item_id}/description-versions/{pk}/":       "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intakes/":                                                          "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/intakes/{pk}/":                                                     "intake_inbox_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/":                                            "deploy_board_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/project-deploy-boards/{pk}/":                                       "deploy_board_reads",
+		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/history/":                                        "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/meta/":                                           "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/":                                       "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/":                                  "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/":                   "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/":              "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/":                       "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/":      "work_item_history",
+		"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/": "work_item_history",
 	}
-	if len(want) != 56 {
-		t.Fatalf("route accounting fixture has %d GETs, want 56", len(want))
+	if len(want) != 59 {
+		t.Fatalf("route accounting fixture has %d GETs, want 59", len(want))
 	}
 	getMounts := make([]readServiceMount, 0, len(mounts))
 	explicitHeads := 0
@@ -168,14 +171,14 @@ func TestReadServiceGeneratedMountsAccountForSelectedFiftySixRoutes(t *testing.T
 			}
 		}
 	}
-	if len(getMounts) != 56 {
-		t.Fatalf("generated GET accounting = %d, want 56", len(getMounts))
+	if len(getMounts) != 59 {
+		t.Fatalf("generated GET accounting = %d, want 59", len(getMounts))
 	}
 	if explicitHeads != 1 {
 		t.Fatalf("generated explicit HEAD accounting = %d, want page FileResponse HEAD only", explicitHeads)
 	}
-	if authoredOptionsMounts != 20 || corsPreflightMounts != 40 {
-		t.Fatalf("generated OPTIONS accounting = %d authored + %d CORS preflight, want 20 + 40", authoredOptionsMounts, corsPreflightMounts)
+	if authoredOptionsMounts != 20 || corsPreflightMounts != 43 {
+		t.Fatalf("generated OPTIONS accounting = %d authored + %d CORS preflight, want 20 + 43", authoredOptionsMounts, corsPreflightMounts)
 	}
 	seen := make(map[string]bool, len(getMounts))
 	for _, mount := range getMounts {
@@ -883,14 +886,19 @@ func TestDjangoPageInternalErrorsUseHTML500(t *testing.T) {
 }
 
 func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
-	// Membership lifecycle, the 36 assets paths, the 14 invitation/membership
+	// Membership lifecycle, the 36 legacy assets paths plus draft association, the 14 invitation/membership
 	// paths, custom view creation, API-v1 Sticky format-suffix companions,
-	// administration paths, and four workspace user-insights routes contribute here.
+	// administration paths, four workspace user-insights routes, and three custom-property
+	// history routes contribute here.
 	if len(assetsProtocolMetadata) != 36 {
 		t.Fatalf("assets protocol paths = %d, want 36", len(assetsProtocolMetadata))
 	}
-	if len(readServiceProtocols) != 272 {
-		t.Fatalf("protocol routes = %d, want 272", len(readServiceProtocols))
+	if len(readServiceProtocols) != 276 {
+		t.Fatalf("protocol routes = %d, want 276", len(readServiceProtocols))
+	}
+	draftAssets := mustReadServiceProtocol("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/")
+	if !draftAssets.authenticateMethod || !draftAssets.csrfForAuthenticatedSession || draftAssets.allow != "POST, OPTIONS" {
+		t.Fatal("draft association must enforce session authentication and CSRF")
 	}
 	for _, protocol := range readServiceProtocols {
 		if protocol.pattern == "/api/v1/workspaces/{slug}/projects/{project_id}/cycles/date-check/" {
@@ -953,10 +961,10 @@ func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
 	}
 	// Invitations add 10 HEAD owners; the existing member-detail read mounts its own HEAD.
 	// The two API rosters remain GET-only. Administration adds nine HEAD owners,
-	// workspace user insights adds three, and work item history adds six derived routes.
+	// workspace user insights adds three, and work item history adds nine derived routes.
 	// Member preference writes also preserve the existing member-detail GET/HEAD.
-	if derivedHeads != 138 {
-		t.Errorf("derived HEAD owners = %d, want 138", derivedHeads)
+	if derivedHeads != 141 {
+		t.Errorf("derived HEAD owners = %d, want 141", derivedHeads)
 	}
 	for _, path := range []string{
 		"/api/workspaces/{slug}/projects/{project_id}/issue-labels/",
@@ -1018,8 +1026,8 @@ func TestReadServiceProtocolRegistryOwnsDeclaredRoutes(t *testing.T) {
 	for _, mount := range historyServer.Mounts {
 		collect(mount.Method, mount.Verb, mount.Pattern)
 	}
-	if len(generatedGets) != 56 || len(generatedOptions) != 60 {
-		t.Errorf("generated read mounts have %d GET and %d OPTIONS routes, want 56 GET and 60 total OPTIONS", len(generatedGets), len(generatedOptions))
+	if len(generatedGets) != 59 || len(generatedOptions) != 63 {
+		t.Errorf("generated read mounts have %d GET and %d OPTIONS routes, want 59 GET and 63 total OPTIONS", len(generatedGets), len(generatedOptions))
 	}
 	getPaths := make(map[string]bool, len(generatedGets))
 	for _, path := range generatedGets {

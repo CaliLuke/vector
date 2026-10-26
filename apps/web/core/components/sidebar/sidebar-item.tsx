@@ -6,7 +6,7 @@
 
 import { Link } from "@tanstack/react-router";
 import { forwardRef } from "react";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 // ============================================================================
 // TYPES

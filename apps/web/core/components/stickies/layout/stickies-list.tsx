@@ -10,12 +10,11 @@ import { useEffect, useRef, useState } from "react";
 import type Masonry from "masonry-layout";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
 
 import { useTheme } from "next-themes";
 
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
 import { EUserWorkspaceRoles } from "@plane/types";
@@ -29,8 +28,8 @@ import { DetailedEmptyState } from "@/components/empty-state/detailed-empty-stat
 import { SimpleEmptyState } from "@/components/empty-state/simple-empty-state-root";
 import { StickiesEmptyState } from "@/components/home/widgets/empty-states/stickies";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
-import { useSticky } from "@/hooks/use-stickies";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useStickies } from "@/components/stickies/provider";
 // local imports
 import { useStickyOperations } from "../sticky/use-operations";
 import { StickiesLoader } from "./stickies-loader";
@@ -43,11 +42,10 @@ type TStickiesLayout = {
 
 type TProps = TStickiesLayout & {
   columnCount: number;
-  containerWidth: number | null;
 };
 
-export const StickiesList = observer(function StickiesList(props: TProps) {
-  const { workspaceSlug, intersectionElement, columnCount, containerWidth } = props;
+export const StickiesList = function StickiesList(props: TProps) {
+  const { workspaceSlug, intersectionElement, columnCount } = props;
   // navigation
   const pathname = useLocation({ select: (location) => location.pathname });
   // theme hook
@@ -55,27 +53,25 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { getWorkspaceStickyIds, toggleShowNewSticky, searchQuery, loader } = useSticky();
-  const { allowPermissions } = useUserPermissions();
+  const { list, stickyIds: workspaceStickyIds, searchQuery } = useStickies();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   // sticky operations
   const { stickyOperations } = useStickyOperations({ workspaceSlug: workspaceSlug?.toString() });
   // derived values
-  const workspaceStickyIds = getWorkspaceStickyIds(workspaceSlug?.toString());
   const itemWidth = `${100 / columnCount}%`;
   const totalRows = Math.ceil(workspaceStickyIds.length / columnCount);
   const isStickiesPage = pathname?.includes("stickies");
-  const hasGuestLevelPermissions = allowPermissions(
-    [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const hasGuestLevelPermissions = canWorkspace([
+    EUserWorkspaceRoles.ADMIN,
+    EUserWorkspaceRoles.MEMBER,
+    EUserWorkspaceRoles.GUEST,
+  ]);
   const stickiesResolvedPath = resolvedTheme === "light" ? lightStickiesAsset : darkStickiesAsset;
   const stickiesSearchResolvedPath = resolvedTheme === "light" ? lightStickiesSearchAsset : darkStickiesSearchAsset;
   const masonryRef = useRef<MasonryInstance | null>(null);
   const masonryContainerRef = useRef<HTMLDivElement | null>(null);
   const masonryResizeObserverRef = useRef<ResizeObserver | null>(null);
-  const shouldRenderMasonry = loader !== "init-loader" && !(loader === "loaded" && workspaceStickyIds.length === 0);
-  const stickyIdsKey = workspaceStickyIds.join("\0");
-  const hasIntersectionElement = intersectionElement != null;
+  const shouldRenderMasonry = !list.isPending && workspaceStickyIds.length > 0;
 
   useEffect(() => {
     if (!shouldRenderMasonry) return;
@@ -86,6 +82,7 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
     let cancelled = false;
     let masonry: MasonryInstance | null = null;
     let resizeObserver: ResizeObserver | null = null;
+    let childObserver: MutationObserver | null = null;
 
     void import("masonry-layout").then(({ default: Masonry }) => {
       if (cancelled) return;
@@ -102,28 +99,28 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
       resizeObserver = new ResizeObserver(() => masonry?.layout());
       masonryResizeObserverRef.current = resizeObserver;
       container.querySelectorAll<HTMLElement>(".sticky-masonry-item").forEach((item) => resizeObserver?.observe(item));
+      childObserver = new MutationObserver((records) => {
+        for (const record of records) {
+          record.addedNodes.forEach((node) => {
+            if (node instanceof HTMLElement && node.matches(".sticky-masonry-item")) resizeObserver?.observe(node);
+          });
+        }
+        masonry?.reloadItems();
+        masonry?.layout();
+      });
+      childObserver.observe(container, { childList: true });
+      masonry.layout();
     });
 
     return () => {
       cancelled = true;
+      childObserver?.disconnect();
       resizeObserver?.disconnect();
       masonryResizeObserverRef.current = null;
       masonry?.destroy();
       if (masonryRef.current === masonry) masonryRef.current = null;
     };
   }, [shouldRenderMasonry]);
-
-  useEffect(() => {
-    if (!shouldRenderMasonry) return;
-
-    const container = masonryContainerRef.current;
-    const resizeObserver = masonryResizeObserverRef.current;
-    resizeObserver?.disconnect();
-    container?.querySelectorAll<HTMLElement>(".sticky-masonry-item").forEach((item) => resizeObserver?.observe(item));
-
-    masonryRef.current?.reloadItems();
-    masonryRef.current?.layout();
-  }, [containerWidth, hasIntersectionElement, itemWidth, shouldRenderMasonry, stickyIdsKey]);
 
   const handleLayout = () => {
     masonryRef.current?.layout();
@@ -157,11 +154,26 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
     }
   };
 
-  if (loader === "init-loader") {
+  if (list.isPending) {
     return <StickiesLoader />;
   }
 
-  if (loader === "loaded" && workspaceStickyIds.length === 0) {
+  if (list.isError)
+    return (
+      <div role="alert">
+        Unable to load stickies.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void list.refetch();
+          }}
+        >
+          Try again
+        </button>
+      </div>
+    );
+
+  if (workspaceStickyIds.length === 0) {
     return (
       <div className="grid size-full place-items-center">
         {isStickiesPage ? (
@@ -181,7 +193,6 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
                   prependIcon: <PlusIcon className="size-4" />,
                   text: t("stickies.empty_state.general.primary_button.text"),
                   onClick: () => {
-                    toggleShowNewSticky(true);
                     stickyOperations.create();
                   },
                   disabled: !hasGuestLevelPermissions,
@@ -224,7 +235,7 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
       </div>
     </div>
   );
-});
+};
 
 type MasonryInstance = Required<Pick<Masonry, "layout" | "reloadItems" | "destroy">>;
 
@@ -262,7 +273,7 @@ export function StickiesLayout(props: TStickiesLayout) {
 
   return (
     <div ref={ref} className="size-full">
-      <StickiesList {...props} columnCount={columnCount} containerWidth={containerWidth} />
+      <StickiesList {...props} columnCount={columnCount} />
     </div>
   );
 }

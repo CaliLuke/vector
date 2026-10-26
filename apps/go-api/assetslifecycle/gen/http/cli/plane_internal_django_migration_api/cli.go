@@ -23,7 +23,7 @@ import (
 //
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() []string {
-	return []string{"plane-internal-django-migration-api (get-api-assets-v2-static-by-asset-id|delete-api-assets-v2-user-assets|patch-api-assets-v2-user-assets|post-api-assets-v2-user-assets|delete-api-assets-v2-user-assets-by-asset-id|patch-api-assets-v2-user-assets-by-asset-id|post-api-assets-v2-user-assets-by-asset-id|delete-api-assets-v2-workspaces-by-slug|get-api-assets-v2-workspaces-by-slug|patch-api-assets-v2-workspaces-by-slug|post-api-assets-v2-workspaces-by-slug|get-api-assets-v2-workspaces-by-slug-check-by-asset-id|get-api-assets-v2-workspaces-by-slug-download-by-asset-id|post-api-assets-v2-workspaces-by-slug-duplicate-assets-by-asset-id|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id|get-api-assets-v2-workspaces-by-slug-projects-by-project-id|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id|post-api-assets-v2-workspaces-by-slug-projects-by-project-id|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-download-by-asset-id|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|post-api-assets-v2-workspaces-by-slug-restore-by-asset-id|delete-api-assets-v2-workspaces-by-slug-by-asset-id|get-api-assets-v2-workspaces-by-slug-by-asset-id|patch-api-assets-v2-workspaces-by-slug-by-asset-id|post-api-assets-v2-workspaces-by-slug-by-asset-id|delete-api-public-assets-v2-anchor-by-anchor|get-api-public-assets-v2-anchor-by-anchor|patch-api-public-assets-v2-anchor-by-anchor|post-api-public-assets-v2-anchor-by-anchor|post-api-public-assets-v2-anchor-by-anchor-restore-by-pk|post-api-public-assets-v2-anchor-by-anchor-by-entity-id-bulk|delete-api-public-assets-v2-anchor-by-anchor-by-pk|get-api-public-assets-v2-anchor-by-anchor-by-pk|patch-api-public-assets-v2-anchor-by-anchor-by-pk|post-api-public-assets-v2-anchor-by-anchor-by-pk|delete-api-users-file-assets|get-api-users-file-assets|post-api-users-file-assets|delete-api-users-file-assets-by-asset-key|get-api-users-file-assets-by-asset-key|post-api-users-file-assets-by-asset-key|post-apiv1-assets-user-assets|post-apiv1-assets-user-assets-server|delete-apiv1-assets-user-assets-by-asset-id|patch-apiv1-assets-user-assets-by-asset-id|delete-apiv1-assets-user-assets-by-asset-id-server|patch-apiv1-assets-user-assets-by-asset-id-server|post-apiv1-workspaces-by-slug-assets|get-apiv1-workspaces-by-slug-assets-by-asset-id|patch-apiv1-workspaces-by-slug-assets-by-asset-id|get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|post-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|delete-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|patch-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments|post-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments|delete-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|patch-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|delete-api-workspaces-file-assets-by-workspace-id-by-asset-key|get-api-workspaces-file-assets-by-workspace-id-by-asset-key|post-api-workspaces-file-assets-by-workspace-id-by-asset-key|post-api-workspaces-file-assets-by-workspace-id-by-asset-key-restore|delete-api-workspaces-by-slug-file-assets|get-api-workspaces-by-slug-file-assets|post-api-workspaces-by-slug-file-assets|delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|get-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|post-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk)"}
+	return []string{"plane-internal-django-migration-api (get-api-assets-v2-static-by-asset-id|delete-api-assets-v2-user-assets|patch-api-assets-v2-user-assets|post-api-assets-v2-user-assets|delete-api-assets-v2-user-assets-by-asset-id|patch-api-assets-v2-user-assets-by-asset-id|post-api-assets-v2-user-assets-by-asset-id|delete-api-assets-v2-workspaces-by-slug|get-api-assets-v2-workspaces-by-slug|patch-api-assets-v2-workspaces-by-slug|post-api-assets-v2-workspaces-by-slug|get-api-assets-v2-workspaces-by-slug-check-by-asset-id|get-api-assets-v2-workspaces-by-slug-download-by-asset-id|post-api-assets-v2-workspaces-by-slug-duplicate-assets-by-asset-id|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id|get-api-assets-v2-workspaces-by-slug-projects-by-project-id|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id|post-api-assets-v2-workspaces-by-slug-projects-by-project-id|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-download-by-asset-id|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk|post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk|delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|get-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk|post-api-assets-v2-workspaces-by-slug-restore-by-asset-id|delete-api-assets-v2-workspaces-by-slug-by-asset-id|get-api-assets-v2-workspaces-by-slug-by-asset-id|patch-api-assets-v2-workspaces-by-slug-by-asset-id|post-api-assets-v2-workspaces-by-slug-by-asset-id|delete-api-public-assets-v2-anchor-by-anchor|get-api-public-assets-v2-anchor-by-anchor|patch-api-public-assets-v2-anchor-by-anchor|post-api-public-assets-v2-anchor-by-anchor|post-api-public-assets-v2-anchor-by-anchor-restore-by-pk|post-api-public-assets-v2-anchor-by-anchor-by-entity-id-bulk|delete-api-public-assets-v2-anchor-by-anchor-by-pk|get-api-public-assets-v2-anchor-by-anchor-by-pk|patch-api-public-assets-v2-anchor-by-anchor-by-pk|post-api-public-assets-v2-anchor-by-anchor-by-pk|delete-api-users-file-assets|get-api-users-file-assets|post-api-users-file-assets|delete-api-users-file-assets-by-asset-key|get-api-users-file-assets-by-asset-key|post-api-users-file-assets-by-asset-key|post-apiv1-assets-user-assets|post-apiv1-assets-user-assets-server|delete-apiv1-assets-user-assets-by-asset-id|patch-apiv1-assets-user-assets-by-asset-id|delete-apiv1-assets-user-assets-by-asset-id-server|patch-apiv1-assets-user-assets-by-asset-id-server|post-apiv1-workspaces-by-slug-assets|get-apiv1-workspaces-by-slug-assets-by-asset-id|patch-apiv1-workspaces-by-slug-assets-by-asset-id|get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|post-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|delete-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|patch-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments|post-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments|delete-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|patch-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk|delete-api-workspaces-file-assets-by-workspace-id-by-asset-key|get-api-workspaces-file-assets-by-workspace-id-by-asset-key|post-api-workspaces-file-assets-by-workspace-id-by-asset-key|post-api-workspaces-file-assets-by-workspace-id-by-asset-key-restore|delete-api-workspaces-by-slug-file-assets|get-api-workspaces-by-slug-file-assets|post-api-workspaces-by-slug-file-assets|delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|get-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|post-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments|delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk)"}
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
@@ -168,6 +168,12 @@ type commandLine struct {
 			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
 			Stream                       string `help:"path to file containing the streamed request body" name:"stream" required:""`
 		} `cmd:"" help:"This enables timezone conversion according\nto the user set timezone" name:"patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk"`
+		PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk struct {
+			Slug                         string `help:"" name:"slug" required:""`
+			EntityID                     string `help:"" name:"entity-id" required:""`
+			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
+			Stream                       string `help:"path to file containing the streamed request body" name:"stream" required:""`
+		} `cmd:"" help:"Associate completed uploads with an active private draft owned by the current user." name:"post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk"`
 		PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk struct {
 			Slug                         string `help:"" name:"slug" required:""`
 			ProjectID                    string `help:"" name:"project-id" required:""`
@@ -572,6 +578,10 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPkFlag                            *string
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPlaneSessionCookieCredentialFlag  *string
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStreamFlag                        *string
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkSlugFlag                                                              *string
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEntityIDFlag                                                          *string
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredentialFlag                                      *string
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamFlag                                                            *string
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkSlugFlag                                           *string
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkProjectIDFlag                                      *string
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkEntityIDFlag                                       *string
@@ -863,6 +873,10 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPkFlag = &command.PlaneInternalDjangoMigrationAPI.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk.Pk
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPlaneSessionCookieCredentialFlag = &command.PlaneInternalDjangoMigrationAPI.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk.PlaneSessionCookieCredential
 		planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStreamFlag = &command.PlaneInternalDjangoMigrationAPI.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk.Stream
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkSlugFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk.Slug
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEntityIDFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk.EntityID
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredentialFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk.PlaneSessionCookieCredential
+		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk.Stream
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkSlugFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk.Slug
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkProjectIDFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk.ProjectID
 		planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkEntityIDFlag = &command.PlaneInternalDjangoMigrationAPI.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk.EntityID
@@ -1135,6 +1149,9 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		case "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk":
 			svcn = "plane-internal-django-migration-api"
 			epn = "patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk"
+		case "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk":
+			svcn = "plane-internal-django-migration-api"
+			epn = "post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk"
 		case "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk":
 			svcn = "plane-internal-django-migration-api"
 			epn = "post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk"
@@ -1424,6 +1441,12 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 				if err == nil {
 					data, err = planeinternaldjangomigrationapic.BuildPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStreamPayload(data, *planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkStreamFlag)
 				}
+			case "post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk":
+				endpoint = c.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk()
+				data, err = planeinternaldjangomigrationapic.BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload(*planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkSlugFlag, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkEntityIDFlag, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneSessionCookieCredentialFlag)
+				if err == nil {
+					data, err = planeinternaldjangomigrationapic.BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamPayload(data, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamFlag)
+				}
 			case "post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk":
 				endpoint = c.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk()
 				data, err = planeinternaldjangomigrationapic.BuildPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPayload(*planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkSlugFlag, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkProjectIDFlag, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkEntityIDFlag, *planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPlaneSessionCookieCredentialFlag)
@@ -1707,6 +1730,7 @@ func planeInternalDjangoMigrationAPIUsage() {
 	fmt.Fprintln(os.Stderr, "    delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk: This enables timezone conversion according\n\tto the user set timezone")
 	fmt.Fprintln(os.Stderr, "    get-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk: This enables timezone conversion according\n\tto the user set timezone")
 	fmt.Fprintln(os.Stderr, "    patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk: This enables timezone conversion according\n\tto the user set timezone")
+	fmt.Fprintln(os.Stderr, "    post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk: Associate completed uploads with an active private draft owned by the current user.")
 	fmt.Fprintln(os.Stderr, "    post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk: This enables timezone conversion according\n\tto the user set timezone")
 	fmt.Fprintln(os.Stderr, "    delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk: This endpoint is used to upload cover images/logos etc for workspace, projects and users.")
 	fmt.Fprintln(os.Stderr, "    get-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk: This endpoint is used to upload cover images/logos etc for workspace, projects and users.")
@@ -2312,6 +2336,29 @@ func planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByPr
 	fmt.Fprintln(os.Stderr, "Example:")
 	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-attachments-by-pk --slug \"Aut distinctio et et.\" --project-id \"3226f8d5-bd3d-4b1f-9968-04d10d418187\" --issue-id \"f1a13ec7-fc24-439b-a092-ed0a3127c424\" --pk \"f9e719a1-58d4-49b1-91f0-ddac192b74af\" --plane-session-cookie-credential \"Molestias placeat ipsum vel et.\" --stream \"loom.bin\"")
 }
+func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -entity-id STRING")
+	fmt.Fprint(os.Stderr, " -plane-session-cookie-credential STRING")
+	fmt.Fprint(os.Stderr, " -stream STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Associate completed uploads with an active private draft owned by the current user.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -entity-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -plane-session-cookie-credential STRING: ")
+	fmt.Fprintln(os.Stderr, "    -stream STRING: path to file containing the streamed request body")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-by-entity-id-bulk --slug \"Et hic libero iusto aperiam voluptatem sint.\" --entity-id \"3b686d9e-5844-423b-834c-bdb87aaf32c7\" --plane-session-cookie-credential \"Officia rerum fugiat.\" --stream \"loom.bin\"")
+}
 func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkUsage() {
 	// Header with flags
 	fmt.Fprintf(os.Stderr, "%s [flags] plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk", os.Args[0])
@@ -2335,7 +2382,7 @@ func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByPro
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk --slug \"Rerum nobis earum vel eum.\" --project-id \"93186ac2-0e18-4387-94fc-0201316cd252\" --entity-id \"46ba572f-d584-4d7f-806f-98aa44c13e2c\" --plane-session-cookie-credential \"Sed error incidunt voluptatibus a sit perferendis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-entity-id-bulk --slug \"Odit recusandae dolore non eos aliquid labore.\" --project-id \"080efcb0-0ab6-4440-a824-85ad7263441c\" --entity-id \"87aa62f4-e463-40a9-a438-df79e7453a5b\" --plane-session-cookie-credential \"Labore consectetur ea itaque vitae corporis ut.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkUsage() {
 	// Header with flags
@@ -2358,7 +2405,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIAssetsV2WorkspacesBySlugProjectsByP
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Voluptatem autem maiores sapiente corporis.\" --project-id \"03b010ab-fe43-4ce0-96b8-89d848dbd523\" --pk \"efac2f40-d133-45c4-a671-3e0319125d35\" --plane-session-cookie-credential \"Aliquam consequuntur nobis sequi.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Enim quos.\" --project-id \"92b57a23-3ee6-4114-8820-87550408ab38\" --pk \"e805d9ad-9f9f-49cc-ad72-05afd4ae36fe\" --plane-session-cookie-credential \"Unde non.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkUsage() {
 	// Header with flags
@@ -2381,7 +2428,7 @@ func planeInternalDjangoMigrationAPIGetAPIAssetsV2WorkspacesBySlugProjectsByProj
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Commodi dolor et illo ad.\" --project-id \"6116c9ef-f7bd-4177-9895-81fb5884829d\" --pk \"66ff6588-0b83-48c9-9060-b9440a86bb17\" --plane-session-cookie-credential \"Vel aut et molestias quidem unde.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"In odio.\" --project-id \"ede85c2c-b213-4b77-9388-0d1d3ca4c0f5\" --pk \"c4166dc7-b26d-432e-8f8a-3df42ca31944\" --plane-session-cookie-credential \"Reprehenderit ut quis.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkUsage() {
 	// Header with flags
@@ -2406,7 +2453,7 @@ func planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugProjectsByPr
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Voluptatem dicta fugit et reprehenderit rerum accusantium.\" --project-id \"84ac6cbc-36c3-435a-a712-eb8c6bf0bc02\" --pk \"7776b639-bc31-4ddc-ac2d-30fd330d80d1\" --plane-session-cookie-credential \"Saepe quia veritatis minima sed.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Quae rem.\" --project-id \"97d04b57-c8a3-4816-b97d-c00e1ce28950\" --pk \"8adb5c38-a3e7-4353-af69-6a0921e2eee4\" --plane-session-cookie-credential \"Placeat distinctio sint consequatur molestias dolor.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkUsage() {
 	// Header with flags
@@ -2431,7 +2478,7 @@ func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugProjectsByPro
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Nesciunt ut necessitatibus quia aut modi voluptas.\" --project-id \"823da726-5b74-4599-925e-c22cea6da40f\" --pk \"3274c670-5392-423b-9a8d-aa7c10db5f89\" --plane-session-cookie-credential \"Quas quas odit quibusdam.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-projects-by-project-id-by-pk --slug \"Delectus est iusto nulla.\" --project-id \"7f090dfc-e8fd-49ad-b187-a9d54872adf7\" --pk \"8dafde22-d1f4-4931-bcd2-d4521892f993\" --plane-session-cookie-credential \"Neque fugit voluptas quo repellendus.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDUsage() {
 	// Header with flags
@@ -2452,7 +2499,7 @@ func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugRestoreByAsse
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-restore-by-asset-id --slug \"Unde ut nemo.\" --asset-id \"b1efa265-3c97-4485-b76f-e0489ca7d40d\" --plane-session-cookie-credential \"Quod tempora et eos commodi distinctio ab.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-restore-by-asset-id --slug \"Possimus sunt quia dolorum natus.\" --asset-id \"d0531763-926b-473d-9bf3-f4e0264859a9\" --plane-session-cookie-credential \"Ducimus sit alias officiis.\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIAssetsV2WorkspacesBySlugByAssetIDUsage() {
 	// Header with flags
@@ -2473,7 +2520,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIAssetsV2WorkspacesBySlugByAssetIDUs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Ipsam odio.\" --asset-id \"b66e498b-0f78-441b-81b9-92e2a489187c\" --plane-session-cookie-credential \"Quia aut culpa dolores quaerat autem.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Corrupti minus.\" --asset-id \"5aad516a-2f34-4d82-b1d4-7019ea4023d5\" --plane-session-cookie-credential \"Voluptatibus mollitia.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIAssetsV2WorkspacesBySlugByAssetIDUsage() {
 	// Header with flags
@@ -2494,7 +2541,7 @@ func planeInternalDjangoMigrationAPIGetAPIAssetsV2WorkspacesBySlugByAssetIDUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Illo expedita.\" --asset-id \"bf3e0f2a-2960-457f-bf34-b35b03c2939e\" --plane-session-cookie-credential \"Omnis sed libero quis officiis quo consequuntur.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Non ea.\" --asset-id \"c2f2a259-99a7-4328-a42e-d15968ec8971\" --plane-session-cookie-credential \"Inventore corrupti.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugByAssetIDUsage() {
 	// Header with flags
@@ -2517,7 +2564,7 @@ func planeInternalDjangoMigrationAPIPatchAPIAssetsV2WorkspacesBySlugByAssetIDUsa
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Voluptatibus qui eveniet rem.\" --asset-id \"e940d01d-8af8-4a83-95bb-37b7ff24420b\" --plane-session-cookie-credential \"Eveniet magni dolor illo corrupti illo sint.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Nam unde modi dolorem mollitia ut similique.\" --asset-id \"0edeefac-f11f-4665-b785-0eb21d0d8d9f\" --plane-session-cookie-credential \"Ipsam sint.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByAssetIDUsage() {
 	// Header with flags
@@ -2540,7 +2587,7 @@ func planeInternalDjangoMigrationAPIPostAPIAssetsV2WorkspacesBySlugByAssetIDUsag
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Voluptas in distinctio voluptate similique.\" --asset-id \"23cb22f6-f6e9-41f1-97fa-ef80012b9b63\" --plane-session-cookie-credential \"Architecto similique ut tempora.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-assets-v2-workspaces-by-slug-by-asset-id --slug \"Aut quia assumenda.\" --asset-id \"4336a418-3451-44d1-a1a8-f37683a6b572\" --plane-session-cookie-credential \"Et explicabo voluptatibus et quasi.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIPublicAssetsV2AnchorByAnchorUsage() {
 	// Header with flags
@@ -2559,7 +2606,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIPublicAssetsV2AnchorByAnchorUsage()
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-public-assets-v2-anchor-by-anchor --anchor \"Animi sed earum distinctio.\" --plane-session-cookie-credential \"Suscipit magni exercitationem vel adipisci enim.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-public-assets-v2-anchor-by-anchor --anchor \"Quia quia vel rerum officia numquam.\" --plane-session-cookie-credential \"Ut facilis sit nesciunt ea.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIPublicAssetsV2AnchorByAnchorUsage() {
 	// Header with flags
@@ -2580,7 +2627,7 @@ func planeInternalDjangoMigrationAPIGetAPIPublicAssetsV2AnchorByAnchorUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-public-assets-v2-anchor-by-anchor --anchor \"Et sunt qui sunt eveniet.\" --search \"Voluptas asperiores adipisci.\" --plane-session-cookie-credential \"Ut adipisci aperiam culpa cum mollitia est.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-public-assets-v2-anchor-by-anchor --anchor \"Tempore impedit aut repudiandae vel iure nemo.\" --search \"Id non est.\" --plane-session-cookie-credential \"Velit labore et ex.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIPublicAssetsV2AnchorByAnchorUsage() {
 	// Header with flags
@@ -2601,7 +2648,7 @@ func planeInternalDjangoMigrationAPIPatchAPIPublicAssetsV2AnchorByAnchorUsage() 
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-public-assets-v2-anchor-by-anchor --anchor \"Enim dolorem saepe est.\" --plane-session-cookie-credential \"Pariatur iusto nostrum.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-public-assets-v2-anchor-by-anchor --anchor \"Deserunt maiores.\" --plane-session-cookie-credential \"Voluptas molestiae modi quo incidunt et ratione.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorUsage() {
 	// Header with flags
@@ -2622,7 +2669,7 @@ func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor --anchor \"Et qui.\" --plane-session-cookie-credential \"Consequatur atque nobis nihil sint.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor --anchor \"Ducimus fuga in sed repellendus.\" --plane-session-cookie-credential \"Ullam odio.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorRestoreByPkUsage() {
 	// Header with flags
@@ -2643,7 +2690,7 @@ func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorRestoreBy
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-restore-by-pk --anchor \"Nobis sed amet aperiam sed velit.\" --pk \"859a91f3-1c3f-43fc-be3a-58d4307fedb7\" --plane-session-cookie-credential \"Molestiae unde fugit quibusdam corporis quia eos.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-restore-by-pk --anchor \"Aspernatur aliquam sint officia sequi.\" --pk \"7c5e5035-cbd8-4e95-8f9d-2efa2bfa250e\" --plane-session-cookie-credential \"Et facere id.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkUsage() {
 	// Header with flags
@@ -2666,7 +2713,7 @@ func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorByEntityI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-by-entity-id-bulk --anchor \"Suscipit magnam dicta.\" --entity-id \"c2add325-77f3-475f-8879-9b5f216c1cfb\" --plane-session-cookie-credential \"Omnis quia non minima harum velit dolore.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-by-entity-id-bulk --anchor \"Qui adipisci est nihil autem eum.\" --entity-id \"55d0b758-61e3-40f2-a763-7c94894a68d7\" --plane-session-cookie-credential \"Reprehenderit provident non dolore facere nemo.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIPublicAssetsV2AnchorByAnchorByPkUsage() {
 	// Header with flags
@@ -2687,7 +2734,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIPublicAssetsV2AnchorByAnchorByPkUsa
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Earum optio mollitia qui ut.\" --pk \"cca00dfb-c9f0-4db9-a723-a890f958f145\" --plane-session-cookie-credential \"Inventore provident possimus illum eum.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Debitis dolores.\" --pk \"639b1d66-807a-407e-aae2-09145427facd\" --plane-session-cookie-credential \"Porro consequuntur commodi ea aut et ut.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIPublicAssetsV2AnchorByAnchorByPkUsage() {
 	// Header with flags
@@ -2708,7 +2755,7 @@ func planeInternalDjangoMigrationAPIGetAPIPublicAssetsV2AnchorByAnchorByPkUsage(
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Ut veniam minus fugiat est dolorem.\" --pk \"5aecee18-9978-4422-8e97-75d469b4f9b4\" --plane-session-cookie-credential \"Laboriosam esse quaerat omnis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Magnam et assumenda aliquam.\" --pk \"d0d1d5cd-b69c-402b-acb4-1625a66a135e\" --plane-session-cookie-credential \"Ducimus dolores.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIPublicAssetsV2AnchorByAnchorByPkUsage() {
 	// Header with flags
@@ -2731,7 +2778,7 @@ func planeInternalDjangoMigrationAPIPatchAPIPublicAssetsV2AnchorByAnchorByPkUsag
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Dignissimos nihil.\" --pk \"a5bd6bd6-800e-4cc6-9b11-da689addfab7\" --plane-session-cookie-credential \"Eos fugit quaerat eum consequatur illo.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Et molestiae animi aut.\" --pk \"c5904389-99bc-4761-8f1e-ba9cfe6f4de0\" --plane-session-cookie-credential \"Dolores nam.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorByPkUsage() {
 	// Header with flags
@@ -2754,7 +2801,7 @@ func planeInternalDjangoMigrationAPIPostAPIPublicAssetsV2AnchorByAnchorByPkUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"A debitis.\" --pk \"fa1ff2c3-3ca4-411d-a40a-7ab4e22d417c\" --plane-session-cookie-credential \"Asperiores quae aut occaecati quis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-public-assets-v2-anchor-by-anchor-by-pk --anchor \"Sed laboriosam optio.\" --pk \"36549ee5-e563-44de-b161-88601bb65616\" --plane-session-cookie-credential \"Quaerat excepturi similique repellendus laboriosam quis.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIUsersFileAssetsUsage() {
 	// Header with flags
@@ -2771,7 +2818,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIUsersFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-users-file-assets --plane-session-cookie-credential \"Sed quisquam aut accusantium.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-users-file-assets --plane-session-cookie-credential \"Facilis sint atque sunt incidunt sunt.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIUsersFileAssetsUsage() {
 	// Header with flags
@@ -2788,7 +2835,7 @@ func planeInternalDjangoMigrationAPIGetAPIUsersFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-users-file-assets --plane-session-cookie-credential \"Aperiam quos aut animi rem voluptatem debitis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-users-file-assets --plane-session-cookie-credential \"Numquam laboriosam numquam id temporibus rem.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIUsersFileAssetsUsage() {
 	// Header with flags
@@ -2807,7 +2854,7 @@ func planeInternalDjangoMigrationAPIPostAPIUsersFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-users-file-assets --plane-session-cookie-credential \"Consequatur optio occaecati.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-users-file-assets --plane-session-cookie-credential \"Consequuntur alias.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIUsersFileAssetsByAssetKeyUsage() {
 	// Header with flags
@@ -2826,7 +2873,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIUsersFileAssetsByAssetKeyUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-users-file-assets-by-asset-key --asset-key \"Aut ipsam perspiciatis temporibus.\" --plane-session-cookie-credential \"Excepturi suscipit.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-users-file-assets-by-asset-key --asset-key \"Illum aut voluptatem quae.\" --plane-session-cookie-credential \"Cumque magnam vel.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIUsersFileAssetsByAssetKeyUsage() {
 	// Header with flags
@@ -2845,7 +2892,7 @@ func planeInternalDjangoMigrationAPIGetAPIUsersFileAssetsByAssetKeyUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-users-file-assets-by-asset-key --asset-key \"Fuga error aliquid quia.\" --plane-session-cookie-credential \"Unde nostrum eveniet qui minima sit similique.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-users-file-assets-by-asset-key --asset-key \"Reprehenderit sequi dolor qui.\" --plane-session-cookie-credential \"Reiciendis nulla laudantium.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIUsersFileAssetsByAssetKeyUsage() {
 	// Header with flags
@@ -2866,7 +2913,7 @@ func planeInternalDjangoMigrationAPIPostAPIUsersFileAssetsByAssetKeyUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-users-file-assets-by-asset-key --asset-key \"Veritatis ad rerum saepe.\" --plane-session-cookie-credential \"In reprehenderit sint libero vitae mollitia.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-users-file-assets-by-asset-key --asset-key \"Aut harum ut itaque et dolores vel.\" --plane-session-cookie-credential \"Nobis alias qui.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIV1AssetsUserAssetsUsage() {
 	// Header with flags
@@ -2885,7 +2932,7 @@ func planeInternalDjangoMigrationAPIPostAPIV1AssetsUserAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-assets-user-assets --api-key-auth-credential \"Et dolore.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-assets-user-assets --api-key-auth-credential \"Asperiores beatae enim dolor.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIV1AssetsUserAssetsServerUsage() {
 	// Header with flags
@@ -2904,7 +2951,7 @@ func planeInternalDjangoMigrationAPIPostAPIV1AssetsUserAssetsServerUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-assets-user-assets-server --api-key-auth-credential \"Et aut veniam nulla impedit cumque iure.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-assets-user-assets-server --api-key-auth-credential \"Sapiente et eum qui ducimus magni.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIV1AssetsUserAssetsByAssetIDUsage() {
 	// Header with flags
@@ -2923,7 +2970,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIV1AssetsUserAssetsByAssetIDUsage() 
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-assets-user-assets-by-asset-id --asset-id \"f0e257fc-704f-441a-9030-ee9a128b893c\" --api-key-auth-credential \"Autem quas.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-assets-user-assets-by-asset-id --asset-id \"6857cf58-4f13-415e-9efb-bb4b85c9dd8b\" --api-key-auth-credential \"Sapiente rem quo veniam.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIV1AssetsUserAssetsByAssetIDUsage() {
 	// Header with flags
@@ -2944,7 +2991,7 @@ func planeInternalDjangoMigrationAPIPatchAPIV1AssetsUserAssetsByAssetIDUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-assets-user-assets-by-asset-id --asset-id \"cd35e954-05d9-47e3-a083-36321590b74a\" --api-key-auth-credential \"Voluptatem occaecati id.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-assets-user-assets-by-asset-id --asset-id \"79584748-437a-403d-991a-47ab6bd5f1b2\" --api-key-auth-credential \"Molestiae voluptatem necessitatibus non iusto quod exercitationem.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIV1AssetsUserAssetsByAssetIDServerUsage() {
 	// Header with flags
@@ -2963,7 +3010,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIV1AssetsUserAssetsByAssetIDServerUs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-assets-user-assets-by-asset-id-server --asset-id \"d355488c-b960-4073-86f5-22fe58366c81\" --api-key-auth-credential \"Debitis excepturi est quasi iste ipsam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-assets-user-assets-by-asset-id-server --asset-id \"6d544293-9736-4b6d-b021-3a1aba12d6c6\" --api-key-auth-credential \"Sed quidem sunt mollitia totam.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIV1AssetsUserAssetsByAssetIDServerUsage() {
 	// Header with flags
@@ -2984,7 +3031,7 @@ func planeInternalDjangoMigrationAPIPatchAPIV1AssetsUserAssetsByAssetIDServerUsa
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-assets-user-assets-by-asset-id-server --asset-id \"ee60b423-e5c4-4e29-b9f9-5246e287e6b7\" --api-key-auth-credential \"Ullam ipsam corrupti neque libero omnis est.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-assets-user-assets-by-asset-id-server --asset-id \"ab9287b8-6b3c-4d2f-a6de-0ea8cbbe3dfa\" --api-key-auth-credential \"Sed sint ex corporis vel dolorem ut.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugAssetsUsage() {
 	// Header with flags
@@ -3005,7 +3052,7 @@ func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-assets --slug \"Repudiandae ab iste fuga et sunt.\" --api-key-auth-credential \"Quaerat aut.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-assets --slug \"Qui sint unde culpa aut tempora quisquam.\" --api-key-auth-credential \"Ad velit.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugAssetsByAssetIDUsage() {
 	// Header with flags
@@ -3026,7 +3073,7 @@ func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugAssetsByAssetIDUsage
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-assets-by-asset-id --slug \"Ut animi est minus.\" --asset-id \"1eaf9533-9387-4ec5-8c1b-abe598f126ab\" --api-key-auth-credential \"Hic recusandae cupiditate sed qui qui ducimus.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-assets-by-asset-id --slug \"Nihil consequatur cumque.\" --asset-id \"51ba1de7-2c0b-4f2e-99fb-6433aa410405\" --api-key-auth-credential \"Voluptatum in assumenda odio hic occaecati.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugAssetsByAssetIDUsage() {
 	// Header with flags
@@ -3049,7 +3096,7 @@ func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugAssetsByAssetIDUsa
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-assets-by-asset-id --slug \"Fuga voluptatem laborum mollitia ullam.\" --asset-id \"4f84720e-88f3-4851-be66-a5e2e57a3df6\" --api-key-auth-credential \"Dolor qui qui cum sunt harum.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-assets-by-asset-id --slug \"Commodi voluptate.\" --asset-id \"68fa1b95-0f24-4953-808d-247e630a155a\" --api-key-auth-credential \"Temporibus iure hic nulla.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsUsage() {
 	// Header with flags
@@ -3072,7 +3119,7 @@ func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Dolor et illo magni quidem expedita inventore.\" --project-id \"7c5f4334-4389-42d9-839a-c4369118ab48\" --issue-id \"36f13bb9-2f2d-4772-9e18-82be17e83fdd\" --api-key-auth-credential \"Dolorem iusto asperiores sunt ipsam aliquam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Quibusdam nesciunt consequatur quibusdam aspernatur.\" --project-id \"4e8b5085-0ae7-4beb-87c6-0c23cf175ed2\" --issue-id \"290682a4-f4fe-4096-bdd2-ed19ef125d21\" --api-key-auth-credential \"Sunt eos maiores voluptates alias quam.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsUsage() {
 	// Header with flags
@@ -3097,7 +3144,7 @@ func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugProjectsByProjectID
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Nobis provident qui tempora incidunt eos temporibus.\" --project-id \"3b2e26fd-395b-4c12-b862-0f92c11bc9d3\" --issue-id \"6796bc4c-acc6-4f71-9237-3d08181b4fa0\" --api-key-auth-credential \"Consequatur aut distinctio autem itaque est.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Magni exercitationem ut dolor ea nisi.\" --project-id \"b17ac264-e724-4e91-a11a-de43dd5df3e7\" --issue-id \"5e714be3-8291-4e9e-8613-084bacfb2b83\" --api-key-auth-credential \"Earum et qui.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkUsage() {
 	// Header with flags
@@ -3122,7 +3169,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIV1WorkspacesBySlugProjectsByProject
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Sed adipisci nisi tempora non non dignissimos.\" --project-id \"0273cd0e-a460-4d61-9845-1374d918584c\" --issue-id \"db31273a-c9b7-460d-bdf1-abfadc04c80f\" --pk \"b491ddb3-8fa8-464c-bb0c-9f425bfb5647\" --api-key-auth-credential \"Quia sit rem.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Incidunt eius necessitatibus provident molestiae.\" --project-id \"316996d1-04a8-4184-84d2-e3ff474f51cf\" --issue-id \"d0ced153-e5f7-4e40-bde1-251e2a9b9115\" --pk \"c4df6183-bcc1-448e-943f-e29a4b72025d\" --api-key-auth-credential \"Nulla et in eius est nesciunt.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkUsage() {
 	// Header with flags
@@ -3147,7 +3194,7 @@ func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Hic quidem dolor.\" --project-id \"cb45e32d-c075-4d51-928a-cce24a90ee10\" --issue-id \"b3af1dbb-e00d-4923-87ee-84484155948c\" --pk \"424a5d9d-b5b4-432a-9a93-58af1b5c4c91\" --api-key-auth-credential \"Quia tenetur maiores earum porro vero.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Alias sint eum dicta omnis ut.\" --project-id \"8d1a50f0-a2b8-41aa-921d-2bcf857042d8\" --issue-id \"ea88fc40-84c5-4e75-89c0-39656ff26434\" --pk \"d6bc9605-1a3a-4746-a0e9-c44c6da94007\" --api-key-auth-credential \"Debitis nam molestiae modi sunt blanditiis.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkUsage() {
 	// Header with flags
@@ -3174,7 +3221,7 @@ func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugProjectsByProjectI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Culpa et molestiae sit ullam officiis possimus.\" --project-id \"4f03f012-11ae-4bda-a2b6-db6b882c4094\" --issue-id \"ea7364e2-a69d-4b1e-9ec1-b8586aa23908\" --pk \"2a9349bb-0f79-40ff-9247-487ec85b306c\" --api-key-auth-credential \"Eos earum et.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Exercitationem omnis nisi.\" --project-id \"c7c24898-e898-4d1e-a865-421b4a8bcd0c\" --issue-id \"9ccdda5e-ba33-4536-9bd7-7b74dd63bfbd\" --pk \"1a94a816-05c5-4ea9-a09f-5ece6a4a5535\" --api-key-auth-credential \"Sit ut sunt aspernatur porro quo iste.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsUsage() {
 	// Header with flags
@@ -3197,7 +3244,7 @@ func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDW
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments --slug \"Harum fuga praesentium officia.\" --project-id \"2fc2f4bd-1f39-42ca-8b9c-80b8107e1190\" --issue-id \"e761aa99-bb21-4948-abe5-d9973bdcbac7\" --api-key-auth-credential \"Odio error perferendis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments --slug \"Iure et officiis officiis optio.\" --project-id \"77b82469-ad26-4b20-879c-49ad8c9c60cb\" --issue-id \"d510b118-f40d-4c95-b582-04185be8fed2\" --api-key-auth-credential \"Ipsum quo incidunt laborum autem.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsUsage() {
 	// Header with flags
@@ -3222,7 +3269,7 @@ func planeInternalDjangoMigrationAPIPostAPIV1WorkspacesBySlugProjectsByProjectID
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments --slug \"Veniam officiis rem saepe optio corrupti quidem.\" --project-id \"97b34f03-30a1-4556-8d63-7703e5387389\" --issue-id \"a138a8be-1b9e-4d97-a3d1-930853d8921f\" --api-key-auth-credential \"Vel atque amet voluptatum.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments --slug \"Officiis in non eos et facere.\" --project-id \"177fbb5b-a8a5-41cc-b7f6-852e86734ec0\" --issue-id \"1f448c3a-4282-492c-ae6f-866b3b6584e6\" --api-key-auth-credential \"Eius quas at rerum id.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkUsage() {
 	// Header with flags
@@ -3247,7 +3294,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIV1WorkspacesBySlugProjectsByProject
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Minus qui nulla eum et ad.\" --project-id \"d3b3b0ea-1a13-42d7-a012-0c52070a85ca\" --issue-id \"7c59fda7-b0bc-407c-8ceb-39e07663a3f6\" --pk \"098332c8-15bd-4f97-b6af-25599b6417bb\" --api-key-auth-credential \"Reiciendis ex.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Odio minima.\" --project-id \"71edc957-6d05-4221-99e2-bda47c6a7dde\" --issue-id \"6bf8ffd7-4669-4c77-aa7e-856f7c3d65ca\" --pk \"d3064916-0d2a-4a18-a3a8-63c9b27a05da\" --api-key-auth-credential \"Fuga assumenda id est.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkUsage() {
 	// Header with flags
@@ -3272,7 +3319,7 @@ func planeInternalDjangoMigrationAPIGetAPIV1WorkspacesBySlugProjectsByProjectIDW
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Cumque aut qui sed adipisci nam aliquid.\" --project-id \"8f4cba2e-5fa8-46c3-affb-bc3ff8489f2e\" --issue-id \"bfaa9b9e-2caf-4676-8151-0e286ad35e26\" --pk \"046e6c50-cafa-476c-b3ca-543125f737ff\" --api-key-auth-credential \"Sed rerum deserunt rerum.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Voluptatem id deserunt et ipsa.\" --project-id \"72fb11ea-6326-44a4-8bc2-8a5c6dc9d5be\" --issue-id \"4d05f373-cbf1-4d83-838a-3557f1e681b8\" --pk \"92d0fae6-de55-4d62-a2d4-3d21a29de095\" --api-key-auth-credential \"Quia debitis voluptatem voluptatum aut eos.\"")
 }
 func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkUsage() {
 	// Header with flags
@@ -3299,7 +3346,7 @@ func planeInternalDjangoMigrationAPIPatchAPIV1WorkspacesBySlugProjectsByProjectI
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Quia quos iure non autem aperiam totam.\" --project-id \"ad648d0a-7ad4-41b8-b9a8-b69a4e8b3491\" --issue-id \"1db1f4d5-1f01-4d9b-b250-8519fa2ccf24\" --pk \"5231e457-d114-45bc-a000-846d37348d54\" --api-key-auth-credential \"Beatae culpa porro eum doloribus.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api patch-apiv1-workspaces-by-slug-projects-by-project-id-work-items-by-issue-id-attachments-by-pk --slug \"Voluptas fugiat assumenda est architecto vero.\" --project-id \"ade300e0-464b-48d9-b559-7e66b954e43b\" --issue-id \"969dacd6-0182-4952-bb01-1c2962996ecc\" --pk \"34b90c92-e0fc-4b68-8899-62417d13c738\" --api-key-auth-credential \"Repellendus voluptatem consequatur facere necessitatibus.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyUsage() {
 	// Header with flags
@@ -3320,7 +3367,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesFileAssetsByWorkspaceIDBy
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"b457bb21-29e8-4d1a-8a0f-47666a3bff8f\" --asset-key \"Sit perspiciatis aspernatur quia quia aut.\" --plane-session-cookie-credential \"Sequi id a aut.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"d7d2b162-2d1e-441e-a955-141a76344630\" --asset-key \"Consequatur cupiditate eum soluta nostrum.\" --plane-session-cookie-credential \"Qui soluta magnam culpa modi.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyUsage() {
 	// Header with flags
@@ -3341,7 +3388,7 @@ func planeInternalDjangoMigrationAPIGetAPIWorkspacesFileAssetsByWorkspaceIDByAss
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"d7d2b162-2d1e-441e-a955-141a76344630\" --asset-key \"Consequatur cupiditate eum soluta nostrum.\" --plane-session-cookie-credential \"Qui soluta magnam culpa modi.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"8450cba2-2705-40c8-b7e4-f8b00a4ee41f\" --asset-key \"Sit aut et.\" --plane-session-cookie-credential \"Sapiente ad eum reprehenderit quam.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyUsage() {
 	// Header with flags
@@ -3364,7 +3411,7 @@ func planeInternalDjangoMigrationAPIPostAPIWorkspacesFileAssetsByWorkspaceIDByAs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"2c0e4ea6-9d9b-438e-a6ec-ff7ac4c8a1a0\" --asset-key \"Debitis est molestiae sint voluptatibus sunt.\" --plane-session-cookie-credential \"Ea exercitationem omnis saepe recusandae minima.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-file-assets-by-workspace-id-by-asset-key --workspace-id \"3352a5be-e934-4019-b0e4-22e1d0f74d2a\" --asset-key \"Quia saepe tempore consequatur doloremque.\" --plane-session-cookie-credential \"Repellat animi illum deleniti dicta voluptatum.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreUsage() {
 	// Header with flags
@@ -3385,7 +3432,7 @@ func planeInternalDjangoMigrationAPIPostAPIWorkspacesFileAssetsByWorkspaceIDByAs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-file-assets-by-workspace-id-by-asset-key-restore --workspace-id \"1f3bda75-abd2-4b81-a17f-67682a876a12\" --asset-key \"Accusantium vitae qui.\" --plane-session-cookie-credential \"Consequatur reiciendis veniam illum dolor.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-file-assets-by-workspace-id-by-asset-key-restore --workspace-id \"e7ca7480-0d93-49a5-8d09-9ddc256177cd\" --asset-key \"Laboriosam labore.\" --plane-session-cookie-credential \"Quo sunt adipisci aut minima et recusandae.\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugFileAssetsUsage() {
 	// Header with flags
@@ -3404,7 +3451,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-file-assets --slug \"Dolores ex dolores sunt et voluptas atque.\" --plane-session-cookie-credential \"Distinctio ab.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-file-assets --slug \"Ab animi qui explicabo cum.\" --plane-session-cookie-credential \"Ducimus enim suscipit voluptatem exercitationem cupiditate maxime.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIWorkspacesBySlugFileAssetsUsage() {
 	// Header with flags
@@ -3423,7 +3470,7 @@ func planeInternalDjangoMigrationAPIGetAPIWorkspacesBySlugFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-by-slug-file-assets --slug \"Harum molestiae ipsum laudantium.\" --plane-session-cookie-credential \"Non illum reiciendis maiores ipsum.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-by-slug-file-assets --slug \"Quos autem quaerat soluta velit.\" --plane-session-cookie-credential \"Molestiae accusantium.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIWorkspacesBySlugFileAssetsUsage() {
 	// Header with flags
@@ -3444,7 +3491,7 @@ func planeInternalDjangoMigrationAPIPostAPIWorkspacesBySlugFileAssetsUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-by-slug-file-assets --slug \"Repellat aut maxime quia dolorum dolorem.\" --plane-session-cookie-credential \"Laudantium sit dolorem voluptas tenetur quo officiis.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-by-slug-file-assets --slug \"Inventore voluptatem quam.\" --plane-session-cookie-credential \"Eius provident velit omnis.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsUsage() {
 	// Header with flags
@@ -3467,7 +3514,7 @@ func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugProjectsByProjectID
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Rem quia quam deleniti quaerat et.\" --project-id \"d1b071b9-4180-421b-a6ca-acb2c6588209\" --issue-id \"dfb39203-18e9-4a58-b5c3-6a900ffe4199\" --plane-session-cookie-credential \"Voluptas numquam adipisci consequatur laboriosam corporis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Sunt aperiam in earum rem ut.\" --project-id \"195e7b65-97a4-4e48-966e-4c84c6fa6a7a\" --issue-id \"8f009b22-15c5-4414-a087-ccbc1621fabd\" --plane-session-cookie-credential \"Odit vitae vel alias fugiat aut pariatur.\"")
 }
 func planeInternalDjangoMigrationAPIGetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsUsage() {
 	// Header with flags
@@ -3492,7 +3539,7 @@ func planeInternalDjangoMigrationAPIGetAPIWorkspacesBySlugProjectsByProjectIDIss
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Tenetur sunt dolor quia in.\" --project-id \"cd8760e5-d248-48d1-b5ff-b1b0dadd2dd3\" --issue-id \"cbe2cdff-d3af-4b43-8362-fec3fc092952\" --search \"Cum assumenda dolores quia in quidem.\" --plane-session-cookie-credential \"Quibusdam qui veritatis.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api get-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Officia rerum.\" --project-id \"917aec4b-119a-4dad-aba2-c3ff12a4cdb0\" --issue-id \"88d9ee1f-19b1-4fdb-9772-d9b21a487c63\" --search \"Vero enim eligendi.\" --plane-session-cookie-credential \"Atque accusamus ut voluptatem fugiat voluptatem laboriosam.\"")
 }
 func planeInternalDjangoMigrationAPIPostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsUsage() {
 	// Header with flags
@@ -3517,7 +3564,7 @@ func planeInternalDjangoMigrationAPIPostAPIWorkspacesBySlugProjectsByProjectIDIs
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Saepe dolores aliquam et.\" --project-id \"37e8045c-eca8-425d-8dec-dc9cee733743\" --issue-id \"019acda0-a19d-458d-88c0-a2e5699564fd\" --plane-session-cookie-credential \"Necessitatibus in non quia voluptate.\" --stream \"loom.bin\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api post-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments --slug \"Aut necessitatibus quia minima quisquam assumenda adipisci.\" --project-id \"fb8b5878-eac7-41d3-b6e5-58e9466e0a43\" --issue-id \"87bf1200-ba6a-4da7-acc9-88c2d150d1cc\" --plane-session-cookie-credential \"Dolorum qui aliquam.\" --stream \"loom.bin\"")
 }
 func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkUsage() {
 	// Header with flags
@@ -3542,5 +3589,5 @@ func planeInternalDjangoMigrationAPIDeleteAPIWorkspacesBySlugProjectsByProjectID
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Optio fugiat culpa quibusdam doloremque magnam.\" --project-id \"098e980e-a73d-4927-8354-abea7adc66e5\" --issue-id \"bffa82c7-d167-458f-ab39-ddffe239b78e\" --pk \"ea43a49a-def4-468b-93fe-fa2e06cc992b\" --plane-session-cookie-credential \"Ut in aperiam.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "plane-internal-django-migration-api delete-api-workspaces-by-slug-projects-by-project-id-issues-by-issue-id-issue-attachments-by-pk --slug \"Sint nemo accusantium mollitia quisquam.\" --project-id \"0cfded85-1a7e-48f6-aa1e-3cb45544c661\" --issue-id \"8b06f75a-2c6d-4cc3-9103-229cd786dfac\" --pk \"b0dae261-3d13-45eb-844f-1acf873a5036\" --plane-session-cookie-credential \"At et esse non quas ut sit.\"")
 }

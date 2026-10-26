@@ -4,44 +4,42 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 // plane imports
 import { EIconSize } from "@plane/constants";
 import { CloseIcon, StateGroupIcon } from "@plane/propel/icons";
 // hooks
-import { useStates } from "@/hooks/store/use-state";
+import { statesOptions } from "@/queries/lookups";
 
 type Props = {
   handleRemove: (val: string) => void;
   values: string[];
 };
 
-export const AppliedStateFilters = observer(function AppliedStateFilters(props: Props) {
+export const AppliedStateFilters = function AppliedStateFilters(props: Props) {
   const { handleRemove, values } = props;
 
-  const { sortedStates: states } = useStates();
+  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
 
   return (
     <>
-      {values.map((stateId) => {
-        const stateDetails = states?.find((s) => s.id === stateId);
-
-        if (!stateDetails) return null;
-
-        return (
-          <div key={stateId} className="flex items-center gap-1 rounded-sm bg-layer-3 p-1 text-11">
+      {states
+        .filter((state) => values.includes(state.id))
+        .map((stateDetails) => (
+          <div key={stateDetails.id} className="flex items-center gap-1 rounded-sm bg-layer-3 p-1 text-11">
             <StateGroupIcon color={stateDetails.color} stateGroup={stateDetails.group} size={EIconSize.SM} />
             {stateDetails.name}
             <button
               type="button"
               className="grid place-items-center text-tertiary hover:text-secondary"
-              onClick={() => handleRemove(stateId)}
+              onClick={() => handleRemove(stateDetails.id)}
             >
               <CloseIcon height={10} width={10} strokeWidth={2} />
             </button>
           </div>
-        );
-      })}
+        ))}
     </>
   );
-});
+};

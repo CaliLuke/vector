@@ -4,19 +4,18 @@
  * See the LICENSE file for details.
  */
 
+import type { TEditableEditorProps } from "@/hooks/editor/use-editor-handlers";
+import { useEditorHandlers } from "@/hooks/editor/use-editor-handlers";
 import { forwardRef } from "react";
 // plane imports
 import { DocumentEditorWithRef } from "@plane/editor";
-import type { IEditorPropsExtended, EditorRefApi, IDocumentEditorProps, TFileHandler } from "@plane/editor";
-import type { MakeOptional, TSearchEntityRequestPayload, TSearchResponse } from "@plane/types";
-import { cn } from "@plane/utils";
+import type { IEditorPropsExtended, EditorRefApi, IDocumentEditorProps } from "@plane/editor";
+import type { MakeOptional } from "@plane/types";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useEditorConfig, useEditorMention } from "@/hooks/editor";
-import { useMember } from "@/hooks/store/use-member";
-import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
+
+import { DISABLED_EDITOR_EXTENSIONS } from "@/components/editor/extensions";
 // local imports
-import { EditorMentionsRoot } from "../embeds/mentions";
 
 type DocumentEditorWrapperProps = MakeOptional<
   Omit<IDocumentEditorProps, "fileHandler" | "mentionHandler" | "user" | "extendedEditorProps">,
@@ -26,17 +25,7 @@ type DocumentEditorWrapperProps = MakeOptional<
   workspaceSlug: string;
   workspaceId: string;
   projectId?: string;
-} & (
-    | {
-        editable: false;
-      }
-    | {
-        editable: true;
-        searchMentionCallback: (payload: TSearchEntityRequestPayload) => Promise<TSearchResponse>;
-        uploadFile: TFileHandler["upload"];
-        duplicateFile: TFileHandler["duplicate"];
-      }
-  );
+} & TEditableEditorProps;
 
 export const DocumentEditor = forwardRef(function DocumentEditor(
   props: DocumentEditorWrapperProps,
@@ -52,49 +41,19 @@ export const DocumentEditor = forwardRef(function DocumentEditor(
     disabledExtensions: additionalDisabledExtensions = [],
     ...rest
   } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
-  // parse content
-  const { getEditorMetaData } = useParseEditorContent({
-    projectId,
-    workspaceSlug,
-  });
-  // editor flaggings
-  const { document: documentEditorExtensions } = useEditorFlagging({
-    workspaceSlug,
-    projectId,
-  });
-  // use editor mention
-  const { fetchMentions } = useEditorMention({
+  const { fileHandler, getEditorMetaData, mentionHandler } = useEditorHandlers({
+    ...props,
     enableAdvancedMentions: true,
-    searchEntity: editable ? async (payload) => await props.searchMentionCallback(payload) : async () => ({}),
   });
-  // editor config
-  const { getEditorFileHandlers } = useEditorConfig();
-
   return (
     <DocumentEditorWithRef
       ref={ref}
-      disabledExtensions={[...documentEditorExtensions.disabled, ...(additionalDisabledExtensions ?? [])]}
+      disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, ...(additionalDisabledExtensions ?? [])]}
       editable={editable}
-      flaggedExtensions={documentEditorExtensions.flagged}
-      fileHandler={getEditorFileHandlers({
-        projectId,
-        uploadFile: editable ? props.uploadFile : async () => "",
-        duplicateFile: editable ? props.duplicateFile : async () => "",
-        workspaceId,
-        workspaceSlug,
-      })}
+      flaggedExtensions={[]}
+      fileHandler={fileHandler}
       getEditorMetaData={getEditorMetaData}
-      mentionHandler={{
-        searchCallback: async (query) => {
-          const res = await fetchMentions(query);
-          if (!res) throw new Error("Failed in fetching mentions");
-          return res;
-        },
-        renderComponent: EditorMentionsRoot,
-        getMentionedEntityDetails: (id: string) => ({ display_name: getUserDetails(id)?.display_name ?? "" }),
-      }}
+      mentionHandler={mentionHandler}
       extendedEditorProps={extendedEditorProps}
       {...rest}
       containerClassName={cn("relative pb-3 pl-3", containerClassName)}

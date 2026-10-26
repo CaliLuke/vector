@@ -5,10 +5,9 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // ui
-import { EUserPermissions, EUserPermissionsLevel, CYCLE_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, CYCLE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { CycleIcon } from "@plane/propel/icons";
@@ -17,14 +16,14 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { CyclesViewHeader } from "@/components/cycles/cycles-view-header";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const CyclesListHeader = observer(function CyclesListHeader() {
+export const CyclesListHeader = function CyclesListHeader() {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId } = useParams({
@@ -33,19 +32,18 @@ export const CyclesListHeader = observer(function CyclesListHeader() {
 
   // store hooks
   const { toggleCreateCycleModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
-  const { currentProjectDetails, loader } = useProject();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const loader = routeProjectQuery.isPending;
   const { t } = useTranslation();
 
-  const canUserCreateCycle = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canUserCreateCycle = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
+        <Breadcrumbs onBack={router.history.back} isLoading={loader}>
           <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
           <Breadcrumbs.Item
             component={
@@ -80,4 +78,4 @@ export const CyclesListHeader = observer(function CyclesListHeader() {
       )}
     </Header>
   );
-});
+};

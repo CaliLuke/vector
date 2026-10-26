@@ -5,7 +5,6 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
 
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
@@ -13,7 +12,7 @@ import { PlusIcon } from "@plane/propel/icons";
 import type { TIssueServiceType } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // components
 import { useTimeLineRelationOptions } from "@/components/relations";
 // types
@@ -26,11 +25,11 @@ type Props = {
   issueServiceType: TIssueServiceType;
 };
 
-export const RelationActionButton = observer(function RelationActionButton(props: Props) {
+export const RelationActionButton = function RelationActionButton(props: Props) {
   const { customButton, issueId, disabled = false, issueServiceType } = props;
   const { t } = useTranslation();
   // store hooks
-  const { toggleRelationModal, setRelationKey } = useIssueDetail(issueServiceType);
+  const { toggleRelationModal, setRelationKey } = useIssueDetailUiState(issueServiceType);
 
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
 
@@ -72,4 +71,4 @@ export const RelationActionButton = observer(function RelationActionButton(props
       })}
     </CustomMenu>
   );
-});
+};

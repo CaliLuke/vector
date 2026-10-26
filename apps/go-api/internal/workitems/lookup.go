@@ -11,6 +11,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
+	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 )
 
 func (r *Repository) rows(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
@@ -71,7 +72,10 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 		if len(rows) > 1 {
 			return Result{}, errors.New("multiple work items match identifier")
 		}
-		v, e := djangoapi.SerializeIssue(ctx, r.db, rows[0], q.Params["fields"], q.Params["expand"])
+		if e = r.authorizeGuestItemRead(ctx, q, rows[0]); e != nil {
+			return Result{}, e
+		}
+		v, e := r.serializeVisibleIssue(ctx, rows[0], q, q.Params["fields"], q.Params["expand"])
 		return Result{200, v}, e
 	}
 	comparison := "p.identifier=$2"
@@ -117,7 +121,7 @@ func (r *Repository) identifier(ctx context.Context, q Request) (Result, error) 
 	row := values[0]
 	q.IssueID = row["id"].(string)
 	if q.API {
-		v, e := djangoapi.SerializeIssue(ctx, r.db, row, q.Params["fields"], q.Params["expand"])
+		v, e := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
 		return Result{200, v}, e
 	}
 	if err = r.guestIssue(ctx, q, row, project); err != nil {
@@ -162,7 +166,8 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		return Result{200, map[string]any{"issues": []any{}}}, nil
 	}
 	args := []any{q.Slug, q.ActorID}
-	where := []string{liveIssue, `w.slug=$1`, `EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=i.project_id AND pm.member_id=$2 AND pm.is_active)`}
+	searchJoin := ""
+	where := []string{liveIssue, `w.slug=$1`, djangoapi.IssueVisibleSQL("i", "$2::uuid", "w.id")}
 	add := func(value any, format string) {
 		args = append(args, value)
 		where = append(where, fmt.Sprintf(format, len(args)))
@@ -182,6 +187,13 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		}
 		add(id.String(), `i.project_id=$%d`)
 	}
+	if !q.API && q.Params["type_id"] != "" {
+		id, err := djangoinput.UUID(q.Params["type_id"])
+		if err != nil {
+			return Result{}, failure(400, "error", "Please provide a valid work item type")
+		}
+		add(id.String(), `i.type_id=$%d`)
+	}
 	if query != "" {
 		args = append(args, "%"+escapeSearch(query)+"%")
 		pos := len(args)
@@ -195,40 +207,16 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		} else {
 			clauses = append(clauses, fmt.Sprintf(`i.sequence_id::text ILIKE $%d`, pos))
 		}
+		if !q.API {
+			args = append(args, query)
+			searchJoin = workitemsearch.JoinSQL("i", fmt.Sprintf("$%d::text", len(args)))
+			clauses = append(clauses, "property_match.snippet IS NOT NULL")
+		}
 		where = append(where, "("+strings.Join(clauses, " OR ")+")")
 	}
 	if !q.API {
-		if id := q.Params["issue_id"]; id != "" && (q.Params["parent"] == "true" || q.Params["issue_relation"] == "true" || q.Params["sub_issue"] == "true") {
-			parsed, e := djangoinput.UUID(id)
-			if e != nil {
-				return Result{}, failure(400, "error", "Please provide valid detail")
-			}
-			anchors, e := r.rows(ctx, `SELECT to_jsonb(i) FROM issues i WHERE i.id=$1 AND `+liveIssue, parsed.String())
-			if e != nil {
-				return Result{}, e
-			}
-			if len(anchors) == 0 && q.Params["sub_issue"] == "true" {
-				return Result{}, errors.New("search parent missing")
-			}
-			if len(anchors) > 0 {
-				a := anchors[0]
-				add(parsed.String(), `i.id<>$%d`)
-				if q.Params["parent"] == "true" {
-					if a["parent_id"] != nil {
-						add(a["parent_id"], `i.id<>$%d`)
-					}
-					add(parsed.String(), `(i.parent_id IS NULL OR i.parent_id<>$%d)`)
-				}
-				if q.Params["sub_issue"] == "true" {
-					where = append(where, "i.parent_id IS NULL")
-					if a["parent_id"] != nil {
-						add(a["parent_id"], `i.id<>$%d`)
-					}
-				}
-				if q.Params["issue_relation"] == "true" {
-					add(parsed.String(), `NOT EXISTS(SELECT 1 FROM issue_relations rel WHERE rel.deleted_at IS NULL AND ((rel.issue_id=$%[1]d AND rel.related_issue_id=i.id) OR (rel.related_issue_id=$%[1]d AND rel.issue_id=i.id)))`)
-				}
-			}
+		if err := r.searchRelationships(ctx, q, add, &where); err != nil {
+			return Result{}, err
 		}
 		if q.Params["cycle"] == "true" {
 			where = append(where, `NOT EXISTS(SELECT 1 FROM cycle_issues ci WHERE ci.issue_id=i.id AND ci.deleted_at IS NULL)`)
@@ -243,8 +231,6 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 		if q.Params["target_date"] == "none" {
 			where = append(where, `i.target_date IS NULL`)
 		}
-		args = append(args, q.ProjectID)
-		where = append(where, fmt.Sprintf(`(i.created_by_id=$2 OR NOT EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=$%d AND pm.member_id=$2 AND pm.is_active AND pm.role=5 AND pm.deleted_at IS NULL))`, len(args)))
 	}
 	limit := 100
 	if q.API {
@@ -259,10 +245,13 @@ func (r *Repository) search(ctx context.Context, q Request) (Result, error) {
 	}
 	fields := `'name',i.name,'id',i.id,'sequence_id',i.sequence_id,'project__identifier',p.identifier,'project_id',i.project_id,'workspace__slug',w.slug`
 	if !q.API {
-		fields += `,'start_date',i.start_date,'project__name',p.name,'state__name',s.name,'state__group',s."group",'state__color',s.color`
+		fields += `,'type_id',i.type_id,'start_date',i.start_date,'project__name',p.name,'state__name',s.name,'state__group',s."group",'state__color',s.color`
+	}
+	if searchJoin != "" {
+		fields += `,'custom_property_match',property_match.snippet`
 	}
 	args = append(args, limit)
-	rows, err := r.rows(ctx, `SELECT jsonb_build_object(`+fields+`) FROM issues i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id LEFT JOIN states s ON s.id=i.state_id WHERE `+strings.Join(where, " AND ")+fmt.Sprintf(` ORDER BY i.created_at DESC LIMIT $%d`, len(args)), args...)
+	rows, err := r.rows(ctx, `SELECT jsonb_build_object(`+fields+`) FROM issues i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id LEFT JOIN states s ON s.id=i.state_id `+searchJoin+` WHERE `+strings.Join(where, " AND ")+fmt.Sprintf(` ORDER BY i.created_at DESC LIMIT $%d`, len(args)), args...)
 	if q.API {
 		return Result{200, map[string]any{"issues": rows}}, err
 	}

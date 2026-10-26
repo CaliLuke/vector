@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { PanelRight } from "lucide-react";
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarActions } from "@/providers/sidebar-state";
 
-export const SidebarHamburgerToggle = observer(function SidebarHamburgerToggle() {
+export function SidebarHamburgerToggle() {
   // store hooks
-  const { toggleSidebar } = useAppTheme();
+  const { toggleSidebar } = useSidebarActions();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -27,4 +26,4 @@ export const SidebarHamburgerToggle = observer(function SidebarHamburgerToggle()
       <PanelRight className="size-3.5 text-secondary transition-all group-hover:text-primary" />
     </button>
   );
-});
+}

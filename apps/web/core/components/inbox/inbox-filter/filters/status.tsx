@@ -5,7 +5,6 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
 // types
 import { INBOX_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -14,27 +13,26 @@ import type { TInboxIssueStatus } from "@plane/types";
 import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
 // constants
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 import { InboxStatusIcon } from "../../inbox-status-icon";
 
 type Props = {
   searchQuery: string;
 };
 
-export const FilterStatus = observer(function FilterStatus(props: Props) {
+export const FilterStatus = function FilterStatus(props: Props) {
   const { searchQuery } = props;
   // hooks
-  const { currentTab, inboxFilters, handleInboxIssueFilters } = useProjectInbox();
+  const { tab, filters, setFilter } = useIntakePreferences();
   const { t } = useTranslation();
   // states
   const [previewEnabled, setPreviewEnabled] = useState(true);
   // derived values
-  const filterValue = inboxFilters?.status || [];
+  const filterValue = filters?.status || [];
   const appliedFiltersCount = filterValue?.length ?? 0;
   const filteredOptions = INBOX_STATUS.filter(
     (s) =>
-      ((currentTab === "open" && [-2, 0].includes(s.status)) ||
-        (currentTab === "closed" && [-1, 1, 2].includes(s.status))) &&
+      ((tab === "open" && [-2, 0].includes(s.status)) || (tab === "closed" && [-1, 1, 2].includes(s.status))) &&
       s.key.includes(searchQuery.toLowerCase())
   );
 
@@ -43,7 +41,7 @@ export const FilterStatus = observer(function FilterStatus(props: Props) {
 
   const handleStatusFilterSelect = (status: TInboxIssueStatus) => {
     const selectedStatus = handleFilterValue(status);
-    if (selectedStatus.length >= 1) handleInboxIssueFilters("status", selectedStatus);
+    if (selectedStatus.length >= 1) setFilter("status", selectedStatus);
   };
 
   return (
@@ -72,4 +70,4 @@ export const FilterStatus = observer(function FilterStatus(props: Props) {
       )}
     </>
   );
-});
+};

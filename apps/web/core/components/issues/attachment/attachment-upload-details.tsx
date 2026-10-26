@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Tooltip } from "@plane/propel/tooltip";
-import { CircularProgressIndicator } from "@plane/ui";
-import { getFileExtension, truncateText } from "@plane/utils";
+import { AttachmentUploadProgress } from "./upload-progress";
+import { getFileExtension } from "@plane/utils/attachment";
+import { truncateText } from "@plane/utils/string";
 // ui
 // icons
 import { getFileIcon } from "@/components/icons";
@@ -15,13 +15,13 @@ import { getFileIcon } from "@/components/icons";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // types
-import type { TAttachmentUploadStatus } from "@/store/issue/issue-details/attachment.store";
+import type { TAttachmentUploadStatus } from "@/hooks/use-issue-resources";
 
 type Props = {
   uploadStatus: TAttachmentUploadStatus;
 };
 
-export const IssueAttachmentsUploadDetails = observer(function IssueAttachmentsUploadDetails(props: Props) {
+export function IssueAttachmentsUploadDetails(props: Props) {
   // props
   const { uploadStatus } = props;
   // derived values
@@ -47,12 +47,7 @@ export const IssueAttachmentsUploadDetails = observer(function IssueAttachmentsU
           </div>
         </div>
       </div>
-      <div className="flex flex-shrink-0 items-center gap-2">
-        <span className="flex-shrink-0">
-          <CircularProgressIndicator size={20} strokeWidth={3} percentage={uploadStatus.progress} />
-        </span>
-        <div className="flex-shrink-0 text-13 font-medium">{uploadStatus.progress}% done</div>
-      </div>
+      <AttachmentUploadProgress progress={uploadStatus.progress} />
     </div>
   );
-});
+}

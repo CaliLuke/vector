@@ -35,6 +35,17 @@ type Client struct {
 	// DescriptionVersionDetail Doer is the HTTP client used to make requests to
 	// the description_version_detail endpoint.
 	DescriptionVersionDetailDoer loomhttp.Doer
+	// PropertyHistory Doer is the HTTP client used to make requests to the
+	// property_history endpoint.
+	PropertyHistoryDoer loomhttp.Doer
+	// PropertyVersions Doer is the HTTP client used to make requests to the
+	// property_versions endpoint.
+	PropertyVersionsDoer loomhttp.Doer
+	// PropertyVersionDetail Doer is the HTTP client used to make requests to the
+	// property_version_detail endpoint.
+	PropertyVersionDetailDoer loomhttp.Doer
+	// API groups work_item_history operations.
+	API *APIClient
 	// RestoreResponseBody controls whether the response bodies are reset after
 	// decoding so they can be read again.
 	RestoreResponseBody bool
@@ -45,10 +56,130 @@ type Client struct {
 	decoder func(*http.Response) loomhttp.Decoder
 }
 
+// APIClient groups API HTTP client operations.
+type APIClient struct {
+	client *Client
+}
+
+// History returns an endpoint that makes HTTP requests to the
+// work_item_history service history server.
+func (g *APIClient) History() loom.Endpoint {
+	return g.client.History()
+}
+
+// BuildHistoryRequest instantiates a HTTP request object with method and path
+// set to call the "work_item_history" service "history" endpoint
+func (g *APIClient) BuildHistoryRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildHistoryRequest(ctx, v)
+}
+
+// Meta returns an endpoint that makes HTTP requests to the work_item_history
+// service meta server.
+func (g *APIClient) Meta() loom.Endpoint {
+	return g.client.Meta()
+}
+
+// BuildMetaRequest instantiates a HTTP request object with method and path set
+// to call the "work_item_history" service "meta" endpoint
+func (g *APIClient) BuildMetaRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildMetaRequest(ctx, v)
+}
+
+// Versions returns an endpoint that makes HTTP requests to the
+// work_item_history service versions server.
+func (g *APIClient) Versions() loom.Endpoint {
+	return g.client.Versions()
+}
+
+// BuildVersionsRequest instantiates a HTTP request object with method and path
+// set to call the "work_item_history" service "versions" endpoint
+func (g *APIClient) BuildVersionsRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildVersionsRequest(ctx, v)
+}
+
+// VersionDetail returns an endpoint that makes HTTP requests to the
+// work_item_history service version_detail server.
+func (g *APIClient) VersionDetail() loom.Endpoint {
+	return g.client.VersionDetail()
+}
+
+// BuildVersionDetailRequest instantiates a HTTP request object with method and
+// path set to call the "work_item_history" service "version_detail" endpoint
+func (g *APIClient) BuildVersionDetailRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildVersionDetailRequest(ctx, v)
+}
+
+// DescriptionVersions returns an endpoint that makes HTTP requests to the
+// work_item_history service description_versions server.
+func (g *APIClient) DescriptionVersions() loom.Endpoint {
+	return g.client.DescriptionVersions()
+}
+
+// BuildDescriptionVersionsRequest instantiates a HTTP request object with
+// method and path set to call the "work_item_history" service
+// "description_versions" endpoint
+func (g *APIClient) BuildDescriptionVersionsRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildDescriptionVersionsRequest(ctx, v)
+}
+
+// DescriptionVersionDetail returns an endpoint that makes HTTP requests to the
+// work_item_history service description_version_detail server.
+func (g *APIClient) DescriptionVersionDetail() loom.Endpoint {
+	return g.client.DescriptionVersionDetail()
+}
+
+// BuildDescriptionVersionDetailRequest instantiates a HTTP request object with
+// method and path set to call the "work_item_history" service
+// "description_version_detail" endpoint
+func (g *APIClient) BuildDescriptionVersionDetailRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildDescriptionVersionDetailRequest(ctx, v)
+}
+
+// PropertyHistory returns an endpoint that makes HTTP requests to the
+// work_item_history service property_history server.
+func (g *APIClient) PropertyHistory() loom.Endpoint {
+	return g.client.PropertyHistory()
+}
+
+// BuildPropertyHistoryRequest instantiates a HTTP request object with method
+// and path set to call the "work_item_history" service "property_history"
+// endpoint
+func (g *APIClient) BuildPropertyHistoryRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildPropertyHistoryRequest(ctx, v)
+}
+
+// PropertyVersions returns an endpoint that makes HTTP requests to the
+// work_item_history service property_versions server.
+func (g *APIClient) PropertyVersions() loom.Endpoint {
+	return g.client.PropertyVersions()
+}
+
+// BuildPropertyVersionsRequest instantiates a HTTP request object with method
+// and path set to call the "work_item_history" service "property_versions"
+// endpoint
+func (g *APIClient) BuildPropertyVersionsRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildPropertyVersionsRequest(ctx, v)
+}
+
+// PropertyVersionDetail returns an endpoint that makes HTTP requests to the
+// work_item_history service property_version_detail server.
+func (g *APIClient) PropertyVersionDetail() loom.Endpoint {
+	return g.client.PropertyVersionDetail()
+}
+
+// BuildPropertyVersionDetailRequest instantiates a HTTP request object with
+// method and path set to call the "work_item_history" service
+// "property_version_detail" endpoint
+func (g *APIClient) BuildPropertyVersionDetailRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildPropertyVersionDetailRequest(ctx, v)
+}
+
 // NewClient instantiates HTTP clients for all the work_item_history service
 // servers.
 func NewClient(scheme string, host string, doer loomhttp.Doer, enc func(*http.Request) loomhttp.Encoder, dec func(*http.Response) loomhttp.Decoder, restoreBody bool) *Client {
-	return &Client{HistoryDoer: doer, MetaDoer: doer, VersionsDoer: doer, VersionDetailDoer: doer, DescriptionVersionsDoer: doer, DescriptionVersionDetailDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
+	client := &Client{HistoryDoer: doer, MetaDoer: doer, VersionsDoer: doer, VersionDetailDoer: doer, DescriptionVersionsDoer: doer, DescriptionVersionDetailDoer: doer, PropertyHistoryDoer: doer, PropertyVersionsDoer: doer, PropertyVersionDetailDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
+	client.API = &APIClient{client: client}
+	return client
 }
 
 // History returns an endpoint that makes HTTP requests to the
@@ -216,5 +347,89 @@ func (c *Client) DescriptionVersionDetail() loom.Endpoint {
 			return nil, err
 		}
 		return &workitemhistory.DescriptionVersionDetailResponseData{Result: res.(*workitemhistory.WorkItemHistoryResponseMetadata), Body: resp.Body}, nil
+	}
+}
+
+// PropertyHistory returns an endpoint that makes HTTP requests to the
+// work_item_history service property_history server.
+func (c *Client) PropertyHistory() loom.Endpoint {
+	var (
+		encodeRequest  = EncodePropertyHistoryRequest(c.encoder)
+		decodeResponse = DecodePropertyHistoryResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildPropertyHistoryRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.PropertyHistoryDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("work_item_history", "property_history", err)
+		}
+		res, err := decodeResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+		return &workitemhistory.PropertyHistoryResponseData{Result: res.(*workitemhistory.WorkItemHistoryResponseMetadata), Body: resp.Body}, nil
+	}
+}
+
+// PropertyVersions returns an endpoint that makes HTTP requests to the
+// work_item_history service property_versions server.
+func (c *Client) PropertyVersions() loom.Endpoint {
+	var (
+		encodeRequest  = EncodePropertyVersionsRequest(c.encoder)
+		decodeResponse = DecodePropertyVersionsResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildPropertyVersionsRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.PropertyVersionsDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("work_item_history", "property_versions", err)
+		}
+		res, err := decodeResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+		return &workitemhistory.PropertyVersionsResponseData{Result: res.(*workitemhistory.WorkItemHistoryResponseMetadata), Body: resp.Body}, nil
+	}
+}
+
+// PropertyVersionDetail returns an endpoint that makes HTTP requests to the
+// work_item_history service property_version_detail server.
+func (c *Client) PropertyVersionDetail() loom.Endpoint {
+	var (
+		encodeRequest  = EncodePropertyVersionDetailRequest(c.encoder)
+		decodeResponse = DecodePropertyVersionDetailResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildPropertyVersionDetailRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.PropertyVersionDetailDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("work_item_history", "property_version_detail", err)
+		}
+		res, err := decodeResponse(resp)
+		if err != nil {
+			return nil, err
+		}
+		return &workitemhistory.PropertyVersionDetailResponseData{Result: res.(*workitemhistory.WorkItemHistoryResponseMetadata), Body: resp.Body}, nil
 	}
 }

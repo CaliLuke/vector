@@ -238,22 +238,6 @@
       "count": 2
     },
     {
-      "fingerprint": [
-        "errcheck",
-        "internal/assets/attachment_scope_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/assets/attachment_scope_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["errcheck", "internal/assets/attachment.go", "Error return value of `body.Close` is not checked"],
       "count": 2
     },
@@ -610,20 +594,8 @@
       "count": 1
     },
     {
-      "fingerprint": [
-        "errcheck",
-        "internal/devtools/checks.go",
-        "Error return value of `apiResp.Body.Close` is not checked"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintf` is not checked"],
       "count": 2
-    },
-    {
-      "fingerprint": ["errcheck", "internal/devtools/checks.go", "Error return value of `fmt.Fprintln` is not checked"],
-      "count": 1
     },
     {
       "fingerprint": [
@@ -774,22 +746,6 @@
         "errcheck",
         "internal/projectconfiguration/repository.go",
         "Error return value of `tx.Rollback` is not checked"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectlabelreads/repository_integration_test.go",
-        "Error return value of `connection.Close` is not checked"
-      ],
-      "count": 2
-    },
-    {
-      "fingerprint": [
-        "errcheck",
-        "internal/projectlabelreads/repository_integration_test.go",
-        "Error return value of `pair.Close` is not checked"
       ],
       "count": 1
     },
@@ -1127,7 +1083,7 @@
     },
     {
       "fingerprint": ["errcheck", "project_configuration.go", "Error return value of `body.Close` is not checked"],
-      "count": 8
+      "count": 7
     },
     {
       "fingerprint": ["errcheck", "project_intake_writes.go", "Error return value of `body.Close` is not checked"],
@@ -1512,14 +1468,6 @@
     {
       "fingerprint": [
         "errorlint",
-        "internal/workspacesidebarpreferences/repository.go",
-        "comparing with == will fail on wrapped errors. Use errors.Is to check for a specific error"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
         "internal/workspaceuserinsights/repository_integration_test.go",
         "comparing with != will fail on wrapped errors. Use errors.Is to check for a specific error"
       ],
@@ -1564,14 +1512,6 @@
         "non-wrapping format verb for fmt.Errorf. Use `%w` to format errors"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "errorlint",
-        "workspace_favorites_test.go",
-        "type assertion on error will fail on wrapped errors. Use errors.As to check for specific errors"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -1816,14 +1756,6 @@
     {
       "fingerprint": [
         "govet",
-        "internal/assets/postgres.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 11
-    },
-    {
-      "fingerprint": [
-        "govet",
         "internal/assets/public_authorization_integration_test.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
@@ -1835,7 +1767,7 @@
         "internal/assets/service.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 5
+      "count": 4
     },
     {
       "fingerprint": [
@@ -2323,7 +2255,7 @@
         "internal/devtools/checks.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 3
+      "count": 2
     },
     {
       "fingerprint": [
@@ -2515,36 +2447,12 @@
         "internal/projectconfiguration/operations.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 8
+      "count": 7
     },
     {
       "fingerprint": [
         "govet",
         "internal/projectconfiguration/repository.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "govet",
-        "internal/projectlabelreads/api_v1.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "govet",
-        "internal/projectlabelreads/repository_integration_test.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 3
-    },
-    {
-      "fingerprint": [
-        "govet",
-        "internal/projectlabelreads/writes.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
       "count": 1
@@ -2803,7 +2711,7 @@
         "internal/workitems/intake.go",
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
-      "count": 11
+      "count": 10
     },
     {
       "fingerprint": [
@@ -3064,14 +2972,6 @@
         "shadow: declaration of \"err\" shadows declaration at line #"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "govet",
-        "workspace_favorites_test.go",
-        "shadow: declaration of \"err\" shadows declaration at line #"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [
@@ -3670,10 +3570,6 @@
       "count": 3
     },
     {
-      "fingerprint": ["staticcheck", "internal/devtools/checks.go", "ST1005: error strings should not be capitalized"],
-      "count": 2
-    },
-    {
       "fingerprint": [
         "staticcheck",
         "internal/devtools/local_logs.go",
@@ -3774,14 +3670,6 @@
         "staticcheck",
         "internal/pagereads/repository.go",
         "ST1005: error strings should not be capitalized"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "staticcheck",
-        "internal/projectlabelreads/write_input.go",
-        "QF1001: could apply De Morgan's law"
       ],
       "count": 1
     },
@@ -4166,22 +4054,6 @@
       "count": 1
     },
     {
-      "fingerprint": [
-        "unparam",
-        "internal/assets/service.go",
-        "(*LifecycleService).projectAssetForMutation - result 0 (github.com/google/uuid.UUID) is never used"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
-        "internal/assets/service.go",
-        "assetFilenameDefault - generatedWhenMissing always receives true"
-      ],
-      "count": 1
-    },
-    {
       "fingerprint": ["unparam", "internal/authredirects/service.go", "(*Service).completeLogin - signup is unused"],
       "count": 1
     },
@@ -4278,14 +4150,6 @@
         "unparam",
         "internal/workitems/collaboration_projection.go",
         "(*Repository).collaborationDump - annotated always receives false"
-      ],
-      "count": 1
-    },
-    {
-      "fingerprint": [
-        "unparam",
-        "internal/workitems/repository.go",
-        "(*Repository).publishTask - name always receives \"plane.bgtasks.issue_activities_task.issue_activity\""
       ],
       "count": 1
     },
@@ -4419,14 +4283,6 @@
     },
     {
       "fingerprint": ["unused", "internal/projectintakewrites/repository.go", "func parseBody is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/projectlabelreads/write_input.go", "func labelFloat is unused"],
-      "count": 1
-    },
-    {
-      "fingerprint": ["unused", "internal/projectlabelreads/write_input.go", "func pythonType is unused"],
       "count": 1
     },
     {

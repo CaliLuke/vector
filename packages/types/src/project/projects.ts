@@ -46,10 +46,10 @@ export interface IProject extends IPartialProject {
   archive_in?: number;
   close_in?: number;
   // only for uploading the cover image
-  cover_image_asset?: null;
-  cover_image?: string;
+  cover_image_asset?: string | null;
+  cover_image?: string | null;
   // only for rendering the cover image
-  readonly cover_image_url?: string;
+  readonly cover_image_url?: string | null;
   default_assignee?: IUser | string | null;
   default_state?: string | null;
   description?: string;
@@ -146,6 +146,8 @@ export interface GithubRepositoriesResponse {
 }
 
 export type TProjectIssuesSearchParams = {
+  type_id?: string;
+  child_type_id?: string;
   search: string;
   parent?: boolean;
   issue_relation?: boolean;

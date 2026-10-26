@@ -4,9 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type EmptyStateSize = "sm" | "lg";
 
@@ -34,7 +33,7 @@ const getTitleClassName = (hasDescription: boolean) =>
     "text-16 text-tertiary": hasDescription,
   });
 
-export const SimpleEmptyState = observer(function SimpleEmptyState(props: Props) {
+export const SimpleEmptyState = function SimpleEmptyState(props: Props) {
   const { title, description, size = "sm", assetPath } = props;
 
   return (
@@ -50,4 +49,4 @@ export const SimpleEmptyState = observer(function SimpleEmptyState(props: Props)
       {description && <p className="text-14 font-medium whitespace-pre-line text-placeholder">{description}</p>}
     </div>
   );
-});
+};

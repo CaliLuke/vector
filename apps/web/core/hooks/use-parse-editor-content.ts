@@ -8,10 +8,11 @@ import { useCallback } from "react";
 // plane types
 import type { TSearchEntities } from "@plane/types";
 // helpers
-import { getBase64Image, getEditorAssetSrc } from "@plane/utils";
-import type { TCustomComponentsMetaData } from "@plane/utils";
+import { getBase64Image } from "@plane/utils/file";
+import { getEditorAssetSrc } from "@plane/utils/editor/common";
+import type { TCustomComponentsMetaData } from "@plane/utils/editor/markdown-parser";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // plane web hooks
 import { useAdditionalEditorMention } from "@/hooks/use-additional-editor-mention";
 
@@ -22,8 +23,14 @@ type TArgs = {
 
 export const useParseEditorContent = (args: TArgs) => {
   const { projectId, workspaceSlug } = args;
-  // store hooks
-  const { getUserDetails } = useMember();
+  const {
+    query: memberRosterQuery,
+    membersById,
+    isLoading: memberRosterIsLoading,
+    isError: memberRosterIsError,
+    retry: retryMemberRoster,
+  } = useWorkspaceMemberRoster(workspaceSlug);
+  const isMemberRosterReady = memberRosterQuery.isSuccess && !memberRosterIsLoading && !memberRosterIsError;
   // parse additional content
   const { parseAdditionalEditorContent } = useAdditionalEditorMention({
     enableAdvancedMentions: true,
@@ -36,6 +43,9 @@ export const useParseEditorContent = (args: TArgs) => {
    */
   const replaceCustomComponentsFromHTMLContent = useCallback(
     async (props: { htmlContent: string; noAssets?: boolean }): Promise<string> => {
+      if (!isMemberRosterReady) {
+        throw new Error("Workspace member data must load before exporting page mentions.");
+      }
       const { htmlContent, noAssets = false } = props;
       // create a DOM parser
       const parser = new DOMParser();
@@ -52,8 +62,8 @@ export const useParseEditorContent = (args: TArgs) => {
         const entityType = (component.getAttribute("entity_name") || "user_mention") as TSearchEntities;
         let textContent = "user";
         if (entityType === "user_mention") {
-          const userDetails = getUserDetails(id);
-          textContent = userDetails?.display_name ?? "";
+          const userDetails = membersById?.get(id)?.member;
+          textContent = userDetails?.display_name ?? id;
         } else {
           const mentionDetails = parseAdditionalEditorContent({
             id,
@@ -160,7 +170,7 @@ export const useParseEditorContent = (args: TArgs) => {
       serializedDoc = serializedDoc.replace(/background-color: null/g, "").replace(/color: null/g, "");
       return serializedDoc;
     },
-    [getUserDetails, parseAdditionalEditorContent]
+    [isMemberRosterReady, membersById, parseAdditionalEditorContent]
   );
 
   /**
@@ -170,6 +180,9 @@ export const useParseEditorContent = (args: TArgs) => {
    */
   const replaceCustomComponentsFromMarkdownContent = useCallback(
     (props: { markdownContent: string; noAssets?: boolean }): string => {
+      if (!isMemberRosterReady) {
+        throw new Error("Workspace member data must load before exporting page mentions.");
+      }
       const { markdownContent, noAssets = false } = props;
       let parsedMarkdownContent = markdownContent;
       // replace the matched mention components with [display_name](redirect_url)
@@ -180,9 +193,8 @@ export const useParseEditorContent = (args: TArgs) => {
         const entityType = entity_type as TSearchEntities;
         if (!id || !entityType) return "";
         if (entityType === "user_mention") {
-          const userDetails = getUserDetails(id);
-          if (!userDetails) return "";
-          return `[${userDetails.display_name}](${originUrl}/${workspaceSlug}/profile/${id})`;
+          const userDetails = membersById?.get(id)?.member;
+          return `[${userDetails?.display_name ?? id}](${originUrl}/${workspaceSlug}/profile/${id})`;
         } else {
           const mentionDetails = parseAdditionalEditorContent({
             id,
@@ -214,7 +226,7 @@ export const useParseEditorContent = (args: TArgs) => {
       parsedMarkdownContent = parsedMarkdownContent.replace(issueEmbedRegex, "");
       return parsedMarkdownContent;
     },
-    [getUserDetails, parseAdditionalEditorContent, workspaceSlug]
+    [isMemberRosterReady, membersById, parseAdditionalEditorContent, workspaceSlug]
   );
 
   const getEditorMetaData = useCallback(
@@ -247,19 +259,19 @@ export const useParseEditorContent = (args: TArgs) => {
       const userMentions: TCustomComponentsMetaData["user_mentions"] = [];
       const mentionComponents = doc.querySelectorAll("mention-component");
       mentionComponents.forEach((element) => {
+        const entityName = element.getAttribute("entity_name");
+        if (entityName && entityName !== "user_mention") return;
         const id = element.getAttribute("entity_identifier");
         if (id) {
-          const userDetails = getUserDetails(id);
+          const userDetails = membersById?.get(id)?.member;
           const originUrl = typeof window !== "undefined" && (window.location.origin ?? "");
           const path = `${workspaceSlug}/profile/${id}`;
           const url = `${originUrl}/${path}`;
-          if (userDetails) {
-            userMentions.push({
-              id,
-              display_name: userDetails.display_name,
-              url,
-            });
-          }
+          userMentions.push({
+            id,
+            display_name: userDetails?.display_name ?? id,
+            url,
+          });
         }
       });
 
@@ -268,12 +280,16 @@ export const useParseEditorContent = (args: TArgs) => {
         user_mentions: userMentions,
       };
     },
-    [getUserDetails, projectId, workspaceSlug]
+    [membersById, projectId, workspaceSlug]
   );
 
   return {
     replaceCustomComponentsFromHTMLContent,
     replaceCustomComponentsFromMarkdownContent,
     getEditorMetaData,
+    memberRosterQuery,
+    memberRosterIsLoading,
+    memberRosterIsError,
+    retryMemberRoster,
   };
 };

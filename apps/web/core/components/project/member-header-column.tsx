@@ -5,7 +5,7 @@
  */
 
 // ui
-import { observer } from "mobx-react";
+
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, CheckIcon, ChevronDownIcon, Eraser, MoveRight } from "lucide-react";
 // constants
 import type { IProjectMemberDisplayProperties, TMemberOrderByOptions } from "@plane/constants";
@@ -14,7 +14,7 @@ import { MEMBER_PROPERTY_DETAILS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // types
 import { CustomMenu } from "@plane/ui";
-import type { IMemberFilters } from "@/store/member/utils";
+import type { IMemberFilters } from "@/helpers/member-ordering";
 
 interface Props {
   property: keyof IProjectMemberDisplayProperties;
@@ -22,7 +22,7 @@ interface Props {
   handleDisplayFilterUpdate: (data: Partial<IMemberFilters>) => void;
 }
 
-export const MemberHeaderColumn = observer(function MemberHeaderColumn(props: Props) {
+export const MemberHeaderColumn = function MemberHeaderColumn(props: Props) {
   const { displayFilters, handleDisplayFilterUpdate, property } = props;
   // i18n
   const { t } = useTranslation();
@@ -118,4 +118,4 @@ export const MemberHeaderColumn = observer(function MemberHeaderColumn(props: Pr
       )}
     </CustomMenu>
   );
-});
+};

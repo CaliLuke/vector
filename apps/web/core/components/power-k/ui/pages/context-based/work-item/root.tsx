@@ -5,15 +5,16 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EIssueServiceType } from "@plane/types";
 // components
 import type { TPowerKPageType } from "@/components/power-k/core/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 // local imports
 import { PowerKMembersMenu } from "../../../../menus/members";
 import { PowerKWorkItemCyclesMenu } from "./cycles-menu";
@@ -28,58 +29,77 @@ type Props = {
   handleSelection: (data: unknown) => void;
 };
 
-export const PowerKWorkItemContextBasedPages = observer(function PowerKWorkItemContextBasedPages(props: Props) {
+export const PowerKWorkItemContextBasedPages = function PowerKWorkItemContextBasedPages(props: Props) {
   const { activePage, handleSelection } = props;
   // navigation
-  const { workItem: entityIdentifier } = useParams({ strict: false });
+  const { workspaceSlug, workItem: entityIdentifier } = useParams({ strict: false });
   // store hooks
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail(EIssueServiceType.ISSUES);
-  const {
-    project: { getProjectMemberIds },
-  } = useMember();
-  // derived values
-  const entityId = entityIdentifier ? getIssueIdByIdentifier(entityIdentifier.toString()) : null;
-  const entityDetails = entityId ? getIssueById(entityId) : null;
-  const projectMemberIds = entityDetails?.project_id ? getProjectMemberIds(entityDetails.project_id, false) : [];
+  const { data: currentUser } = useCurrentUser();
+  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug?.toString());
+  const [projectIdentifier, sequenceId] = (entityIdentifier?.toString() ?? "").split("-");
+  const identifierProjectId = projectCatalogue.projects?.find(
+    (project) => project.identifier === projectIdentifier
+  )?.id;
+  const entityDetails = useWorkItemByIdentifier(
+    workspaceSlug?.toString(),
+    projectIdentifier,
+    sequenceId,
+    identifierProjectId
+  ).issue;
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { memberships } = useProjectMemberRoster(workspaceSlug, entityDetails?.project_id ?? undefined);
+  const projectMemberIds = projectRosterMemberIds(memberships, membersById, currentUser?.id, false);
 
   if (!entityDetails) return null;
 
   return (
-    <>
-      {/* states menu */}
-      {activePage === "update-work-item-state" && (
-        <PowerKProjectStatesMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-      {/* priority menu */}
-      {activePage === "update-work-item-priority" && (
-        <PowerKWorkItemPrioritiesMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-      {/* members menu */}
-      {activePage === "update-work-item-assignee" && (
-        <PowerKMembersMenu
-          handleSelect={handleSelection}
-          userIds={projectMemberIds ?? undefined}
-          value={entityDetails.assignee_ids}
-        />
-      )}
-      {/* estimates menu */}
-      {activePage === "update-work-item-estimate" && (
-        <PowerKWorkItemEstimatesMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-      {/* cycles menu */}
-      {activePage === "update-work-item-cycle" && (
-        <PowerKWorkItemCyclesMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-      {/* modules menu */}
-      {activePage === "update-work-item-module" && (
-        <PowerKWorkItemModulesMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-      {/* labels menu */}
-      {activePage === "update-work-item-labels" && (
-        <PowerKWorkItemLabelsMenu handleSelect={handleSelection} workItemDetails={entityDetails} />
-      )}
-    </>
+    <WorkItemContextPage
+      activePage={activePage}
+      handleSelection={handleSelection}
+      workItemDetails={entityDetails}
+      workspaceSlug={workspaceSlug}
+      projectMemberIds={projectMemberIds ?? undefined}
+    />
   );
-});
+};
+
+type WorkItemDetails = NonNullable<ReturnType<typeof useWorkItemByIdentifier>["issue"]>;
+type WorkItemContextPageProps = Props & {
+  workItemDetails: WorkItemDetails;
+  workspaceSlug: string | undefined;
+  projectMemberIds: string[] | undefined;
+};
+
+function WorkItemContextPage({
+  activePage,
+  handleSelection,
+  workItemDetails,
+  workspaceSlug,
+  projectMemberIds,
+}: WorkItemContextPageProps) {
+  switch (activePage) {
+    case "update-work-item-state":
+      return <PowerKProjectStatesMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    case "update-work-item-priority":
+      return <PowerKWorkItemPrioritiesMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    case "update-work-item-assignee":
+      return (
+        <PowerKMembersMenu
+          workspaceSlug={workspaceSlug}
+          handleSelect={handleSelection}
+          userIds={projectMemberIds}
+          value={workItemDetails.assignee_ids}
+        />
+      );
+    case "update-work-item-estimate":
+      return <PowerKWorkItemEstimatesMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    case "update-work-item-cycle":
+      return <PowerKWorkItemCyclesMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    case "update-work-item-module":
+      return <PowerKWorkItemModulesMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    case "update-work-item-labels":
+      return <PowerKWorkItemLabelsMenu handleSelect={handleSelection} workItemDetails={workItemDetails} />;
+    default:
+      return null;
+  }
+}

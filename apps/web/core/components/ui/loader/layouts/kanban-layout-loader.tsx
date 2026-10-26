@@ -5,11 +5,11 @@
  */
 
 import { forwardRef } from "react";
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 // plane ui
 import { ContentWrapper } from "@plane/ui";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 export const KanbanIssueBlockLoader = forwardRef(function KanbanIssueBlockLoader(
   { cardHeight = 100, shouldAnimate = true }: { cardHeight?: number; shouldAnimate?: boolean },

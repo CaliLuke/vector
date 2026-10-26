@@ -5979,6 +5979,8 @@ var _ = Service("WorkItemCore", func() {
 			Attribute("project_id", String, func() {
 				Format(FormatUUID)
 			})
+			Attribute("type_id", String, func() { Format(FormatUUID) })
+			Attribute("child_type_id", String, func() { Format(FormatUUID) })
 			Attribute("search", String, func() {
 				Description("A search term.")
 				Meta("openapi:allowEmptyValue", "false")
@@ -5993,6 +5995,8 @@ var _ = Service("WorkItemCore", func() {
 			Meta("openapi:tag:projects")
 			GET("/api/workspaces/{slug}/projects/{project_id}/search-issues/")
 			Param("project_id")
+			Param("type_id")
+			Param("child_type_id")
 			Param("search")
 			Param("slug")
 			Response(200, func() {

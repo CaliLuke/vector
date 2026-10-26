@@ -7,7 +7,7 @@
 import { startTransition, StrictMode } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
-import { installLocalLogging } from "@plane/utils";
+import { installLocalLogging } from "@plane/utils/local-logging";
 
 if (import.meta.env.DEV && import.meta.env.VITE_LOCAL_LOGGING === "1") {
   const stopLogging = installLocalLogging("plane-space-browser");

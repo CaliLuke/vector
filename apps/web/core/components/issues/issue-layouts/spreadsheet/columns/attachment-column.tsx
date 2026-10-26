@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // types
 import type { TIssue } from "@plane/types";
 import { Row } from "@plane/ui";
@@ -14,7 +14,7 @@ type Props = {
   issue: TIssue;
 };
 
-export const SpreadsheetAttachmentColumn = observer(function SpreadsheetAttachmentColumn(props: Props) {
+export const SpreadsheetAttachmentColumn = function SpreadsheetAttachmentColumn(props: Props) {
   const { issue } = props;
 
   return (
@@ -22,4 +22,4 @@ export const SpreadsheetAttachmentColumn = observer(function SpreadsheetAttachme
       {issue?.attachment_count ?? 0} {issue?.attachment_count === 1 ? "attachment" : "attachments"}
     </Row>
   );
-});
+};

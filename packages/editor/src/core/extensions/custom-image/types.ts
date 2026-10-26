@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import type { ImageOptions } from "@tiptap/extension-image";
 import type { Node } from "@tiptap/core";
 // types
-import type { TFileHandler } from "@/types";
 
 export enum ECustomImageAttributeNames {
   ID = "id",
@@ -56,18 +56,10 @@ export type InsertImageComponentProps = {
   event: "insert" | "drop";
 };
 
-export type CustomImageExtensionOptions = {
-  getImageDownloadSource: TFileHandler["getAssetDownloadSrc"];
-  getImageSource: TFileHandler["getAssetSrc"];
-  restoreImage: TFileHandler["restore"];
-  uploadImage?: TFileHandler["upload"];
-  duplicateImage?: TFileHandler["duplicate"];
-};
-
 export type CustomImageExtensionStorage = {
   fileMap: Map<string, UploadEntity>;
   deletedImageSet: Map<string, boolean>;
   maxFileSize: number;
 };
 
-export type CustomImageExtensionType = Node<CustomImageExtensionOptions, CustomImageExtensionStorage>;
+export type CustomImageExtensionType = Node<ImageOptions, CustomImageExtensionStorage>;

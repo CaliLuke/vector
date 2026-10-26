@@ -4,71 +4,47 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { PAST_DURATION_FILTER_OPTIONS } from "@plane/constants";
-import { CloseIcon } from "@plane/propel/icons";
 import type { TInboxIssueFilterDateKeys } from "@plane/types";
 // helpers
-import { Tag } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // constants
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
+import { InboxAppliedFilterGroup, toggleAppliedFilterValue } from "./shared";
 
-type InboxIssueAppliedFiltersDate = {
+type TInboxIssueAppliedFiltersDateProps = {
   filterKey: TInboxIssueFilterDateKeys;
   label: string;
 };
 
-export const InboxIssueAppliedFiltersDate = observer(function InboxIssueAppliedFiltersDate(
-  props: InboxIssueAppliedFiltersDate
+function getDateOptionDetail(date: string) {
+  const currentDate = PAST_DURATION_FILTER_OPTIONS.find((option) => option.value === date);
+  if (currentDate) return currentDate;
+  const dateSplit = date.split(";");
+  return {
+    name: `${dateSplit[1].charAt(0).toUpperCase() + dateSplit[1].slice(1)} ${renderFormattedDate(dateSplit[0])}`,
+    value: date,
+  };
+}
+
+export const InboxIssueAppliedFiltersDate = function InboxIssueAppliedFiltersDate(
+  props: TInboxIssueAppliedFiltersDateProps
 ) {
   const { filterKey, label } = props;
   // hooks
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
+  const { filters, setFilter } = useIntakePreferences();
   // derived values
-  const filteredValues = inboxFilters?.[filterKey] || [];
-  const currentOptionDetail = (date: string) => {
-    const currentDate = PAST_DURATION_FILTER_OPTIONS.find((d) => d.value === date);
-    if (currentDate) return currentDate;
-    const dateSplit = date.split(";");
+  const filteredValues = filters?.[filterKey] || [];
+  const clearFilter = () => setFilter(filterKey, undefined);
+  const options = filteredValues.map((value) => {
+    const optionDetail = getDateOptionDetail(value);
     return {
-      name: `${dateSplit[1].charAt(0).toUpperCase() + dateSplit[1].slice(1)} ${renderFormattedDate(dateSplit[0])}`,
-      value: date,
+      key: value,
+      label: optionDetail.name,
+      onRemove: () => setFilter(filterKey, toggleAppliedFilterValue(filteredValues, optionDetail.value)),
     };
-  };
+  });
 
-  const handleFilterValue = (value: string): string[] =>
-    filteredValues?.includes(value) ? filteredValues.filter((v) => v !== value) : [...filteredValues, value];
-
-  const clearFilter = () => handleInboxIssueFilters(filterKey, undefined);
-
-  if (filteredValues.length === 0) return <></>;
-  return (
-    <Tag>
-      <div className="text-11 text-secondary">{label}</div>
-      {filteredValues.map((value) => {
-        const optionDetail = currentOptionDetail(value);
-        if (!optionDetail) return <></>;
-        return (
-          <div key={value} className="relative flex items-center gap-1 rounded-sm bg-layer-1 p-1 text-11">
-            <div className="truncate text-11">{optionDetail?.name}</div>
-            <div
-              className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-              onClick={() => handleInboxIssueFilters(filterKey, handleFilterValue(optionDetail?.value))}
-            >
-              <CloseIcon className={`h-3 w-3`} />
-            </div>
-          </div>
-        );
-      })}
-
-      <div
-        className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-        onClick={clearFilter}
-      >
-        <CloseIcon className={`h-3 w-3`} />
-      </div>
-    </Tag>
-  );
-});
+  return <InboxAppliedFilterGroup label={label} options={options} onClearAll={clearFilter} />;
+};

@@ -8,7 +8,7 @@
 import { MAX_FILE_SIZE } from "@plane/constants";
 import type { TFileHandler } from "@plane/editor";
 import { SitesFileService } from "@plane/services";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // services
 const sitesFileService = new SitesFileService();
 

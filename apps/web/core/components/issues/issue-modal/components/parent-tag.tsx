@@ -4,41 +4,37 @@
  * See the LICENSE file for details.
  */
 
+import type { IssueDraftForm } from "../form-state";
 import React from "react";
-import { observer } from "mobx-react";
-import type { Control } from "react-hook-form";
-import { Controller } from "react-hook-form";
+
 import { ETabIndices } from "@plane/constants";
 import { CloseIcon } from "@plane/propel/icons";
 // plane imports
 // types
-import type { ISearchIssueResponse, TIssue } from "@plane/types";
+import type { ISearchIssueResponse } from "@plane/types";
 // helpers
-import { getTabIndex } from "@plane/utils";
+import { getTabIndex } from "@plane/utils/tab-indices";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 
 type TIssueParentTagProps = {
-  control: Control<TIssue>;
+  form: IssueDraftForm;
   selectedParentIssue: ISearchIssueResponse;
-  handleFormChange: () => void;
   setSelectedParentIssue: (issue: ISearchIssueResponse | null) => void;
 };
 
-export const IssueParentTag = observer(function IssueParentTag(props: TIssueParentTagProps) {
-  const { control, selectedParentIssue, handleFormChange, setSelectedParentIssue } = props;
+export const IssueParentTag = function IssueParentTag(props: TIssueParentTagProps) {
+  const { form, selectedParentIssue, setSelectedParentIssue } = props;
   // store hooks
   const { isMobile } = usePlatformOS();
 
   const { getIndex } = getTabIndex(ETabIndices.ISSUE_FORM, isMobile);
 
   return (
-    <Controller
-      control={control}
-      name="parent_id"
-      render={({ field: { onChange } }) => (
+    <form.Field name="parent_id">
+      {({ handleChange: onChange }) => (
         <div className="flex w-min items-center gap-2 rounded-sm bg-surface-2 p-2 text-caption-sm-regular whitespace-nowrap">
           <div className="flex items-center gap-2">
             <span
@@ -64,7 +60,6 @@ export const IssueParentTag = observer(function IssueParentTag(props: TIssuePare
               className="grid place-items-center"
               onClick={() => {
                 onChange(null);
-                handleFormChange();
                 setSelectedParentIssue(null);
               }}
               tabIndex={getIndex("remove_parent")}
@@ -74,6 +69,6 @@ export const IssueParentTag = observer(function IssueParentTag(props: TIssuePare
           </div>
         </div>
       )}
-    />
+    </form.Field>
   );
-});
+};

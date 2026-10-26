@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -10,7 +11,8 @@ const packageStubs = {
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "@plane/propel/icons": `export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null;`,
   "@plane/propel/toast": `export const TOAST_TYPE = { SUCCESS: "success" }; export const setToast = (...args) => globalThis.__identifierToastCalls.push(args);`,
-  "@plane/utils": `export const cn = (...values) => values.filter(value => typeof value === "string").join(" ");`,
+  "@plane/utils/common":
+    'export const cn = (...values) => values.filter(value => typeof value === "string").join(" ");',
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
 };
 globalThis.__identifierToastCalls = toastCalls;

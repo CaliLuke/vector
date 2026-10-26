@@ -18,7 +18,7 @@ import (
 
 type workspaceFavoritesRepository interface {
 	Authorized(context.Context, uuid.UUID, string) (bool, error)
-	List(context.Context, uuid.UUID, string) (json.RawMessage, error)
+	List(context.Context, uuid.UUID, string, bool) (json.RawMessage, error)
 	Group(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error)
 	Create(context.Context, uuid.UUID, string, store.CreateInput) (json.RawMessage, error)
 	Update(context.Context, uuid.UUID, string, uuid.UUID, store.UpdateInput) (json.RawMessage, error)
@@ -75,7 +75,8 @@ func (s *workspaceFavoritesService) List(ctx context.Context, payload *api.ListP
 	if err != nil {
 		return nil, err
 	}
-	body, err := s.repository.List(ctx, userID, payload.Slug)
+	includeAll := payload.All != nil && *payload.All
+	body, err := s.repository.List(ctx, userID, payload.Slug, includeAll)
 	if err != nil {
 		return nil, workspaceFavoriteInternalError()
 	}
@@ -92,6 +93,10 @@ func (s *workspaceFavoritesService) Create(ctx context.Context, payload *api.Cre
 		return nil, validation
 	}
 	body, err := s.repository.Create(ctx, userID, payload.Slug, input)
+	if errors.Is(err, store.ErrInvalidScope) {
+		message := "Favorite target is not accessible."
+		return nil, &api.WorkspaceFavoriteInvalid{Message: &message}
+	}
 	if errors.Is(err, store.ErrAlreadyExists) {
 		message := "Favorite already exists"
 		return nil, &api.WorkspaceFavoriteInvalid{Message: &message}

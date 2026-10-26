@@ -6,40 +6,51 @@
 
 import { useParams, useLocation } from "@tanstack/react-router";
 import { useCallback, useEffect } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { TProjectAppliedDisplayFilterKeys, TProjectFilters } from "@plane/types";
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
+import { orderProjects, shouldFilterProject } from "@plane/utils/project";
 // components
 import { PageHead } from "@/components/core/page-title";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectFilter } from "@/hooks/store/use-project-filter";
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectListFilters } from "@/hooks/use-project-list-filters";
 // local imports
 import { ProjectAppliedFiltersList } from "./applied-filters";
 import { ProjectCardList } from "./card-list";
 
-export const ProjectRoot = observer(function ProjectRoot() {
-  const { currentWorkspace } = useWorkspace();
+export function ProjectRoot() {
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const pathname = useLocation({ select: (location) => location.pathname });
   const { t } = useTranslation();
-  // store
-  const { totalProjectIds, filteredProjectIds } = useProject();
+  const catalogue = useWorkspaceProjectDetails(workspaceSlug);
   const {
-    currentWorkspaceFilters,
-    currentWorkspaceAppliedDisplayFilters,
+    displayFilters,
+    filters: currentWorkspaceFilters,
+    searchQuery,
+    appliedDisplayFilters: currentWorkspaceAppliedDisplayFilters,
     clearAllFilters,
     clearAllAppliedDisplayFilters,
     updateFilters,
     updateDisplayFilters,
-  } = useProjectFilter();
+  } = useProjectListFilters();
+  const workspaceProjects = catalogue.projects?.filter((project) => project.workspace === currentWorkspace?.id) ?? [];
+  const filteredProjects = orderProjects(
+    workspaceProjects.filter(
+      (project) =>
+        shouldFilterProject(project, displayFilters, currentWorkspaceFilters) &&
+        (project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          project.identifier.toLowerCase().includes(searchQuery.toLowerCase()))
+    ),
+    displayFilters.order_by
+  );
   // derived values
   const pageTitle = currentWorkspace?.name
-    ? `${currentWorkspace?.name} - ${t("workspace_projects.label", { count: 2 })}`
+    ? `${currentWorkspace.name} - ${t("workspace_projects.label", { count: 2 })}`
     : undefined;
 
   const isArchived = pathname.includes("/archives");
@@ -49,35 +60,32 @@ export const ProjectRoot = observer(function ProjectRoot() {
 
   const handleRemoveFilter = useCallback(
     (key: keyof TProjectFilters, value: string | null) => {
-      if (!workspaceSlug) return;
       let newValues = currentWorkspaceFilters?.[key] ?? [];
 
       if (!value) newValues = [];
       else newValues = newValues.filter((val) => val !== value);
 
-      updateFilters(workspaceSlug.toString(), { [key]: newValues });
+      updateFilters({ [key]: newValues });
     },
-    [currentWorkspaceFilters, updateFilters, workspaceSlug]
+    [currentWorkspaceFilters, updateFilters]
   );
 
   const handleRemoveDisplayFilter = useCallback(
     (key: TProjectAppliedDisplayFilterKeys) => {
-      if (!workspaceSlug) return;
-      updateDisplayFilters(workspaceSlug.toString(), { [key]: false });
+      updateDisplayFilters({ [key]: false });
     },
-    [updateDisplayFilters, workspaceSlug]
+    [updateDisplayFilters]
   );
 
   const handleClearAllFilters = useCallback(() => {
-    if (!workspaceSlug) return;
-    clearAllFilters(workspaceSlug.toString());
-    clearAllAppliedDisplayFilters(workspaceSlug.toString());
-    if (isArchived) updateDisplayFilters(workspaceSlug.toString(), { archived_projects: true });
-  }, [clearAllFilters, clearAllAppliedDisplayFilters, workspaceSlug, isArchived, updateDisplayFilters]);
+    clearAllFilters();
+    clearAllAppliedDisplayFilters();
+    if (isArchived) updateDisplayFilters({ archived_projects: true });
+  }, [clearAllFilters, clearAllAppliedDisplayFilters, isArchived, updateDisplayFilters]);
 
   useEffect(() => {
-    updateDisplayFilters(workspaceSlug.toString(), { archived_projects: isArchived });
-  }, [isArchived, updateDisplayFilters, workspaceSlug]);
+    updateDisplayFilters({ archived_projects: isArchived });
+  }, [isArchived, updateDisplayFilters]);
 
   return (
     <>
@@ -90,13 +98,22 @@ export const ProjectRoot = observer(function ProjectRoot() {
             handleClearAllFilters={handleClearAllFilters}
             handleRemoveFilter={handleRemoveFilter}
             handleRemoveDisplayFilter={handleRemoveDisplayFilter}
-            filteredProjects={filteredProjectIds?.length ?? 0}
-            totalProjects={totalProjectIds?.length ?? 0}
+            filteredProjects={filteredProjects.length}
+            totalProjects={workspaceProjects.length}
             alwaysAllowEditing
           />
         )}
-        <ProjectCardList />
+        <ProjectCardList
+          projects={filteredProjects}
+          workspaceProjectCount={workspaceProjects.filter((project) => !project.archived_at).length}
+          archivedOnly={Boolean(displayFilters.archived_projects)}
+          hasFilters={calculateTotalFilters(currentWorkspaceFilters ?? {}) > 0}
+          isPending={catalogue.isPending}
+          isError={catalogue.isError}
+          accessDenied={catalogue.accessDenied}
+          retry={catalogue.retryAccess}
+        />
       </div>
     </>
   );
-});
+}

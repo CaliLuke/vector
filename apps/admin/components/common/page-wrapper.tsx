@@ -6,7 +6,7 @@
 
 import type { ReactNode } from "react";
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TPageWrapperProps = {
   children: ReactNode;

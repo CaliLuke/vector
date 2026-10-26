@@ -6,103 +6,160 @@
 
 import { useRouterState, Navigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
 // helpers
 import { EPageTypes } from "@/helpers/authentication.helper";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser, useUserProfile, useUserSettings } from "@/hooks/store/user";
-
-type TPageType = EPageTypes;
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
+import { useCurrentUserSettings } from "@/hooks/use-current-user-settings";
+import { useWorkspaces } from "@/hooks/use-workspaces";
+import { getWorkspaceDestination } from "@/queries/workspaces";
+import { Button } from "@plane/propel/button";
+import type { IWorkspace, IUserSettings, TUserProfile } from "@plane/types";
+import type { IUser } from "@plane/types";
 
 type TAuthenticationWrapper = {
   children: ReactNode;
-  pageType?: TPageType;
+  pageType?: EPageTypes;
 };
 
-const isValidURL = (url: string): boolean => {
-  return url.startsWith("/") && !url.startsWith("//") && !url.includes("\\");
+type TRedirect = { to: string; search?: { next_path: string }; replace?: boolean };
+
+type TAccountQueryGateProps = {
+  isPending: boolean;
+  isError: boolean;
+  onRetry: () => void;
+  children: ReactNode;
 };
 
-export const AuthenticationWrapper = observer(function AuthenticationWrapper(props: TAuthenticationWrapper) {
-  // Keep redirects tied to the rendered page while the next route is loading.
-  const location = useRouterState({ select: (state) => state.resolvedLocation ?? state.location });
-  const currentHref = location.href;
-  const searchParams = new URLSearchParams(location.searchStr);
-  const nextPath = searchParams.get("next_path");
-  // props
-  const { children, pageType = EPageTypes.AUTHENTICATED } = props;
-  // hooks
-  const { isLoading: isUserLoading, data: currentUser, fetchCurrentUser } = useUser();
-  const { data: currentUserProfile } = useUserProfile();
-  const { data: currentUserSettings } = useUserSettings();
-  const { loader: workspacesLoader, workspaces } = useWorkspace();
-
-  const { isLoading: isUserSWRLoading } = useSWR("USER_INFORMATION", async () => await fetchCurrentUser(), {
-    revalidateOnFocus: false,
-    shouldRetryOnError: false,
-  });
-
-  const isUserOnboard =
-    currentUserProfile?.is_onboarded ||
-    (currentUserProfile?.onboarding_step?.profile_complete &&
-      currentUserProfile?.onboarding_step?.workspace_create &&
-      currentUserProfile?.onboarding_step?.workspace_invite &&
-      currentUserProfile?.onboarding_step?.workspace_join) ||
-    false;
-
-  const getWorkspaceRedirectionUrl = (): string => {
-    let redirectionRoute = "/create-workspace";
-
-    // validating the nextPath from the router query
-    if (nextPath && isValidURL(nextPath.toString())) {
-      redirectionRoute = nextPath.toString();
-      return redirectionRoute;
-    }
-
-    // validate the last and fallback workspace_slug
-    const currentWorkspaceSlug =
-      currentUserSettings?.workspace?.last_workspace_slug || currentUserSettings?.workspace?.fallback_workspace_slug;
-
-    // validate the current workspace_slug is available in the user's workspace list
-    const isCurrentWorkspaceValid = Object.values(workspaces || {}).findIndex(
-      (workspace) => workspace.slug === currentWorkspaceSlug
-    );
-
-    if (isCurrentWorkspaceValid >= 0) redirectionRoute = `/${currentWorkspaceSlug}`;
-
-    return redirectionRoute;
-  };
-
-  if ((isUserSWRLoading || isUserLoading || workspacesLoader) && !currentUser?.id)
+function AccountQueryGate({ isPending, isError, onRetry, children }: TAccountQueryGateProps) {
+  if (isPending)
     return (
       <div className="relative flex h-screen w-full items-center justify-center">
         <LogoSpinner />
       </div>
     );
 
-  if (pageType === EPageTypes.PUBLIC) return <>{children}</>;
-
-  if (!currentUser?.id) {
-    if (pageType === EPageTypes.NON_AUTHENTICATED) return <>{children}</>;
-    return <Navigate to="/" search={{ next_path: currentHref }} />;
-  }
-
-  const canEnterWorkspace = Boolean(currentUserProfile?.id && isUserOnboard);
-  if (pageType === EPageTypes.AUTHENTICATED) return canEnterWorkspace ? <>{children}</> : <Navigate to="/onboarding" />;
-
-  if (pageType === EPageTypes.NON_AUTHENTICATED)
-    return <Navigate to={canEnterWorkspace ? getWorkspaceRedirectionUrl() : "/onboarding"} />;
-
-  if (pageType === EPageTypes.ONBOARDING && canEnterWorkspace)
-    return <Navigate to={getWorkspaceRedirectionUrl()} replace />;
-
-  if (pageType === EPageTypes.SET_PASSWORD && !currentUser.is_password_autoset && canEnterWorkspace)
-    return <Navigate to={getWorkspaceRedirectionUrl()} />;
+  if (isError)
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-4" role="alert">
+        <p>Unable to load your account. Please try again.</p>
+        <Button onClick={onRetry}>Retry</Button>
+      </div>
+    );
 
   return <>{children}</>;
-});
+}
+
+function isValidURL(url: string): boolean {
+  return url.startsWith("/") && !url.startsWith("//") && !url.includes("\\");
+}
+
+function hasCompletedOnboarding(profile: TUserProfile | undefined): boolean {
+  const steps = profile?.onboarding_step;
+  return Boolean(
+    profile?.is_onboarded ||
+    (steps && steps.profile_complete && steps.workspace_create && steps.workspace_invite && steps.workspace_join)
+  );
+}
+
+function getAuthenticationRedirect(
+  pageType: EPageTypes,
+  user: IUser | null | undefined,
+  profile: TUserProfile | undefined,
+  currentHref: string,
+  nextPath: string | null,
+  settings: IUserSettings | undefined,
+  workspaces: IWorkspace[]
+): TRedirect | undefined {
+  if (pageType === EPageTypes.PUBLIC) return undefined;
+
+  if (!user?.id)
+    return pageType === EPageTypes.NON_AUTHENTICATED ? undefined : { to: "/", search: { next_path: currentHref } };
+
+  return getSignedInRedirect(pageType, user, profile, nextPath, settings, workspaces);
+}
+
+function getSignedInRedirect(
+  pageType: EPageTypes,
+  user: IUser,
+  profile: TUserProfile | undefined,
+  nextPath: string | null,
+  settings: IUserSettings | undefined,
+  workspaces: IWorkspace[]
+): TRedirect | undefined {
+  const canEnterWorkspace = Boolean(profile?.id && hasCompletedOnboarding(profile));
+  if (pageType === EPageTypes.AUTHENTICATED) return canEnterWorkspace ? undefined : { to: "/onboarding" };
+
+  const destination = canEnterWorkspace
+    ? nextPath && isValidURL(nextPath)
+      ? nextPath
+      : getWorkspaceDestination(workspaces, settings)
+    : "/onboarding";
+  if (pageType === EPageTypes.NON_AUTHENTICATED) return { to: destination };
+  if (pageType === EPageTypes.ONBOARDING && canEnterWorkspace) return { to: destination, replace: true };
+  if (pageType === EPageTypes.SET_PASSWORD && !user.is_password_autoset && canEnterWorkspace)
+    return { to: destination };
+  return undefined;
+}
+
+type TAuthenticationContentProps = {
+  children: ReactNode;
+  pageType: EPageTypes;
+  user: IUser | null | undefined;
+  profile: TUserProfile | undefined;
+  currentHref: string;
+  nextPath: string | null;
+  settings: IUserSettings | undefined;
+  workspaces: IWorkspace[];
+};
+
+function AuthenticationContent(props: TAuthenticationContentProps) {
+  const redirect = getAuthenticationRedirect(
+    props.pageType,
+    props.user,
+    props.profile,
+    props.currentHref,
+    props.nextPath,
+    props.settings,
+    props.workspaces
+  );
+  if (redirect?.search) return <Navigate to="/" search={redirect.search} />;
+  if (redirect) return <Navigate to={redirect.to} replace={redirect.replace} />;
+  return <>{props.children}</>;
+}
+
+export function AuthenticationWrapper(props: TAuthenticationWrapper) {
+  const location = useRouterState({ select: (state) => state.resolvedLocation ?? state.location });
+  const searchParams = new URLSearchParams(location.searchStr);
+  const { children, pageType = EPageTypes.AUTHENTICATED } = props;
+  const userQuery = useCurrentUser();
+  const profileQuery = useCurrentUserProfile();
+  const settingsQuery = useCurrentUserSettings();
+  const workspacesQuery = useWorkspaces();
+  const currentUser = userQuery.data;
+  const accountQueries = currentUser?.id ? [userQuery, profileQuery, settingsQuery, workspacesQuery] : [userQuery];
+
+  return (
+    <AccountQueryGate
+      isPending={accountQueries.some((query) => query.isPending)}
+      isError={accountQueries.some((query) => query.isError)}
+      onRetry={() => accountQueries.filter((query) => query.isError).forEach((query) => void query.refetch())}
+    >
+      <AuthenticationContent
+        pageType={pageType}
+        user={currentUser}
+        profile={profileQuery.data}
+        currentHref={location.href}
+        nextPath={searchParams.get("next_path")}
+        settings={settingsQuery.data}
+        workspaces={workspacesQuery.data ?? []}
+      >
+        {children}
+      </AuthenticationContent>
+    </AccountQueryGate>
+  );
+}

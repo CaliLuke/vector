@@ -5,7 +5,6 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { ArchiveIcon, CycleIcon, ModuleIcon, WorkItemsIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -15,8 +14,8 @@ import { Breadcrumbs, Header } from "@plane/ui";
 // components
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useIssueListCount } from "@/hooks/use-issue-list-count";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web imports
@@ -50,32 +49,29 @@ const PROJECT_ARCHIVES_BREADCRUMB_LIST: {
   },
 };
 
-export const ProjectArchivesHeader = observer(function ProjectArchivesHeader(props: TProps) {
+export function ProjectArchivesHeader(props: TProps) {
   const { activeTab } = props;
   // router
   const router = useRouter();
-  const { workspaceSlug, projectId } = useParams({
-    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId",
-  });
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const {
-    issues: { getGroupIssueCount },
-  } = useIssues(EIssuesStoreType.ARCHIVED);
-  const { loader } = useProject();
+  const { count: issueCount } = useIssueListCount(EIssuesStoreType.ARCHIVED);
+  const routeProjectQuery = useRouteProject();
+  const loader = routeProjectQuery.isPending;
   // hooks
   const { isMobile } = usePlatformOS();
 
-  const issueCount = getGroupIssueCount(undefined, undefined, false);
-
   const activeTabBreadcrumbDetail =
     PROJECT_ARCHIVES_BREADCRUMB_LIST[activeTab as keyof typeof PROJECT_ARCHIVES_BREADCRUMB_LIST];
+
+  if (!workspaceSlug || !projectId) return null;
 
   return (
     <Header>
       <Header.LeftItem>
         <div className="flex items-center gap-2.5">
-          <Breadcrumbs onBack={router.history.back} isLoading={loader === "init-loader"}>
-            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+          <Breadcrumbs onBack={router.history.back} isLoading={loader}>
+            <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
             <Breadcrumbs.Item
               component={
                 <BreadcrumbLink
@@ -111,4 +107,4 @@ export const ProjectArchivesHeader = observer(function ProjectArchivesHeader(pro
       </Header.LeftItem>
     </Header>
   );
-});
+}

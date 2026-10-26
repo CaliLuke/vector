@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
+import type { TPage } from "@plane/types";
+
 import { useRouter, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 import { ArrowRightCircle } from "lucide-react";
 // plane imports
@@ -18,10 +19,7 @@ import { useQueryParams } from "@/hooks/use-query-params";
 // plane web components
 import type { TPageNavigationPaneTab } from "@/components/pages/navigation-pane/tab-panels";
 // store
-import type { EPageStoreType } from "@/hooks/store";
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
-import type { TPageRootHandlers } from "../editor/page-root";
 import { PageNavigationPaneTabPanelsRoot } from "./tab-panels/root";
 import { PageNavigationPaneTabsList } from "./tabs-list";
 import type { INavigationPaneExtension } from "./types/extensions";
@@ -35,15 +33,13 @@ import {
 type Props = {
   handleClose: () => void;
   isNavigationPaneOpen: boolean;
-  page: TPageInstance;
-  versionHistory: Pick<TPageRootHandlers, "fetchAllVersions" | "fetchVersionDetails">;
+  page: TPage;
   // Generic extension system for additional navigation pane content
   extensions?: INavigationPaneExtension[];
-  storeType: EPageStoreType;
 };
 
-export const PageNavigationPaneRoot = observer(function PageNavigationPaneRoot(props: Props) {
-  const { handleClose, isNavigationPaneOpen, page, versionHistory, extensions = [], storeType } = props;
+export function PageNavigationPaneRoot(props: Props) {
+  const { handleClose, isNavigationPaneOpen, page, extensions = [] } = props;
 
   // navigation
   const router = useRouter();
@@ -109,14 +105,14 @@ export const PageNavigationPaneRoot = observer(function PageNavigationPaneRoot(p
 
       <div className="animate-slide-in-right flex flex-1 flex-col overflow-hidden">
         {ActiveExtension ? (
-          <ActiveExtension.component page={page} extensionData={ActiveExtension.data} storeType={storeType} />
+          <ActiveExtension.component page={page} extensionData={ActiveExtension.data} />
         ) : showNavigationTabs ? (
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <PageNavigationPaneTabsList />
-            <PageNavigationPaneTabPanelsRoot page={page} versionHistory={versionHistory} />
+            <PageNavigationPaneTabPanelsRoot page={page} />
           </Tabs>
         ) : null}
       </div>
     </aside>
   );
-});
+}

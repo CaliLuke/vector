@@ -13,7 +13,7 @@ import { ChevronRightIcon } from "@plane/propel/icons";
 // plane ui
 import { Tooltip } from "@plane/propel/tooltip";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { RichTextEditor } from "@/components/editor/rich-text";
 // plane web constants
 import { AI_EDITOR_TASKS, LOADING_TEXTS } from "@plane/constants";

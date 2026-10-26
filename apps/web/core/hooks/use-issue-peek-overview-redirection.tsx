@@ -5,36 +5,37 @@
  */
 
 // types
-import { useRouter } from "@tanstack/react-router";
+import { useParams, useRouter } from "@tanstack/react-router";
 import type { TIssue } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // helpers
-import { generateWorkItemLink } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
-import { useIssueDetail } from "./store/use-issue-detail";
-import { useProject } from "./store/use-project";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkspaceProjectDetails } from "./use-projects";
 
 const useIssuePeekOverviewRedirection = (isEpic: boolean = false) => {
   // router
   const router = useRouter();
+  const { workspaceSlug } = useParams({ strict: false });
+  const projects = useWorkspaceProjectDetails(workspaceSlug);
   //   store hooks
-  const { getIsIssuePeeked, setPeekIssue } = useIssueDetail(
+  const { getIsIssuePeeked, setPeekIssue } = useIssueDetailUiState(
     isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
   );
-  const { getProjectIdentifierById } = useProject();
 
   const handleRedirection = (
-    workspaceSlug: string | undefined,
+    targetWorkspaceSlug: string | undefined,
     issue: TIssue | undefined,
     isMobile = false,
     nestingLevel?: number
   ) => {
     if (!issue) return;
     const { project_id, id, archived_at, tempId } = issue;
-    const projectIdentifier = getProjectIdentifierById(issue?.project_id);
+    const projectIdentifier = projects.projects?.find((project) => project.id === project_id)?.identifier;
 
     const workItemLink = generateWorkItemLink({
-      workspaceSlug,
+      workspaceSlug: targetWorkspaceSlug,
       projectId: project_id,
       issueId: id,
       projectIdentifier,
@@ -42,11 +43,17 @@ const useIssuePeekOverviewRedirection = (isEpic: boolean = false) => {
       isEpic,
       isArchived: !!archived_at,
     });
-    if (workspaceSlug && project_id && id && !getIsIssuePeeked(id) && !tempId) {
+    if (targetWorkspaceSlug && project_id && id && !getIsIssuePeeked(id) && !tempId) {
       if (isMobile) {
         void router.navigate({ href: workItemLink });
       } else {
-        setPeekIssue({ workspaceSlug, projectId: project_id, issueId: id, nestingLevel, isArchived: !!archived_at });
+        setPeekIssue({
+          workspaceSlug: targetWorkspaceSlug,
+          projectId: project_id,
+          issueId: id,
+          nestingLevel,
+          isArchived: !!archived_at,
+        });
       }
     }
   };

@@ -5,7 +5,7 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane imports
 import { GROUP_CHOICES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -28,9 +28,10 @@ function ProfileOverviewPage(): React.JSX.Element | null {
   const { workspaceSlug, userId } = Route.useParams();
 
   const { t } = useTranslation();
-  const { data: userProfile } = useSWR(USER_PROFILE_DATA(workspaceSlug, userId), () =>
-    userService.getUserProfileData(workspaceSlug, userId)
-  );
+  const { data: userProfile } = useQuery({
+    queryKey: USER_PROFILE_DATA(workspaceSlug, userId),
+    queryFn: () => userService.getUserProfileData(workspaceSlug, userId),
+  });
 
   const stateDistribution: IUserStateDistribution[] = Object.keys(GROUP_CHOICES).map((key) => {
     const group = userProfile?.state_distribution.find((g) => g.state_group === key);

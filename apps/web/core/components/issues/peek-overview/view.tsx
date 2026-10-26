@@ -4,20 +4,22 @@
  * See the LICENSE file for details.
  */
 
+import { workItemServiceType } from "@/helpers/work-item-service-type";
 import { useRef, useState } from "react";
-import { observer } from "mobx-react";
+
 import { createPortal } from "react-dom";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import type { TNameDescriptionLoader } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 import useKeypress from "@/hooks/use-keypress";
 import usePeekOverviewOutsideClickDetector from "@/hooks/use-peek-overview-outside-click";
 // local imports
 import type { TIssueOperations } from "../issue-detail";
+import { useTextSaveStatus } from "../use-text-save-status";
 import { IssueActivity } from "../issue-detail/issue-activity";
 import { IssueDetailWidgets } from "../issue-detail-widgets";
 import { IssuePeekOverviewError } from "./error";
@@ -40,7 +42,9 @@ interface IIssueView {
   issueOperations: TIssueOperations;
 }
 
-export const IssueView = observer(function IssueView(props: IIssueView) {
+type TLocalPeekModal = "delete" | "archive" | "duplicate" | "edit";
+
+export const IssueView = function IssueView(props: IIssueView) {
   const {
     workspaceSlug,
     projectId,
@@ -55,35 +59,32 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
   } = props;
   // states
   const [peekMode, setPeekMode] = useState<TPeekModes>("side-peek");
-  const [isSubmitting, setIsSubmitting] = useState<TNameDescriptionLoader>("saved");
-  const [isDeleteIssueModalOpen, setIsDeleteIssueModalOpen] = useState(false);
-  const [isArchiveIssueModalOpen, setIsArchiveIssueModalOpen] = useState(false);
-  const [isDuplicateIssueModalOpen, setIsDuplicateIssueModalOpen] = useState(false);
-  const [isEditIssueModalOpen, setIsEditIssueModalOpen] = useState(false);
+  const {
+    status: isSubmitting,
+    setTitleStatus,
+    setDescriptionStatus,
+  } = useTextSaveStatus(`${workspaceSlug}/${projectId}/${issueId}`);
+  const [openModal, setOpenModal] = useState<TLocalPeekModal | undefined>();
   // ref
   const issuePeekOverviewRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<EditorRefApi>(null);
   // store hooks
-  const {
-    setPeekIssue,
-    isAnyModalOpen,
-    issue: { getIssueById },
-  } = useIssueDetail();
-  const { isAnyModalOpen: isAnyEpicModalOpen } = useIssueDetail(EIssueServiceType.EPICS);
-  const issue = getIssueById(issueId);
+  const { setPeekIssue, isAnyModalOpen } = useIssueDetailUiState();
+  const { isAnyModalOpen: isAnyEpicModalOpen } = useIssueDetailUiState(EIssueServiceType.EPICS);
+  const record = useWorkItemDetailRecord();
+  const issue = issueId === record?.issueId ? record.issue : undefined;
   // remove peek id
   const removeRoutePeekId = () => {
     setPeekIssue(undefined);
     if (embedIssue && embedRemoveCurrentNotification) embedRemoveCurrentNotification();
   };
 
-  const toggleDeleteIssueModal = (value: boolean) => setIsDeleteIssueModalOpen(value);
-  const toggleArchiveIssueModal = (value: boolean) => setIsArchiveIssueModalOpen(value);
-  const toggleDuplicateIssueModal = (value: boolean) => setIsDuplicateIssueModalOpen(value);
-  const toggleEditIssueModal = (value: boolean) => setIsEditIssueModalOpen(value);
+  const toggleDeleteIssueModal = createModalToggle(setOpenModal, "delete");
+  const toggleArchiveIssueModal = createModalToggle(setOpenModal, "archive");
+  const toggleDuplicateIssueModal = createModalToggle(setOpenModal, "duplicate");
+  const toggleEditIssueModal = createModalToggle(setOpenModal, "edit");
 
-  const isAnyLocalModalOpen =
-    isDeleteIssueModalOpen || isArchiveIssueModalOpen || isDuplicateIssueModalOpen || isEditIssueModalOpen;
+  const isAnyLocalModalOpen = openModal !== undefined;
 
   usePeekOverviewOutsideClickDetector(
     issuePeekOverviewRef,
@@ -103,7 +104,14 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
     const editorImageFullScreenModalElement = document.querySelector(".editor-image-full-screen-modal");
     const dropdownElement = document.activeElement?.tagName === "INPUT";
     const isAnyDropbarOpen = editorRef.current?.isAnyDropbarOpen();
-    if (!isAnyModalOpen && !dropdownElement && !isAnyDropbarOpen && !editorImageFullScreenModalElement) {
+    if (
+      !isAnyModalOpen &&
+      !isAnyEpicModalOpen &&
+      !isAnyLocalModalOpen &&
+      !dropdownElement &&
+      !isAnyDropbarOpen &&
+      !editorImageFullScreenModalElement
+    ) {
       removeRoutePeekId();
       const issueElement = document.getElementById(`issue-${issueId}`);
       if (issueElement) issueElement?.focus();
@@ -132,6 +140,21 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
   const shouldUsePortal = !embedIssue;
 
   const portalContainer = document.getElementById("full-screen-portal") as HTMLElement;
+
+  const itemDetails = (
+    <PeekOverviewIssueDetails
+      editorRef={editorRef}
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      issueId={issueId}
+      issueOperations={issueOperations}
+      disabled={disabled}
+      isArchived={is_archived}
+      onEditorOpenChange={toggleEditIssueModal}
+      setTitleStatus={setTitleStatus}
+      setDescriptionStatus={setDescriptionStatus}
+    />
+  );
 
   const content = (
     <div className="w-full text-body-sm-regular">
@@ -168,6 +191,8 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                 workspaceSlug={workspaceSlug}
                 projectId={projectId}
                 isSubmitting={isSubmitting}
+                removeIssue={() => issueOperations.remove(workspaceSlug, projectId, issueId)}
+                archiveIssue={() => issueOperations.archive?.(workspaceSlug, projectId, issueId) ?? Promise.resolve()}
                 disabled={disabled}
                 embedIssue={embedIssue}
               />
@@ -175,17 +200,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
               <div className="vertical-scrollbar relative scrollbar-md h-full w-full overflow-hidden overflow-y-auto">
                 {["side-peek", "modal"].includes(peekMode) ? (
                   <div className="relative flex flex-col gap-3 space-y-3 px-8 py-5">
-                    <PeekOverviewIssueDetails
-                      editorRef={editorRef}
-                      workspaceSlug={workspaceSlug}
-                      projectId={projectId}
-                      issueId={issueId}
-                      issueOperations={issueOperations}
-                      disabled={disabled}
-                      isArchived={is_archived}
-                      isSubmitting={isSubmitting}
-                      setIsSubmitting={(value) => setIsSubmitting(value)}
-                    />
+                    {itemDetails}
 
                     <div className="py-2">
                       <IssueDetailWidgets
@@ -206,6 +221,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                     />
 
                     <IssueActivity
+                      serviceType={workItemServiceType(issue)}
                       workspaceSlug={workspaceSlug}
                       projectId={projectId}
                       issueId={issueId}
@@ -216,17 +232,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                   <div className="vertical-scrollbar flex h-full w-full overflow-auto">
                     <div className="relative h-full w-full space-y-6 overflow-auto p-4 py-5">
                       <div className="space-y-3">
-                        <PeekOverviewIssueDetails
-                          editorRef={editorRef}
-                          workspaceSlug={workspaceSlug}
-                          projectId={projectId}
-                          issueId={issueId}
-                          issueOperations={issueOperations}
-                          disabled={disabled}
-                          isArchived={is_archived}
-                          isSubmitting={isSubmitting}
-                          setIsSubmitting={(value) => setIsSubmitting(value)}
-                        />
+                        {itemDetails}
 
                         <div className="py-2">
                           <IssueDetailWidgets
@@ -239,6 +245,7 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
                         </div>
 
                         <IssueActivity
+                          serviceType={workItemServiceType(issue)}
                           workspaceSlug={workspaceSlug}
                           projectId={projectId}
                           issueId={issueId}
@@ -270,4 +277,15 @@ export const IssueView = observer(function IssueView(props: IIssueView) {
   );
 
   return <>{shouldUsePortal && portalContainer ? createPortal(content, portalContainer) : content}</>;
-});
+};
+
+function createModalToggle(
+  setOpenModal: React.Dispatch<React.SetStateAction<TLocalPeekModal | undefined>>,
+  modal: TLocalPeekModal
+) {
+  return (isOpen: boolean) =>
+    setOpenModal((current) => {
+      if (isOpen) return modal;
+      return current === modal ? undefined : current;
+    });
+}

@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -262,7 +265,7 @@ SELECT COALESCE((
       FROM module_issues relation JOIN modules module ON module.id = relation.module_id
       WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL AND module.archived_at IS NULL), '[]'::json),
     'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id)
-      FROM issue_labels relation WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL), '[]'::json),
+      FROM issue_labels relation WHERE `+issuequery.LiveIssueLabelPredicate("issue", "relation")+`), '[]'::json),
     'assignee_ids', COALESCE((SELECT json_agg(DISTINCT relation.assignee_id)
       FROM issue_assignees relation JOIN project_members member ON member.project_id = issue.project_id
         AND member.member_id = relation.assignee_id AND member.is_active = TRUE
@@ -273,7 +276,7 @@ SELECT COALESCE((
     'target_date', issue.target_date,
     'sequence_id', issue.sequence_id,
     'project_id', issue.project_id,
-    'parent_id', issue.parent_id,
+    'parent_id', `+djangoapi.PublicParentSQL("issue")+`,
     'cycle_id', (SELECT relation.cycle_id FROM cycle_issues relation WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL LIMIT 1),
     'created_by', issue.created_by_id,
     'vote_items', (SELECT jsonb_agg(DISTINCT jsonb_build_object(

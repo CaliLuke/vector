@@ -4,25 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import type { Placement } from "@popperjs/core";
-import { observer } from "mobx-react";
-import { createPortal } from "react-dom";
-import { usePopper } from "react-popper";
 import { ArrowRight, CalendarDays } from "lucide-react";
-import { Combobox } from "@headlessui/react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // ui
 import type { DateRange, Matcher } from "@plane/propel/calendar";
 import { Calendar } from "@plane/propel/calendar";
+import { Popover } from "@plane/propel/popover";
 import { CloseIcon, DueDatePropertyIcon } from "@plane/propel/icons";
-import { ComboDropDown } from "@plane/ui";
-import { cn, renderFormattedDate } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // helpers
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
-import { useDropdown } from "@/hooks/use-dropdown";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
 // components
 import { DropdownButton } from "./buttons";
 import { MergedDateDisplay } from "./merged-date";
@@ -70,7 +66,7 @@ type Props = {
   renderInPortal?: boolean;
 };
 
-export const DateRangeDropdown = observer(function DateRangeDropdown(props: Props) {
+export function DateRangeDropdown(props: Props) {
   const { t } = useTranslation();
   const {
     buttonClassName,
@@ -107,58 +103,24 @@ export const DateRangeDropdown = observer(function DateRangeDropdown(props: Prop
   } = props;
   // states
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const [dateRange, setDateRange] = useState<DateRange>(value);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const dateRange = value;
   // hooks
-  const { data } = useUserProfile();
+  const { data } = useCurrentUserProfile();
   const startOfWeek = data?.start_of_the_week;
-  // refs
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  // popper-js refs
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-  // popper-js init
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: placement ?? "bottom-start",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
-  });
-
-  const onOpen = () => {
-    if (referenceElement) referenceElement.focus();
-  };
-
-  const { handleKeyDown, handleOnClick } = useDropdown({
-    dropdownRef,
-    isOpen,
-    onOpen,
-    setIsOpen,
-  });
-
   const disabledDays: Matcher[] = [];
   if (minDate) disabledDays.push({ before: minDate });
   if (maxDate) disabledDays.push({ after: maxDate });
 
   const clearDates = () => {
     const clearedRange = { from: undefined, to: undefined };
-    setDateRange(clearedRange);
     onSelect?.(clearedRange);
   };
 
   const hasDisplayedDates = dateRange.from || dateRange.to;
 
-  useEffect(() => {
-    setDateRange(value);
-  }, [value]);
-
   const comboButton = (
     <button
-      ref={setReferenceElement}
       type="button"
       className={cn(
         "clickable block h-full max-w-full outline-none",
@@ -168,7 +130,7 @@ export const DateRangeDropdown = observer(function DateRangeDropdown(props: Prop
         },
         buttonContainerClassName
       )}
-      onClick={handleOnClick}
+      tabIndex={tabIndex}
       disabled={disabled}
     >
       <DropdownButton
@@ -260,51 +222,35 @@ export const DateRangeDropdown = observer(function DateRangeDropdown(props: Prop
     </button>
   );
 
-  const comboOptions = (
-    <Combobox.Options modal={false} data-prevent-outside-click static>
-      <div
-        className="z-30 my-1 overflow-hidden rounded-md border-[0.5px] border-subtle-1 bg-surface-1"
-        ref={setPopperElement}
-        style={styles.popper}
-        {...attributes.popper}
-      >
-        <Calendar
-          className="rounded-md border border-subtle p-3 text-12"
-          captionLayout="dropdown"
-          selected={dateRange}
-          onSelect={(val: DateRange | undefined) => {
-            onSelect?.(val);
-          }}
-          mode="range"
-          disabled={disabledDays}
-          showOutsideDays
-          fixedWeeks
-          weekStartsOn={startOfWeek}
-          // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
-          autoFocus
-        />
-      </div>
-    </Combobox.Options>
-  );
-
-  const Options = renderInPortal ? createPortal(comboOptions, document.body) : comboOptions;
-
   return (
-    <ComboDropDown
-      as="div"
-      ref={dropdownRef}
-      tabIndex={tabIndex}
-      className={cn("h-full", className)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          if (!isOpen) handleKeyDown(e);
-        } else handleKeyDown(e);
-      }}
-      button={comboButton}
-      disabled={disabled}
-      renderByDefault={renderByDefault}
-    >
-      {isOpen && Options}
-    </ComboDropDown>
+    <div ref={containerRef} className={cn("h-full", className)}>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Popover.Button render={comboButton} disabled={disabled} />
+        <Popover.Panel
+          placement={placement ?? "bottom-start"}
+          sideOffset={4}
+          initialFocus={false}
+          containerRef={renderInPortal ? undefined : containerRef}
+          positionerClassName="z-30"
+          className="overflow-hidden rounded-md border-[0.5px] border-subtle-1 bg-surface-1"
+        >
+          <Calendar
+            className="rounded-md border border-subtle p-3 text-12"
+            captionLayout="dropdown"
+            selected={dateRange}
+            onSelect={(val: DateRange | undefined) => {
+              onSelect?.(val);
+            }}
+            mode="range"
+            disabled={disabledDays}
+            showOutsideDays
+            fixedWeeks
+            weekStartsOn={startOfWeek}
+            // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
+            autoFocus
+          />
+        </Popover.Panel>
+      </Popover>
+    </div>
   );
-});
+}

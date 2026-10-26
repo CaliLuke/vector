@@ -53,16 +53,74 @@ func (r *Repository) collaborationExternalConflict(ctx context.Context, q Reques
 			source = old["external_source"]
 		}
 	}
-	var id *string
-	if err := r.db.QueryRow(ctx, `SELECT (SELECT c.id::text FROM issue_comments c JOIN workspaces w ON w.id=c.workspace_id WHERE c.project_id=$1 AND w.slug=$2 AND c.external_source=$3 AND c.external_id=$4 AND c.deleted_at IS NULL ORDER BY c.created_at DESC LIMIT 1)`, q.ProjectID, q.Slug, source, input.Fields["external_id"]).Scan(&id); err != nil {
+	var exists bool
+	var visibleID *string
+	query := `WITH conflicts AS (
+SELECT c.id,` + djangoapi.IssueVisibleSQL("visible_issue", "NULLIF($5,'')::uuid", "w.id") + ` AS visible
+FROM issue_comments c JOIN workspaces w ON w.id=c.workspace_id
+JOIN issues visible_issue ON visible_issue.id=c.issue_id AND visible_issue.project_id=c.project_id AND visible_issue.workspace_id=c.workspace_id
+WHERE c.project_id=$1 AND w.slug=$2 AND c.external_source=$3 AND c.external_id=$4 AND c.deleted_at IS NULL
+)
+SELECT EXISTS(SELECT 1 FROM conflicts), (SELECT id::text FROM conflicts WHERE visible ORDER BY id LIMIT 1)`
+	if err := r.db.QueryRow(ctx, query, q.ProjectID, q.Slug, source, input.Fields["external_id"], q.ActorID).Scan(&exists, &visibleID); err != nil {
 		return err
 	}
-	if id != nil {
-		if old != nil {
-			value := old["id"].(string)
-			id = &value
+	if exists {
+		body := map[string]any{"error": "Work item comment with the same external id and external source already exists"}
+		if visibleID != nil {
+			body["id"] = *visibleID
 		}
-		return &djangoapi.HTTPError{Status: 409, Body: map[string]any{"error": "Work item comment with the same external id and external source already exists", "id": *id}}
+		if old != nil {
+			body["id"] = old["id"]
+		}
+		return &djangoapi.HTTPError{Status: 409, Body: body}
+	}
+	return nil
+}
+
+func (r *Repository) validateCollaborationCommentReferences(ctx context.Context, q Request, changes, old map[string]any) error {
+	if parentID, present := changes["parent_id"]; present && parentID != nil && parentID != "" {
+		var selfID any
+		if old != nil {
+			selfID = old["id"]
+		}
+		var visible bool
+		args := []any{parentID, q.IssueID, q.ProjectID, q.Slug, selfID}
+		visibility := `parent.access='EXTERNAL' AND ` + djangoapi.PublicRelatedIssueSQL("parent_issue", "parent_issue")
+		if !collaborationPublic(q) {
+			args = append(args, q.ActorID)
+			visibility = djangoapi.IssueVisibleSQL("parent_issue", "NULLIF($6,'')::uuid", "parent_workspace.id")
+		}
+		query := `SELECT EXISTS(SELECT 1 FROM issue_comments parent
+JOIN issues parent_issue ON parent_issue.id=parent.issue_id
+JOIN workspaces parent_workspace ON parent_workspace.id=parent.workspace_id
+WHERE parent.id=$1 AND parent.id IS DISTINCT FROM $5::uuid
+AND parent.issue_id=$2 AND parent.project_id=$3 AND parent.workspace_id=parent_workspace.id
+AND parent_workspace.slug=$4 AND parent.deleted_at IS NULL
+AND ` + visibility + `)`
+		if err := r.db.QueryRow(ctx, query, args...).Scan(&visible); err != nil {
+			return err
+		}
+		if !visible {
+			return collaborationMissing(q)
+		}
+	}
+	if old == nil {
+		return nil
+	}
+	previousDescription := old["description_id"]
+	if descriptionID, present := changes["description_id"]; present && !reflect.DeepEqual(descriptionID, previousDescription) {
+		return collaborationMissing(q)
+	}
+	if previousDescription == nil {
+		return nil
+	}
+	var shared bool
+	if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issue_comments other WHERE other.description_id=$1 AND other.id<>$2)`, previousDescription, old["id"]).Scan(&shared); err != nil {
+		return err
+	}
+	if shared {
+		return collaborationMissing(q)
 	}
 	return nil
 }
@@ -108,6 +166,11 @@ func (r *Repository) writeCollaboration(ctx context.Context, q Request, kind, ta
 			description = value
 		}
 		if err := r.collaborationReference(ctx, q, "descriptions", description); err != nil {
+			return Result{}, err
+		}
+	}
+	if kind == "comment" {
+		if err := r.validateCollaborationCommentReferences(ctx, q, changes, old); err != nil {
 			return Result{}, err
 		}
 	}
@@ -316,9 +379,9 @@ func (r *Repository) destroyCollaboration(ctx context.Context, q Request, kind, 
 	if err != nil {
 		return Result{}, err
 	}
-	// App and API comment deletion schedule cleanup before activity; public
-	// comments and the other custom actions queue activity before soft deletion.
-	before := kind == "comment" && !collaborationPublic(q)
+	// Private child writes must pass their atomic visibility guard before any
+	// activity is published. Public-board actions retain their existing ordering.
+	before := !collaborationPublic(q)
 	if before {
 		if err = r.deleteCollaboration(ctx, q, table, row); err != nil {
 			return Result{}, err

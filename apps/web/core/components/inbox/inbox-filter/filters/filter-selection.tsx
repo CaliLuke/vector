@@ -5,11 +5,13 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import { SearchIcon, CloseIcon } from "@plane/propel/icons";
+import { useParams } from "@tanstack/react-router";
+import { FilterSelectionSearch } from "@/components/common/filters/filter-selection-search";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useMember } from "@/hooks/store/use-member";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { FilterDate } from "./date";
@@ -18,36 +20,24 @@ import { FilterMember } from "./members";
 import { FilterPriority } from "./priority";
 import { FilterStatus } from "./status";
 
-export const InboxIssueFilterSelection = observer(function InboxIssueFilterSelection() {
+export function InboxIssueFilterSelection() {
   // hooks
   const { isMobile } = usePlatformOS();
-  const {
-    project: { projectMemberIds },
-  } = useMember();
-  const { projectLabels } = useLabel();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { data: currentUser } = useCurrentUser();
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const projectMemberIds = projectId
+    ? projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false)
+    : undefined;
+  const { labels: projectLabels } = useProjectLabels(workspaceSlug?.toString(), projectId?.toString());
   // states
   const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="bg-surface-1 p-2.5 pb-0">
-        <div className="flex items-center gap-1.5 rounded-sm border-[0.5px] border-subtle bg-surface-2 px-1.5 py-1 text-11">
-          <SearchIcon className="text-placeholder" width={12} height={12} strokeWidth={2} />
-          <input
-            type="text"
-            className="w-full bg-surface-2 outline-none placeholder:text-placeholder"
-            placeholder="Search"
-            value={filtersSearchQuery}
-            onChange={(e) => setFiltersSearchQuery(e.target.value)}
-            autoFocus={!isMobile}
-          />
-          {filtersSearchQuery !== "" && (
-            <button type="button" className="grid place-items-center" onClick={() => setFiltersSearchQuery("")}>
-              <CloseIcon className="text-tertiary" height={12} width={12} strokeWidth={2} />
-            </button>
-          )}
-        </div>
-      </div>
+      {/* oxlint-disable-next-line jsx_a11y/no-autofocus */}
+      <FilterSelectionSearch value={filtersSearchQuery} onChange={setFiltersSearchQuery} autoFocus={!isMobile} />
 
       <div className="vertical-scrollbar scrollbar-sm h-full w-full divide-y divide-subtle-1 overflow-y-auto px-2.5">
         {/* status */}
@@ -65,6 +55,7 @@ export const InboxIssueFilterSelection = observer(function InboxIssueFilterSelec
             label="Assignees"
             searchQuery={filtersSearchQuery}
             memberIds={projectMemberIds ?? []}
+            workspaceSlug={workspaceSlug}
           />
         </div>
         {/* Created By */}
@@ -74,6 +65,7 @@ export const InboxIssueFilterSelection = observer(function InboxIssueFilterSelec
             label="Created By"
             searchQuery={filtersSearchQuery}
             memberIds={projectMemberIds ?? []}
+            workspaceSlug={workspaceSlug}
           />
         </div>
         {/* Labels */}
@@ -91,4 +83,4 @@ export const InboxIssueFilterSelection = observer(function InboxIssueFilterSelec
       </div>
     </div>
   );
-});
+}

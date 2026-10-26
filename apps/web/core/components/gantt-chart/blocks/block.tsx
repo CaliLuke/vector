@@ -6,14 +6,13 @@
 
 import type { RefObject } from "react";
 import { useRef } from "react";
-import { observer } from "mobx-react";
 // components
 import type { IBlockUpdateDependencyData } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 // helpers
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../contexts/chart-state";
 // constants
 import { BLOCK_HEIGHT } from "../constants";
 // components
@@ -32,7 +31,7 @@ type Props = {
   updateBlockDates?: (updates: IBlockUpdateDependencyData[]) => Promise<void>;
 };
 
-export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
+export function GanttChartBlock(props: Props) {
   const {
     blockId,
     showAllBlocks,
@@ -45,13 +44,11 @@ export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
     updateBlockDates,
   } = props;
   // store hooks
-  const { updateActiveBlockId, getBlockById, getIsCurrentDependencyDragging, currentView } = useTimeLineChartStore();
+  const { setActiveBlockId, blocksById, currentView } = useGanttChartState();
   // refs
   const resizableRef = useRef<HTMLDivElement>(null);
 
-  const block = getBlockById(blockId);
-
-  const isCurrentDependencyDragging = getIsCurrentDependencyDragging(blockId);
+  const block = blocksById[blockId];
 
   const { isMoving, handleBlockDrag } = useGanttResizable(block, resizableRef, ganttContainerRef, updateBlockDates);
 
@@ -85,12 +82,11 @@ export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
           classNames="flex h-full w-full items-center"
           placeholderChildren={<div className="h-8 w-full rounded-sm bg-layer-1" />}
           shouldRecordHeights={false}
-          forceRender={isCurrentDependencyDragging}
         >
           <div
             className={cn("relative h-full w-full")}
-            onMouseEnter={() => updateActiveBlockId(blockId)}
-            onMouseLeave={() => updateActiveBlockId(null)}
+            onMouseEnter={() => setActiveBlockId(blockId)}
+            onMouseLeave={() => setActiveBlockId(null)}
           >
             <ChartDraggable
               block={block}
@@ -108,4 +104,4 @@ export const GanttChartBlock = observer(function GanttChartBlock(props: Props) {
       )}
     </div>
   );
-});
+}

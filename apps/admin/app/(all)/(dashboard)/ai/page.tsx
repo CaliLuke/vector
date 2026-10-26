@@ -4,23 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigurationsOptions } from "@/queries/instance";
 import { Loader } from "@plane/ui";
 // components
 import { PageWrapper } from "@/components/common/page-wrapper";
 // hooks
-import { useInstance } from "@/hooks/store";
 // types
 import type { Route } from "./+types/page";
 // local
 import { InstanceAIForm } from "./form";
 
-const InstanceAIPage = observer(function InstanceAIPage(_props: Route.ComponentProps) {
-  // store
-  const { fetchInstanceConfigurations, formattedConfig } = useInstance();
-
-  useSWR("INSTANCE_CONFIGURATIONS", () => fetchInstanceConfigurations());
+const InstanceAIPage = function InstanceAIPage(_props: Route.ComponentProps) {
+  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
 
   return (
     <PageWrapper
@@ -43,7 +39,7 @@ const InstanceAIPage = observer(function InstanceAIPage(_props: Route.ComponentP
       )}
     </PageWrapper>
   );
-});
+};
 
 export const meta: Route.MetaFunction = () => [{ title: "Artificial Intelligence Settings - God Mode" }];
 

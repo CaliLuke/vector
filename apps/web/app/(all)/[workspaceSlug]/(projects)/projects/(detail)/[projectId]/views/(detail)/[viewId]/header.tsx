@@ -6,20 +6,18 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useCallback, useRef } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import {
   EIssueFilterType,
   ISSUE_DISPLAY_FILTERS_BY_PAGE,
   EUserPermissions,
-  EUserPermissionsLevel,
   WORK_ITEM_TRACKER_ELEMENTS,
 } from "@plane/constants";
 import { Button } from "@plane/propel/button";
 import { LockIcon, ViewsIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { ICustomSearchSelectOption, IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
+import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 import { EIssuesStoreType, EViewAccess, EIssueLayoutTypes } from "@plane/types";
 import { Breadcrumbs, Header, BreadcrumbNavigationSearchDropdown } from "@plane/ui";
 // components
@@ -29,16 +27,16 @@ import { DisplayFiltersSelection, FiltersDropdown, LayoutSelection } from "@/com
 import { ViewQuickActions } from "@/components/views/quick-actions";
 import { WorkItemFiltersToggle } from "@/components/work-item-filters/filters-toggle";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectView, useProjectViews } from "@/hooks/use-project-views";
+import { useProjectViewIssuePreferences } from "@/providers/project-view-issue-preferences";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader() {
+export const ProjectViewIssuesHeader = function ProjectViewIssuesHeader() {
   // refs
   const parentRef = useRef(null);
   // router
@@ -47,85 +45,56 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId",
   });
   // store hooks
-  const {
-    issuesFilter: { issueFilters, updateFilters },
-  } = useIssues(EIssuesStoreType.PROJECT_VIEW);
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
-  const { currentProjectDetails, loader } = useProject();
-  const { projectViewIds, getViewById } = useProjectView();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const loader = routeProjectQuery.isPending;
+  const { issueFilters, updateFilters } = useProjectViewIssuePreferences();
+  const viewQuery = useProjectView(workspaceSlug, projectId, viewId);
+  const viewsQuery = useProjectViews(workspaceSlug, projectId);
 
-  const activeLayout = issueFilters?.displayFilters?.layout;
+  const activeLayout = issueFilters.displayFilters?.layout;
 
   const handleLayoutChange = useCallback(
     (layout: EIssueLayoutTypes) => {
-      if (!workspaceSlug || !projectId || !viewId) return;
-      updateFilters(
-        workspaceSlug.toString(),
-        projectId.toString(),
-        EIssueFilterType.DISPLAY_FILTERS,
-        { layout: layout },
-        viewId.toString()
-      );
+      void updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, { layout: layout });
     },
-    [workspaceSlug, projectId, viewId, updateFilters]
+    [workspaceSlug, projectId, updateFilters]
   );
 
   const handleDisplayFilters = useCallback(
     (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      if (!workspaceSlug || !projectId || !viewId) return;
-      updateFilters(
-        workspaceSlug.toString(),
-        projectId.toString(),
-        EIssueFilterType.DISPLAY_FILTERS,
-        updatedDisplayFilter,
-        viewId.toString()
-      );
+      void updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter);
     },
-    [workspaceSlug, projectId, viewId, updateFilters]
+    [workspaceSlug, projectId, updateFilters]
   );
 
   const handleDisplayProperties = useCallback(
     (property: Partial<IIssueDisplayProperties>) => {
-      if (!workspaceSlug || !projectId || !viewId) return;
-      updateFilters(
-        workspaceSlug.toString(),
-        projectId.toString(),
-        EIssueFilterType.DISPLAY_PROPERTIES,
-        property,
-        viewId.toString()
-      );
+      void updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_PROPERTIES, property);
     },
-    [workspaceSlug, projectId, viewId, updateFilters]
+    [workspaceSlug, projectId, updateFilters]
   );
 
-  const viewDetails = viewId ? getViewById(viewId.toString()) : null;
+  const viewDetails = viewQuery.view;
 
-  const canUserCreateIssue = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canUserCreateIssue = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  if (!viewDetails) return;
+  if (!viewDetails) return null;
 
-  const switcherOptions = projectViewIds
-    ?.map((id) => {
-      const _view = id === viewId ? viewDetails : getViewById(id);
-      if (!_view) return;
-      return {
-        value: _view.id,
-        query: _view.name,
-        content: <SwitcherLabel logo_props={_view.logo_props} name={_view.name} LabelIcon={ViewsIcon} />,
-      };
-    })
-    .filter((option) => option !== undefined) as ICustomSearchSelectOption[];
+  const switcherOptions = (viewsQuery.views ?? []).map((view) => ({
+    value: view.id,
+    query: view.name,
+    content: <SwitcherLabel logo_props={view.logo_props} name={view.name} LabelIcon={ViewsIcon} />,
+  }));
 
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs isLoading={loader === "init-loader"}>
-          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
+        <Breadcrumbs isLoading={loader}>
+          <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug} projectId={projectId} />
           <Breadcrumbs.Item
             component={
               <BreadcrumbLink
@@ -138,12 +107,12 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
           <Breadcrumbs.Item
             component={
               <BreadcrumbNavigationSearchDropdown
-                selectedItem={viewId?.toString() ?? ""}
+                selectedItem={viewId}
                 navigationItems={switcherOptions}
                 onChange={(value: string) => {
                   void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views/${value}` });
                 }}
-                title={viewDetails?.name}
+                title={viewDetails.name}
                 icon={
                   <Breadcrumbs.Icon>
                     <SwitcherIcon logo_props={viewDetails.logo_props} LabelIcon={ViewsIcon} size={16} />
@@ -155,7 +124,7 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
           />
         </Breadcrumbs>
 
-        {viewDetails?.access === EViewAccess.PRIVATE ? (
+        {viewDetails.access === EViewAccess.PRIVATE ? (
           <div className="cursor-default text-tertiary">
             <Tooltip tooltipContent={"Private"}>
               <LockIcon className="h-4 w-4" />
@@ -180,16 +149,16 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
               selectedLayout={activeLayout}
             />
           )}
-          {viewId && <WorkItemFiltersToggle entityType={EIssuesStoreType.PROJECT_VIEW} entityId={viewId} />}
+          <WorkItemFiltersToggle />
           {!viewDetails.is_locked && (
             <FiltersDropdown title="Display" placement="bottom-end">
               <DisplayFiltersSelection
                 layoutDisplayFiltersOptions={
                   activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[activeLayout] : undefined
                 }
-                displayFilters={issueFilters?.displayFilters ?? {}}
+                displayFilters={issueFilters.displayFilters ?? {}}
                 handleDisplayFiltersUpdate={handleDisplayFilters}
-                displayProperties={issueFilters?.displayProperties ?? {}}
+                displayProperties={issueFilters.displayProperties ?? {}}
                 handleDisplayPropertiesUpdate={handleDisplayProperties}
                 cycleViewDisabled={!currentProjectDetails?.cycle_view}
                 moduleViewDisabled={!currentProjectDetails?.module_view}
@@ -213,12 +182,12 @@ export const ProjectViewIssuesHeader = observer(function ProjectViewIssuesHeader
           <ViewQuickActions
             parentRef={parentRef}
             customClassName="flex-shrink-0 flex items-center justify-center size-[26px] bg-layer-1/70 rounded-sm"
-            projectId={projectId.toString()}
+            projectId={projectId}
             view={viewDetails}
-            workspaceSlug={workspaceSlug.toString()}
+            workspaceSlug={workspaceSlug}
           />
         </div>
       </Header.RightItem>
     </Header>
   );
-});
+};

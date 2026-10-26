@@ -6,41 +6,31 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 import { STICKIES_PER_PAGE } from "@plane/constants";
 import { ContentWrapper, Loader } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { useSticky } from "@/hooks/use-stickies";
+import { useStickies } from "@/components/stickies/provider";
 import { StickiesLayout } from "./stickies-list";
 
-export const StickiesInfinite = observer(function StickiesInfinite() {
+export const StickiesInfinite = function StickiesInfinite() {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
-  const { fetchWorkspaceStickies, fetchNextWorkspaceStickies, getWorkspaceStickyIds, loader, paginationInfo } =
-    useSticky();
+  const { list, stickyIds } = useStickies();
   //state
   const [elementRef, setElementRef] = useState<HTMLDivElement | null>(null);
 
   // ref
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useSWR(
-    workspaceSlug ? `WORKSPACE_STICKIES_${workspaceSlug}` : null,
-    workspaceSlug ? () => fetchWorkspaceStickies(workspaceSlug.toString()) : null,
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
-
   const handleLoadMore = () => {
-    if (loader === "pagination") return;
-    fetchNextWorkspaceStickies(workspaceSlug?.toString());
+    if (list.isFetching || !list.hasNextPage) return;
+    void list.fetchNextPage();
   };
-
-  const hasNextPage = paginationInfo?.next_page_results && paginationInfo?.next_cursor !== undefined;
-  const shouldObserve = hasNextPage && loader !== "pagination";
-  const workspaceStickies = getWorkspaceStickyIds(workspaceSlug?.toString());
+  const hasNextPage = list.hasNextPage;
+  const shouldObserve = hasNextPage && !list.isFetching;
+  const workspaceStickies = stickyIds;
   useIntersectionObserver(containerRef, shouldObserve ? elementRef : null, handleLoadMore);
 
   return (
@@ -66,4 +56,4 @@ export const StickiesInfinite = observer(function StickiesInfinite() {
       />
     </ContentWrapper>
   );
-});
+};

@@ -8,7 +8,7 @@ import { forwardRef } from "react";
 import type { ComponentProps } from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 import { DragHandle } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TooltipProps = ComponentProps<typeof Tooltip>;
 

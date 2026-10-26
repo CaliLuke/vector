@@ -5,11 +5,11 @@
  */
 
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { Row } from "@plane/ui";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { ExtendedAppHeader } from "@/components/common/extended-app-header";
 
 export interface AppHeaderProps {
@@ -19,7 +19,7 @@ export interface AppHeaderProps {
   rowClassName?: string;
 }
 
-export const AppHeader = observer(function AppHeader(props: AppHeaderProps) {
+export const AppHeader = function AppHeader(props: AppHeaderProps) {
   const { header, mobileHeader, className, rowClassName } = props;
 
   return (
@@ -31,4 +31,4 @@ export const AppHeader = observer(function AppHeader(props: AppHeaderProps) {
       {mobileHeader && mobileHeader}
     </div>
   );
-});
+};

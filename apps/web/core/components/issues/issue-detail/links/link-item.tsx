@@ -4,43 +4,37 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, CopyIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { TIssueServiceType } from "@plane/types";
+import type { TIssueLink, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // ui
 import { CustomMenu } from "@plane/ui";
-import { calculateTimeAgo, copyTextToClipboard } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { copyTextToClipboard } from "@plane/utils/string";
 // helpers
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import type { TLinkOperationsModal } from "./create-update-link-modal";
 
 type TIssueLinkItem = {
-  linkId: string;
+  link: TIssueLink;
   linkOperations: TLinkOperationsModal;
   isNotAllowed: boolean;
   issueServiceType?: TIssueServiceType;
 };
 
-export const IssueLinkItem = observer(function IssueLinkItem(props: TIssueLinkItem) {
+export function IssueLinkItem(props: TIssueLinkItem) {
   // props
-  const { linkId, linkOperations, isNotAllowed, issueServiceType = EIssueServiceType.ISSUES } = props;
+  const { link, linkOperations, isNotAllowed, issueServiceType = EIssueServiceType.ISSUES } = props;
   // hooks
   const { t } = useTranslation();
-  const {
-    toggleIssueLinkModal: toggleIssueLinkModalStore,
-    setIssueLinkData,
-    link: { getLinkById },
-  } = useIssueDetail(issueServiceType);
+  const { toggleIssueLinkModal: toggleIssueLinkModalStore, setIssueLinkData } = useIssueDetailUiState(issueServiceType);
   const { isMobile } = usePlatformOS();
-  const linkDetail = getLinkById(linkId);
-  if (!linkDetail) return <></>;
+  const linkDetail = link;
 
   // const Icon = getIconForLink(linkDetail.url);
   const faviconUrl: string | undefined = linkDetail.metadata?.favicon;
@@ -53,7 +47,7 @@ export const IssueLinkItem = observer(function IssueLinkItem(props: TIssueLinkIt
   return (
     <>
       <div
-        key={linkId}
+        key={link.id}
         className="group 3xl:col-span-2 col-span-12 flex h-10 flex-shrink-0 items-center justify-between gap-3 rounded-sm border-[0.5px] border-subtle bg-surface-2 px-3 hover:bg-layer-1 lg:col-span-6 xl:col-span-4 2xl:col-span-3"
       >
         <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -125,4 +119,4 @@ export const IssueLinkItem = observer(function IssueLinkItem(props: TIssueLinkIt
       </div>
     </>
   );
-});
+}

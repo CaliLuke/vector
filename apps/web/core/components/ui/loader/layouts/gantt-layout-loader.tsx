@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 import { Row } from "@plane/ui";
 import { BLOCK_HEIGHT } from "@/components/gantt-chart/constants";
 import { getRandomLength } from "../utils";

@@ -4,24 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
 // plane imports
 import { RichTextEditor } from "@/components/editor/rich-text-editor";
-import { usePublish } from "@/hooks/store/publish";
 // types
-import type { IIssue } from "@/types/issue";
+
+import type { IPublicIssue } from "@plane/types";
 // local imports
 import { IssueReactions } from "./issue-reaction";
 
 type Props = {
   anchor: string;
-  issueDetails: IIssue;
+  issueDetails: IPublicIssue;
 };
 
-export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetails(props: Props) {
+export const PeekOverviewIssueDetails = function PeekOverviewIssueDetails(props: Props) {
   const { anchor, issueDetails } = props;
-  // store hooks
-  const { project_details, workspace: workspaceID } = usePublish(anchor);
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { project_details, workspace: workspaceID } = publishSettings ?? {};
   // derived values
   const description = issueDetails.description_html;
 
@@ -40,7 +41,7 @@ export const PeekOverviewIssueDetails = observer(function PeekOverviewIssueDetai
           workspaceId={workspaceID?.toString() ?? ""}
         />
       )}
-      <IssueReactions anchor={anchor} />
+      <IssueReactions issue={issueDetails} anchor={anchor} />
     </div>
   );
-});
+};

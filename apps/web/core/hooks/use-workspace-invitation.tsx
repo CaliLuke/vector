@@ -4,88 +4,43 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import type { Control, FieldArrayWithId, FormState, UseFormWatch } from "react-hook-form";
-import { useFieldArray, useForm } from "react-hook-form";
-// plane imports
+import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import { EUserPermissions } from "@plane/constants";
+import { checkEmailValidity } from "@plane/utils/string";
 
-type EmailRole = {
-  email: string;
-  role: EUserPermissions;
-};
+export type InvitationFormValues = { emails: { email: string; role: EUserPermissions }[] };
+export const emptyInvitation = () => ({ id: crypto.randomUUID(), email: "", role: EUserPermissions.MEMBER });
 
-export type InvitationFormValues = {
-  emails: EmailRole[];
-};
-
-const SEND_WORKSPACE_INVITATION_MODAL_DEFAULT_VALUES: InvitationFormValues = {
-  emails: [
-    {
-      email: "",
-      role: EUserPermissions.MEMBER,
-    },
-  ],
-};
-
-type TUseWorkspaceInvitationProps = {
+export function useInvitationForm({
+  onSubmit,
+  initialRows = 1,
+  allowEmptyRows = false,
+}: {
   onSubmit: (data: InvitationFormValues) => Promise<void> | undefined;
-  onClose: () => void;
-};
-
-type TUseWorkspaceInvitationReturn = {
-  control: Control<InvitationFormValues>;
-  fields: FieldArrayWithId<InvitationFormValues, "emails", "id">[];
-  formState: FormState<InvitationFormValues>;
-  watch: UseFormWatch<InvitationFormValues>;
-  remove: (index: number) => void;
-  onFormSubmit: () => void;
-  handleClose: () => void;
-  appendField: () => void;
-};
-
-export const useWorkspaceInvitationActions = (props: TUseWorkspaceInvitationProps): TUseWorkspaceInvitationReturn => {
-  const { onSubmit, onClose } = props;
-  // form info
-  const { control, reset, watch, handleSubmit, formState } = useForm<InvitationFormValues>({
-    defaultValues: SEND_WORKSPACE_INVITATION_MODAL_DEFAULT_VALUES,
+  initialRows?: number;
+  allowEmptyRows?: boolean;
+}) {
+  const [defaultValues] = useState(() => ({ emails: Array.from({ length: initialRows }, emptyInvitation) }));
+  return useForm({
+    defaultValues,
+    validators: {
+      onChange: ({ value }) => {
+        const emails = allowEmptyRows ? value.emails.filter((entry) => entry.email.trim()) : value.emails;
+        return emails.length > 0 && emails.every((entry) => checkEmailValidity(entry.email))
+          ? undefined
+          : "Enter valid email addresses.";
+      },
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const submission = onSubmit({
+        emails: value.emails.filter((entry) => entry.email.trim()).map(({ email, role }) => ({ email, role })),
+      });
+      if (!submission) return;
+      await submission;
+      formApi.reset();
+    },
   });
+}
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "emails",
-  });
-
-  const handleClose = () => {
-    onClose();
-    const timeout = setTimeout(() => {
-      reset(SEND_WORKSPACE_INVITATION_MODAL_DEFAULT_VALUES);
-      clearTimeout(timeout);
-    }, 350);
-  };
-
-  const appendField = () => {
-    append({ email: "", role: EUserPermissions.MEMBER });
-  };
-
-  const onSubmitForm = async (data: InvitationFormValues) => {
-    await onSubmit(data)?.then(() => {
-      reset(SEND_WORKSPACE_INVITATION_MODAL_DEFAULT_VALUES);
-    });
-  };
-
-  useEffect(() => {
-    if (fields.length === 0) append([{ email: "", role: EUserPermissions.MEMBER }]);
-  }, [fields, append]);
-
-  return {
-    control,
-    fields,
-    formState,
-    watch,
-    remove,
-    onFormSubmit: handleSubmit(onSubmitForm),
-    handleClose,
-    appendField,
-  };
-};
+export type InvitationFormApi = ReturnType<typeof useInvitationForm>;

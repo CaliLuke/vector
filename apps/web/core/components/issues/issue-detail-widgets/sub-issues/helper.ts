@@ -4,30 +4,109 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo } from "react";
-// plane imports
+import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssueServiceType, TSubIssueOperations } from "@plane/types";
-import { EIssueServiceType } from "@plane/types";
-import { copyUrlToClipboard } from "@plane/utils";
-// hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useWorkItemDetailScope } from "@/hooks/use-work-item-detail";
+import { useIssueListMutationOwner } from "@/hooks/use-issue-list-mutation-owner";
+import {
+  allSubItems,
+  captureIssueDetailReconciliation,
+  issueDetailKeys,
+  issueSubItemsOptions,
+} from "@/queries/issue-details";
+import {
+  captureIssueListMutationOwner,
+  patchIssueMutation,
+  refreshCapturedIssueLists,
+} from "@/queries/issue-list-mutations";
+import { captureProjectAccessScope } from "@/queries/project-access-scope";
+import { getIdentitySessionGeneration } from "@/queries/identity";
+import { itemAccessOptions } from "@/queries/work-item-access";
+import { IssueService } from "@/services/issue";
 
-export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSubIssueOperations => {
-  // translation
+export function useSubIssueOperations(
+  workspaceSlug: string,
+  projectId: string,
+  parentIssueId: string,
+  issueServiceType: TIssueServiceType
+): TSubIssueOperations {
   const { t } = useTranslation();
-  // store hooks
-  const {
-    subIssues: { setSubIssueHelpers },
-    createSubIssues,
-    fetchSubIssues,
-    updateSubIssue,
-    deleteSubIssue,
-    removeSubIssue,
-  } = useIssueDetail(issueServiceType);
+  const client = useQueryClient();
+  const access = useWorkItemDetailScope(workspaceSlug, projectId, issueServiceType, parentIssueId);
+  const service = useMemo(() => new IssueService(issueServiceType), [issueServiceType]);
+  const mutationStoreType =
+    issueServiceType === EIssueServiceType.EPICS ? EIssuesStoreType.EPIC : EIssuesStoreType.PROJECT;
+  const resolveListOwner = useIssueListMutationOwner(mutationStoreType);
+  const listActions = useIssuesActions(mutationStoreType);
 
-  const subIssueOperations: TSubIssueOperations = useMemo(
+  const captureOwner = useCallback(
+    (targetParentId: string) => {
+      const scope = access.scope;
+      const queryKey = issueDetailKeys.subItems(scope, targetParentId);
+      const capturedQuery = client.getQueryCache().find({ queryKey, exact: true });
+      const projectScope = captureProjectAccessScope(client, scope);
+      const itemScope = {
+        accountId: scope.accountId,
+        generation: scope.sessionGeneration,
+        workspaceSlug: scope.workspaceSlug,
+        projectId: scope.projectId,
+        issueId: targetParentId,
+        serviceType: scope.serviceType,
+      };
+      const itemAccessKey = itemAccessOptions(itemScope).queryKey;
+      const capturedItemAccess = client.getQueryCache().find({ queryKey: itemAccessKey, exact: true });
+      const itemAccessRevision = capturedItemAccess?.state.dataUpdatedAt;
+      return {
+        scope,
+        queryKey,
+        parentId: targetParentId,
+        isCurrent: () =>
+          access.isReady &&
+          client.getQueryCache().find({ queryKey, exact: true }) === capturedQuery &&
+          client.getQueryCache().find({ queryKey: itemAccessKey, exact: true }) === capturedItemAccess &&
+          capturedItemAccess?.state.dataUpdatedAt === itemAccessRevision &&
+          capturedItemAccess?.state.data !== true &&
+          getIdentitySessionGeneration(client) === scope.sessionGeneration &&
+          projectScope.isVerified(),
+      };
+    },
+    [access.isReady, access.scope, client]
+  );
+
+  const refresh = useCallback(
+    (owner: ReturnType<typeof captureOwner>) => {
+      if (!owner.isCurrent()) return;
+      void client.invalidateQueries({ queryKey: owner.queryKey, exact: true }).catch(() => undefined);
+      void client
+        .invalidateQueries({ queryKey: issueDetailKeys.detail(owner.scope, owner.parentId), exact: true })
+        .catch(() => undefined);
+    },
+    [client]
+  );
+  const assertMutationScope = useCallback(
+    (
+      owner: ReturnType<typeof captureOwner>,
+      targetWorkspace: string,
+      targetProject: string,
+      requireParentProject = false
+    ) => {
+      if (
+        !owner.isCurrent() ||
+        owner.scope.workspaceSlug !== targetWorkspace ||
+        (requireParentProject && owner.scope.projectId !== targetProject)
+      )
+        throw new Error("Work item access changed. Reload before continuing.");
+    },
+    []
+  );
+
+  const operations: TSubIssueOperations = useMemo(
     () => ({
       copyLink: async (path) => {
         await copyUrlToClipboard(path);
@@ -42,9 +121,12 @@ export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSub
           }),
         });
       },
-      fetchSubIssues: async (workspaceSlug, projectId, parentIssueId) => {
+      fetchSubIssues: async (targetWorkspace, targetProject, targetParentId) => {
         try {
-          await fetchSubIssues(workspaceSlug, projectId, parentIssueId);
+          const owner = captureOwner(targetParentId);
+          assertMutationScope(owner, targetWorkspace, targetProject, true);
+          const options = issueSubItemsOptions(client, owner.scope, targetParentId, access.isReady);
+          await client.fetchQuery(options);
         } catch {
           setToast({
             type: TOAST_TYPE.ERROR,
@@ -58,62 +140,80 @@ export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSub
           });
         }
       },
-      addSubIssue: async (workspaceSlug, projectId, parentIssueId, issueIds) => {
-        try {
-          await createSubIssues(workspaceSlug, projectId, parentIssueId, issueIds);
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: t("toast.success"),
-            message: t("entity.add.success", {
-              entity:
-                issueServiceType === EIssueServiceType.ISSUES
-                  ? t("common.sub_work_items")
-                  : t("issue.label", { count: issueIds.length }),
-            }),
-          });
-        } catch {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("entity.add.failed", {
-              entity:
-                issueServiceType === EIssueServiceType.ISSUES
-                  ? t("common.sub_work_items")
-                  : t("issue.label", { count: issueIds.length }),
-            }),
-          });
+      addSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueIds) => {
+        const owner = captureOwner(targetParentId);
+        assertMutationScope(owner, _workspaceSlug, _projectId, true);
+        const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
+        if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
+        const capturedList = captureIssueListMutationOwner(client, listOwner);
+        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, issueIds);
+        const response = await service.addSubIssues(_workspaceSlug, _projectId, targetParentId, {
+          sub_issue_ids: issueIds,
+        });
+        const records = allSubItems(response);
+        if (owner.isCurrent()) {
+          await Promise.all(records.map((record) => childDetailOwner.reconcile(record)));
+          await refreshCapturedIssueLists(client, capturedList);
+          refresh(owner);
         }
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("toast.success"),
+          message: t("entity.add.success", {
+            entity:
+              issueServiceType === EIssueServiceType.ISSUES
+                ? t("common.sub_work_items")
+                : t("issue.label", { count: issueIds.length }),
+          }),
+        });
       },
       updateSubIssue: async (
-        workspaceSlug,
-        projectId,
-        parentIssueId,
+        _workspaceSlug,
+        _projectId,
+        targetParentId,
         issueId,
         issueData,
-        oldIssue = {},
+        _oldIssue = {},
         fromModal = false
       ) => {
+        const owner = captureOwner(targetParentId);
+        assertMutationScope(owner, _workspaceSlug, _projectId);
+        const childDetailOwner = fromModal
+          ? undefined
+          : captureIssueDetailReconciliation(client, owner.scope, [issueId]);
         try {
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-          await updateSubIssue(workspaceSlug, projectId, parentIssueId, issueId, issueData, oldIssue, fromModal);
+          if (!fromModal) {
+            const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
+            if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
+            const receipt = await patchIssueMutation(client, listOwner, issueId, issueData);
+            await childDetailOwner?.reconcile(receipt);
+          }
+          if (childDetailOwner && fromModal) void childDetailOwner.refresh();
+          if (owner.isCurrent()) refresh(owner);
           setToast({
             type: TOAST_TYPE.SUCCESS,
             title: t("toast.success"),
             message: t("sub_work_item.update.success"),
           });
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-        } catch (_error) {
+        } catch (error) {
           setToast({
             type: TOAST_TYPE.ERROR,
             title: t("toast.error"),
             message: t("sub_work_item.update.error"),
           });
+          throw error;
         }
       },
-      removeSubIssue: async (workspaceSlug, projectId, parentIssueId, issueId) => {
+      removeSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
+        const owner = captureOwner(targetParentId);
+        assertMutationScope(owner, _workspaceSlug, _projectId);
+        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
         try {
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-          await removeSubIssue(workspaceSlug, projectId, parentIssueId, issueId);
+          const listOwner = await resolveListOwner(_workspaceSlug, _projectId);
+          if (!listOwner) throw new Error("Work item access is unavailable. Retry the operation.");
+          const receipt = await patchIssueMutation(client, listOwner, issueId, { parent_id: null });
+          await childDetailOwner.reconcile(receipt);
+          if (owner.isCurrent()) refresh(owner);
           setToast({
             type: TOAST_TYPE.SUCCESS,
             title: t("toast.success"),
@@ -124,8 +224,7 @@ export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSub
                   : t("issue.label", { count: 1 }),
             }),
           });
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-        } catch (_error) {
+        } catch (error) {
           setToast({
             type: TOAST_TYPE.ERROR,
             title: t("toast.error"),
@@ -136,14 +235,18 @@ export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSub
                   : t("issue.label", { count: 1 }),
             }),
           });
+          throw error;
         }
       },
-      deleteSubIssue: async (workspaceSlug, projectId, parentIssueId, issueId) => {
+      deleteSubIssue: async (_workspaceSlug, _projectId, targetParentId, issueId) => {
+        const owner = captureOwner(targetParentId);
+        assertMutationScope(owner, _workspaceSlug, _projectId);
+        const childDetailOwner = captureIssueDetailReconciliation(client, owner.scope, [issueId]);
         try {
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-          await deleteSubIssue(workspaceSlug, projectId, parentIssueId, issueId);
-          setSubIssueHelpers(parentIssueId, "issue_loader", issueId);
-        } catch (_error) {
+          await listActions.removeIssue(_projectId, issueId);
+          childDetailOwner.remove();
+          if (owner.isCurrent()) refresh(owner);
+        } catch (error) {
           setToast({
             type: TOAST_TYPE.ERROR,
             title: t("toast.error"),
@@ -154,20 +257,22 @@ export const useSubIssueOperations = (issueServiceType: TIssueServiceType): TSub
                   : t("issue.label", { count: 1 }),
             }),
           });
+          throw error;
         }
       },
     }),
     [
-      createSubIssues,
-      deleteSubIssue,
-      fetchSubIssues,
+      access.isReady,
+      captureOwner,
+      refresh,
+      assertMutationScope,
+      client,
       issueServiceType,
-      removeSubIssue,
-      setSubIssueHelpers,
+      listActions,
+      resolveListOwner,
+      service,
       t,
-      updateSubIssue,
     ]
   );
-
-  return subIssueOperations;
-};
+  return operations;
+}

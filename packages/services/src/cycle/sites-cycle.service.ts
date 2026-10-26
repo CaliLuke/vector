@@ -27,11 +27,11 @@ export class SitesCycleService extends APIService {
    * @returns {Promise<TPublicCycle[]>} The list of cycles
    * @throws {Error} If the request fails
    */
-  async list(anchor: string): Promise<TPublicCycle[]> {
-    return this.get(`/api/public/anchor/${anchor}/cycles/`)
+  async list(anchor: string, signal?: AbortSignal): Promise<TPublicCycle[]> {
+    return this.get(`/api/public/anchor/${anchor}/cycles/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

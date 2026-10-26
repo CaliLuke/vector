@@ -5,29 +5,30 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TIssueServiceType } from "@plane/types";
 import { Collapsible } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // local imports
 import { IssueAttachmentsCollapsibleContent } from "./content";
 import { IssueAttachmentsCollapsibleTitle } from "./title";
 import { IssueAttachmentActionButton } from "./quick-action-button";
+import type { TAttachmentHelpers } from "./helper";
 
 type Props = {
   workspaceSlug: string;
-  projectId: string;
   issueId: string;
   disabled?: boolean;
   issueServiceType: TIssueServiceType;
+  attachmentHelpers: TAttachmentHelpers;
 };
 
-export const AttachmentsCollapsible = observer(function AttachmentsCollapsible(props: Props) {
-  const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType } = props;
+export const AttachmentsCollapsible = function AttachmentsCollapsible(props: Props) {
+  const { workspaceSlug, issueId, disabled = false, issueServiceType, attachmentHelpers } = props;
   // store hooks
-  const { openWidgets, toggleOpenWidget } = useIssueDetail(issueServiceType);
+  const { openWidgets, toggleOpenWidget } = useIssueDetailUiState(issueServiceType);
 
   // derived values
   const isCollapsibleOpen = openWidgets.includes("attachments");
@@ -47,10 +48,8 @@ export const AttachmentsCollapsible = observer(function AttachmentsCollapsible(p
         !disabled && (
           <IssueAttachmentActionButton
             workspaceSlug={workspaceSlug}
-            projectId={projectId}
-            issueId={issueId}
             disabled={disabled}
-            issueServiceType={issueServiceType}
+            attachmentHelpers={attachmentHelpers}
           />
         )
       }
@@ -58,11 +57,10 @@ export const AttachmentsCollapsible = observer(function AttachmentsCollapsible(p
     >
       <IssueAttachmentsCollapsibleContent
         workspaceSlug={workspaceSlug}
-        projectId={projectId}
-        issueId={issueId}
         disabled={disabled}
         issueServiceType={issueServiceType}
+        attachmentHelpers={attachmentHelpers}
       />
     </Collapsible>
   );
-});
+};

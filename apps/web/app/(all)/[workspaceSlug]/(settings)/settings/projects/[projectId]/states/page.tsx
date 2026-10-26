@@ -5,8 +5,8 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
@@ -15,28 +15,28 @@ import { ProjectStateRoot } from "@/components/project-states";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SettingsHeading } from "@/components/settings/heading";
 // hook
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { StatesProjectSettingsHeader } from "./header";
 
 function StatesSettingsPage(): React.JSX.Element | null {
   const { workspaceSlug, projectId } = Route.useParams();
   // store
-  const { currentProjectDetails } = useProject();
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const { can: canProject, isPending, isError } = useProjectPermissions(workspaceSlug, projectId);
 
   const { t } = useTranslation();
 
   // derived values
   const pageTitle = currentProjectDetails?.name ? `${currentProjectDetails?.name} - States` : undefined;
   // derived values
-  const canPerformProjectMemberActions = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canPerformProjectMemberActions = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  if (workspaceUserInfo && !canPerformProjectMemberActions) {
+  if (isPending) return null;
+
+  if (isError || !canPerformProjectMemberActions) {
     return <NotAuthorizedView section="settings" isProjectView className="h-auto" />;
   }
 
@@ -57,5 +57,5 @@ function StatesSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/states")({
-  component: observer(StatesSettingsPage),
+  component: StatesSettingsPage,
 });

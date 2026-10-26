@@ -5,19 +5,17 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+
+import { useQuery, skipToken } from "@tanstack/react-query";
 
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { OnboardingRoot } from "@/components/onboarding";
 // constants
-import { USER_WORKSPACES_LIST } from "@plane/constants";
 // helpers
 import { EPageTypes } from "@/helpers/authentication.helper";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // wrappers
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 // services
@@ -27,23 +25,13 @@ const workspaceService = new WorkspaceService();
 
 function OnboardingPage(): React.JSX.Element | null {
   // store hooks
-  const { data: user } = useUser();
-  const { fetchWorkspaces } = useWorkspace();
-
-  // fetching workspaces list
-  useSWR(USER_WORKSPACES_LIST, () => {
-    if (user?.id) {
-      fetchWorkspaces();
-    }
-  });
+  const { data: user } = useCurrentUser();
 
   // fetching user workspace invitations
-  const { isLoading: invitationsLoader, data: invitations } = useSWR(
-    `USER_WORKSPACE_INVITATIONS_LIST_${user?.id}`,
-    () => {
-      if (user?.id) return workspaceService.userWorkspaceInvitations();
-    }
-  );
+  const { isLoading: invitationsLoader, data: invitations } = useQuery({
+    queryKey: ["USER_WORKSPACE_INVITATIONS_LIST", user?.id],
+    queryFn: user?.id ? () => workspaceService.userWorkspaceInvitations() : skipToken,
+  });
 
   return (
     <AuthenticationWrapper pageType={EPageTypes.ONBOARDING}>
@@ -65,5 +53,5 @@ function OnboardingPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/onboarding/")({
-  component: observer(OnboardingPage),
+  component: OnboardingPage,
 });

@@ -12,6 +12,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	workspacefavorites "github.com/CaliLuke/go-plane/gen/workspace_favorites"
 	loomhttp "github.com/CaliLuke/loom/http"
@@ -41,11 +43,28 @@ func DecodeListRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decode
 		var err error
 		var (
 			slug      string
+			all       *bool
 			sessionID *string
 
 			params = mux.Vars(r)
 		)
 		slug = params["slug"]
+		qp, queryErr := url.ParseQuery(r.URL.RawQuery)
+		if queryErr != nil {
+			return payload, loom.DecodePayloadError("invalid query string")
+		}
+		{
+			allRaw := qp.Get("all")
+			allPresent := qp.Has("all")
+
+			if allPresent {
+				v, err2 := strconv.ParseBool(allRaw)
+				if err2 != nil {
+					err = loom.MergeErrors(err, loom.InvalidFieldTypeError("all", allRaw, "boolean"))
+				}
+				all = &v
+			}
+		}
 		{
 			c, cookieErr := r.Cookie("session-id")
 			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
@@ -64,7 +83,7 @@ func DecodeListRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decode
 		if err != nil {
 			return payload, err
 		}
-		payload = NewListPayload(slug, sessionID)
+		payload = NewListPayload(slug, all, sessionID)
 
 		return payload, nil
 	}

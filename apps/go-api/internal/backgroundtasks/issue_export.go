@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/loom/execution"
 	executionSelvedge "github.com/CaliLuke/loom/execution/selvedge"
 	"github.com/CaliLuke/selvedge"
@@ -302,7 +304,7 @@ func (store *issueExportStore) issues(ctx context.Context, input IssueExportInpu
 	return result, nil
 }
 
-const issueExportQuery = `SELECT json_build_object(
+var issueExportQuery = `SELECT json_build_object(
  'project_name',p.name,'project_identifier',p.identifier,
  'parent',COALESCE(parent_project.identifier||'-'||parent.sequence_id::text,''),
  'identifier',p.identifier||'-'||i.sequence_id::text,'sequence_id',i.sequence_id,'name',i.name,
@@ -312,20 +314,20 @@ const issueExportQuery = `SELECT json_build_object(
  'created_by_name',COALESCE(NULLIF(creator.display_name,''),trim(concat_ws(' ',creator.first_name,creator.last_name))),
  'start_date',i.start_date,'target_date',i.target_date,'completed_at',i.completed_at,'created_at',i.created_at,'updated_at',i.updated_at,'archived_at',i.archived_at,
  'estimate',COALESCE(estimate_point.value::text,''),
- 'labels',COALESCE((SELECT json_agg(label.name ORDER BY label.name) FROM issue_labels il JOIN labels label ON label.id=il.label_id WHERE il.issue_id=i.id AND il.deleted_at IS NULL),'[]'::json),
+ 'labels',COALESCE((SELECT json_agg(label.name ORDER BY label.name) FROM issue_labels il JOIN labels label ON label.id=il.label_id WHERE ` + issuequery.LiveIssueLabelPredicate("i", "il") + `),'[]'::json),
  'cycles',COALESCE((SELECT json_agg(cycle.name ORDER BY cycle.name) FROM cycle_issues ci JOIN cycles cycle ON cycle.id=ci.cycle_id WHERE ci.issue_id=i.id),'[]'::json),
  'modules',COALESCE((SELECT json_agg(module.name ORDER BY module.name) FROM module_issues mi JOIN modules module ON module.id=mi.module_id WHERE mi.issue_id=i.id),'[]'::json),
  'links',COALESCE((SELECT json_agg(json_build_object('url',link.url,'title',COALESCE(NULLIF(link.title,''),link.url)) ORDER BY link.created_at) FROM issue_links link WHERE link.issue_id=i.id),'[]'::json),
  'relations',COALESCE((SELECT json_agg(relation_value ORDER BY relation_value->>'direction',relation_value->>'issue') FROM (
-   SELECT json_build_object('type',rel.relation_type,'issue',related_project.identifier||'-'||related.sequence_id::text,'direction','outgoing') relation_value FROM issue_relations rel JOIN issues related ON related.id=rel.related_issue_id JOIN projects related_project ON related_project.id=related.project_id WHERE rel.issue_id=i.id
-   UNION ALL SELECT json_build_object('type',rel.relation_type,'issue',source_project.identifier||'-'||source.sequence_id::text,'direction','incoming') FROM issue_relations rel JOIN issues source ON source.id=rel.issue_id JOIN projects source_project ON source_project.id=source.project_id WHERE rel.related_issue_id=i.id
+   SELECT json_build_object('type',rel.relation_type,'issue',related_project.identifier||'-'||related.sequence_id::text,'direction','outgoing') relation_value FROM issue_relations rel JOIN issues related ON related.id=rel.related_issue_id JOIN projects related_project ON related_project.id=related.project_id WHERE rel.issue_id=i.id AND rel.deleted_at IS NULL AND ` + djangoapi.IssueVisibleSQL("related", "initiator.id", "i.workspace_id") + `
+   UNION ALL SELECT json_build_object('type',rel.relation_type,'issue',source_project.identifier||'-'||source.sequence_id::text,'direction','incoming') FROM issue_relations rel JOIN issues source ON source.id=rel.issue_id JOIN projects source_project ON source_project.id=source.project_id WHERE rel.related_issue_id=i.id AND rel.deleted_at IS NULL AND ` + djangoapi.IssueVisibleSQL("source", "initiator.id", "i.workspace_id") + `
  ) all_relations),'[]'::json),
  'comments',COALESCE((SELECT json_agg(json_build_object('comment',comment.comment_stripped,'created_by',COALESCE(NULLIF(actor.display_name,''),trim(concat_ws(' ',actor.first_name,actor.last_name))),'created_at',to_char(comment.created_at,'YYYY-MM-DD HH24:MI:SS')) ORDER BY comment.created_at) FROM issue_comments comment LEFT JOIN users actor ON actor.id=comment.actor_id WHERE comment.issue_id=i.id),'[]'::json),
- 'sub_issues_count',(SELECT count(*) FROM issues child WHERE child.parent_id=i.id AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft=false),
+ 'sub_issues_count',(SELECT count(*) FROM issues child WHERE child.parent_id=i.id AND ` + djangoapi.IssueVisibleSQL("child", "initiator.id", "i.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND child.is_draft=false),
  'link_count',(SELECT count(*) FROM issue_links link WHERE link.issue_id=i.id),
  'attachment_count',(SELECT count(*) FROM file_assets asset WHERE asset.issue_id=i.id AND asset.entity_type='ISSUE_ATTACHMENT'),
  'is_draft',i.is_draft
-) FROM issues i JOIN projects p ON p.id=i.project_id JOIN users initiator ON initiator.id=(SELECT initiated_by_id FROM exporters WHERE token=$3 AND type='issue_exports') LEFT JOIN states state ON state.id=i.state_id LEFT JOIN users creator ON creator.id=i.created_by_id LEFT JOIN estimate_points estimate_point ON estimate_point.id=i.estimate_point_id LEFT JOIN issues parent ON parent.id=i.parent_id LEFT JOIN projects parent_project ON parent_project.id=parent.project_id WHERE i.workspace_id=$1::uuid AND i.project_id=ANY($2::uuid[]) AND i.deleted_at IS NULL AND p.archived_at IS NULL AND EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=i.project_id AND pm.member_id=initiator.id AND pm.is_active=true) ORDER BY i.created_at,i.id`
+) FROM issues i JOIN projects p ON p.id=i.project_id JOIN users initiator ON initiator.id=(SELECT initiated_by_id FROM exporters WHERE token=$3 AND type='issue_exports') LEFT JOIN states state ON state.id=i.state_id LEFT JOIN users creator ON creator.id=i.created_by_id LEFT JOIN estimate_points estimate_point ON estimate_point.id=i.estimate_point_id LEFT JOIN issues parent ON parent.id=i.parent_id AND ` + djangoapi.IssueVisibleSQL("parent", "initiator.id", "i.workspace_id") + ` LEFT JOIN projects parent_project ON parent_project.id=parent.project_id WHERE i.workspace_id=$1::uuid AND i.project_id=ANY($2::uuid[]) AND i.deleted_at IS NULL AND p.archived_at IS NULL AND ` + djangoapi.IssueVisibleSQL("i", "initiator.id", "$1::uuid") + ` ORDER BY i.created_at,i.id`
 
 func formatIssueExport(filename, format string, records []map[string]any) (string, []byte, error) {
 	switch format {

@@ -5,9 +5,10 @@
  */
 
 // plane imports
-import { observer } from "mobx-react";
+
 import type { EProductSubscriptionEnum, TBillingFrequency } from "@plane/types";
-import { calculateYearlyDiscount, cn } from "@plane/utils";
+import { calculateYearlyDiscount } from "@plane/utils/subscription";
+import { cn } from "@plane/utils/common";
 
 type TPlanFrequencyToggleProps = {
   subscriptionType: EProductSubscriptionEnum;
@@ -17,7 +18,7 @@ type TPlanFrequencyToggleProps = {
   setSelectedFrequency: (frequency: TBillingFrequency) => void;
 };
 
-export const PlanFrequencyToggle = observer(function PlanFrequencyToggle(props: TPlanFrequencyToggleProps) {
+export const PlanFrequencyToggle = function PlanFrequencyToggle(props: TPlanFrequencyToggleProps) {
   const { monthlyPrice, yearlyPrice, selectedFrequency, setSelectedFrequency } = props;
   // derived values
   const yearlyDiscount = calculateYearlyDiscount(monthlyPrice, yearlyPrice);
@@ -57,4 +58,4 @@ export const PlanFrequencyToggle = observer(function PlanFrequencyToggle(props: 
       </div>
     </div>
   );
-});
+};

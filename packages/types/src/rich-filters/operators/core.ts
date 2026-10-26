@@ -9,6 +9,8 @@
  */
 export const CORE_LOGICAL_OPERATOR = {
   AND: "and",
+  OR: "or",
+  NOT: "not",
 } as const;
 
 /**

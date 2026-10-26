@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import { cn, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 
 type Props = {
   logo: string | null | undefined;
@@ -15,7 +15,7 @@ type Props = {
   classNames?: string;
 };
 
-export const WorkspaceLogo = observer(function WorkspaceLogo(props: Props) {
+export const WorkspaceLogo = function WorkspaceLogo(props: Props) {
   // translation
   const { t } = useTranslation();
 
@@ -38,4 +38,4 @@ export const WorkspaceLogo = observer(function WorkspaceLogo(props: Props) {
       )}
     </div>
   );
-});
+};

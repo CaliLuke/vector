@@ -262,6 +262,10 @@ func (store *PostgresIssueActivityStore) RecordIssueActivity(ctx context.Context
 	if err != nil {
 		return nil, fmt.Errorf("load project for issue activity: %w", err)
 	}
+	// Schema migrations lock the workspace before changing item rows.
+	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspaceID); err != nil {
+		return nil, fmt.Errorf("lock issue activity schema: %w", err)
+	}
 	rows, err := buildIssueActivityRows(ctx, tx, input)
 	if err != nil {
 		return nil, err

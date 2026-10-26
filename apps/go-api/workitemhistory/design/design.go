@@ -177,4 +177,53 @@ var _ = Service("work_item_history", func() {
 			httpErrors()
 		})
 	})
+	Method("property_history", func() {
+		sessionPayload([]string{"work_item_id"})
+		Result(responseMetadata)
+		declareErrors()
+		HTTP(func() {
+			GET("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/")
+			Param("slug")
+			Param("project_id")
+			Param("work_item_id")
+			Cookie("planeSessionCookieCredential:session-id")
+			rawResponse()
+			httpErrors()
+		})
+	})
+
+	Method("property_versions", func() {
+		sessionPayload([]string{"work_item_id", "property_id"}, "before")
+		Result(responseMetadata)
+		declareErrors()
+		HTTP(func() {
+			GET("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/")
+			Param("slug")
+			Param("project_id")
+			Param("work_item_id")
+			Param("property_id")
+			Param("before")
+			Cookie("planeSessionCookieCredential:session-id")
+			rawResponse()
+			httpErrors()
+		})
+	})
+
+	Method("property_version_detail", func() {
+		sessionPayload([]string{"work_item_id", "property_id", "pk"})
+		Result(responseMetadata)
+		declareErrors()
+		HTTP(func() {
+			GET("/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/")
+			Param("slug")
+			Param("project_id")
+			Param("work_item_id")
+			Param("property_id")
+			Param("pk")
+			Cookie("planeSessionCookieCredential:session-id")
+			rawResponse()
+			httpErrors()
+		})
+	})
+
 })

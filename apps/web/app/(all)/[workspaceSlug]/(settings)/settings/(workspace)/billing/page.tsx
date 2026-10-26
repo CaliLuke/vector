@@ -5,28 +5,30 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 // component
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { PageHead } from "@/components/core/page-title";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 // local imports
 import { BillingWorkspaceSettingsHeader } from "./header";
 import { BillingRoot } from "@/components/workspace/billing";
 
 function BillingSettingsPage(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
   // store hooks
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace, isPending, isError } = useWorkspacePermissions(workspaceSlug);
   // derived values
-  const canPerformWorkspaceAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const canPerformWorkspaceAdminActions = canWorkspace([EUserPermissions.ADMIN]);
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Billing & Plans` : undefined;
 
-  if (workspaceUserInfo && !canPerformWorkspaceAdminActions) {
+  if (isPending) return null;
+
+  if (isError || !canPerformWorkspaceAdminActions) {
     return <NotAuthorizedView section="settings" className="h-auto" />;
   }
 
@@ -39,5 +41,5 @@ function BillingSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/billing")({
-  component: observer(BillingSettingsPage),
+  component: BillingSettingsPage,
 });

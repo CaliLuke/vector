@@ -5,38 +5,30 @@
  */
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useCallback, useMemo } from "react";
+
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { GANTT_TIMELINE_TYPE } from "@plane/types";
+import { EUserPermissions } from "@plane/constants";
+import { EUserWorkspaceRoles } from "@plane/types";
+import type { IProjectUserPropertiesResponse, TProject } from "@plane/types";
+import { Button } from "@plane/propel/button";
 // components
 import { ProjectAccessRestriction } from "@/components/auth-screens/project/project-access-restriction";
-import {
-  PROJECT_DETAILS,
-  PROJECT_ME_INFORMATION,
-  PROJECT_LABELS,
-  PROJECT_MEMBERS,
-  PROJECT_MEMBER_PREFERENCES,
-  PROJECT_STATES,
-  PROJECT_ESTIMATES,
-  PROJECT_ALL_CYCLES,
-  PROJECT_MODULES,
-  PROJECT_VIEWS,
-  PROJECT_INTAKE_STATE,
-} from "@plane/constants";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useLabel } from "@/hooks/store/use-label";
-import { useMember } from "@/hooks/store/use-member";
-import { useModule } from "@/hooks/store/use-module";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
-import { useTimeLineChart } from "@/hooks/use-timeline-chart";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useProjectDetail } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useJoinProject, useProjectPermissions } from "@/hooks/use-permissions";
+import { usePatchProjectUserProperties, useProjectUserProperties } from "@/hooks/use-project-user-properties";
+import {
+  projectIssueFiltersFromProperties,
+  projectIssueRequestInputFromProperties,
+} from "@/helpers/issue-list/request";
+import type { ProjectUserPropertiesPatch } from "@/queries/project-user-properties";
+import { ProjectIssuePreferencesContext } from "@/hooks/use-project-issue-preferences-context";
 
 interface IProjectAuthWrapper {
   workspaceSlug: string;
@@ -45,117 +37,200 @@ interface IProjectAuthWrapper {
   isLoading?: boolean;
 }
 
-export const ProjectAuthWrapper = observer(function ProjectAuthWrapper(props: IProjectAuthWrapper) {
+function projectIdentifierFor(project: TProject | undefined, projectId: string) {
+  return project?.id === projectId ? project.identifier : undefined;
+}
+
+export const ProjectAuthWrapper = function ProjectAuthWrapper(props: IProjectAuthWrapper) {
   const { workspaceSlug, projectId, children, isLoading: isParentLoading = false } = props;
-  // states
-  const [isJoiningProject, setIsJoiningProject] = useState(false);
   // store hooks
-  const { fetchUserProjectInfo, allowPermissions, getProjectRoleByWorkspaceSlugAndProjectId } = useUserPermissions();
-  const { fetchProjectDetails } = useProject();
-  const { joinProject } = useUserPermissions();
-  const { fetchAllCycles } = useCycle();
-  const { fetchModulesSlim, fetchModules } = useModule();
-  const { initGantt } = useTimeLineChart(GANTT_TIMELINE_TYPE.MODULE);
-  const { fetchViews } = useProjectView();
-  const {
-    project: { fetchProjectMembers, fetchProjectUserProperties },
-  } = useMember();
-  const { fetchProjectStates, fetchProjectIntakeState } = useProjectState();
-  const { data: currentUserData } = useUser();
-  const { fetchProjectLabels } = useLabel();
-  const { getProjectEstimates } = useProjectEstimates();
+  const permissions = useProjectPermissions(workspaceSlug, projectId);
+  const joinProject = useJoinProject(workspaceSlug, projectId);
   // derived values
-  const hasPermissionToCurrentProject = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
-  const currentProjectRole = getProjectRoleByWorkspaceSlugAndProjectId(workspaceSlug, projectId);
-  const isWorkspaceAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE, workspaceSlug);
-  // Initialize module timeline chart
-  useEffect(() => {
-    initGantt();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  const hasPermissionToCurrentProject = permissions.can([
+    EUserPermissions.ADMIN,
+    EUserPermissions.MEMBER,
+    EUserPermissions.GUEST,
+  ]);
+  useProjectLabels(workspaceSlug, projectId);
+  const isWorkspaceAdmin = permissions.workspaceRole === EUserWorkspaceRoles.ADMIN;
   // fetching project details
-  const { isLoading: isProjectDetailsLoading, error: projectDetailsError } = useSWR(
-    PROJECT_DETAILS(workspaceSlug, projectId),
-    () => fetchProjectDetails(workspaceSlug, projectId)
+  const projectDetails = useProjectDetail(workspaceSlug, projectId, true, true);
+  const canLoadProject = hasPermissionToCurrentProject && projectDetails.project !== undefined;
+  const projectPropertiesQuery = useProjectEntities(
+    workspaceSlug,
+    projectId,
+    hasPermissionToCurrentProject,
+    canLoadProject,
+    projectDetails.project
   );
-  // fetching user project member information
-  useSWR(PROJECT_ME_INFORMATION(workspaceSlug, projectId), () => fetchUserProjectInfo(workspaceSlug, projectId));
-  // fetching project member preferences
-  useSWR(
-    currentUserData?.id ? PROJECT_MEMBER_PREFERENCES(projectId, currentProjectRole) : null,
-    currentUserData?.id ? () => fetchProjectUserProperties(workspaceSlug, projectId) : null,
-    { revalidateIfStale: false, revalidateOnFocus: false }
+  const canWriteProjectPreferences =
+    hasPermissionToCurrentProject && projectPropertiesQuery.data !== undefined && !projectPropertiesQuery.isError;
+  const { mutateAsync: patchProjectProperties } = usePatchProjectUserProperties(
+    workspaceSlug,
+    projectId,
+    canWriteProjectPreferences
   );
-  // fetching project labels
-  useSWR(PROJECT_LABELS(projectId, currentProjectRole), () => fetchProjectLabels(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project members
-  useSWR(PROJECT_MEMBERS(projectId, currentProjectRole), () => fetchProjectMembers(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project states
-  useSWR(PROJECT_STATES(projectId, currentProjectRole), () => fetchProjectStates(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project intake state
-  useSWR(PROJECT_INTAKE_STATE(projectId, currentProjectRole), () => fetchProjectIntakeState(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project estimates
-  useSWR(PROJECT_ESTIMATES(projectId, currentProjectRole), () => getProjectEstimates(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project cycles
-  useSWR(PROJECT_ALL_CYCLES(projectId, currentProjectRole), () => fetchAllCycles(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
-  // fetching project modules
-  useSWR(
-    PROJECT_MODULES(projectId, currentProjectRole),
-    async () => {
-      await Promise.all([fetchModulesSlim(workspaceSlug, projectId), fetchModules(workspaceSlug, projectId)]);
+  const saveProjectPreferences = useCallback(
+    async (patch: ProjectUserPropertiesPatch): Promise<IProjectUserPropertiesResponse> => {
+      if (!canWriteProjectPreferences) throw new Error("Project preferences are not ready to update.");
+      return patchProjectProperties(patch);
     },
-    { revalidateIfStale: false, revalidateOnFocus: false }
+    [canWriteProjectPreferences, patchProjectProperties]
   );
-  // fetching project views
-  useSWR(PROJECT_VIEWS(projectId, currentProjectRole), () => fetchViews(workspaceSlug, projectId), {
-    revalidateIfStale: false,
-    revalidateOnFocus: false,
-  });
+  const projectIdentifier = projectIdentifierFor(projectDetails.project, projectId);
+  const preferenceContext = useMemo(
+    () => ({
+      workspaceSlug,
+      projectId,
+      properties: projectPropertiesQuery.data,
+      issueFilters: projectPropertiesQuery.data
+        ? projectIssueFiltersFromProperties(projectPropertiesQuery.data)
+        : undefined,
+      requestInput: projectPropertiesQuery.data
+        ? projectIssueRequestInputFromProperties(
+            workspaceSlug,
+            projectId,
+            projectPropertiesQuery.data,
+            projectIdentifier
+          )
+        : undefined,
+      isPending: projectPropertiesQuery.isPending,
+      isError: projectPropertiesQuery.isError,
+      refetch: projectPropertiesQuery.refetch,
+      save: saveProjectPreferences,
+    }),
+    [
+      projectId,
+      projectPropertiesQuery.data,
+      projectPropertiesQuery.isError,
+      projectPropertiesQuery.isPending,
+      projectPropertiesQuery.refetch,
+      projectIdentifier,
+      saveProjectPreferences,
+      workspaceSlug,
+    ]
+  );
 
-  // handle join project
-  const handleJoinProject = () => {
-    setIsJoiningProject(true);
-    joinProject(workspaceSlug, projectId).finally(() => setIsJoiningProject(false));
+  const retryAccess = () => {
+    void projectDetails.retryAccess();
   };
+  const handleJoinProject = () => {
+    joinProject.mutate(undefined, {
+      onSuccess: () => {
+        void projectDetails.retryAccess();
+      },
+    });
+  };
+  const errorStatus = projectErrorStatus(projectDetails.error);
+  const accessState = projectAccessState({
+    isParentLoading,
+    permissions,
+    projectDetails,
+    errorStatus,
+    hasPermissionToCurrentProject,
+    hasJoined: joinProject.isSuccess,
+  });
+  if (accessState === "loading") return null;
 
-  const isProjectLoading = (isParentLoading || isProjectDetailsLoading) && !projectDetailsError;
-
-  if (isProjectLoading) return null;
-
-  if (!isProjectLoading && hasPermissionToCurrentProject === false) {
+  if (accessState === "unavailable" || accessState === "joined") {
     return (
-      <ProjectAccessRestriction
-        errorStatusCode={projectDetailsError?.status}
-        isWorkspaceAdmin={isWorkspaceAdmin}
-        handleJoinProject={handleJoinProject}
-        isJoinButtonDisabled={isJoiningProject}
-      />
+      <div role="alert" className="flex h-full flex-col items-center justify-center gap-3">
+        <p>
+          {joinProject.isSuccess
+            ? "Project joined. Unable to load project access yet."
+            : "Unable to load project access. Please try again."}
+        </p>
+        <Button
+          disabled={
+            permissions.membershipQuery.isFetching || permissions.rolesQuery.isFetching || projectDetails.isFetching
+          }
+          onClick={retryAccess}
+        >
+          Retry
+        </Button>
+      </div>
     );
   }
 
-  return <>{children}</>;
-});
+  if (accessState === "restricted") {
+    return (
+      <>
+        {joinProject.isError && (
+          <p role="alert" className="text-center text-danger-primary">
+            Unable to join this project. Please try again.
+          </p>
+        )}
+        <ProjectAccessRestriction
+          errorStatusCode={errorStatus}
+          isWorkspaceAdmin={isWorkspaceAdmin}
+          handleJoinProject={handleJoinProject}
+          isJoinButtonDisabled={joinProject.isPending}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {projectPropertiesQuery.isError && (
+        <div role="alert" className="flex items-center gap-3">
+          <p>Unable to load project preferences.</p>
+          <Button disabled={projectPropertiesQuery.isFetching} onClick={() => void projectPropertiesQuery.refetch()}>
+            Retry
+          </Button>
+        </div>
+      )}
+      <ProjectIssuePreferencesContext.Provider value={preferenceContext}>
+        {children}
+      </ProjectIssuePreferencesContext.Provider>
+    </>
+  );
+};
+
+function useProjectEntities(
+  workspaceSlug: string,
+  projectId: string,
+  canAccessProject: boolean,
+  canLoadProject: boolean,
+  project: TProject | undefined
+) {
+  useProjectStates(workspaceSlug, projectId, Boolean(project?.inbox_view), canLoadProject);
+  useProjectEstimates(canLoadProject ? workspaceSlug : undefined, canLoadProject ? projectId : undefined);
+  // Fetch the full project-preferences response into its native account/scope Query cache.
+  const projectPropertiesQuery = useProjectUserProperties(workspaceSlug, projectId, {
+    canAccess: canAccessProject,
+    fetchEnabled: canLoadProject,
+  });
+  useProjectCycles(canLoadProject ? workspaceSlug : undefined, canLoadProject ? projectId : undefined);
+  useProjectModules(canLoadProject ? workspaceSlug : undefined, canLoadProject ? projectId : undefined);
+  return projectPropertiesQuery;
+}
+
+function projectErrorStatus(error: unknown) {
+  if (error && typeof error === "object" && "status" in error && typeof error.status === "number") return error.status;
+  return undefined;
+}
+
+function projectAccessState({
+  isParentLoading,
+  permissions,
+  projectDetails,
+  errorStatus,
+  hasPermissionToCurrentProject,
+  hasJoined,
+}: {
+  isParentLoading: boolean;
+  permissions: Pick<ReturnType<typeof useProjectPermissions>, "isPending" | "isError">;
+  projectDetails: { isPending: boolean; isError: boolean; isSuccess: boolean };
+  errorStatus: number | undefined;
+  hasPermissionToCurrentProject: boolean;
+  hasJoined: boolean;
+}) {
+  if (isParentLoading || permissions.isPending || projectDetails.isPending) return "loading";
+  if (permissions.isError || (projectDetails.isError && ![403, 404, 409].includes(errorStatus ?? 0)))
+    return "unavailable";
+  if (hasJoined && (!hasPermissionToCurrentProject || !projectDetails.isSuccess)) return "joined";
+  if (!hasPermissionToCurrentProject || projectDetails.isError) return "restricted";
+  return "ready";
+}

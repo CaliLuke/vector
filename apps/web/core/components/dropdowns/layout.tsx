@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ISSUE_LAYOUT_MAP } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -13,7 +13,7 @@ import { CheckIcon } from "@plane/propel/icons";
 import { EIssueLayoutTypes } from "@plane/types";
 import { getButtonStyling } from "@plane/propel/button";
 import { Dropdown } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { IssueLayoutIcon } from "@/components/issues/issue-layouts/layout-icon";
 
@@ -23,8 +23,19 @@ type TLayoutDropDown = {
   disabledLayouts?: EIssueLayoutTypes[];
 };
 
-export const LayoutDropDown = observer(function LayoutDropDown(props: TLayoutDropDown) {
-  const { onChange, value = EIssueLayoutTypes.LIST, disabledLayouts = [] } = props;
+function getLayoutDetails(value: string | string[] | undefined) {
+  if (typeof value !== "string") return ISSUE_LAYOUT_MAP[EIssueLayoutTypes.LIST];
+  return (
+    Object.entries(ISSUE_LAYOUT_MAP).find(([key]) => key === value)?.[1] ?? ISSUE_LAYOUT_MAP[EIssueLayoutTypes.LIST]
+  );
+}
+
+function getLayoutType(value: string): EIssueLayoutTypes | undefined {
+  return Object.values(EIssueLayoutTypes).find((layout) => layout.valueOf() === value);
+}
+
+export const LayoutDropDown = function LayoutDropDown(props: TLayoutDropDown) {
+  const { onChange, value, disabledLayouts = [] } = props;
   // plane i18n
   const { t } = useTranslation();
   // derived values
@@ -42,35 +53,44 @@ export const LayoutDropDown = observer(function LayoutDropDown(props: TLayoutDro
     [availableLayouts]
   );
 
-  const buttonContent = useCallback((isOpen: boolean, buttonValue: string | string[] | undefined) => {
-    const dropdownValue = ISSUE_LAYOUT_MAP[buttonValue as EIssueLayoutTypes];
-    return (
-      <div className="flex items-center gap-2 text-secondary">
-        <IssueLayoutIcon layout={dropdownValue.key} strokeWidth={2} className={`size-3.5 text-secondary`} />
-        <span className="text-11 font-medium">{t(dropdownValue.i18n_label)}</span>
-      </div>
-    );
-  }, []);
-
-  const itemContent = useCallback((props: { value: string; selected: boolean }) => {
-    const dropdownValue = ISSUE_LAYOUT_MAP[props.value as EIssueLayoutTypes];
-
-    return (
-      <div className={cn("flex w-full items-center justify-between gap-2 text-secondary")}>
-        <div className="flex items-center gap-2">
-          <IssueLayoutIcon layout={dropdownValue.key} strokeWidth={2} className={`size-3 text-secondary`} />
+  const buttonContent = useCallback(
+    (_isOpen: boolean, buttonValue: string | string[] | undefined) => {
+      const dropdownValue = getLayoutDetails(buttonValue);
+      return (
+        <div className="flex items-center gap-2 text-secondary">
+          <IssueLayoutIcon layout={dropdownValue.key} strokeWidth={2} className={`size-3.5 text-secondary`} />
           <span className="text-11 font-medium">{t(dropdownValue.i18n_label)}</span>
         </div>
-        {props.selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
-      </div>
-    );
-  }, []);
+      );
+    },
+    [t]
+  );
 
-  const keyExtractor = useCallback((option: any) => option.value, []);
+  const itemContent = useCallback(
+    (item: { value: string; selected: boolean }) => {
+      const dropdownValue = getLayoutDetails(item.value);
+
+      return (
+        <div className={cn("flex w-full items-center justify-between gap-2 text-secondary")}>
+          <div className="flex items-center gap-2">
+            <IssueLayoutIcon layout={dropdownValue.key} strokeWidth={2} className={`size-3 text-secondary`} />
+            <span className="text-11 font-medium">{t(dropdownValue.i18n_label)}</span>
+          </div>
+          {item.selected && <CheckIcon className="h-3.5 w-3.5 flex-shrink-0" />}
+        </div>
+      );
+    },
+    [t]
+  );
+
+  const keyExtractor = useCallback((option: { data: unknown; value: string }) => option.value, []);
 
   return (
     <Dropdown
-      onChange={onChange as (value: string) => void}
+      onChange={(selected) => {
+        const layout = getLayoutType(selected);
+        if (layout) onChange(layout);
+      }}
       value={value?.toString()}
       keyExtractor={keyExtractor}
       options={options}
@@ -80,4 +100,4 @@ export const LayoutDropDown = observer(function LayoutDropDown(props: TLayoutDro
       disableSearch
     />
   );
-});
+};

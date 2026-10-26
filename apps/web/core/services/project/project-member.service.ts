@@ -15,8 +15,12 @@ export class ProjectMemberService extends APIService {
     super(API_BASE_URL);
   }
 
-  async fetchProjectMembers(workspaceSlug: string, projectId: string): Promise<TProjectMembership[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`)
+  async fetchProjectMembers(
+    workspaceSlug: string,
+    projectId: string,
+    signal?: AbortSignal
+  ): Promise<TProjectMembership[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/members/`, {}, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -32,14 +36,6 @@ export class ProjectMemberService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
-      });
-  }
-
-  async projectMemberMe(workspaceSlug: string, projectId: string): Promise<TProjectMembership> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/project-members/me/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
       });
   }
 
@@ -72,7 +68,3 @@ export class ProjectMemberService extends APIService {
       });
   }
 }
-
-const projectMemberService = new ProjectMemberService();
-
-export default projectMemberService;

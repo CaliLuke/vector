@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { PlusIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TInvitationModalActionsProps = {
   isInviteDisabled?: boolean;
@@ -26,7 +24,7 @@ type TInvitationModalActionsProps = {
   className?: string;
 };
 
-export const InvitationModalActions = observer(function InvitationModalActions(props: TInvitationModalActionsProps) {
+export const InvitationModalActions = function InvitationModalActions(props: TInvitationModalActionsProps) {
   const {
     isInviteDisabled = false,
     isSubmitting = false,
@@ -51,16 +49,22 @@ export const InvitationModalActions = observer(function InvitationModalActions(p
           }
         )}
         onClick={appendField}
-        disabled={isInviteDisabled}
+        disabled={isInviteDisabled || isSubmitting}
       >
         <PlusIcon className="h-3.5 w-3.5" />
         {addMoreButtonText || t("common.add_more")}
       </button>
       <div className="flex items-center gap-2">
-        <Button variant="secondary" size="lg" onClick={handleClose}>
+        <Button variant="secondary" type="button" size="lg" onClick={handleClose} disabled={isSubmitting}>
           {cancelButtonText || t("cancel")}
         </Button>
-        <Button variant="primary" size="lg" type="submit" loading={isSubmitting} disabled={isInviteDisabled}>
+        <Button
+          variant="primary"
+          size="lg"
+          type="submit"
+          loading={isSubmitting}
+          disabled={isInviteDisabled || isSubmitting}
+        >
           {isSubmitting
             ? submitButtonText?.loading || t("workspace_settings.settings.members.modal.button_loading")
             : submitButtonText?.default || t("workspace_settings.settings.members.modal.button")}
@@ -68,4 +72,4 @@ export const InvitationModalActions = observer(function InvitationModalActions(p
       </div>
     </div>
   );
-});
+};

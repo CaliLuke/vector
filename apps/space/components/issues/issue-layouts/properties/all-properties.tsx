@@ -4,19 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Paperclip } from "lucide-react";
 import { LinkIcon, ViewsIcon } from "@plane/propel/icons";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueDisplayProperties } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/with-display-properties-HOC";
 // helpers
 import { getDate } from "@/helpers/date-time.helper";
 //// hooks
-import type { IIssue } from "@/types/issue";
+
+import type { IPublicIssue } from "@plane/types";
 import { IssueBlockCycle } from "./cycle";
 import { IssueBlockDate } from "./due-date";
 import { IssueBlockLabels } from "./labels";
@@ -26,12 +26,12 @@ import { IssueBlockPriority } from "./priority";
 import { IssueBlockState } from "./state";
 
 export interface IIssueProperties {
-  issue: IIssue;
+  issue: IPublicIssue;
   displayProperties: IIssueDisplayProperties | undefined;
   className: string;
 }
 
-export const IssueProperties = observer(function IssueProperties(props: IIssueProperties) {
+export const IssueProperties = function IssueProperties(props: IIssueProperties) {
   const { issue, displayProperties, className } = props;
 
   if (!displayProperties || !issue.project_id) return null;
@@ -182,4 +182,4 @@ export const IssueProperties = observer(function IssueProperties(props: IIssuePr
       </WithDisplayPropertiesHOC>
     </div>
   );
-});
+};

@@ -8,14 +8,19 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { NotificationsSidebarRoot } from "@/components/workspace-notifications/sidebar";
 
+import { NotificationsProvider } from "@/components/workspace-notifications/provider";
+
 function ProjectInboxIssuesLayout(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
   return (
-    <div className="relative flex h-full w-full items-center overflow-hidden">
-      <NotificationsSidebarRoot />
-      <div className="h-full w-full overflow-hidden overflow-y-auto">
-        <Outlet />
+    <NotificationsProvider key={workspaceSlug} workspaceSlug={workspaceSlug}>
+      <div className="relative flex h-full w-full items-center overflow-hidden">
+        <NotificationsSidebarRoot />
+        <div className="h-full w-full overflow-hidden overflow-y-auto">
+          <Outlet />
+        </div>
       </div>
-    </div>
+    </NotificationsProvider>
   );
 }
 

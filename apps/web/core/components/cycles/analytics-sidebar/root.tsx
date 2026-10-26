@@ -5,7 +5,8 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+
 // plane imports
 import { Loader } from "@plane/ui";
 // local imports
@@ -22,16 +23,22 @@ type Props = {
   workspaceSlug: string;
 };
 
-export const CycleDetailsSidebar = observer(function CycleDetailsSidebar(props: Props) {
+export const CycleDetailsSidebar = function CycleDetailsSidebar(props: Props) {
   const { handleClose, isArchived, projectId, workspaceSlug, cycleId } = props;
 
   // store hooks
-  const { cycle: cycleDetails } = useCyclesDetails({
+  const {
+    cycle: cycleDetails,
+    isError,
+    retry,
+  } = useCyclesDetails({
     workspaceSlug,
     projectId,
     cycleId,
+    isArchived,
   });
 
+  if (isError) return <CatalogueReadFailure label="cycles" retry={retry} />;
   if (!cycleDetails)
     return (
       <Loader className="px-5">
@@ -57,12 +64,17 @@ export const CycleDetailsSidebar = observer(function CycleDetailsSidebar(props: 
           isArchived={isArchived}
           handleClose={handleClose}
         />
-        <CycleSidebarDetails projectId={projectId} cycleDetails={cycleDetails} />
+        <CycleSidebarDetails workspaceSlug={workspaceSlug} projectId={projectId} cycleDetails={cycleDetails} />
       </div>
 
       {workspaceSlug && projectId && cycleDetails?.id && (
-        <CycleAnalyticsProgress workspaceSlug={workspaceSlug} projectId={projectId} cycleId={cycleDetails?.id} />
+        <CycleAnalyticsProgress
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          cycleId={cycleDetails?.id}
+          isArchived={isArchived}
+        />
       )}
     </div>
   );
-});
+};

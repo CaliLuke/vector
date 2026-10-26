@@ -5,8 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
 // Vector imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -14,7 +12,7 @@ import type { IState } from "@plane/types";
 // ui
 import { AlertModalCore } from "@plane/ui";
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useProjectStates } from "@/hooks/use-project-states";
 
 type TStateDeleteModal = {
   isOpen: boolean;
@@ -22,25 +20,20 @@ type TStateDeleteModal = {
   data: IState | null;
 };
 
-export const StateDeleteModal = observer(function StateDeleteModal(props: TStateDeleteModal) {
+export function StateDeleteModal(props: TStateDeleteModal) {
   const { isOpen, onClose, data } = props;
-  // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { deleteState } = useProjectState();
+  const { deleteState, mutation } = useProjectStates(workspaceSlug, data?.project_id);
 
   const handleClose = () => {
     onClose();
-    setIsDeleteLoading(false);
   };
 
   const handleDeletion = async () => {
     if (!workspaceSlug || !data) return;
 
-    setIsDeleteLoading(true);
-
-    await deleteState(workspaceSlug.toString(), data.project_id, data.id)
+    await deleteState(data.id)
       .then(() => {
         handleClose();
       })
@@ -58,9 +51,6 @@ export const StateDeleteModal = observer(function StateDeleteModal(props: TState
             title: "Error!",
             message: "State could not be deleted. Please try again.",
           });
-      })
-      .finally(() => {
-        setIsDeleteLoading(false);
       });
   };
 
@@ -68,7 +58,7 @@ export const StateDeleteModal = observer(function StateDeleteModal(props: TState
     <AlertModalCore
       handleClose={handleClose}
       handleSubmit={handleDeletion}
-      isSubmitting={isDeleteLoading}
+      isSubmitting={mutation.isPending}
       isOpen={isOpen}
       title="Delete State"
       content={
@@ -79,4 +69,4 @@ export const StateDeleteModal = observer(function StateDeleteModal(props: TState
       }
     />
   );
-});
+}

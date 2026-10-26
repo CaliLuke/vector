@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import packageJson from "package.json";
 import { useTranslation } from "@plane/i18n";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
-export const ProductUpdatesHeader = observer(function ProductUpdatesHeader() {
+export function ProductUpdatesHeader() {
   const { t } = useTranslation();
   return (
     <div className="mx-6 my-4 flex flex-shrink-0 items-center justify-between gap-2">
@@ -26,4 +25,4 @@ export const ProductUpdatesHeader = observer(function ProductUpdatesHeader() {
       </div>
     </div>
   );
-});
+}

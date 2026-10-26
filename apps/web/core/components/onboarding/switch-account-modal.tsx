@@ -14,7 +14,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser, useSignOut } from "@/hooks/use-current-user";
 
 type Props = {
   isOpen: boolean;
@@ -28,7 +28,8 @@ export function SwitchAccountModal(props: Props) {
   // router
   const router = useRouter();
   // store hooks
-  const { data: userData, signOut } = useUser();
+  const { data: userData } = useCurrentUser();
+  const { mutateAsync: signOut } = useSignOut();
 
   const { setTheme } = useTheme();
 

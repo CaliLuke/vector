@@ -9,12 +9,12 @@ import React from "react";
 // ui
 import { Button } from "@plane/propel/button";
 
-type Props = {
+export type EmptyStateProps = {
   title: string;
   description?: React.ReactNode;
-  image: any;
+  image?: string;
   primaryButton?: {
-    icon?: any;
+    icon?: React.ReactElement;
     text: string;
     onClick: () => void;
   };
@@ -22,7 +22,14 @@ type Props = {
   disabled?: boolean;
 };
 
-export function EmptyState({ title, description, image, primaryButton, secondaryButton, disabled = false }: Props) {
+export function EmptyState({
+  title,
+  description,
+  image,
+  primaryButton,
+  secondaryButton,
+  disabled = false,
+}: EmptyStateProps) {
   return (
     <div className={`flex h-full w-full items-center justify-center`}>
       <div className="flex w-full flex-col items-center text-center">

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // constants
 import { NETWORK_CHOICES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -16,7 +15,7 @@ type Props = {
   editable: boolean | undefined;
 };
 
-export const AppliedAccessFilters = observer(function AppliedAccessFilters(props: Props) {
+export const AppliedAccessFilters = function AppliedAccessFilters(props: Props) {
   const { handleRemove, values, editable } = props;
   const { t } = useTranslation();
 
@@ -41,4 +40,4 @@ export const AppliedAccessFilters = observer(function AppliedAccessFilters(props
       })}
     </>
   );
-});
+};

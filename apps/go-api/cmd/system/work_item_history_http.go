@@ -17,6 +17,9 @@ var workItemHistoryPaths = []string{
 	"/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/",
 	"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/",
 	"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/",
+	"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/",
+	"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/",
+	"/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/",
 }
 
 func newWorkItemHistoryProtocol(pattern string) readServiceProtocol {
@@ -26,6 +29,8 @@ func newWorkItemHistoryProtocol(pattern string) readServiceProtocol {
 		name = "Issue Meta Endpoint"
 	case workItemHistoryPaths[2], workItemHistoryPaths[3]:
 		name = "Issue Version Endpoint"
+	case workItemHistoryPaths[6], workItemHistoryPaths[7], workItemHistoryPaths[8]:
+		name = "Work Item Property History Endpoint"
 	case workItemHistoryPaths[4], workItemHistoryPaths[5]:
 		name = "Work Item Description Version Endpoint"
 	}
@@ -55,6 +60,9 @@ func mountWorkItemHistory(
 		{workItemHistoryPaths[3], server.VersionDetail},
 		{workItemHistoryPaths[4], server.DescriptionVersions},
 		{workItemHistoryPaths[5], server.DescriptionVersionDetail},
+		{workItemHistoryPaths[6], server.PropertyHistory},
+		{workItemHistoryPaths[7], server.PropertyVersions},
+		{workItemHistoryPaths[8], server.PropertyVersionDetail},
 	}, cors)
 }
 

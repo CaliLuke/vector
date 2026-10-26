@@ -4,12 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
 import { Disclosure } from "@headlessui/react";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 // plane imports
 import { useTranslation } from "@plane/i18n";
+import type { TWorkItemFilterCondition } from "@plane/shared-state";
 import type { ICycle } from "@plane/types";
 import { Row } from "@plane/ui";
 // assets
@@ -23,8 +23,9 @@ import useCyclesDetails from "@/components/cycles/active-cycle/use-cycles-detail
 import { CycleListGroupHeader } from "@/components/cycles/list/cycle-list-group-header";
 import { CyclesListItem } from "@/components/cycles/list/cycles-list-item";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import type { ActiveCycleIssueDetails } from "@/store/issue/cycle";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { activeCycle as selectActiveCycle } from "@/queries/cycle-module-selectors";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 interface IActiveCycleDetails {
   workspaceSlug: string;
@@ -39,18 +40,16 @@ type ActiveCyclesComponentProps = {
   activeCycleResolvedPath: string;
   workspaceSlug: string;
   projectId: string;
-  handleFiltersUpdate: (filters: any) => void;
-  cycleIssueDetails?: ActiveCycleIssueDetails | { nextPageResults: boolean };
+  handleFiltersUpdate: (filters: TWorkItemFilterCondition[]) => void;
 };
 
-const ActiveCyclesComponent = observer(function ActiveCyclesComponent({
+const ActiveCyclesComponent = function ActiveCyclesComponent({
   cycleId,
   activeCycle,
   activeCycleResolvedPath: _activeCycleResolvedPath,
   workspaceSlug,
   projectId,
   handleFiltersUpdate,
-  cycleIssueDetails,
 }: ActiveCyclesComponentProps) {
   const { t } = useTranslation();
 
@@ -69,7 +68,7 @@ const ActiveCyclesComponent = observer(function ActiveCyclesComponent({
     <div className="flex flex-col border-b border-subtle">
       <CyclesListItem
         key={cycleId}
-        cycleId={cycleId}
+        cycle={activeCycle}
         workspaceSlug={workspaceSlug}
         projectId={projectId}
         className="!border-b-transparent"
@@ -89,31 +88,47 @@ const ActiveCyclesComponent = observer(function ActiveCyclesComponent({
             cycle={activeCycle}
             cycleId={cycleId}
             handleFiltersUpdate={handleFiltersUpdate}
-            cycleIssueDetails={cycleIssueDetails}
           />
         </div>
       </Row>
     </div>
   );
-});
+};
 
-export const ActiveCycleRoot = observer(function ActiveCycleRoot(props: IActiveCycleDetails) {
+export const ActiveCycleRoot = function ActiveCycleRoot(props: IActiveCycleDetails) {
   const { workspaceSlug, projectId, cycleId: propsCycleId, showHeader = true } = props;
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { currentProjectActiveCycleId } = useCycle();
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
   // derived values
-  const cycleId = propsCycleId ?? currentProjectActiveCycleId;
+  const cycleId = propsCycleId ?? selectActiveCycle(catalogue.cycles)?.id;
   const activeCycleResolvedPath = resolvedTheme === "light" ? lightActiveCycleAsset : darkActiveCycleAsset;
   // fetch cycle details
   const {
-    handleFiltersUpdate,
+    handleFiltersUpdate: saveFilters,
     cycle: activeCycle,
-    cycleIssueDetails,
+    isError,
+    isPending,
+    retry,
   } = useCyclesDetails({ workspaceSlug, projectId, cycleId });
+
+  const handleFiltersUpdate = (conditions: TWorkItemFilterCondition[]) => {
+    void saveFilters(conditions).catch((error) => console.warn("Cycle filters could not be saved.", error));
+  };
+  if (catalogue.isError || catalogue.isAccessDenied || isError)
+    return (
+      <CatalogueReadFailure
+        label="active cycle"
+        retry={async () => {
+          await catalogue.retry();
+          await retry();
+        }}
+      />
+    );
+  if (catalogue.isPending || isPending) return <output>Loading active cycle…</output>;
 
   return (
     <>
@@ -132,7 +147,6 @@ export const ActiveCycleRoot = observer(function ActiveCycleRoot(props: IActiveC
                   workspaceSlug={workspaceSlug}
                   projectId={projectId}
                   handleFiltersUpdate={handleFiltersUpdate}
-                  cycleIssueDetails={cycleIssueDetails}
                 />
               </Disclosure.Panel>
             </>
@@ -146,9 +160,8 @@ export const ActiveCycleRoot = observer(function ActiveCycleRoot(props: IActiveC
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           handleFiltersUpdate={handleFiltersUpdate}
-          cycleIssueDetails={cycleIssueDetails}
         />
       )}
     </>
   );
-});
+};

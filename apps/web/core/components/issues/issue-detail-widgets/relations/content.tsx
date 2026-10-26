@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { TIssue, TIssueServiceType, TIssueRelationTypes } from "@plane/types";
@@ -16,7 +16,8 @@ import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 import { useTimeLineRelationOptions } from "@/components/relations";
 import { CreateUpdateEpicModal } from "@/components/epic-modal";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useIssueRelations } from "@/hooks/use-issue-resources";
 // helper
 import { DeleteIssueModal } from "../../delete-issue-modal";
 import { RelationIssueList } from "../../relations/issue-list";
@@ -24,12 +25,34 @@ import { useRelationOperations } from "./helper";
 
 type Props = {
   workspaceSlug: string;
+  projectId: string;
   issueId: string;
   disabled: boolean;
   issueServiceType?: TIssueServiceType;
 };
 
 type TIssueCrudState = { toggle: boolean; issueId: string | undefined; issue: TIssue | undefined };
+
+type TVisibleRelationRow = {
+  relationKey: TIssueRelationTypes;
+  issues: TIssue[];
+  icon: ((size: number) => React.ReactElement) | undefined;
+  labelKey: string | undefined;
+  className: string | undefined;
+};
+
+function getVisibleRelationRows(
+  relations: ReturnType<typeof useIssueRelations>["relations"],
+  options: ReturnType<typeof useTimeLineRelationOptions>
+): TVisibleRelationRow[] {
+  if (!relations) return [];
+  return (Object.keys(relations) as TIssueRelationTypes[]).flatMap((relationKey) => {
+    const option = options[relationKey];
+    const issues = relations[relationKey];
+    if (!option || issues.length === 0) return [];
+    return [{ relationKey, issues, icon: option.icon, labelKey: option.i18n_label, className: option.className }];
+  });
+}
 
 export type TRelationObject = {
   key: TIssueRelationTypes;
@@ -39,8 +62,32 @@ export type TRelationObject = {
   placeholder: string;
 };
 
-export const RelationsCollapsibleContent = observer(function RelationsCollapsibleContent(props: Props) {
-  const { workspaceSlug, issueId, disabled = false, issueServiceType = EIssueServiceType.ISSUES } = props;
+function RelationRetryButton({
+  queryError,
+  accessError,
+  retry,
+  refetch,
+}: {
+  queryError: boolean;
+  accessError: boolean;
+  retry: () => Promise<unknown>;
+  refetch: () => Promise<unknown>;
+}) {
+  const { t } = useTranslation();
+  if (!queryError && !accessError) return null;
+  return (
+    <button
+      type="button"
+      className="text-11 text-danger-primary"
+      onClick={() => void (accessError ? retry() : refetch())}
+    >
+      {t("common.retry")}
+    </button>
+  );
+}
+
+export const RelationsCollapsibleContent = function RelationsCollapsibleContent(props: Props) {
+  const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType = EIssueServiceType.ISSUES } = props;
   // plane hooks
   const { t } = useTranslation();
   // state
@@ -69,18 +116,19 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
   });
 
   // store hooks
-  const {
-    relation: { getRelationsByIssueId, removeRelation },
-    toggleDeleteIssueModal,
-    toggleCreateIssueModal,
-  } = useIssueDetail(issueServiceType);
+  const { toggleDeleteIssueModal, toggleCreateIssueModal } = useIssueDetailUiState(issueServiceType);
 
   // helper
-  const issueOperations = useRelationOperations();
-  const epicOperations = useRelationOperations(EIssueServiceType.EPICS);
+  const issueOperations = useRelationOperations(workspaceSlug, projectId, issueId);
+  const epicOperations = useRelationOperations(workspaceSlug, projectId, issueId, EIssueServiceType.EPICS);
 
   // derived values
-  const relations = getRelationsByIssueId(issueId);
+  const { relations, query, isError, retry } = useIssueRelations({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
 
   const handleIssueCrudState = (
@@ -103,25 +151,7 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
   };
 
   // if relations are not available, return null
-  if (!relations) return null;
-
-  // map relations to array
-  const relationsArray = (Object.keys(relations) as TIssueRelationTypes[])
-    .filter((relationKey) => !!ISSUE_RELATION_OPTIONS[relationKey])
-    .map((relationKey) => {
-      const issueIds = relations[relationKey];
-      const issueRelationOption = ISSUE_RELATION_OPTIONS[relationKey];
-      return {
-        relationKey: relationKey,
-        issueIds: issueIds,
-        icon: issueRelationOption?.icon,
-        label: issueRelationOption?.i18n_label ? t(issueRelationOption?.i18n_label) : "",
-        className: issueRelationOption?.className,
-      };
-    });
-
-  // filter out relations with no issues
-  const filteredRelationsArray = relationsArray.filter((relation) => relation.issueIds.length > 0);
+  const visibleRelations = getVisibleRelationRows(relations, ISSUE_RELATION_OPTIONS);
 
   const shouldRenderIssueDeleteModal =
     issueCrudState?.delete?.toggle &&
@@ -133,24 +163,26 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
 
   return (
     <>
+      <RelationRetryButton queryError={query.isError} accessError={isError} retry={retry} refetch={query.refetch} />
       <div className="gap- flex flex-col">
-        {filteredRelationsArray.map((relation) => (
+        {visibleRelations.map((relation) => (
           <div key={relation.relationKey}>
             <Collapsible
               buttonClassName="w-full"
               title={
                 <div className={`flex h-9 w-full items-center gap-1 px-2.5 py-1 ${relation.className}`}>
                   <span>{relation.icon ? relation.icon(14) : null}</span>
-                  <span className="text-13 leading-5 font-medium">{relation.label}</span>
+                  <span className="text-13 leading-5 font-medium">{relation.labelKey ? t(relation.labelKey) : ""}</span>
                 </div>
               }
               defaultOpen
             >
               <RelationIssueList
                 workspaceSlug={workspaceSlug}
+                projectId={projectId}
                 issueId={issueId}
                 relationKey={relation.relationKey}
-                issueIds={relation.issueIds}
+                issues={relation.issues}
                 disabled={disabled}
                 handleIssueCrudState={handleIssueCrudState}
                 issueServiceType={issueServiceType}
@@ -170,21 +202,6 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
           data={issueCrudState?.delete?.issue as TIssue}
           onSubmit={async () => {
             if (
-              issueCrudState.removeRelation.issueId &&
-              issueCrudState.removeRelation.issue?.project_id &&
-              issueCrudState.removeRelation.relationKey &&
-              issueCrudState.removeRelation.relationIssueId
-            ) {
-              await removeRelation(
-                workspaceSlug,
-                issueCrudState.removeRelation.issue.project_id,
-                issueCrudState.removeRelation.issueId,
-                issueCrudState.removeRelation.relationKey as TIssueRelationTypes,
-                issueCrudState.removeRelation.relationIssueId,
-                true
-              );
-            }
-            if (
               issueCrudState.delete.issue &&
               issueCrudState.delete.issue.id &&
               issueCrudState.delete.issue.project_id
@@ -197,6 +214,7 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
                 issueCrudState.delete.issue?.project_id,
                 issueCrudState?.delete?.issue?.id
               );
+              void query.refetch().catch(() => undefined);
             }
           }}
           isEpic={!!issueCrudState.delete.issue?.is_epic}
@@ -236,4 +254,4 @@ export const RelationsCollapsibleContent = observer(function RelationsCollapsibl
       )}
     </>
   );
-});
+};

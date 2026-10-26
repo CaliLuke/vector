@@ -5,18 +5,17 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { observer } from "mobx-react";
 
-import useSWR, { mutate } from "swr";
+import { useQuery, skipToken, useQueryClient, useMutation } from "@tanstack/react-query";
 // types
-import type { IWorkspaceIntegration, ISlackIntegration } from "@plane/types";
+import type { IWorkspaceIntegration } from "@plane/types";
 // ui
 import { Loader } from "@plane/ui";
-// fetch-keys
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
+// query keys
 import { SLACK_CHANNEL_INFO } from "@plane/constants";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
+import { instanceConfigOptions } from "@/queries/instance";
 import useIntegrationPopup from "@/hooks/use-integration-popup";
 // services
 import { AppInstallationService } from "@/services/app_installation.service";
@@ -27,61 +26,40 @@ type Props = {
 
 const appInstallationService = new AppInstallationService();
 
-export const SelectChannel = observer(function SelectChannel({ integration }: Props) {
+export function SelectChannel({ integration }: Props) {
+  const queryClient = useQueryClient();
   // store hooks
-  const { config } = useInstance();
-  // states
-  const [slackChannelAvailabilityToggle, setSlackChannelAvailabilityToggle] = useState<boolean>(false);
-  const [slackChannel, setSlackChannel] = useState<ISlackIntegration | null>(null);
-
+  const { data: config } = useQuery(instanceConfigOptions);
   const { workspaceSlug, projectId } = useParams({ strict: false });
 
-  // FIXME:
   const { startAuth } = useIntegrationPopup({
     provider: "slackChannel",
     stateParams: integration.id,
-    // github_app_name: instance?.config?.github_client_id || "",
     slack_client_id: config?.slack_client_id || "",
   });
 
-  const { data: projectIntegration } = useSWR(
-    workspaceSlug && projectId && integration.id ? SLACK_CHANNEL_INFO(workspaceSlug, projectId) : null,
-    () =>
+  const { data: projectIntegration } = useQuery({
+    queryKey: SLACK_CHANNEL_INFO(workspaceSlug, projectId, integration.id),
+    queryFn:
       workspaceSlug && projectId && integration.id
-        ? appInstallationService.getSlackChannelDetail(workspaceSlug, projectId, integration.id)
-        : null
-  );
+        ? () => appInstallationService.getSlackChannelDetail(workspaceSlug, projectId, integration.id)
+        : skipToken,
+  });
 
-  useEffect(() => {
-    if (projectId && projectIntegration && projectIntegration.length > 0) {
-      const projectSlackIntegrationCheck: ISlackIntegration | undefined = projectIntegration.find(
-        (_slack: ISlackIntegration) => _slack.project === projectId
-      );
-      if (projectSlackIntegrationCheck) {
-        setSlackChannel(() => projectSlackIntegrationCheck);
-        setSlackChannelAvailabilityToggle(true);
-      }
-    }
-  }, [projectIntegration, projectId]);
-
-  const handleDelete = async () => {
-    if (!workspaceSlug || !projectId) return;
-    if (projectIntegration.length === 0) return;
-    mutate(SLACK_CHANNEL_INFO(workspaceSlug?.toString(), projectId?.toString()), (prevData: any) => {
-      if (!prevData) return;
-      return prevData.id !== integration.id;
-    }).then(() => {
-      setSlackChannelAvailabilityToggle(false);
-      setSlackChannel(null);
-    });
-    appInstallationService
-      .removeSlackChannel(workspaceSlug, projectId, integration.id, slackChannel?.id)
-      .catch((err) => console.error(err));
-  };
-
-  const handleAuth = async () => {
-    await startAuth();
-  };
+  const slackChannel = projectIntegration?.find((channel) => channel.project === projectId);
+  const { mutate: removeChannel, isPending: isRemoving } = useMutation({
+    mutationFn: async () => {
+      if (!workspaceSlug || !projectId || !slackChannel) return;
+      await appInstallationService.removeSlackChannel(workspaceSlug, projectId, integration.id, slackChannel.id);
+      await queryClient.invalidateQueries({ queryKey: SLACK_CHANNEL_INFO(workspaceSlug, projectId, integration.id) });
+    },
+    onError: () =>
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Failed to disconnect channel",
+        message: "Please try again.",
+      }),
+  });
 
   return (
     <>
@@ -90,15 +68,17 @@ export const SelectChannel = observer(function SelectChannel({ integration }: Pr
           type="button"
           className={`bg-gray-700 relative inline-flex h-4 w-6 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
           role="switch"
-          aria-checked
+          aria-checked={!!slackChannel}
+          disabled={isRemoving}
           onClick={() => {
-            slackChannelAvailabilityToggle ? handleDelete() : handleAuth();
+            if (slackChannel) removeChannel();
+            else startAuth();
           }}
         >
           <span
             aria-hidden="true"
             className={`shadow inline-block h-2 w-2 transform self-center rounded-full bg-white ring-0 transition duration-200 ease-in-out ${
-              slackChannelAvailabilityToggle ? "translate-x-3" : "translate-x-0"
+              slackChannel ? "translate-x-3" : "translate-x-0"
             }`}
           />
         </button>
@@ -109,4 +89,4 @@ export const SelectChannel = observer(function SelectChannel({ integration }: Pr
       )}
     </>
   );
-});
+}

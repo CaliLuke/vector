@@ -4,20 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import type { IGanttBlock } from "@plane/types";
 import { Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { MultipleSelectEntityAction } from "@/components/core/multiple-select";
 import { IssueGanttSidebarBlock } from "@/components/issues/issue-layouts/gantt/blocks";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
+import { daysFromGanttWidth } from "../../state";
 // local imports
 import { BLOCK_HEIGHT, GANTT_SELECT_GROUP } from "../../constants";
+import { GanttSidebarDuration } from "../common";
 
 type Props = {
   block: IGanttBlock;
@@ -27,20 +28,20 @@ type Props = {
   isEpic?: boolean;
 };
 
-export const IssuesSidebarBlock = observer(function IssuesSidebarBlock(props: Props) {
+export const IssuesSidebarBlock = function IssuesSidebarBlock(props: Props) {
   const { block, enableSelection, isDragging, selectionHelpers, isEpic = false } = props;
   // store hooks
-  const { updateActiveBlockId, isBlockActive, getNumberOfDaysFromPosition } = useTimeLineChartStore();
-  const { getIsIssuePeeked } = useIssueDetail();
+  const { activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
+  const { getIsIssuePeeked } = useIssueDetailUiState();
 
   const isBlockComplete = !!block?.start_date && !!block?.target_date;
-  const duration = isBlockComplete ? getNumberOfDaysFromPosition(block?.position?.width) : undefined;
+  const duration = isBlockComplete ? daysFromGanttWidth(viewData, block?.position?.width) : undefined;
 
   if (!block?.data) return null;
 
   const isIssueSelected = selectionHelpers?.getIsEntitySelected(block.id);
   const isIssueFocused = selectionHelpers?.getIsEntityActive(block.id);
-  const isBlockHoveredOn = isBlockActive(block.id);
+  const isBlockHoveredOn = activeBlockId === block.id;
 
   return (
     <div
@@ -49,8 +50,8 @@ export const IssuesSidebarBlock = observer(function IssuesSidebarBlock(props: Pr
         "rounded-l-sm border border-r-0 border-accent-strong": getIsIssuePeeked(block.data.id),
         "border border-r-0 border-strong-1": isIssueFocused,
       })}
-      onMouseEnter={() => updateActiveBlockId(block.id)}
-      onMouseLeave={() => updateActiveBlockId(null)}
+      onMouseEnter={() => setActiveBlockId(block.id)}
+      onMouseLeave={() => setActiveBlockId(null)}
     >
       <Row
         className={cn(
@@ -82,17 +83,11 @@ export const IssuesSidebarBlock = observer(function IssuesSidebarBlock(props: Pr
         )}
         <div className="flex h-full flex-grow items-center justify-between gap-2 truncate">
           <div className="flex-grow truncate">
-            <IssueGanttSidebarBlock issueId={block.data.id} isEpic={isEpic} />
+            <IssueGanttSidebarBlock issue={block.data} isEpic={isEpic} />
           </div>
-          {duration && (
-            <div className="flex-shrink-0 text-13 text-secondary">
-              <span>
-                {duration} day{duration > 1 ? "s" : ""}
-              </span>
-            </div>
-          )}
+          {duration && <GanttSidebarDuration days={duration} />}
         </div>
       </Row>
     </div>
   );
-});
+};

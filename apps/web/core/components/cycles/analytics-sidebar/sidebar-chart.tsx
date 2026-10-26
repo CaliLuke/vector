@@ -4,87 +4,89 @@
  * See the LICENSE file for details.
  */
 
-import { Fragment } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import type { TCycleEstimateType } from "@plane/types";
+import type { ICycle, TCycleEstimateType } from "@plane/types";
 import { Loader } from "@plane/ui";
-import { getDate } from "@plane/utils";
+import { getDate } from "@plane/utils/datetime";
 // components
 import ProgressChart from "@/components/core/sidebar/progress-chart";
 import { validateCycleSnapshot } from "@/components/cycles/analytics-sidebar/issue-progress";
 import { EstimateTypeDropdown } from "@/components/cycles/dropdowns";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { progressDistribution } from "@/components/estimates/progress-distribution";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
 
 type ProgressChartProps = {
   workspaceSlug: string;
   projectId: string;
   cycleId: string;
+  isArchived?: boolean;
 };
-export const SidebarChart = observer(function SidebarChart(props: ProgressChartProps) {
-  const { workspaceSlug, projectId, cycleId } = props;
+
+type CycleProgressChartProps = {
+  cycle: ICycle | null;
+  estimateType: TCycleEstimateType;
+  translate: ReturnType<typeof useTranslation>["t"];
+};
+
+function CycleProgressChartContent(props: CycleProgressChartProps) {
+  const { cycle, estimateType, translate } = props;
+  const cycleDetails = validateCycleSnapshot(cycle);
+  const startDate = getDate(cycleDetails?.start_date);
+  const endDate = getDate(cycleDetails?.end_date);
+  const distribution = progressDistribution(cycleDetails, estimateType)?.completion_chart;
+
+  if (!cycleDetails || !startDate || !endDate || !distribution)
+    return (
+      <Loader className="mt-4 h-[160px] w-full">
+        <Loader.Item width="100%" height="100%" />
+      </Loader>
+    );
+
+  const total = estimateType === "points" ? cycleDetails.total_estimate_points || 0 : cycleDetails.total_issues || 0;
+  return (
+    <ProgressChart
+      distribution={distribution}
+      totalIssues={total}
+      plotTitle={estimateType === "points" ? translate("points") : translate("work_items")}
+    />
+  );
+}
+
+export const SidebarChart = function SidebarChart(props: ProgressChartProps) {
+  const { workspaceSlug, projectId, cycleId, isArchived = false } = props;
+  const { isEnabled: estimatesEnabled } = useProjectEstimates(workspaceSlug, projectId);
 
   // hooks
-  const { getEstimateTypeByCycleId, getCycleById, fetchCycleDetails, fetchArchivedCycleDetails, setEstimateType } =
-    useCycle();
+  const { cycle } = useCycleDetails(workspaceSlug, projectId, cycleId, isArchived);
+  const chart = useParentChartPreferences("cycle", workspaceSlug, projectId, cycleId);
   const { t } = useTranslation();
 
-  // derived data
-  const cycleDetails = validateCycleSnapshot(getCycleById(cycleId));
-  const cycleStartDate = getDate(cycleDetails?.start_date);
-  const cycleEndDate = getDate(cycleDetails?.end_date);
-  const totalEstimatePoints = cycleDetails?.total_estimate_points || 0;
-  const totalIssues = cycleDetails?.total_issues || 0;
-  const estimateType = getEstimateTypeByCycleId(cycleId);
-
-  const chartDistributionData =
-    estimateType === "points" ? cycleDetails?.estimate_distribution : cycleDetails?.distribution || undefined;
-
-  const completionChartDistributionData = chartDistributionData?.completion_chart || undefined;
+  const estimateType = estimatesEnabled ? chart.measure : "issues";
 
   if (!workspaceSlug || !projectId || !cycleId) return null;
 
-  const isArchived = !!cycleDetails?.archived_at;
-
   // handlers
   const onChange = async (value: TCycleEstimateType) => {
-    setEstimateType(cycleId, value);
-    if (!workspaceSlug || !projectId || !cycleId) return;
-    try {
-      if (isArchived) {
-        await fetchArchivedCycleDetails(workspaceSlug, projectId, cycleId);
-      } else {
-        await fetchCycleDetails(workspaceSlug, projectId, cycleId);
-      }
-    } catch (err) {
-      console.error(err);
-      setEstimateType(cycleId, estimateType);
-    }
+    chart.update({ measure: value });
   };
   return (
     <div>
       <div className="relative flex items-center justify-between gap-2 pt-4">
-        <EstimateTypeDropdown value={estimateType} onChange={onChange} cycleId={cycleId} projectId={projectId} />
+        <EstimateTypeDropdown
+          value={estimateType}
+          onChange={onChange}
+          cycleId={cycleId}
+          projectId={projectId}
+          isArchived={isArchived}
+        />
       </div>
       <div className="py-4">
-        <div>
-          {cycleStartDate && cycleEndDate && completionChartDistributionData ? (
-            <Fragment>
-              <ProgressChart
-                distribution={completionChartDistributionData}
-                totalIssues={estimateType === "points" ? totalEstimatePoints : totalIssues}
-                plotTitle={estimateType === "points" ? t("points") : t("work_items")}
-              />
-            </Fragment>
-          ) : (
-            <Loader className="mt-4 h-[160px] w-full">
-              <Loader.Item width="100%" height="100%" />
-            </Loader>
-          )}
-        </div>
+        <CycleProgressChartContent cycle={cycle ?? null} estimateType={estimateType} translate={t} />
       </div>
     </div>
   );
-});
+};

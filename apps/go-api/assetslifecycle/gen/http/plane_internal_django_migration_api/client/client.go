@@ -112,6 +112,10 @@ type Client struct {
 	// PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk
 	// endpoint.
 	PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer loomhttp.Doer
+	// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk Doer is the HTTP client used
+	// to make requests to the PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk
+	// endpoint.
+	PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkDoer loomhttp.Doer
 	// PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk Doer is the
 	// HTTP client used to make requests to the
 	// PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk endpoint.
@@ -724,6 +728,21 @@ func (g *APIClient) PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByI
 // endpoint
 func (g *APIClient) BuildPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkRequest(ctx context.Context, v any) (*http.Request, error) {
 	return g.client.BuildPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkRequest(ctx, v)
+}
+
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk returns an endpoint that makes
+// HTTP requests to the PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk server.
+func (g *APIClient) PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk() loom.Endpoint {
+	return g.client.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk()
+}
+
+// BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest instantiates a
+// HTTP request object with method and path set to call the
+// "PlaneInternalDjangoMigrationAPI" service
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" endpoint
+func (g *APIClient) BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(ctx context.Context, v any) (*http.Request, error) {
+	return g.client.BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(ctx, v)
 }
 
 // PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk returns an
@@ -1604,7 +1623,7 @@ func (g *APIClient) BuildDeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIss
 // NewClient instantiates HTTP clients for all the
 // PlaneInternalDjangoMigrationAPI service servers.
 func NewClient(scheme string, host string, doer loomhttp.Doer, enc func(*http.Request) loomhttp.Encoder, dec func(*http.Response) loomhttp.Decoder, restoreBody bool) *Client {
-	client := &Client{GetAPIAssetsV2StaticByAssetIDDoer: doer, DeleteAPIAssetsV2UserAssetsDoer: doer, PatchAPIAssetsV2UserAssetsDoer: doer, PostAPIAssetsV2UserAssetsDoer: doer, DeleteAPIAssetsV2UserAssetsByAssetIDDoer: doer, PatchAPIAssetsV2UserAssetsByAssetIDDoer: doer, PostAPIAssetsV2UserAssetsByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugDoer: doer, GetAPIAssetsV2WorkspacesBySlugDoer: doer, PatchAPIAssetsV2WorkspacesBySlugDoer: doer, PostAPIAssetsV2WorkspacesBySlugDoer: doer, GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, PatchAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, DeleteAPIPublicAssetsV2AnchorByAnchorDoer: doer, GetAPIPublicAssetsV2AnchorByAnchorDoer: doer, PatchAPIPublicAssetsV2AnchorByAnchorDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkDoer: doer, DeleteAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, GetAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, PatchAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, DeleteAPIUsersFileAssetsDoer: doer, GetAPIUsersFileAssetsDoer: doer, PostAPIUsersFileAssetsDoer: doer, DeleteAPIUsersFileAssetsByAssetKeyDoer: doer, GetAPIUsersFileAssetsByAssetKeyDoer: doer, PostAPIUsersFileAssetsByAssetKeyDoer: doer, PostAPIV1AssetsUserAssetsDoer: doer, PostAPIV1AssetsUserAssetsServerDoer: doer, DeleteAPIV1AssetsUserAssetsByAssetIDDoer: doer, PatchAPIV1AssetsUserAssetsByAssetIDDoer: doer, DeleteAPIV1AssetsUserAssetsByAssetIDServerDoer: doer, PatchAPIV1AssetsUserAssetsByAssetIDServerDoer: doer, PostAPIV1WorkspacesBySlugAssetsDoer: doer, GetAPIV1WorkspacesBySlugAssetsByAssetIDDoer: doer, PatchAPIV1WorkspacesBySlugAssetsByAssetIDDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsDoer: doer, PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsDoer: doer, DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreDoer: doer, DeleteAPIWorkspacesBySlugFileAssetsDoer: doer, GetAPIWorkspacesBySlugFileAssetsDoer: doer, PostAPIWorkspacesBySlugFileAssetsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
+	client := &Client{GetAPIAssetsV2StaticByAssetIDDoer: doer, DeleteAPIAssetsV2UserAssetsDoer: doer, PatchAPIAssetsV2UserAssetsDoer: doer, PostAPIAssetsV2UserAssetsDoer: doer, DeleteAPIAssetsV2UserAssetsByAssetIDDoer: doer, PatchAPIAssetsV2UserAssetsByAssetIDDoer: doer, PostAPIAssetsV2UserAssetsByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugDoer: doer, GetAPIAssetsV2WorkspacesBySlugDoer: doer, PatchAPIAssetsV2WorkspacesBySlugDoer: doer, PostAPIAssetsV2WorkspacesBySlugDoer: doer, GetAPIAssetsV2WorkspacesBySlugCheckByAssetIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugDownloadByAssetIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkDoer: doer, PostAPIAssetsV2WorkspacesBySlugRestoreByAssetIDDoer: doer, DeleteAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, GetAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, PatchAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, PostAPIAssetsV2WorkspacesBySlugByAssetIDDoer: doer, DeleteAPIPublicAssetsV2AnchorByAnchorDoer: doer, GetAPIPublicAssetsV2AnchorByAnchorDoer: doer, PatchAPIPublicAssetsV2AnchorByAnchorDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorRestoreByPkDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulkDoer: doer, DeleteAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, GetAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, PatchAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, PostAPIPublicAssetsV2AnchorByAnchorByPkDoer: doer, DeleteAPIUsersFileAssetsDoer: doer, GetAPIUsersFileAssetsDoer: doer, PostAPIUsersFileAssetsDoer: doer, DeleteAPIUsersFileAssetsByAssetKeyDoer: doer, GetAPIUsersFileAssetsByAssetKeyDoer: doer, PostAPIUsersFileAssetsByAssetKeyDoer: doer, PostAPIV1AssetsUserAssetsDoer: doer, PostAPIV1AssetsUserAssetsServerDoer: doer, DeleteAPIV1AssetsUserAssetsByAssetIDDoer: doer, PatchAPIV1AssetsUserAssetsByAssetIDDoer: doer, DeleteAPIV1AssetsUserAssetsByAssetIDServerDoer: doer, PatchAPIV1AssetsUserAssetsByAssetIDServerDoer: doer, PostAPIV1WorkspacesBySlugAssetsDoer: doer, GetAPIV1WorkspacesBySlugAssetsByAssetIDDoer: doer, PatchAPIV1WorkspacesBySlugAssetsByAssetIDDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsDoer: doer, PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsDoer: doer, DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPkDoer: doer, DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyDoer: doer, PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestoreDoer: doer, DeleteAPIWorkspacesBySlugFileAssetsDoer: doer, GetAPIWorkspacesBySlugFileAssetsDoer: doer, PostAPIWorkspacesBySlugFileAssetsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsDoer: doer, DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPkDoer: doer, RestoreResponseBody: restoreBody, scheme: scheme, host: host, decoder: dec, encoder: enc}
 	client.API = &APIClient{client: client}
 	return client
 }
@@ -2241,6 +2260,31 @@ func (c *Client) PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssu
 		resp, err := c.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkDoer.Do(req)
 		if err != nil {
 			return nil, loomhttp.ErrRequestError("PlaneInternalDjangoMigrationAPI", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk returns an endpoint that makes
+// HTTP requests to the PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk server.
+func (c *Client) PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk() loom.Endpoint {
+	var (
+		encodeRequest  = EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(c.encoder)
+		decodeResponse = DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v any) (any, error) {
+		req, err := c.BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkDoer.Do(req)
+		if err != nil {
+			return nil, loomhttp.ErrRequestError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
 		}
 		return decodeResponse(resp)
 	}

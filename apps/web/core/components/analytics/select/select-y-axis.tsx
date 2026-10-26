@@ -5,7 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { EEstimateSystem } from "@plane/constants";
 import { ProjectIcon } from "@plane/propel/icons";
@@ -13,7 +12,7 @@ import type { ChartYAxisMetric } from "@plane/types";
 // plane package imports
 import { CustomSelect } from "@plane/ui";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
+import { useProjectEstimates } from "@/hooks/use-estimates";
 // plane web constants
 type Props = {
   value: ChartYAxisMetric;
@@ -22,19 +21,14 @@ type Props = {
   options: { value: ChartYAxisMetric; label: string }[];
 };
 
-export const SelectYAxis = observer(function SelectYAxis({ value, onChange, hiddenOptions, options }: Props) {
+export const SelectYAxis = function SelectYAxis({ value, onChange, hiddenOptions, options }: Props) {
   // hooks
-  const { projectId } = useParams({ strict: false });
-  const { areEstimateEnabledByProjectId, currentActiveEstimateId, estimateById } = useProjectEstimates();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { isEnabled, activeEstimate } = useProjectEstimates(workspaceSlug, projectId);
 
   const isEstimateEnabled = (analyticsOption: string) => {
     if (analyticsOption === "estimate") {
-      if (
-        projectId &&
-        currentActiveEstimateId &&
-        areEstimateEnabledByProjectId(projectId.toString()) &&
-        estimateById(currentActiveEstimateId)?.type === EEstimateSystem.POINTS
-      ) {
+      if (projectId && isEnabled && activeEstimate?.type === EEstimateSystem.POINTS) {
         return true;
       } else {
         return false;
@@ -68,4 +62,4 @@ export const SelectYAxis = observer(function SelectYAxis({ value, onChange, hidd
       })}
     </CustomSelect>
   );
-});
+};

@@ -5,8 +5,6 @@
  */
 
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -18,26 +16,27 @@ import WorkspaceCreationDisabled from "@/app/assets/workspace/workspace-creation
 // components
 import { CreateWorkspaceForm } from "@/components/workspace/create-workspace-form";
 // hooks
-import { useUser, useUserProfile } from "@/hooks/store/user";
-import { useInstance } from "@/hooks/store/use-instance";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateUserProfile } from "@/hooks/use-current-user-profile";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
+import { isIdentityScopeCurrent, captureIdentityScope } from "@/queries/identity";
 
 // wrappers
 import { AuthenticationWrapper } from "@/lib/wrappers/authentication-wrapper";
 
-const CreateWorkspacePage = observer(function CreateWorkspacePage(): React.JSX.Element | null {
+function CreateWorkspacePage(): React.JSX.Element | null {
   const { t } = useTranslation();
   // router
   const router = useRouter();
+  const queryClient = useQueryClient();
   // store hooks
-  const { config } = useInstance();
-  const { data: currentUser } = useUser();
-  const { updateUserProfile } = useUserProfile();
+  const { data: config } = useQuery(instanceConfigOptions);
+  const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
+  const identityScope = captureIdentityScope(queryClient, currentUser?.id);
+  const routeHref = router.state.location.href;
   // states
-  const [defaultValues, setDefaultValues] = useState<Pick<IWorkspace, "name" | "slug" | "organization_size">>({
-    name: "",
-    slug: "",
-    organization_size: "",
-  });
   // derived values
   const isWorkspaceCreationDisabled = config?.is_workspace_creation_disabled ?? false;
 
@@ -54,9 +53,12 @@ const CreateWorkspacePage = observer(function CreateWorkspacePage(): React.JSX.E
   };
 
   const onSubmit = async (workspace: IWorkspace) => {
-    await updateUserProfile({ last_workspace_id: workspace.id }).then(
-      () => void router.navigate({ href: `/${workspace.slug}` })
-    );
+    if (!isIdentityScopeCurrent(queryClient, identityScope) || router.state.location.href !== routeHref)
+      throw new Error("The account session or workspace setup route changed.");
+    await updateUserProfile({ last_workspace_id: workspace.id });
+    if (!isIdentityScopeCurrent(queryClient, identityScope) || router.state.location.href !== routeHref)
+      throw new Error("The account session or workspace setup route changed.");
+    await router.navigate({ href: `/${workspace.slug}` });
   };
 
   return (
@@ -103,8 +105,11 @@ const CreateWorkspacePage = observer(function CreateWorkspacePage(): React.JSX.E
               <div className="sm:w-3/4 md:w-2/5">
                 <CreateWorkspaceForm
                   onSubmit={onSubmit}
-                  defaultValues={defaultValues}
-                  setDefaultValues={setDefaultValues}
+                  secondaryButton={
+                    <Button variant="secondary" type="button" size="xl" onClick={() => router.history.back()}>
+                      {t("common.go_back")}
+                    </Button>
+                  }
                 />
               </div>
             </div>
@@ -113,7 +118,7 @@ const CreateWorkspacePage = observer(function CreateWorkspacePage(): React.JSX.E
       </div>
     </AuthenticationWrapper>
   );
-});
+}
 
 export const Route = createFileRoute("/create-workspace/")({
   component: CreateWorkspacePage,

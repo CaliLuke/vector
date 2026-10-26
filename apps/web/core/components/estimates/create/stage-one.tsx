@@ -12,7 +12,7 @@ import { Tooltip } from "@plane/propel/tooltip";
 import type { TEstimateSystemKeys } from "@plane/types";
 // helpers
 import { isEstimateSystemEnabled } from "./helper";
-import { convertMinutesToHoursMinutesString } from "@plane/utils";
+import { convertMinutesToHoursMinutesString } from "@plane/utils/datetime";
 // components
 import { RadioInput } from "../radio-select";
 
@@ -73,6 +73,7 @@ export function EstimateCreateStageOne(props: TEstimateCreateStageOne) {
               {t("project_settings.estimates.create.start_from_scratch")}
             </div>
             <button
+              type="button"
               className="block w-full space-y-1 rounded-md border border-subtle p-3 py-2.5 text-left hover:bg-layer-transparent-hover"
               onClick={() => handleEstimatePoints("custom")}
             >
@@ -92,6 +93,7 @@ export function EstimateCreateStageOne(props: TEstimateCreateStageOne) {
               {Object.keys(currentEstimateSystem.templates).map((name) =>
                 currentEstimateSystem.templates[name]?.hide ? null : (
                   <button
+                    type="button"
                     key={name}
                     className="space-y-1 rounded-md border border-subtle p-3 py-2.5 text-left hover:bg-surface-2"
                     onClick={() => handleEstimatePoints(name)}

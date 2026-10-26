@@ -4,34 +4,39 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState } from "react";
-import { observer } from "mobx-react";
+import React, { useState } from "react";
+
 // plane imports
 import type { IWorkspaceMemberInvitation } from "@plane/types";
 import { ECreateOrJoinWorkspaceViews, EOnboardingSteps } from "@plane/types";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // local components
 import { WorkspaceCreateStep, WorkspaceJoinInvitesStep } from "./";
 
 type Props = {
   invitations: IWorkspaceMemberInvitation[];
-  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => void;
+  handleStepChange: (step: EOnboardingSteps, skipInvites?: boolean) => Promise<void>;
 };
 
-export const WorkspaceSetupStep = observer(function WorkspaceSetupStep({ invitations, handleStepChange }: Props) {
+export const WorkspaceSetupStep = function WorkspaceSetupStep({ invitations, handleStepChange }: Props) {
   // states
-  const [currentView, setCurrentView] = useState<ECreateOrJoinWorkspaceViews | null>(null);
+  const [viewState, setViewState] = useState(() => ({
+    invitations,
+    view:
+      invitations.length > 0
+        ? ECreateOrJoinWorkspaceViews.WORKSPACE_JOIN
+        : ECreateOrJoinWorkspaceViews.WORKSPACE_CREATE,
+  }));
+  const currentView =
+    viewState.invitations === invitations
+      ? viewState.view
+      : invitations.length > 0
+        ? ECreateOrJoinWorkspaceViews.WORKSPACE_JOIN
+        : ECreateOrJoinWorkspaceViews.WORKSPACE_CREATE;
+  const setCurrentView = (view: ECreateOrJoinWorkspaceViews) => setViewState({ invitations, view });
   // store hooks
-  const { data: user } = useUser();
-
-  useEffect(() => {
-    if (invitations.length > 0) {
-      setCurrentView(ECreateOrJoinWorkspaceViews.WORKSPACE_JOIN);
-    } else {
-      setCurrentView(ECreateOrJoinWorkspaceViews.WORKSPACE_CREATE);
-    }
-  }, [invitations]);
+  const { data: user } = useCurrentUser();
 
   return (
     <>
@@ -39,13 +44,13 @@ export const WorkspaceSetupStep = observer(function WorkspaceSetupStep({ invitat
         <WorkspaceJoinInvitesStep
           invitations={invitations}
           handleNextStep={async () => {
-            handleStepChange(EOnboardingSteps.WORKSPACE_CREATE_OR_JOIN, true);
+            await handleStepChange(EOnboardingSteps.WORKSPACE_CREATE_OR_JOIN, true);
           }}
           handleCurrentViewChange={() => setCurrentView(ECreateOrJoinWorkspaceViews.WORKSPACE_CREATE)}
         />
       ) : (
         <WorkspaceCreateStep
-          user={user}
+          user={user ?? undefined}
           onComplete={(skipInvites) => handleStepChange(EOnboardingSteps.WORKSPACE_CREATE_OR_JOIN, skipInvites)}
           handleCurrentViewChange={() => setCurrentView(ECreateOrJoinWorkspaceViews.WORKSPACE_JOIN)}
           hasInvitations={invitations.length > 0}
@@ -53,4 +58,4 @@ export const WorkspaceSetupStep = observer(function WorkspaceSetupStep({ invitat
       )}
     </>
   );
-});
+};

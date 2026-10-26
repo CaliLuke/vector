@@ -10,6 +10,12 @@ import (
 )
 
 func (r *Repository) groupUniverse(ctx context.Context, q Request, field string, rows []map[string]any) ([]any, error) {
+	if field == "type_id" && r.typeDiscovery != nil {
+		return r.discoveryTypeGroups(), nil
+	}
+	if field != "" && q.ProjectID == "" && usesTypeGrouping(q) {
+		return visibleGroupValues(rows, field), nil
+	}
 	switch field {
 	case "":
 		return []any{}, nil
@@ -29,13 +35,43 @@ func (r *Repository) groupUniverse(ctx context.Context, q Request, field string,
 			}
 		}
 		return values, nil
+	case "labels__id":
+		args := []any{q.Slug}
+		where := ""
+		if q.Operation == "public_feedback_issue_list" {
+			args = append(args, q.ProjectID)
+			where = " AND project.id=$2"
+		} else {
+			args = append(args, q.ActorID)
+			where = ` AND EXISTS (
+        SELECT 1 FROM project_members member
+        WHERE member.project_id=project.id AND member.workspace_id=workspace.id
+          AND member.member_id=$2 AND member.is_active=true AND member.deleted_at IS NULL
+      )`
+			if q.ProjectID != "" {
+				args = append(args, q.ProjectID)
+				where += " AND project.id=$3"
+			}
+		}
+		values, err := r.rows(ctx, `SELECT jsonb_build_object('value',label.id) FROM labels label
+      JOIN projects project ON project.id=label.project_id AND project.workspace_id=label.workspace_id
+      JOIN workspaces workspace ON workspace.id=project.workspace_id
+      WHERE workspace.slug=$1 AND workspace.deleted_at IS NULL
+        AND project.deleted_at IS NULL
+        AND label.deleted_at IS NULL`+where+` ORDER BY label.created_at DESC`, args...)
+		if err != nil {
+			return nil, err
+		}
+		out := make([]any, 0, len(values)+1)
+		for _, value := range values {
+			out = append(out, value["value"])
+		}
+		return append(out, "None"), nil
 	}
 	table, column, extra, none := "", "id", "", false
 	switch field {
 	case "state_id":
 		table, extra = "states", ` AND NOT t.is_triage AND t."group" <> 'triage'`
-	case "labels__id":
-		table, none = "labels", true
 	case "assignees__id":
 		table, column, extra = "project_members", "member_id", " AND t.is_active"
 		if q.ProjectID == "" {
@@ -79,13 +115,20 @@ func (r *Repository) groupedPage(ctx context.Context, q Request, results []any, 
 func (r *Repository) groupedPageWithVisibleRowCounts(ctx context.Context, q Request, results []any, rows []map[string]any, limit, page int, countEveryVisibleRow bool) (Result, error) {
 	group, subgroup := q.Params["group_by"], q.Params["sub_group_by"]
 	var groups, subgroups []any
+	universeRows := rows
+	if q.ProjectID == "" && usesTypeGrouping(q) {
+		universeRows = make([]map[string]any, 0, len(results))
+		for _, result := range results {
+			universeRows = append(universeRows, result.(map[string]any))
+		}
+	}
 	if len(rows) > 0 {
 		var err error
-		groups, err = r.groupUniverse(ctx, q, group, rows)
+		groups, err = r.groupUniverse(ctx, q, group, universeRows)
 		if err != nil {
 			return Result{}, err
 		}
-		subgroups, err = r.groupUniverse(ctx, q, subgroup, rows)
+		subgroups, err = r.groupUniverse(ctx, q, subgroup, universeRows)
 		if err != nil {
 			return Result{}, err
 		}

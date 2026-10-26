@@ -6,10 +6,10 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { observer } from "mobx-react";
 
 // hooks
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { usePowerK } from "@/hooks/use-power-k";
+import { usePowerKCommandRegistry } from "@/hooks/use-power-k-command-registry";
 // local imports
 import { detectContextFromURL } from "./core/context-detector";
 import { ShortcutHandler } from "./core/shortcut-handler";
@@ -25,13 +25,13 @@ type GlobalShortcutsProps = {
  * Global shortcuts component - sets up keyboard listeners and context detection
  * Should be mounted once at the app root level
  */
-export const GlobalShortcutsProvider = observer(function GlobalShortcutsProvider(props: GlobalShortcutsProps) {
+export function GlobalShortcutsProvider(props: GlobalShortcutsProps) {
   const { context, commands } = props;
   // router
   const params = useParams({ strict: false });
   // store hooks
-  const { commandRegistry, isShortcutsListModalOpen, setActiveContext, togglePowerKModal, toggleShortcutsListModal } =
-    usePowerK();
+  const { isShortcutsListModalOpen, setActiveContext, togglePowerKModal, toggleShortcutsListModal } = usePowerK();
+  const { commandRegistry, registerCommands } = usePowerKCommandRegistry();
 
   // Detect context from URL and update store
   useEffect(() => {
@@ -40,10 +40,7 @@ export const GlobalShortcutsProvider = observer(function GlobalShortcutsProvider
   }, [params, setActiveContext]);
 
   // Register commands on mount
-  useEffect(() => {
-    commandRegistry.clear();
-    commandRegistry.registerMultiple(commands);
-  }, [commandRegistry, commands]);
+  useEffect(() => registerCommands(commands), [commands, registerCommands]);
 
   // Store context in ref to avoid recreation on context changes
   const contextRef = useRef(context);
@@ -81,4 +78,4 @@ export const GlobalShortcutsProvider = observer(function GlobalShortcutsProvider
   }, [commandRegistry, togglePowerKModal]);
 
   return <ShortcutsModal isOpen={isShortcutsListModalOpen} onClose={() => toggleShortcutsListModal(false)} />;
-});
+}

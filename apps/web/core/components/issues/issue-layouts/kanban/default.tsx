@@ -4,16 +4,17 @@
  * See the LICENSE file for details.
  */
 
+import { TypeGroupingStatus } from "@/components/issues/issue-layouts/type-group-columns";
+import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
+import { useParams } from "@tanstack/react-router";
 import type { MutableRefObject } from "react";
-import { observer } from "mobx-react";
+
 import type {
   GroupByColumnTypes,
   IGroupByColumn,
-  TGroupedIssues,
   TIssue,
   IIssueDisplayProperties,
   IIssueMap,
-  TSubGroupedIssues,
   TIssueKanbanFilters,
   TIssueGroupByOptions,
   TIssueOrderByOptions,
@@ -24,21 +25,23 @@ import { ContentWrapper } from "@plane/ui";
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { KanbanColumnLoader } from "@/components/ui/loader/layouts/kanban-layout-loader";
 // hooks
-import { useKanbanView } from "@/hooks/store/use-kanban-view";
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { canDragDropForGrouping } from "@/providers/issue-layout-ui-state";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 // types
 // parent components
 import { useWorkFlowFDragNDrop } from "@/components/workflow";
 import type { TRenderQuickActions } from "../list/list-view-types";
 import type { GroupDropLocation } from "../utils";
-import { getGroupByColumns, isWorkspaceLevel, getApproximateCardHeight } from "../utils";
+import { isWorkspaceLevel, getApproximateCardHeight } from "../utils";
 // components
 import { HeaderGroupByCard } from "./headers/group-by-card";
 import { KanbanGroup } from "./kanban-group";
+import { getGroupedIssueIds } from "../issue-display-ordering";
+import type { IssueListGroupedIds } from "@/queries/issue-lists";
 
 export interface IKanBan {
   issuesMap: IIssueMap;
-  groupedIssueIds: TGroupedIssues | TSubGroupedIssues;
+  groupedIssueIds: IssueListGroupedIds;
   getGroupIssueCount: (
     groupId: string | undefined,
     subGroupId: string | undefined,
@@ -52,7 +55,7 @@ export interface IKanBan {
   dropErrorMessage?: string | undefined;
   sub_group_id?: string;
   sub_group_index?: number;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   collapsedGroups: TIssueKanbanFilters;
   handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
@@ -60,7 +63,7 @@ export interface IKanBan {
   enableQuickIssueCreate?: boolean;
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
   disableIssueCreation?: boolean;
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   canEditProperties: (projectId: string | undefined) => boolean;
   scrollableContainerRef?: MutableRefObject<HTMLDivElement | null>;
   handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
@@ -69,7 +72,18 @@ export interface IKanBan {
   isEpic?: boolean;
 }
 
-export const KanBan = observer(function KanBan(props: IKanBan) {
+export type IKanBanSwimlaneProps = Omit<
+  IKanBan,
+  | "dropErrorMessage"
+  | "enableQuickIssueCreate"
+  | "isDropDisabled"
+  | "showEmptyGroup"
+  | "sub_group_id"
+  | "sub_group_index"
+> &
+  Required<Pick<IKanBan, "enableQuickIssueCreate" | "showEmptyGroup">>;
+
+export const KanBan = function KanBan(props: IKanBan) {
   const {
     issuesMap,
     groupedIssueIds,
@@ -99,21 +113,23 @@ export const KanBan = observer(function KanBan(props: IKanBan) {
   } = props;
   // i18n
   // store hooks
-  const storeType = useIssueStoreType();
-  const issueKanBanView = useKanbanView();
+  const storeType = useIssueListType();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // derived values
-  const isDragDisabled = !issueKanBanView?.getCanUserDragDrop(group_by, sub_group_by);
+  const isDragDisabled = !canDragDropForGrouping(group_by, sub_group_by);
 
   const { getIsWorkflowWorkItemCreationDisabled } = useWorkFlowFDragNDrop(group_by, sub_group_by);
 
-  const list = getGroupByColumns({
+  const list = useGroupColumns({
+    workspaceSlug,
+    projectId,
     groupBy: group_by as GroupByColumnTypes,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: isEpic,
   });
 
-  if (!list) return null;
+  if (!list) return <TypeGroupingStatus active={group_by === "type_id"} />;
 
   const visibilityGroupBy = (_list: IGroupByColumn): { showGroup: boolean; showIssues: boolean } => {
     if (sub_group_by) {
@@ -152,9 +168,7 @@ export const KanBan = observer(function KanBan(props: IKanBan) {
 
           if (groupByVisibilityToggle.showGroup === false) return <></>;
 
-          const issueIds = isSubGroup
-            ? ((groupedIssueIds as TSubGroupedIssues)?.[subList.id]?.[sub_group_id] ?? [])
-            : ((groupedIssueIds as TGroupedIssues)?.[subList.id] ?? []);
+          const issueIds = getGroupedIssueIds(groupedIssueIds, subList.id, isSubGroup ? sub_group_id : undefined) ?? [];
           const issueLength = issueIds?.length;
           const groupHeight = issueLength * approximateCardHeight;
 
@@ -236,4 +250,4 @@ export const KanBan = observer(function KanBan(props: IKanBan) {
         })}
     </ContentWrapper>
   );
-});
+};

@@ -8,9 +8,9 @@
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { ProjectIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // plane web hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 type Props = {
   project: {
@@ -33,10 +33,11 @@ function CompletionPercentage({ percentage }: { percentage: number }) {
 
 function ActiveProjectItem(props: Props) {
   const { project } = props;
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   const { id, completed_issues, total_issues } = project;
 
-  const projectDetails = getProjectById(id);
+  const projectDetails = projectRows?.find((projectRow) => projectRow.id === id);
 
   if (!projectDetails) return null;
 

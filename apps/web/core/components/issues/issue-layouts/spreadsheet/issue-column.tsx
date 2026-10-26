@@ -5,9 +5,9 @@
  */
 
 import { useRef } from "react";
-import { observer } from "mobx-react";
+
 // types
-import type { IIssueDisplayProperties, TIssue } from "@plane/types";
+import type { TIssueStandardDisplayProperty, IIssueDisplayProperties, TIssue } from "@plane/types";
 // constants
 import { SPREADSHEET_COLUMNS } from "../utils";
 // components
@@ -18,17 +18,17 @@ type Props = {
   displayProperties: IIssueDisplayProperties;
   issueDetail: TIssue;
   disableUserActions: boolean;
-  property: keyof IIssueDisplayProperties;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  property: TIssueStandardDisplayProperty;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   isEstimateEnabled: boolean;
 };
 
-export const IssueColumn = observer(function IssueColumn(props: Props) {
-  const { displayProperties, issueDetail, disableUserActions, property, updateIssue } = props;
+export const IssueColumn = function IssueColumn(props: Props) {
+  const { displayProperties, issueDetail, disableUserActions, property, updateIssue, isEstimateEnabled } = props;
   // router
   const tableCellRef = useRef<HTMLTableCellElement | null>(null);
 
-  const shouldRenderProperty = shouldRenderColumn(property);
+  const shouldRenderProperty = shouldRenderColumn(property, isEstimateEnabled);
 
   const Column = SPREADSHEET_COLUMNS[property];
 
@@ -58,4 +58,4 @@ export const IssueColumn = observer(function IssueColumn(props: Props) {
       </td>
     </WithDisplayPropertiesHOC>
   );
-});
+};

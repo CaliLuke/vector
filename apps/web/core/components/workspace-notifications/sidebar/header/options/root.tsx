@@ -4,38 +4,29 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { CheckCheck, RefreshCw } from "lucide-react";
 // plane imports
-import { ENotificationLoader, ENotificationQueryParamType } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Tooltip } from "@plane/propel/tooltip";
 import { Spinner } from "@plane/ui";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { NotificationFilter } from "../../filters/menu";
 import { NotificationHeaderMenuOption } from "./menu-option";
 import { IconButton } from "@plane/propel/icon-button";
 
-type TNotificationSidebarHeaderOptions = {
-  workspaceSlug: string;
-};
-
-export const NotificationSidebarHeaderOptions = observer(function NotificationSidebarHeaderOptions(
-  props: TNotificationSidebarHeaderOptions
-) {
-  const { workspaceSlug } = props;
+export const NotificationSidebarHeaderOptions = function NotificationSidebarHeaderOptions() {
   // hooks
   const { isMobile } = usePlatformOS();
-  const { loader, getNotifications, markAllNotificationsAsRead } = useWorkspaceNotifications();
+  const { list, markAllRead } = useNotifications();
   const { t } = useTranslation();
 
   const refreshNotifications = async () => {
-    if (loader) return;
+    if (list.isFetching || markAllRead.isPending) return;
     try {
-      await getNotifications(workspaceSlug, ENotificationLoader.MUTATION_LOADER, ENotificationQueryParamType.CURRENT);
+      await list.refetch();
     } catch (error) {
       console.error(error);
     }
@@ -43,9 +34,9 @@ export const NotificationSidebarHeaderOptions = observer(function NotificationSi
 
   const handleMarkAllNotificationsAsRead = async () => {
     // NOTE: We are using loader to prevent continues request when we are making all the notification to read
-    if (loader) return;
+    if (list.isFetching || markAllRead.isPending) return;
     try {
-      await markAllNotificationsAsRead(workspaceSlug);
+      await markAllRead.mutateAsync();
     } catch (error) {
       console.error(error);
     }
@@ -58,7 +49,7 @@ export const NotificationSidebarHeaderOptions = observer(function NotificationSi
         <IconButton
           size="base"
           variant="ghost"
-          icon={loader === ENotificationLoader.MARK_ALL_AS_READY ? Spinner : CheckCheck}
+          icon={markAllRead.isPending ? Spinner : CheckCheck}
           onClick={() => {
             handleMarkAllNotificationsAsRead();
           }}
@@ -71,7 +62,7 @@ export const NotificationSidebarHeaderOptions = observer(function NotificationSi
           size="base"
           variant="ghost"
           icon={RefreshCw}
-          className={loader === ENotificationLoader.MUTATION_LOADER ? "animate-spin" : ""}
+          className={list.isRefetching ? "animate-spin" : ""}
           onClick={refreshNotifications}
         />
       </Tooltip>
@@ -83,4 +74,4 @@ export const NotificationSidebarHeaderOptions = observer(function NotificationSi
       <NotificationHeaderMenuOption />
     </div>
   );
-});
+};

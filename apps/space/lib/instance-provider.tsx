@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions, instanceInfoOptions } from "@/queries/session";
 import { Link } from "react-router";
 import { useTheme } from "next-themes";
-import useSWR from "swr";
 // plane imports
 import { SPACE_BASE_PATH } from "@plane/constants";
 import { PlaneLockup } from "@plane/propel/icons";
@@ -18,26 +18,15 @@ import PlaneBackgroundPattern from "@/app/assets/auth/background-pattern.svg?url
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { InstanceFailureView } from "@/components/instance/instance-failure-view";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
-import { useUser } from "@/hooks/store/use-user";
 
-export const InstanceProvider = observer(function InstanceProvider({ children }: { children: React.ReactNode }) {
-  const { fetchInstanceInfo, instance, error } = useInstance();
-  const { fetchCurrentUser } = useUser();
+export const InstanceProvider = function InstanceProvider({ children }: { children: React.ReactNode }) {
+  const { data: instanceInfo, error } = useQuery(instanceInfoOptions);
+  const instance = instanceInfo?.instance;
   const { resolvedTheme } = useTheme();
 
   const patternBackground = resolvedTheme === "dark" ? PlaneBackgroundPatternDark : PlaneBackgroundPattern;
 
-  useSWR("INSTANCE_INFO", () => fetchInstanceInfo(), {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    errorRetryCount: 0,
-  });
-  useSWR("CURRENT_USER", () => fetchCurrentUser(), {
-    shouldRetryOnError: false,
-    revalidateOnFocus: true,
-    revalidateIfStale: true,
-  });
+  useQuery(currentUserOptions);
 
   if (!instance && !error)
     return (
@@ -71,4 +60,4 @@ export const InstanceProvider = observer(function InstanceProvider({ children }:
   }
 
   return children;
-});
+};

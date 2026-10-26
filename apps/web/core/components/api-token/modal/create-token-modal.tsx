@@ -5,15 +5,15 @@
  */
 
 import { useState } from "react";
-import { mutate } from "swr";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 // plane imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { APITokenService } from "@plane/services";
 import type { IApiToken } from "@plane/types";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
-import { renderFormattedDate, csvDownload } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { csvDownload } from "@plane/utils/file";
 // constants
-import { API_TOKENS_LIST } from "@plane/constants";
+import { apiTokensOptions, createApiTokenOptions } from "@/queries/api-tokens";
 // local imports
 import { CreateApiTokenForm } from "./form";
 import { GeneratedTokenDetails } from "./generated-token-details";
@@ -23,75 +23,52 @@ type Props = {
   onClose: () => void;
 };
 
-// services
-const apiTokenService = new APITokenService();
-
 export function CreateApiTokenModal(props: Props) {
-  const { isOpen, onClose } = props;
+  return props.isOpen ? <CreateApiTokenDialog onClose={props.onClose} /> : null;
+}
+
+const downloadSecretKey = (data: IApiToken) => {
+  const csvData = {
+    Title: data.label,
+    Description: data.description,
+    Expiry: data.expired_at ? (renderFormattedDate(data.expired_at)?.replace(",", " ") ?? "") : "Never expires",
+    "Secret key": data.token ?? "",
+  };
+
+  csvDownload(csvData, `secret-key-${Date.now()}`);
+};
+
+function CreateApiTokenDialog({ onClose }: Pick<Props, "onClose">) {
+  const queryClient = useQueryClient();
+  const createToken = useMutation(createApiTokenOptions(queryClient));
   // states
-  const [neverExpires, setNeverExpires] = useState<boolean>(false);
   const [generatedToken, setGeneratedToken] = useState<IApiToken | null | undefined>(null);
 
-  const handleClose = () => {
-    onClose();
-
-    setTimeout(() => {
-      setNeverExpires(false);
-      setGeneratedToken(null);
-    }, 350);
-  };
-
-  const downloadSecretKey = (data: IApiToken) => {
-    const csvData = {
-      Title: data.label,
-      Description: data.description,
-      Expiry: data.expired_at ? (renderFormattedDate(data.expired_at)?.replace(",", " ") ?? "") : "Never expires",
-      "Secret key": data.token ?? "",
-    };
-
-    csvDownload(csvData, `secret-key-${Date.now()}`);
-  };
-
   const handleCreateToken = async (data: Partial<IApiToken>) => {
-    // make the request to generate the token
-    await apiTokenService
-      .create(data)
-      .then((res) => {
-        setGeneratedToken(res);
-        downloadSecretKey(res);
-
-        mutate<IApiToken[]>(
-          API_TOKENS_LIST,
-          (prevData) => {
-            if (!prevData) return;
-
-            return [res, ...prevData];
-          },
-          false
-        );
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err.message || err.detail,
-        });
-
-        throw err;
-      });
+    await createToken.mutateAsync(data, {
+      onSuccess: (token, _input, query) => {
+        if (!query || queryClient.getQueryCache().find({ queryKey: apiTokensOptions.queryKey, exact: true }) !== query)
+          return;
+        setGeneratedToken(token);
+        try {
+          downloadSecretKey(token);
+        } catch {
+          setToast({
+            type: TOAST_TYPE.ERROR,
+            title: "Token created",
+            message: "The CSV download failed. Copy the token from this dialog.",
+          });
+        }
+      },
+    });
   };
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={() => {}} position={EModalPosition.TOP} width={EModalWidth.XXL}>
+    <ModalCore isOpen handleClose={() => {}} position={EModalPosition.TOP} width={EModalWidth.XXL}>
       {generatedToken ? (
-        <GeneratedTokenDetails handleClose={handleClose} tokenDetails={generatedToken} />
+        <GeneratedTokenDetails handleClose={onClose} tokenDetails={generatedToken} />
       ) : (
-        <CreateApiTokenForm
-          handleClose={handleClose}
-          neverExpires={neverExpires}
-          toggleNeverExpires={() => setNeverExpires((prevData) => !prevData)}
-          onSubmit={handleCreateToken}
-        />
+        <CreateApiTokenForm handleClose={onClose} onSubmit={handleCreateToken} />
       )}
     </ModalCore>
   );

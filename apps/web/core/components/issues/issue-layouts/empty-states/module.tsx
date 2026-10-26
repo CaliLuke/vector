@@ -6,10 +6,9 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -18,12 +17,13 @@ import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // components
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-work-item-filter-instance";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkItemFilterUi } from "@/providers/work-item-filter-ui";
+import { FilteredIssuesEmptyState } from "./filtered-issues";
 
-export const ModuleEmptyState = observer(function ModuleEmptyState() {
+export function ModuleEmptyState() {
   // router
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // states
@@ -31,22 +31,19 @@ export const ModuleEmptyState = observer(function ModuleEmptyState() {
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { issues } = useIssues(EIssuesStoreType.MODULE);
+  const actions = useIssuesActions(EIssuesStoreType.MODULE);
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { state: filterUi } = useWorkItemFilterUi();
   // derived values
-  const moduleWorkItemFilter = useWorkItemFilterInstance(EIssuesStoreType.MODULE, moduleId);
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const canPerformEmptyStateActions = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
 
   const handleAddIssuesToModule = async (data: ISearchIssueResponse[]) => {
     if (!workspaceSlug || !projectId || !moduleId) return;
 
     const issueIds = data.map((i) => i.id);
-    await issues
-      .addIssuesToModule(workspaceSlug.toString(), projectId?.toString(), moduleId.toString(), issueIds)
+    await actions
+      .addIssuesToModule(projectId, moduleId, issueIds)
       .then(() =>
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -74,19 +71,11 @@ export const ModuleEmptyState = observer(function ModuleEmptyState() {
         handleOnSubmit={handleAddIssuesToModule}
       />
       <div className="grid h-full w-full place-items-center">
-        {moduleWorkItemFilter?.hasActiveFilters ? (
-          <EmptyStateDetailed
-            assetKey="search"
-            title={t("common_empty_state.search.title")}
-            description={t("common_empty_state.search.description")}
-            actions={[
-              {
-                label: "Clear filters",
-                onClick: moduleWorkItemFilter?.clearFilters,
-                disabled: !canPerformEmptyStateActions || !moduleWorkItemFilter,
-                variant: "secondary",
-              },
-            ]}
+        {filterUi.hasActiveFilters ? (
+          <FilteredIssuesEmptyState
+            clearFilters={filterUi.clearFilters}
+            canClearFilters={canPerformEmptyStateActions}
+            clearFiltersLabel="Clear filters"
           />
         ) : (
           <EmptyStateDetailed
@@ -114,4 +103,4 @@ export const ModuleEmptyState = observer(function ModuleEmptyState() {
       </div>
     </div>
   );
-});
+}

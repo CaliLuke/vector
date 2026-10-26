@@ -18,7 +18,7 @@ import interThin from "@/app/assets/fonts/inter/thin.ttf?url";
 import interUltraBold from "@/app/assets/fonts/inter/ultrabold.ttf?url";
 import interUltraLight from "@/app/assets/fonts/inter/ultralight.ttf?url";
 // plane imports
-import { convertRemToPixel } from "@plane/utils";
+import { convertRemToPixel } from "@plane/utils/common";
 
 const EDITOR_PDF_FONT_FAMILY_STYLES: Styles = {
   "*:not(.courier, .courier-bold)": { fontFamily: "Inter" },

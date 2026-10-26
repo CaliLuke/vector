@@ -32,17 +32,8 @@ type Props = {
 
 export function ImageExtension(props: Props) {
   const { fileHandler } = props;
-  // derived values
-  const { getAssetSrc } = fileHandler;
 
   return ImageExtensionConfig.extend({
-    addOptions() {
-      return {
-        ...this.parent?.(),
-        getImageSource: getAssetSrc,
-      };
-    },
-
     addKeyboardShortcuts() {
       return {
         ArrowDown: insertEmptyParagraphAtNodeBoundaries("down", this.name),

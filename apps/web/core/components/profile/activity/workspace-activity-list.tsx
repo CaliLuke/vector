@@ -7,13 +7,13 @@
 import { useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 // services
 import { USER_PROFILE_ACTIVITY } from "@plane/constants";
 import { UserService } from "@/services/user.service";
 // components
 import { ActivityList } from "./activity-list";
-// fetch-keys
+// query keys
 
 // services
 const userService = new UserService();
@@ -30,20 +30,20 @@ export function WorkspaceActivityListPage(props: Props) {
   // router
   const { workspaceSlug, userId } = useParams({ strict: false });
 
-  const { data: userProfileActivity } = useSWR(
-    workspaceSlug && userId
-      ? USER_PROFILE_ACTIVITY(workspaceSlug.toString(), userId.toString(), {
-          cursor,
-        })
-      : null,
-    workspaceSlug && userId
-      ? () =>
-          userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
-            cursor,
-            per_page: perPage,
-          })
-      : null
-  );
+  const { data: userProfileActivity } = useQuery({
+    queryKey: USER_PROFILE_ACTIVITY(workspaceSlug, userId, {
+      per_page: perPage,
+      cursor,
+    }),
+    queryFn:
+      workspaceSlug && userId
+        ? () =>
+            userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
+              cursor,
+              per_page: perPage,
+            })
+        : skipToken,
+  });
 
   useEffect(() => {
     if (!userProfileActivity) return;

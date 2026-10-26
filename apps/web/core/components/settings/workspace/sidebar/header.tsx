@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "@tanstack/react-router";
+import { useParams, useRouter } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ROLE_DETAILS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -14,20 +14,18 @@ import { IconButton } from "@plane/propel/icon-button";
 // components
 import { WorkspaceLogo } from "@/components/workspace/logo";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 
-export const WorkspaceSettingsSidebarHeader = observer(function WorkspaceSettingsSidebarHeader() {
+export const WorkspaceSettingsSidebarHeader = function WorkspaceSettingsSidebarHeader() {
   // router
   const router = useRouter();
   // store hooks
-  const { getWorkspaceRoleByWorkspaceSlug } = useUserPermissions();
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { workspaceRole: currentWorkspaceRole } = useWorkspacePermissions(workspaceSlug);
   // derived values
-  const currentWorkspaceRole = currentWorkspace?.slug
-    ? getWorkspaceRoleByWorkspaceSlug(currentWorkspace.slug)
-    : undefined;
   // translation
   const { t } = useTranslation();
 
@@ -59,4 +57,4 @@ export const WorkspaceSettingsSidebarHeader = observer(function WorkspaceSetting
       </div>
     </div>
   );
-});
+};

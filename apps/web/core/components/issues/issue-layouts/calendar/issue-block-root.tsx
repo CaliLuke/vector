@@ -7,11 +7,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
 // plane helpers
 import { useOutsideClickDetector } from "@plane/hooks";
 // components
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueListView } from "@/providers/issue-list-view";
 import type { TRenderQuickActions } from "../list/list-view-types";
 import { HIGHLIGHT_CLASS } from "../utils";
 import { CalendarIssueBlock } from "./issue-block";
@@ -25,17 +24,14 @@ type Props = {
   canEditProperties: (projectId: string | undefined) => boolean;
 };
 
-export const CalendarIssueBlockRoot = observer(function CalendarIssueBlockRoot(props: Props) {
+export function CalendarIssueBlockRoot(props: Props) {
   const { issueId, quickActions, isDragDisabled, isEpic = false, canEditProperties } = props;
 
   const issueRef = useRef<HTMLAnchorElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
-
-  const issue = getIssueById(issueId);
+  const { issuesById } = useIssueListView();
+  const issue = issuesById[issueId];
 
   const canDrag = !isDragDisabled && canEditProperties(issue?.project_id ?? undefined);
 
@@ -57,7 +53,7 @@ export const CalendarIssueBlockRoot = observer(function CalendarIssueBlockRoot(p
         },
       })
     );
-  }, [issueRef?.current, issue, canDrag]);
+  }, [issue, canDrag]);
 
   useOutsideClickDetector(issueRef, () => {
     issueRef?.current?.classList?.remove(HIGHLIGHT_CLASS);
@@ -74,4 +70,4 @@ export const CalendarIssueBlockRoot = observer(function CalendarIssueBlockRoot(p
       isEpic={isEpic}
     />
   );
-});
+}

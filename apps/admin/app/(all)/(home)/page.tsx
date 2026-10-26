@@ -4,20 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { instanceInfoOptions } from "@/queries/instance";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { InstanceFailureView } from "@/components/instance/failure";
 import { InstanceSetupForm } from "@/components/instance/setup-form";
 // hooks
-import { useInstance } from "@/hooks/store";
 // components
 import type { Route } from "./+types/page";
 import { InstanceSignInForm } from "./sign-in-form";
 
 function HomePage() {
-  // store hooks
-  const { instance, error } = useInstance();
+  const { data: instanceInfo, error } = useQuery(instanceInfoOptions);
+  const instance = instanceInfo?.instance;
 
   // if instance is not fetched, show loading
   if (!instance && !error) {
@@ -42,7 +42,7 @@ function HomePage() {
   return <InstanceSignInForm />;
 }
 
-export default observer(HomePage);
+export default HomePage;
 
 export const meta: Route.MetaFunction = () => [
   { title: "Admin – Instance Setup & Sign-In" },

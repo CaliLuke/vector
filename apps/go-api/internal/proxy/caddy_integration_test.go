@@ -4,7 +4,6 @@ package proxy_test
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -512,9 +511,7 @@ func startCaddyWithConfig(t *testing.T, ctx context.Context, configPath string, 
 		environment["GO_STICKIES_ENABLED"] = strconv.FormatBool(*enabled)
 	}
 
-	container, err := testcontainers.Run(
-		ctx,
-		caddyImage,
+	options := []testcontainers.ContainerCustomizer{
 		testcontainers.WithExposedPorts(caddyHTTPPort),
 		testcontainers.WithEnv(environment),
 		testcontainers.WithFiles(
@@ -529,11 +526,14 @@ func startCaddyWithConfig(t *testing.T, ctx context.Context, configPath string, 
 				FileMode:          0o644,
 			},
 		),
-		testcontainers.WithHostPortAccess(djangoPort, goPort),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("serving initial configuration").WithStartupTimeout(time.Minute),
 		),
-	)
+	}
+	if os.Getenv("VECTOR_TEST_HOST_GATEWAY") == "" {
+		options = append(options, testcontainers.WithHostPortAccess(djangoPort, goPort))
+	}
+	container, err := testcontainers.Run(ctx, caddyImage, options...)
 	if err != nil {
 		t.Fatalf("start Caddy with Sticky flag %v: %v", enabled, err)
 	}
@@ -555,7 +555,28 @@ func startCaddyWithConfig(t *testing.T, ctx context.Context, configPath string, 
 }
 
 func hostUpstream(port int) string {
-	return fmt.Sprintf("%s:%d", testcontainers.HostInternal, port)
+	host := os.Getenv("VECTOR_TEST_HOST_GATEWAY")
+	if host == "" {
+		host = testcontainers.HostInternal
+	}
+	return net.JoinHostPort(host, strconv.Itoa(port))
+}
+
+func TestProxyHostGatewayConfiguration(t *testing.T) {
+	for _, test := range []struct {
+		name, gateway, want string
+	}{
+		{name: "portable default", want: "host.testcontainers.internal:8080"},
+		{name: "native host DNS", gateway: "host.docker.internal", want: "host.docker.internal:8080"},
+		{name: "IPv6 gateway", gateway: "::1", want: "[::1]:8080"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Setenv("VECTOR_TEST_HOST_GATEWAY", test.gateway)
+			if got := hostUpstream(8080); got != test.want {
+				t.Fatalf("upstream address = %q, want %q", got, test.want)
+			}
+		})
+	}
 }
 
 func assertTarget(t *testing.T, method, url, want string) {

@@ -5,12 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
 import { DragHandle } from "@plane/ui";
 // helper
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
@@ -19,7 +19,7 @@ type Props = {
   isDragging: boolean;
 };
 
-export const FavoriteItemDragHandle = observer(function FavoriteItemDragHandle(props: Props) {
+export const FavoriteItemDragHandle = function FavoriteItemDragHandle(props: Props) {
   const { sort_order, isDragging } = props;
   // store hooks
   const { isMobile } = usePlatformOS();
@@ -44,4 +44,4 @@ export const FavoriteItemDragHandle = observer(function FavoriteItemDragHandle(p
       </div>
     </Tooltip>
   );
-});
+};

@@ -4,37 +4,35 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 import { cn } from "@plane/propel/utils";
-import type { IFilterInstance } from "@plane/shared-state";
-import type { TExternalFilter, TFilterProperty, TSupportedOperators } from "@plane/types";
+import type { TFilterProperty, TSupportedOperators } from "@plane/types";
 // local imports
 import { AddFilterDropdown } from "../add-filters/dropdown";
 import { COMMON_FILTER_ITEM_BORDER_CLASSNAME } from "../shared";
+import type { TFilterExpressionEditor } from "../shared";
 
-interface IFilterItemPropertyProps<P extends TFilterProperty, E extends TExternalFilter> {
+interface IFilterItemPropertyProps<P extends TFilterProperty> {
   conditionId: string;
   icon: React.FC<React.SVGAttributes<SVGElement>> | undefined;
   isDisabled?: boolean;
-  filter: IFilterInstance<P, E>;
+  editor: TFilterExpressionEditor<P>;
   label: string;
   tooltipContent?: React.ReactNode | undefined;
 }
 
-export const FilterItemProperty = observer(function FilterItemProperty<
-  P extends TFilterProperty,
-  E extends TExternalFilter,
->(props: IFilterItemPropertyProps<P, E>) {
-  const { conditionId, filter, isDisabled } = props;
+export const FilterItemProperty = function FilterItemProperty<P extends TFilterProperty>(
+  props: IFilterItemPropertyProps<P>
+) {
+  const { conditionId, editor, isDisabled } = props;
 
   if (isDisabled) {
     return <PropertyButton {...props} />;
   }
 
   const handleFilterSelect = (property: P, operator: TSupportedOperators, isNegation: boolean) => {
-    filter.updateConditionProperty(conditionId, property, operator, isNegation);
+    editor.onUpdateConditionProperty(conditionId, property, operator, isNegation);
   };
 
   return (
@@ -44,13 +42,13 @@ export const FilterItemProperty = observer(function FilterItemProperty<
       customButton={<PropertyButton {...props} />}
     />
   );
-});
+};
 
-type TPropertyButtonProps<P extends TFilterProperty, E extends TExternalFilter> = IFilterItemPropertyProps<P, E> & {
+type TPropertyButtonProps<P extends TFilterProperty> = IFilterItemPropertyProps<P> & {
   className?: string;
 };
 
-function PropertyButton<P extends TFilterProperty, E extends TExternalFilter>(props: TPropertyButtonProps<P, E>) {
+function PropertyButton<P extends TFilterProperty>(props: TPropertyButtonProps<P>) {
   const { icon: Icon, label, tooltipContent, className } = props;
 
   return (

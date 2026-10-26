@@ -5,79 +5,77 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useCallback } from "react";
 // plane imports
 
-import { EUserPermissionsLevel, EPageAccess } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
+import { Button } from "@plane/propel/button";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TPage, TPageNavigationTabs } from "@plane/types";
-import { EUserProjectRoles } from "@plane/types";
+import type { TPageNavigationTabs } from "@plane/types";
+import { filterPagesByPageType } from "@plane/utils/page";
 // components
 import { PageLoader } from "@/components/pages/loaders/page-loader";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // plane web hooks
-import { EPageStoreType, usePageStore } from "@/hooks/store";
+import { usePageList } from "./page-record-context";
+import { useCreatePageAction } from "./use-create-page-action";
 
 type Props = {
   children: React.ReactNode;
   pageType: TPageNavigationTabs;
-  storeType: EPageStoreType;
 };
 
-export const PagesListMainContent = observer(function PagesListMainContent(props: Props) {
-  const { children, pageType, storeType } = props;
+export function PagesListMainContent(props: Props) {
+  const { children, pageType } = props;
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { currentProjectDetails } = useProject();
-  const { isAnyPageAvailable, getCurrentProjectFilteredPageIdsByTab, getCurrentProjectPageIdsByTab, loader } =
-    usePageStore(storeType);
-  const { allowPermissions } = useUserPermissions();
-  const { createPage } = usePageStore(EPageStoreType.PROJECT);
-  // states
-  const [isCreatingPage, setIsCreatingPage] = useState(false);
+  const { workspaceSlug, projectId } = useParams({
+    from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages",
+  });
+  const { pages, visiblePages, isPending, isError, isDenied, refetch } = usePageList();
   // router
   const router = useRouter();
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // derived values
-  const pageIds = getCurrentProjectPageIdsByTab(pageType);
-  const filteredPageIds = getCurrentProjectFilteredPageIdsByTab(pageType);
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
+  const handlePageCreated = useCallback(
+    (pageId: string) => {
+      void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/pages/${pageId}` });
+    },
+    [projectId, router, workspaceSlug]
   );
+  const { createPage: handleCreatePage, isCreatingPage } = useCreatePageAction({
+    workspaceSlug,
+    projectId,
+    pageType,
+    onCreated: handlePageCreated,
+  });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const canPerformEmptyStateActions = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  // handle page create
-  const handleCreatePage = async () => {
-    setIsCreatingPage(true);
-
-    const payload: Partial<TPage> = {
-      access: pageType === "private" ? EPageAccess.PRIVATE : EPageAccess.PUBLIC,
-    };
-
-    await createPage(payload)
-      .then((res) => {
-        const pageId = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${res?.id}`;
-        void router.navigate({ href: pageId });
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err?.data?.error || "Page could not be created. Please try again.",
-        });
-      })
-      .finally(() => setIsCreatingPage(false));
-  };
-
-  if (loader === "init-loader") return <PageLoader />;
+  if (isPending && pages.length === 0 && !isDenied && !isError) return <PageLoader />;
+  if (isDenied)
+    return (
+      <EmptyStateDetailed
+        assetKey="page"
+        title="Pages are unavailable"
+        description="You do not have access to the pages in this project."
+      />
+    );
+  if (isError && pages.length === 0)
+    return (
+      <div className="grid h-full place-items-center">
+        <div className="text-center">
+          <p className="text-13 text-secondary">Failed to load pages.</p>
+          <Button variant="secondary" size="sm" onClick={() => void refetch()} className="mt-3">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  const pageIds = filterPagesByPageType(pageType, pages).filter((page) => page.project_ids?.includes(projectId));
   // if no pages exist in the active page type
-  if (!isAnyPageAvailable || pageIds?.length === 0) {
-    if (!isAnyPageAvailable) {
+  if (pageIds.length === 0) {
+    if (pageType === "public" || pageType === "private") {
       return (
         <EmptyStateDetailed
           assetKey="page"
@@ -87,7 +85,7 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
             {
               label: t("project_empty_state.pages.cta_primary"),
               onClick: () => {
-                handleCreatePage();
+                void handleCreatePage();
               },
               variant: "primary",
               disabled: !canPerformEmptyStateActions || isCreatingPage,
@@ -96,42 +94,6 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
         />
       );
     }
-    if (pageType === "public")
-      return (
-        <EmptyStateDetailed
-          assetKey="page"
-          title={t("project_empty_state.pages.title")}
-          description={t("project_empty_state.pages.description")}
-          actions={[
-            {
-              label: t("project_empty_state.pages.cta_primary"),
-              onClick: () => {
-                handleCreatePage();
-              },
-              variant: "primary",
-              disabled: !canPerformEmptyStateActions || isCreatingPage,
-            },
-          ]}
-        />
-      );
-    if (pageType === "private")
-      return (
-        <EmptyStateDetailed
-          assetKey="page"
-          title={t("project_empty_state.pages.title")}
-          description={t("project_empty_state.pages.description")}
-          actions={[
-            {
-              label: t("project_empty_state.pages.cta_primary"),
-              onClick: () => {
-                handleCreatePage();
-              },
-              variant: "primary",
-              disabled: !canPerformEmptyStateActions || isCreatingPage,
-            },
-          ]}
-        />
-      );
     if (pageType === "archived")
       return (
         <EmptyStateDetailed
@@ -142,7 +104,7 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
       );
   }
   // if no pages match the filter criteria
-  if (filteredPageIds?.length === 0)
+  if (visiblePages.length === 0)
     return (
       <EmptyStateDetailed
         assetKey="search"
@@ -152,4 +114,4 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
     );
 
   return <div className="h-full w-full overflow-hidden">{children}</div>;
-});
+}

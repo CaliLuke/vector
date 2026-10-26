@@ -110,25 +110,29 @@ export class IssueService extends APIService {
       });
   }
 
-  async retrieve(workspaceSlug: string, projectId: string, issueId: string, queries?: any): Promise<TIssue> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/`, {
-      params: queries,
-    })
-      .then(async (response) => {
-        // add is_epic flag when the service type is epic
-        if (response.data && this.serviceType === EIssueServiceType.EPICS) {
-          response.data.is_epic = true;
-        }
-        return response?.data;
-      })
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async retrieve(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    queries?: Record<string, unknown>,
+    options?: { signal?: AbortSignal }
+  ): Promise<TIssue> {
+    return this.retrieveItem(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/`,
+      queries,
+      options
+    );
   }
 
-  async retrieveIssues(workspaceSlug: string, projectId: string, issueIds: string[]): Promise<TIssue[]> {
+  async retrieveIssues(
+    workspaceSlug: string,
+    projectId: string,
+    issueIds: string[],
+    options?: { includeProperties?: boolean; signal?: AbortSignal }
+  ): Promise<TIssue[]> {
     return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/list/`, {
-      params: { issues: issueIds.join(",") },
+      params: { issues: issueIds.join(","), ...(options?.includeProperties ? { include_properties: true } : {}) },
+      signal: options?.signal,
     })
       .then(async (response) => response?.data)
       .catch((error) => {
@@ -223,12 +227,21 @@ export class IssueService extends APIService {
       });
   }
 
-  async patchIssue(workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async patchIssue(
+    workspaceSlug: string,
+    projectId: string,
+    issueId: string,
+    data: Partial<TIssue>
+  ): Promise<TIssue | undefined> {
+    const response = await this.patch(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/`,
+      data
+    ).catch((error) => {
+      throw error?.response?.data ?? error;
+    });
+    if (response.status === 204) return undefined;
+    if (!response.data) throw new Error("The work item response was empty.");
+    return response.data;
   }
 
   async deleteIssue(workspaceSlug: string, projectId: string, issuesId: string): Promise<any> {
@@ -255,11 +268,12 @@ export class IssueService extends APIService {
     workspaceSlug: string,
     projectId: string,
     issueId: string,
-    queries?: Partial<Record<TIssueParams, string | boolean>>
+    queries?: Partial<Record<TIssueParams, string | boolean>>,
+    options?: { signal?: AbortSignal }
   ): Promise<TIssueSubIssues> {
     return this.get(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/${this.serviceType === EIssueServiceType.EPICS ? "issues" : "sub-issues"}/`,
-      { params: queries }
+      { params: queries, signal: options?.signal }
     )
       .then((response) => response?.data)
       .catch((error) => {
@@ -378,11 +392,15 @@ export class IssueService extends APIService {
   async getIssueNotificationSubscriptionStatus(
     workspaceSlug: string,
     projectId: string,
-    issueId: string
+    issueId: string,
+    signal?: AbortSignal
   ): Promise<{
     subscribed: boolean;
   }> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/subscribe/`)
+    return this.get(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/subscribe/`,
+      { signal }
+    )
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -440,12 +458,26 @@ export class IssueService extends APIService {
     workspaceSlug: string,
     project_identifier: string,
     issue_sequence: string,
-    queries?: any
+    queries?: Record<string, unknown>,
+    options?: { signal?: AbortSignal }
   ): Promise<TIssue> {
-    return this.get(`/api/workspaces/${workspaceSlug}/work-items/${project_identifier}-${issue_sequence}/`, {
+    return this.retrieveItem(
+      `/api/workspaces/${workspaceSlug}/work-items/${project_identifier}-${issue_sequence}/`,
+      queries,
+      options
+    );
+  }
+
+  private async retrieveItem(
+    url: string,
+    queries?: Record<string, unknown>,
+    options?: { signal?: AbortSignal }
+  ): Promise<TIssue> {
+    return this.get(url, {
       params: queries,
+      signal: options?.signal,
     })
-      .then(async (response) => {
+      .then((response) => {
         // add is_epic flag when the service type is epic
         if (response.data && this.serviceType === EIssueServiceType.EPICS) {
           response.data.is_epic = true;

@@ -4,46 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { useRef, useEffect } from "react";
-import useSWR from "swr";
-// plane imports
-import { UserService } from "@plane/services";
-import type { IUser } from "@plane/types";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
 export const useMention = () => {
-  const userService = new UserService();
-  const { data: user, isLoading: userDataLoading } = useSWR("currentUser", async () => userService.me());
+  const queryClient = useQueryClient();
 
-  const userRef = useRef<IUser | undefined>(undefined);
-
-  useEffect(() => {
-    if (userRef) {
-      userRef.current = user;
-    }
-  }, [user]);
-
-  const waitForUserDate = async () =>
-    new Promise<IUser>((resolve) => {
-      const checkData = () => {
-        if (userRef.current) {
-          resolve(userRef.current);
-        } else {
-          setTimeout(checkData, 100);
-        }
-      };
-      checkData();
-    });
-
-  const mentionHighlights = async () => {
-    if (!userDataLoading && userRef.current) {
-      return [userRef.current.id];
-    } else {
-      const user = await waitForUserDate();
-      return [user.id];
+  const mentionHighlights = async (): Promise<string[]> => {
+    try {
+      const user = await queryClient.ensureQueryData(currentUserOptions);
+      return user ? [user.id] : [];
+    } catch {
+      // Anonymous readers have no personal mentions to highlight.
+      return [];
     }
   };
 
-  return {
-    mentionHighlights,
-  };
+  return { mentionHighlights };
 };

@@ -3,58 +3,45 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { usePageRecord } from "@/components/pages/page-record-context";
+import { projectPageVersionOptions } from "@/queries/pages";
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { EyeIcon, TriangleAlert } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TPageVersion } from "@plane/types";
-import { renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import { renderFormattedDate, renderFormattedTime } from "@plane/utils/datetime";
 // helpers
-import type { EPageStoreType } from "@/hooks/store";
 // local imports
 import type { TVersionEditorProps } from "./editor";
 
 type Props = {
   activeVersion: string | null;
   editorComponent: React.FC<TVersionEditorProps>;
-  fetchVersionDetails: (pageId: string, versionId: string) => Promise<TPageVersion | undefined>;
   handleClose: () => void;
   handleRestore: (descriptionHTML: string) => Promise<void>;
   pageId: string;
   restoreEnabled: boolean;
-  storeType: EPageStoreType;
 };
 
-export const PageVersionsMainContent = observer(function PageVersionsMainContent(props: Props) {
-  const {
-    activeVersion,
-    editorComponent,
-    fetchVersionDetails,
-    handleClose,
-    handleRestore,
-    pageId,
-    restoreEnabled,
-    storeType,
-  } = props;
+export function PageVersionsMainContent(props: Props) {
+  const { activeVersion, editorComponent, handleClose, handleRestore, pageId, restoreEnabled } = props;
+  const { scope } = usePageRecord();
+  const client = useQueryClient();
   // states
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isRetrying, setIsRetrying] = useState(false);
 
   const {
     data: versionDetails,
     error: versionDetailsError,
-    mutate: mutateVersionDetails,
-  } = useSWR(
-    pageId && activeVersion ? `PAGE_VERSION_${activeVersion}` : null,
-    pageId && activeVersion ? () => fetchVersionDetails(pageId, activeVersion) : null
-  );
+    refetch,
+    isFetching: isRetrying,
+  } = useQuery(projectPageVersionOptions(client, scope, pageId, activeVersion));
 
   const handleRestoreVersion = async () => {
-    if (!restoreEnabled) return;
+    if (!restoreEnabled || !versionDetails) return;
     setIsRestoring(true);
     await handleRestore(versionDetails?.description_html ?? "<p></p>")
       .then(() => {
@@ -73,12 +60,6 @@ export const PageVersionsMainContent = observer(function PageVersionsMainContent
       .finally(() => setIsRestoring(false));
   };
 
-  const handleRetry = async () => {
-    setIsRetrying(true);
-    await mutateVersionDetails();
-    setIsRetrying(false);
-  };
-
   const VersionEditor = editorComponent;
 
   return (
@@ -93,7 +74,7 @@ export const PageVersionsMainContent = observer(function PageVersionsMainContent
               <h6 className="text-16 font-semibold">Something went wrong!</h6>
               <p className="text-13 text-tertiary">The version could not be loaded, please try again.</p>
             </div>
-            <Button variant="link" onClick={handleRetry} loading={isRetrying}>
+            <Button variant="link" onClick={() => void refetch()} loading={isRetrying}>
               Try again
             </Button>
           </div>
@@ -113,16 +94,22 @@ export const PageVersionsMainContent = observer(function PageVersionsMainContent
               </span>
             </div>
             {restoreEnabled && (
-              <Button variant="primary" className="flex-shrink-0" onClick={handleRestoreVersion} loading={isRestoring}>
+              <Button
+                variant="primary"
+                className="flex-shrink-0"
+                onClick={handleRestoreVersion}
+                loading={isRestoring}
+                disabled={!versionDetails}
+              >
                 {isRestoring ? "Restoring" : "Restore"}
               </Button>
             )}
           </div>
           <div className="vertical-scrollbar scrollbar-sm h-full overflow-y-scroll pt-8">
-            <VersionEditor activeVersion={activeVersion} storeType={storeType} versionDetails={versionDetails} />
+            <VersionEditor activeVersion={activeVersion} versionDetails={versionDetails} />
           </div>
         </>
       )}
     </div>
   );
-});
+}

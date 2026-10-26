@@ -6,29 +6,27 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 // local imports
 import { ModuleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseListRoot } from "../base-list-root";
 
-export const ModuleListLayout = observer(function ModuleListLayout() {
+export function ModuleListLayout() {
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
-
-  const { issues } = useIssues(EIssuesStoreType.MODULE);
+  const actions = useIssuesActions(EIssuesStoreType.MODULE);
 
   return (
     <BaseListRoot
       QuickActions={ModuleIssueQuickActions}
-      addIssuesToView={(issueIds: string[]) => {
+      addIssuesToView={async (issueIds: string[]) => {
         if (!workspaceSlug || !projectId || !moduleId) throw new Error();
-        return issues.addIssuesToModule(workspaceSlug.toString(), projectId.toString(), moduleId.toString(), issueIds);
+        return actions.addIssuesToModule(projectId, moduleId, issueIds);
       }}
       viewId={moduleId?.toString()}
     />
   );
-});
+}

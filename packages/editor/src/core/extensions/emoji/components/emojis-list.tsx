@@ -9,7 +9,7 @@ import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 // plane imports
 import { useOutsideClickDetector } from "@plane/hooks";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 export type EmojiItem = {
   name: string;

@@ -1,18 +1,19 @@
 import { createRequire, registerHooks } from "node:module";
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { transformSync } from "esbuild";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const repositoryRoot = fileURLToPath(new URL("../../..", import.meta.url));
 const webRoot = path.join(repositoryRoot, "apps/web");
+const adminRoot = path.join(repositoryRoot, "apps/admin");
 const spaceRoot = path.join(repositoryRoot, "apps/space");
 const uiRoot = path.join(repositoryRoot, "packages/ui");
 const propelRoot = path.join(repositoryRoot, "packages/propel");
 const i18nRoot = path.join(repositoryRoot, "packages/i18n");
 const hooksRoot = path.join(repositoryRoot, "packages/hooks");
 const requireFromWeb = createRequire(path.join(webRoot, "package.json"));
-const typescript = requireFromWeb("typescript");
-const appSourceRoots = [webRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot].map(
+const appSourceRoots = [webRoot, adminRoot, spaceRoot, uiRoot, propelRoot, hooksRoot, i18nRoot].map(
   (root) => pathToFileURL(root).href
 );
 const relativeSpecifiers = new Set([".", ".."]);
@@ -43,22 +44,26 @@ export function registerWebModuleHooks(options = {}) {
   registerAppModuleHooks(webRoot, "core", options);
 }
 
+export function registerAdminModuleHooks(options = {}) {
+  registerAppModuleHooks(adminRoot, "", options);
+}
+
 export function registerSpaceModuleHooks(options = {}) {
   registerAppModuleHooks(spaceRoot, "", options);
 }
 
-function registerAppModuleHooks(appRoot, aliasRoot, { stubStoreContext = false, stubEmojiRoot = false } = {}) {
+function registerAppModuleHooks(appRoot, aliasRoot, { stubEmojiRoot = false } = {}) {
   registerHooks({
     resolve(specifier, context, nextResolve) {
       let target;
-      if (stubStoreContext && specifier === "@/lib/store-context") {
-        target = path.join(repositoryRoot, "tests/frontend/helpers/work-item-store-context.mjs");
-      } else if (
+      if (
         stubEmojiRoot &&
         specifier === "../emoji-icon-picker/emoji/emoji" &&
         context.parentURL?.startsWith(pathToFileURL(propelRoot).href)
       ) {
         target = path.join(repositoryRoot, "tests/frontend/helpers/emoji-root-stub.mjs");
+      } else if (appRoot === webRoot && /^@\/(app|helpers|styles)\//.test(specifier)) {
+        target = path.resolve(appRoot, specifier.slice(2));
       } else if (specifier.startsWith("@/")) {
         target = path.resolve(appRoot, aliasRoot, specifier.slice(2));
       } else if (isRelativeSpecifier(specifier) && isAppSourceUrl(context.parentURL)) {
@@ -75,7 +80,8 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubStoreContext = false, 
     },
     load(url, context, nextLoad) {
       if (
-        (url.startsWith(pathToFileURL(webRoot).href) ||
+        (url.startsWith(pathToFileURL(adminRoot).href) ||
+          url.startsWith(pathToFileURL(webRoot).href) ||
           url.startsWith(pathToFileURL(spaceRoot).href) ||
           url.startsWith(pathToFileURL(uiRoot).href) ||
           url.startsWith(pathToFileURL(propelRoot).href) ||
@@ -83,16 +89,15 @@ function registerAppModuleHooks(appRoot, aliasRoot, { stubStoreContext = false, 
           url.startsWith(pathToFileURL(i18nRoot).href)) &&
         /\.tsx?$/.test(url)
       ) {
-        const compilerOptions = {
-          module: typescript.ModuleKind.ESNext,
-          target: typescript.ScriptTarget.ES2022,
-        };
-        if (url.endsWith(".tsx")) compilerOptions.jsx = typescript.JsxEmit.ReactJSX;
         const source = readFileSync(fileURLToPath(url), "utf8");
-        const output = typescript.transpileModule(source, {
-          compilerOptions,
-          fileName: fileURLToPath(url),
-        }).outputText;
+        const output = transformSync(source, {
+          format: "esm",
+          loader: url.endsWith(".tsx") ? "tsx" : "ts",
+          sourcefile: fileURLToPath(url),
+          target: "es2022",
+          tsconfigRaw: { compilerOptions: { useDefineForClassFields: true } },
+          ...(url.endsWith(".tsx") ? { jsx: "automatic", jsxImportSource: "react" } : {}),
+        }).code;
         return { format: "module", shortCircuit: true, source: output };
       }
 

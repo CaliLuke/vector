@@ -5,7 +5,7 @@
  */
 
 import { Combobox } from "@headlessui/react";
-import { sortBy } from "lodash-es";
+import sortBy from "lodash-es/sortBy.js";
 import React, { useMemo, useRef, useState } from "react";
 import { usePopper } from "react-popper";
 // plane imports

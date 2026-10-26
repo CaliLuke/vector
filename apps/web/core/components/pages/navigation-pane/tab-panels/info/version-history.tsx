@@ -3,44 +3,44 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { usePageRecord } from "@/components/pages/page-record-context";
+import { projectPageVersionsOptions } from "@/queries/pages";
+
+import type { TPage } from "@plane/types";
 
 import { Link, useLocation } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import type { TPageVersion } from "@plane/types";
+import type { IUserLite, TPageVersion } from "@plane/types";
 import { Avatar } from "@plane/ui";
-import { cn, getFileURL, renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
+import { renderFormattedDate, renderFormattedTime } from "@plane/utils/datetime";
 // components
-import type { TPageRootHandlers } from "@/components/pages/editor/page-root";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { useQueryParams } from "@/hooks/use-query-params";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM } from "../..";
 
 type Props = {
-  page: TPageInstance;
-  versionHistory: Pick<TPageRootHandlers, "fetchAllVersions" | "fetchVersionDetails">;
+  page: TPage;
+  workspaceSlug: string;
 };
 
 type VersionHistoryItemProps = {
   getVersionLink: (versionID: string) => string;
   isVersionActive: boolean;
+  memberDetails: IUserLite | undefined;
   version: TPageVersion;
 };
 
-const VersionHistoryItem = observer(function VersionHistoryItem(props: VersionHistoryItemProps) {
-  const { getVersionLink, isVersionActive, version } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
-  // derived values
-  const versionCreator = getUserDetails(version.owned_by);
+function VersionHistoryItem(props: VersionHistoryItemProps) {
+  const { getVersionLink, isVersionActive, memberDetails, version } = props;
   // translation
   const { t } = useTranslation();
 
@@ -63,21 +63,19 @@ const VersionHistoryItem = observer(function VersionHistoryItem(props: VersionHi
         <p className="mt-1 flex items-center gap-1">
           <Avatar
             size="sm"
-            src={getFileURL(versionCreator?.avatar_url ?? "")}
-            name={versionCreator?.display_name}
+            src={getFileURL(memberDetails?.avatar_url ?? "")}
+            name={memberDetails?.display_name}
             className="shrink-0"
           />
-          <span>{versionCreator?.display_name ?? t("common.deactivated_user")}</span>
+          <span>{memberDetails?.display_name ?? t("common.deactivated_user")}</span>
         </p>
       </Link>
     </li>
   );
-});
+}
 
-export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNavigationPaneInfoTabVersionHistory(
-  props: Props
-) {
-  const { page, versionHistory } = props;
+export function PageNavigationPaneInfoTabVersionHistory(props: Props) {
+  const { page, workspaceSlug } = props;
   // navigation
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const activeVersion = searchParams.get(PAGE_NAVIGATION_PANE_VERSION_QUERY_PARAM);
@@ -87,11 +85,11 @@ export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNav
   const { t } = useTranslation();
   // query params
   const { updateQueryParams } = useQueryParams();
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
   // fetch all versions
-  const { data: versionsList } = useSWR(
-    id ? `PAGE_VERSIONS_LIST_${id}` : null,
-    id ? () => versionHistory.fetchAllVersions(id) : null
-  );
+  const { scope } = usePageRecord();
+  const client = useQueryClient();
+  const { data: versionsList } = useQuery(projectPageVersionsOptions(client, scope, id));
 
   const getVersionLink = useCallback(
     (versionID?: string) => {
@@ -138,6 +136,7 @@ export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNav
               key={version.id}
               getVersionLink={getVersionLink}
               isVersionActive={activeVersion === version.id}
+              memberDetails={membersById?.get(version.owned_by)?.member}
               version={version}
             />
           ))}
@@ -145,4 +144,4 @@ export const PageNavigationPaneInfoTabVersionHistory = observer(function PageNav
       </div>
     </div>
   );
-});
+}

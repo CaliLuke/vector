@@ -6,17 +6,16 @@
 
 import { useCallback } from "react";
 import { X } from "lucide-react";
-import { observer } from "mobx-react";
 // plane imports
 import { IconButton } from "@plane/propel/icon-button";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 // local imports
 import { ProfileSettingsContent } from "./content";
 import { ProfileSettingsSidebarRoot } from "./sidebar";
 
-export const ProfileSettingsModal = observer(function ProfileSettingsModal() {
+export function ProfileSettingsModal() {
   // store hooks
   const { profileSettingsModal, toggleProfileSettingsModal } = useCommandPalette();
   // derived values
@@ -56,4 +55,4 @@ export const ProfileSettingsModal = observer(function ProfileSettingsModal() {
       </div>
     </ModalCore>
   );
-});
+}

@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import type { UseFormGetValues } from "react-hook-form";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
@@ -13,17 +11,17 @@ import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import type { IUserTheme } from "@plane/types";
 
 type Props = {
-  getValues: UseFormGetValues<IUserTheme>;
+  value: IUserTheme;
 };
 
-export const CustomThemeDownloadConfigButton = observer(function CustomThemeDownloadConfigButton(props: Props) {
-  const { getValues } = props;
+export const CustomThemeDownloadConfigButton = function CustomThemeDownloadConfigButton(props: Props) {
+  const { value } = props;
   // translation
   const { t } = useTranslation();
 
   const handleDownloadConfig = () => {
     try {
-      const currentValues = getValues();
+      const currentValues = value;
       const config = {
         version: "1.0",
         themeName: "Custom Theme",
@@ -36,7 +34,7 @@ export const CustomThemeDownloadConfigButton = observer(function CustomThemeDown
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `plane-theme-${Date.now()}.json`;
+      link.download = `vector-theme-${Date.now()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -62,4 +60,4 @@ export const CustomThemeDownloadConfigButton = observer(function CustomThemeDown
       Download config
     </Button>
   );
-});
+};

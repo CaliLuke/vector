@@ -10,7 +10,7 @@ import { useTranslation } from "@plane/i18n";
 import type { ISvgIcons } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   onChange: (value: number) => void;

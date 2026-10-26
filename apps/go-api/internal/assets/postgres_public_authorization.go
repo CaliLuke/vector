@@ -16,7 +16,7 @@ func (repository *PostgresRepository) PublicOwnedProjectAsset(ctx context.Contex
 		return FileAsset{}, err
 	}
 	var ownedID uuid.UUID
-	if err := repository.database.QueryRow(ctx, `SELECT id FROM file_assets WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND (@include_deleted OR deleted_at IS NULL)`, pgx.StrictNamedArgs{"id": assetID, "workspace": workspaceID, "project": projectID, "actor": userID, "include_deleted": includeDeleted}).Scan(&ownedID); err != nil {
+	if err := repository.database.QueryRow(ctx, `SELECT id FROM file_assets WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND (@include_deleted OR deleted_at IS NULL)`, pgx.StrictNamedArgs{"id": assetID, "workspace": workspaceID, "project": projectID, "actor": userID, "include_deleted": includeDeleted}).Scan(&ownedID); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 		}

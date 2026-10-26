@@ -4,26 +4,28 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 import { LabelPropertyIcon } from "@plane/propel/icons";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
+import { labelsOptions } from "@/queries/lookups";
 
 type Props = {
   labelIds: string[];
   shouldShowLabel?: boolean;
 };
 
-export const IssueBlockLabels = observer(function IssueBlockLabels({ labelIds, shouldShowLabel = false }: Props) {
-  const { getLabelsByIds } = useLabel();
+export const IssueBlockLabels = function IssueBlockLabels({ labelIds, shouldShowLabel = false }: Props) {
+  const { data: labels = [] } = useQuery(labelsOptions(useParams().anchor));
 
-  const labels = getLabelsByIds(labelIds);
+  const selectedLabels = labels.filter((item) => labelIds.includes(item.id));
 
-  const labelsString = labels.length > 0 ? labels.map((label) => label.name).join(", ") : "No Labels";
+  const labelsString = selectedLabels.length > 0 ? selectedLabels.map((label) => label.name).join(", ") : "No Labels";
 
-  if (labels.length <= 0)
+  if (selectedLabels.length <= 0)
     return (
       <Tooltip position="top" tooltipHeading="Labels" tooltipContent="None">
         <div
@@ -37,9 +39,9 @@ export const IssueBlockLabels = observer(function IssueBlockLabels({ labelIds, s
 
   return (
     <div className="flex h-5 w-full flex-wrap items-center gap-2 overflow-hidden">
-      {labels.length <= 2 ? (
+      {selectedLabels.length <= 2 ? (
         <>
-          {labels.map((label) => (
+          {selectedLabels.map((label) => (
             <Tooltip key={label.id} position="top" tooltipHeading="Labels" tooltipContent={label?.name ?? ""}>
               <div
                 key={label?.id}
@@ -65,11 +67,11 @@ export const IssueBlockLabels = observer(function IssueBlockLabels({ labelIds, s
           <Tooltip position="top" tooltipHeading="Labels" tooltipContent={labelsString}>
             <div className="flex h-full items-center gap-1.5 text-secondary">
               <span className="h-2 w-2 flex-shrink-0 rounded-full bg-accent-primary" />
-              {`${labels.length} Labels`}
+              {`${selectedLabels.length} Labels`}
             </div>
           </Tooltip>
         </div>
       )}
     </div>
   );
-});
+};

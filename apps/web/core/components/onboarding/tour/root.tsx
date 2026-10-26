@@ -5,7 +5,6 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { Button } from "@plane/propel/button";
 import { CloseIcon, PlaneLockup } from "@plane/propel/icons";
@@ -16,8 +15,8 @@ import ModulesTour from "@/app/assets/onboarding/modules.webp?url";
 import PagesTour from "@/app/assets/onboarding/pages.webp?url";
 import ViewsTour from "@/app/assets/onboarding/views.webp?url";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useUser } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // local imports
 import { TourSidebar } from "./sidebar";
 
@@ -78,13 +77,13 @@ const TOUR_STEPS: {
   },
 ];
 
-export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) {
+export function TourRoot(props: TOnboardingTourProps) {
   const { onComplete } = props;
   // states
   const [step, setStep] = useState<TTourSteps>("welcome");
   // store hooks
   const { toggleCreateProjectModal } = useCommandPalette();
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
 
   const currentStepIndex = TOUR_STEPS.findIndex((tourStep) => tourStep.key === step);
   const currentStep = TOUR_STEPS[currentStepIndex];
@@ -181,4 +180,4 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
       )}
     </>
   );
-});
+}

@@ -39,8 +39,7 @@ import {
   StartDatePropertyIcon,
   StatePropertyIcon,
 } from "@plane/propel/icons";
-import { store } from "@/lib/store-context";
-import type { TProjectActivity } from "@plane/types";
+import type { IWorkspace, TProjectActivity } from "@plane/types";
 
 type ActivityIconMap = {
   [key: string]: FC<{ className?: string }>;
@@ -79,12 +78,14 @@ export const iconsMap: ActivityIconMap = {
   intake_view: IntakeIcon,
 };
 
-export const messages = (activity: TProjectActivity): { message: string | ReactNode; customUserName?: string } => {
+export const messages = (
+  activity: TProjectActivity,
+  workspaceDetail: IWorkspace | undefined
+): { message: string | ReactNode; customUserName?: string } => {
   const activityType = activity.field;
   const newValue = activity.new_value;
   const oldValue = activity.old_value;
   const verb = activity.verb;
-  const workspaceDetail = store.workspaceRoot.getWorkspaceById(activity.workspace);
 
   const getBooleanActionText = (value: string | undefined) => {
     if (value === "true") return "enabled";

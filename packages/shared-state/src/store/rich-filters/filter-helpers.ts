@@ -4,280 +4,190 @@
  * See the LICENSE file for details.
  */
 
-import { cloneDeep } from "lodash-es";
-import { action, makeObservable, observable, toJS } from "mobx";
-// plane imports
-import type { TAutoVisibilityOptions, TExpressionOptions } from "@plane/constants";
-import { DEFAULT_FILTER_EXPRESSION_OPTIONS } from "@plane/constants";
+import cloneDeep from "lodash-es/cloneDeep.js";
+import isEqual from "lodash-es/isEqual.js";
 import type {
-  IFilterAdapter,
-  TSupportedOperators,
+  SingleOrArray,
+  TAllAvailableOperatorsForDisplay,
+  TFilterConditionForBuild,
   TFilterConditionNode,
-  TFilterExpression,
-  TFilterValue,
-  TFilterProperty,
-  TExternalFilter,
-  TLogicalOperator,
+  TFilterConditionNodeForDisplay,
   TFilterConditionPayload,
+  TFilterExpression,
+  TFilterProperty,
+  TFilterValue,
+  TLogicalOperator,
+  TSupportedOperators,
 } from "@plane/types";
-import { LOGICAL_OPERATOR } from "@plane/types";
-import { addAndCondition, createConditionNode, updateNodeInExpression } from "@plane/utils";
-// local imports
-import type { IFilterInstance } from "./filter";
+import { EXTENDED_OPERATORS, FILTER_NODE_TYPE, LOGICAL_OPERATOR } from "@plane/types";
+import {
+  addAndCondition,
+  createConditionNode,
+  createNotGroupNode,
+  createOrGroupNode,
+  findNodeById,
+  findConjunctiveCondition as findCondition,
+  findParentChain,
+  getDisplayOperator,
+  getOperatorForPayload,
+  hasChildrenProperty,
+  hasValidValue,
+  isConditionNode,
+  isNotGroupNode,
+  isOrGroupNode,
+  removeNodeFromExpression,
+  replaceNodeInExpression,
+  shouldNotifyChangeForExpression,
+  updateNodeInExpression,
+} from "@plane/utils/rich-filters";
 
-type TFilterInstanceHelperParams<P extends TFilterProperty, E extends TExternalFilter> = {
-  adapter: IFilterAdapter<P, E>;
-};
-
-/**
- * Interface for filter instance helper utilities.
- * Provides comprehensive methods for filter expression manipulation, node operations,
- * operator utilities, and expression restructuring.
- * @template P - The filter property type extending TFilterProperty
- * @template E - The external filter type extending TExternalFilter
- */
-export interface IFilterInstanceHelper<P extends TFilterProperty, E extends TExternalFilter> {
-  isVisible: boolean;
-  // initialization
-  initializeExpression: (initialExpression?: E) => TFilterExpression<P> | null;
-  initializeExpressionOptions: (expressionOptions?: Partial<TExpressionOptions<E>>) => TExpressionOptions<E>;
-  // visibility
-  setInitialVisibility: (visibilityOption: TAutoVisibilityOptions) => void;
-  toggleVisibility: (isVisible?: boolean) => void;
-  // condition operations
-  addConditionToExpression: <V extends TFilterValue>(
-    expression: TFilterExpression<P> | null,
-    groupOperator: TLogicalOperator,
-    condition: TFilterConditionPayload<P, V>,
-    isNegation: boolean
-  ) => TFilterExpression<P> | null;
-  handleConditionPropertyUpdate: (
-    expression: TFilterExpression<P>,
-    conditionId: string,
-    property: P,
-    operator: TSupportedOperators,
-    isNegation: boolean
-  ) => TFilterExpression<P> | null;
-  // group operations
-  restructureExpressionForOperatorChange: (
-    expression: TFilterExpression<P>,
-    conditionId: string,
-    newOperator: TSupportedOperators,
-    isNegation: boolean,
-    shouldResetValue: boolean
-  ) => TFilterExpression<P> | null;
+export function addFilterCondition<P extends TFilterProperty, V extends TFilterValue>(
+  expression: TFilterExpression<P> | null,
+  groupOperator: TLogicalOperator,
+  condition: TFilterConditionPayload<P, V>,
+  isNegation: boolean
+): TFilterExpression<P> | null {
+  const conditionNode = createConditionNode(condition);
+  const nodeToAdd = isNegation ? createNotGroupNode(conditionNode) : conditionNode;
+  if (groupOperator === LOGICAL_OPERATOR.AND) return addAndCondition(cloneDeep(expression), nodeToAdd);
+  if (groupOperator === LOGICAL_OPERATOR.OR) {
+    if (!expression) return nodeToAdd;
+    const current = cloneDeep(expression);
+    if (!isConditionNode(current) && isOrGroupNode(current)) {
+      current.children.push(nodeToAdd);
+      return current;
+    }
+    return createOrGroupNode([current, nodeToAdd]);
+  }
+  return expression;
 }
 
-/**
- * Comprehensive helper class for filter instance operations.
- * Provides utilities for filter expression manipulation, node operations,
- * operator transformations, and expression restructuring.
- *
- * @template K - The filter property type extending TFilterProperty
- * @template E - The external filter type extending TExternalFilter
- */
-export class FilterInstanceHelper<
-  P extends TFilterProperty,
-  E extends TExternalFilter,
-> implements IFilterInstanceHelper<P, E> {
-  // parent filter instance
-  private _filterInstance: IFilterInstance<P, E>;
-  // adapter
-  private adapter: IFilterAdapter<P, E>;
-  // visibility
-  isVisible: boolean;
-
-  /**
-   * Creates a new FilterInstanceHelper instance.
-   *
-   * @param adapter - The filter adapter for converting between internal and external formats
-   */
-  constructor(filterInstance: IFilterInstance<P, E>, params: TFilterInstanceHelperParams<P, E>) {
-    this._filterInstance = filterInstance;
-    this.adapter = params.adapter;
-    this.isVisible = false;
-
-    makeObservable(this, {
-      isVisible: observable,
-      setInitialVisibility: action,
-      toggleVisibility: action,
-    });
-  }
-
-  // ------------ initialization ------------
-
-  /**
-   * Initializes the filter expression from external format.
-   * @param initialExpression - The initial expression to initialize the filter with
-   * @returns The initialized filter expression or null if no initial expression provided
-   */
-  initializeExpression: IFilterInstanceHelper<P, E>["initializeExpression"] = (initialExpression) => {
-    if (!initialExpression) return null;
-    return this.adapter.toInternal(toJS(cloneDeep(initialExpression)));
-  };
-
-  /**
-   * Initializes the filter expression options with defaults.
-   * @param expressionOptions - Optional expression options to override defaults
-   * @returns The initialized filter expression options
-   */
-  initializeExpressionOptions: IFilterInstanceHelper<P, E>["initializeExpressionOptions"] = (expressionOptions) => ({
-    ...DEFAULT_FILTER_EXPRESSION_OPTIONS,
-    ...expressionOptions,
-  });
-
-  /**
-   * Sets the initial visibility state for the filter based on options and active filters.
-   * @param visibilityOption - The visibility options for the filter instance.
-   * @returns The initial visibility state
-   */
-  setInitialVisibility: IFilterInstanceHelper<P, E>["setInitialVisibility"] = action((visibilityOption) => {
-    // If explicit initial visibility is provided, use it
-    if (visibilityOption.autoSetVisibility === false) {
-      this.isVisible = visibilityOption.isVisibleOnMount;
-      return;
-    }
-
-    // If filter has active filters, make it visible
-    if (this._filterInstance.hasActiveFilters) {
-      this.isVisible = true;
-      return;
-    }
-
-    // Default to hidden if no active filters
-    this.isVisible = false;
-    return;
-  });
-
-  /**
-   * Toggles the visibility of the filter.
-   * @param isVisible - The visibility to set.
-   */
-  toggleVisibility: IFilterInstanceHelper<P, E>["toggleVisibility"] = action((isVisible) => {
-    if (isVisible !== undefined) {
-      this.isVisible = isVisible;
-      return;
-    }
-    this.isVisible = !this.isVisible;
-  });
-
-  // ------------ condition operations ------------
-
-  /**
-   * Adds a condition to the filter expression based on the logical operator.
-   * @param expression - The current filter expression
-   * @param groupOperator - The logical operator to use for the condition
-   * @param condition - The condition to add
-   * @param isNegation - Whether the condition should be negated
-   * @returns The updated filter expression
-   */
-  addConditionToExpression: IFilterInstanceHelper<P, E>["addConditionToExpression"] = (
-    expression,
-    groupOperator,
-    condition,
-    isNegation
-  ) => this._addConditionByOperator(expression, groupOperator, this._getConditionPayloadToAdd(condition, isNegation));
-
-  /**
-   * Updates the property and operator of a condition in the filter expression.
-   * This method updates the property, operator, resets the value, and handles negation properly.
-   * @param expression - The filter expression to operate on
-   * @param conditionId - The ID of the condition being updated
-   * @param property - The new property for the condition
-   * @param operator - The new operator for the condition
-   * @param isNegation - Whether the condition should be negated
-   * @returns The updated expression
-   */
-  handleConditionPropertyUpdate: IFilterInstanceHelper<P, E>["handleConditionPropertyUpdate"] = (
+export function updateFilterConditionProperty<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  conditionId: string,
+  property: P,
+  operator: TSupportedOperators,
+  isNegation: boolean
+): TFilterExpression<P> {
+  return updateFilterCondition(
     expression,
     conditionId,
-    property,
-    operator,
+    { property, operator, value: undefined, valueFormat: undefined },
     isNegation
-  ) => {
-    const payload = { property, operator, value: undefined };
+  );
+}
 
-    return this._updateCondition(expression, conditionId, payload, isNegation);
-  };
-
-  // ------------ group operations ------------
-
-  /**
-   * Restructures the expression when a condition's operator changes between positive and negative.
-   * @param expression - The filter expression to operate on
-   * @param conditionId - The ID of the condition being updated
-   * @param newOperator - The new operator for the condition
-   * @param isNegation - Whether the operator is negation
-   * @param shouldResetValue - Whether to reset the condition value
-   * @returns The restructured expression
-   */
-  restructureExpressionForOperatorChange: IFilterInstanceHelper<P, E>["restructureExpressionForOperatorChange"] = (
+export function updateFilterConditionOperator<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  conditionId: string,
+  operator: TSupportedOperators,
+  isNegation: boolean,
+  shouldResetValue: boolean
+): TFilterExpression<P> {
+  return updateFilterCondition(
     expression,
     conditionId,
-    newOperator,
-    isNegation,
-    shouldResetValue
-  ) => {
-    const payload = shouldResetValue ? { operator: newOperator, value: undefined } : { operator: newOperator };
+    shouldResetValue ? { operator, value: undefined } : { operator },
+    isNegation
+  );
+}
 
-    return this._updateCondition(expression, conditionId, payload, isNegation);
-  };
-
-  // ------------ private helpers ------------
-
-  /**
-   * Gets the condition payload to add to the expression.
-   * @param conditionNode - The condition node to add
-   * @param isNegation - Whether the condition should be negated
-   * @returns The condition payload to add
-   */
-  private _getConditionPayloadToAdd = (
-    condition: TFilterConditionPayload<P, TFilterValue>,
-    _isNegation: boolean
-  ): TFilterExpression<P> => {
-    const conditionNode = createConditionNode(condition);
-
-    return conditionNode;
-  };
-
-  /**
-   * Handles the logical operator switch for adding conditions.
-   * @param expression - The current expression
-   * @param groupOperator - The logical operator
-   * @param conditionToAdd - The condition to add
-   * @returns The updated expression
-   */
-  private _addConditionByOperator(
-    expression: TFilterExpression<P> | null,
-    groupOperator: TLogicalOperator,
-    conditionToAdd: TFilterExpression<P>
-  ): TFilterExpression<P> | null {
-    switch (groupOperator) {
-      case LOGICAL_OPERATOR.AND:
-        return addAndCondition(expression, conditionToAdd);
-      default:
-        console.warn(`Unsupported logical operator: ${groupOperator}`);
-        return expression;
-    }
+export function updateFilterConditionValue<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  conditionId: string,
+  value: SingleOrArray<TFilterValue>,
+  forceUpdate = false
+): { expression: TFilterExpression<P> | null; changed: boolean } {
+  const current = findNodeById(expression, conditionId);
+  if (!current || current.type !== FILTER_NODE_TYPE.CONDITION) return { expression, changed: false };
+  if (!hasValidValue(value)) {
+    const result = removeNodeFromExpression(expression, conditionId);
+    return { expression: result.expression, changed: result.shouldNotify };
   }
+  if (!forceUpdate && isEqual(current.value, value)) return { expression, changed: false };
+  const next = cloneDeep(expression);
+  updateNodeInExpression(next, conditionId, { value });
+  return { expression: next, changed: true };
+}
 
-  /**
-   * Updates a condition with the given payload and handles negation wrapping/unwrapping.
-   * @param expression - The filter expression to operate on
-   * @param conditionId - The ID of the condition being updated
-   * @param payload - The payload to update the condition with
-   * @param isNegation - Whether the condition should be negated
-   * @returns The updated expression with proper negation handling
-   */
-  private _updateCondition = (
-    expression: TFilterExpression<P>,
-    conditionId: string,
-    payload: Partial<TFilterConditionNode<P, TFilterValue>>,
-    _isNegation: boolean
-  ): TFilterExpression<P> | null => {
-    // Update the condition with the payload
-    updateNodeInExpression(expression, conditionId, payload);
+export function removeFilterCondition<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  conditionId: string
+): { expression: TFilterExpression<P> | null; shouldNotify: boolean } {
+  return removeNodeFromExpression(expression, conditionId);
+}
 
-    return expression;
-  };
+export function updateFilterGroupOperator<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  groupId: string,
+  operator: "and" | "or"
+): TFilterExpression<P> {
+  const next = cloneDeep(expression);
+  const group = findNodeById(next, groupId);
+  if (group?.type === FILTER_NODE_TYPE.GROUP && hasChildrenProperty(group)) group.logicalOperator = operator;
+  return next;
+}
+
+export function updateFilterCondition<P extends TFilterProperty>(
+  expression: TFilterExpression<P>,
+  conditionId: string,
+  payload: Partial<TFilterConditionNode<P, TFilterValue>>,
+  isNegation: boolean
+): TFilterExpression<P> {
+  const next = cloneDeep(expression);
+  updateNodeInExpression(next, conditionId, payload);
+  const condition = findNodeById(next, conditionId);
+  if (!condition || !isConditionNode(condition)) return next;
+  const currentNegation = getOperatorForPayload(getDisplayOperator(condition.operator, next, conditionId)).isNegation;
+  if (currentNegation === isNegation) return next;
+  const parent = findParentChain(next, conditionId)?.[0];
+  if (parent && isNotGroupNode(parent)) return replaceNodeInExpression(next, parent.id, condition);
+  return replaceNodeInExpression(next, conditionId, createNotGroupNode(condition));
+}
+
+export function addSidebarFilterCondition<P extends TFilterProperty>(
+  expression: TFilterExpression<P> | null,
+  condition: TFilterConditionForBuild<P, TFilterValue>
+): TFilterExpression<P> {
+  const { operator, isNegation } = getOperatorForPayload(condition.operator);
+  const payload = { property: condition.property, operator, value: condition.value };
+  const existing = expression
+    ? findConjunctiveCondition(expression, condition.property, condition.operator)
+    : undefined;
+  if (!expression || !existing)
+    return addFilterCondition(expression, LOGICAL_OPERATOR.AND, payload, isNegation) ?? createConditionNode(payload);
+  const updated = updateFilterConditionValue(expression, existing.id, condition.value, true);
+  return updated.expression ?? createConditionNode(payload);
+}
+
+export function findConjunctiveCondition<P extends TFilterProperty>(
+  expression: TFilterExpression<P> | null,
+  property: P,
+  operator: TAllAvailableOperatorsForDisplay
+): TFilterConditionNodeForDisplay<P, TFilterValue> | undefined {
+  if (!expression) return undefined;
+  return findCondition(expression, property, operator);
+}
+
+export function isEmptyFilterExpression<P extends TFilterProperty>(expression: TFilterExpression<P> | null): boolean {
+  return expression === null;
+}
+
+export function hasValidFilterValue(value: SingleOrArray<TFilterValue>): boolean {
+  return hasValidValue(value);
+}
+
+export function shouldNotifyFilterChange<P extends TFilterProperty>(expression: TFilterExpression<P> | null): boolean {
+  return shouldNotifyChangeForExpression(expression);
+}
+
+export function operatorValueMustReset<P extends TFilterProperty>(
+  condition: TFilterConditionNode<P, TFilterValue>,
+  currentConfigType: string | undefined,
+  nextConfigType: string | undefined,
+  operator: TSupportedOperators
+): boolean {
+  const changesPresenceCheck =
+    (condition.operator === EXTENDED_OPERATORS.IS_NULL) !== (operator === EXTENDED_OPERATORS.IS_NULL);
+  return changesPresenceCheck || currentConfigType !== nextConfigType;
 }

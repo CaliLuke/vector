@@ -6,7 +6,7 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
+import { useStore } from "@tanstack/react-form";
 
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -17,7 +17,7 @@ import { InvitationModalActions } from "@/components/workspace/invite-modal/acti
 import { InvitationFields } from "@/components/workspace/invite-modal/fields";
 import { InvitationForm } from "@/components/workspace/invite-modal/form";
 // hooks
-import { useWorkspaceInvitationActions } from "@/hooks/use-workspace-invitation";
+import { useInvitationForm, emptyInvitation } from "@/hooks/use-workspace-invitation";
 
 export type TSendWorkspaceInvitationModalProps = {
   isOpen: boolean;
@@ -25,43 +25,39 @@ export type TSendWorkspaceInvitationModalProps = {
   onSubmit: (data: IWorkspaceBulkInviteFormData) => Promise<void> | undefined;
 };
 
-export const SendWorkspaceInvitationModal = observer(function SendWorkspaceInvitationModal(
-  props: TSendWorkspaceInvitationModalProps
-) {
-  const { isOpen, onClose, onSubmit } = props;
+export function SendWorkspaceInvitationModal(props: TSendWorkspaceInvitationModalProps) {
+  if (!props.isOpen) return null;
+  return <WorkspaceInvitationForm {...props} />;
+}
+
+function WorkspaceInvitationForm({ onClose, onSubmit }: TSendWorkspaceInvitationModalProps) {
   // store hooks
   const { t } = useTranslation();
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // derived values
-  const { control, fields, formState, remove, onFormSubmit, handleClose, appendField } = useWorkspaceInvitationActions({
-    onSubmit,
-    onClose,
-  });
+  const form = useInvitationForm({ onSubmit });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const handleClose = () => {
+    if (!isSubmitting) onClose();
+  };
 
   return (
-    <ModalCore isOpen={isOpen} position={EModalPosition.TOP} width={EModalWidth.XXL}>
+    <ModalCore isOpen handleClose={handleClose} position={EModalPosition.TOP} width={EModalWidth.XXL}>
       <InvitationForm
         title={t("workspace_settings.settings.members.modal.title")}
         description={t("workspace_settings.settings.members.modal.description")}
-        onSubmit={onFormSubmit}
+        onSubmit={() => form.handleSubmit().catch(() => undefined)}
         actions={
           <InvitationModalActions
-            isSubmitting={formState.isSubmitting}
+            isSubmitting={isSubmitting}
             handleClose={handleClose}
-            appendField={appendField}
+            appendField={() => form.pushFieldValue("emails", emptyInvitation())}
           />
         }
         className="p-5"
       >
-        <InvitationFields
-          workspaceSlug={workspaceSlug.toString()}
-          fields={fields}
-          control={control}
-          formState={formState}
-          remove={remove}
-        />
+        <InvitationFields workspaceSlug={workspaceSlug} form={form} />
       </InvitationForm>
     </ModalCore>
   );
-});
+}

@@ -5,8 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
 
 // Vector Imports
 import { useTranslation } from "@plane/i18n";
@@ -14,7 +12,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspaceView } from "@plane/types";
 import { AlertModalCore } from "@plane/ui";
 // hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
+import { useWorkspaceViewActionScope, useWorkspaceViewMutations } from "@/hooks/use-workspace-views";
 
 type Props = {
   data: IWorkspaceView;
@@ -22,45 +20,41 @@ type Props = {
   onClose: () => void;
 };
 
-export const DeleteGlobalViewModal = observer(function DeleteGlobalViewModal(props: Props) {
+export function DeleteGlobalViewModal(props: Props) {
   const { data, isOpen, onClose } = props;
-  // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // store hooks
-  const { deleteGlobalView } = useGlobalView();
+  const { remove } = useWorkspaceViewMutations(workspaceSlug);
+  const captureActionScope = useWorkspaceViewActionScope(workspaceSlug, isOpen, data.id);
   const { t } = useTranslation();
   const handleClose = () => onClose();
 
   const handleDeletion = async () => {
     if (!workspaceSlug) return;
-    setIsDeleteLoading(true);
-
+    const isCurrent = captureActionScope();
     try {
-      await deleteGlobalView(workspaceSlug.toString(), data.id);
+      await remove.mutateAsync(data.id);
+      if (!isCurrent()) return;
+      handleClose();
     } catch (_error) {
+      if (!isCurrent()) return;
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
         message: "Failed to delete the view. Please try again.",
       });
+      return;
     }
-
-    setIsDeleteLoading(false);
-    handleClose();
-    // remove filters from local storage
-    localStorage.removeItem(`global_view_filters/${data.id}`);
   };
 
   return (
     <AlertModalCore
       handleClose={handleClose}
       handleSubmit={handleDeletion}
-      isSubmitting={isDeleteLoading}
+      isSubmitting={remove.isPending}
       isOpen={isOpen}
       title={t("workspace_views.delete_view.title")}
       content={<>{t("workspace_views.delete_view.content")}</>}
     />
   );
-});
+}

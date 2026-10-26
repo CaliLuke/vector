@@ -4,14 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
 import type { IIssueLabel } from "@plane/types";
-import { Loader } from "@plane/ui";
 // components
-import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
+import { FilterOption } from "@/components/issues/issue-layouts/filters/header/helpers/filter-option";
+import { FilterOptionSection } from "@/components/issues/issue-layouts/filters/header/helpers/filter-option-section";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 
 function LabelIcons({ color }: { color: string }) {
   return <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />;
@@ -22,73 +20,38 @@ type Props = {
   searchQuery: string;
 };
 
-export const FilterLabels = observer(function FilterLabels(props: Props) {
+export const FilterLabels = function FilterLabels(props: Props) {
   const { labels, searchQuery } = props;
 
-  const [itemsToRender, setItemsToRender] = useState(5);
-  const [previewEnabled, setPreviewEnabled] = useState(true);
+  const { filters, setFilter } = useIntakePreferences();
 
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
-
-  const filterValue = inboxFilters?.labels || [];
+  const filterValue = filters?.labels || [];
 
   const appliedFiltersCount = filterValue?.length ?? 0;
 
   const filteredOptions = labels?.filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const handleViewToggle = () => {
-    if (!filteredOptions) return;
-
-    if (itemsToRender === filteredOptions.length) setItemsToRender(5);
-    else setItemsToRender(filteredOptions.length);
-  };
-
   const handleFilterValue = (value: string): string[] =>
     filterValue?.includes(value) ? filterValue.filter((v) => v !== value) : [...filterValue, value];
 
   return (
-    <>
-      <FilterHeader
-        title={`Label${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
-        isPreviewEnabled={previewEnabled}
-        handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
-      />
-      {previewEnabled && (
-        <div>
-          {filteredOptions ? (
-            filteredOptions.length > 0 ? (
-              <>
-                {filteredOptions.slice(0, itemsToRender).map((label) => (
-                  <FilterOption
-                    key={label?.id}
-                    isChecked={filterValue?.includes(label?.id) ? true : false}
-                    onClick={() => handleInboxIssueFilters("labels", handleFilterValue(label.id))}
-                    icon={<LabelIcons color={label.color} />}
-                    title={label.name}
-                  />
-                ))}
-                {filteredOptions.length > 5 && (
-                  <button
-                    type="button"
-                    className="ml-8 text-11 font-medium text-accent-primary"
-                    onClick={handleViewToggle}
-                  >
-                    {itemsToRender === filteredOptions.length ? "View less" : "View all"}
-                  </button>
-                )}
-              </>
-            ) : (
-              <p className="text-11 text-placeholder italic">No matches found</p>
-            )
-          ) : (
-            <Loader className="space-y-2">
-              <Loader.Item height="20px" />
-              <Loader.Item height="20px" />
-              <Loader.Item height="20px" />
-            </Loader>
-          )}
-        </div>
-      )}
-    </>
+    <FilterOptionSection
+      title={`Label${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
+      optionCount={filteredOptions?.length ?? 0}
+      state={filteredOptions === undefined ? { kind: "loading" } : undefined}
+      renderOptions={(itemsToRender) =>
+        filteredOptions
+          ?.slice(0, itemsToRender)
+          .map((label) => (
+            <FilterOption
+              key={label?.id}
+              isChecked={filterValue.includes(label.id)}
+              onClick={() => setFilter("labels", handleFilterValue(label.id))}
+              icon={<LabelIcons color={label.color} />}
+              title={label.name}
+            />
+          ))
+      }
+    />
   );
-});
+};

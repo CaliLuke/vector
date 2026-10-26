@@ -5,31 +5,31 @@
  */
 
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
 // plane imports
 import { Avatar } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // local imports
 import { PowerKModalCommandItem } from "../ui/modal/command-item";
 
 type Props = {
+  workspaceSlug: string | undefined;
   handleSelect: (assigneeId: string) => void;
   heading?: string;
   userIds: string[] | undefined;
   value: string[];
 };
 
-export const PowerKMembersMenu = observer(function PowerKMembersMenu(props: Props) {
-  const { handleSelect, heading, userIds, value } = props;
+export const PowerKMembersMenu = function PowerKMembersMenu(props: Props) {
+  const { workspaceSlug, handleSelect, heading, userIds, value } = props;
   // store hooks
-  const { getUserDetails } = useMember();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
 
   return (
     <Command.Group heading={heading}>
       {userIds?.map((memberId) => {
-        const memberDetails = getUserDetails(memberId);
+        const memberDetails = memberById(memberId)?.member;
         if (!memberDetails) return;
 
         return (
@@ -51,4 +51,4 @@ export const PowerKMembersMenu = observer(function PowerKMembersMenu(props: Prop
       })}
     </Command.Group>
   );
-});
+};

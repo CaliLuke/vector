@@ -4,21 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import { usePathname } from "next/navigation";
+import { useSidebar } from "@/providers/sidebar";
+import { useLocation } from "react-router";
 import { Menu, Settings } from "lucide-react";
 // icons
 import { Breadcrumbs } from "@plane/ui";
 // components
 import { BreadcrumbLink } from "../breadcrumb-link";
 // hooks
-import { useTheme } from "@/hooks/store";
 // local imports
 import { CORE_HEADER_SEGMENT_LABELS } from "./core";
 import { EXTENDED_HEADER_SEGMENT_LABELS } from "./extended";
 
-export const HamburgerToggle = observer(function HamburgerToggle() {
-  const { isSidebarCollapsed, toggleSidebar } = useTheme();
+export const HamburgerToggle = function HamburgerToggle() {
+  const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   return (
     <button
       type="button"
@@ -29,7 +28,7 @@ export const HamburgerToggle = observer(function HamburgerToggle() {
       <Menu size={14} className="text-secondary transition-all group-hover:text-primary" />
     </button>
   );
-});
+};
 
 const HEADER_SEGMENT_LABELS = {
   ...CORE_HEADER_SEGMENT_LABELS,
@@ -38,8 +37,7 @@ const HEADER_SEGMENT_LABELS = {
 
 // Function to dynamically generate breadcrumb items based on pathname
 const generateBreadcrumbItems = (pathname: string) => {
-  const pathSegments = pathname.split("/").slice(1); // removing the first empty string.
-  pathSegments.pop();
+  const pathSegments = pathname.split("/").filter(Boolean);
 
   let currentUrl = "";
   const breadcrumbItems = pathSegments.map((segment) => {
@@ -52,8 +50,8 @@ const generateBreadcrumbItems = (pathname: string) => {
   return breadcrumbItems;
 };
 
-export const AdminHeader = observer(function AdminHeader() {
-  const pathName = usePathname();
+export const AdminHeader = function AdminHeader() {
+  const { pathname: pathName } = useLocation();
 
   const breadcrumbItems = generateBreadcrumbItems(pathName || "");
 
@@ -86,4 +84,4 @@ export const AdminHeader = observer(function AdminHeader() {
       </div>
     </div>
   );
-});
+};

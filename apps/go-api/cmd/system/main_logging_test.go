@@ -61,3 +61,20 @@ func TestNewLogContextReportsRequestCancellationSafely(t *testing.T) {
 		})
 	}
 }
+
+func TestRunLogsStartupFailureBeforeReturning(t *testing.T) {
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
+	t.Setenv("SECRET_KEY", "test-only-secret-key")
+	var output bytes.Buffer
+	err := run(context.Background(), []string{"--go-background-tasks"}, &output)
+	if err == nil || err.Error() != "database-url is required" {
+		t.Fatalf("run() error = %v, want missing database URL", err)
+	}
+	var entry map[string]any
+	if err := json.Unmarshal(output.Bytes(), &entry); err != nil {
+		t.Fatalf("decode startup log: %v, output=%s", err, &output)
+	}
+	if entry[log.MessageKey] != "Go API exited with an error" || entry[log.ErrorMessageKey] != "database-url is required" {
+		t.Fatalf("startup failure log = %v", entry)
+	}
+}

@@ -2986,6 +2986,36 @@ var _ = Service("PlaneInternalDjangoMigrationAPI", func() {
 			})
 		})
 	})
+	Method("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", func() {
+		Description("Associate completed uploads with an active private draft owned by the current user.")
+		Meta("openapi:operationId", "post_api_assets_v2_workspaces_by_slug_by_entity_id_bulk")
+		Security(ImportedPlaneSessionCookieSecurity)
+		Payload(func() {
+			Attribute("entity_id", String, func() { Format(FormatUUID) })
+			Attribute("slug", String)
+			APIKey("PlaneSessionCookie", "planeSessionCookieCredential", String)
+			Required("entity_id", "slug")
+		})
+		Result(Empty)
+		for _, status := range []string{"400", "401", "403", "404", "409", "500"} {
+			Error("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus"+status, MapOf(String, Any))
+		}
+		HTTP(func() {
+			POST("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/")
+			Param("entity_id")
+			Param("slug")
+			Cookie("planeSessionCookieCredential:session-id")
+			SkipRequestBodyEncodeDecode()
+			OpenAPIRequestBodyTypes(ImportedRestFrameworkSerializersFileassetbulkrequestRequestRequest, []string{"application/json"}, true)
+			Response(204)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400", 400)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401", 401)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403", 403)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404", 404)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409", 409)
+			Response("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500", 500)
+		})
+	})
 	Method("PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk", func() {
 		Description("This enables timezone conversion according\nto the user set timezone")
 		Meta("openapi:operationId", "post_api_assets_v2_workspaces_by_slug_projects_by_project_id_by_entity_id_bulk")

@@ -1,4 +1,4 @@
-import { React } from "./react-dom.mjs";
+import { React } from "./react.mjs";
 
 export const EUserPermissions = { ADMIN: "ADMIN", MEMBER: "MEMBER" };
 export const ISSUE_DISPLAY_PROPERTIES = [

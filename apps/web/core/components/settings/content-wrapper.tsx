@@ -6,7 +6,7 @@
 
 // plane imports
 import { ScrollArea } from "@plane/propel/scrollarea";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { AppHeader } from "@/components/core/app-header";
 

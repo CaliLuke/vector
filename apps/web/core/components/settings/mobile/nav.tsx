@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useRef } from "react";
-import { observer } from "mobx-react";
+import { useRef, useState } from "react";
 import { Menu } from "lucide-react";
 import { useOutsideClickDetector } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 import { ChevronRightIcon } from "@plane/propel/icons";
-import { useUserSettings } from "@/hooks/store/user";
 import { IconButton } from "@plane/propel/icon-button";
 
 type Props = {
@@ -18,16 +16,14 @@ type Props = {
   activePath: string;
 };
 
-export const SettingsMobileNav = observer(function SettingsMobileNav(props: Props) {
+export function SettingsMobileNav(props: Props) {
   const { hamburgerContent: HamburgerContent, activePath } = props;
-  // refs
   const sidebarRef = useRef<HTMLDivElement>(null);
-  // store hooks
-  const { sidebarCollapsed, toggleSidebar } = useUserSettings();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const { t } = useTranslation();
 
   useOutsideClickDetector(sidebarRef, () => {
-    if (!sidebarCollapsed) toggleSidebar(true);
+    if (!sidebarCollapsed) setSidebarCollapsed(true);
   });
 
   return (
@@ -38,7 +34,12 @@ export const SettingsMobileNav = observer(function SettingsMobileNav(props: Prop
             <HamburgerContent className="max-h-100 rounded-lg border border-subtle pb-3" />
           </div>
         )}
-        <IconButton variant="secondary" className="group z-50 shrink-0" icon={Menu} onClick={() => toggleSidebar()} />
+        <IconButton
+          variant="secondary"
+          className="group z-50 shrink-0"
+          icon={Menu}
+          onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+        />
       </div>
       {/* path */}
       <div className="flex items-center gap-2">
@@ -47,4 +48,4 @@ export const SettingsMobileNav = observer(function SettingsMobileNav(props: Prop
       </div>
     </div>
   );
-});
+}

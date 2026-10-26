@@ -4,52 +4,36 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
-import { observer } from "mobx-react";
-import { usePopper } from "react-popper";
+import React from "react";
+
+import { useCalendarHeaderPopover } from "./use-calendar-header-popover";
 import { Popover, Transition } from "@headlessui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@plane/propel/icons";
 //hooks
 // icons
 // constants
-import { getDate } from "@plane/utils";
+import { getDate } from "@plane/utils/datetime";
 import { MONTHS_LIST } from "@plane/constants";
-import { useCalendarView } from "@/hooks/store/use-calendar-view";
-import type { ICycleIssuesFilter } from "@/store/issue/cycle";
-import type { IModuleIssuesFilter } from "@/store/issue/module";
-import type { IProjectIssuesFilter } from "@/store/issue/project";
-import type { IProjectViewIssuesFilter } from "@/store/issue/project-views";
+import type { ICalendarWeek } from "@plane/types";
+import type { TCalendarDates } from "@/providers/issue-layout-ui-state";
+import type { IIssueDisplayFilterOptions } from "@plane/types";
 // helpers
 
 interface Props {
-  issuesFilterStore: IProjectIssuesFilter | IModuleIssuesFilter | ICycleIssuesFilter | IProjectViewIssuesFilter;
+  displayFilters: IIssueDisplayFilterOptions;
+  activeMonthDate: Date;
+  activeWeek: ICalendarWeek | undefined;
+  updateCalendarDates: (filters: Partial<TCalendarDates>) => void;
 }
-export const CalendarMonthsDropdown = observer(function CalendarMonthsDropdown(props: Props) {
-  const { issuesFilterStore } = props;
+export const CalendarMonthsDropdown = function CalendarMonthsDropdown(props: Props) {
+  const { displayFilters, activeMonthDate, activeWeek, updateCalendarDates } = props;
 
-  const issueCalendarView = useCalendarView();
+  const calendarLayout = displayFilters.calendar?.layout ?? "month";
 
-  const calendarLayout = issuesFilterStore.issueFilters?.displayFilters?.calendar?.layout ?? "month";
-
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: "auto",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
-  });
-
-  const { activeMonthDate } = issueCalendarView.calendarFilters;
+  const { setReferenceElement, setPopperElement, styles, attributes } = useCalendarHeaderPopover();
 
   const getWeekLayoutHeader = (): string => {
-    const allDaysOfActiveWeek = issueCalendarView.allDaysOfActiveWeek;
+    const allDaysOfActiveWeek = activeWeek;
 
     if (!allDaysOfActiveWeek) return "Week view";
 
@@ -74,9 +58,7 @@ export const CalendarMonthsDropdown = observer(function CalendarMonthsDropdown(p
   };
 
   const handleDateChange = (date: Date) => {
-    issueCalendarView.updateCalendarFilters({
-      activeMonthDate: date,
-    });
+    updateCalendarDates({ activeMonthDate: date });
   };
 
   return (
@@ -152,4 +134,4 @@ export const CalendarMonthsDropdown = observer(function CalendarMonthsDropdown(p
       </Transition>
     </Popover>
   );
-});
+};

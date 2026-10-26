@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 import { cn } from "@plane/propel/utils";
 import type { SingleOrArray, TFilterValue } from "@plane/types";
-import { hasValidValue } from "@plane/utils";
+import { hasValidValue } from "@plane/utils/rich-filters";
 
 interface FilterItemContainerProps {
   children: React.ReactNode;

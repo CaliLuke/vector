@@ -5,9 +5,9 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
@@ -17,8 +17,8 @@ import { ProjectSettingsMemberDefaults } from "@/components/project/project-sett
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SettingsHeading } from "@/components/settings/heading";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions, useWorkspacePermissions } from "@/hooks/use-permissions";
 // local imports
 import { MembersProjectSettingsHeader } from "./header";
 
@@ -28,18 +28,27 @@ function MembersSettingsPage(): React.JSX.Element | null {
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { currentProjectDetails } = useProject();
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const {
+    can: canProject,
+    isPending: isProjectPending,
+    isError: isProjectError,
+  } = useProjectPermissions(workspaceSlug, projectId);
+  const {
+    can: canWorkspace,
+    isPending: isWorkspacePending,
+    isError: isWorkspaceError,
+  } = useWorkspacePermissions(workspaceSlug);
   // derived values
   const pageTitle = currentProjectDetails?.name ? `${currentProjectDetails?.name} - Members` : undefined;
-  const isProjectMemberOrAdmin = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
-  const isWorkspaceAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isProjectMemberOrAdmin = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const isWorkspaceAdmin = canWorkspace([EUserPermissions.ADMIN]);
   const canPerformProjectMemberActions = isProjectMemberOrAdmin || isWorkspaceAdmin;
 
-  if (workspaceUserInfo && !canPerformProjectMemberActions) {
+  if (isWorkspacePending || (!isWorkspaceAdmin && isProjectPending)) return null;
+
+  if (isWorkspaceError || (!isWorkspaceAdmin && isProjectError) || !canPerformProjectMemberActions) {
     return <NotAuthorizedView section="settings" isProjectView className="h-auto" />;
   }
 
@@ -54,5 +63,5 @@ function MembersSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/members")({
-  component: observer(MembersSettingsPage),
+  component: MembersSettingsPage,
 });

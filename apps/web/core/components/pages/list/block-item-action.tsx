@@ -4,40 +4,46 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { EPageAccess } from "@plane/types";
+import type { TPage } from "@plane/types";
+
 import { Earth, Info, Minus } from "lucide-react";
 // plane imports
 import { LockIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import { Avatar, FavoriteStar } from "@plane/ui";
-import { renderFormattedDate, getFileURL } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 import { usePageOperations } from "@/hooks/use-page-operations";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 // plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageActions } from "../dropdowns";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
   parentRef: React.RefObject<HTMLElement | null>;
-  storeType: EPageStoreType;
+  projectId: string;
+  workspaceSlug: string;
 };
 
-export const BlockItemAction = observer(function BlockItemAction(props: Props) {
-  const { page, parentRef, storeType } = props;
+export function BlockItemAction(props: Props) {
+  const { page, parentRef, projectId, workspaceSlug } = props;
   // store hooks
-  const { getUserDetails } = useMember();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { canCurrentUserFavoritePage } = usePagePermissions(page, workspaceSlug);
   // page operations
-  const { pageOperations } = usePageOperations({
+  const { pageOperations, isFavorite, isFavoriteReady } = usePageOperations({
     page,
+    projectId,
+    workspaceSlug,
   });
   // derived values
-  const { access, created_at, is_favorite, owned_by, canCurrentUserFavoritePage } = page;
-  const ownerDetails = owned_by ? getUserDetails(owned_by) : undefined;
+  const { access, created_at, owned_by } = page;
+  const ownerDetails = owned_by ? memberById(owned_by)?.member : undefined;
 
   return (
     <>
@@ -48,8 +54,8 @@ export const BlockItemAction = observer(function BlockItemAction(props: Props) {
         </Tooltip>
       </div>
       <div className="cursor-default text-tertiary">
-        <Tooltip tooltipContent={access === 0 ? "Public" : "Private"}>
-          {access === 0 ? <Earth className="h-4 w-4" /> : <LockIcon className="h-4 w-4" />}
+        <Tooltip tooltipContent={access === EPageAccess.PUBLIC ? "Public" : "Private"}>
+          {access === EPageAccess.PUBLIC ? <Earth className="h-4 w-4" /> : <LockIcon className="h-4 w-4" />}
         </Tooltip>
       </div>
       {/* vertical divider */}
@@ -63,19 +69,20 @@ export const BlockItemAction = observer(function BlockItemAction(props: Props) {
       </Tooltip>
 
       {/* favorite/unfavorite */}
-      {canCurrentUserFavoritePage && (
+      {canCurrentUserFavoritePage && isFavoriteReady && (
         <FavoriteStar
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            pageOperations.toggleFavorite();
+            void pageOperations.toggleFavorite();
           }}
-          selected={is_favorite}
+          selected={isFavorite}
         />
       )}
 
       {/* quick actions dropdown */}
       <PageActions
+        workspaceSlug={workspaceSlug}
         optionsOrder={[
           "open-in-new-tab",
           "copy-link",
@@ -86,9 +93,9 @@ export const BlockItemAction = observer(function BlockItemAction(props: Props) {
           "delete",
         ]}
         page={page}
+        projectId={projectId}
         parentRef={parentRef}
-        storeType={storeType}
       />
     </>
   );
-});
+}

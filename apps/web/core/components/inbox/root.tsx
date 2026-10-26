@@ -4,21 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
+import { useState } from "react";
 import { PanelLeft } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import { IntakeIcon } from "@plane/propel/icons";
 import { EInboxIssueCurrentTab } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { InboxContentRoot } from "@/components/inbox/content";
 import { InboxSidebar } from "@/components/inbox/sidebar";
 import { InboxLayoutLoader } from "@/components/ui/loader/layouts/project-inbox/inbox-layout-loader";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { IntakePreferencesScope, useIntakePreferences } from "@/providers/intake-preferences";
+import { useIntakeList } from "@/hooks/use-intake";
 
 type TInboxIssueRoot = {
   workspaceSlug: string;
@@ -28,37 +28,32 @@ type TInboxIssueRoot = {
   navigationTab?: EInboxIssueCurrentTab | undefined;
 };
 
-export const InboxIssueRoot = observer(function InboxIssueRoot(props: TInboxIssueRoot) {
-  const { workspaceSlug, projectId, inboxIssueId, inboxAccessible, navigationTab } = props;
+export function InboxIssueRoot(props: TInboxIssueRoot) {
+  return (
+    <IntakePreferencesScope
+      workspaceSlug={props.workspaceSlug}
+      projectId={props.projectId}
+      navigationTab={props.navigationTab}
+    >
+      <InboxIssueScreen {...props} />
+    </IntakePreferencesScope>
+  );
+}
+
+function InboxIssueScreen(props: TInboxIssueRoot) {
+  const { workspaceSlug, projectId, inboxIssueId, inboxAccessible } = props;
   // states
   const [isMobileSidebar, setIsMobileSidebar] = useState(true);
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { loader, error, currentTab, currentInboxProjectId, handleCurrentTab, fetchInboxIssues } = useProjectInbox();
-
-  useEffect(() => {
-    if (!inboxAccessible || !workspaceSlug || !projectId) return;
-    // Check if project has changed
-    const hasProjectChanged = currentInboxProjectId && currentInboxProjectId !== projectId;
-
-    if (navigationTab && navigationTab !== currentTab) {
-      handleCurrentTab(workspaceSlug, projectId, navigationTab);
-    } else if (hasProjectChanged) {
-      handleCurrentTab(workspaceSlug, projectId, EInboxIssueCurrentTab.OPEN);
-    } else {
-      fetchInboxIssues(
-        workspaceSlug.toString(),
-        projectId.toString(),
-        undefined,
-        navigationTab || EInboxIssueCurrentTab.OPEN
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inboxAccessible, workspaceSlug, projectId]);
+  const list = useIntakeList(inboxAccessible);
+  const { tab } = useIntakePreferences();
+  const issueIds = list.rows.map((row) => row.issue.id);
+  if (!inboxAccessible || list.accessDenied) return <div className="p-4">Intake is unavailable for this project.</div>;
 
   // loader
-  if (loader === "init-loading")
+  if (list.isPending)
     return (
       <div className="relative flex h-full w-full flex-col">
         <InboxLayoutLoader />
@@ -66,16 +61,27 @@ export const InboxIssueRoot = observer(function InboxIssueRoot(props: TInboxIssu
     );
 
   // error
-  if (error && error?.status === "init-error")
+  if (list.isError && !list.isFetchNextPageError && !list.data)
     return (
       <div className="relative flex h-full w-full flex-col items-center justify-center gap-3">
         <IntakeIcon className="size-[60px]" strokeWidth={1.5} />
-        <div className="text-secondary">{error?.message}</div>
+        <div className="text-secondary">Could not load intake work items.</div>
+        <button type="button" onClick={() => void list.retry()}>
+          Retry
+        </button>
       </div>
     );
 
   return (
-    <>
+    <div className="flex h-full flex-col">
+      {list.isError && !list.isFetchNextPageError && (
+        <div role="alert" className="p-3">
+          Could not refresh intake work items.{" "}
+          <button type="button" onClick={() => void list.retry()}>
+            Retry
+          </button>
+        </div>
+      )}
       {!inboxIssueId && (
         <div className="flex h-12 w-full items-center border-b border-subtle px-4 lg:hidden">
           <PanelLeft
@@ -101,6 +107,7 @@ export const InboxIssueRoot = observer(function InboxIssueRoot(props: TInboxIssu
 
         {inboxIssueId ? (
           <InboxContentRoot
+            navigation={{ tab, issueIds }}
             setIsMobileSidebar={setIsMobileSidebar}
             isMobileSidebar={isMobileSidebar}
             workspaceSlug={workspaceSlug.toString()}
@@ -115,6 +122,6 @@ export const InboxIssueRoot = observer(function InboxIssueRoot(props: TInboxIssu
           />
         )}
       </div>
-    </>
+    </div>
   );
-});
+}

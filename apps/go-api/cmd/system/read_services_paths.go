@@ -108,7 +108,7 @@ func djangoUUIDPathSegment(value string) bool {
 }
 
 var readServiceScalarQueryParameters = map[string]struct{}{
-	"assignee_id": {}, "assignee_id__in": {}, "assignees": {}, "completed_at": {},
+	"all": {}, "assignee_id": {}, "assignee_id__in": {}, "assignees": {}, "completed_at": {},
 	"created_at": {}, "created_at__exact": {}, "created_at__range": {}, "created_by": {},
 	"created_by_id": {}, "created_by_id__in": {}, "cursor": {}, "cycle": {}, "cycle_id__in": {},
 	"cycle_view": {}, "entity_name": {}, "estimate_point": {}, "expand": {}, "fields": {}, "filters": {}, "format": {}, "group_by": {}, "grouped": {}, "inbox_status": {},

@@ -4,24 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
+
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUser } from "@/hooks/store/use-user";
+import { membersOptions } from "@/queries/lookups";
 
 type Props = {
   id: string;
 };
 
-export const EditorUserMention = observer(function EditorUserMention(props: Props) {
+export const EditorUserMention = function EditorUserMention(props: Props) {
   const { id } = props;
-  // store hooks
-  const { data: currentUser } = useUser();
-  const { getMemberById } = useMember();
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const { data: members = [] } = useQuery(membersOptions(useParams().anchor));
   // derived values
-  const userDetails = getMemberById(id);
+  const userDetails = members.find((item) => item.member === id);
 
   if (!userDetails) {
     return (
@@ -40,4 +41,4 @@ export const EditorUserMention = observer(function EditorUserMention(props: Prop
       @{userDetails?.member__display_name}
     </div>
   );
-});
+};

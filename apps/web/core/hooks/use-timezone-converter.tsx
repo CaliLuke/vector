@@ -5,15 +5,16 @@
  */
 
 import { useCallback } from "react";
-import { format } from "date-fns";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { format } from "date-fns/format";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 export const useTimeZoneConverter = (projectId: string) => {
-  const { data: user } = useUser();
-  const { getProjectById } = useProject();
+  const { data: user } = useCurrentUser();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   const userTimezone = user?.user_timezone;
-  const projectTimezone = getProjectById(projectId)?.timezone;
+  const projectTimezone = projectRows?.find((project) => project.id === projectId)?.timezone;
 
   /**
    * Render a date in the user's timezone

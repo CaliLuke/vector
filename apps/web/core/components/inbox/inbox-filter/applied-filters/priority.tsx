@@ -4,58 +4,48 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ISSUE_PRIORITIES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { PriorityIcon, CloseIcon } from "@plane/propel/icons";
+import { PriorityIcon } from "@plane/propel/icons";
 import type { TIssuePriorities } from "@plane/types";
-import { Tag } from "@plane/ui";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
+import { InboxAppliedFilterGroup, toggleAppliedFilterValue } from "./shared";
 
-export const InboxIssueAppliedFiltersPriority = observer(function InboxIssueAppliedFiltersPriority() {
+function getPriorityOptionDetail(priority: TIssuePriorities) {
+  return ISSUE_PRIORITIES.find((option) => option.key === priority) || undefined;
+}
+
+export const InboxIssueAppliedFiltersPriority = function InboxIssueAppliedFiltersPriority() {
   // hooks
   const { t } = useTranslation();
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
+  const { filters, setFilter } = useIntakePreferences();
   // derived values
-  const filteredValues = inboxFilters?.priority || [];
-  const currentOptionDetail = (priority: TIssuePriorities) =>
-    ISSUE_PRIORITIES.find((p) => p.key === priority) || undefined;
-
-  const handleFilterValue = (value: TIssuePriorities): TIssuePriorities[] =>
-    filteredValues?.includes(value) ? filteredValues.filter((v) => v !== value) : [...filteredValues, value];
-
-  const clearFilter = () => handleInboxIssueFilters("priority", undefined);
-
-  if (filteredValues.length === 0) return <></>;
-  return (
-    <Tag>
-      <div className="text-11 text-secondary">{t("common.priority")}</div>
-      {filteredValues.map((value) => {
-        const optionDetail = currentOptionDetail(value);
-        if (!optionDetail) return <></>;
-        return (
-          <div key={value} className="relative flex items-center gap-1 rounded-sm bg-layer-1 p-1 text-11">
-            <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
-              <PriorityIcon priority={optionDetail.key} className="h-3 w-3" />
-            </div>
-            <div className="truncate text-11">{optionDetail?.title}</div>
-            <div
-              className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-              onClick={() => handleInboxIssueFilters("priority", handleFilterValue(optionDetail?.key))}
-            >
-              <CloseIcon className={`h-3 w-3`} />
-            </div>
+  const filteredValues = filters?.priority || [];
+  const clearFilter = () => setFilter("priority", undefined);
+  const options = filteredValues.flatMap((value) => {
+    const optionDetail = getPriorityOptionDetail(value);
+    if (!optionDetail) return [];
+    return [
+      {
+        key: value,
+        leading: (
+          <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
+            <PriorityIcon priority={optionDetail.key} className="h-3 w-3" />
           </div>
-        );
-      })}
+        ),
+        label: optionDetail.title,
+        onRemove: () => setFilter("priority", toggleAppliedFilterValue(filteredValues, optionDetail.key)),
+      },
+    ];
+  });
 
-      <div
-        className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-        onClick={clearFilter}
-      >
-        <CloseIcon className={`h-3 w-3`} />
-      </div>
-    </Tag>
+  return (
+    <InboxAppliedFilterGroup
+      label={t("common.priority")}
+      options={options}
+      hasFilters={filteredValues.length > 0}
+      onClearAll={clearFilter}
+    />
   );
-});
+};

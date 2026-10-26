@@ -6,15 +6,15 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
+
 import { useTheme } from "next-themes";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import type { EViewAccess, TViewFilterProps } from "@plane/types";
 import { EUserProjectRoles } from "@plane/types";
 import { Header, EHeaderVariant } from "@plane/ui";
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
 // assets
 import darkViewsAsset from "@/app/assets/empty-state/disabled-feature/views-dark.webp?url";
 import lightViewsAsset from "@/app/assets/empty-state/disabled-feature/views-light.webp?url";
@@ -24,9 +24,9 @@ import { DetailedEmptyState } from "@/components/empty-state/detailed-empty-stat
 import { ViewAppliedFiltersList } from "@/components/views/applied-filters";
 import { ProjectViewsList } from "@/components/views/views-list";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject, useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useProjectViewListFilters } from "@/providers/project-view-list-filters";
 
 function ProjectViewsPage(): React.JSX.Element | null {
   // router
@@ -37,13 +37,16 @@ function ProjectViewsPage(): React.JSX.Element | null {
   // plane hooks
   const { t } = useTranslation();
   // store
-  const { getProjectById, currentProjectDetails } = useProject();
-  const { filters, updateFilters, clearAllFilters } = useProjectView();
-  const { allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const currentProjectDetails = routeProjectQuery.project;
+  const { filters, updateFilters, clearAllFilters } = useProjectViewListFilters();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectRows?.find((candidate) => candidate.id === projectId);
   const pageTitle = project?.name ? `${project?.name} - Views` : undefined;
-  const canPerformEmptyStateActions = allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT);
+  const canPerformEmptyStateActions = canProject([EUserProjectRoles.ADMIN]);
   const resolvedPath = resolvedTheme === "light" ? lightViewsAsset : darkViewsAsset;
 
   const handleRemoveFilter = useCallback(
@@ -58,7 +61,7 @@ function ProjectViewsPage(): React.JSX.Element | null {
         else newValues = newValues.filter((val) => val !== value) as string[];
       }
 
-      updateFilters("filters", { [key]: newValues });
+      updateFilters("filters", { ...filters.filters, [key]: newValues });
     },
     [filters.filters, updateFilters]
   );
@@ -103,5 +106,5 @@ function ProjectViewsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/")({
-  component: observer(ProjectViewsPage),
+  component: ProjectViewsPage,
 });

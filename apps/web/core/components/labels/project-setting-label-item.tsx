@@ -4,15 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { EditIcon, CloseIcon } from "@plane/propel/icons";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // types
 import type { IIssueLabel } from "@plane/types";
-// hooks
-import { useLabel } from "@/hooks/store/use-label";
 // components
 import type { TLabelOperationsCallbacks } from "./create-update-label-inline";
 import { CreateUpdateLabelInline } from "./create-update-label-inline";
@@ -51,16 +49,25 @@ export function ProjectSettingLabelItem(props: Props) {
   } = props;
   // states
   const [isEditLabelForm, setEditLabelForm] = useState(false);
-  // router
-  const { workspaceSlug, projectId } = useParams({ strict: false });
-  // store hooks
-  const { updateLabel } = useLabel();
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const { updateLabel } = labelOperationsCallbacks;
 
   const removeFromGroup = (label: IIssueLabel) => {
-    if (!workspaceSlug || !projectId) return;
-
-    updateLabel(workspaceSlug.toString(), projectId.toString(), label.id, {
+    void updateLabel(label.id, {
       parent: null,
+    }).catch((error) => {
+      if (!mounted.current) return;
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: error?.error ?? "Label could not be removed from its group. Please try again.",
+      });
     });
   };
 

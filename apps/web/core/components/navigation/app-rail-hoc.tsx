@@ -7,7 +7,6 @@
 // hoc/withDockItems.tsx
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { PlaneNewIcon } from "@plane/propel/icons";
 import type { AppSidebarItemData } from "@/components/sidebar/sidebar-item";
@@ -18,7 +17,7 @@ type WithDockItemsProps = {
 };
 
 export function withDockItems<P extends WithDockItemsProps>(WrappedComponent: React.ComponentType<P>) {
-  const ComponentWithDockItems = observer(function ComponentWithDockItems(props: Omit<P, keyof WithDockItemsProps>) {
+  const ComponentWithDockItems = function ComponentWithDockItems(props: Omit<P, keyof WithDockItemsProps>) {
     const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
     const { isProjectsPath, isNotificationsPath } = useWorkspacePaths();
 
@@ -33,7 +32,7 @@ export function withDockItems<P extends WithDockItemsProps>(WrappedComponent: Re
     ];
 
     return <WrappedComponent {...(props as P)} dockItems={dockItems} />;
-  });
+  };
 
   return ComponentWithDockItems;
 }

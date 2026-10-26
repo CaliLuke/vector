@@ -4,15 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { Fragment, useEffect, useRef } from "react";
-import { observer } from "mobx-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Fragment, useEffect, useRef, useState } from "react";
+
+import { useSearchParams } from "react-router";
 import { Dialog, Transition } from "@headlessui/react";
 // hooks
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
+import { useQuery } from "@tanstack/react-query";
+import { issueOptions } from "@/queries/issues";
+import type { IPeekMode } from "@/types/issue";
 // local imports
-import { FullScreenPeekView } from "./full-screen-peek-view";
-import { SidePeekView } from "./side-peek-view";
+import { PeekView } from "./view";
 
 type TIssuePeekOverview = {
   anchor: string;
@@ -20,31 +21,19 @@ type TIssuePeekOverview = {
   handlePeekClose?: () => void;
 };
 
-export const IssuePeekOverview = observer(function IssuePeekOverview(props: TIssuePeekOverview) {
+export const IssuePeekOverview = function IssuePeekOverview(props: TIssuePeekOverview) {
   const { anchor, peekId, handlePeekClose } = props;
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  // query params
-  const board = searchParams.get("board") || undefined;
-  const state = searchParams.get("state") || undefined;
-  const priority = searchParams.get("priority") || undefined;
-  const labels = searchParams.get("labels") || undefined;
-  // store
-  const { peekMode, setPeekId, getIssueById, fetchIssueDetails } = useIssueDetails();
+  const [, setSearchParams] = useSearchParams();
+  const [peekMode, setPeekMode] = useState<IPeekMode>("side");
+  const query = useQuery(issueOptions(anchor, peekId));
   const panelRef = useRef<HTMLDivElement>(null);
   const previousPeekModeRef = useRef(peekMode);
   // derived values
-  const issueDetails = peekId ? getIssueById(peekId.toString()) : undefined;
+  const issueDetails = query.data;
   // state
   const isPeekOpen = !!peekId;
   const isSidePeek = peekMode === "side";
   const isModalPeekOpen = !!peekId && (peekMode === "modal" || peekMode === "full");
-
-  useEffect(() => {
-    if (anchor && peekId) {
-      fetchIssueDetails(anchor, peekId.toString());
-    }
-  }, [anchor, fetchIssueDetails, peekId]);
 
   useEffect(() => {
     if (previousPeekModeRef.current === peekMode) return;
@@ -61,15 +50,11 @@ export const IssuePeekOverview = observer(function IssuePeekOverview(props: TIss
       return;
     }
 
-    setPeekId(null);
-    let queryParams: any = {
-      board,
-    };
-    if (priority && priority.length > 0) queryParams = { ...queryParams, priority: priority };
-    if (state && state.length > 0) queryParams = { ...queryParams, state: state };
-    if (labels && labels.length > 0) queryParams = { ...queryParams, labels: labels };
-    queryParams = new URLSearchParams(queryParams).toString();
-    router.push(`/issues/${anchor}?${queryParams}`);
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      next.delete("peekId");
+      return next;
+    });
   };
 
   return (
@@ -109,10 +94,19 @@ export const IssuePeekOverview = observer(function IssuePeekOverview(props: TIss
                     }`
               }
             >
-              {peekMode === "full" ? (
-                <FullScreenPeekView anchor={anchor} handleClose={handleClose} issueDetails={issueDetails} />
+              {query.isError ? (
+                <div role="alert" className="p-5">
+                  Could not load the work item. <button onClick={() => void query.refetch()}>Retry</button>
+                  <button onClick={handleClose}>Close</button>
+                </div>
               ) : (
-                <SidePeekView anchor={anchor} handleClose={handleClose} issueDetails={issueDetails} />
+                <PeekView
+                  peekMode={peekMode}
+                  setPeekMode={setPeekMode}
+                  anchor={anchor}
+                  handleClose={handleClose}
+                  issueDetails={issueDetails}
+                />
               )}
             </div>
           </Transition.Child>
@@ -120,4 +114,4 @@ export const IssuePeekOverview = observer(function IssuePeekOverview(props: TIss
       </Transition.Root>
     </>
   );
-});
+};

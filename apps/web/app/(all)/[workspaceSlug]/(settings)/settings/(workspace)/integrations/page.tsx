@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 // components
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { PageHead } from "@/components/core/page-title";
 import { SingleIntegrationCard } from "@/components/integration/single-integration-card";
@@ -16,8 +15,8 @@ import { IntegrationsSettingsLoader } from "@/components/ui/loader/settings/inte
 // constants
 import { APP_INTEGRATIONS } from "@plane/constants";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 // services
 import { IntegrationService } from "@/services/integrations";
 
@@ -25,17 +24,20 @@ const integrationService = new IntegrationService();
 
 function WorkspaceIntegrationsPage() {
   // store hooks
-  const { currentWorkspace } = useWorkspace();
-  const { allowPermissions } = useUserPermissions();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace, isPending, isError } = useWorkspacePermissions(currentWorkspace?.slug);
 
   // derived values
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Integrations` : undefined;
-  const { data: appIntegrations } = useSWR(isAdmin ? APP_INTEGRATIONS : null, () =>
-    isAdmin ? integrationService.getAppIntegrationsList() : null
-  );
+  const { data: appIntegrations } = useQuery({
+    queryKey: APP_INTEGRATIONS,
+    queryFn: isAdmin ? () => integrationService.getAppIntegrationsList() : skipToken,
+  });
 
-  if (!isAdmin) return <NotAuthorizedView section="settings" className="h-auto" />;
+  if (isPending) return <IntegrationsSettingsLoader />;
+
+  if (isError || !isAdmin) return <NotAuthorizedView section="settings" className="h-auto" />;
 
   return (
     <>
@@ -56,4 +58,4 @@ function WorkspaceIntegrationsPage() {
   );
 }
 
-export default observer(WorkspaceIntegrationsPage);
+export default WorkspaceIntegrationsPage;

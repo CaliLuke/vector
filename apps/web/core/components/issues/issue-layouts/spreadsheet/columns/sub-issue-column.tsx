@@ -6,20 +6,19 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // types
 import type { TIssue } from "@plane/types";
 // helpers
 import { Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 
 type Props = {
   issue: TIssue;
 };
 
-export const SpreadsheetSubIssueColumn = observer(function SpreadsheetSubIssueColumn(props: Props) {
+export const SpreadsheetSubIssueColumn = function SpreadsheetSubIssueColumn(props: Props) {
   const { issue } = props;
   // router
   const router = useRouter();
@@ -50,4 +49,4 @@ export const SpreadsheetSubIssueColumn = observer(function SpreadsheetSubIssueCo
       {isEpic ? null : label}
     </Row>
   );
-});
+};

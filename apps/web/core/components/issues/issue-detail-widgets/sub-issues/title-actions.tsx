@@ -5,13 +5,8 @@
  */
 
 import { useCallback } from "react";
-import { cloneDeep } from "lodash-es";
-import { observer } from "mobx-react";
-import {
-  EIssueFilterType,
-  ISSUE_DISPLAY_FILTERS_BY_PAGE,
-  SUB_WORK_ITEM_AVAILABLE_FILTERS_FOR_WORK_ITEM_PAGE,
-} from "@plane/constants";
+import { useParams } from "@tanstack/react-router";
+import { ISSUE_DISPLAY_FILTERS_BY_PAGE, SUB_WORK_ITEM_AVAILABLE_FILTERS_FOR_WORK_ITEM_PAGE } from "@plane/constants";
 import type {
   IIssueDisplayFilterOptions,
   IIssueDisplayProperties,
@@ -19,9 +14,11 @@ import type {
   TIssueServiceType,
 } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useSubWorkItemPreferences } from "@/providers/sub-work-item-preferences";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 import { SubIssueDisplayFilters } from "./display-filters";
 import { SubIssueFilters } from "./filters";
 import { SubIssuesActionButton } from "./quick-action-button";
@@ -33,43 +30,48 @@ type TSubWorkItemTitleActionsProps = {
   projectId: string;
 };
 
-export const SubWorkItemTitleActions = observer(function SubWorkItemTitleActions(props: TSubWorkItemTitleActionsProps) {
+export function SubWorkItemTitleActions(props: TSubWorkItemTitleActionsProps) {
   const { disabled, issueServiceType = EIssueServiceType.ISSUES, parentId, projectId } = props;
 
   // store hooks
-  const {
-    subIssues: {
-      filters: { getSubIssueFilters, updateSubWorkItemFilters },
-    },
-  } = useIssueDetail(issueServiceType);
-  const { getProjectStates } = useProjectState();
-  const {
-    project: { getProjectMemberIds },
-  } = useMember();
+  const { projectStates } = useRouteProjectStates(projectId);
+  const { data: currentUser } = useCurrentUser();
+  const { workspaceSlug } = useParams({ strict: false });
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
 
   // derived values
-  const projectStates = getProjectStates(projectId);
-  const projectMemberIds = getProjectMemberIds(projectId, false);
-  const subIssueFilters = getSubIssueFilters(parentId);
+  const projectMemberIds = projectRosterMemberIds(
+    projectRoster.memberships,
+    workspaceRoster.membersById,
+    currentUser?.id,
+    false
+  );
+  const { preferences: subIssueFilters, updatePreferences } = useSubWorkItemPreferences({
+    workspaceSlug,
+    projectId,
+    parentId,
+    serviceType: issueServiceType,
+  });
   const layoutDisplayFiltersOptions = ISSUE_DISPLAY_FILTERS_BY_PAGE["sub_work_items"].layoutOptions.list;
 
   const handleDisplayFilters = useCallback(
     (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      updateSubWorkItemFilters(EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter, parentId);
+      updatePreferences({ displayFilters: updatedDisplayFilter });
     },
-    [updateSubWorkItemFilters, parentId]
+    [updatePreferences]
   );
 
   const handleDisplayPropertiesUpdate = useCallback(
     (updatedDisplayProperties: Partial<IIssueDisplayProperties>) => {
-      updateSubWorkItemFilters(EIssueFilterType.DISPLAY_PROPERTIES, updatedDisplayProperties, parentId);
+      updatePreferences({ displayProperties: updatedDisplayProperties });
     },
-    [updateSubWorkItemFilters, parentId]
+    [updatePreferences]
   );
 
   const handleFiltersUpdate = useCallback(
     (key: keyof IIssueFilterOptions, value: string | string[]) => {
-      const newValues = cloneDeep(subIssueFilters?.filters?.[key]) ?? [];
+      const newValues = [...(subIssueFilters.filters[key] ?? [])];
 
       if (Array.isArray(value)) {
         // this validation is majorly for the filter start_date, target_date custom
@@ -81,9 +83,9 @@ export const SubWorkItemTitleActions = observer(function SubWorkItemTitleActions
         if (subIssueFilters?.filters?.[key]?.includes(value)) newValues.splice(newValues.indexOf(value), 1);
         else newValues.push(value);
       }
-      updateSubWorkItemFilters(EIssueFilterType.FILTERS, { [key]: newValues }, parentId);
+      updatePreferences({ filters: { [key]: newValues } });
     },
-    [subIssueFilters?.filters, updateSubWorkItemFilters, parentId]
+    [subIssueFilters.filters, updatePreferences]
   );
 
   return (
@@ -107,6 +109,7 @@ export const SubWorkItemTitleActions = observer(function SubWorkItemTitleActions
         handleFiltersUpdate={handleFiltersUpdate}
         filters={subIssueFilters?.filters ?? {}}
         memberIds={projectMemberIds ?? undefined}
+        workspaceSlug={workspaceSlug}
         states={projectStates}
         availableFilters={SUB_WORK_ITEM_AVAILABLE_FILTERS_FOR_WORK_ITEM_PAGE}
       />
@@ -115,4 +118,4 @@ export const SubWorkItemTitleActions = observer(function SubWorkItemTitleActions
       )}
     </div>
   );
-});
+}

@@ -5,18 +5,17 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { useTheme } from "next-themes";
 // plane imports
 import { PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { Button, getButtonStyling } from "@plane/propel/button";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // assets
 import ProjectDarkEmptyState from "@/app/assets/empty-state/project-settings/no-projects-dark.png?url";
 import ProjectLightEmptyState from "@/app/assets/empty-state/project-settings/no-projects-light.png?url";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 
 function ProjectSettingsPage(): React.JSX.Element | null {
   // store hooks
@@ -52,5 +51,5 @@ function ProjectSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/")({
-  component: observer(ProjectSettingsPage),
+  component: ProjectSettingsPage,
 });

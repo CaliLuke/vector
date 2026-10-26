@@ -37,13 +37,8 @@ export const useIntersectionObserver = (
       );
       observer.observe(elementRef);
       return () => {
-        if (elementRef) {
-          observer.unobserve(elementRef);
-        }
+        observer.disconnect();
       };
     }
-    // When i am passing callback as a dependency, it is causing infinite loop,
-    // Please make sure you fix this eslint lint disable error with caution
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rootMargin, callback, elementRef, containerRef.current]);
+  }, [rootMargin, callback, elementRef, containerRef]);
 };

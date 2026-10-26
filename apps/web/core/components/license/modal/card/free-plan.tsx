@@ -4,18 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { CircleX } from "lucide-react";
 // plane constants
 import { FREE_PLAN_UPGRADE_FEATURES } from "@plane/constants";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type FreePlanCardProps = {
   isOnFreePlan: boolean;
 };
 
-export const FreePlanCard = observer(function FreePlanCard(props: FreePlanCardProps) {
+export const FreePlanCard = function FreePlanCard(props: FreePlanCardProps) {
   const { isOnFreePlan } = props;
   return (
     <div className="rounded-xl bg-layer-1 px-2 py-4">
@@ -44,4 +43,4 @@ export const FreePlanCard = observer(function FreePlanCard(props: FreePlanCardPr
       </div>
     </div>
   );
-});
+};

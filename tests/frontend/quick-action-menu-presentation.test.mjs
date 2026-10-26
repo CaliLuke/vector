@@ -1,11 +1,10 @@
+import { registerWebTestModules } from "./helpers/web-test-modules.mjs";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
-import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
-import { resolvePackageStub } from "./helpers/module-stubs.mjs";
-import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-registerWebModuleHooks();
+import test from "node:test";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
+
 globalThis.React = React;
 globalThis.quickActionMenuCalls = [];
 
@@ -16,19 +15,18 @@ const packageStubs = {
   "@plane/propel/icons": "export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null;",
   "lucide-react": "export const MoreHorizontal = () => null;",
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
-  "@plane/utils": "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
+  "@plane/utils/common":
+    "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
 };
 
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent(packageStubs["@plane/utils"])}`,
-      };
-    }
-    return resolvePackageStub(specifier, packageStubs, context, nextResolve);
-  },
+registerWebTestModules(packageStubs, (specifier, context, nextResolve) => {
+  if (specifier === "../utils" && context.parentURL?.includes("/packages/ui/src/dropdowns/")) {
+    return {
+      shortCircuit: true,
+      url: `data:text/javascript,${encodeURIComponent(packageStubs["@plane/utils/common"])}`,
+    };
+  }
+  return nextResolve(specifier, context);
 });
 
 const action = () => globalThis.quickActionMenuCalls.push("enabled");
@@ -38,8 +36,7 @@ const Icon = () => React.createElement("span", { "data-menu-icon": "true" });
 await test("quick action menu keeps visible states, nested actions, and selection behavior", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  const { QuickActionMenu } =
-    await import("../../apps/web/core/components/issues/issue-layouts/quick-action-dropdowns/quick-action-menu.tsx");
+  const { QuickActionMenu } = await import("../../apps/web/core/components/common/quick-action-menu.tsx");
   const parentRef = React.createRef();
   parentRef.current = document.createElement("div");
   const portalElement = document.createElement("div");

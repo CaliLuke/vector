@@ -5,18 +5,17 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
 // ui
 import { DragHandle } from "@plane/ui";
 // helper
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   sort_order: number | null;
   isDragging: boolean;
 };
 
-export const WidgetItemDragHandle = observer(function WidgetItemDragHandle(props: Props) {
+export const WidgetItemDragHandle = function WidgetItemDragHandle(props: Props) {
   const { isDragging } = props;
 
   return (
@@ -28,4 +27,4 @@ export const WidgetItemDragHandle = observer(function WidgetItemDragHandle(props
       <DragHandle className="bg-transparent" />
     </div>
   );
-});
+};

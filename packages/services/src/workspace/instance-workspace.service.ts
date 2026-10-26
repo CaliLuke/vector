@@ -28,15 +28,16 @@ export class InstanceWorkspaceService extends APIService {
    * @returns {Promise<TWorkspacePaginationInfo>} Promise resolving to a paginated list of workspaces
    * @throws {Error} If the API request fails
    */
-  async list(nextPageCursor?: string): Promise<TWorkspacePaginationInfo> {
+  async list(nextPageCursor?: string, signal?: AbortSignal): Promise<TWorkspacePaginationInfo> {
     return this.get(`/api/instances/workspaces/`, {
+      signal,
       params: {
         cursor: nextPageCursor,
       },
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -51,7 +52,7 @@ export class InstanceWorkspaceService extends APIService {
     return this.get(`/api/instances/workspace-slug-check/?${params.toString()}`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -65,7 +66,7 @@ export class InstanceWorkspaceService extends APIService {
     return this.post("/api/instances/workspaces/", data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

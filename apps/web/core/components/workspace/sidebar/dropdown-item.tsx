@@ -5,7 +5,6 @@
  */
 
 import { Link, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { Settings, UserPlus } from "lucide-react";
 import { Menu } from "@headlessui/react";
@@ -14,7 +13,10 @@ import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CheckIcon } from "@plane/propel/icons";
 import type { IWorkspace } from "@plane/types";
-import { cn, getFileURL, getUserRole } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
+import { getUserRole } from "@plane/utils/permission";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
 type TProps = {
   workspace: IWorkspace;
@@ -23,12 +25,13 @@ type TProps = {
   handleWorkspaceNavigation: (workspace: IWorkspace) => void;
   handleClose: () => void;
 };
-const SidebarDropdownItem = observer(function SidebarDropdownItem(props: TProps) {
+function SidebarDropdownItem(props: TProps) {
   const { workspace, activeWorkspace, handleItemClick, handleWorkspaceNavigation, handleClose } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
   const { t } = useTranslation();
+  const { can } = useWorkspacePermissions(activeWorkspace?.slug);
 
   return (
     <div
@@ -88,7 +91,7 @@ const SidebarDropdownItem = observer(function SidebarDropdownItem(props: TProps)
       </Menu.Item>
       {workspace.id === activeWorkspace?.id && (
         <div className="mt-2 mb-1 flex gap-2">
-          {[EUserPermissions.ADMIN, EUserPermissions.MEMBER].includes(workspace?.role) && (
+          {can([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && (
             <Menu.Item>
               <Link
                 to="/$workspaceSlug/settings"
@@ -104,7 +107,7 @@ const SidebarDropdownItem = observer(function SidebarDropdownItem(props: TProps)
               </Link>
             </Menu.Item>
           )}
-          {[EUserPermissions.ADMIN].includes(workspace?.role) && (
+          {can([EUserPermissions.ADMIN]) && (
             <Menu.Item>
               <Link
                 to="/$workspaceSlug/settings/members"
@@ -126,6 +129,6 @@ const SidebarDropdownItem = observer(function SidebarDropdownItem(props: TProps)
       )}
     </div>
   );
-});
+}
 
 export default SidebarDropdownItem;

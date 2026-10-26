@@ -5,13 +5,10 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import useSWR from "swr";
 // components
 import { ViewListLoader } from "@/components/ui/loader/view-list-loader";
 // hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
+import { getWorkspaceViewsLoadState, useWorkspaceViews } from "@/hooks/use-workspace-views";
 // local imports
 import { GlobalViewListItem } from "./view-list-item";
 
@@ -19,27 +16,36 @@ type Props = {
   searchQuery: string;
 };
 
-export const GlobalViewsList = observer(function GlobalViewsList(props: Props) {
+export function GlobalViewsList(props: Props) {
   const { searchQuery } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // store hooks
-  const { fetchAllGlobalViews, currentWorkspaceViews, getSearchedViews } = useGlobalView();
+  const viewsQuery = useWorkspaceViews(workspaceSlug);
+  const loadState = getWorkspaceViewsLoadState(viewsQuery);
+  if (loadState.isError) {
+    return (
+      <div role="alert" className="p-4 text-13 text-secondary">
+        <p>Workspace views could not be loaded.</p>
+        <button type="button" className="mt-2 text-accent-primary" onClick={() => void viewsQuery.retry()}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+  if (loadState.isLoading) return <ViewListLoader />;
+  if (!viewsQuery.canRead)
+    return <output className="block p-4 text-13 text-secondary">Workspace views are unavailable.</output>;
+  if (viewsQuery.isPending || !workspaceSlug) return <ViewListLoader />;
 
-  useSWR(
-    workspaceSlug ? `GLOBAL_VIEWS_LIST_${workspaceSlug.toString()}` : null,
-    workspaceSlug ? () => fetchAllGlobalViews(workspaceSlug.toString()) : null
+  const filteredViews = (viewsQuery.views ?? []).filter((view) =>
+    view.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  if (!currentWorkspaceViews) return <ViewListLoader />;
-
-  const filteredViewsList = getSearchedViews(searchQuery);
 
   return (
     <>
-      {filteredViewsList?.map((viewId) => (
-        <GlobalViewListItem key={viewId} viewId={viewId} />
+      {filteredViews.map((view) => (
+        <GlobalViewListItem key={view.id} view={view} />
       ))}
     </>
   );
-});
+}

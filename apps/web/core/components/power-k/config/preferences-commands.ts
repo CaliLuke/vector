@@ -14,7 +14,8 @@ import type { EStartOfTheWeek, TUserProfile } from "@plane/types";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { useUser, useUserProfile } from "@/hooks/store/user";
+import { useUpdateCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateUserProfile, useUpdateUserTheme } from "@/hooks/use-current-user-profile";
 
 /**
  * Preferences commands - Preferences related commands
@@ -22,8 +23,9 @@ import { useUser, useUserProfile } from "@/hooks/store/user";
 export const usePowerKPreferencesCommands = (): TPowerKCommandConfig[] => {
   // store hooks
   const { setTheme } = useTheme();
-  const { updateCurrentUser } = useUser();
-  const { updateUserProfile, updateUserTheme } = useUserProfile();
+  const { mutateAsync: updateCurrentUser } = useUpdateCurrentUser();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
+  const { mutateAsync: updateUserTheme } = useUpdateUserTheme();
   // translation
   const { t } = useTranslation();
 

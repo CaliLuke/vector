@@ -12,6 +12,9 @@ import type {
   TSupportedOperators,
 } from "@plane/types";
 
+import { isNotGroupNode } from "../../types/core";
+import { findParentChain } from "./core";
+
 /**
  * Helper function to get the display operator for a condition.
  * This checks for NOT group context and applies negation if needed.
@@ -22,8 +25,12 @@ import type {
  */
 export const getDisplayOperator = <P extends TFilterProperty>(
   operator: TSupportedOperators,
-  _expression: TFilterExpression<P>,
-  _conditionId: string
-): TAllAvailableOperatorsForDisplay =>
-  // Otherwise, return the operator as-is
-  operator;
+  expression: TFilterExpression<P>,
+  conditionId: string
+): TAllAvailableOperatorsForDisplay => {
+  const parents = findParentChain(expression, conditionId) ?? [];
+  // Group negation is rendered on the group itself, not distributed to its leaves.
+  const boundary = parents.findIndex((parent) => !isNotGroupNode(parent));
+  const isNegated = (boundary === -1 ? parents.length : boundary) % 2 === 1;
+  return isNegated ? `not_${operator}` : operator;
+};

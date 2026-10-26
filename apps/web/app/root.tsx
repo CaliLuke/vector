@@ -7,7 +7,7 @@
 // plane imports
 import { createRootRoute, HeadContent, Outlet } from "@tanstack/react-router";
 import { SITE_DESCRIPTION } from "@plane/constants";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // types
 // assets
 import favicon16 from "@/app/assets/vector.svg?url";

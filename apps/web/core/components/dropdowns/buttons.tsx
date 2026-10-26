@@ -8,7 +8,7 @@ import React from "react";
 // helpers
 import { getButtonStyling } from "@plane/propel/button";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // types
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { BACKGROUND_BUTTON_VARIANTS, BORDER_BUTTON_VARIANTS } from "./constants";

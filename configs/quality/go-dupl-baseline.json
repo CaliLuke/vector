@@ -2165,8 +2165,8 @@
       "fingerprint": [
         "internal/workitemhistory/repository_integration_test.go",
         "internal/workspaceuserinsights/repository_integration_test.go",
-        "c2e2455036f6df346c9e6f17e6e854d432348bda3228de0824e5637ef32441fe",
-        "e3994d0085543e15c16e2e20089b481b964bb7d8c62cac7dab01cfee4279415e"
+        "270ba7512e035c54cd78c59fd9b516b27065a8f1aebf25f9d34c7d1deb94255c",
+        "c457860e72b5173d7d27374f48d7f821479cd10c005a9d87c3784ef354ee4396"
       ],
       "count": 2
     },
@@ -3231,15 +3231,6 @@
         "d73d250df12c6a0e0507263d88a94f3d5ad716a8920dc23fb89acef1600fd772"
       ],
       "count": 1
-    },
-    {
-      "fingerprint": [
-        "work_item_core/design/design.go",
-        "work_item_core/design/design.go",
-        "6af86d41fb7b0199dcf94119e9070fa2a9cc7e5db62d4db756a264380961b3b1",
-        "7f6fd1f1d6370ec81139812fb04f44ee45974a9dde07b0ea67c5ec9561ac6239"
-      ],
-      "count": 2
     },
     {
       "fingerprint": [

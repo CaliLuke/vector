@@ -17,8 +17,8 @@ func TestLabelWriteOptionalFormSortOrder(t *testing.T) {
 			{"multipart/form-data; boundary=plane", "--plane\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nUpdated\r\n--plane\r\nContent-Disposition: form-data; name=\"sort_order\"\r\n\r\n\r\n--plane--\r\n"},
 		} {
 			t.Run(method+"/"+input.media, func(t *testing.T) {
-				db := &writeDatabase{label: existingWriteLabel()}
-				repository := newWriteRepository(t, db, &writePublisher{db: db})
+				db := &parentWriteDatabase{label: existingWriteLabel()}
+				repository := newWriteRepository(t, db)
 				label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, method, strings.NewReader(input.body), input.media)
 				if err != nil {
 					t.Fatal(err)
@@ -53,8 +53,8 @@ func TestLabelWriteFloatFieldGuards(t *testing.T) {
 		{"string overflow retains source persistence", `"1e309"`, "", true},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"sort_order":`+test.value+`}`), "application/json")
 			if test.message != "" {
 				assertWriteHTTPError(t, err, 400, map[string]any{"sort_order": []string{test.message}})
@@ -78,13 +78,19 @@ func TestLabelWriteParentUUIDRepresentations(t *testing.T) {
 	unicodeDigits := strings.Map(func(r rune) rune { return '\u0660' + r - '0' }, compact)
 	for _, encoded := range []string{"urn:uuid:" + compact, "urn:uuid:{" + compact + "}", "{{" + compact[:4] + "--" + compact[4:] + "}}", unicodeDigits} {
 		t.Run(encoded, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
+			db := &parentWriteDatabase{label: existingWriteLabel()}
 			db.row = func(query string, args []any) pgx.Row {
-				if strings.Contains(query, "SELECT EXISTS") {
+				if strings.Contains(query, "FOR UPDATE OF project") {
+					return stringRow("workspace")
+				}
+				if strings.Contains(query, "FOR KEY SHARE") {
 					if args[0] != writeParent {
 						t.Fatalf("parent lookup = %v, want %s", args[0], writeParent)
 					}
-					return boolRow(true)
+					return stringRow(writeParent)
+				}
+				if strings.Contains(query, "WITH RECURSIVE ancestry") {
+					return boolPairRow(false, false)
 				}
 				if strings.Contains(query, "UPDATE labels SET") {
 					db.saved = true
@@ -92,7 +98,7 @@ func TestLabelWriteParentUUIDRepresentations(t *testing.T) {
 				}
 				return writeLabelRow(db.label)
 			}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			repository := newWriteRepository(t, db)
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"parent":"`+encoded+`"}`), "application/json")
 			if err != nil || !db.saved || label.Parent == nil || *label.Parent != writeParent {
 				t.Fatalf("saved=%v label=%+v err=%v", db.saved, label, err)
@@ -104,8 +110,8 @@ func TestLabelWriteParentUUIDRepresentations(t *testing.T) {
 func TestLabelWriteNumericNameUsesPythonScalarCoercion(t *testing.T) {
 	for _, test := range []struct{ value, want string }{{"1e309", "inf"}, {"-1e309", "-inf"}, {"-0", "0"}} {
 		t.Run(test.value, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPost, strings.NewReader(`{"name":`+test.value+`}`), "application/json")
 			if err != nil || !db.saved || label.Name != test.want {
 				t.Fatalf("saved=%v label=%+v err=%v, want name=%q", db.saved, label, err, test.want)
@@ -115,8 +121,8 @@ func TestLabelWriteNumericNameUsesPythonScalarCoercion(t *testing.T) {
 }
 
 func TestLabelWriteMultipartFileCannotSupplySortOrder(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	repository := newWriteRepository(t, db)
 	body := "--plane\r\nContent-Disposition: form-data; name=\"sort_order\"; filename=\"123\"\r\nContent-Type: text/plain\r\n\r\n123\r\n--plane--\r\n"
 	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(body), "multipart/form-data; boundary=plane")
 	assertWriteHTTPError(t, err, 400, map[string]any{"sort_order": []string{"A valid number is required."}})
@@ -128,8 +134,8 @@ func TestLabelWriteMultipartFileCannotSupplySortOrder(t *testing.T) {
 func TestLabelWriteReportsFirstSurrogate(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodPatch} {
 		t.Run(method, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, method, strings.NewReader(`{"name":"bad\ud800\ud801","color":"\udfff\udffe"}`), "application/json")
 			assertWriteHTTPError(t, err, 400, map[string]any{
 				"name":  []string{"Surrogate characters are not allowed: U+D800."},

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { React, act, createReactDomTestEnvironment, webRequire } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
 import { createModuleStub, resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
@@ -10,9 +11,9 @@ const packageStubs = {
   "@plane/i18n": `export const useTranslation = () => ({ t: key => key });`,
   "@plane/propel/icons": `export const StateGroupIcon = () => null;`,
   "@plane/ui": `export const Avatar = () => null;`,
-  "@plane/utils": `export const cn = (...values) => values.filter(Boolean).join(" ");
-    export const toFilterArray = value => Array.isArray(value) ? value : [];
-    export const getFileURL = value => value;`,
+  "@plane/utils/common": 'export const cn = (...values) => values.filter(Boolean).join(" ");',
+  "@plane/utils/rich-filters": "export const toFilterArray = value => Array.isArray(value) ? value : [];",
+  "@plane/utils/file": "export const getFileURL = value => value;",
 };
 
 registerHooks({
@@ -25,7 +26,6 @@ registerHooks({
 await test("cycle and module progress tabs display matching projections and metric counts", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
-  const { observable, runInAction } = webRequire("mobx");
   const [{ CycleProgressStats }, { ModuleProgressStats }] = await Promise.all([
     import("../../apps/web/core/components/cycles/analytics-sidebar/progress-stats.tsx"),
     import("../../apps/web/core/components/modules/analytics-sidebar/progress-stats.tsx"),
@@ -46,7 +46,7 @@ await test("cycle and module progress tabs display matching projections and metr
     );
   };
 
-  const cycleDistribution = observable({
+  let cycleDistribution = {
     assignees: [
       {
         assignee_id: "cycle-user",
@@ -65,24 +65,23 @@ await test("cycle and module progress tabs display matching projections and metr
         total_estimates: 5,
       },
     ],
+  };
+  const cycleProps = () => ({
+    ...commonProps,
+    cycleId: "cycle-1",
+    distribution: cycleDistribution,
+    plotType: "burnup",
   });
-  await environment.render(
-    React.createElement(CycleProgressStats, {
-      ...commonProps,
-      cycleId: "cycle-1",
-      distribution: cycleDistribution,
-      plotType: "burnup",
-    })
-  );
+  await environment.render(React.createElement(CycleProgressStats, cycleProps()));
   assert.match(activePanelText(), /Cycle Assignee/, "selected assignee tab should show assignee data");
   assert.match(activePanelText(), /60%/);
   assert.doesNotMatch(activePanelText(), /Cycle Label/);
 
-  await act(async () => {
-    runInAction(() => {
-      cycleDistribution.assignees[0].display_name = "Updated Cycle Assignee";
-    });
-  });
+  cycleDistribution = {
+    ...cycleDistribution,
+    assignees: [{ ...cycleDistribution.assignees[0], display_name: "Updated Cycle Assignee" }],
+  };
+  await environment.render(React.createElement(CycleProgressStats, cycleProps()));
   assert.match(activePanelText(), /Updated Cycle Assignee/);
 
   await act(async () => environment.container.querySelectorAll('[role="tab"]')[0].click());

@@ -18,7 +18,7 @@ import { GlobeIcon, LockIcon } from "@plane/propel/icons";
 import type { ISvgIcons } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 // constants
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import type { ToolbarMenuItem } from "@plane/editor";
 import { TOOLBAR_ITEMS } from "@plane/editor";
 // helpers

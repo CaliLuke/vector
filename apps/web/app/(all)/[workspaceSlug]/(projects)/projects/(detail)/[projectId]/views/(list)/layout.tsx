@@ -7,18 +7,20 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
+import { ProjectViewListFiltersProvider } from "@/providers/project-view-list-filters";
 // local components
 import { ProjectViewsHeader } from "./header";
 import { ViewMobileHeader } from "./mobile-header";
 
 function ProjectViewsListLayout(): React.JSX.Element | null {
+  const { workspaceSlug, projectId } = Route.useParams();
   return (
-    <>
+    <ProjectViewListFiltersProvider workspaceSlug={workspaceSlug} projectId={projectId}>
       <AppHeader header={<ProjectViewsHeader />} mobileHeader={<ViewMobileHeader />} />
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-    </>
+    </ProjectViewListFiltersProvider>
   );
 }
 

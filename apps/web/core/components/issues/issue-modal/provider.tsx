@@ -3,58 +3,32 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { useParams } from "@tanstack/react-router";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
+import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
-import React, { useState } from "react";
-import { observer } from "mobx-react";
-// plane imports
-import type { ISearchIssueResponse, TIssue } from "@plane/types";
-// components
-import { IssueModalContext } from "@/components/issues/issue-modal/context";
-// hooks
-import { useUser } from "@/hooks/store/user/user-user";
+import type { ISearchIssueResponse } from "@plane/types";
+import { IssueModalContext } from "./context";
+import { useCreationPermissions } from "@/hooks/use-creation-permissions";
 
-export type TIssueModalProviderProps = {
-  templateId?: string;
-  dataForPreload?: Partial<TIssue>;
-  allowedProjectIds?: string[];
-  children: React.ReactNode;
-};
-
-export const IssueModalProvider = observer(function IssueModalProvider(props: TIssueModalProviderProps) {
-  const { children, allowedProjectIds } = props;
-  // states
+type Props = { allowedProjectIds?: string[]; children: ReactNode };
+export const IssueModalProvider = function IssueModalProvider({ children, allowedProjectIds }: Props) {
   const [selectedParentIssue, setSelectedParentIssue] = useState<ISearchIssueResponse | null>(null);
-  // store hooks
-  const { projectsWithCreatePermissions } = useUser();
-  // derived values
-  const projectIdsWithCreatePermissions = Object.keys(projectsWithCreatePermissions ?? {});
-
-  return (
-    <IssueModalContext.Provider
-      // oxlint-disable-next-line react/jsx-no-constructed-context-values
-      value={{
-        allowedProjectIds: allowedProjectIds ?? projectIdsWithCreatePermissions,
-        workItemTemplateId: null,
-        setWorkItemTemplateId: () => {},
-        isApplyingTemplate: false,
-        setIsApplyingTemplate: () => {},
-        selectedParentIssue,
-        setSelectedParentIssue,
-        issuePropertyValues: {},
-        setIssuePropertyValues: () => {},
-        issuePropertyValueErrors: {},
-        setIssuePropertyValueErrors: () => {},
-        getIssueTypeIdOnProjectChange: () => null,
-        getActiveAdditionalPropertiesLength: () => 0,
-        handlePropertyValuesValidation: () => true,
-        handleCreateUpdatePropertyValues: () => Promise.resolve(),
-        handleProjectEntitiesFetch: () => Promise.resolve(),
-        handleTemplateChange: () => Promise.resolve(),
-        handleConvert: () => Promise.resolve(),
-        handleCreateSubWorkItem: () => Promise.resolve(),
-      }}
-    >
-      {children}
-    </IssueModalContext.Provider>
+  const { projectsWithCreatePermissions } = useCreationPermissions();
+  const { workspaceSlug } = useParams({ strict: false });
+  const joinedProjectIds = useJoinedProjectIds(workspaceSlug);
+  const defaultProjectId = joinedProjectIds.find(
+    (id) => projectsWithCreatePermissions[id] !== undefined && (!allowedProjectIds || allowedProjectIds.includes(id))
   );
-});
+  const value = useMemo(
+    () => ({
+      allowedProjectIds: allowedProjectIds ?? Object.keys(projectsWithCreatePermissions ?? {}),
+      defaultProjectId,
+      selectedParentIssue,
+      setSelectedParentIssue,
+    }),
+    [allowedProjectIds, projectsWithCreatePermissions, defaultProjectId, selectedParentIssue]
+  );
+  return <IssueModalContext.Provider value={value}>{children}</IssueModalContext.Provider>;
+};

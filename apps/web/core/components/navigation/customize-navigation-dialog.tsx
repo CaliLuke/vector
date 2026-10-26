@@ -5,17 +5,18 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback, useMemo, useState } from "react";
-import { observer } from "mobx-react";
+import { useCallback, useMemo } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
 
 import { GripVertical, X } from "lucide-react";
 // plane imports
-import { WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS, EUserPermissionsLevel } from "@plane/constants";
+import { WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
+import { Button } from "@plane/propel/button";
 import { Checkbox, EModalPosition, EModalWidth, ModalCore, Sortable } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import {
   usePersonalNavigationPreferences,
   useProjectNavigationPreferences,
@@ -44,17 +45,18 @@ const PERSONAL_ITEMS: Array<{ key: TPersonalNavigationItemKey; labelTranslationK
   { key: "drafts", labelTranslationKey: "drafts" },
 ];
 
-export const CustomizeNavigationDialog = observer(function CustomizeNavigationDialog(
-  props: TCustomizeNavigationDialogProps
-) {
+export function CustomizeNavigationDialog(props: TCustomizeNavigationDialogProps) {
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  return props.isOpen ? <CustomizeNavigationForm key={workspaceSlug} {...props} workspaceSlug={workspaceSlug} /> : null;
+}
+
+function CustomizeNavigationForm(props: TCustomizeNavigationDialogProps & { workspaceSlug: string }) {
   const { isOpen, onClose } = props;
+  const { workspaceSlug } = props;
   const { t } = useTranslation();
 
-  // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can } = useWorkspacePermissions(workspaceSlug);
   const {
     preferences: personalPreferences,
     togglePersonalItem,
@@ -72,24 +74,41 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
     updateWorkspaceItemOrder,
   } = useWorkspaceNavigationPreferences();
 
-  // local state for limited projects count input
-  const [projectCountInput, setProjectCountInput] = useState(projectPreferences.limitedProjectsCount.toString());
+  const form = useForm({
+    defaultValues: { projectCount: projectPreferences.limitedProjectsCount.toString() },
+    onSubmit: async ({ value, formApi }) => {
+      const count = Number(value.projectCount);
+      try {
+        await updateLimitedProjectsCount(count);
+        formApi.reset(value);
+      } catch (cause) {
+        form.setErrorMap({ onSubmit: { form: "Could not save the project limit. Please try again.", fields: {} } });
+        throw cause;
+      }
+    },
+  });
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const submitError = useStore(form.store, (state) => state.errorMap.onSubmit);
+
+  const close = () => {
+    if (!busy) onClose();
+  };
+
+  const submitProjectCount = () => {
+    form.setErrorMap({ onSubmit: undefined });
+    void form.handleSubmit().catch(() => {});
+  };
 
   // Filter personal items by feature flags
-  const filteredPersonalItems = PERSONAL_ITEMS;
 
   // Filter workspace items by permissions and feature flags, then get pinned/unpinned items
   const workspaceItems = useMemo(() => {
     const items = WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS.filter((item) => {
       // Permission check
-      const hasPermission = allowPermissions(
-        item.access,
-        EUserPermissionsLevel.WORKSPACE,
-        workspaceSlug?.toString() || ""
-      );
+      const hasPermission = can(item.access);
       return hasPermission;
     }).map((item) => {
-      // Get pinned status and sort order from localStorage
+      // Apply server-backed pin and sort preferences.
       const preference = workspacePreferences.items[item.key];
       const isPinned = preference?.is_pinned ?? false;
       const sortOrder = preference?.sort_order ?? 0;
@@ -104,7 +123,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
 
     // oxlint-disable-next-line unicorn/no-array-sort
     return items.sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [workspaceSlug, allowPermissions, workspacePreferences]);
+  }, [can, workspacePreferences]);
 
   // Handle checkbox toggle
   const handleWorkspaceItemToggle = useCallback(
@@ -140,49 +159,23 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
 
   // Separate personal items into enabled/disabled
   const personalItems = useMemo(() => {
-    const items = filteredPersonalItems.map((item) => {
+    const items = PERSONAL_ITEMS.map((item) => {
       const itemState = personalPreferences.items[item.key];
-      const isEnabled = typeof itemState === "boolean" ? itemState : (itemState?.enabled ?? true);
-      const sortOrder = typeof itemState === "boolean" ? 0 : (itemState?.sort_order ?? 0);
 
       return {
-        ...item,
-        isEnabled,
-        sortOrder,
+        key: item.key,
+        labelTranslationKey: item.labelTranslationKey,
+        isEnabled: itemState.enabled,
+        sortOrder: itemState.sort_order,
       };
     });
 
     // oxlint-disable-next-line unicorn/no-array-sort
     return items.sort((a, b) => a.sortOrder - b.sortOrder);
-  }, [personalPreferences, filteredPersonalItems]);
-
-  // Prevent typing invalid characters in number input
-  // oxlint-disable-next-line unicorn/consistent-function-scoping
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Block: e, E, +, -, .
-    if (["e", "E", "+", "-", "."].includes(e.key)) {
-      e.preventDefault();
-    }
-  };
-
-  // Handle project count input change
-  const handleProjectCountChange = (value: string) => {
-    // Strip any non-digit characters
-    const cleanedValue = value.replace(/\D/g, "");
-    setProjectCountInput(cleanedValue);
-
-    // Parse and validate the value
-    const numValue = parseInt(cleanedValue, 10);
-
-    // If valid number, enforce minimum of 1
-    if (!isNaN(numValue)) {
-      const validValue = Math.max(1, numValue);
-      updateLimitedProjectsCount(validValue);
-    }
-  };
+  }, [personalPreferences]);
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={onClose} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
+    <ModalCore isOpen={isOpen} handleClose={close} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
       <div className="flex max-h-[90vh] flex-col rounded-lg bg-surface-1">
         {/* Header */}
         <div className="flex justify-between px-6 pt-4">
@@ -194,7 +187,8 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={close}
+            disabled={busy}
             className="flex size-5 flex-shrink-0 items-center justify-center rounded-sm text-placeholder hover:bg-layer-1"
             aria-label={t("close")}
           >
@@ -217,7 +211,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                   <div className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-all duration-200 hover:bg-surface-2">
                     <GripVertical className="size-4 cursor-grab text-placeholder transition-colors active:cursor-grabbing" />
                     <Checkbox
-                      checked={!!personalPreferences.items[item.key]?.enabled}
+                      checked={personalPreferences.items[item.key].enabled}
                       onChange={(e) => togglePersonalItem(item.key, e.target.checked)}
                     />
                     <div className="flex flex-1 items-center gap-2">
@@ -248,7 +242,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                     <div className="group flex items-center gap-2 rounded-md px-2 py-1.5 transition-all duration-200 hover:bg-surface-2">
                       <GripVertical className="size-4 cursor-grab text-placeholder transition-colors active:cursor-grabbing" />
                       <Checkbox
-                        checked={!!workspacePreferences.items[item.key]?.is_pinned}
+                        checked={workspacePreferences.items[item.key]?.is_pinned ?? false}
                         onChange={(e) => handleWorkspaceItemToggle(item.key, e.target.checked)}
                       />
                       <div className="flex flex-1 items-center gap-2">
@@ -318,32 +312,71 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                   </label>
 
                   {projectPreferences.showLimitedProjects && (
-                    <div className="pl-8">
-                      <div className="flex w-full flex-col gap-1">
-                        <div className="flex w-full flex-col gap-2 pb-1.5">
-                          <label className="w-full text-11 text-secondary">{t("enter_number_of_projects")}</label>
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={projectCountInput}
-                            onKeyDown={handleKeyDown}
-                            onChange={(e) => handleProjectCountChange(e.target.value)}
-                            className={cn(
-                              "w-full rounded-md px-2 py-1 text-13",
-                              "border bg-surface-2",
-                              "text-secondary",
-                              parseInt(projectCountInput) >= 1
-                                ? "border-strong focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
-                                : "border-danger-strong focus:border-danger-strong focus:ring-1 focus:ring-danger-strong"
+                    <form
+                      className="pl-8"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        submitProjectCount();
+                      }}
+                    >
+                      <form.Field
+                        name="projectCount"
+                        validators={{
+                          onChange: ({ value }) => validateProjectCount(value),
+                          onSubmit: ({ value }) => validateProjectCount(value),
+                        }}
+                      >
+                        {(field) => (
+                          <div className="flex w-full flex-col gap-1">
+                            <div className="flex w-full flex-col gap-2 pb-1.5">
+                              <label htmlFor={field.name} className="w-full text-11 text-secondary">
+                                {t("enter_number_of_projects")}
+                              </label>
+                              <input
+                                id={field.name}
+                                name={field.name}
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                onBlur={() => {
+                                  field.handleBlur();
+                                  if (form.store.state.isDirty && isValidProjectCount(field.state.value)) {
+                                    submitProjectCount();
+                                  }
+                                }}
+                                disabled={busy}
+                                aria-invalid={!field.state.meta.isValid}
+                                className={cn(
+                                  "w-full rounded-md px-2 py-1 text-13",
+                                  "border bg-surface-2",
+                                  "text-secondary",
+                                  field.state.meta.isValid
+                                    ? "border-strong focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
+                                    : "border-danger-strong focus:border-danger-strong focus:ring-1 focus:ring-danger-strong"
+                                )}
+                              />
+                            </div>
+                            {[...new Set(field.state.meta.errors)].map((error) => (
+                              <span key={error} role="alert" className="pl-0.5 text-11 text-danger-primary">
+                                {error}
+                              </span>
+                            ))}
+                            {submitError && (
+                              <span role="alert" className="pl-0.5 text-11 text-danger-primary">
+                                {submitError}
+                              </span>
                             )}
-                          />
-                        </div>
-                        {parseInt(projectCountInput) < 1 && projectCountInput !== "" && (
-                          <span className="pl-0.5 text-11 text-danger-primary">Minimum value is 1</span>
+                            {submitError && (
+                              <Button type="submit" variant="primary" size="sm" disabled={busy} loading={busy}>
+                                Retry
+                              </Button>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    </div>
+                      </form.Field>
+                    </form>
                   )}
                 </div>
               </div>
@@ -353,4 +386,13 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
       </div>
     </ModalCore>
   );
-});
+}
+
+function validateProjectCount(value: string) {
+  return isValidProjectCount(value) ? undefined : "Enter a whole number of at least 1.";
+}
+
+function isValidProjectCount(value: string) {
+  const count = Number(value);
+  return Boolean(value.trim()) && Number.isInteger(count) && count >= 1;
+}

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
 import { LabelListItem } from "./label-list-item";
 // types
@@ -19,7 +18,7 @@ type TLabelList = {
   disabled: boolean;
 };
 
-export const LabelList = observer(function LabelList(props: TLabelList) {
+export const LabelList = function LabelList(props: TLabelList) {
   const { workspaceSlug, projectId, issueId, values, labelOperations, disabled } = props;
   const issueLabels = values || undefined;
 
@@ -40,4 +39,4 @@ export const LabelList = observer(function LabelList(props: TLabelList) {
       ))}
     </>
   );
-});
+};

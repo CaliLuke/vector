@@ -11,7 +11,6 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"os/exec"
-	"sort"
 	"strings"
 	"time"
 
@@ -134,7 +133,7 @@ func hasCookie(cookies []*http.Cookie, name string) bool {
 	return false
 }
 
-// CheckLocalLogging verifies proxy ingestion and a persisted Go request span.
+// CheckLocalLogging verifies proxy ingestion and correlated Go error logs and spans.
 func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error {
 	marker := "local-logging-check-" + strings.ReplaceAll(uuid.NewString(), "-", "")
 	cutoff := time.Now().UnixNano()
@@ -154,26 +153,33 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 	if err != nil {
 		return err
 	}
-	if err := localPost(ctx, localOrigin+"/__local_telemetry/v1/logs", encoded, 5*time.Second); err != nil {
-		return fmt.Errorf("Logal ingestion request failed: %w", err)
+	if postErr := localPost(ctx, localOrigin+"/__local_telemetry/v1/logs", encoded, 5*time.Second); postErr != nil {
+		return fmt.Errorf("log collector ingestion request failed: %w", postErr)
 	}
-	// Exercise the shipping API through the browser proxy. Anonymous Go requests create spans.
-	apiReq, err := http.NewRequestWithContext(ctx, http.MethodGet, localOrigin+"/api/users/me/", nil)
+	// A malformed renderer charset exercises an existing read-only error path
+	// before project lookup. It requires neither credentials nor seeded data.
+	traceID := strings.ReplaceAll(uuid.NewString(), "-", "")
+	parentSpanID := strings.ReplaceAll(uuid.NewString(), "-", "")[:16]
+	apiReq, err := http.NewRequestWithContext(ctx, http.MethodGet, localOrigin+"/api/public/anchor/observability-probe/labels/", nil)
 	if err != nil {
 		return err
 	}
+	apiReq.Header.Set("Accept", "application/json; indent*=bogus''%34")
+	apiReq.Header.Set("traceparent", "00-"+traceID+"-"+parentSpanID+"-01")
 	apiClient := &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	apiResp, err := apiClient.Do(apiReq)
 	if err != nil {
-		return fmt.Errorf("authenticated API probe failed: %w", err)
+		return fmt.Errorf("go error logging probe failed: %w", err)
 	}
-	apiResp.Body.Close()
-	if apiResp.StatusCode != http.StatusUnauthorized && apiResp.StatusCode != http.StatusForbidden && (apiResp.StatusCode < 200 || apiResp.StatusCode >= 300) {
-		return fmt.Errorf("anonymous API probe returned HTTP %d", apiResp.StatusCode)
+	if closeErr := apiResp.Body.Close(); closeErr != nil {
+		return fmt.Errorf("close logging probe response: %w", closeErr)
+	}
+	if apiResp.StatusCode != http.StatusInternalServerError {
+		return fmt.Errorf("go error logging probe returned HTTP %d, want 500", apiResp.StatusCode)
 	}
 	deadline := time.Now().Add(15 * time.Second)
 	for {
-		query := fmt.Sprintf("SELECT 'log' AS kind, COUNT(*) AS count, '' AS service_name FROM otel_logs WHERE body_json LIKE '%%%s%%' UNION ALL SELECT 'span' AS kind, COUNT(*) AS count, service_name FROM otel_spans WHERE received_at_unix_nano >= %d GROUP BY service_name", marker, cutoff)
+		query := fmt.Sprintf("SELECT COUNT(*) AS count FROM otel_logs WHERE body_json LIKE '%%%s%%'", marker)
 		cmd := exec.CommandContext(ctx, "bash", "scripts/logal-query.sh", "sql", "--query", query, "--json")
 		cmd.Dir = root
 		var stdout, stderr bytes.Buffer
@@ -183,32 +189,64 @@ func CheckLocalLogging(ctx context.Context, root string, output io.Writer) error
 		}
 		var result struct {
 			Rows []struct {
-				Kind        string `json:"kind"`
-				Count       int64  `json:"count"`
-				ServiceName string `json:"service_name"`
+				Count int64 `json:"count"`
 			} `json:"rows"`
 		}
 		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
 			return fmt.Errorf("decode Logal query: %w", err)
 		}
-		found := false
-		services := map[string]bool{}
-		for _, row := range result.Rows {
-			if row.Kind == "log" && row.Count > 0 {
-				found = true
-			} else if row.Kind == "span" && row.Count > 0 {
-				services[row.ServiceName] = true
-			}
+		found := len(result.Rows) == 1 && result.Rows[0].Count > 0
+		correlated, err := hasLocalGoErrorTrace(ctx, root, traceID)
+		if err != nil {
+			return err
 		}
-		if found && services["plane-go-api"] {
-			fmt.Fprintln(output, "PASS proxy -> Logal -> SQLite; Go request trace persisted")
-			return nil
+		if found && correlated {
+			_, writeErr := fmt.Fprintln(output, "PASS proxy -> Logal -> SQLite; Go HTTP 500 error log and matching request trace persisted")
+			return writeErr
 		}
 		if time.Now().After(deadline) {
-			return fmt.Errorf("Logal verification failed: persisted marker=%t, traced services=%v", found, sortedKeys(services))
+			return fmt.Errorf("log collector verification failed: persisted marker=%t, correlated Go error=%t", found, correlated)
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
+}
+
+// hasLocalGoErrorTrace requires native OTLP correlation fields, so a trace alone
+// or an uncorrelated stdout copy cannot make the logging check pass.
+func hasLocalGoErrorTrace(ctx context.Context, root, traceID string) (bool, error) {
+	type record struct {
+		SpanID     string `json:"span_id"`
+		StatusCode int    `json:"status_code"`
+	}
+	rows := make(map[string][]record, 2)
+	for _, signal := range []string{"logs", "spans"} {
+		args := []string{"scripts/logal-query.sh", signal, "--service", "plane-go-api", "--trace-id", traceID, "--json"}
+		if signal == "logs" {
+			args = append(args, "--level", "error")
+		}
+		command := exec.CommandContext(ctx, "bash", args...)
+		command.Dir = root
+		var stdout, stderr bytes.Buffer
+		command.Stdout, command.Stderr = &stdout, &stderr
+		if err := command.Run(); err != nil {
+			return false, fmt.Errorf("query Go %s: %w: %s", signal, err, strings.TrimSpace(stderr.String()))
+		}
+		var result struct {
+			Rows []record `json:"rows"`
+		}
+		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+			return false, fmt.Errorf("decode Go %s: %w", signal, err)
+		}
+		rows[signal] = result.Rows
+	}
+	for _, entry := range rows["logs"] {
+		for _, span := range rows["spans"] {
+			if entry.SpanID != "" && entry.SpanID == span.SpanID && span.StatusCode == 2 {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }
 
 func localPost(ctx context.Context, endpoint string, body []byte, timeout time.Duration) error {
@@ -229,13 +267,4 @@ func localPost(ctx context.Context, endpoint string, body []byte, timeout time.D
 		return fmt.Errorf("returned HTTP %d", resp.StatusCode)
 	}
 	return nil
-}
-
-func sortedKeys(values map[string]bool) []string {
-	keys := make([]string, 0, len(values))
-	for key := range values {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
 }

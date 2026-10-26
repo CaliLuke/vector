@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { compact, isEqual, sortBy } from "lodash-es";
+import compact from "lodash-es/compact.js";
+import isEqual from "lodash-es/isEqual.js";
+import sortBy from "lodash-es/sortBy.js";
 // plane imports
 import type {
   TFilterConditionNode,
@@ -17,8 +19,7 @@ import { FILTER_NODE_TYPE } from "@plane/types";
 // local imports
 import { isConditionNode, isGroupNode } from "../types/core";
 import { processGroupNode } from "../types/shared";
-import { hasValidValue } from "../validators/core";
-import { transformExpressionTree } from "./transformation/core";
+import { sanitizeAndStabilizeExpression } from "./transformation/core";
 
 /**
  * Creates a comparable representation of a condition for deep comparison.
@@ -32,6 +33,7 @@ const createConditionComparable = <P extends TFilterProperty>(condition: TFilter
   type: condition.type,
   property: condition.property,
   operator: condition.operator,
+  valueFormat: condition.valueFormat,
   value: Array.isArray(condition.value) ? condition.value : [condition.value],
 });
 
@@ -82,7 +84,9 @@ export const createGroupComparable = <P extends TFilterProperty>(
   };
 
   return processGroupNode(group, {
+    onOrGroup: (orGroup) => createComparableChildren(orGroup.children, baseComparable),
     onAndGroup: (andGroup) => createComparableChildren(andGroup.children, baseComparable),
+    onNotGroup: (notGroup) => ({ ...baseComparable, child: createExpressionComparable(notGroup.child) }),
   });
 };
 
@@ -120,21 +124,11 @@ export const createExpressionComparable = <P extends TFilterProperty>(
  * @returns The normalized expression or null if the entire expression is empty
  */
 export const normalizeFilterExpression = <P extends TFilterProperty>(
-  expression: TFilterExpression<P> | null
+  expression: TFilterExpression<P> | null,
+  acceptsCondition: (condition: TFilterConditionNode<P, TFilterValue>) => boolean = (condition) =>
+    condition.value !== undefined
 ): TFilterExpression<P> | null => {
-  const result = transformExpressionTree<P>(expression, (node: TFilterExpression<P>) => {
-    // Only transform condition nodes - check if they have valid values
-    if (isConditionNode(node)) {
-      return {
-        expression: hasValidValue(node.value) ? node : null,
-        shouldNotify: false,
-      };
-    }
-    // For group nodes, let the generic transformer handle the recursion
-    return { expression: node, shouldNotify: false };
-  });
-
-  return result.expression;
+  return sanitizeAndStabilizeExpression(expression, acceptsCondition);
 };
 
 /**
@@ -148,11 +142,12 @@ export const normalizeFilterExpression = <P extends TFilterProperty>(
  */
 export const deepCompareFilterExpressions = <P extends TFilterProperty>(
   expression1: TFilterExpression<P> | null,
-  expression2: TFilterExpression<P> | null
+  expression2: TFilterExpression<P> | null,
+  currentConditionComplete?: (condition: TFilterConditionNode<P, TFilterValue>) => boolean
 ): boolean => {
   // Normalize both expressions to remove empty conditions and groups
   const normalized1 = normalizeFilterExpression(expression1);
-  const normalized2 = normalizeFilterExpression(expression2);
+  const normalized2 = normalizeFilterExpression(expression2, currentConditionComplete);
 
   // If both are null after normalization, they're equal
   if (!normalized1 && !normalized2) {

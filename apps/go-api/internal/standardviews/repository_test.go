@@ -84,7 +84,7 @@ func TestProjectQueriesPreserveTenantMembershipVisibilityAndFavoriteRules(t *tes
 
 func TestDeleteProjectSoftDeletesAndCleansSideEffects(t *testing.T) {
 	project := uuid.MustParse("00000000-0000-4000-8000-000000000011")
-	db := &viewDB{rows: []pgx.Row{viewRow(func(dest ...any) error { *dest[0].(**uuid.UUID) = &project; return nil })}, tag: pgconn.NewCommandTag("DELETE 1")}
+	db := &viewDB{rows: []pgx.Row{boolRow(true)}}
 	r, _ := NewRepository(db)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
@@ -92,7 +92,7 @@ func TestDeleteProjectSoftDeletesAndCleansSideEffects(t *testing.T) {
 		t.Fatal(err)
 	}
 	joined := strings.Join(db.queries, "\n")
-	for _, fragment := range []string{"deleted_at=NOW()", "wm.role=20", "UPDATE user_favorites SET deleted_at=NOW()", "DELETE FROM user_recent_visits"} {
+	for _, fragment := range []string{"deleted_at=NOW()", "wm.role=20", "UPDATE user_favorites f SET deleted_at=NOW()", "DELETE FROM user_recent_visits"} {
 		if !strings.Contains(joined, fragment) {
 			t.Errorf("delete query missing %q", fragment)
 		}

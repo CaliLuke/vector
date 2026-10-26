@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
 import type { TCycleDistribution, TCycleEstimateDistribution, TCyclePlotType } from "@plane/types";
 import type { TSelectedFilterProgressStats } from "@/components/core/sidebar/progress-stats/shared";
@@ -24,7 +23,7 @@ type TCycleProgressStats = {
   totalIssuesCount: number;
 };
 
-export const CycleProgressStats = observer(function CycleProgressStats(props: TCycleProgressStats) {
+export const CycleProgressStats = function CycleProgressStats(props: TCycleProgressStats) {
   const {
     cycleId,
     distribution,
@@ -52,4 +51,4 @@ export const CycleProgressStats = observer(function CycleProgressStats(props: TC
       totalIssuesCount={totalIssuesCount}
     />
   );
-});
+};

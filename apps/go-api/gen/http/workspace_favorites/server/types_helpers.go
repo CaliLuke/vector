@@ -1072,9 +1072,10 @@ func NewGroupUnauthenticatedResponseBody(res *workspacefavorites.WorkspaceFavori
 }
 
 // NewListPayload builds a workspace_favorites service list endpoint payload.
-func NewListPayload(slug string, sessionID *string) *workspacefavorites.ListPayload {
+func NewListPayload(slug string, all *bool, sessionID *string) *workspacefavorites.ListPayload {
 	v := &workspacefavorites.ListPayload{}
 	v.Slug = slug
+	v.All = all
 	v.SessionID = sessionID
 
 	return v

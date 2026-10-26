@@ -5,7 +5,6 @@
  */
 
 import { createFileRoute, useLocation, Outlet } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // components
 import { getProjectActivePath } from "@/components/settings/helper";
@@ -41,5 +40,5 @@ function ProjectDetailSettingsLayout(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId")({
-  component: observer(ProjectDetailSettingsLayout),
+  component: ProjectDetailSettingsLayout,
 });

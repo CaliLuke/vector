@@ -5,42 +5,43 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 // ui
 import { useTranslation } from "@plane/i18n";
 import { Avatar } from "@plane/propel/avatar";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import { Loader, Card } from "@plane/ui";
-import { calculateTimeAgo, getFileURL } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { ActivityMessage, IssueLink } from "@/components/core/activity";
 // constants
 import { USER_PROFILE_ACTIVITY } from "@plane/constants";
 // helpers
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // services
 import { UserService } from "@/services/user.service";
 
 const userService = new UserService();
 
-export const ProfileActivity = observer(function ProfileActivity() {
+export const ProfileActivity = function ProfileActivity() {
   const { workspaceSlug, userId } = useParams({ strict: false });
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   const { t } = useTranslation();
 
-  const { data: userProfileActivity } = useSWR(
-    workspaceSlug && userId ? USER_PROFILE_ACTIVITY(workspaceSlug.toString(), userId.toString(), {}) : null,
-    workspaceSlug && userId
-      ? () =>
-          userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
-            per_page: 10,
-          })
-      : null
-  );
+  const { data: userProfileActivity } = useQuery({
+    queryKey: USER_PROFILE_ACTIVITY(workspaceSlug, userId, { per_page: 10 }),
+    queryFn:
+      workspaceSlug && userId
+        ? () =>
+            userService.getUserProfileActivity(workspaceSlug.toString(), userId.toString(), {
+              per_page: 10,
+            })
+        : skipToken,
+  });
 
   return (
     <div className="space-y-2">
@@ -88,4 +89,4 @@ export const ProfileActivity = observer(function ProfileActivity() {
       </Card>
     </div>
   );
-});
+};

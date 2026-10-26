@@ -4,33 +4,31 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { CloseIcon } from "@plane/propel/icons";
 // plane ui
 import { Avatar } from "@plane/ui";
 // helpers
-import { cn, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // types
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
 export type AppliedMembersFiltersProps = {
   className?: string;
   handleRemove: (val: string) => void;
   values: string[];
   editable: boolean | undefined;
+  workspaceSlug: string | undefined;
 };
 
-export const AppliedMembersFilters = observer(function AppliedMembersFilters(props: AppliedMembersFiltersProps) {
-  const { handleRemove, values, editable, className } = props;
-  // store hooks
-  const {
-    workspace: { getWorkspaceMemberDetails },
-  } = useMember();
+export function AppliedMembersFilters(props: AppliedMembersFiltersProps) {
+  const { handleRemove, values, editable, className, workspaceSlug } = props;
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
 
   return (
     <>
       {values.map((memberId) => {
-        const memberDetails = getWorkspaceMemberDetails(memberId)?.member;
+        const memberDetails = membersById?.get(memberId)?.member;
 
         if (!memberDetails) return null;
 
@@ -60,4 +58,4 @@ export const AppliedMembersFilters = observer(function AppliedMembersFilters(pro
       })}
     </>
   );
-});
+}

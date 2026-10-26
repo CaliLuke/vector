@@ -9,7 +9,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
+
+import { useParams } from "@tanstack/react-router";
 // plane constants
 import { DRAG_ALLOWED_GROUPS } from "@plane/constants";
 // i18n
@@ -17,16 +18,14 @@ import { useTranslation } from "@plane/i18n";
 //types
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type {
-  TGroupedIssues,
   TIssue,
   IIssueDisplayProperties,
   IIssueMap,
-  TSubGroupedIssues,
   TIssueGroupByOptions,
   TIssueOrderByOptions,
 } from "@plane/types";
 import { EIssueLayoutTypes } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import type { GroupDropLocation } from "@/components/issues/issue-layouts/utils";
 // components
 import {
@@ -36,12 +35,15 @@ import {
   getIssueBlockId,
 } from "@/components/issues/issue-layouts/utils";
 import { KanbanIssueBlockLoader } from "@/components/ui/loader/layouts/kanban-layout-loader";
+import { getGroupedIssueIds } from "../issue-display-ordering";
+import type { IssueListGroupedIds } from "@/queries/issue-lists";
 import { useWorkFlowFDragNDrop } from "@/components/workflow";
 // hooks
-import { useProjectState } from "@/hooks/store/use-project-state";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
+import { useIssueListView } from "@/providers/issue-list-view";
 // local imports
+import { canQuickAddToGroup } from "../quick-add/grouping";
 import { GroupDragOverlay } from "../group-drag-overlay";
 import type { TRenderQuickActions } from "../list/list-view-types";
 import { KanbanQuickAddIssueButton, QuickAddIssueRoot } from "../quick-add";
@@ -50,7 +52,7 @@ import { KanbanIssueBlocksList } from "./blocks-list";
 interface IKanbanGroup {
   groupId: string;
   issuesMap: IIssueMap;
-  groupedIssueIds: TGroupedIssues | TSubGroupedIssues;
+  groupedIssueIds: IssueListGroupedIds;
   displayProperties: IIssueDisplayProperties | undefined;
   sub_group_by: TIssueGroupByOptions | undefined;
   group_by: TIssueGroupByOptions | undefined;
@@ -58,7 +60,7 @@ interface IKanbanGroup {
   isDragDisabled: boolean;
   isDropDisabled: boolean;
   dropErrorMessage: string | undefined;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   enableQuickIssueCreate?: boolean;
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
@@ -72,7 +74,7 @@ interface IKanbanGroup {
   isEpic?: boolean;
 }
 
-export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
+export const KanbanGroup = function KanbanGroup(props: IKanbanGroup) {
   const {
     groupId,
     sub_group_id,
@@ -98,11 +100,10 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
   // i18n
   const { t } = useTranslation();
   // hooks
-  const projectState = useProjectState();
+  const { projectId } = useParams({ strict: false });
+  const { getProjectDefaultStateId } = useRouteProjectStates(projectId);
 
-  const {
-    issues: { getGroupIssueCount, getPaginationData, getIssueLoader },
-  } = useIssuesStore();
+  const { countForGroup, paginationForGroup, isLoadingNextPage } = useIssueListView();
 
   const [intersectionElement, setIntersectionElement] = useState<HTMLSpanElement | null>(null);
   const columnRef = useRef<HTMLDivElement | null>(null);
@@ -113,7 +114,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
     loadMoreIssues(groupId, sub_group_id === "null" ? undefined : sub_group_id);
   }, [loadMoreIssues, groupId, sub_group_id]);
 
-  const isPaginating = !!getIssueLoader(groupId, sub_group_id);
+  const isPaginating = isLoadingNextPage(groupId, sub_group_id);
 
   useIntersectionObserver(
     containerRef,
@@ -130,7 +131,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
   useEffect(() => {
     const element = columnRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       dropTargetForElements({
@@ -171,7 +172,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
             return;
           }
 
-          handleOnDrop(source, destination);
+          void handleOnDrop(source, destination);
 
           highlightIssueOnDrop(
             getIssueBlockId(source.id, destination?.groupId, destination?.subGroupId),
@@ -183,7 +184,6 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
         element,
       })
     );
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
   }, [
     columnRef,
     groupId,
@@ -194,6 +194,8 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
     isWorkflowDropDisabled,
     dropErrorMessage,
     handleOnDrop,
+    handleWorkFlowState,
+    t,
   ]);
 
   const prePopulateQuickAddData = (
@@ -202,8 +204,8 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
     groupValue: string,
     subGroupValue: string
   ) => {
-    const defaultState = projectState.projectStates?.find((state) => state.default);
-    let preloadedData: object = { state_id: defaultState?.id };
+    const defaultStateId = getProjectDefaultStateId(projectId);
+    let preloadedData: object = { state_id: defaultStateId };
 
     if (groupByKey) {
       if (groupByKey === "state") {
@@ -250,13 +252,11 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
 
   const isSubGroup = !!sub_group_id && sub_group_id !== "null";
 
-  const issueIds = isSubGroup
-    ? ((groupedIssueIds as TSubGroupedIssues)?.[groupId]?.[sub_group_id] ?? [])
-    : ((groupedIssueIds as TGroupedIssues)?.[groupId] ?? []);
+  const issueIds = getGroupedIssueIds(groupedIssueIds, groupId, isSubGroup ? sub_group_id : undefined) ?? [];
 
-  const groupIssueCount = getGroupIssueCount(groupId, sub_group_id, false) ?? 0;
+  const groupIssueCount = countForGroup(groupId, sub_group_id, false) ?? 0;
 
-  const nextPageResults = getPaginationData(groupId, sub_group_id)?.nextPageResults;
+  const nextPageResults = paginationForGroup(groupId, sub_group_id)?.nextPageResults;
 
   const loadMore = isPaginating ? (
     <KanbanIssueBlockLoader />
@@ -270,7 +270,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
     </div>
   );
 
-  const shouldLoadMore = nextPageResults === undefined ? issueIds?.length < groupIssueCount : !!nextPageResults;
+  const shouldLoadMore = nextPageResults === undefined ? issueIds?.length < groupIssueCount : nextPageResults;
   const canOverlayBeVisible = isWorkflowDropDisabled || orderBy !== "sort_order" || isDropDisabled;
   const shouldOverlayBeVisible = isDraggingOverColumn && canOverlayBeVisible;
   const canDragIssuesInCurrentGrouping =
@@ -326,7 +326,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
           </div>
         ))}
 
-      {enableQuickIssueCreate &&
+      {canQuickAddToGroup(enableQuickIssueCreate, group_by, sub_group_by) &&
         !disableIssueCreation &&
         !getIsWorkflowWorkItemCreationDisabled(groupId, sub_group_id) && (
           <div className="sticky bottom-0 w-full bg-surface-2 py-0.5">
@@ -343,4 +343,4 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
         )}
     </div>
   );
-});
+};

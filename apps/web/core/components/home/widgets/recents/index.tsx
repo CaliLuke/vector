@@ -5,8 +5,7 @@
  */
 
 import { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
 // plane types
 import { PageIcon, ProjectIcon, WorkItemsIcon } from "@plane/propel/icons";
@@ -37,7 +36,7 @@ type TRecentWidgetProps = THomeWidgetProps & {
   showFilterSelect?: boolean;
 };
 
-export const RecentActivityWidget = observer(function RecentActivityWidget(props: TRecentWidgetProps) {
+export const RecentActivityWidget = function RecentActivityWidget(props: TRecentWidgetProps) {
   const { presetFilter, showFilterSelect = true, workspaceSlug } = props;
   // states
   const [filter, setFilter] = useState<TRecentActivityFilterKeys>(presetFilter ?? filters[0].name);
@@ -45,21 +44,19 @@ export const RecentActivityWidget = observer(function RecentActivityWidget(props
   // ref
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: recents, isLoading } = useSWR(
-    workspaceSlug ? `WORKSPACE_RECENT_ACTIVITY_${workspaceSlug}_${filter}` : null,
-    workspaceSlug
+  const { data: recents, isLoading } = useQuery({
+    queryKey: ["WORKSPACE_RECENT_ACTIVITY", workspaceSlug, filter],
+    queryFn: workspaceSlug
       ? () =>
           workspaceService.fetchWorkspaceRecents(
             workspaceSlug.toString(),
             filter === filters[0].name ? undefined : filter
           )
-      : null,
-    {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
+      : skipToken,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
   const resolveRecent = (activity: TActivityEntityData) => {
     switch (activity.entity_name) {
@@ -108,4 +105,4 @@ export const RecentActivityWidget = observer(function RecentActivityWidget(props
       </div>
     </ContentOverflowWrapper>
   );
-});
+};

@@ -4,24 +4,18 @@
  * See the LICENSE file for details.
  */
 
+import { usePageRecord } from "@/components/pages/page-record-context";
+
 // plane imports
 import { ScrollArea } from "@plane/propel/scrollarea";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageContentBrowser } from "../../editor/summary";
 import { PageNavigationPaneOutlineTabEmptyState } from "./empty-state/outline";
 
-type Props = {
-  page: TPageInstance;
-};
-
-export function PageNavigationPaneOutlineTabPanel(props: Props) {
-  const { page } = props;
+export function PageNavigationPaneOutlineTabPanel() {
   // derived values
-  const {
-    editor: { editorRef },
-  } = page;
+  const { editorRef } = usePageRecord();
 
   return (
     <ScrollArea

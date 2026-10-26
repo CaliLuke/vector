@@ -7,7 +7,7 @@
 import type { TFilterGroupNode, TFilterProperty } from "@plane/types";
 import { processGroupNode } from "../../types/shared";
 import type { TTreeTransformFn, TTreeTransformResult } from "./core";
-import { transformGroupWithChildren } from "./core";
+import { transformExpressionTree, transformGroupWithChildren } from "./core";
 
 /**
  * Transforms groups by processing children.
@@ -21,5 +21,10 @@ export const transformGroup = <P extends TFilterProperty>(
   transformFn: TTreeTransformFn<P>
 ): TTreeTransformResult<P> =>
   processGroupNode(group, {
+    onOrGroup: (orGroup) => transformGroupWithChildren(orGroup, transformFn),
     onAndGroup: (andGroup) => transformGroupWithChildren(andGroup, transformFn),
+    onNotGroup: (notGroup) => {
+      const result = transformExpressionTree(notGroup.child, transformFn);
+      return { ...result, expression: result.expression ? { ...notGroup, child: result.expression } : null };
+    },
   });

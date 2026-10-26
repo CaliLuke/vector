@@ -4,13 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Tooltip } from "@plane/propel/tooltip";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import packageJson from "package.json";
 
-export const WorkspaceEditionBadge = observer(function WorkspaceEditionBadge() {
+export const WorkspaceEditionBadge = function WorkspaceEditionBadge() {
   // platform
   const { isMobile } = usePlatformOS();
 
@@ -19,4 +18,4 @@ export const WorkspaceEditionBadge = observer(function WorkspaceEditionBadge() {
       <span className="px-3 py-2 text-13 text-secondary">Self-hosted</span>
     </Tooltip>
   );
-});
+};

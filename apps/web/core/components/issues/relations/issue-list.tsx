@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TIssue, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
@@ -15,8 +15,9 @@ import { RelationIssueListItem } from "./issue-list-item";
 
 type Props = {
   workspaceSlug: string;
+  projectId: string;
   issueId: string;
-  issueIds: string[];
+  issues: TIssue[];
   relationKey: TIssueRelationTypes;
   handleIssueCrudState: (
     key: "update" | "delete" | "removeRelation",
@@ -29,11 +30,12 @@ type Props = {
   issueServiceType?: TIssueServiceType;
 };
 
-export const RelationIssueList = observer(function RelationIssueList(props: Props) {
+export const RelationIssueList = function RelationIssueList(props: Props) {
   const {
     workspaceSlug,
+    projectId,
     issueId,
-    issueIds,
+    issues,
     relationKey,
     disabled = false,
     handleIssueCrudState,
@@ -42,15 +44,15 @@ export const RelationIssueList = observer(function RelationIssueList(props: Prop
 
   return (
     <div className="relative">
-      {issueIds &&
-        issueIds.length > 0 &&
-        issueIds.map((relationIssueId) => (
+      {issues.length > 0 &&
+        issues.map((issue) => (
           <RelationIssueListItem
-            key={relationIssueId}
+            key={issue.id}
             workspaceSlug={workspaceSlug}
+            projectId={projectId}
             issueId={issueId}
             relationKey={relationKey}
-            relationIssueId={relationIssueId}
+            issue={issue}
             disabled={disabled}
             handleIssueCrudState={handleIssueCrudState}
             issueServiceType={issueServiceType}
@@ -58,4 +60,4 @@ export const RelationIssueList = observer(function RelationIssueList(props: Prop
         ))}
     </div>
   );
-});
+};

@@ -5,32 +5,30 @@
  */
 
 import React, { useMemo } from "react";
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 import { CollapsibleButton } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueRelations } from "@/hooks/use-issue-resources";
 // components
 import { useTimeLineRelationOptions } from "@/components/relations";
+import { countVisibleRelations } from "./count";
 type Props = {
   isOpen: boolean;
+  workspaceSlug: string;
+  projectId: string;
   issueId: string;
   issueServiceType?: TIssueServiceType;
 };
 
-export const RelationsCollapsibleTitle = observer(function RelationsCollapsibleTitle(props: Props) {
-  const { isOpen, issueId, issueServiceType = EIssueServiceType.ISSUES } = props;
+export function RelationsCollapsibleTitle(props: Props) {
+  const { isOpen, workspaceSlug, projectId, issueId, issueServiceType = EIssueServiceType.ISSUES } = props;
   const { t } = useTranslation();
-  // store hook
-  const {
-    relation: { getRelationCountByIssueId },
-  } = useIssueDetail(issueServiceType);
-
+  const { relations } = useIssueRelations({ workspaceSlug, projectId, issueId, serviceType: issueServiceType });
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
   // derived values
-  const relationsCount = getRelationCountByIssueId(issueId, ISSUE_RELATION_OPTIONS);
+  const relationsCount = countVisibleRelations(relations, ISSUE_RELATION_OPTIONS);
 
   // indicator element
   const indicatorElement = useMemo(
@@ -43,4 +41,4 @@ export const RelationsCollapsibleTitle = observer(function RelationsCollapsibleT
   );
 
   return <CollapsibleButton isOpen={isOpen} title={t("common.relations")} indicatorElement={indicatorElement} />;
-});
+}

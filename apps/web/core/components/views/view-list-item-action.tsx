@@ -6,24 +6,23 @@
 
 import { useParams } from "@tanstack/react-router";
 import React, { useState } from "react";
-import { observer } from "mobx-react";
 
 import { Earth } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
+import { EUserPermissions, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
 import { LockIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IProjectView } from "@plane/types";
 import { EViewAccess } from "@plane/types";
-import { FavoriteStar } from "@plane/ui";
-import { getPublishViewLink } from "@plane/utils";
+import { getPublishViewLink } from "@plane/utils/project-views";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useFavorites } from "@/hooks/use-favorites";
 // local imports
 import { ButtonAvatars } from "../dropdowns/member/avatar";
+import { AuthorizedFavoriteStar } from "@/components/common/authorized-favorite-star";
 import { DeleteProjectViewModal } from "./delete-view-modal";
 import { CreateUpdateProjectViewModal } from "./modal";
 import { ViewQuickActions } from "./quick-actions";
@@ -33,7 +32,30 @@ type Props = {
   view: IProjectView;
 };
 
-export const ViewListItemAction = observer(function ViewListItemAction(props: Props) {
+function ViewPublishStatus({
+  anchor,
+  publishLink,
+  onOpen,
+}: {
+  anchor: string | null | undefined;
+  publishLink: string | null | undefined;
+  onOpen: () => void;
+}) {
+  if (!anchor || !publishLink) return null;
+
+  return (
+    // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
+    <div
+      className="flex cursor-pointer items-center gap-1.5 rounded-sm bg-success-subtle px-3 py-1.5 text-11 font-medium text-success-primary"
+      onClick={onOpen}
+    >
+      <span className="size-1.5 flex-shrink-0 rounded-full bg-success-primary" />
+      Live
+    </div>
+  );
+}
+
+export const ViewListItemAction = function ViewListItemAction(props: Props) {
   const { parentRef, view } = props;
   // states
   const [createUpdateViewModal, setCreateUpdateViewModal] = useState(false);
@@ -42,10 +64,11 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // store
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
-  const { addViewToFavorites, removeViewFromFavorites } = useProjectView();
-  const { getUserDetails } = useMember();
+  const { favorites, favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug);
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const getUserDetails = (userId: string) => membersById?.get(userId)?.member;
 
   // local storage
   const { setValue: toggleFavoriteMenu, storedValue: isFavoriteOpen } = useLocalStorage<boolean>(
@@ -54,10 +77,8 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
   );
 
   // derived values
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const isFavorite = favoritesByEntity?.has(`view:${view.id}`) ?? false;
 
   const access = view.access;
 
@@ -67,14 +88,14 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
   const handleAddToFavorites = async () => {
     if (!workspaceSlug || !projectId) return;
 
-    await addViewToFavorites(workspaceSlug.toString(), projectId.toString(), view.id);
+    await toggleFavorite("view", view.id, projectId.toString());
     if (!isFavoriteOpen) toggleFavoriteMenu(true);
   };
 
   const handleRemoveFromFavorites = () => {
     if (!workspaceSlug || !projectId) return;
 
-    removeViewFromFavorites(workspaceSlug.toString(), projectId.toString(), view.id);
+    void toggleFavorite("view", view.id, projectId.toString());
   };
 
   const ownedByDetails = view.owned_by ? getUserDetails(view.owned_by) : undefined;
@@ -97,33 +118,20 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
         </Tooltip>
       </div>
 
-      {view?.anchor && publishLink ? (
-        // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-        <div
-          className="flex cursor-pointer items-center gap-1.5 rounded-sm bg-success-subtle px-3 py-1.5 text-11 font-medium text-success-primary"
-          onClick={() => setPublishModalOpen(true)}
-        >
-          <span className="size-1.5 flex-shrink-0 rounded-full bg-success-primary" />
-          Live
-        </div>
-      ) : (
-        <></>
-      )}
+      <ViewPublishStatus anchor={view.anchor} publishLink={publishLink} onOpen={() => setPublishModalOpen(true)} />
 
       {/* created by */}
-      {<ButtonAvatars showTooltip={false} userIds={ownedByDetails?.id ?? []} />}
+      {<ButtonAvatars showTooltip={false} userIds={ownedByDetails?.id ?? []} workspaceSlug={workspaceSlug} />}
 
-      {isEditingAllowed && (
-        <FavoriteStar
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (view.is_favorite) handleRemoveFromFavorites();
-            else handleAddToFavorites();
-          }}
-          selected={view.is_favorite}
-        />
-      )}
+      <AuthorizedFavoriteStar
+        canFavorite={isEditingAllowed}
+        isReady={favorites !== undefined}
+        onAdd={handleAddToFavorites}
+        onRemove={handleRemoveFromFavorites}
+        selected={isFavorite}
+        preventDefault
+        stopPropagation
+      />
       {projectId && workspaceSlug && (
         <div className="hidden md:block">
           <ViewQuickActions
@@ -136,4 +144,4 @@ export const ViewListItemAction = observer(function ViewListItemAction(props: Pr
       )}
     </>
   );
-});
+};

@@ -4,21 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect, useMemo } from "react";
-import { observer } from "mobx-react";
+import React, { useMemo } from "react";
+
 // plane imports
 import type {
   SingleOrArray,
-  IFilterOption,
   TFilterProperty,
   TMultiSelectFilterFieldConfig,
   TFilterConditionNodeForDisplay,
 } from "@plane/types";
 import { CustomSearchSelect } from "@plane/ui";
-import { toFilterArray, getFilterValueLength } from "@plane/utils";
+import { toFilterArray, getFilterValueLength } from "@plane/utils/rich-filters";
 // local imports
+import { useFilterSelectOptions } from "./use-options";
 import { SelectedOptionsDisplay } from "./selected-options-display";
-import { getCommonCustomSearchSelectProps, getFormattedOptions, loadOptions } from "./shared";
+import { getCommonCustomSearchSelectProps, getFormattedOptions } from "./shared";
 
 type TMultiSelectFilterValueInputProps<P extends TFilterProperty> = {
   config: TMultiSelectFilterFieldConfig<string>;
@@ -27,19 +27,12 @@ type TMultiSelectFilterValueInputProps<P extends TFilterProperty> = {
   onChange: (values: SingleOrArray<string>) => void;
 };
 
-export const MultiSelectFilterValueInput = observer(function MultiSelectFilterValueInput<P extends TFilterProperty>(
+export const MultiSelectFilterValueInput = function MultiSelectFilterValueInput<P extends TFilterProperty>(
   props: TMultiSelectFilterValueInputProps<P>
 ) {
   const { config, condition, isDisabled, onChange } = props;
-  // states
-  const [options, setOptions] = useState<IFilterOption<string>[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  // derived values
+  const { options, loading, error } = useFilterSelectOptions(config);
   const formattedOptions = useMemo(() => getFormattedOptions<string>(options), [options]);
-
-  useEffect(() => {
-    loadOptions({ config, setOptions, setLoading });
-  }, [config]);
 
   const handleSelectChange = (values: string[]) => {
     onChange(values);
@@ -52,9 +45,9 @@ export const MultiSelectFilterValueInput = observer(function MultiSelectFilterVa
       onChange={handleSelectChange}
       options={formattedOptions}
       multiple
-      disabled={loading || isDisabled}
+      disabled={loading || error || isDisabled}
       customButton={<SelectedOptionsDisplay<string> selectedValue={condition.value} options={options} />}
       defaultOpen={getFilterValueLength(condition.value) === 0}
     />
   );
-});
+};

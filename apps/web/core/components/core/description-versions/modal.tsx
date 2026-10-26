@@ -5,7 +5,6 @@
  */
 
 import { useCallback, useRef } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
@@ -13,14 +12,16 @@ import { Button } from "@plane/propel/button";
 import { CopyIcon, ChevronLeftIcon, ChevronRightIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import type { TDescriptionVersion } from "@plane/types";
+import type { IUserLite, TDescriptionVersion } from "@plane/types";
 import { Avatar, EModalPosition, EModalWidth, Loader, ModalCore } from "@plane/ui";
-import { calculateTimeAgo, cn, getFileURL } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { RichTextEditor } from "@/components/editor/rich-text";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
+import { useWorkspaceMarkdownCopy } from "@/hooks/use-workspace-markdown-copy";
 import { IconButton } from "@plane/propel/icon-button";
 
 type Props = {
@@ -33,11 +34,12 @@ type Props = {
   isOpen: boolean;
   isPrevDisabled: boolean;
   isRestoreDisabled: boolean;
+  versionCreator: IUserLite | undefined;
   projectId: string | undefined;
   workspaceSlug: string;
 };
 
-export const DescriptionVersionsModal = observer(function DescriptionVersionsModal(props: Props) {
+export function DescriptionVersionsModal(props: Props) {
   const {
     activeVersionDescription,
     activeVersionDetails,
@@ -48,30 +50,40 @@ export const DescriptionVersionsModal = observer(function DescriptionVersionsMod
     isPrevDisabled,
     isOpen,
     isRestoreDisabled,
+    versionCreator,
     projectId,
     workspaceSlug,
   } = props;
   // refs
   const editorRef = useRef<EditorRefApi>(null);
-  // store hooks
-  const { getUserDetails } = useMember();
-  const { getWorkspaceBySlug } = useWorkspace();
+  // workspace
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
+  const {
+    actionLabel: markdownActionLabel,
+    actionDisabled: markdownActionDisabled,
+    state: markdownCopyState,
+    statusRole,
+    statusMessage,
+    handleAction,
+  } = useWorkspaceMarkdownCopy(workspaceSlug);
   // derived values
   const activeVersionId = activeVersionDetails?.id;
-  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id;
-  const versionCreator = activeVersionDetails?.owned_by ? getUserDetails(activeVersionDetails.owned_by) : null;
+  const workspaceId = workspaceDetails?.id;
   // translation
   const { t } = useTranslation();
 
   const handleCopyMarkdown = useCallback(() => {
-    if (!editorRef.current) return;
-    editorRef.current.copyMarkdownToClipboard();
-    setToast({
-      type: TOAST_TYPE.SUCCESS,
-      title: t("toast.success"),
-      message: "Markdown copied to clipboard.",
-    });
-  }, [t]);
+    handleAction(
+      () => editorRef.current,
+      () => {
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("toast.success"),
+          message: "Markdown copied to clipboard.",
+        });
+      }
+    );
+  }, [handleAction, t]);
 
   if (!workspaceId) return null;
 
@@ -156,11 +168,26 @@ export const DescriptionVersionsModal = observer(function DescriptionVersionsMod
         {/* End version description */}
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 border-t-[0.5px] border-subtle pt-4">
-          <Tooltip tooltipContent={t("common.actions.copy_markdown")}>
-            <IconButton type="button" variant="ghost" size="base" onClick={handleCopyMarkdown} icon={CopyIcon} />
+          <Tooltip
+            tooltipContent={markdownCopyState === "ready" ? t("common.actions.copy_markdown") : markdownActionLabel}
+          >
+            <IconButton
+              type="button"
+              variant="ghost"
+              size="base"
+              onClick={handleCopyMarkdown}
+              icon={CopyIcon}
+              disabled={markdownActionDisabled}
+              aria-label={markdownCopyState === "ready" ? t("common.actions.copy_markdown") : markdownActionLabel}
+            />
           </Tooltip>
+          {statusMessage && (
+            <span role={statusRole} className="sr-only">
+              {statusMessage}
+            </span>
+          )}
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="lg" onClick={handleClose} tabIndex={1}>
+            <Button variant="secondary" size="lg" onClick={handleClose}>
               {t("common.cancel")}
             </Button>
             {!isRestoreDisabled && (
@@ -181,4 +208,4 @@ export const DescriptionVersionsModal = observer(function DescriptionVersionsMod
       </div>
     </ModalCore>
   );
-});
+}

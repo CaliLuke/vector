@@ -3,7 +3,8 @@
 // WorkItemCore HTTP client types
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package client
 

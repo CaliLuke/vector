@@ -4,48 +4,36 @@
  * See the LICENSE file for details.
  */
 
-import type { MutableRefObject } from "react";
-import { observer } from "mobx-react";
+import { TypeGroupingStatus } from "@/components/issues/issue-layouts/type-group-columns";
+import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
+import { useParams } from "@tanstack/react-router";
+
 // plane imports
-import type {
-  GroupByColumnTypes,
-  IGroupByColumn,
-  TGroupedIssues,
-  TIssue,
-  IIssueDisplayProperties,
-  IIssueMap,
-  TSubGroupedIssues,
-  TIssueKanbanFilters,
-  TIssueGroupByOptions,
-  TIssueOrderByOptions,
-} from "@plane/types";
+import type { GroupByColumnTypes, IGroupByColumn } from "@plane/types";
 import { Row } from "@plane/ui";
 // hooks
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 // plane web imports
 import { useWorkFlowFDragNDrop } from "@/components/workflow";
 // local imports
-import type { TRenderQuickActions } from "../list/list-view-types";
-import type { GroupDropLocation } from "../utils";
-import { getGroupByColumns, isWorkspaceLevel } from "../utils";
+import { isWorkspaceLevel } from "../utils";
 import { KanBan } from "./default";
+import type { IKanBanSwimlaneProps } from "./default";
 import { HeaderGroupByCard } from "./headers/group-by-card";
 import { HeaderSubGroupByCard } from "./headers/sub-group-by-card";
 
-interface ISubGroupSwimlaneHeader {
-  collapsedGroups: TIssueKanbanFilters;
-  group_by: TIssueGroupByOptions | undefined;
-  getGroupIssueCount: (
-    groupId: string | undefined,
-    subGroupId: string | undefined,
-    isSubGroupCumulative: boolean
-  ) => number | undefined;
-  handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
-  isEpic?: boolean;
+type ISubGroupSwimlaneHeader = Pick<
+  IKanBanSwimlaneProps,
+  | "collapsedGroups"
+  | "getGroupIssueCount"
+  | "group_by"
+  | "handleCollapsedGroups"
+  | "isEpic"
+  | "showEmptyGroup"
+  | "sub_group_by"
+> & {
   list: IGroupByColumn[];
-  showEmptyGroup: boolean;
-  sub_group_by: TIssueGroupByOptions | undefined;
-}
+};
 
 const visibilitySubGroupByGroupCount = (subGroupIssueCount: number, showEmptyGroup: boolean): boolean => {
   let subGroupHeaderVisibility = true;
@@ -59,7 +47,7 @@ const visibilitySubGroupByGroupCount = (subGroupIssueCount: number, showEmptyGro
   return subGroupHeaderVisibility;
 };
 
-const SubGroupSwimlaneHeader = observer(function SubGroupSwimlaneHeader({
+const SubGroupSwimlaneHeader = function SubGroupSwimlaneHeader({
   collapsedGroups,
   getGroupIssueCount,
   group_by,
@@ -102,35 +90,11 @@ const SubGroupSwimlaneHeader = observer(function SubGroupSwimlaneHeader({
         })}
     </div>
   );
-});
+};
 
-interface ISubGroupSwimlane extends ISubGroupSwimlaneHeader {
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
-  canEditProperties: (projectId: string | undefined) => boolean;
-  collapsedGroups: TIssueKanbanFilters;
-  disableIssueCreation?: boolean;
-  displayProperties: IIssueDisplayProperties | undefined;
-  enableQuickIssueCreate: boolean;
-  getGroupIssueCount: (
-    groupId: string | undefined,
-    subGroupId: string | undefined,
-    isSubGroupCumulative: boolean
-  ) => number | undefined;
-  groupedIssueIds: TGroupedIssues | TSubGroupedIssues;
-  handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
-  handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
-  isEpic?: boolean;
-  issuesMap: IIssueMap;
-  loadMoreIssues: (groupId?: string, subGroupId?: string) => void;
-  orderBy: TIssueOrderByOptions | undefined;
-  quickActions: TRenderQuickActions;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
-  scrollableContainerRef?: MutableRefObject<HTMLDivElement | null>;
-  showEmptyGroup: boolean;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
-}
+type ISubGroupSwimlane = IKanBanSwimlaneProps & Pick<ISubGroupSwimlaneHeader, "list">;
 
-const SubGroupSwimlane = observer(function SubGroupSwimlane(props: ISubGroupSwimlane) {
+const SubGroupSwimlane = function SubGroupSwimlane(props: ISubGroupSwimlane) {
   const {
     addIssuesToView,
     canEditProperties,
@@ -233,37 +197,11 @@ const SubGroupSwimlane = observer(function SubGroupSwimlane(props: ISubGroupSwim
         })}
     </div>
   );
-});
+};
 
-export interface IKanBanSwimLanes {
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
-  canEditProperties: (projectId: string | undefined) => boolean;
-  collapsedGroups: TIssueKanbanFilters;
-  disableIssueCreation?: boolean;
-  displayProperties: IIssueDisplayProperties | undefined;
-  enableQuickIssueCreate: boolean;
-  getGroupIssueCount: (
-    groupId: string | undefined,
-    subGroupId: string | undefined,
-    isSubGroupCumulative: boolean
-  ) => number | undefined;
-  group_by: TIssueGroupByOptions | undefined;
-  groupedIssueIds: TGroupedIssues | TSubGroupedIssues;
-  handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
-  handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
-  isEpic?: boolean;
-  issuesMap: IIssueMap;
-  loadMoreIssues: (groupId?: string, subGroupId?: string) => void;
-  orderBy: TIssueOrderByOptions | undefined;
-  quickActions: TRenderQuickActions;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
-  scrollableContainerRef?: MutableRefObject<HTMLDivElement | null>;
-  showEmptyGroup: boolean;
-  sub_group_by: TIssueGroupByOptions | undefined;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
-}
+export type IKanBanSwimLanes = IKanBanSwimlaneProps;
 
-export const KanBanSwimLanes = observer(function KanBanSwimLanes(props: IKanBanSwimLanes) {
+export const KanBanSwimLanes = function KanBanSwimLanes(props: IKanBanSwimLanes) {
   const {
     issuesMap,
     groupedIssueIds,
@@ -288,22 +226,28 @@ export const KanBanSwimLanes = observer(function KanBanSwimLanes(props: IKanBanS
     isEpic = false,
   } = props;
   // store hooks
-  const storeType = useIssueStoreType();
+  const storeType = useIssueListType();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // derived values
-  const groupByList = getGroupByColumns({
+  const groupByList = useGroupColumns({
+    workspaceSlug,
+    projectId,
     groupBy: group_by as GroupByColumnTypes,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: isEpic,
   });
-  const subGroupByList = getGroupByColumns({
+  const subGroupByList = useGroupColumns({
+    workspaceSlug,
+    projectId,
     groupBy: sub_group_by as GroupByColumnTypes,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
     isEpic: isEpic,
   });
 
-  if (!groupByList || !subGroupByList) return null;
+  if (!groupByList || !subGroupByList)
+    return <TypeGroupingStatus active={group_by === "type_id" || sub_group_by === "type_id"} />;
 
   return (
     <div className="relative">
@@ -348,4 +292,4 @@ export const KanBanSwimLanes = observer(function KanBanSwimLanes(props: IKanBanS
       )}
     </div>
   );
-});
+};

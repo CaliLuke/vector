@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
+import { useIdentityGeneration } from "@/hooks/use-identity-generation";
 // hooks
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 import { useMultipleSelect } from "@/hooks/use-multiple-select";
@@ -16,7 +18,14 @@ type Props = {
   entities: Record<string, string[]>; // { groupID: entityIds[] }
 };
 
-export const MultipleSelectGroup = observer(function MultipleSelectGroup(props: Props) {
+export function MultipleSelectGroup(props: Props) {
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const generation = useIdentityGeneration(useQueryClient());
+  return <SelectionGroup key={JSON.stringify([generation, pathname, props.disabled ?? false])} {...props} />;
+}
+
+// Render callbacks still read observable issue/layout data until those owners migrate.
+const SelectionGroup = function SelectionGroup(props: Props) {
   const { children, containerRef, disabled = false, entities } = props;
 
   const helpers = useMultipleSelect({
@@ -26,4 +35,4 @@ export const MultipleSelectGroup = observer(function MultipleSelectGroup(props: 
   });
 
   return <>{children(helpers)}</>;
-});
+};

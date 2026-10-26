@@ -6,26 +6,26 @@
 
 // component
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import useSWR from "swr";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
-// plane web hooks
-import { EPageStoreType, usePageStore } from "@/hooks/store";
+import { PageRecordProvider } from "@/components/pages/page-record-context";
 // local components
 import { PageDetailsHeader } from "./header";
 
 function ProjectPageDetailsLayout(): React.JSX.Element | null {
-  const { workspaceSlug, projectId } = Route.useParams();
-  const { fetchPagesList } = usePageStore(EPageStoreType.PROJECT);
-  // fetching pages list
-  useSWR(`PROJECT_PAGES_${projectId}`, () => fetchPagesList(workspaceSlug, projectId));
+  const { workspaceSlug, projectId, pageId } = Route.useParams();
   return (
-    <>
+    <PageRecordProvider
+      key={`${workspaceSlug}/${projectId}/${pageId}`}
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      pageId={pageId}
+    >
       <AppHeader header={<PageDetailsHeader />} />
       <ContentWrapper>
         <Outlet />
       </ContentWrapper>
-    </>
+    </PageRecordProvider>
   );
 }
 

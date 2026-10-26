@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import type { TInstanceAuthenticationMethodKeys } from "@plane/types";
+import type { IFormattedInstanceConfiguration, TInstanceAuthenticationMethodKeys } from "@plane/types";
 
 export type TGetAuthenticationModeProps = {
+  config: Partial<IFormattedInstanceConfiguration> | undefined;
   disabled: boolean;
   updateConfig: (key: TInstanceAuthenticationMethodKeys, value: string) => void;
   resolvedTheme: string | undefined;

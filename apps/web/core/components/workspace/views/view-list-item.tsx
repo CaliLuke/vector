@@ -6,34 +6,25 @@
 
 import { Link, useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
+import type { IWorkspaceView } from "@plane/types";
 
 // plane imports
 import { EditIcon, TrashIcon } from "@plane/propel/icons";
 import { CustomMenu } from "@plane/ui";
-import { truncateText } from "@plane/utils";
-// hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
+import { truncateText } from "@plane/utils/string";
 // local imports
 import { DeleteGlobalViewModal } from "./delete-view-modal";
 import { CreateUpdateWorkspaceViewModal } from "./modal";
 
-type Props = { viewId: string };
+type Props = { view: IWorkspaceView };
 
-export const GlobalViewListItem = observer(function GlobalViewListItem(props: Props) {
-  const { viewId } = props;
+export function GlobalViewListItem(props: Props) {
+  const { view } = props;
   // states
   const [updateViewModal, setUpdateViewModal] = useState(false);
   const [deleteViewModal, setDeleteViewModal] = useState(false);
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // store hooks
-  const { getViewDetailsById } = useGlobalView();
-  // derived data
-  const view = getViewDetailsById(viewId);
-
-  if (!view) return null;
-
   return (
     <>
       <CreateUpdateWorkspaceViewModal data={view} isOpen={updateViewModal} onClose={() => setUpdateViewModal(false)} />
@@ -83,4 +74,4 @@ export const GlobalViewListItem = observer(function GlobalViewListItem(props: Pr
       </div>
     </>
   );
-});
+}

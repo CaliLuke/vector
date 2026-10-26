@@ -25,46 +25,48 @@ type FilterError struct {
 func (err *FilterError) Error() string { return err.Message }
 
 type Options struct {
-	Limit           int
-	Page            int
-	OrderBy         string
-	CursorValue     float64
-	CursorSet       bool
-	OrderBySet      bool
-	GroupBy         string
-	SubGroupBy      string
-	State           string
-	StateGroup      string
-	EstimatePoint   string
-	Priority        string
-	Assignees       string
-	AssigneesSet    bool
-	Labels          string
-	Project         string
-	LabelsSet       bool
-	LoggedBy        string
-	CreatedBy       string
-	Parent          string
-	Mentions        string
-	Name            string
-	CreatedAt       string
-	UpdatedAt       string
-	StartDate       string
-	TargetDate      string
-	CompletedAt     string
-	CycleSet        bool
-	Cycle           string
-	Module          string
-	ModuleSet       bool
-	IntakeStatus    string
-	InboxStatus     string
-	SubIssue        string
-	Subscriber      string
-	StartTargetDate string
-	SubscriberSet   bool
-	Type            string
-	TypeSet         bool
-	Filters         string
+	IncludeProperties bool
+	PropertyFilter    *BoundPropertyFilter
+	Limit             int
+	Page              int
+	OrderBy           string
+	CursorValue       float64
+	CursorSet         bool
+	OrderBySet        bool
+	GroupBy           string
+	SubGroupBy        string
+	State             string
+	StateGroup        string
+	EstimatePoint     string
+	Priority          string
+	Assignees         string
+	AssigneesSet      bool
+	Labels            string
+	Project           string
+	LabelsSet         bool
+	LoggedBy          string
+	CreatedBy         string
+	Parent            string
+	Mentions          string
+	Name              string
+	CreatedAt         string
+	UpdatedAt         string
+	StartDate         string
+	TargetDate        string
+	CompletedAt       string
+	CycleSet          bool
+	Cycle             string
+	Module            string
+	ModuleSet         bool
+	IntakeStatus      string
+	InboxStatus       string
+	SubIssue          string
+	Subscriber        string
+	StartTargetDate   string
+	SubscriberSet     bool
+	Type              string
+	TypeSet           bool
+	Filters           string
 }
 
 func RequesterDateSQL(column string) string {
@@ -174,8 +176,9 @@ var issueComplexFilterFields = map[string]struct{}{
 type orderedIssueFilterObject []orderedIssueFilterField
 
 type orderedIssueFilterField struct {
-	name  string
-	value any
+	name         string
+	value        any
+	propertyLeaf int // positive only in an authorized prepared property filter
 }
 
 func decodeOrderedIssueFilter(decoder *json.Decoder) (any, error) {
@@ -274,56 +277,67 @@ func normalizePythonJSONConstants(raw string) string {
 }
 
 func BuildComplexFilter(raw string, args *[]any) (string, error) {
+	return buildComplexFilter(raw, args, nil)
+}
+
+// BuildComplexFilterWithTypes is only for authenticated callers that resolved
+// this catalogue in the same authorized read snapshot. A nil catalogue retains
+// the legacy/public field allowlist. Inactive retained types may be included.
+func BuildComplexFilterWithTypes(raw string, args *[]any, typeIDs map[string]bool) (string, error) {
+	return buildComplexFilter(raw, args, typeIDs)
+}
+
+func buildComplexFilter(raw string, args *[]any, typeIDs map[string]bool) (string, error) {
 	if raw == "" {
 		return "", nil
 	}
-	decoder := json.NewDecoder(strings.NewReader(normalizePythonJSONConstants(raw)))
-	decoder.UseNumber()
-	decoded, err := decodeOrderedIssueFilter(decoder)
+	decoded, err := parseComplexFilter(raw)
 	if err != nil {
-		return "", newFilterError(
-			"Invalid JSON for 'filter'. Expected a valid JSON object.",
-			"invalid_json",
-		)
+		return "", err
 	}
-	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
-		return "", newFilterError(
-			"Invalid JSON for 'filter'. Expected a valid JSON object.",
-			"invalid_json",
-		)
-	}
-	switch value := decoded.(type) {
-	case nil:
+	if emptyComplexFilter(decoded) {
 		return "", nil
-	case bool:
-		if !value {
-			return "", nil
-		}
-	case string:
-		if value == "" {
-			return "", nil
-		}
-	case json.Number:
-		number, _ := strconv.ParseFloat(value.String(), 64)
-		if number == 0 {
-			return "", nil
-		}
-	case []any:
-		if len(value) == 0 {
-			return "", nil
-		}
-	case orderedIssueFilterObject:
-		if len(value) == 0 {
-			return "", nil
-		}
 	}
-	if err := validateIssueComplexFilter(decoded, 1); err != nil {
+	if err := validateIssueComplexFilter(decoded, 1, typeIDs); err != nil {
 		return "", err
 	}
 	return renderIssueComplexFilter(decoded, args)
 }
 
-func validateIssueComplexFilter(node any, depth int) error {
+func emptyComplexFilter(decoded any) bool {
+	switch value := decoded.(type) {
+	case nil:
+		return true
+	case bool:
+		if !value {
+			return true
+		}
+	case string:
+		if value == "" {
+			return true
+		}
+	case json.Number:
+		number, _ := strconv.ParseFloat(value.String(), 64)
+		if number == 0 {
+			return true
+		}
+	case []any:
+		if len(value) == 0 {
+			return true
+		}
+	case orderedIssueFilterObject:
+		if len(value) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func validateIssueComplexFilter(node any, depth int, typeIDs map[string]bool) error {
+	return validateIssueFilterWithProperties(node, depth, typeIDs, nil)
+}
+
+func validateIssueFilterWithProperties(node any, depth int, typeIDs map[string]bool, accept func(*orderedIssueFilterField) (bool, error)) error {
 	if depth > 5 {
 		return newFilterError("Filter nesting is too deep (max 5); found depth "+strconv.Itoa(depth), "max_depth_exceeded")
 	}
@@ -355,7 +369,7 @@ func validateIssueComplexFilter(node any, depth int) error {
 			if !ok {
 				return newFilterError("'not' must be a single JSON object", "invalid_not_child")
 			}
-			return validateIssueComplexFilter(child, depth+1)
+			return validateIssueFilterWithProperties(child, depth+1, typeIDs, accept)
 		}
 		children, ok := logical.value.([]any)
 		if !ok || len(children) == 0 {
@@ -365,13 +379,14 @@ func validateIssueComplexFilter(node any, depth int) error {
 			if _, ok := child.(orderedIssueFilterObject); !ok {
 				return newFilterError("All children of '"+operator+"' must be JSON objects", "invalid_operator_child_type")
 			}
-			if err := validateIssueComplexFilter(child, depth+1); err != nil {
+			if err := validateIssueFilterWithProperties(child, depth+1, typeIDs, accept); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
-	for _, field := range object {
+	for index := range object {
+		field := &object[index]
 		if list, ok := field.value.([]any); ok {
 			for _, item := range list {
 				if !isIssueFilterScalar(item) {
@@ -381,7 +396,22 @@ func validateIssueComplexFilter(node any, depth int) error {
 		} else if !isIssueFilterScalar(field.value) {
 			return newFilterError("Value for '"+field.name+"' must be a scalar, null, or list/tuple of scalars", "invalid_value_type")
 		}
+		if isTypeFilterField(field.name) && typeIDs != nil {
+			if err := validateTypeFilterField(field.name, field.value, typeIDs); err != nil {
+				return err
+			}
+			continue
+		}
 		if _, ok := issueComplexFilterFields[field.name]; !ok {
+			if accept != nil {
+				handled, err := accept(field)
+				if err != nil {
+					return err
+				}
+				if handled {
+					continue
+				}
+			}
 			return newFilterError("Filtering on field '"+field.name+"' is not allowed", "invalid_filter_field")
 		}
 	}
@@ -400,17 +430,10 @@ func renderIssueComplexFilter(node any, args *[]any) (string, error) {
 	if err != nil || len(order) == 0 {
 		return predicate, err
 	}
-	joins := make([]string, 0, len(order))
-	for _, field := range order {
-		relation, _ := issueComplexRelation(field)
-		alias := aliases[field]
-		joins = append(joins, "LEFT JOIN "+relation[0]+" "+alias+
-			" ON "+alias+".issue_id = issue.id AND "+alias+".deleted_at IS NULL")
-	}
 	return `EXISTS (
     SELECT 1
     FROM (VALUES (1)) complex_seed(dummy)
-    ` + strings.Join(joins, "\n    ") + `
+    ` + issueFilterRelationJoins(order, aliases) + `
     WHERE ` + predicate + `
   )`, nil
 }
@@ -474,7 +497,11 @@ func renderIssueComplexFilterTree(node orderedIssueFilterObject, args *[]any, al
 				if strings.HasSuffix(field.name, "__in") {
 					clauses = append(clauses, "FALSE")
 				} else {
-					clauses = append(clauses, "NOT EXISTS (SELECT 1 FROM "+relation[0]+" empty_relation WHERE empty_relation.issue_id = issue.id)")
+					predicate := "empty_relation.issue_id = issue.id"
+					if baseField == "label_id" {
+						predicate = LiveIssueLabelPredicate("issue", "empty_relation")
+					}
+					clauses = append(clauses, "NOT EXISTS (SELECT 1 FROM "+relation[0]+" empty_relation WHERE "+predicate+")")
 				}
 				continue
 			}
@@ -487,9 +514,13 @@ func renderIssueComplexFilterTree(node orderedIssueFilterObject, args *[]any, al
 				continue
 			}
 			*args = append(*args, strings.Join(ids, ","))
+			predicate := aliases[baseField] + ".deleted_at IS NULL"
+			if baseField == "label_id" {
+				predicate = LiveIssueLabelPredicate("issue", aliases[baseField])
+			}
 			clauses = append(clauses, fmt.Sprintf(
-				"(%s.%s::text = ANY(string_to_array($%d, ',')) AND %s.deleted_at IS NULL)",
-				aliases[baseField], relation[1], len(*args), aliases[baseField],
+				"(%s.%s::text = ANY(string_to_array($%d, ',')) AND %s)",
+				aliases[baseField], relation[1], len(*args), predicate,
 			))
 			continue
 		}
@@ -508,7 +539,7 @@ func renderIssueComplexFilterTree(node orderedIssueFilterObject, args *[]any, al
 }
 func orderedIssueFilterValue(object orderedIssueFilterObject, name string) (any, bool) {
 	for _, field := range object {
-		if field.name == name {
+		if strings.EqualFold(field.name, name) {
 			return field.value, true
 		}
 	}
@@ -528,6 +559,9 @@ func issueComplexRelation(field string) ([2]string, bool) {
 }
 
 func renderIssueComplexFilterField(field string, value any, args *[]any) (string, error) {
+	if isTypeFilterField(field) {
+		return renderTypeFilter(field, value, args)
+	}
 	values := issueFilterValues(value)
 	inLookup := strings.HasSuffix(field, "__in")
 	rangeLookup := strings.HasSuffix(field, "__range")
@@ -583,9 +617,13 @@ func renderIssueComplexFilterField(field string, value any, args *[]any) (string
 			"label_id":      {"issue_labels", "label_id"},
 			"subscriber_id": {"issue_subscribers", "subscriber_id"},
 		}[baseField]
+		predicate := "complex_relation.issue_id = issue.id AND complex_relation.deleted_at IS NULL"
+		if baseField == "label_id" {
+			predicate = LiveIssueLabelPredicate("issue", "complex_relation")
+		}
 		return fmt.Sprintf(
-			"EXISTS (SELECT 1 FROM %s complex_relation WHERE complex_relation.issue_id = issue.id AND complex_relation.deleted_at IS NULL AND complex_relation.%s::text = ANY(string_to_array($%d, ',')))",
-			relation[0], relation[1], len(*args),
+			"EXISTS (SELECT 1 FROM %s complex_relation WHERE %s AND complex_relation.%s::text = ANY(string_to_array($%d, ',')))",
+			relation[0], predicate, relation[1], len(*args),
 		), nil
 	case "created_by_id", "state_id", "project_id":
 		ids, err := issueFilterUUIDs(values, field)
@@ -941,9 +979,9 @@ func order(value string, present bool) string {
 	case "-assignees__first_name":
 		return "(SELECT min(users.first_name) FROM issue_assignees assignment JOIN users ON users.id = assignment.assignee_id WHERE assignment.issue_id = issue.id) DESC NULLS LAST"
 	case "labels__name":
-		return "(SELECT min(labels.name) FROM issue_labels assignment JOIN labels ON labels.id = assignment.label_id WHERE assignment.issue_id = issue.id) ASC NULLS LAST"
+		return "(SELECT min(labels.name) FROM issue_labels assignment JOIN labels ON labels.id = assignment.label_id WHERE " + LiveIssueLabelPredicate("issue", "assignment") + ") ASC NULLS LAST"
 	case "-labels__name":
-		return "(SELECT min(labels.name) FROM issue_labels assignment JOIN labels ON labels.id = assignment.label_id WHERE assignment.issue_id = issue.id) DESC NULLS LAST"
+		return "(SELECT min(labels.name) FROM issue_labels assignment JOIN labels ON labels.id = assignment.label_id WHERE " + LiveIssueLabelPredicate("issue", "assignment") + ") DESC NULLS LAST"
 	case "issue_module__module__name":
 		return "(SELECT modules.name FROM modules WHERE modules.id = $4) ASC NULLS LAST"
 	case "-issue_module__module__name":
@@ -1005,9 +1043,11 @@ func relationOrder(options Options, assignees, labels, modules string, args *[]a
 	joins, predicate, complexConstrained := "", "", false
 	var err error
 	if !relationPresent && values == "" {
-		joins, predicate, complexConstrained, err = issueComplexOrderConstraint(
-			options.Filters, targetField, "order_relation", args,
-		)
+		if options.PropertyFilter != nil {
+			joins, predicate, complexConstrained, err = options.PropertyFilter.orderConstraint(targetField, "order_relation", args)
+		} else {
+			joins, predicate, complexConstrained, err = issueComplexOrderConstraint(options.Filters, targetField, "order_relation", args)
+		}
 		if err != nil {
 			return "", err
 		}
@@ -1017,6 +1057,9 @@ func relationOrder(options Options, assignees, labels, modules string, args *[]a
 	}
 
 	where := []string{"order_relation.issue_id = issue.id"}
+	if targetField == "label_id" {
+		where = append(where, LiveIssueLabelPredicate("issue", "order_relation"))
+	}
 	if values != "" || relationPresent {
 		where = append(where, "order_relation.deleted_at IS NULL")
 	}
@@ -1050,11 +1093,23 @@ func issueComplexOrderConstraint(raw, targetField, targetAlias string, args *[]a
 	if !ok || len(object) == 0 {
 		return "", "", false, nil
 	}
+	joins, aliases, constrained := issueFilterOrderBindings(object, targetField, targetAlias)
+	if !constrained {
+		return "", "", false, nil
+	}
+	predicate, err := renderIssueComplexFilterTree(object, args, aliases)
+	if err != nil {
+		return "", "", false, err
+	}
+	return joins, predicate, true, nil
+}
+
+func issueFilterOrderBindings(object orderedIssueFilterObject, targetField, targetAlias string) (string, map[string]string, bool) {
 	order := make([]string, 0)
 	seen := make(map[string]bool)
 	collectPositiveIssueFilterRelations(object, &order, seen)
 	if !seen[targetField] {
-		return "", "", false, nil
+		return "", nil, false
 	}
 	aliases := make(map[string]string, len(order))
 	joins := make([]string, 0, len(order)-1)
@@ -1069,9 +1124,24 @@ func issueComplexOrderConstraint(raw, targetField, targetAlias string, args *[]a
 		joins = append(joins, "LEFT JOIN "+relation[0]+" "+alias+
 			" ON "+alias+".issue_id = issue.id AND "+alias+".deleted_at IS NULL")
 	}
-	predicate, err := renderIssueComplexFilterTree(object, args, aliases)
+	return strings.Join(joins, " "), aliases, true
+}
+
+func parseComplexFilter(raw string) (any, error) {
+	decoder := json.NewDecoder(strings.NewReader(normalizePythonJSONConstants(raw)))
+	decoder.UseNumber()
+	decoded, err := decodeOrderedIssueFilter(decoder)
 	if err != nil {
-		return "", "", false, err
+		return nil, newFilterError(
+			"Invalid JSON for 'filter'. Expected a valid JSON object.",
+			"invalid_json",
+		)
 	}
-	return strings.Join(joins, " "), predicate, true, nil
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		return nil, newFilterError(
+			"Invalid JSON for 'filter'. Expected a valid JSON object.",
+			"invalid_json",
+		)
+	}
+	return decoded, nil
 }

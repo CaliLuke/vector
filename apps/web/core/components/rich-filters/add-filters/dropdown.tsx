@@ -5,34 +5,33 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { IFilterInstance } from "@plane/shared-state";
-import type { TExternalFilter, TFilterProperty, TSupportedOperators } from "@plane/types";
+import type { TFilterProperty, TSupportedOperators } from "@plane/types";
+import { availableFilterConfigs, enabledFilterOperators, filterConfigByProperty } from "@plane/shared-state";
 import { CustomSearchSelect } from "@plane/ui";
-import { getOperatorForPayload } from "@plane/utils";
+import { getOperatorForPayload } from "@plane/utils/rich-filters";
+import type { TFilterExpressionEditor } from "../shared";
 
-export type TAddFilterDropdownProps<P extends TFilterProperty, E extends TExternalFilter> = {
+export type TAddFilterDropdownProps<P extends TFilterProperty> = {
   customButton: React.ReactNode;
   buttonConfig?: {
     className?: string;
     defaultOpen?: boolean;
     isDisabled?: boolean;
   };
-  filter: IFilterInstance<P, E>;
+  editor: TFilterExpressionEditor<P>;
   handleFilterSelect: (property: P, operator: TSupportedOperators, isNegation: boolean) => void;
 };
 
-export const AddFilterDropdown = observer(function AddFilterDropdown<
-  P extends TFilterProperty,
-  E extends TExternalFilter,
->(props: TAddFilterDropdownProps<P, E>) {
-  const { filter, customButton, buttonConfig } = props;
+export const AddFilterDropdown = function AddFilterDropdown<P extends TFilterProperty>(
+  props: TAddFilterDropdownProps<P>
+) {
+  const { editor, customButton, buttonConfig } = props;
   const { className, defaultOpen = false, isDisabled = false } = buttonConfig || {};
 
   // Transform available filter configs to CustomSearchSelect options format
-  const filterOptions = filter.configManager.allAvailableConfigs.map((config) => ({
+  const filterOptions = availableFilterConfigs(editor.configs, editor.conditions).map((config) => ({
     value: config.id,
     content: (
       <div className="flex items-center justify-between gap-2 text-secondary transition-all duration-200 ease-in-out">
@@ -62,9 +61,10 @@ export const AddFilterDropdown = observer(function AddFilterDropdown<
     : filterOptions;
 
   const handleFilterSelect = (property: P) => {
-    const config = filter.configManager.getConfigByProperty(property);
-    if (config?.firstOperator) {
-      const { operator, isNegation } = getOperatorForPayload(config.firstOperator);
+    const config = filterConfigByProperty(editor.configs, property);
+    const firstOperator = config ? enabledFilterOperators(config)[0] : undefined;
+    if (firstOperator) {
+      const { operator, isNegation } = getOperatorForPayload(firstOperator);
       props.handleFilterSelect(property, operator, isNegation);
     } else {
       setToast({
@@ -91,4 +91,4 @@ export const AddFilterDropdown = observer(function AddFilterDropdown<
       />
     </div>
   );
-});
+};

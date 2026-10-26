@@ -5,30 +5,32 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
 // constants
 // helpers
 import { INBOX_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { cn, findHowManyDaysLeft } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { findHowManyDaysLeft } from "@plane/utils/datetime";
 // store
-import type { IInboxIssueStore } from "@/store/inbox/inbox-issue.store";
+import type { TInboxIssue } from "@plane/types";
 import { ICON_PROPERTIES, InboxStatusIcon } from "./inbox-status-icon";
+import { useCurrentTime } from "@/hooks/use-current-time";
 
 type Props = {
-  inboxIssue: IInboxIssueStore;
+  inboxIssue: TInboxIssue;
   iconSize?: number;
   showDescription?: boolean;
 };
 
-export const InboxIssueStatus = observer(function InboxIssueStatus(props: Props) {
+export const InboxIssueStatus = function InboxIssueStatus(props: Props) {
   const { inboxIssue, iconSize = 16, showDescription = false } = props;
   //hooks
   const { t } = useTranslation();
+  const { currentTime } = useCurrentTime();
   // derived values
   const inboxIssueStatusDetail = INBOX_STATUS.find((s) => s.status === inboxIssue.status);
 
-  const isSnoozedDatePassed = inboxIssue.status === 0 && new Date(inboxIssue.snoozed_till ?? "") < new Date();
+  const isSnoozedDatePassed = inboxIssue.status === 0 && new Date(inboxIssue.snoozed_till ?? "") < currentTime;
   if (!inboxIssueStatusDetail || isSnoozedDatePassed) return <></>;
 
   const description = t(inboxIssueStatusDetail.i18n_description(), {
@@ -53,4 +55,4 @@ export const InboxIssueStatus = observer(function InboxIssueStatus(props: Props)
       {showDescription && <div className="text-13 whitespace-nowrap">{description}</div>}
     </div>
   );
-});
+};

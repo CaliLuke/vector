@@ -4,73 +4,46 @@
  * See the LICENSE file for details.
  */
 
-import { useState, useEffect, useRef } from "react";
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
+import { useState, useEffect } from "react";
 import { LockKeyhole, LockKeyholeOpen } from "lucide-react";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 // hooks
 import { usePageOperations } from "@/hooks/use-page-operations";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
-
-// Define our lock display states, renaming "icon-only" to "neutral"
-type LockDisplayState = "neutral" | "locked" | "unlocked";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageLockControl = observer(function PageLockControl({ page }: Props) {
-  // Initial state: if locked, then "locked", otherwise default to "neutral"
-  const [displayState, setDisplayState] = useState<LockDisplayState>(page.is_locked ? "locked" : "neutral");
-  // derived values
-  const { canCurrentUserLockPage, is_locked } = page;
-  // Ref for the transition timer
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Ref to store the previous value of isLocked for detecting transitions
-  const prevLockedRef = useRef(is_locked);
+export function PageLockControl({ page, workspaceSlug }: Props) {
+  const { canCurrentUserLockPage } = usePagePermissions(page, workspaceSlug);
+  const [transition, setTransition] = useState({ pageId: page.id, locked: page.is_locked, showUnlocked: false });
+  if (transition.pageId !== page.id || transition.locked !== page.is_locked) {
+    setTransition({
+      pageId: page.id,
+      locked: page.is_locked,
+      showUnlocked: transition.pageId === page.id && transition.locked && !page.is_locked,
+    });
+  }
+  const displayState = page.is_locked ? "locked" : transition.showUnlocked ? "unlocked" : "neutral";
   // page operations
   const {
     pageOperations: { toggleLock },
   } = usePageOperations({
     page,
+    workspaceSlug,
   });
 
-  // Cleanup any running timer on unmount
-  useEffect(
-    () => () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    },
-    []
-  );
-
-  // Update display state when isLocked changes
   useEffect(() => {
-    // Clear any previous timer to avoid overlapping transitions
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Transition logic:
-    // If locked, ensure the display state is "locked"
-    // If unlocked after being locked, show "unlocked" briefly then revert to "neutral"
-    if (is_locked) {
-      setDisplayState("locked");
-    } else if (prevLockedRef.current === true) {
-      setDisplayState("unlocked");
-      timerRef.current = setTimeout(() => {
-        setDisplayState("neutral");
-        timerRef.current = null;
-      }, 600);
-    } else {
-      setDisplayState("neutral");
-    }
-
-    // Update the previous locked state
-    prevLockedRef.current = is_locked;
-  }, [is_locked]);
+    if (!transition.showUnlocked) return undefined;
+    const timer = setTimeout(() => setTransition((current) => ({ ...current, showUnlocked: false })), 600);
+    return () => clearTimeout(timer);
+  }, [transition]);
 
   if (!canCurrentUserLockPage) return null;
 
@@ -81,7 +54,7 @@ export const PageLockControl = observer(function PageLockControl({ page }: Props
         <Tooltip tooltipContent="Lock" position="bottom">
           <button
             type="button"
-            onClick={toggleLock}
+            onClick={() => void toggleLock()}
             className="grid size-6 flex-shrink-0 place-items-center rounded-sm text-secondary transition-colors hover:bg-layer-1 hover:text-primary"
             aria-label="Lock"
           >
@@ -93,7 +66,7 @@ export const PageLockControl = observer(function PageLockControl({ page }: Props
       {displayState === "locked" && (
         <button
           type="button"
-          onClick={toggleLock}
+          onClick={() => void toggleLock()}
           className="flex h-6 items-center gap-1 rounded-sm bg-accent-primary/20 px-2 text-accent-primary transition-colors hover:bg-accent-primary/30"
           aria-label="Locked"
         >
@@ -117,4 +90,4 @@ export const PageLockControl = observer(function PageLockControl({ page }: Props
       )}
     </>
   );
-});
+}

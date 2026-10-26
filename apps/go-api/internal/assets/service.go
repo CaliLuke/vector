@@ -58,9 +58,23 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 		if err != nil {
 			return &api.RestFrameworkSerializersFileassetexistsresponseResponse{Exists: false}, nil
 		}
-		exists, err := service.assets.repository.WorkspaceAssetExists(ctx, workspaceID, assetID)
+		exists, err := service.assets.repository.WorkspaceAssetExists(ctx, userID, workspaceID, assetID)
 		if err != nil {
 			return nil, err
+		}
+		if exists {
+			asset, lookupErr := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
+			if lookupErr != nil {
+				return nil, lookupErr
+			}
+			if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+				var denied *djangoapi.HTTPError
+				if errors.As(accessErr, &denied) && denied.Status == 404 {
+					exists = false
+				} else {
+					return nil, accessErr
+				}
+			}
 		}
 		return &api.RestFrameworkSerializersFileassetexistsresponseResponse{Exists: exists}, nil
 	case "GetAPIAssetsV2WorkspacesBySlugDownloadByAssetID":
@@ -106,6 +120,9 @@ func (service *LifecycleService) invoke(ctx context.Context, name string, payloa
 	case "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk":
 		p := payload.(*api.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPayload)
 		return nil, service.bulkAssociateProjectAssets(ctx, p.Slug, p.ProjectID, p.EntityID, body)
+	case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk":
+		p := payload.(*api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload)
+		return nil, service.bulkAssociateDraftAssets(ctx, p.Slug, p.EntityID, body)
 	case "PatchAPIAssetsV2UserAssetsByAssetID":
 		p := payload.(*api.PatchAPIAssetsV2UserAssetsByAssetIDPayload)
 		return nil, service.confirmUserAssetUpload(ctx, p.AssetID, body)
@@ -281,7 +298,7 @@ func (service *LifecycleService) deleteLegacyUserAssetByKey(ctx context.Context,
 	if err != nil {
 		return err
 	}
-	return sourceLookupError(service.assets.repository.UpdateAssetDeletedByKey(ctx, key, &userID, true), map[string]any{"error": "The required object does not exist."})
+	return sourceLookupError(service.assets.repository.UpdateAssetDeletedByKey(ctx, key, &userID, nil, userID, true), map[string]any{"error": "The required object does not exist."})
 }
 
 func (service *LifecycleService) getLegacyWorkspaceAssetByKey(ctx context.Context, rawWorkspaceID, key string) (*api.GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseDataOrGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError, error) {
@@ -300,7 +317,7 @@ func (service *LifecycleService) getLegacyWorkspaceAssetByKey(ctx context.Contex
 	if !member {
 		return nil, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
-	assets, err := service.assets.repository.WorkspaceAssetsByKey(ctx, workspaceAssetKey(rawWorkspaceID, key))
+	assets, err := service.assets.repository.WorkspaceAssetsByKey(ctx, workspaceAssetKey(rawWorkspaceID, key), workspaceID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -308,11 +325,34 @@ func (service *LifecycleService) getLegacyWorkspaceAssetByKey(ctx context.Contex
 		result := api.NewGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseDataOrGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseErrorGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError(&api.GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError{Error: "Asset key does not exist", Status: false})
 		return &result, nil
 	}
+	visibleAssets := make([]map[string]any, 0, len(assets))
 	for index := range assets {
+		kind, _ := assets[index]["entity_type"].(string)
+		id, _ := assets[index]["id"].(string)
+		asset := FileAsset{ID: id, EntityType: kind}
+		if raw, ok := assets[index]["draft_issue"].(string); ok {
+			draft, parseErr := uuid.Parse(raw)
+			if parseErr != nil {
+				return nil, notFoundAssetError()
+			}
+			asset.DraftIssueID = &draft
+		}
+		if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+			var denied *djangoapi.HTTPError
+			if errors.As(accessErr, &denied) && denied.Status == 404 {
+				continue
+			}
+			return nil, accessErr
+		}
 		assetKey, _ := assets[index]["asset"].(string)
 		assets[index]["asset"] = legacyFileAssetURL(ctx, "/api/workspaces/file-assets/"+rawWorkspaceID+"/"+key+"/", assetKey)
+		visibleAssets = append(visibleAssets, assets[index])
 	}
-	data, err := fileAssetSerializerResponses(assets)
+	if len(visibleAssets) == 0 {
+		result := api.NewGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseDataOrGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseErrorGetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError(&api.GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyResponseError{Error: "Asset key does not exist", Status: false})
+		return &result, nil
+	}
+	data, err := fileAssetSerializerResponses(visibleAssets)
 	if err != nil {
 		return nil, err
 	}
@@ -349,7 +389,7 @@ func (service *LifecycleService) deleteLegacyWorkspaceAssetByKey(ctx context.Con
 	if !member {
 		return &djangoapi.HTTPError{Status: 403, Body: map[string]any{"detail": "You do not have permission to perform this action."}}
 	}
-	return sourceLookupError(service.assets.repository.UpdateAssetDeletedByKey(ctx, workspaceAssetKey(rawWorkspaceID, key), nil, deleted), map[string]any{"error": "The required object does not exist."})
+	return sourceLookupError(service.assets.repository.UpdateAssetDeletedByKey(ctx, workspaceAssetKey(rawWorkspaceID, key), nil, &workspaceID, userID, deleted), map[string]any{"error": "The required object does not exist."})
 }
 
 func workspaceAssetKey(rawWorkspaceID, key string) string {
@@ -411,11 +451,17 @@ func (service *LifecycleService) projectAssetForMutation(ctx context.Context, sl
 		return uuid.Nil, uuid.Nil, FileAsset{}, notFoundAssetError()
 	}
 	asset, err := service.assets.repository.AssetByProjectAndID(ctx, workspaceID, projectID, assetID)
-	return workspaceID, projectID, asset, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
+	if err != nil {
+		return uuid.Nil, uuid.Nil, FileAsset{}, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
+	}
+	if err := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); err != nil {
+		return uuid.Nil, uuid.Nil, FileAsset{}, err
+	}
+	return workspaceID, projectID, asset, nil
 }
 
 func (service *LifecycleService) patchProjectAsset(ctx context.Context, slug, rawProjectID, rawAssetID string, body io.ReadCloser) error {
-	_, projectID, asset, err := service.projectAssetForMutation(ctx, slug, rawProjectID, rawAssetID)
+	workspaceID, projectID, asset, err := service.projectAssetForMutation(ctx, slug, rawProjectID, rawAssetID)
 	if err != nil {
 		return err
 	}
@@ -423,23 +469,39 @@ func (service *LifecycleService) patchProjectAsset(ctx context.Context, slug, ra
 	if err != nil {
 		return err
 	}
-	if len(asset.StorageMetadata) == 0 {
-		assetID, _ := uuid.Parse(rawAssetID)
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", nil, map[string]any{"asset_id": assetID.String()}); err != nil {
-			return fmt.Errorf("queue FileAsset storage metadata: %w", err)
-		}
-	}
 	assetID, _ := uuid.Parse(rawAssetID)
-	return service.assets.repository.UpdateProjectAsset(ctx, projectID, assetID, attributes)
+	if privateDraftAsset(asset) {
+		actor, err := assetUserID(ctx)
+		if err != nil {
+			return err
+		}
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, actor, assetID, "confirm", attributes, true)
+	}
+	actor, err := assetUserID(ctx)
+	if err != nil {
+		return err
+	}
+	return service.assets.repository.UpdateProjectAsset(ctx, actor, workspaceID, projectID, assetID, attributes, len(asset.StorageMetadata) == 0)
 }
 
 func (service *LifecycleService) deleteProjectAsset(ctx context.Context, slug, rawProjectID, rawAssetID string) error {
-	_, projectID, _, err := service.projectAssetForMutation(ctx, slug, rawProjectID, rawAssetID)
+	workspaceID, projectID, asset, err := service.projectAssetForMutation(ctx, slug, rawProjectID, rawAssetID)
 	if err != nil {
 		return err
 	}
 	assetID, _ := uuid.Parse(rawAssetID)
-	return service.assets.repository.DeleteProjectAsset(ctx, projectID, assetID)
+	if privateDraftAsset(asset) {
+		actor, err := assetUserID(ctx)
+		if err != nil {
+			return err
+		}
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, actor, assetID, "delete", nil, false)
+	}
+	actor, err := assetUserID(ctx)
+	if err != nil {
+		return err
+	}
+	return service.assets.repository.DeleteProjectAsset(ctx, actor, workspaceID, projectID, assetID)
 }
 
 func (service *LifecycleService) workspaceAssetForMutation(ctx context.Context, slug, rawAssetID string) (uuid.UUID, uuid.UUID, FileAsset, error) {
@@ -459,14 +521,8 @@ func (service *LifecycleService) workspaceAssetForMutation(ctx context.Context, 
 	if err != nil {
 		return uuid.Nil, uuid.Nil, FileAsset{}, sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
-	if asset.ProjectID != nil {
-		allowed, err := service.assets.repository.ProjectMemberActive(ctx, userID, workspaceID, *asset.ProjectID)
-		if err != nil {
-			return uuid.Nil, uuid.Nil, FileAsset{}, err
-		}
-		if !allowed {
-			return uuid.Nil, uuid.Nil, FileAsset{}, &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have access to this asset."}}
-		}
+	if err := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); err != nil {
+		return uuid.Nil, uuid.Nil, FileAsset{}, err
 	}
 	return userID, workspaceID, asset, nil
 }
@@ -481,12 +537,10 @@ func (service *LifecycleService) patchWorkspaceAsset(ctx context.Context, slug, 
 		return err
 	}
 	assetID, _ := uuid.Parse(rawAssetID)
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", nil, map[string]any{"asset_id": assetID.String()}); err != nil {
-			return fmt.Errorf("queue FileAsset storage metadata: %w", err)
-		}
+	if privateDraftAsset(asset) {
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, userID, assetID, "confirm", attributes, true)
 	}
-	workspaceHookApplied, err := service.assets.repository.UpdateWorkspaceAsset(ctx, userID, workspaceID, assetID, attributes)
+	workspaceHookApplied, err := service.assets.repository.UpdateWorkspaceAsset(ctx, userID, workspaceID, assetID, attributes, len(asset.StorageMetadata) == 0)
 	if err != nil {
 		return err
 	}
@@ -505,6 +559,9 @@ func (service *LifecycleService) deleteWorkspaceAsset(ctx context.Context, slug,
 		return err
 	}
 	assetID, _ := uuid.Parse(rawAssetID)
+	if privateDraftAsset(asset) {
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, userID, assetID, "delete", nil, false)
+	}
 	if err := service.assets.repository.DeleteWorkspaceAsset(ctx, userID, workspaceID, assetID); err != nil {
 		return err
 	}
@@ -562,7 +619,17 @@ func (service *LifecycleService) restoreWorkspaceAsset(ctx context.Context, slug
 	if err != nil {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	return sourceLookupError(service.assets.repository.RestoreWorkspaceAsset(ctx, workspaceID, assetID), map[string]any{"error": "The required object does not exist."})
+	asset, err := service.assets.repository.AssetByWorkspaceAndIDIncludingDeleted(ctx, workspaceID, assetID)
+	if err != nil {
+		return sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
+	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return accessErr
+	}
+	if privateDraftAsset(asset) {
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, userID, assetID, "restore", nil, false)
+	}
+	return sourceLookupError(service.assets.repository.RestoreWorkspaceAsset(ctx, userID, workspaceID, assetID), map[string]any{"error": "The required object does not exist."})
 }
 
 func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.Context, slug, rawAssetID string, body io.ReadCloser) error {
@@ -582,13 +649,11 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "Asset not found"})
 	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return accessErr
+	}
 	if asset.IsDeleted {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
-	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", nil, map[string]any{"asset_id": assetID.String()}); err != nil {
-			return fmt.Errorf("queue FileAsset storage metadata: %w", err)
-		}
 	}
 	uploaded := asset.IsUploaded
 	if body != nil {
@@ -609,7 +674,10 @@ func (service *LifecycleService) confirmLegacyWorkspaceAssetUpload(ctx context.C
 			uploaded = parsed
 		}
 	}
-	return service.assets.repository.UpdateWorkspaceAssetUploaded(ctx, workspaceID, assetID, uploaded)
+	if privateDraftAsset(asset) {
+		return service.assets.repository.MutateDraftAsset(ctx, workspaceID, userID, assetID, "confirm", nil, uploaded)
+	}
+	return service.assets.repository.UpdateWorkspaceAssetUploaded(ctx, userID, workspaceID, assetID, uploaded, uploaded && len(asset.StorageMetadata) == 0)
 }
 
 func djangoBool(value any) (bool, bool) {
@@ -645,11 +713,6 @@ func (service *LifecycleService) confirmLegacyUserAssetUpload(ctx context.Contex
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The requested resource does not exist."})
 	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", nil, map[string]any{"asset_id": assetID.String()}); err != nil {
-			return fmt.Errorf("queue FileAsset storage metadata: %w", err)
-		}
-	}
 	attributes := asset.Attributes
 	if body != nil {
 		defer body.Close()
@@ -669,7 +732,7 @@ func (service *LifecycleService) confirmLegacyUserAssetUpload(ctx context.Contex
 	if err != nil {
 		return fmt.Errorf("encode FileAsset attributes: %w", err)
 	}
-	return service.assets.repository.UpdateLegacyUserAsset(ctx, userID, assetID, encoded)
+	return service.assets.repository.UpdateLegacyUserAsset(ctx, userID, assetID, encoded, len(asset.StorageMetadata) == 0)
 }
 
 func (service *LifecycleService) deleteLegacyUserAsset(ctx context.Context, rawAssetID string) error {
@@ -700,11 +763,6 @@ func (service *LifecycleService) confirmUserAssetUpload(ctx context.Context, raw
 	if err != nil {
 		return sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
 	}
-	if len(asset.StorageMetadata) == 0 {
-		if err := service.assets.publishTask(ctx, "plane.bgtasks.storage_metadata_task.get_asset_object_metadata", nil, map[string]any{"asset_id": assetID.String()}); err != nil {
-			return fmt.Errorf("queue FileAsset storage metadata: %w", err)
-		}
-	}
 	attributes := asset.Attributes
 	if body != nil {
 		defer body.Close()
@@ -724,7 +782,7 @@ func (service *LifecycleService) confirmUserAssetUpload(ctx context.Context, raw
 	if err != nil {
 		return fmt.Errorf("encode FileAsset attributes: %w", err)
 	}
-	if err := service.assets.repository.UpdateUserAsset(ctx, userID, assetID, encoded, true); err != nil {
+	if err := service.assets.repository.UpdateUserAsset(ctx, userID, assetID, encoded, true, len(asset.StorageMetadata) == 0); err != nil {
 		return err
 	}
 	if asset.EntityType == "USER_AVATAR" || asset.EntityType == "USER_COVER" {
@@ -769,6 +827,10 @@ func (service *LifecycleService) invalidateUserAssetCaches(ctx context.Context, 
 }
 
 func (service *LifecycleService) workspaceAssetRedirect(ctx context.Context, slug, rawAssetID string) (string, error) {
+	return service.workspaceAssetLocation(ctx, slug, rawAssetID, "The required object does not exist.")
+}
+
+func (service *LifecycleService) workspaceAssetLocation(ctx context.Context, slug, rawAssetID, missingMessage string) (string, error) {
 	userID, err := assetUserID(ctx)
 	if err != nil {
 		return "", err
@@ -783,16 +845,10 @@ func (service *LifecycleService) workspaceAssetRedirect(ctx context.Context, slu
 	}
 	asset, err := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
 	if err != nil {
-		return "", sourceLookupError(err, map[string]any{"error": "The required object does not exist."})
+		return "", sourceLookupError(err, map[string]any{"error": missingMessage})
 	}
-	if asset.ProjectID != nil {
-		allowed, checkErr := service.assets.repository.ProjectMemberActive(ctx, userID, workspaceID, *asset.ProjectID)
-		if checkErr != nil {
-			return "", checkErr
-		}
-		if !allowed {
-			return "", &djangoapi.HTTPError{Status: 403, Body: map[string]any{"error": "You don't have access to this asset."}}
-		}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return "", accessErr
 	}
 	if !asset.IsUploaded {
 		return "", notFoundAssetError()
@@ -839,6 +895,9 @@ func (service *LifecycleService) projectAssetRedirect(ctx context.Context, slug,
 	}
 	if asset.ProjectID == nil || *asset.ProjectID != projectID {
 		return "", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
+	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return "", accessErr
 	}
 	if !asset.IsUploaded {
 		return "", notFoundAssetError()
@@ -1034,9 +1093,12 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 	if err != nil {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
-	source, err := service.assets.repository.AssetForDuplicate(ctx, workspaceID, assetID)
+	source, err := service.assets.repository.AssetForDuplicate(ctx, userID, workspaceID, assetID)
 	if err != nil {
 		return nil, sourceLookupError(err, map[string]any{"error": "Asset not found"})
+	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, source); accessErr != nil {
+		return nil, accessErr
 	}
 	if !source.IsUploaded {
 		return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
@@ -1057,7 +1119,11 @@ func (service *LifecycleService) duplicateWorkspaceAsset(ctx context.Context, sl
 	if err := service.assets.storage.Copy(ctx, source.Asset, destinationKey); err != nil {
 		return nil, fmt.Errorf("copy workspace FileAsset %s: %w", source.ID, err)
 	}
-	if err := service.assets.repository.MarkDuplicateUploaded(ctx, duplicateID); err != nil {
+	if entityType == "DRAFT_ISSUE_DESCRIPTION" {
+		if err := service.assets.repository.MutateDraftAsset(ctx, workspaceID, userID, duplicateID, "confirm", nil, true); err != nil {
+			return nil, err
+		}
+	} else if err := service.assets.repository.MarkDuplicateUploaded(ctx, userID, workspaceID, duplicateID); err != nil {
 		return nil, err
 	}
 	return &api.RestFrameworkSerializersFileassetduplicateresponseResponse{AssetID: duplicateID.String()}, nil
@@ -1227,7 +1293,9 @@ func v2WorkspaceAssetURL(slug, assetID, entityType, entityID string) string {
 		return "/api/assets/v2/static/" + assetID + "/"
 	case "ISSUE_ATTACHMENT":
 		return "/api/assets/v2/workspaces/" + slug + "/projects/None/issues/" + nullableText(entityID, "None") + "/attachments/" + assetID + "/"
-	case "ISSUE_DESCRIPTION", "COMMENT_DESCRIPTION", "PAGE_DESCRIPTION", "DRAFT_ISSUE_DESCRIPTION":
+	case "DRAFT_ISSUE_DESCRIPTION":
+		return "/api/assets/v2/workspaces/" + slug + "/" + assetID + "/"
+	case "ISSUE_DESCRIPTION", "COMMENT_DESCRIPTION", "PAGE_DESCRIPTION":
 		return "/api/assets/v2/workspaces/" + slug + "/projects/None/" + assetID + "/"
 	default:
 		return ""
@@ -1235,35 +1303,7 @@ func v2WorkspaceAssetURL(slug, assetID, entityType, entityID string) string {
 }
 
 func (service *LifecycleService) workspaceDownload(ctx context.Context, slug, rawAssetID string) (string, error) {
-	userID, err := assetUserID(ctx)
-	if err != nil {
-		return "", err
-	}
-	workspaceID, err := service.v2WorkspaceID(ctx, userID, slug)
-	if err != nil {
-		return "", err
-	}
-	assetID, err := uuid.Parse(rawAssetID)
-	if err != nil {
-		return "", notFoundAssetError()
-	}
-	asset, err := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
-	if err != nil {
-		return "", sourceLookupError(err, map[string]any{"error": "The requested asset could not be found."})
-	}
-	if !asset.IsUploaded {
-		return "", notFoundAssetError()
-	}
-	filename, err := assetFilenameDefault(asset.Attributes, true)
-	if err != nil {
-		return "", err
-	}
-	scheme, host := RequestOrigin(ctx)
-	location, err := service.assets.storage.PresignGet(ctx, asset.Asset, "attachment", filename, scheme, host)
-	if err != nil {
-		return "", fmt.Errorf("presign workspace FileAsset %s download: %w", asset.ID, err)
-	}
-	return location, nil
+	return service.workspaceAssetLocation(ctx, slug, rawAssetID, "The requested asset could not be found.")
 }
 
 func (service *LifecycleService) projectDownload(ctx context.Context, slug, rawProjectID, rawAssetID string) (string, error) {
@@ -1293,6 +1333,9 @@ func (service *LifecycleService) projectDownload(ctx context.Context, slug, rawP
 	asset, err := service.assets.repository.AssetByWorkspaceAndID(ctx, workspaceID, assetID)
 	if err != nil {
 		return "", sourceLookupError(err, map[string]any{"error": "The requested asset could not be found."})
+	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return "", accessErr
 	}
 	if asset.ProjectID == nil || *asset.ProjectID != projectID || !asset.IsUploaded {
 		return "", notFoundAssetError()
@@ -1426,6 +1469,9 @@ func (service *LifecycleService) GetAPIV1WorkspacesBySlugAssetsByAssetID(ctx con
 		}
 		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", err)
 	}
+	if accessErr := service.authorizeAssetAttachment(ctx, workspaceID, userID, asset); accessErr != nil {
+		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", accessErr)
+	}
 	if asset.IsDeleted {
 		return nil, mapAssetsLifecycleError("GetAPIV1WorkspacesBySlugAssetsByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}})
 	}
@@ -1468,7 +1514,7 @@ func (service *LifecycleService) GetAPIAssetsV2StaticByAssetID(ctx context.Conte
 	if err != nil {
 		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", sourceLookupError(err, map[string]any{"error": "The required object does not exist."}))
 	}
-	if !asset.IsUploaded {
+	if privateDraftAsset(asset) || !asset.IsUploaded {
 		return nil, mapAssetsLifecycleError("GetAPIAssetsV2StaticByAssetID", &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}})
 	}
 	switch asset.EntityType {

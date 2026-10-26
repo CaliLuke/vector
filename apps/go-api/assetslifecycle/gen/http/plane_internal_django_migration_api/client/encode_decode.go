@@ -4873,6 +4873,168 @@ func BuildPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAtta
 	}, nil
 }
 
+// BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest instantiates a
+// HTTP request object with method and path set to call the
+// "PlaneInternalDjangoMigrationAPI" service
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" endpoint
+func (c *Client) BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug     string
+		entityID string
+		body     io.Reader
+	)
+	{
+		rd, ok := v.(*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", "planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData", v)
+		}
+		p := rd.Payload
+		body = rd.Body
+		slug = p.Slug
+		entityID = p.EntityID
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPlaneInternalDjangoMigrationAPIPath(slug, entityID))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", u.String(), err)
+	}
+	req, err := http.NewRequest("POST", u.String(), body)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest returns an
+// encoder for requests sent to the PlaneInternalDjangoMigrationAPI
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk server.
+func EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) (err error) {
+		defer func() {
+			err = loomhttp.FinalizeRequestEncoding(req, "PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+		}()
+		data, ok := v.(*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData)
+		if !ok {
+			return loomhttp.ErrInvalidType("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", "*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData", v)
+		}
+		p := data.Payload
+		if p.PlaneSessionCookieCredential != nil {
+			v := *p.PlaneSessionCookieCredential
+			if err := loomhttp.AddRequestCookie(req, "session-id", v); err != nil {
+				return loomhttp.ErrEncodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+			}
+		}
+		return nil
+	}
+}
+
+// DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse returns a
+// decoder for responses returned by the PlaneInternalDjangoMigrationAPI
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint. restoreBody controls
+// whether the response body should be restored after having been read.
+// DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse may return the
+// following errors:
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400): http.StatusBadRequest
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401): http.StatusUnauthorized
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403): http.StatusForbidden
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404): http.StatusNotFound
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409): http.StatusConflict
+//   - "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500" (type planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500): http.StatusInternalServerError
+//   - error: internal error
+func DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusNoContent:
+				return nil, nil
+			case http.StatusBadRequest:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400(body)
+			case http.StatusUnauthorized:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401(body)
+			case http.StatusForbidden:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403(body)
+			case http.StatusNotFound:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404(body)
+			case http.StatusConflict:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409(body)
+			case http.StatusInternalServerError:
+				var (
+					body map[string]loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
+				}
+				return nil, NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500(body)
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
+// BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamPayload creates a
+// streaming endpoint request payload from the method payload and the path to
+// the file to be streamed
+func BuildPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStreamPayload(payload any, fpath string) (*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData, error) {
+	f, err := os.Open(fpath)
+	if err != nil {
+		return nil, err
+	}
+	return &planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData{
+		Payload: payload.(*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload),
+		Body:    f,
+	}, nil
+}
+
 // BuildPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkRequest
 // instantiates a HTTP request object with method and path set to call the
 // "PlaneInternalDjangoMigrationAPI" service

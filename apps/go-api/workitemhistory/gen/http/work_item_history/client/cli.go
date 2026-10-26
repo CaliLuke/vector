@@ -291,3 +291,154 @@ func BuildDescriptionVersionDetailPayload(workItemHistoryDescriptionVersionDetai
 
 	return v, nil
 }
+
+// BuildPropertyHistoryPayload builds the payload for the work_item_history
+// property_history endpoint from CLI flags.
+func BuildPropertyHistoryPayload(workItemHistoryPropertyHistorySlug string, workItemHistoryPropertyHistoryProjectID string, workItemHistoryPropertyHistoryWorkItemID string, workItemHistoryPropertyHistoryPlaneSessionCookieCredential string) (*workitemhistory.PropertyHistoryPayload, error) {
+	var err error
+	var slug string
+	{
+		slug = workItemHistoryPropertyHistorySlug
+	}
+	var projectID string
+	{
+		projectID = workItemHistoryPropertyHistoryProjectID
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var workItemID string
+	{
+		workItemID = workItemHistoryPropertyHistoryWorkItemID
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var planeSessionCookieCredential *string
+	{
+		if workItemHistoryPropertyHistoryPlaneSessionCookieCredential != "" {
+			planeSessionCookieCredential = &workItemHistoryPropertyHistoryPlaneSessionCookieCredential
+		}
+	}
+	v := &workitemhistory.PropertyHistoryPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v, nil
+}
+
+// BuildPropertyVersionsPayload builds the payload for the work_item_history
+// property_versions endpoint from CLI flags.
+func BuildPropertyVersionsPayload(workItemHistoryPropertyVersionsSlug string, workItemHistoryPropertyVersionsProjectID string, workItemHistoryPropertyVersionsWorkItemID string, workItemHistoryPropertyVersionsPropertyID string, workItemHistoryPropertyVersionsBefore string, workItemHistoryPropertyVersionsPlaneSessionCookieCredential string) (*workitemhistory.PropertyVersionsPayload, error) {
+	var err error
+	var slug string
+	{
+		slug = workItemHistoryPropertyVersionsSlug
+	}
+	var projectID string
+	{
+		projectID = workItemHistoryPropertyVersionsProjectID
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var workItemID string
+	{
+		workItemID = workItemHistoryPropertyVersionsWorkItemID
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var propertyID string
+	{
+		propertyID = workItemHistoryPropertyVersionsPropertyID
+		err = loom.MergeErrors(err, loom.ValidateFormat("property_id", propertyID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var before *string
+	{
+		if workItemHistoryPropertyVersionsBefore != "" {
+			before = &workItemHistoryPropertyVersionsBefore
+		}
+	}
+	var planeSessionCookieCredential *string
+	{
+		if workItemHistoryPropertyVersionsPlaneSessionCookieCredential != "" {
+			planeSessionCookieCredential = &workItemHistoryPropertyVersionsPlaneSessionCookieCredential
+		}
+	}
+	v := &workitemhistory.PropertyVersionsPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PropertyID = propertyID
+	v.Before = before
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v, nil
+}
+
+// BuildPropertyVersionDetailPayload builds the payload for the
+// work_item_history property_version_detail endpoint from CLI flags.
+func BuildPropertyVersionDetailPayload(workItemHistoryPropertyVersionDetailSlug string, workItemHistoryPropertyVersionDetailProjectID string, workItemHistoryPropertyVersionDetailWorkItemID string, workItemHistoryPropertyVersionDetailPropertyID string, workItemHistoryPropertyVersionDetailPk string, workItemHistoryPropertyVersionDetailPlaneSessionCookieCredential string) (*workitemhistory.PropertyVersionDetailPayload, error) {
+	var err error
+	var slug string
+	{
+		slug = workItemHistoryPropertyVersionDetailSlug
+	}
+	var projectID string
+	{
+		projectID = workItemHistoryPropertyVersionDetailProjectID
+		err = loom.MergeErrors(err, loom.ValidateFormat("project_id", projectID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var workItemID string
+	{
+		workItemID = workItemHistoryPropertyVersionDetailWorkItemID
+		err = loom.MergeErrors(err, loom.ValidateFormat("work_item_id", workItemID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var propertyID string
+	{
+		propertyID = workItemHistoryPropertyVersionDetailPropertyID
+		err = loom.MergeErrors(err, loom.ValidateFormat("property_id", propertyID, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var pk string
+	{
+		pk = workItemHistoryPropertyVersionDetailPk
+		err = loom.MergeErrors(err, loom.ValidateFormat("pk", pk, loom.FormatUUID))
+		if err != nil {
+			return nil, err
+		}
+	}
+	var planeSessionCookieCredential *string
+	{
+		if workItemHistoryPropertyVersionDetailPlaneSessionCookieCredential != "" {
+			planeSessionCookieCredential = &workItemHistoryPropertyVersionDetailPlaneSessionCookieCredential
+		}
+	}
+	v := &workitemhistory.PropertyVersionDetailPayload{}
+	v.Slug = slug
+	v.ProjectID = projectID
+	v.WorkItemID = workItemID
+	v.PropertyID = propertyID
+	v.Pk = pk
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v, nil
+}

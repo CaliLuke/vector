@@ -17,7 +17,7 @@ import type { IIssueLabel } from "@plane/types";
 // ui
 import { CustomMenu, DragHandle } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { LabelName } from "./label-name";
 

@@ -5,8 +5,7 @@
  */
 
 import React, { useRef, useState } from "react";
-import { omit } from "lodash-es";
-import { observer } from "mobx-react";
+import omit from "lodash-es/omit.js";
 import { SquareStackIcon } from "lucide-react";
 import { CopyIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
 // plane utils
@@ -15,11 +14,11 @@ import type { TWorkspaceDraftIssue } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 import { Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useProject } from "@/hooks/store/use-project";
-import { useWorkspaceDraftIssues } from "@/hooks/store/workspace-draft";
+import { useSidebarCollapsed } from "@/providers/sidebar-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkspaceDraftMutations } from "@/hooks/use-workspace-drafts";
 // local imports
 import { IdentifierText } from "../issue-detail/identifier-text";
 import { CreateUpdateIssueModal } from "../issue-modal/modal";
@@ -29,33 +28,36 @@ import { WorkspaceDraftIssueQuickActions } from "./quick-action";
 
 type Props = {
   workspaceSlug: string;
-  issueId: string;
+  issue: TWorkspaceDraftIssue;
 };
 
-export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
+export function DraftIssueBlock(props: Props) {
   // props
-  const { workspaceSlug, issueId } = props;
+  const { workspaceSlug, issue } = props;
   // states
   const [moveToIssue, setMoveToIssue] = useState(false);
   const [createUpdateIssueModal, setCreateUpdateIssueModal] = useState(false);
   const [issueToEdit, setIssueToEdit] = useState<TWorkspaceDraftIssue | undefined>(undefined);
   const [deleteIssueModal, setDeleteIssueModal] = useState(false);
   // hooks
-  const { getIssueById, updateIssue, deleteIssue } = useWorkspaceDraftIssues();
-  const { sidebarCollapsed: isSidebarCollapsed } = useAppTheme();
-  const { getProjectIdentifierById } = useProject();
+  const { updateDraft, deleteDraft } = useWorkspaceDraftMutations(workspaceSlug);
+  const isSidebarCollapsed = useSidebarCollapsed();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // ref
   const issueRef = useRef<HTMLDivElement | null>(null);
   // derived values
-  const issue = getIssueById(issueId);
-  const projectIdentifier = (issue && issue.project_id && getProjectIdentifierById(issue.project_id)) || undefined;
-  if (!issue || !projectIdentifier) return null;
-
+  const projectIdentifier =
+    (issue &&
+      issue.project_id &&
+      (projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "")) ||
+    undefined;
   const duplicateIssuePayload = omit(
     {
       ...issue,
       name: `${issue.name} (copy)`,
       is_draft: true,
+      sourceIssueId: issue.id,
     },
     ["id"]
   );
@@ -104,7 +106,7 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
         data={issue}
         isOpen={deleteIssueModal}
         handleClose={() => setDeleteIssueModal(false)}
-        onSubmit={async () => deleteIssue(workspaceSlug, issueId)}
+        onSubmit={async () => deleteDraft(issue.id)}
       />
       <CreateUpdateIssueModal
         isOpen={createUpdateIssueModal}
@@ -114,9 +116,6 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
           setMoveToIssue(false);
         }}
         data={issueToEdit ?? duplicateIssuePayload}
-        onSubmit={async (data) => {
-          if (issueToEdit) await updateIssue(workspaceSlug, issueId, data);
-        }}
         storeType={EIssuesStoreType.WORKSPACE_DRAFT}
         fetchIssueDetails={false}
         moveToIssue={moveToIssue}
@@ -144,7 +143,7 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
             <div className="flex flex-grow items-center gap-0.5 truncate">
               <div className="flex items-center gap-1">
                 <div className="flex-shrink-0">
-                  {issue.project_id && (
+                  {projectIdentifier && (
                     <div className="flex items-center space-x-2">
                       <IdentifierText
                         identifier={projectIdentifier}
@@ -161,7 +160,7 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
               </div>
 
               <Tooltip tooltipContent={issue.name} position="top-start" renderByDefault={false}>
-                <p className="w-full cursor-pointer truncate text-13 text-primary">{issue.name}</p>
+                <p className="w-full cursor-pointer truncate text-13 text-primary">{issue.name || "Untitled"}</p>
               </Tooltip>
             </div>
 
@@ -181,7 +180,7 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
               className={`relative flex flex-wrap ${isSidebarCollapsed ? "md:flex-shrink-0 md:flex-grow" : "lg:flex-shrink-0 lg:flex-grow"} items-center gap-2 whitespace-nowrap`}
               issue={issue}
               updateIssue={async (projectId, issueId, data) => {
-                await updateIssue(workspaceSlug, issueId, data);
+                await updateDraft(issue.id, data);
               }}
             />
             <div
@@ -201,4 +200,4 @@ export const DraftIssueBlock = observer(function DraftIssueBlock(props: Props) {
       </div>
     </>
   );
-});
+}

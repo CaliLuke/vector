@@ -11,7 +11,7 @@ import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail, useProjectMutations } from "@/hooks/use-projects";
 
 type Props = {
   workspaceSlug: string;
@@ -29,9 +29,9 @@ export function ArchiveRestoreProjectModal(props: Props) {
   // states
   const [isLoading, setIsLoading] = useState(false);
   // store hooks
-  const { getProjectById, archiveProject, restoreProject } = useProject();
-
-  const projectDetails = getProjectById(projectId);
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const projectDetails = projectQuery.project;
+  const projectMutation = useProjectMutations(workspaceSlug, projectId);
   if (!projectDetails) return null;
 
   const handleClose = () => {
@@ -41,7 +41,8 @@ export function ArchiveRestoreProjectModal(props: Props) {
 
   const handleArchiveProject = async () => {
     setIsLoading(true);
-    await archiveProject(workspaceSlug, projectId)
+    await projectMutation
+      .mutateAsync({ type: "archive", projectId })
       .then(() => {
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -64,7 +65,8 @@ export function ArchiveRestoreProjectModal(props: Props) {
 
   const handleRestoreProject = async () => {
     setIsLoading(true);
-    await restoreProject(workspaceSlug, projectId)
+    await projectMutation
+      .mutateAsync({ type: "restore", projectId })
       .then(() => {
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -103,7 +105,6 @@ export function ArchiveRestoreProjectModal(props: Props) {
           <Button
             variant="primary"
             size="lg"
-            tabIndex={1}
             onClick={archive ? handleArchiveProject : handleRestoreProject}
             loading={isLoading}
           >

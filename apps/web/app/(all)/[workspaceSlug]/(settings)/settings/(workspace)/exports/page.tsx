@@ -5,10 +5,9 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { PageHead } from "@/components/core/page-title";
@@ -16,28 +15,28 @@ import { ExportGuide } from "@/components/exporter/guide";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SettingsHeading } from "@/components/settings/heading";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 // local imports
 import { ExportsWorkspaceSettingsHeader } from "./header";
 
 function ExportsPage(): React.JSX.Element | null {
+  const { workspaceSlug } = Route.useParams();
   // store hooks
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace, isPending, isError } = useWorkspacePermissions(workspaceSlug);
   const { t } = useTranslation();
 
   // derived values
-  const canPerformWorkspaceMemberActions = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canPerformWorkspaceMemberActions = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
   const pageTitle = currentWorkspace?.name
     ? `${currentWorkspace.name} - ${t("workspace_settings.settings.exports.title")}`
     : undefined;
 
   // if user is not authorized to view this page
-  if (workspaceUserInfo && !canPerformWorkspaceMemberActions) {
+  if (isPending) return null;
+
+  if (isError || !canPerformWorkspaceMemberActions) {
     return <NotAuthorizedView section="settings" className="h-auto" />;
   }
 
@@ -60,5 +59,5 @@ function ExportsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/exports")({
-  component: observer(ExportsPage),
+  component: ExportsPage,
 });

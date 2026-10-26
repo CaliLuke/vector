@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 
 export function InboxSidebarLoader() {
   return (

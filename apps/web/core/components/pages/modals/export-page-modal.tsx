@@ -5,10 +5,9 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
 import type { PageProps } from "@react-pdf/renderer";
 import { pdf } from "@react-pdf/renderer";
-import { Controller, useForm } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
 
 // plane editor
 import type { EditorRefApi } from "@plane/editor";
@@ -103,24 +102,41 @@ const defaultValues: TFormValues = {
 };
 
 export function ExportPageModal(props: Props) {
-  const { editorRef, isOpen, onClose, pageTitle } = props;
-  // states
-  const [isExporting, setIsExporting] = useState(false);
+  return props.isOpen ? <ExportPageDialog {...props} /> : null;
+}
+
+function ExportPageDialog({ editorRef, onClose, pageTitle }: Props) {
   // params
   const { workspaceSlug, projectId } = useParams({ strict: false });
-  // form info
-  const { control, reset, watch } = useForm<TFormValues>({
-    defaultValues,
-  });
   // parse editor content
-  const { replaceCustomComponentsFromHTMLContent, replaceCustomComponentsFromMarkdownContent } = useParseEditorContent({
+  const {
+    memberRosterQuery,
+    memberRosterIsLoading,
+    memberRosterIsError,
+    retryMemberRoster,
+    replaceCustomComponentsFromHTMLContent,
+    replaceCustomComponentsFromMarkdownContent,
+  } = useParseEditorContent({
     projectId,
     workspaceSlug: workspaceSlug ?? "",
   });
+  const isMemberRosterReady = memberRosterQuery.isSuccess && !memberRosterIsError;
+  // form info
+  const form = useForm({
+    defaultValues,
+    validators: {
+      onSubmit: () => (isMemberRosterReady ? undefined : "Load workspace members before exporting."),
+    },
+    onSubmit: async () => {
+      await handleExport();
+    },
+  });
+  const isExporting = useStore(form.store, (state) => state.isSubmitting);
+  const values = useStore(form.store, (state) => state.values);
   // derived values
-  const selectedExportFormat = watch("export_format");
-  const selectedPageFormat = watch("page_format");
-  const selectedContentVariety = watch("content_variety");
+  const selectedExportFormat = values.export_format;
+  const selectedPageFormat = values.page_format;
+  const selectedContentVariety = values.content_variety;
   const isPDFSelected = selectedExportFormat === "pdf";
   const fileName = pageTitle
     ?.toLowerCase()
@@ -128,10 +144,7 @@ export function ExportPageModal(props: Props) {
     .replace(/-+/g, "-");
   // handle modal close
   const handleClose = () => {
-    onClose();
-    setTimeout(() => {
-      reset();
-    }, 300);
+    if (!isExporting) onClose();
   };
 
   const initiateDownload = (blob: Blob, filename: string) => {
@@ -157,7 +170,7 @@ export function ExportPageModal(props: Props) {
       const blob = await pdf(<PDFDocument content={parsedPageContent} pageFormat={selectedPageFormat} />).toBlob();
       initiateDownload(blob, `${fileName}-${selectedPageFormat.toString().toLowerCase()}.pdf`);
     } catch (error) {
-      throw new Error(`Error in exporting as a PDF: ${error}`);
+      throw new Error("Error in exporting as a PDF.", { cause: error });
     }
   };
   // handle export as markdown
@@ -172,12 +185,12 @@ export function ExportPageModal(props: Props) {
       const blob = new Blob([parsedMarkdownContent], { type: "text/markdown" });
       initiateDownload(blob, `${fileName}.md`);
     } catch (error) {
-      throw new Error(`Error in exporting as markdown: ${error}`);
+      throw new Error("Error in exporting as markdown.", { cause: error });
     }
   };
   // handle export
   const handleExport = async () => {
-    setIsExporting(true);
+    if (!isMemberRosterReady) throw new Error("Load workspace members before exporting.");
     try {
       if (selectedExportFormat === "pdf") {
         await handleExportAsPDF();
@@ -190,7 +203,7 @@ export function ExportPageModal(props: Props) {
         title: "Success!",
         message: "Page exported successfully.",
       });
-      handleClose();
+      onClose();
     } catch (error) {
       console.error("Error in exporting page:", error);
       setToast({
@@ -198,28 +211,33 @@ export function ExportPageModal(props: Props) {
         title: "Error!",
         message: "Page could not be exported. Please try again later.",
       });
-    } finally {
-      setIsExporting(false);
+      throw error;
     }
   };
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.SM}>
-      <div>
+    <ModalCore isOpen handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.SM}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit().catch(() => {
+            // The export failure is already reported with a toast.
+          });
+        }}
+      >
         <div className="space-y-5 p-5">
           <h3 className="text-18 font-medium text-secondary">Export page</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
               <h6 className="flex-shrink-0 text-13 text-secondary">Export format</h6>
-              <Controller
-                control={control}
-                name="export_format"
-                render={({ field: { onChange, value } }) => (
+              <form.Field name="export_format">
+                {(field) => (
                   <CustomSelect
-                    label={EXPORT_FORMATS.find((format) => format.key === value)?.label}
+                    label={EXPORT_FORMATS.find((format) => format.key === field.state.value)?.label}
+                    disabled={isExporting}
                     buttonClassName="border-none"
-                    value={value}
-                    onChange={(val: TExportFormats) => onChange(val)}
+                    value={field.state.value}
+                    onChange={(val: TExportFormats) => field.handleChange(val)}
                     className="flex-shrink-0"
                     placement="bottom-end"
                   >
@@ -230,19 +248,18 @@ export function ExportPageModal(props: Props) {
                     ))}
                   </CustomSelect>
                 )}
-              />
+              </form.Field>
             </div>
             <div className="flex items-center justify-between gap-2">
               <h6 className="flex-shrink-0 text-13 text-secondary">Include content</h6>
-              <Controller
-                control={control}
-                name="content_variety"
-                render={({ field: { onChange, value } }) => (
+              <form.Field name="content_variety">
+                {(field) => (
                   <CustomSelect
-                    label={CONTENT_VARIETY.find((variety) => variety.key === value)?.label}
+                    label={CONTENT_VARIETY.find((variety) => variety.key === field.state.value)?.label}
+                    disabled={isExporting}
                     buttonClassName="border-none"
-                    value={value}
-                    onChange={(val: TContentVariety) => onChange(val)}
+                    value={field.state.value}
+                    onChange={(val: TContentVariety) => field.handleChange(val)}
                     className="flex-shrink-0"
                     placement="bottom-end"
                   >
@@ -253,20 +270,19 @@ export function ExportPageModal(props: Props) {
                     ))}
                   </CustomSelect>
                 )}
-              />
+              </form.Field>
             </div>
             {isPDFSelected && (
               <div className="flex items-center justify-between gap-2">
                 <h6 className="flex-shrink-0 text-13 text-secondary">Page format</h6>
-                <Controller
-                  control={control}
-                  name="page_format"
-                  render={({ field: { onChange, value } }) => (
+                <form.Field name="page_format">
+                  {(field) => (
                     <CustomSelect
-                      label={PAGE_FORMATS.find((format) => format.key === value)?.label}
+                      label={PAGE_FORMATS.find((format) => format.key === field.state.value)?.label}
+                      disabled={isExporting}
                       buttonClassName="border-none"
-                      value={value}
-                      onChange={(val: TPageFormats) => onChange(val)}
+                      value={field.state.value}
+                      onChange={(val: TPageFormats) => field.handleChange(val)}
                       className="flex-shrink-0"
                       placement="bottom-end"
                     >
@@ -277,20 +293,44 @@ export function ExportPageModal(props: Props) {
                       ))}
                     </CustomSelect>
                   )}
-                />
+                </form.Field>
               </div>
             )}
           </div>
+          {(!memberRosterQuery.isSuccess || memberRosterIsError) && (
+            <div role={memberRosterIsError ? "alert" : "status"} className="mt-3 text-13 text-tertiary">
+              {memberRosterIsError
+                ? "Workspace members could not be loaded. Retry before exporting to preserve page mentions."
+                : "Loading workspace members before export…"}
+              {memberRosterIsError && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={memberRosterIsLoading}
+                  onClick={() => void retryMemberRoster()}
+                >
+                  {memberRosterIsLoading ? "Retrying" : "Retry"}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center justify-end gap-2 border-t-[0.5px] border-subtle px-5 py-4">
-          <Button variant="secondary" size="lg" onClick={handleClose}>
+          <Button type="button" disabled={isExporting} variant="secondary" size="lg" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary" size="lg" loading={isExporting} onClick={handleExport}>
+          <Button
+            variant="primary"
+            size="lg"
+            loading={isExporting}
+            disabled={!memberRosterQuery.isSuccess || memberRosterIsError}
+            type="submit"
+          >
             {isExporting ? "Exporting" : "Export"}
           </Button>
         </div>
-      </div>
+      </form>
     </ModalCore>
   );
 }

@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { createFileRoute, useLocation, Outlet } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+import { WorkItemTypesPreviewProvider } from "@/components/work-item-types/preview-provider";
+
+import { createFileRoute, useChildMatches, Outlet } from "@tanstack/react-router";
 
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
@@ -13,27 +14,27 @@ import { getWorkspaceActivePath, pathnameToAccessKey } from "@/components/settin
 import { SettingsMobileNav } from "@/components/settings/mobile/nav";
 // plane imports
 import { WORKSPACE_SETTINGS_ACCESS } from "@plane/constants";
-import type { EUserWorkspaceRoles } from "@plane/types";
 // components
 import { WorkspaceSettingsSidebarRoot } from "@/components/settings/workspace/sidebar";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
-const WorkspaceSettingLayout = observer(function WorkspaceSettingLayout(): React.JSX.Element | null {
+function WorkspaceSettingLayout(): React.JSX.Element | null {
   // router
   const { workspaceSlug } = Route.useParams();
-  // store hooks
-  const { workspaceUserInfo, getWorkspaceRoleByWorkspaceSlug } = useUserPermissions();
-  // next hooks
-  const pathname = useLocation({ select: (location) => location.pathname });
+  // Workspace permissions
+  const { workspaceRole, isPending, isError } = useWorkspacePermissions(workspaceSlug);
+  // Use the rendered child route while this layout remains mounted during navigation.
+  const pathname = useChildMatches({ select: (matches) => matches.at(-1)?.pathname }) ?? "";
   // derived values
   const { accessKey } = pathnameToAccessKey(pathname);
-  const userWorkspaceRole = getWorkspaceRoleByWorkspaceSlug(workspaceSlug);
+  const isAuthorized =
+    !isError &&
+    Boolean(
+      pathname && workspaceSlug && workspaceRole && WORKSPACE_SETTINGS_ACCESS[accessKey]?.includes(workspaceRole)
+    );
 
-  let isAuthorized: boolean | string = false;
-  if (pathname && workspaceSlug && userWorkspaceRole) {
-    isAuthorized = WORKSPACE_SETTINGS_ACCESS[accessKey]?.includes(userWorkspaceRole as EUserWorkspaceRoles);
-  }
+  if (isPending) return null;
 
   return (
     <>
@@ -42,20 +43,22 @@ const WorkspaceSettingLayout = observer(function WorkspaceSettingLayout(): React
         activePath={getWorkspaceActivePath(pathname) || ""}
       />
       <div className="inset-y-0 flex h-full w-full flex-row">
-        {workspaceUserInfo && !isAuthorized ? (
+        {!isAuthorized ? (
           <NotAuthorizedView section="settings" className="h-auto" />
         ) : (
           <div className="relative flex size-full">
             <div className="hidden h-full md:block">
               <WorkspaceSettingsSidebarRoot />
             </div>
-            <Outlet />
+            <WorkItemTypesPreviewProvider key={workspaceSlug}>
+              <Outlet />
+            </WorkItemTypesPreviewProvider>
           </div>
         )}
       </div>
     </>
   );
-});
+}
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace")({
   component: WorkspaceSettingLayout,

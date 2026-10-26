@@ -5,29 +5,25 @@
  */
 
 import { useParams, useRouter, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useCallback } from "react";
 
 // constants
-import { EPageAccess } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 // plane types
 import { Button } from "@plane/propel/button";
 import { PageIcon } from "@plane/propel/icons";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TPage } from "@plane/types";
 // plane ui
 import { Breadcrumbs, Header } from "@plane/ui";
 // helpers
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useRouteProject } from "@/hooks/use-projects";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
-import { EPageStoreType, usePageStore } from "@/hooks/store";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCreatePageAction } from "@/components/pages/use-create-page-action";
 
-export const PagesListHeader = observer(function PagesListHeader() {
-  // states
-  const [isCreatingPage, setIsCreatingPage] = useState(false);
+export const PagesListHeader = function PagesListHeader() {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId } = useParams({
@@ -36,36 +32,28 @@ export const PagesListHeader = observer(function PagesListHeader() {
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const pageType = searchParams.get("type");
   // store hooks
-  const { currentProjectDetails, loader } = useProject();
-  const { canCurrentUserCreatePage, createPage } = usePageStore(EPageStoreType.PROJECT);
-  // handle page create
-  const handleCreatePage = async () => {
-    setIsCreatingPage(true);
-
-    const payload: Partial<TPage> = {
-      access: pageType === "private" ? EPageAccess.PRIVATE : EPageAccess.PUBLIC,
-    };
-
-    await createPage(payload)
-      // oxlint-disable-next-line promise/always-return
-      .then((res) => {
-        const pageId = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${res?.id}`;
-        void router.navigate({ href: pageId });
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err?.data?.error || "Page could not be created. Please try again.",
-        });
-      })
-      .finally(() => setIsCreatingPage(false));
-  };
+  const projectQuery = useRouteProject();
+  const currentProjectDetails = projectQuery.project;
+  const handlePageCreated = useCallback(
+    (pageId: string) => {
+      const href = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${pageId}`;
+      void router.navigate({ href });
+    },
+    [currentProjectDetails?.id, router, workspaceSlug]
+  );
+  const { createPage: handleCreatePage, isCreatingPage } = useCreatePageAction({
+    workspaceSlug,
+    projectId,
+    pageType: pageType === "private" ? "private" : "public",
+    onCreated: handlePageCreated,
+  });
+  const { can } = useProjectPermissions(workspaceSlug, projectId);
+  const canCurrentUserCreatePage = can([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <Header>
       <Header.LeftItem>
-        <Breadcrumbs isLoading={loader === "init-loader"}>
+        <Breadcrumbs isLoading={projectQuery.isPending}>
           <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
           <Breadcrumbs.Item
             component={
@@ -82,11 +70,11 @@ export const PagesListHeader = observer(function PagesListHeader() {
       </Header.LeftItem>
       {canCurrentUserCreatePage && (
         <Header.RightItem>
-          <Button variant="primary" size="lg" onClick={handleCreatePage} loading={isCreatingPage}>
+          <Button variant="primary" size="lg" onClick={() => void handleCreatePage()} loading={isCreatingPage}>
             {isCreatingPage ? "Adding" : "Add page"}
           </Button>
         </Header.RightItem>
       )}
     </Header>
   );
-});
+};

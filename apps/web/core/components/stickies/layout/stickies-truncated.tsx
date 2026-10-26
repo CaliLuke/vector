@@ -5,14 +5,11 @@
  */
 
 import { Link, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 // plane utils
 import { useTranslation } from "@plane/i18n";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useSticky } from "@/hooks/use-stickies";
 // components
 import { ContentOverflowWrapper } from "../../core/content-overflow-HOC";
 import { StickiesLayout } from "./stickies-list";
@@ -21,19 +18,12 @@ type StickiesTruncatedProps = {
   handleClose?: () => void;
 };
 
-export const StickiesTruncated = observer(function StickiesTruncated(props: StickiesTruncatedProps) {
+export const StickiesTruncated = function StickiesTruncated(props: StickiesTruncatedProps) {
   const { handleClose = () => {} } = props;
   // navigation
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { fetchWorkspaceStickies } = useSticky();
   const { t } = useTranslation();
-
-  useSWR(
-    workspaceSlug ? `WORKSPACE_STICKIES_${workspaceSlug}` : null,
-    workspaceSlug ? () => fetchWorkspaceStickies(workspaceSlug.toString()) : null,
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
 
   return (
     <ContentOverflowWrapper
@@ -56,4 +46,4 @@ export const StickiesTruncated = observer(function StickiesTruncated(props: Stic
       <StickiesLayout workspaceSlug={workspaceSlug?.toString()} />
     </ContentOverflowWrapper>
   );
-});
+};

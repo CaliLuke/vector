@@ -4,8 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import React, { useRef } from "react";
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+import { useWorkItemTableValues, TablePropertyValuesContext } from "@/hooks/use-work-item-table-values";
+import { useWorkItemTableCatalog } from "@/hooks/use-work-item-table-catalog";
+import { useIssueListView } from "@/providers/issue-list-view";
+import { PropertyEditorDialog } from "./property-editor-dialog";
+import React, { useRef, useState } from "react";
 // plane constants
 import { SPREADSHEET_SELECT_GROUP, SPREADSHEET_PROPERTY_LIST } from "@plane/constants";
 // types
@@ -15,7 +19,7 @@ import { EIssueLayoutTypes } from "@plane/types";
 import { MultipleSelectGroup } from "@/components/core/multiple-select";
 import { IssueBulkOperationsRoot } from "@/components/issues/bulk-operations";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useRouteProject } from "@/hooks/use-projects";
 import { useBulkOperationStatus } from "@/hooks/use-bulk-operation-status";
 // local imports
 import type { TRenderQuickActions } from "../list/list-view-types";
@@ -28,7 +32,7 @@ type Props = {
   handleDisplayFilterUpdate: (data: Partial<IIssueDisplayFilterOptions>) => void;
   issueIds: string[] | undefined;
   quickActions: TRenderQuickActions;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   openIssuesListModal?: (() => void) | null;
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
   canEditProperties: (projectId: string | undefined) => boolean;
@@ -40,7 +44,7 @@ type Props = {
   isEpic?: boolean;
 };
 
-export const SpreadsheetView = observer(function SpreadsheetView(props: Props) {
+export function SpreadsheetView(props: Props) {
   const {
     displayProperties,
     displayFilters,
@@ -57,11 +61,24 @@ export const SpreadsheetView = observer(function SpreadsheetView(props: Props) {
     isWorkspaceLevel = false,
     isEpic = false,
   } = props;
+  const { workspaceSlug } = useParams({ strict: false });
+  const catalog = useWorkItemTableCatalog(!isEpic);
+  const [editing, setEditing] = useState<{ id: string; projectId: string }>();
+  const customColumns = catalog.fields.filter((field) => displayProperties[field.key]);
+  const loadedItems = useLoadedTableItems(issueIds);
+  const propertyReads = useWorkItemTableValues(
+    workspaceSlug ?? "",
+    loadedItems,
+    catalog.identities?.revision,
+    customColumns.length > 0
+  );
+
   // refs
   const containerRef = useRef<HTMLTableElement | null>(null);
   const portalRef = useRef<HTMLDivElement | null>(null);
   // store hooks
-  const { currentProjectDetails } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
   // plane web hooks
   const isBulkOperationsEnabled = useBulkOperationStatus();
 
@@ -78,51 +95,93 @@ export const SpreadsheetView = observer(function SpreadsheetView(props: Props) {
   if (!issueIds || issueIds.length === 0) return <></>;
   return (
     <div className="relative flex h-full w-full flex-col overflow-x-hidden bg-layer-1 whitespace-nowrap text-secondary">
+      {catalog.isError && (
+        <p role="alert" className="p-3 text-12 text-danger-primary">
+          Could not load custom columns.{" "}
+          <button type="button" onClick={() => void catalog.retry()}>
+            Retry
+          </button>
+        </p>
+      )}
+      {propertyReads.isError && (
+        <p role="alert" className="p-3 text-12 text-danger-primary">
+          Could not refresh custom property values.{" "}
+          <button
+            type="button"
+            onClick={() => {
+              void catalog.retry();
+              void propertyReads.retry();
+            }}
+          >
+            Retry
+          </button>
+        </p>
+      )}
+      {editing && workspaceSlug && (
+        <PropertyEditorDialog
+          workspaceSlug={workspaceSlug}
+          projectId={editing.projectId}
+          issueId={editing.id}
+          onClose={() => setEditing(undefined)}
+        />
+      )}
       <div ref={portalRef} className="spreadsheet-menu-portal" />
-      <MultipleSelectGroup
-        containerRef={containerRef}
-        entities={{
-          [SPREADSHEET_SELECT_GROUP]: issueIds,
-        }}
-        disabled={!isBulkOperationsEnabled || isEpic}
-      >
-        {(helpers) => (
-          <>
-            <div ref={containerRef} className="vertical-scrollbar horizontal-scrollbar scrollbar-lg h-full w-full">
-              <SpreadsheetTable
-                displayProperties={displayProperties}
-                displayFilters={displayFilters}
-                handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-                issueIds={issueIds}
-                isEstimateEnabled={isEstimateEnabled}
-                portalElement={portalRef}
-                quickActions={quickActions}
-                updateIssue={updateIssue}
-                canEditProperties={canEditProperties}
-                containerRef={containerRef}
-                canLoadMoreIssues={canLoadMoreIssues}
-                loadMoreIssues={loadMoreIssues}
-                spreadsheetColumnsList={spreadsheetColumnsList}
-                selectionHelpers={helpers}
-                isEpic={isEpic}
-              />
-            </div>
-            <div className="border-t border-subtle">
-              <div className="sticky bottom-0 left-0 z-5">
-                {enableQuickCreateIssue && !disableIssueCreation && (
-                  <QuickAddIssueRoot
-                    layout={EIssueLayoutTypes.SPREADSHEET}
-                    QuickAddButton={SpreadsheetAddIssueButton}
-                    quickAddCallback={quickAddCallback}
-                    isEpic={isEpic}
-                  />
-                )}
+      <TablePropertyValuesContext value={propertyReads.values}>
+        <MultipleSelectGroup
+          containerRef={containerRef}
+          entities={{
+            [SPREADSHEET_SELECT_GROUP]: issueIds,
+          }}
+          disabled={!isBulkOperationsEnabled || isEpic}
+        >
+          {(helpers) => (
+            <>
+              <div ref={containerRef} className="vertical-scrollbar horizontal-scrollbar scrollbar-lg h-full w-full">
+                <SpreadsheetTable
+                  customColumns={customColumns}
+                  onEditProperties={(issue) => {
+                    if (issue.project_id) setEditing({ id: issue.id, projectId: issue.project_id });
+                  }}
+                  displayProperties={displayProperties}
+                  displayFilters={displayFilters}
+                  handleDisplayFilterUpdate={handleDisplayFilterUpdate}
+                  issueIds={issueIds}
+                  isEstimateEnabled={isEstimateEnabled}
+                  portalElement={portalRef}
+                  quickActions={quickActions}
+                  updateIssue={updateIssue}
+                  canEditProperties={canEditProperties}
+                  containerRef={containerRef}
+                  canLoadMoreIssues={canLoadMoreIssues}
+                  loadMoreIssues={loadMoreIssues}
+                  spreadsheetColumnsList={spreadsheetColumnsList}
+                  propertyRevision={catalog.identities?.revision}
+                  selectionHelpers={helpers}
+                  isEpic={isEpic}
+                />
               </div>
-            </div>
-            <IssueBulkOperationsRoot selectionHelpers={helpers} />
-          </>
-        )}
-      </MultipleSelectGroup>
+              <div className="border-t border-subtle">
+                <div className="sticky bottom-0 left-0 z-5">
+                  {enableQuickCreateIssue && !disableIssueCreation && (
+                    <QuickAddIssueRoot
+                      layout={EIssueLayoutTypes.SPREADSHEET}
+                      QuickAddButton={SpreadsheetAddIssueButton}
+                      quickAddCallback={quickAddCallback}
+                      isEpic={isEpic}
+                    />
+                  )}
+                </div>
+              </div>
+              <IssueBulkOperationsRoot selectionHelpers={helpers} />
+            </>
+          )}
+        </MultipleSelectGroup>
+      </TablePropertyValuesContext>
     </div>
   );
-});
+}
+
+function useLoadedTableItems(issueIds: string[] | undefined) {
+  const { issuesById } = useIssueListView();
+  return (issueIds ?? []).flatMap((id) => (issuesById[id] ? [issuesById[id]] : []));
+}

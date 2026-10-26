@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
+import type { CommentActions } from "@/components/comments/types";
 import { useRef, useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import type { TIssueComment, TCommentsOperations } from "@plane/types";
+import type { TIssueComment } from "@plane/types";
 // local imports
 import { CommentQuickActions } from "../quick-actions";
 import { CommentBlock } from "../comment-block";
@@ -18,16 +18,15 @@ type TCommentCard = {
   workspaceSlug: string;
   entityId: string;
   comment: TIssueComment | undefined;
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   ends: "top" | "bottom" | undefined;
   showAccessSpecifier: boolean;
   showCopyLinkOption: boolean;
-  enableReplies: boolean;
   disabled?: boolean;
   projectId?: string;
 };
 
-export const CommentCard = observer(function CommentCard(props: TCommentCard) {
+export const CommentCard = function CommentCard(props: TCommentCard) {
   const {
     workspaceSlug,
     entityId,
@@ -74,4 +73,4 @@ export const CommentCard = observer(function CommentCard(props: TCommentCard) {
       />
     </CommentBlock>
   );
-});
+};

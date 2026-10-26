@@ -4,22 +4,23 @@
  * See the LICENSE file for details.
  */
 
+import type { ICycle } from "@plane/types";
 // components
 import { CyclesListItem } from "./cycles-list-item";
 
 type Props = {
-  cycleIds: string[];
+  cycles: ICycle[];
   projectId: string;
   workspaceSlug: string;
 };
 
 export function CyclesListMap(props: Props) {
-  const { cycleIds, projectId, workspaceSlug } = props;
+  const { cycles, projectId, workspaceSlug } = props;
 
   return (
     <>
-      {cycleIds.map((cycleId) => (
-        <CyclesListItem key={cycleId} cycleId={cycleId} workspaceSlug={workspaceSlug} projectId={projectId} />
+      {cycles.map((cycle) => (
+        <CyclesListItem key={cycle.id} cycle={cycle} workspaceSlug={workspaceSlug} projectId={projectId} />
       ))}
     </>
   );

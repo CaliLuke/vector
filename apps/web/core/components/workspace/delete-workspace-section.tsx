@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { WORKSPACE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -20,7 +20,7 @@ type TDeleteWorkspace = {
   workspace: IWorkspace | null;
 };
 
-export const DeleteWorkspaceSection = observer(function DeleteWorkspaceSection(props: TDeleteWorkspace) {
+export const DeleteWorkspaceSection = function DeleteWorkspaceSection(props: TDeleteWorkspace) {
   const { workspace } = props;
   // states
   const [deleteWorkspaceModal, setDeleteWorkspaceModal] = useState(false);
@@ -49,4 +49,4 @@ export const DeleteWorkspaceSection = observer(function DeleteWorkspaceSection(p
       />
     </>
   );
-});
+};

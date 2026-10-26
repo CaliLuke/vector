@@ -4,15 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import type { IBaseLayoutsListItem, IBaseLayoutsListProps } from "@plane/types";
 import { cn } from "@plane/ui";
 import { useLayoutState } from "../hooks/use-layout-state";
 import { BaseListGroup } from "./group";
 
-export const BaseListLayout = observer(function BaseListLayout<T extends IBaseLayoutsListItem>(
-  props: IBaseLayoutsListProps<T>
-) {
+export const BaseListLayout = function BaseListLayout<T extends IBaseLayoutsListItem>(props: IBaseLayoutsListProps<T>) {
   const {
     items,
     groupedItemIds,
@@ -71,4 +68,4 @@ export const BaseListLayout = observer(function BaseListLayout<T extends IBaseLa
       </div>
     </div>
   );
-});
+};

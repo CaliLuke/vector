@@ -23,21 +23,13 @@ export class IssueActivityService extends APIService {
     workspaceSlug: string,
     projectId: string,
     issueId: string,
-    params:
-      | {
-          created_at__gt: string;
-        }
-      | object = {}
+    signal?: AbortSignal
   ): Promise<TIssueActivity[]> {
     return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/${this.serviceType}/${issueId}/history/`, {
+      signal,
       params: {
-        activity_type: `${this.serviceType === EIssueServiceType.EPICS ? "epic-property" : "issue-property"}`,
-        ...params,
+        activity_type: this.serviceType === EIssueServiceType.EPICS ? "epic-property" : "issue-property",
       },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    }).then((response) => response?.data);
   }
 }

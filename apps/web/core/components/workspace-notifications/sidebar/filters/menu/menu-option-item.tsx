@@ -4,23 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import type { ENotificationFilterType } from "@plane/constants";
 import { CheckIcon } from "@plane/propel/icons";
 // plane imports
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 
-export const NotificationFilterOptionItem = observer(function NotificationFilterOptionItem(props: {
+export const NotificationFilterOptionItem = function NotificationFilterOptionItem(props: {
   label: string;
   value: ENotificationFilterType;
 }) {
   const { value, label } = props;
   // hooks
-  const { filters, updateFilters } = useWorkspaceNotifications();
+  const { filters, updateFilters } = useNotifications();
 
   const handleFilterTypeChange = (filterType: ENotificationFilterType, filterValue: boolean) =>
     updateFilters("type", {
@@ -55,4 +53,4 @@ export const NotificationFilterOptionItem = observer(function NotificationFilter
       </div>
     </div>
   );
-});
+};

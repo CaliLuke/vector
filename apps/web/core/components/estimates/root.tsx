@@ -5,8 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
@@ -14,8 +13,7 @@ import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-it
 import { SettingsHeading } from "@/components/settings/heading";
 // hooks
 import { EmptyStateCompact } from "@plane/propel/empty-state";
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useProject } from "@/hooks/store/use-project";
+import { useEstimateEditorKey, useProjectEstimates } from "@/hooks/use-estimates";
 // local imports
 import { CreateEstimateModal } from "./create/modal";
 import { DeleteEstimateModal } from "./delete/modal";
@@ -29,27 +27,38 @@ type TEstimateRoot = {
   isAdmin: boolean;
 };
 
-export const EstimateRoot = observer(function EstimateRoot(props: TEstimateRoot) {
+export function EstimateRoot(props: TEstimateRoot) {
+  const key = useEstimateEditorKey(props.workspaceSlug, props.projectId);
+  return <EstimateSettings key={key} {...props} />;
+}
+
+const EstimateSettings = function EstimateSettings(props: TEstimateRoot) {
   const { workspaceSlug, projectId, isAdmin } = props;
   // hooks
-  const { currentProjectDetails } = useProject();
-  const { loader, currentActiveEstimateId, archivedEstimateIds, getProjectEstimates } = useProjectEstimates();
+  const estimates = useProjectEstimates(workspaceSlug, projectId);
+  const currentActiveEstimateId = estimates.activeEstimate?.id;
+  const archivedEstimates = estimates.archivedEstimates;
   // states
   const [isEstimateCreateModalOpen, setIsEstimateCreateModalOpen] = useState(false);
-  // oxlint-disable-next-line no-unused-vars
-  const [estimateToUpdate, setEstimateToUpdate] = useState<string | undefined>();
   const [estimateToDelete, setEstimateToDelete] = useState<string | undefined>();
 
   const { t } = useTranslation();
 
-  const { isLoading: isSWRLoading } = useSWR(
-    workspaceSlug && projectId ? `PROJECT_ESTIMATES_${workspaceSlug}_${projectId}` : null,
-    async () => workspaceSlug && projectId && getProjectEstimates(workspaceSlug, projectId)
-  );
-
-  if (loader === "init-loader" || isSWRLoading) {
-    return <EstimateLoaderScreen />;
-  }
+  if (estimates.isPending) return <EstimateLoaderScreen />;
+  if (estimates.isError || estimates.isAccessDenied)
+    return (
+      <div role="alert">
+        Estimates are unavailable.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void estimates.retry();
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
 
   return (
     <>
@@ -75,11 +84,9 @@ export const EstimateRoot = observer(function EstimateRoot(props: TEstimateRoot)
               <div className="mt-12 flex flex-col gap-y-4">
                 <SettingsHeading title="Estimates list" variant="h6" />
                 <EstimateList
-                  estimateIds={[currentActiveEstimateId]}
+                  estimates={estimates.activeEstimate ? [estimates.activeEstimate] : []}
                   isAdmin={isAdmin}
-                  isEstimateEnabled={Boolean(currentProjectDetails?.estimate)}
                   isEditable
-                  onEditClick={(estimateId: string) => setEstimateToUpdate(estimateId)}
                   onDeleteClick={(estimateId: string) => setEstimateToDelete(estimateId)}
                 />
               </div>
@@ -101,7 +108,7 @@ export const EstimateRoot = observer(function EstimateRoot(props: TEstimateRoot)
             />
           )}
           {/* archived estimates section */}
-          {archivedEstimateIds && archivedEstimateIds.length > 0 && (
+          {archivedEstimates && archivedEstimates.length > 0 && (
             <div className="mt-12 flex flex-col gap-y-4">
               <SettingsHeading
                 title="Archived estimates"
@@ -121,7 +128,7 @@ export const EstimateRoot = observer(function EstimateRoot(props: TEstimateRoot)
                 }
                 variant="h6"
               />
-              <EstimateList estimateIds={archivedEstimateIds} isAdmin={isAdmin} />
+              <EstimateList estimates={archivedEstimates} isAdmin={isAdmin} />
             </div>
           )}
         </div>
@@ -136,11 +143,10 @@ export const EstimateRoot = observer(function EstimateRoot(props: TEstimateRoot)
       <DeleteEstimateModal
         workspaceSlug={workspaceSlug}
         projectId={projectId}
-        estimateId={estimateToDelete ? estimateToDelete : undefined}
-        // oxlint-disable-next-line no-unneeded-ternary
-        isOpen={estimateToDelete ? true : false}
+        estimateId={estimateToDelete}
+        isOpen={Boolean(estimateToDelete)}
         handleClose={() => setEstimateToDelete(undefined)}
       />
     </>
   );
-});
+};

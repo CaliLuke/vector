@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { format, isValid } from "date-fns";
-import { isNumber } from "lodash-es";
+import { format } from "date-fns/format";
+import { isValid } from "date-fns/isValid";
+import isNumber from "lodash-es/isNumber.js";
 
 export const timeAgo = (time: any) => {
   switch (typeof time) {

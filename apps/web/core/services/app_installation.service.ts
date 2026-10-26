@@ -5,6 +5,7 @@
  */
 
 // services
+import type { ISlackIntegration } from "@plane/types";
 import { API_BASE_URL } from "@plane/constants";
 import { APIService } from "@/services/api.service";
 // helpers
@@ -42,7 +43,7 @@ export class AppInstallationService extends APIService {
     workspaceSlug: string,
     projectId: string,
     integrationId: string | null | undefined
-  ): Promise<any> {
+  ): Promise<ISlackIntegration[]> {
     return this.get(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/workspace-integrations/${integrationId}/project-slack-sync/`
     )

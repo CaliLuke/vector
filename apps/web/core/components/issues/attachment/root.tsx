@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // hooks
 import { useAttachmentOperations } from "../issue-detail-widgets/attachments/helper";
 // components
@@ -18,7 +17,7 @@ export type TIssueAttachmentRoot = {
   disabled?: boolean;
 };
 
-export const IssueAttachmentRoot = observer(function IssueAttachmentRoot(props: TIssueAttachmentRoot) {
+export function IssueAttachmentRoot(props: TIssueAttachmentRoot) {
   // props
   const { workspaceSlug, projectId, issueId, disabled = false } = props;
   // hooks
@@ -29,12 +28,13 @@ export const IssueAttachmentRoot = observer(function IssueAttachmentRoot(props: 
       <h3 className="text-body-sm-medium">Attachments</h3>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <IssueAttachmentUpload
+          key={attachmentHelpers.uploadScopeKey}
           workspaceSlug={workspaceSlug}
           disabled={disabled}
           attachmentOperations={attachmentHelpers.operations}
         />
-        <IssueAttachmentsList issueId={issueId} disabled={disabled} attachmentHelpers={attachmentHelpers} />
+        <IssueAttachmentsList workspaceSlug={workspaceSlug} disabled={disabled} attachmentHelpers={attachmentHelpers} />
       </div>
     </div>
   );
-});
+}

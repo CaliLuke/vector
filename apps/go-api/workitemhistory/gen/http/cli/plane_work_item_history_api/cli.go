@@ -23,7 +23,7 @@ import (
 //
 //	command (subcommand1|subcommand2|...)
 func UsageCommands() []string {
-	return []string{"work-item-history (history|meta|versions|version-detail|description-versions|description-version-detail)"}
+	return []string{"work-item-history (history|meta|versions|version-detail|description-versions|description-version-detail|property-history|property-versions|property-version-detail)"}
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
@@ -75,6 +75,28 @@ type commandLine struct {
 			Pk                           string `help:"" name:"pk" required:""`
 			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
 		} `cmd:"" help:"DescriptionVersionDetail implements description_version_detail." name:"description-version-detail"`
+		PropertyHistory struct {
+			Slug                         string `help:"" name:"slug" required:""`
+			ProjectID                    string `help:"" name:"project-id" required:""`
+			WorkItemID                   string `help:"" name:"work-item-id" required:""`
+			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
+		} `cmd:"" help:"PropertyHistory implements property_history." name:"property-history"`
+		PropertyVersions struct {
+			Slug                         string `help:"" name:"slug" required:""`
+			ProjectID                    string `help:"" name:"project-id" required:""`
+			WorkItemID                   string `help:"" name:"work-item-id" required:""`
+			PropertyID                   string `help:"" name:"property-id" required:""`
+			Before                       string `help:"" name:"before"`
+			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
+		} `cmd:"" help:"PropertyVersions implements property_versions." name:"property-versions"`
+		PropertyVersionDetail struct {
+			Slug                         string `help:"" name:"slug" required:""`
+			ProjectID                    string `help:"" name:"project-id" required:""`
+			WorkItemID                   string `help:"" name:"work-item-id" required:""`
+			PropertyID                   string `help:"" name:"property-id" required:""`
+			Pk                           string `help:"" name:"pk" required:""`
+			PlaneSessionCookieCredential string `help:"" name:"plane-session-cookie-credential"`
+		} `cmd:"" help:"PropertyVersionDetail implements property_version_detail." name:"property-version-detail"`
 	} `cmd:"" help:"Issue activity history, metadata, and version reads." name:"work-item-history"`
 }
 
@@ -116,6 +138,22 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		workItemHistoryDescriptionVersionDetailWorkItemIDFlag                   *string
 		workItemHistoryDescriptionVersionDetailPkFlag                           *string
 		workItemHistoryDescriptionVersionDetailPlaneSessionCookieCredentialFlag *string
+		workItemHistoryPropertyHistorySlugFlag                                  *string
+		workItemHistoryPropertyHistoryProjectIDFlag                             *string
+		workItemHistoryPropertyHistoryWorkItemIDFlag                            *string
+		workItemHistoryPropertyHistoryPlaneSessionCookieCredentialFlag          *string
+		workItemHistoryPropertyVersionsSlugFlag                                 *string
+		workItemHistoryPropertyVersionsProjectIDFlag                            *string
+		workItemHistoryPropertyVersionsWorkItemIDFlag                           *string
+		workItemHistoryPropertyVersionsPropertyIDFlag                           *string
+		workItemHistoryPropertyVersionsBeforeFlag                               *string
+		workItemHistoryPropertyVersionsPlaneSessionCookieCredentialFlag         *string
+		workItemHistoryPropertyVersionDetailSlugFlag                            *string
+		workItemHistoryPropertyVersionDetailProjectIDFlag                       *string
+		workItemHistoryPropertyVersionDetailWorkItemIDFlag                      *string
+		workItemHistoryPropertyVersionDetailPropertyIDFlag                      *string
+		workItemHistoryPropertyVersionDetailPkFlag                              *string
+		workItemHistoryPropertyVersionDetailPlaneSessionCookieCredentialFlag    *string
 	)
 	{
 		args = flag.Args()
@@ -156,6 +194,22 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		workItemHistoryDescriptionVersionDetailWorkItemIDFlag = &command.WorkItemHistory.DescriptionVersionDetail.WorkItemID
 		workItemHistoryDescriptionVersionDetailPkFlag = &command.WorkItemHistory.DescriptionVersionDetail.Pk
 		workItemHistoryDescriptionVersionDetailPlaneSessionCookieCredentialFlag = &command.WorkItemHistory.DescriptionVersionDetail.PlaneSessionCookieCredential
+		workItemHistoryPropertyHistorySlugFlag = &command.WorkItemHistory.PropertyHistory.Slug
+		workItemHistoryPropertyHistoryProjectIDFlag = &command.WorkItemHistory.PropertyHistory.ProjectID
+		workItemHistoryPropertyHistoryWorkItemIDFlag = &command.WorkItemHistory.PropertyHistory.WorkItemID
+		workItemHistoryPropertyHistoryPlaneSessionCookieCredentialFlag = &command.WorkItemHistory.PropertyHistory.PlaneSessionCookieCredential
+		workItemHistoryPropertyVersionsSlugFlag = &command.WorkItemHistory.PropertyVersions.Slug
+		workItemHistoryPropertyVersionsProjectIDFlag = &command.WorkItemHistory.PropertyVersions.ProjectID
+		workItemHistoryPropertyVersionsWorkItemIDFlag = &command.WorkItemHistory.PropertyVersions.WorkItemID
+		workItemHistoryPropertyVersionsPropertyIDFlag = &command.WorkItemHistory.PropertyVersions.PropertyID
+		workItemHistoryPropertyVersionsBeforeFlag = &command.WorkItemHistory.PropertyVersions.Before
+		workItemHistoryPropertyVersionsPlaneSessionCookieCredentialFlag = &command.WorkItemHistory.PropertyVersions.PlaneSessionCookieCredential
+		workItemHistoryPropertyVersionDetailSlugFlag = &command.WorkItemHistory.PropertyVersionDetail.Slug
+		workItemHistoryPropertyVersionDetailProjectIDFlag = &command.WorkItemHistory.PropertyVersionDetail.ProjectID
+		workItemHistoryPropertyVersionDetailWorkItemIDFlag = &command.WorkItemHistory.PropertyVersionDetail.WorkItemID
+		workItemHistoryPropertyVersionDetailPropertyIDFlag = &command.WorkItemHistory.PropertyVersionDetail.PropertyID
+		workItemHistoryPropertyVersionDetailPkFlag = &command.WorkItemHistory.PropertyVersionDetail.Pk
+		workItemHistoryPropertyVersionDetailPlaneSessionCookieCredentialFlag = &command.WorkItemHistory.PropertyVersionDetail.PlaneSessionCookieCredential
 		switch path {
 		case "work-item-history history":
 			svcn = "work-item-history"
@@ -175,6 +229,15 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		case "work-item-history description-version-detail":
 			svcn = "work-item-history"
 			epn = "description-version-detail"
+		case "work-item-history property-history":
+			svcn = "work-item-history"
+			epn = "property-history"
+		case "work-item-history property-versions":
+			svcn = "work-item-history"
+			epn = "property-versions"
+		case "work-item-history property-version-detail":
+			svcn = "work-item-history"
+			epn = "property-version-detail"
 		}
 	}
 
@@ -206,6 +269,15 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 			case "description-version-detail":
 				endpoint = c.DescriptionVersionDetail()
 				data, err = workitemhistoryc.BuildDescriptionVersionDetailPayload(*workItemHistoryDescriptionVersionDetailSlugFlag, *workItemHistoryDescriptionVersionDetailProjectIDFlag, *workItemHistoryDescriptionVersionDetailWorkItemIDFlag, *workItemHistoryDescriptionVersionDetailPkFlag, *workItemHistoryDescriptionVersionDetailPlaneSessionCookieCredentialFlag)
+			case "property-history":
+				endpoint = c.PropertyHistory()
+				data, err = workitemhistoryc.BuildPropertyHistoryPayload(*workItemHistoryPropertyHistorySlugFlag, *workItemHistoryPropertyHistoryProjectIDFlag, *workItemHistoryPropertyHistoryWorkItemIDFlag, *workItemHistoryPropertyHistoryPlaneSessionCookieCredentialFlag)
+			case "property-versions":
+				endpoint = c.PropertyVersions()
+				data, err = workitemhistoryc.BuildPropertyVersionsPayload(*workItemHistoryPropertyVersionsSlugFlag, *workItemHistoryPropertyVersionsProjectIDFlag, *workItemHistoryPropertyVersionsWorkItemIDFlag, *workItemHistoryPropertyVersionsPropertyIDFlag, *workItemHistoryPropertyVersionsBeforeFlag, *workItemHistoryPropertyVersionsPlaneSessionCookieCredentialFlag)
+			case "property-version-detail":
+				endpoint = c.PropertyVersionDetail()
+				data, err = workitemhistoryc.BuildPropertyVersionDetailPayload(*workItemHistoryPropertyVersionDetailSlugFlag, *workItemHistoryPropertyVersionDetailProjectIDFlag, *workItemHistoryPropertyVersionDetailWorkItemIDFlag, *workItemHistoryPropertyVersionDetailPropertyIDFlag, *workItemHistoryPropertyVersionDetailPkFlag, *workItemHistoryPropertyVersionDetailPlaneSessionCookieCredentialFlag)
 			}
 		}
 	}
@@ -227,6 +299,9 @@ func workItemHistoryUsage() {
 	fmt.Fprintln(os.Stderr, "    version-detail: VersionDetail implements version_detail.")
 	fmt.Fprintln(os.Stderr, "    description-versions: DescriptionVersions implements description_versions.")
 	fmt.Fprintln(os.Stderr, "    description-version-detail: DescriptionVersionDetail implements description_version_detail.")
+	fmt.Fprintln(os.Stderr, "    property-history: PropertyHistory implements property_history.")
+	fmt.Fprintln(os.Stderr, "    property-versions: PropertyVersions implements property_versions.")
+	fmt.Fprintln(os.Stderr, "    property-version-detail: PropertyVersionDetail implements property_version_detail.")
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Additional help:")
 	fmt.Fprintf(os.Stderr, "    %s work-item-history COMMAND --help\n", os.Args[0])
@@ -380,4 +455,81 @@ func workItemHistoryDescriptionVersionDetailUsage() {
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
 	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-history description-version-detail --slug \"Facilis totam.\" --project-id \"f90ea249-b29b-4ab1-b66a-dbcf824b3dfb\" --work-item-id \"14e594a7-fe26-457e-87e5-2bf678af376b\" --pk \"6b2abb0a-076b-4500-95ae-82735e562d8b\" --plane-session-cookie-credential \"Nihil dolores et non perferendis.\"")
+}
+func workItemHistoryPropertyHistoryUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] work-item-history property-history", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -work-item-id STRING")
+	fmt.Fprint(os.Stderr, " -plane-session-cookie-credential STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "PropertyHistory implements property_history.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -project-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -work-item-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -plane-session-cookie-credential STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-history property-history --slug \"Modi cumque sequi vero voluptates error.\" --project-id \"68d70947-5ff8-42f8-87ec-aa39873ad7ea\" --work-item-id \"65cff76f-4a88-466f-8716-a1021cde6ae2\" --plane-session-cookie-credential \"Aut aut incidunt adipisci aperiam.\"")
+}
+func workItemHistoryPropertyVersionsUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] work-item-history property-versions", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -work-item-id STRING")
+	fmt.Fprint(os.Stderr, " -property-id STRING")
+	fmt.Fprint(os.Stderr, " -before STRING")
+	fmt.Fprint(os.Stderr, " -plane-session-cookie-credential STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "PropertyVersions implements property_versions.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -project-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -work-item-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -property-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -before STRING: ")
+	fmt.Fprintln(os.Stderr, "    -plane-session-cookie-credential STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-history property-versions --slug \"Dolores et non quia est quae.\" --project-id \"fb513d92-f299-46f2-80e6-96296c1d52d2\" --work-item-id \"800e0c4d-4c51-4c34-b685-c0cee70dddbf\" --property-id \"7cf148ea-2031-44fe-8b02-519f8d53ba6b\" --before \"Id dolores enim.\" --plane-session-cookie-credential \"Expedita non omnis quos eum.\"")
+}
+func workItemHistoryPropertyVersionDetailUsage() {
+	// Header with flags
+	fmt.Fprintf(os.Stderr, "%s [flags] work-item-history property-version-detail", os.Args[0])
+	fmt.Fprint(os.Stderr, " -slug STRING")
+	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -work-item-id STRING")
+	fmt.Fprint(os.Stderr, " -property-id STRING")
+	fmt.Fprint(os.Stderr, " -pk STRING")
+	fmt.Fprint(os.Stderr, " -plane-session-cookie-credential STRING")
+	fmt.Fprintln(os.Stderr)
+
+	// Description
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "PropertyVersionDetail implements property_version_detail.")
+
+	// Flags list
+	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
+	fmt.Fprintln(os.Stderr, "    -project-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -work-item-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -property-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -pk STRING: ")
+	fmt.Fprintln(os.Stderr, "    -plane-session-cookie-credential STRING: ")
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "Example:")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-history property-version-detail --slug \"Quam voluptas adipisci molestiae ut quo qui.\" --project-id \"b57fabe3-4405-4b8f-86df-533bf3f591d9\" --work-item-id \"2c12e1ee-4b64-4398-b903-0cee5f17da67\" --property-id \"a5c12f30-385e-472e-bd83-af701fc53ee3\" --pk \"5e204572-0839-4cec-a766-aa89441a6fb9\" --plane-session-cookie-credential \"Labore sunt tenetur sed itaque.\"")
 }

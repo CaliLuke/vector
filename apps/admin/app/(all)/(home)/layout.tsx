@@ -4,22 +4,21 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/instance";
+import { useNavigate, Outlet } from "react-router";
 import { useEffect } from "react";
-import { observer } from "mobx-react";
-import { useRouter } from "next/navigation";
-import { Outlet } from "react-router";
 // hooks
-import { useUser } from "@/hooks/store/use-user";
 
 function RootLayout() {
   // router
-  const { replace } = useRouter();
-  // store hooks
-  const { isUserLoggedIn } = useUser();
+  const navigate = useNavigate();
+  const user = useQuery(currentUserOptions);
+  const isUserLoggedIn = user.isPending ? undefined : user.isSuccess;
 
   useEffect(() => {
-    if (isUserLoggedIn === true) replace("/general");
-  }, [replace, isUserLoggedIn]);
+    if (isUserLoggedIn === true) void navigate("/general", { replace: true });
+  }, [navigate, isUserLoggedIn]);
 
   return (
     <div className="relative z-10 flex h-screen w-screen flex-col items-center overflow-hidden overflow-y-auto bg-surface-1 px-8 pt-6 pb-10">
@@ -28,4 +27,4 @@ function RootLayout() {
   );
 }
 
-export default observer(RootLayout);
+export default RootLayout;

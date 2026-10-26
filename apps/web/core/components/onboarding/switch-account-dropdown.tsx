@@ -5,13 +5,14 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { Menu, Transition } from "@headlessui/react";
 // ui
-import { cn, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // helpers
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // components
 import { SwitchAccountModal } from "./switch-account-modal";
 
@@ -19,12 +20,12 @@ type TSwitchAccountDropdownProps = {
   fullName?: string;
 };
 
-export const SwitchAccountDropdown = observer(function SwitchAccountDropdown(props: TSwitchAccountDropdownProps) {
+export const SwitchAccountDropdown = function SwitchAccountDropdown(props: TSwitchAccountDropdownProps) {
   const { fullName } = props;
   // states
   const [showSwitchAccountModal, setShowSwitchAccountModal] = useState(false);
   // store hooks
-  const { data: user } = useUser();
+  const { data: user } = useCurrentUser();
 
   const displayName = user?.first_name
     ? `${user?.first_name} ${user?.last_name ?? ""}`
@@ -78,4 +79,4 @@ export const SwitchAccountDropdown = observer(function SwitchAccountDropdown(pro
       </Menu>
     </>
   );
-});
+};

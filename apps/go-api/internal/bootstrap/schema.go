@@ -10,6 +10,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/workitemsearch"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
@@ -134,7 +135,7 @@ func MigrateSchema(ctx context.Context, databaseURL string) error {
 		return fmt.Errorf("verify application schema: %w", err)
 	}
 
-	return nil
+	return workitemsearch.Backfill(ctx, connection)
 }
 
 func expectedSchema() (map[string]string, error) {

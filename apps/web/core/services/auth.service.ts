@@ -4,81 +4,18 @@
  * See the LICENSE file for details.
  */
 
-// types
 import { API_BASE_URL } from "@plane/constants";
-import type { ICsrfTokenData, IEmailCheckData, IEmailCheckResponse } from "@plane/types";
-// helpers
-// services
-import { APIService } from "@/services/api.service";
+import { AuthService } from "@plane/services";
+import { installUnauthorizedRedirectInterceptor } from "./api.service";
+import userService from "./user.service";
 
-export class AuthService extends APIService {
-  constructor() {
-    super(API_BASE_URL);
-  }
+export const authService = new AuthService(API_BASE_URL, installUnauthorizedRedirectInterceptor);
 
-  async requestCSRFToken(): Promise<ICsrfTokenData> {
-    return this.get("/auth/get-csrf-token/")
-      .then((response) => response.data)
-      .catch((error) => {
-        throw error;
-      });
-  }
-
-  emailCheck = async (data: IEmailCheckData): Promise<IEmailCheckResponse> =>
-    this.post("/auth/email-check/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
-
-  async sendResetPasswordLink(data: { email: string }): Promise<any> {
-    return this.post(`/auth/forgot-password/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response;
-      });
-  }
-
-  async setPassword(token: string, data: { password: string }): Promise<any> {
-    return this.post(`/auth/set-password/`, data, {
-      headers: {
-        "X-CSRFTOKEN": token,
-      },
-    })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
-  }
-
-  async generateUniqueCode(data: { email: string }): Promise<any> {
-    return this.post("/auth/magic-generate/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
-  }
-
-  async signOut(baseUrl: string): Promise<any> {
-    await this.requestCSRFToken().then((data) => {
-      const csrfToken = data?.csrf_token;
-
-      if (!csrfToken) throw Error("CSRF token not found");
-
-      const form = document.createElement("form");
-      const element1 = document.createElement("input");
-
-      form.method = "POST";
-      form.action = `${baseUrl}/auth/sign-out/`;
-
-      element1.value = csrfToken;
-      element1.name = "csrfmiddlewaretoken";
-      element1.type = "hidden";
-      form.appendChild(element1);
-
-      document.body.appendChild(form);
-
-      form.submit();
-    });
-  }
+export async function signOutCurrentSession() {
+  const { csrf_token: csrfToken } = await authService.requestCSRFToken();
+  if (!csrfToken) throw new Error("CSRF token not found");
+  await authService.post("/auth/sign-out/", new URLSearchParams({ csrfmiddlewaretoken: csrfToken }));
+  // This endpoint redirects on both success and failure. Confirm cookie revocation
+  // before clearing private state rather than treating a submitted form as success.
+  if (await userService.currentUser()) throw new Error("Unable to sign out. Please try again.");
 }

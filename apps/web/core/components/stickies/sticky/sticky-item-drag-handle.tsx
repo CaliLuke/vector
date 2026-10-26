@@ -4,17 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // ui
 import { DragHandle } from "@plane/ui";
 // helper
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   isDragging: boolean;
 };
 
-export const StickyItemDragHandle = observer(function StickyItemDragHandle(props: Props) {
+export const StickyItemDragHandle = function StickyItemDragHandle(props: Props) {
   const { isDragging } = props;
 
   return (
@@ -29,4 +28,4 @@ export const StickyItemDragHandle = observer(function StickyItemDragHandle(props
       <DragHandle className="bg-transparent" />
     </div>
   );
-});
+};

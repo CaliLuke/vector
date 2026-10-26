@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // icons
 // plane imports
 import { EIconSize } from "@plane/constants";
@@ -18,7 +17,7 @@ type Props = {
   editable: boolean | undefined;
 };
 
-export const AppliedStateFilters = observer(function AppliedStateFilters(props: Props) {
+export const AppliedStateFilters = function AppliedStateFilters(props: Props) {
   const { handleRemove, states, values, editable } = props;
 
   return (
@@ -51,4 +50,4 @@ export const AppliedStateFilters = observer(function AppliedStateFilters(props: 
       })}
     </>
   );
-});
+};

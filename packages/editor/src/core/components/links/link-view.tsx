@@ -40,7 +40,7 @@ export function LinkView(props: LinkViewProps & { style: CSSProperties }) {
   return (
     <>
       {currentView === "LinkPreview" && <LinkPreview viewProps={props} switchView={switchView} />}
-      {currentView === "LinkEditView" && <LinkEditView viewProps={props} switchView={switchView} />}
+      {currentView === "LinkEditView" && <LinkEditView viewProps={props} />}
     </>
   );
 }

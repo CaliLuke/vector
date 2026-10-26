@@ -5,12 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TIssueServiceType } from "@plane/types";
 import { Collapsible } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // local imports
 import { SubIssuesCollapsibleContent } from "./content";
 import { SubIssuesCollapsibleTitle } from "./title";
@@ -24,10 +24,10 @@ type Props = {
   issueServiceType: TIssueServiceType;
 };
 
-export const SubIssuesCollapsible = observer(function SubIssuesCollapsible(props: Props) {
+export const SubIssuesCollapsible = function SubIssuesCollapsible(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType } = props;
   // store hooks
-  const { openWidgets, toggleOpenWidget } = useIssueDetail(issueServiceType);
+  const { openWidgets, toggleOpenWidget } = useIssueDetailUiState(issueServiceType);
   // derived values
   const isCollapsibleOpen = openWidgets.includes("sub-work-items");
 
@@ -35,7 +35,15 @@ export const SubIssuesCollapsible = observer(function SubIssuesCollapsible(props
     <Collapsible
       isOpen={isCollapsibleOpen}
       onToggle={() => toggleOpenWidget("sub-work-items")}
-      title={<SubIssuesCollapsibleTitle isOpen={isCollapsibleOpen} parentIssueId={issueId} />}
+      title={
+        <SubIssuesCollapsibleTitle
+          isOpen={isCollapsibleOpen}
+          parentIssueId={issueId}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueServiceType={issueServiceType}
+        />
+      }
       titleActionElement={
         <SubWorkItemTitleActions
           projectId={projectId}
@@ -55,4 +63,4 @@ export const SubIssuesCollapsible = observer(function SubIssuesCollapsible(props
       />
     </Collapsible>
   );
-});
+};

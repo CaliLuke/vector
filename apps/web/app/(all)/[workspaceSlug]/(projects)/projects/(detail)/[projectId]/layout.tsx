@@ -5,15 +5,14 @@
  */
 
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 // plane imports
 import { Header, Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { TabNavigationRoot } from "@/components/navigation/tab-navigation-root";
 import { AppSidebarToggleButton } from "@/components/sidebar/sidebar-toggle-button";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarCollapsed } from "@/providers/sidebar-state";
 import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferences";
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
@@ -23,7 +22,7 @@ function ProjectLayout(): React.JSX.Element | null {
   // router
   const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
-  const { sidebarCollapsed } = useAppTheme();
+  const sidebarCollapsed = useSidebarCollapsed();
   // preferences
   const { preferences: projectPreferences } = useProjectNavigationPreferences();
 
@@ -57,5 +56,5 @@ function ProjectLayout(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId")({
-  component: observer(ProjectLayout),
+  component: ProjectLayout,
 });

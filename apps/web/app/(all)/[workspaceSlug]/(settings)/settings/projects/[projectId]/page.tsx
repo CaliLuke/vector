@@ -5,17 +5,17 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ProjectDetailsForm } from "@/components/project/form";
 import { ProjectDetailsFormLoader } from "@/components/project/form-loader";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { GeneralProjectSettingsHeader } from "./header";
 import { GeneralProjectSettingsControlSection } from "@/components/project/settings/control-section";
@@ -24,10 +24,11 @@ function ProjectSettingsPage(): React.JSX.Element | null {
   // router
   const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
-  const { currentProjectDetails } = useProject();
-  const { allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId);
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
   const pageTitle = currentProjectDetails?.name ? `${currentProjectDetails?.name} - General Settings` : undefined;
 
@@ -52,5 +53,5 @@ function ProjectSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/")({
-  component: observer(ProjectSettingsPage),
+  component: ProjectSettingsPage,
 });

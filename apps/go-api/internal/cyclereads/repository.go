@@ -13,6 +13,10 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+	"github.com/CaliLuke/go-plane/internal/workitemtypes"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -54,6 +58,7 @@ func (err *InvalidGroupingFieldError) Error() string {
 }
 
 type database interface {
+	Begin(context.Context) (pgx.Tx, error)
 	QueryRow(context.Context, string, ...any) pgx.Row
 	Exec(context.Context, string, ...any) (pgconn.CommandTag, error)
 }
@@ -73,15 +78,19 @@ type Repository struct {
 }
 
 type IssueListOptions struct {
-	OrderBy       string
-	GroupBy       string
-	SubGroupBy    string
-	Cursor        string
-	CursorSet     bool
-	PerPage       int
-	PerPageSet    bool
-	Filters       map[string]string
-	ComplexFilter string
+	IncludeProperties bool
+	snapshot          *workitemtypes.PropertyDiscoverySnapshot
+	typeIDs           map[string]bool
+	properties        *cyclePropertyBindings
+	OrderBy           string
+	GroupBy           string
+	SubGroupBy        string
+	Cursor            string
+	CursorSet         bool
+	PerPage           int
+	PerPageSet        bool
+	Filters           map[string]string
+	ComplexFilter     string
 }
 
 func NewRepository(database database) (*Repository, error) {
@@ -232,7 +241,7 @@ func (repository *Repository) ArchiveDetail(
 	return repository.detail(ctx, activeCycleArchiveDetailSQL, "get cycle archive", userID, slug, projectID, cycleID)
 }
 
-func (repository *Repository) Issues(
+func (repository *Repository) issueResults(
 	ctx context.Context,
 	userID uuid.UUID,
 	slug string,
@@ -336,6 +345,11 @@ func (repository *Repository) queryIssues(
 	if err := json.Unmarshal(rowsData, &result.rows); err != nil {
 		return result, fmt.Errorf("decode cycle issue rows: %w", err)
 	}
+	if options.IncludeProperties && options.snapshot != nil {
+		if projectionErr := options.snapshot.ProjectStoredRows(ctx, result.rows, workitemtypes.DiscoveryElevatedProjectVisibility); projectionErr != nil {
+			return issueQueryResult{}, cycleDiscoveryError(projectionErr)
+		}
+	}
 	if err := json.Unmarshal(groupsData, &result.groups); err != nil {
 		return result, fmt.Errorf("decode cycle issue groups: %w", err)
 	}
@@ -377,6 +391,13 @@ func (repository *Repository) groupedIssues(
 	totalPages := 0
 	if maximum > 0 {
 		totalPages = int(math.Ceil(float64(maximum) / float64(limit)))
+	}
+	if options.IncludeProperties && options.snapshot != nil {
+		projected, projectionErr := projectGroupedRows(ctx, options, resultsData)
+		if projectionErr != nil {
+			return nil, cycleDiscoveryError(projectionErr)
+		}
+		resultsData = projected
 	}
 	return encodeIssueEnvelope(
 		options, limit, page, page > 0, nextPage, count, totalPages, total, json.RawMessage(resultsData),
@@ -675,21 +696,10 @@ func issueListQuery(
 	page int,
 ) (string, []any, error) {
 	args := []any{userID, slug, projectID, cycleID}
-	predicates := []string{
-		"workspace.slug = $2", "project.id = $3", "cycle_issue.cycle_id = $4",
-		"cycle_issue.deleted_at IS NULL", "issue.deleted_at IS NULL", "issue.archived_at IS NULL",
-		"issue.is_draft = false", "state.\"group\" IS DISTINCT FROM 'triage'", "project.deleted_at IS NULL", "project.archived_at IS NULL",
-	}
-	complexFilter, err := buildIssueComplexFilter(options.ComplexFilter, &args)
+	legacyJoins, predicates, err := issueFilterSource(options, &args, true)
 	if err != nil {
 		return "", nil, err
 	}
-	if complexFilter != "" {
-		predicates = append(predicates, complexFilter)
-	}
-	complexJoins := issueComplexRelationJoins(options.ComplexFilter)
-	legacyJoins := append(complexJoins, issueLegacyRelationJoins(options.Filters, &args)...)
-	predicates = append(predicates, issueFilterPredicates(options.Filters, &args)...)
 	standaloneJoin := ""
 	standalonePredicate := "true"
 	if options.GroupBy == "" {
@@ -718,10 +728,33 @@ func issueListQuery(
 	return query, args, nil
 }
 
+func issueFilterSource(options IssueListOptions, args *[]any, includeComplex bool) ([]string, []string, error) {
+	predicates := []string{
+		"workspace.slug = request_scope.slug", "project.id = request_scope.project_id", "cycle_issue.cycle_id = request_scope.cycle_id",
+		"cycle_issue.deleted_at IS NULL", "issue.deleted_at IS NULL", "issue.archived_at IS NULL",
+		"issue.is_draft = false", "state.\"group\" IS DISTINCT FROM 'triage'", "project.deleted_at IS NULL", "project.archived_at IS NULL",
+	}
+	structured := options.ComplexFilter
+	if !includeComplex {
+		structured = ""
+	}
+	complexFilter, err := (issueFilterCompiler{typeIDs: options.typeIDs, properties: options.properties}).build(structured, args)
+	if err != nil {
+		return nil, nil, err
+	}
+	if complexFilter != "" {
+		predicates = append(predicates, complexFilter)
+	}
+	complexJoins := issueComplexRelationJoins(structured)
+	legacyJoins := append(complexJoins, issueLegacyRelationJoins(options.Filters, args)...)
+	predicates = append(predicates, issueFilterPredicates(options.Filters, args)...)
+	return legacyJoins, predicates, nil
+}
+
 func standaloneSubgroupJoin(group string) string {
 	switch group {
 	case "labels__id":
-		return "LEFT JOIN issue_labels standalone_subgroup ON standalone_subgroup.issue_id=issue.id"
+		return "LEFT JOIN issue_labels standalone_subgroup ON " + issueRelationPredicate("issue_labels", "standalone_subgroup", true)
 	case "assignees__id":
 		return "LEFT JOIN issue_assignees standalone_subgroup ON standalone_subgroup.issue_id=issue.id"
 	case "issue_module__module_id":
@@ -749,8 +782,8 @@ func standaloneSubgroupSelect(options IssueListOptions) string {
 
 func issueListRelationProjection(options IssueListOptions) string {
 	assignees := `'assignee_ids',COALESCE((SELECT json_agg(DISTINCT assignee.assignee_id) FROM issue_assignees assignee WHERE assignee.issue_id=issue.id AND assignee.deleted_at IS NULL),'[]'::json)`
-	labels := `'label_ids',COALESCE((SELECT json_agg(DISTINCT issue_label.label_id) FROM issue_labels issue_label WHERE issue_label.issue_id=issue.id AND issue_label.deleted_at IS NULL),'[]'::json)`
-	modules := `'module_ids',COALESCE((SELECT json_agg(DISTINCT module_issue.module_id) FROM module_issues module_issue JOIN modules projected_module ON projected_module.id=module_issue.module_id WHERE module_issue.issue_id=issue.id AND module_issue.deleted_at IS NULL AND projected_module.archived_at IS NULL),'[]'::json)`
+	labels := `'label_ids',COALESCE((SELECT json_agg(DISTINCT issue_label.label_id) FROM issue_labels issue_label WHERE ` + issueRelationPredicate("issue_labels", "issue_label", true) + `),'[]'::json)`
+	modules := `'module_ids',COALESCE((SELECT json_agg(DISTINCT module_issue.module_id) FROM module_issues module_issue JOIN modules projected_module ON projected_module.id=module_issue.module_id WHERE module_issue.issue_id=issue.id AND module_issue.deleted_at IS NULL AND projected_module.deleted_at IS NULL AND projected_module.archived_at IS NULL),'[]'::json)`
 	if options.GroupBy == "" {
 		switch options.SubGroupBy {
 		case "labels__id":
@@ -775,21 +808,10 @@ func groupedIssueListQuery(
 	page int,
 ) (string, []any, error) {
 	args := []any{userID, slug, projectID, cycleID}
-	predicates := []string{
-		"workspace.slug = $2", "project.id = $3", "cycle_issue.cycle_id = $4",
-		"cycle_issue.deleted_at IS NULL", "issue.deleted_at IS NULL", "issue.archived_at IS NULL",
-		"issue.is_draft = false", "state.\"group\" IS DISTINCT FROM 'triage'", "project.deleted_at IS NULL", "project.archived_at IS NULL",
-	}
-	complexFilter, err := buildIssueComplexFilter(options.ComplexFilter, &args)
+	legacyJoins, predicates, err := issueFilterSource(options, &args, true)
 	if err != nil {
 		return "", nil, err
 	}
-	if complexFilter != "" {
-		predicates = append(predicates, complexFilter)
-	}
-	complexJoins := issueComplexRelationJoins(options.ComplexFilter)
-	legacyJoins := append(complexJoins, issueLegacyRelationJoins(options.Filters, &args)...)
-	predicates = append(predicates, issueFilterPredicates(options.Filters, &args)...)
 	for _, group := range []string{options.GroupBy, options.SubGroupBy} {
 		if predicate := issueMultiGroupPredicate(group); predicate != "" {
 			predicates = append(predicates, predicate)
@@ -811,6 +833,7 @@ CROSS JOIN LATERAL jsonb_array_elements_text(universes.group_values) group_value
 		payload = multiGroupedIssuePayloadSQL
 	}
 	if options.SubGroupBy != "" {
+		subgroupKeys = issueGroupKeysSQL(options.SubGroupBy)
 		subgroupUniverse = issueGroupUniverseSQL(options.SubGroupBy)
 		payload = subgroupedIssuePayloadSQL
 		bucketKeys = `SELECT DISTINCT group_key,subgroup_key FROM expanded`
@@ -864,7 +887,8 @@ func issueMultiGroupPredicate(group string) string {
 	var table string
 	switch group {
 	case "labels__id":
-		table = "issue_labels"
+		// The canonical label array supplies either live label IDs or None.
+		return ""
 	case "assignees__id":
 		table = "issue_assignees"
 	case "issue_module__module_id":
@@ -925,7 +949,7 @@ func issueGroupUniverseSQL(group string) string {
 	case "priority":
 		return `'["low","medium","high","urgent","none"]'::json`
 	case "labels__id":
-		return `(SELECT COALESCE(json_agg(value),'[]'::json) FROM (SELECT label.id::text value FROM labels label WHERE label.project_id=$3 AND label.deleted_at IS NULL UNION ALL SELECT 'None') values)`
+		return `(SELECT COALESCE(json_agg(value),'[]'::json) FROM (SELECT label.id::text value FROM labels label WHERE label.project_id=$3 AND label.workspace_id=(SELECT label_project.workspace_id FROM projects label_project WHERE label_project.id=$3) AND label.deleted_at IS NULL UNION ALL SELECT 'None') values)`
 	case "assignees__id":
 		return `(SELECT COALESCE(json_agg(project_member.member_id ORDER BY project_member.member_id),'[]'::json) FROM project_members project_member JOIN workspaces workspace ON workspace.id=project_member.workspace_id WHERE workspace.slug=$2 AND project_member.project_id=$3 AND project_member.is_active=true AND project_member.deleted_at IS NULL)`
 	case "issue_module__module_id":
@@ -956,7 +980,7 @@ func issueOrder(orderBy string) string {
 		"state__name":                "state.name",
 		"state__group":               `CASE state."group" WHEN 'backlog' THEN 0 WHEN 'unstarted' THEN 1 WHEN 'started' THEN 2 WHEN 'completed' THEN 3 WHEN 'cancelled' THEN 4 ELSE 5 END`,
 		"assignees__first_name":      "(SELECT min(u.first_name) FROM issue_assignees ia JOIN users u ON u.id=ia.assignee_id WHERE ia.issue_id=issue.id)",
-		"labels__name":               "(SELECT min(label.name) FROM issue_labels il JOIN labels label ON label.id=il.label_id WHERE il.issue_id=issue.id)",
+		"labels__name":               "(SELECT min(label.name) FROM issue_labels il JOIN labels label ON label.id=il.label_id WHERE " + issueRelationPredicate("issue_labels", "il", true) + ")",
 		"issue_module__module__name": "(SELECT min(module.name) FROM module_issues mi JOIN modules module ON module.id=mi.module_id WHERE mi.issue_id=issue.id)",
 	}
 	expression, ok := fields[field]
@@ -1023,7 +1047,7 @@ func issueFilterPredicates(filters map[string]string, args *[]any) []string {
 			}
 		case "labels", "label_id", "label_id__in":
 			if hasCommaToken(value, "None") {
-				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM issue_labels no_label WHERE no_label.issue_id=issue.id)")
+				predicates = append(predicates, "NOT EXISTS (SELECT 1 FROM issue_labels no_label WHERE "+issueRelationPredicate("issue_labels", "no_label", true)+")")
 			}
 		case "assignees", "assignee_id", "assignee_id__in":
 			if hasCommaToken(value, "None") {
@@ -1137,20 +1161,8 @@ func issueLegacyRelationJoins(filters map[string]string, args *[]any) []string {
 			continue
 		}
 		*args = append(*args, values)
-		deleted := ""
-		if relation.softDelete {
-			deleted = " AND " + relation.alias + ".deleted_at IS NULL"
-		}
-		joins = append(joins, fmt.Sprintf(
-			"JOIN %s %s ON %s.issue_id=issue.id AND %s.%s=ANY($%d::uuid[])%s",
-			relation.table,
-			relation.alias,
-			relation.alias,
-			relation.alias,
-			relation.column,
-			len(*args),
-			deleted,
-		))
+		joins = append(joins, fmt.Sprintf("JOIN %s %s ON %s AND %s.%s=ANY($%d::uuid[])",
+			relation.table, relation.alias, issueRelationPredicate(relation.table, relation.alias, relation.softDelete), relation.alias, relation.column, len(*args)))
 	}
 	statusValues := CSV(filters["intake_status"])
 	if inboxValues := CSV(filters["inbox_status"]); len(inboxValues) > 0 {
@@ -1186,7 +1198,7 @@ var issueComplexFilterFields = map[string]struct{}{
 	"priority": {}, "priority__exact": {}, "priority__in": {},
 }
 
-func buildIssueComplexFilter(raw string, args *[]any) (string, error) {
+func (compiler issueFilterCompiler) build(raw string, args *[]any) (string, error) {
 	if raw == "" {
 		return "", nil
 	}
@@ -1221,13 +1233,19 @@ func buildIssueComplexFilter(raw string, args *[]any) (string, error) {
 			return "", nil
 		}
 	}
-	if err := validateIssueComplexFilter(decoded, 1); err != nil {
+	if err := compiler.validate(decoded, 1); err != nil {
 		return "", err
 	}
-	return renderIssueComplexFilter(decoded, args, true)
+	clause, err := compiler.render(decoded, args, true)
+	if object, ok := decoded.(map[string]any); ok {
+		if _, disjunction := issueLogicalValue(object, "or"); disjunction {
+			clause = "(" + clause + ")"
+		}
+	}
+	return clause, err
 }
 
-func validateIssueComplexFilter(node any, depth int) error {
+func (compiler issueFilterCompiler) validate(node any, depth int) error {
 	if depth > 5 {
 		return newFilterError("Filter nesting is too deep (max 5); found depth "+strconv.Itoa(depth), "max_depth_exceeded")
 	}
@@ -1260,7 +1278,7 @@ func validateIssueComplexFilter(node any, depth int) error {
 			if !ok {
 				return newFilterError("'not' must be a single JSON object", "invalid_not_child")
 			}
-			return validateIssueComplexFilter(child, depth+1)
+			return compiler.validate(child, depth+1)
 		}
 		children, ok := value.([]any)
 		if !ok || len(children) == 0 {
@@ -1270,13 +1288,26 @@ func validateIssueComplexFilter(node any, depth int) error {
 			if _, ok := child.(map[string]any); !ok {
 				return newFilterError("All children of '"+operator+"' must be JSON objects", "invalid_operator_child_type")
 			}
-			if err := validateIssueComplexFilter(child, depth+1); err != nil {
+			if err := compiler.validate(child, depth+1); err != nil {
 				return err
 			}
 		}
 		return nil
 	}
 	for field, value := range object {
+		scratch := []any{}
+		if _, handled, err := compiler.properties.field(field, value, &scratch); handled {
+			if err != nil {
+				return err
+			}
+			continue
+		}
+		if _, handled, err := compiler.typeField(field, value, &scratch); handled {
+			if err != nil {
+				return err
+			}
+			continue
+		}
 		if list, ok := value.([]any); ok {
 			if len(list) == 0 {
 				return newFilterError("List value for '"+field+"' must not be empty", "empty_list_value")
@@ -1296,15 +1327,15 @@ func validateIssueComplexFilter(node any, depth int) error {
 	return nil
 }
 
-func renderIssueComplexFilter(node any, args *[]any, directRelations bool) (string, error) {
+func (compiler issueFilterCompiler) render(node any, args *[]any, directRelations bool) (string, error) {
 	object := node.(map[string]any)
 	for _, operator := range []string{"or", "and", "not"} {
-		value, exists := object[operator]
+		value, exists := issueLogicalValue(object, operator)
 		if !exists {
 			continue
 		}
 		if operator == "not" {
-			child, err := renderIssueComplexFilter(value, args, false)
+			child, err := compiler.render(value, args, false)
 			if err != nil {
 				return "", err
 			}
@@ -1325,12 +1356,12 @@ func renderIssueComplexFilter(node any, args *[]any, directRelations bool) (stri
 				leaves = append(leaves, leaf)
 			}
 			if allLeaves {
-				return renderIssueComplexFilterLeaves(leaves, args, directRelations)
+				return compiler.renderLeaves(leaves, args, directRelations)
 			}
 		}
 		clauses := make([]string, 0, len(children))
 		for _, child := range children {
-			clause, err := renderIssueComplexFilter(child, args, directRelations)
+			clause, err := compiler.render(child, args, directRelations)
 			if err != nil {
 				return "", err
 			}
@@ -1347,10 +1378,10 @@ func renderIssueComplexFilter(node any, args *[]any, directRelations bool) (stri
 		}
 		return strings.Join(clauses, joiner), nil
 	}
-	return renderIssueComplexFilterLeaves([]map[string]any{object}, args, directRelations)
+	return compiler.renderLeaves([]map[string]any{object}, args, directRelations)
 }
 
-func renderIssueComplexFilterLeaves(leaves []map[string]any, args *[]any, directRelations bool) (string, error) {
+func (compiler issueFilterCompiler) renderLeaves(leaves []map[string]any, args *[]any, directRelations bool) (string, error) {
 	type relationCondition struct {
 		field string
 		value any
@@ -1364,7 +1395,7 @@ func renderIssueComplexFilterLeaves(leaves []map[string]any, args *[]any, direct
 				relations[baseField] = append(relations[baseField], relationCondition{field: field, value: value})
 				continue
 			}
-			clause, err := renderIssueComplexFilterField(field, value, args, directRelations)
+			clause, err := compiler.renderField(field, value, args, directRelations)
 			if err != nil {
 				return "", err
 			}
@@ -1403,8 +1434,8 @@ func renderIssueComplexFilterLeaves(leaves []map[string]any, args *[]any, direct
 			continue
 		}
 		clauses = append(clauses, fmt.Sprintf(
-			"EXISTS (SELECT 1 FROM %s complex_relation WHERE complex_relation.issue_id = issue.id AND complex_relation.deleted_at IS NULL AND %s)",
-			relation[0], strings.Join(predicates, " AND "),
+			"EXISTS (SELECT 1 FROM %s complex_relation WHERE %s AND %s)",
+			relation[0], issueRelationPredicate(relation[0], "complex_relation", true), strings.Join(predicates, " AND "),
 		))
 	}
 	if len(clauses) == 0 {
@@ -1489,19 +1520,19 @@ func issueComplexRelationJoins(raw string) []string {
 			join = "JOIN"
 		}
 		alias := "complex_join_" + baseField
-		joins = append(joins, fmt.Sprintf(
-			"%s %s %s ON %s.issue_id=issue.id AND %s.deleted_at IS NULL",
-			join,
-			relation[0],
-			alias,
-			alias,
-			alias,
-		))
+		joins = append(joins, fmt.Sprintf("%s %s %s ON %s", join, relation[0], alias, issueRelationPredicate(relation[0], alias, true)))
 	}
 	return joins
 }
 
-func renderIssueComplexFilterField(field string, value any, args *[]any, directRelations bool) (string, error) {
+func (compiler issueFilterCompiler) renderField(field string, value any, args *[]any, directRelations bool) (string, error) {
+	if clause, handled, err := compiler.properties.field(field, value, args); handled {
+		return clause, err
+	}
+	if clause, handled, err := compiler.typeField(field, value, args); handled {
+		return clause, err
+	}
+
 	values := issueFilterValues(value)
 	inLookup := strings.HasSuffix(field, "__in")
 	baseField := strings.TrimSuffix(strings.TrimSuffix(strings.TrimSuffix(field, "__exact"), "__in"), "__range")
@@ -1559,8 +1590,8 @@ func renderIssueComplexFilterField(field string, value any, args *[]any, directR
 			), nil
 		}
 		return fmt.Sprintf(
-			"EXISTS (SELECT 1 FROM %s complex_relation WHERE complex_relation.issue_id = issue.id AND complex_relation.deleted_at IS NULL AND complex_relation.%s::text = ANY(string_to_array($%d, ',')))",
-			relation[0], relation[1], len(*args),
+			"EXISTS (SELECT 1 FROM %s complex_relation WHERE %s AND complex_relation.%s::text = ANY(string_to_array($%d, ',')))",
+			relation[0], issueRelationPredicate(relation[0], "complex_relation", true), relation[1], len(*args),
 		), nil
 	case "created_by_id", "state_id", "project_id":
 		ids, err := issueFilterUUIDs(values, field)
@@ -2066,7 +2097,7 @@ SELECT json_build_object(
         count(issue.id) FILTER (WHERE issue.completed_at IS NULL AND issue.archived_at IS NULL AND issue.is_draft=false) pending_issues
       FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id AND issue.workspace_id=workspace.id AND issue.project_id=project.id AND project.archived_at IS NULL
       LEFT JOIN states issue_state ON issue_state.id=issue.state_id
-      LEFT JOIN issue_labels issue_label ON issue_label.issue_id=issue.id
+      LEFT JOIN issue_labels issue_label ON ` + issueRelationPredicate("issue_labels", "issue_label", true) + `
       LEFT JOIN labels label ON label.id=issue_label.label_id
       WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
         AND issue.archived_at IS NULL AND issue.is_draft=false AND issue_state."group" IS DISTINCT FROM 'triage'
@@ -2104,7 +2135,7 @@ SELECT json_build_object(
         count(issue_label.label_id) FILTER (WHERE issue.completed_at IS NULL) pending_issues
       FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id AND issue.workspace_id=workspace.id AND issue.project_id=project.id AND project.archived_at IS NULL
       LEFT JOIN states issue_state ON issue_state.id=issue.state_id
-      LEFT JOIN issue_labels issue_label ON issue_label.issue_id=issue.id
+      LEFT JOIN issue_labels issue_label ON ` + issueRelationPredicate("issue_labels", "issue_label", true) + `
       LEFT JOIN labels label ON label.id=issue_label.label_id
       WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
         AND issue.archived_at IS NULL AND issue.is_draft=false AND issue_state."group" IS DISTINCT FROM 'triage'
@@ -2126,7 +2157,7 @@ SELECT json_build_object(
         sum(estimate_point.value::float8) FILTER (WHERE issue.completed_at IS NULL AND issue.archived_at IS NULL AND issue.is_draft=false) pending_estimates
       FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id AND issue.workspace_id=workspace.id AND issue.project_id=project.id AND project.archived_at IS NULL
       LEFT JOIN states issue_state ON issue_state.id=issue.state_id
-      LEFT JOIN estimate_points estimate_point ON estimate_point.id=issue.estimate_point_id
+      LEFT JOIN estimate_points estimate_point ON ` + issuequery.LiveNumericEstimatePredicate("issue", "estimate_point") + `
       LEFT JOIN issue_assignees assignee ON assignee.issue_id=issue.id
       LEFT JOIN users user_account ON user_account.id=assignee.assignee_id
       WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
@@ -2143,8 +2174,8 @@ SELECT json_build_object(
         sum(estimate_point.value::float8) FILTER (WHERE issue.completed_at IS NULL AND issue.archived_at IS NULL AND issue.is_draft=false) pending_estimates
       FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id AND issue.workspace_id=workspace.id AND issue.project_id=project.id AND project.archived_at IS NULL
       LEFT JOIN states issue_state ON issue_state.id=issue.state_id
-      LEFT JOIN estimate_points estimate_point ON estimate_point.id=issue.estimate_point_id
-      LEFT JOIN issue_labels issue_label ON issue_label.issue_id=issue.id
+      LEFT JOIN estimate_points estimate_point ON ` + issuequery.LiveNumericEstimatePredicate("issue", "estimate_point") + `
+      LEFT JOIN issue_labels issue_label ON ` + issueRelationPredicate("issue_labels", "issue_label", true) + `
       LEFT JOIN labels label ON label.id=issue_label.label_id
       WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
         AND issue.archived_at IS NULL AND issue.is_draft=false AND issue_state."group" IS DISTINCT FROM 'triage'
@@ -2192,7 +2223,7 @@ var estimateBurndownSQL = `COALESCE((
       counts.total - COALESCE((SELECT sum(completed_point.value::float8) FROM cycle_issues completed_ci
         JOIN issues completed_issue ON completed_issue.id=completed_ci.issue_id AND completed_issue.workspace_id=workspace.id AND completed_issue.project_id=project.id AND project.archived_at IS NULL
         LEFT JOIN states completed_state ON completed_state.id=completed_issue.state_id
-        JOIN estimate_points completed_point ON completed_point.id=completed_issue.estimate_point_id
+        JOIN estimate_points completed_point ON ` + issuequery.LiveNumericEstimatePredicate("completed_issue", "completed_point") + `
         WHERE completed_ci.cycle_id=cycle.id AND completed_ci.deleted_at IS NULL
           AND completed_issue.deleted_at IS NULL AND completed_issue.archived_at IS NULL
           AND completed_issue.is_draft=false AND completed_state."group" IS DISTINCT FROM 'triage'
@@ -2202,7 +2233,7 @@ var estimateBurndownSQL = `COALESCE((
   CROSS JOIN LATERAL (SELECT COALESCE(sum(total_point.value::float8),0) total FROM cycle_issues total_ci
     JOIN issues total_issue ON total_issue.id=total_ci.issue_id AND total_issue.workspace_id=workspace.id AND total_issue.project_id=project.id AND project.archived_at IS NULL
     LEFT JOIN states total_state ON total_state.id=total_issue.state_id
-    JOIN estimate_points total_point ON total_point.id=total_issue.estimate_point_id
+    JOIN estimate_points total_point ON ` + issuequery.LiveNumericEstimatePredicate("total_issue", "total_point") + `
     WHERE total_ci.cycle_id=cycle.id AND total_ci.deleted_at IS NULL AND total_issue.deleted_at IS NULL
       AND total_issue.archived_at IS NULL AND total_issue.is_draft=false AND total_state."group" IS DISTINCT FROM 'triage') counts
 ),'{}'::json)`
@@ -2219,13 +2250,12 @@ SELECT json_build_object(
       AND issue.archived_at IS NULL AND issue.is_draft=false AND issue_state."group" IS DISTINCT FROM 'triage'),
   'logo_props',cycle.logo_props,
   'completed_estimate_points',COALESCE((SELECT sum(point.value::float8) FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id
-    JOIN states state ON state.id=issue.state_id JOIN estimate_points point ON point.id=issue.estimate_point_id
-    JOIN estimates estimate ON estimate.id=point.estimate_id AND estimate.type='points'
+    JOIN states state ON state.id=issue.state_id JOIN estimate_points point ON ` + issuequery.LiveNumericEstimatePredicate("issue", "point") + `
     WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
       AND issue.archived_at IS NULL AND issue.is_draft=false AND state."group"='completed'),0),
   'total_estimate_points',COALESCE((SELECT sum(point.value::float8) FROM cycle_issues ci JOIN issues issue ON issue.id=ci.issue_id
     LEFT JOIN states state ON state.id=issue.state_id
-    JOIN estimate_points point ON point.id=issue.estimate_point_id JOIN estimates estimate ON estimate.id=point.estimate_id AND estimate.type='points'
+    JOIN estimate_points point ON ` + issuequery.LiveNumericEstimatePredicate("issue", "point") + `
     WHERE ci.cycle_id=cycle.id AND ci.deleted_at IS NULL AND issue.deleted_at IS NULL
       AND issue.archived_at IS NULL AND issue.is_draft=false AND state."group" IS DISTINCT FROM 'triage'),0),
   'is_favorite',EXISTS(SELECT 1 FROM user_favorites favorite WHERE favorite.user_id=$1 AND favorite.entity_type='cycle'
@@ -2333,15 +2363,23 @@ SELECT COALESCE(jsonb_object_agg(
 FROM universes
 CROSS JOIN LATERAL jsonb_array_elements_text(universes.group_values) group_value(value)`
 
-var groupedIssueListSQL = `
-WITH filtered AS (
-  SELECT issue.*,(SELECT annotated_cycle.cycle_id FROM cycle_issues annotated_cycle WHERE annotated_cycle.issue_id=issue.id AND annotated_cycle.deleted_at IS NULL ORDER BY annotated_cycle.created_at DESC LIMIT 1) cycle_id
-  FROM issues issue
+const issueRequestScopeSQL = `
+WITH request_scope AS (
+  SELECT $1::uuid user_id, $2::text slug, $3::uuid project_id, $4::uuid cycle_id
+)`
+
+const issueFilterFromSQL = `  FROM issues issue
+  CROSS JOIN request_scope
   JOIN cycle_issues cycle_issue ON cycle_issue.issue_id=issue.id
   %s
   JOIN projects project ON project.id=issue.project_id
   JOIN workspaces workspace ON workspace.id=issue.workspace_id
   LEFT JOIN states state ON state.id=issue.state_id
+`
+
+var groupedIssueListSQL = issueRequestScopeSQL + `, filtered AS (
+  SELECT issue.*,(SELECT annotated_cycle.cycle_id FROM cycle_issues annotated_cycle JOIN cycles live_cycle ON live_cycle.id=annotated_cycle.cycle_id AND live_cycle.deleted_at IS NULL AND live_cycle.project_id=issue.project_id AND live_cycle.workspace_id=issue.workspace_id WHERE annotated_cycle.issue_id=issue.id AND annotated_cycle.deleted_at IS NULL ORDER BY annotated_cycle.created_at DESC LIMIT 1) cycle_id
+` + issueFilterFromSQL + `
   WHERE %s
 ), params AS (
   SELECT $%d::numeric lower_bound,$%d::numeric upper_bound
@@ -2357,14 +2395,14 @@ WITH filtered AS (
     )) countable,
     row_number() OVER (ORDER BY %s) position,
     jsonb_build_object(
-      'id',issue.id,'name',issue.name,'state_id',issue.state_id,'sort_order',issue.sort_order,
+      'id',issue.id,'name',issue.name,'type_id',issue.type_id,'state_id',issue.state_id,'sort_order',issue.sort_order,
       'completed_at',` + utcTimestampSQL("issue.completed_at") + `,'estimate_point',issue.estimate_point_id,'priority',issue.priority,
       'start_date',issue.start_date,'target_date',issue.target_date,'sequence_id',issue.sequence_id,
-      'project_id',issue.project_id,'parent_id',issue.parent_id,'cycle_id',issue.cycle_id,
+      'project_id',issue.project_id,'parent_id',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
       'sub_issues_count',(SELECT count(*) FROM issues child
         LEFT JOIN states child_state ON child_state.id=child.state_id
         JOIN projects child_project ON child_project.id=child.project_id
-        WHERE child.parent_id=issue.id AND child.deleted_at IS NULL AND child.archived_at IS NULL
+        WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
           AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
       'created_at',` + utcTimestampSQL("issue.created_at") + `,'updated_at',` + utcTimestampSQL("issue.updated_at") + `,
       'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
@@ -2372,8 +2410,8 @@ WITH filtered AS (
       'link_count',(SELECT count(*) FROM issue_links link WHERE link.issue_id=issue.id AND link.deleted_at IS NULL),
       'is_draft',issue.is_draft,'archived_at',issue.archived_at,'state__group',state."group",
       'assignee_ids',COALESCE((SELECT jsonb_agg(DISTINCT assignee.assignee_id) FROM issue_assignees assignee WHERE assignee.issue_id=issue.id AND assignee.deleted_at IS NULL),'[]'::jsonb),
-      'label_ids',COALESCE((SELECT jsonb_agg(DISTINCT issue_label.label_id) FROM issue_labels issue_label WHERE issue_label.issue_id=issue.id AND issue_label.deleted_at IS NULL),'[]'::jsonb),
-      'module_ids',COALESCE((SELECT jsonb_agg(DISTINCT module_issue.module_id) FROM module_issues module_issue JOIN modules projected_module ON projected_module.id=module_issue.module_id WHERE module_issue.issue_id=issue.id AND module_issue.deleted_at IS NULL AND projected_module.archived_at IS NULL),'[]'::jsonb)
+      'label_ids',COALESCE((SELECT jsonb_agg(DISTINCT issue_label.label_id) FROM issue_labels issue_label WHERE ` + issueRelationPredicate("issue_labels", "issue_label", true) + `),'[]'::jsonb),
+      'module_ids',COALESCE((SELECT jsonb_agg(DISTINCT module_issue.module_id) FROM module_issues module_issue JOIN modules projected_module ON projected_module.id=module_issue.module_id WHERE module_issue.issue_id=issue.id AND module_issue.deleted_at IS NULL AND projected_module.deleted_at IS NULL AND projected_module.archived_at IS NULL),'[]'::jsonb)
     ) item
   FROM filtered issue
   LEFT JOIN states state ON state.id=issue.state_id
@@ -2434,15 +2472,9 @@ SELECT CASE WHEN EXISTS(SELECT 1 FROM paged) THEN (` + `%s` + `) ELSE '{}'::json
   ),false),
   (SELECT missing_group_key FROM source_guard)`
 
-var issueListSQL = `
-WITH base AS (
-  SELECT issue.*,(SELECT annotated_cycle.cycle_id FROM cycle_issues annotated_cycle WHERE annotated_cycle.issue_id=issue.id AND annotated_cycle.deleted_at IS NULL ORDER BY annotated_cycle.created_at DESC LIMIT 1) cycle_id
-  FROM issues issue
-  JOIN cycle_issues cycle_issue ON cycle_issue.issue_id=issue.id
-  %s
-  JOIN projects project ON project.id=issue.project_id
-  JOIN workspaces workspace ON workspace.id=issue.workspace_id
-  LEFT JOIN states state ON state.id=issue.state_id
+var issueListSQL = issueRequestScopeSQL + `, base AS (
+  SELECT issue.*,(SELECT annotated_cycle.cycle_id FROM cycle_issues annotated_cycle JOIN cycles live_cycle ON live_cycle.id=annotated_cycle.cycle_id AND live_cycle.deleted_at IS NULL AND live_cycle.project_id=issue.project_id AND live_cycle.workspace_id=issue.workspace_id WHERE annotated_cycle.issue_id=issue.id AND annotated_cycle.deleted_at IS NULL ORDER BY annotated_cycle.created_at DESC LIMIT 1) cycle_id
+` + issueFilterFromSQL + `
   WHERE %s
 ), base_total AS (
   SELECT count(DISTINCT id)::int total FROM base
@@ -2453,14 +2485,14 @@ WITH base AS (
   WHERE %s
 ), matching AS (
   SELECT issue.id, issue.created_at, row_number() OVER (ORDER BY %s) position, json_build_object(
-    'id',issue.id,'name',issue.name,'state_id',issue.state_id,'sort_order',issue.sort_order,
+    'id',issue.id,'name',issue.name,'type_id',issue.type_id,'state_id',issue.state_id,'sort_order',issue.sort_order,
     'completed_at',` + utcTimestampSQL("issue.completed_at") + `,'estimate_point',issue.estimate_point_id,'priority',issue.priority,
     'start_date',issue.start_date,'target_date',issue.target_date,'sequence_id',issue.sequence_id,
-    'project_id',issue.project_id,'parent_id',issue.parent_id,'cycle_id',issue.cycle_id,
+    'project_id',issue.project_id,'parent_id',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,'cycle_id',issue.cycle_id,
     'sub_issues_count',(SELECT count(*) FROM issues child
       LEFT JOIN states child_state ON child_state.id=child.state_id
       JOIN projects child_project ON child_project.id=child.project_id
-      WHERE child.parent_id=issue.id AND child.deleted_at IS NULL AND child.archived_at IS NULL
+      WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
         AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
     'created_at',` + utcTimestampSQL("issue.created_at") + `,'updated_at',` + utcTimestampSQL("issue.updated_at") + `,'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
     'attachment_count',(SELECT count(*) FROM file_assets asset WHERE asset.issue_id=issue.id AND asset.entity_type='ISSUE_ATTACHMENT' AND asset.deleted_at IS NULL),
@@ -2489,13 +2521,13 @@ SELECT json_build_object(
   'sub_issues_count',(SELECT count(*) FROM issues child
     LEFT JOIN states child_state ON child_state.id=child.state_id
     JOIN projects child_project ON child_project.id=child.project_id
-    WHERE child.parent_id=issue.id AND child.deleted_at IS NULL AND child.archived_at IS NULL
+    WHERE child.parent_id=issue.id AND ` + djangoapi.IssueVisibleSQL("child", "$1::uuid", "issue.workspace_id") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL
       AND child.is_draft=false AND child_state."group" IS DISTINCT FROM 'triage' AND child_project.archived_at IS NULL),
   'issue_detail',(to_jsonb(issue)
     - 'workspace_id' - 'project_id' - 'state_id' - 'parent_id' - 'estimate_point_id' - 'type_id'
     - 'created_by_id' - 'updated_by_id'
     || jsonb_build_object(
-      'workspace',issue.workspace_id,'project',issue.project_id,'state',issue.state_id,'parent',issue.parent_id,
+      'workspace',issue.workspace_id,'project',issue.project_id,'state',issue.state_id,'parent',` + djangoapi.VisibleParentSQL("issue", "$1::uuid") + `,
       'estimate_point',issue.estimate_point_id,'type',issue.type_id,
       'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,
       'description_binary',CASE WHEN issue.description_binary IS NULL THEN NULL
@@ -2532,7 +2564,7 @@ SELECT json_build_object(
         SELECT jsonb_agg(jsonb_build_object('id',label.id,'name',label.name,'color',label.color) ORDER BY label.created_at DESC)
         FROM issue_labels issue_label
         JOIN labels label ON label.id=issue_label.label_id
-        WHERE issue_label.issue_id=issue.id AND label.deleted_at IS NULL
+        WHERE ` + issueRelationPredicate("issue_labels", "issue_label", true) + `
       ),'[]'::jsonb)
     )
   )
@@ -2552,14 +2584,14 @@ WHERE workspace.slug=$2 AND project.id=$3 AND cycle_issue.cycle_id=$4 AND cycle_
       AND detail_member.member_id=$1 AND detail_member.is_active=true AND detail_member.deleted_at IS NULL
   )`
 
-const cycleProgressSQL = `
+var cycleProgressSQL = `
 SELECT json_build_object(
-  'backlog_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='backlog' AND estimate.type='points'),0),
-  'unstarted_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='unstarted' AND estimate.type='points'),0),
-  'started_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='started' AND estimate.type='points'),0),
-  'cancelled_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='cancelled' AND estimate.type='points'),0),
-  'completed_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='completed' AND estimate.type='points'),0),
-  'total_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE estimate.type='points' AND state."group" IS DISTINCT FROM 'triage'),0),
+  'backlog_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='backlog'),0),
+  'unstarted_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='unstarted'),0),
+  'started_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='started'),0),
+  'cancelled_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='cancelled'),0),
+  'completed_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group"='completed'),0),
+  'total_estimate_points',COALESCE(sum(point.value::float8) FILTER(WHERE state."group" IS DISTINCT FROM 'triage'),0),
   'backlog_issues',CASE WHEN cycle.progress_snapshot <> '{}'::jsonb THEN COALESCE((cycle.progress_snapshot->>'backlog_issues')::int,0) ELSE count(issue.id) FILTER(WHERE state."group"='backlog') END,
   'unstarted_issues',CASE WHEN cycle.progress_snapshot <> '{}'::jsonb THEN COALESCE((cycle.progress_snapshot->>'unstarted_issues')::int,0) ELSE count(issue.id) FILTER(WHERE state."group"='unstarted') END,
   'started_issues',CASE WHEN cycle.progress_snapshot <> '{}'::jsonb THEN COALESCE((cycle.progress_snapshot->>'started_issues')::int,0) ELSE count(issue.id) FILTER(WHERE state."group"='started') END,
@@ -2576,8 +2608,7 @@ LEFT JOIN issues issue ON issue.id=cycle_issue.issue_id AND issue.project_id=pro
   AND issue.deleted_at IS NULL
   AND issue.archived_at IS NULL AND issue.is_draft=false
 LEFT JOIN states state ON state.id=issue.state_id
-LEFT JOIN estimate_points point ON point.id=issue.estimate_point_id
-LEFT JOIN estimates estimate ON estimate.id=point.estimate_id
+LEFT JOIN estimate_points point ON ` + issuequery.LiveNumericEstimatePredicate("issue", "point") + `
 WHERE workspace.slug=$1 AND project.id=$2 AND cycle.id=$3 AND cycle.deleted_at IS NULL
 GROUP BY cycle.id`
 

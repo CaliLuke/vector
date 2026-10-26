@@ -613,62 +613,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "getDisplayPropertiesCount"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "getGroupId"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "HIGHLIGHT_CLASS"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "HIGHLIGHT_WITH_LINE"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "isSubGrouped"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/components/issues/issue-layouts/utils.tsx",
-        "name": "removeNillKeys"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/helpers/emoji.helper.tsx",
-        "name": "renderEmoji"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/space/helpers/string.helper.ts",
         "name": "capitalizeFirstLetter"
       },
@@ -687,14 +631,6 @@
         "category": "exports",
         "file": "apps/space/helpers/string.helper.ts",
         "name": "replaceUnderscoreIfSnakeCase"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/space/store/helpers/base-issues.store.ts",
-        "name": "ISSUE_FILTER_DEFAULT_DATA"
       },
       "count": 1
     },
@@ -821,38 +757,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/inbox/modals/create-modal/create-root.tsx",
-        "name": "defaultIssueData"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-detail/label/create-label.tsx",
-        "name": "LabelCreate"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-detail/links/root.tsx",
-        "name": "IssueLinkRoot"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-detail/reactions/issue-comment.tsx",
-        "name": "IssueCommentReaction"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/cycle.tsx",
         "name": "AppliedCycleFilters"
       },
@@ -861,24 +765,8 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/date.tsx",
-        "name": "AppliedDateFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/label.tsx",
         "name": "AppliedLabelsFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/applied-filters/members.tsx",
-        "name": "AppliedMembersFilters"
       },
       "count": 1
     },
@@ -925,14 +813,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/created-by.tsx",
-        "name": "FilterCreatedBy"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/cycle.tsx",
         "name": "FilterCycle"
       },
@@ -943,14 +823,6 @@
         "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/labels.tsx",
         "name": "FilterLabels"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/filters/header/filters/mentions.tsx",
-        "name": "FilterMentions"
       },
       "count": 1
     },
@@ -990,14 +862,6 @@
       "finding": {
         "category": "exports",
         "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
-        "name": "getScopeMemberIds"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
         "name": "getTeamProjectColumns"
       },
       "count": 1
@@ -1007,14 +871,6 @@
         "category": "exports",
         "file": "apps/web/core/components/labels/label-drag-n-drop-HOC.tsx",
         "name": "LabelDragPreview"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/components/modules/sidebar-select/select-status.tsx",
-        "name": "SidebarStatusSelect"
       },
       "count": 1
     },
@@ -1117,14 +973,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/components/projects/create/attributes.tsx",
-        "name": "default"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/components/relations/index.tsx",
         "name": "ISSUE_RELATION_OPTIONS"
       },
@@ -1173,14 +1021,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/hooks/store/workspace-draft/use-workspace-draft-issue-filters.ts",
-        "name": "useWorkspaceDraftIssueFilters"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/hooks/use-local-storage.tsx",
         "name": "getValueFromLocalStorage"
       },
@@ -1197,14 +1037,6 @@
     {
       "finding": {
         "category": "exports",
-        "file": "apps/web/core/hooks/use-timeline-chart.ts",
-        "name": "getTimelineStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
         "file": "apps/web/core/lib/idle-task.ts",
         "name": "cancelIdle"
       },
@@ -1215,22 +1047,6 @@
         "category": "exports",
         "file": "apps/web/core/lib/idle-task.ts",
         "name": "requestIdle"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/lib/store-context.tsx",
-        "name": "rootStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/services/estimate.service.ts",
-        "name": "EstimateService"
       },
       "count": 1
     },
@@ -1263,118 +1079,6 @@
         "category": "exports",
         "file": "apps/web/core/services/workspace-notification.service.ts",
         "name": "WorkspaceNotificationService"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/base-command-palette.store.ts",
-        "name": "BaseCommandPaletteStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/issue/cycle/issue.store.ts",
-        "name": "ACTIVE_CYCLE_ISSUES"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/issue/helpers/base-issues-utils.ts",
-        "name": "checkIssueDateFilter"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/issue/helpers/base-issues-utils.ts",
-        "name": "getOrderedWorkItems"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/project/base-project-member.store.ts",
-        "name": "BaseProjectMemberStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/utils.ts",
-        "name": "filterProjectMembersByRole"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/utils.ts",
-        "name": "filterWorkspaceMembersByRole"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/utils.ts",
-        "name": "getMemberSortKey"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/utils.ts",
-        "name": "parseOrderKey"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/member/utils.ts",
-        "name": "sortMembers"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/pages/project-page.store.ts",
-        "name": "ROLE_PERMISSIONS_TO_CREATE_PAGE"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/user/account.store.ts",
-        "name": "AccountStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/user/base-permissions.store.ts",
-        "name": "BaseUserPermissionStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "exports",
-        "file": "apps/web/core/store/workspace/index.ts",
-        "name": "BaseWorkspaceRootStore"
       },
       "count": 1
     },
@@ -1765,38 +1469,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/space/components/issues/filters/applied-filters/label.tsx",
-        "name": "apps/space/components/issues/filters/applied-filters/label.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/space/components/issues/filters/labels.tsx",
-        "name": "apps/space/components/issues/filters/labels.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/space/components/issues/issue-layouts/kanban/headers/sub-group-by-card.tsx",
-        "name": "apps/space/components/issues/issue-layouts/kanban/headers/sub-group-by-card.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/space/components/issues/issue-layouts/kanban/swimlanes.tsx",
-        "name": "apps/space/components/issues/issue-layouts/kanban/swimlanes.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/space/helpers/common.helper.ts",
         "name": "apps/space/helpers/common.helper.ts"
       },
@@ -1813,64 +1485,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/space/hooks/store/use-user-profile.ts",
-        "name": "apps/space/hooks/store/use-user-profile.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/space/hooks/use-mention.tsx",
-        "name": "apps/space/hooks/use-mention.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/app/(all)/[workspaceSlug]/(settings)/settings/(workspace)/integrations/page.tsx",
         "name": "apps/web/app/(all)/[workspaceSlug]/(settings)/settings/(workspace)/integrations/page.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/app/compat/next/image.tsx",
-        "name": "apps/web/app/compat/next/image.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/app/layout.tsx",
-        "name": "apps/web/app/layout.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/app/routes/redirects/core/index.ts",
-        "name": "apps/web/app/routes/redirects/core/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/app/routes/redirects/extended/index.ts",
-        "name": "apps/web/app/routes/redirects/extended/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/app/routes/redirects/index.ts",
-        "name": "apps/web/app/routes/redirects/index.ts"
       },
       "count": 1
     },
@@ -1885,40 +1501,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/account/auth-forms/set-password.tsx",
-        "name": "apps/web/core/components/account/auth-forms/set-password.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/active-cycles/workspace-active-cycles-upgrade.tsx",
         "name": "apps/web/core/components/active-cycles/workspace-active-cycles-upgrade.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/analytics/empty-state.tsx",
-        "name": "apps/web/core/components/analytics/empty-state.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/analytics/select/duration.tsx",
-        "name": "apps/web/core/components/analytics/select/duration.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/analytics/trend-piece.tsx",
-        "name": "apps/web/core/components/analytics/trend-piece.tsx"
       },
       "count": 1
     },
@@ -2069,54 +1653,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/comments/comments.tsx",
-        "name": "apps/web/core/components/comments/comments.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/comments/index.ts",
-        "name": "apps/web/core/components/comments/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/common/activity/activity-block.tsx",
-        "name": "apps/web/core/components/common/activity/activity-block.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/common/activity/activity-item.tsx",
-        "name": "apps/web/core/components/common/activity/activity-item.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/common/activity/helper.tsx",
-        "name": "apps/web/core/components/common/activity/helper.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/common/activity/user.tsx",
-        "name": "apps/web/core/components/common/activity/user.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/common/latest-feature-block.tsx",
         "name": "apps/web/core/components/common/latest-feature-block.tsx"
       },
@@ -2189,22 +1725,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/estimates/inputs/index.ts",
-        "name": "apps/web/core/components/estimates/inputs/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/exporter/export-modal.tsx",
-        "name": "apps/web/core/components/exporter/export-modal.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/exporter/single-export.tsx",
         "name": "apps/web/core/components/exporter/single-export.tsx"
       },
@@ -2237,24 +1757,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/integration/github/select-repository.tsx",
-        "name": "apps/web/core/components/integration/github/select-repository.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/integration/single-integration-card.tsx",
         "name": "apps/web/core/components/integration/single-integration-card.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/integration/slack/select-channel.tsx",
-        "name": "apps/web/core/components/integration/slack/select-channel.tsx"
       },
       "count": 1
     },
@@ -2373,54 +1877,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/onboarding/create-or-join-workspaces.tsx",
-        "name": "apps/web/core/components/onboarding/create-or-join-workspaces.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/onboarding/create-workspace.tsx",
-        "name": "apps/web/core/components/onboarding/create-workspace.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/onboarding/invitations.tsx",
-        "name": "apps/web/core/components/onboarding/invitations.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/onboarding/invite-members.tsx",
-        "name": "apps/web/core/components/onboarding/invite-members.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/onboarding/profile-setup.tsx",
-        "name": "apps/web/core/components/onboarding/profile-setup.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/onboarding/step-indicator.tsx",
-        "name": "apps/web/core/components/onboarding/step-indicator.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/pages/editor/ai/index.ts",
         "name": "apps/web/core/components/pages/editor/ai/index.ts"
       },
@@ -2429,24 +1885,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/pages/editor/title.tsx",
-        "name": "apps/web/core/components/pages/editor/title.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/pages/list/index.ts",
         "name": "apps/web/core/components/pages/list/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/power-k/actions/helper.ts",
-        "name": "apps/web/core/components/power-k/actions/helper.ts"
       },
       "count": 1
     },
@@ -2477,40 +1917,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/project/integration-card.tsx",
-        "name": "apps/web/core/components/project/integration-card.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/project/multi-select-modal.tsx",
-        "name": "apps/web/core/components/project/multi-select-modal.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/readonly/cycle.tsx",
-        "name": "apps/web/core/components/readonly/cycle.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/readonly/date.tsx",
         "name": "apps/web/core/components/readonly/date.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/readonly/estimate.tsx",
-        "name": "apps/web/core/components/readonly/estimate.tsx"
       },
       "count": 1
     },
@@ -2527,14 +1935,6 @@
         "category": "files",
         "file": "apps/web/core/components/readonly/labels.tsx",
         "name": "apps/web/core/components/readonly/labels.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/readonly/member.tsx",
-        "name": "apps/web/core/components/readonly/member.tsx"
       },
       "count": 1
     },
@@ -2575,30 +1975,6 @@
         "category": "files",
         "file": "apps/web/core/components/sidebar/search-button.tsx",
         "name": "apps/web/core/components/sidebar/search-button.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/stickies/action-bar.tsx",
-        "name": "apps/web/core/components/stickies/action-bar.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/stickies/modal/index.tsx",
-        "name": "apps/web/core/components/stickies/modal/index.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/stickies/modal/stickies.tsx",
-        "name": "apps/web/core/components/stickies/modal/stickies.tsx"
       },
       "count": 1
     },
@@ -2669,22 +2045,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/user/user-greetings.tsx",
-        "name": "apps/web/core/components/user/user-greetings.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/workspace-notifications/notification-app-sidebar-option.tsx",
-        "name": "apps/web/core/components/workspace-notifications/notification-app-sidebar-option.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/workspace/billing/comparison/base.tsx",
         "name": "apps/web/core/components/workspace/billing/comparison/base.tsx"
       },
@@ -2741,32 +2101,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/components/workspace/ConfirmWorkspaceMemberRemove.tsx",
-        "name": "apps/web/core/components/workspace/ConfirmWorkspaceMemberRemove.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/components/workspace/sidebar/help-section/index.ts",
         "name": "apps/web/core/components/workspace/sidebar/help-section/index.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/workspace/sidebar/user-menu-item.tsx",
-        "name": "apps/web/core/components/workspace/sidebar/user-menu-item.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/components/workspace/sidebar/user-menu.tsx",
-        "name": "apps/web/core/components/workspace/sidebar/user-menu.tsx"
       },
       "count": 1
     },
@@ -2813,32 +2149,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/hooks/store/use-dashboard.ts",
-        "name": "apps/web/core/hooks/store/use-dashboard.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/hooks/store/use-inbox-issues.ts",
-        "name": "apps/web/core/hooks/store/use-inbox-issues.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/core/hooks/use-debounced-duplicate-issues.tsx",
         "name": "apps/web/core/hooks/use-debounced-duplicate-issues.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/hooks/use-integration-popup.tsx",
-        "name": "apps/web/core/hooks/use-integration-popup.tsx"
       },
       "count": 1
     },
@@ -2853,22 +2165,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/core/services/app_installation.service.ts",
-        "name": "apps/web/core/services/app_installation.service.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/core/store/issue/issue_gantt_view.store.ts",
-        "name": "apps/web/core/store/issue/issue_gantt_view.store.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/helpers/dashboard.helper.ts",
         "name": "apps/web/helpers/dashboard.helper.ts"
       },
@@ -2877,24 +2173,8 @@
     {
       "finding": {
         "category": "files",
-        "file": "apps/web/helpers/emoji.helper.tsx",
-        "name": "apps/web/helpers/emoji.helper.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "apps/web/helpers/graph.helper.ts",
         "name": "apps/web/helpers/graph.helper.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "apps/web/helpers/react-hook-form.helper.ts",
-        "name": "apps/web/helpers/react-hook-form.helper.ts"
       },
       "count": 1
     },
@@ -3029,22 +2309,6 @@
     {
       "finding": {
         "category": "files",
-        "file": "packages/shared-state/src/store/user.store.ts",
-        "name": "packages/shared-state/src/store/user.store.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/shared-state/src/store/workspace.store.ts",
-        "name": "packages/shared-state/src/store/workspace.store.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
         "file": "packages/types/src/current-user/index.ts",
         "name": "packages/types/src/current-user/index.ts"
       },
@@ -3063,54 +2327,6 @@
         "category": "files",
         "file": "packages/types/src/issues/issue_subscription.ts",
         "name": "packages/types/src/issues/issue_subscription.ts"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/auth-confirm-password-input.tsx",
-        "name": "packages/ui/src/auth-form/auth-confirm-password-input.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/auth-forgot-password.tsx",
-        "name": "packages/ui/src/auth-form/auth-forgot-password.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/auth-form.tsx",
-        "name": "packages/ui/src/auth-form/auth-form.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/auth-input.tsx",
-        "name": "packages/ui/src/auth-form/auth-input.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/auth-password-input.tsx",
-        "name": "packages/ui/src/auth-form/auth-password-input.tsx"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "files",
-        "file": "packages/ui/src/auth-form/index.ts",
-        "name": "packages/ui/src/auth-form/index.ts"
       },
       "count": 1
     },
@@ -3269,22 +2485,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/space/store/helpers/base-issues.store.ts",
-        "name": "TIssueDisplayFilterOptions"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/space/store/publish/publish.store.ts",
-        "name": "IPublishStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/space/types/auth.ts",
         "name": "ICsrfTokenData"
       },
@@ -3349,14 +2549,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/web/core/components/home/widgets/links/use-links.tsx",
-        "name": "TProjectLinkRoot"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/web/core/components/issues/attachment/delete-attachment-modal.tsx",
         "name": "TAttachmentOperationsRemoveModal"
       },
@@ -3373,14 +2565,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/web/core/components/issues/issue-detail/issue-activity/root.tsx",
-        "name": "TActivityOperations"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/web/core/components/issues/issue-detail/links/links.tsx",
         "name": "TLinkOperationsModal"
       },
@@ -3389,96 +2573,8 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/web/core/components/issues/issue-detail/links/root.tsx",
-        "name": "TIssueLinkRoot"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-detail/reactions/issue-comment.tsx",
-        "name": "TIssueCommentReaction"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/web/core/components/issues/issue-layouts/kanban/base-kanban-root.tsx",
         "name": "KanbanStoreType"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-layouts/spreadsheet/base-spreadsheet-root.tsx",
-        "name": "SpreadsheetStoreType"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-layouts/utils.tsx",
-        "name": "TGetScopeMemberIdsResult"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "TActiveAdditionalPropertiesProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "TCreateSubWorkItemProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "TCreateUpdatePropertyValuesProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "THandleParentWorkItemDetailsProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "THandleProjectEntitiesFetchProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "THandleTemplateChangeProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/issues/issue-modal/context/issue-modal-context.tsx",
-        "name": "TPropertyValuesValidationProps"
       },
       "count": 1
     },
@@ -3533,14 +2629,6 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/web/core/components/project/settings/member-columns.tsx",
-        "name": "RowData"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/web/core/components/sidebar/sidebar-item.tsx",
         "name": "AppSidebarItemComponent"
       },
@@ -3551,14 +2639,6 @@
         "category": "types",
         "file": "apps/web/core/components/sidebar/sidebar-item.tsx",
         "name": "AppSidebarItemProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/components/stickies/layout/sticky.helpers.ts",
-        "name": "TargetData"
       },
       "count": 1
     },
@@ -3605,24 +2685,8 @@
     {
       "finding": {
         "category": "types",
-        "file": "apps/web/core/hooks/use-collaborative-page-actions.tsx",
-        "name": "CollaborativeAction"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
         "file": "apps/web/core/hooks/use-intersection-observer.ts",
         "name": "UseIntersectionObserverProps"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/hooks/use-multiple-select.ts",
-        "name": "TSelectionSnapshot"
       },
       "count": 1
     },
@@ -3639,86 +2703,6 @@
         "category": "types",
         "file": "apps/web/core/services/file.service.ts",
         "name": "UnSplashImageUrls"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/base-command-palette.store.ts",
-        "name": "IBaseCommandPaletteStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/base-command-palette.store.ts",
-        "name": "ModalData"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/base-power-k.store.ts",
-        "name": "ModalData"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/issue/issue-details/root.store.ts",
-        "name": "TIssueCrudState"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/issue/workspace/filter.store.ts",
-        "name": "TBaseFilterStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/member/project/base-project-member.store.ts",
-        "name": "IBaseProjectMemberStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/pages/base-page.ts",
-        "name": "TBasePage"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/pages/base-page.ts",
-        "name": "TBasePagePermissions"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/user/base-permissions.store.ts",
-        "name": "IBaseUserPermissionStore"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "types",
-        "file": "apps/web/core/store/workspace/link.store.ts",
-        "name": "IWorkspaceLinkStoreActions"
       },
       "count": 1
     },
@@ -4013,24 +2997,8 @@
     {
       "finding": {
         "category": "unlisted",
-        "file": "tests/frontend/sub-issues-content-race.test.mjs",
-        "name": "@atlaskit/pragmatic-drag-and-drop-hitbox"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "unlisted",
         "file": "tests/frontend/workspace-menu-keyboard.test.mjs",
         "name": "@headlessui/react"
-      },
-      "count": 1
-    },
-    {
-      "finding": {
-        "category": "unresolved",
-        "file": "tests/frontend/image-picker-search.test.mjs",
-        "name": "@/services/file.service"
       },
       "count": 1
     }

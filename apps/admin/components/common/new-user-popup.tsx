@@ -4,25 +4,27 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import Link from "next/link";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { instanceInfoOptions } from "@/queries/instance";
+import { Link } from "react-router";
 import { useTheme as useNextTheme } from "next-themes";
 // ui
 import { Button, getButtonStyling } from "@plane/propel/button";
-import { resolveGeneralTheme } from "@plane/utils";
+import { resolveGeneralTheme } from "@plane/utils/theme-legacy";
 // hooks
 import TakeoffIconDark from "@/app/assets/logos/takeoff-icon-dark.svg?url";
 import TakeoffIconLight from "@/app/assets/logos/takeoff-icon-light.svg?url";
-import { useTheme } from "@/hooks/store";
 // icons
 
-export const NewUserPopup = observer(function NewUserPopup() {
+export const NewUserPopup = function NewUserPopup() {
   // hooks
-  const { isNewUserPopup, toggleNewUserPopup } = useTheme();
+  const { data } = useQuery(instanceInfoOptions);
+  const [dismissed, setDismissed] = useState(false);
   // theme
   const { resolvedTheme } = useNextTheme();
 
-  if (!isNewUserPopup) return <></>;
+  if (!data || data.instance.workspaces_exist || dismissed) return <></>;
   return (
     <div className="shadow-md absolute right-8 bottom-8 w-96 rounded-lg border border-subtle bg-surface-1 p-6">
       <div className="flex gap-4">
@@ -33,10 +35,10 @@ export const NewUserPopup = observer(function NewUserPopup() {
             workspace.
           </div>
           <div className="flex items-center gap-4 pt-2">
-            <Link href="/workspace/create" className={getButtonStyling("primary", "lg")}>
+            <Link to="/workspace/create" className={getButtonStyling("primary", "lg")}>
               Create workspace
             </Link>
-            <Button variant="secondary" size="lg" onClick={toggleNewUserPopup}>
+            <Button variant="secondary" size="lg" onClick={() => setDismissed(true)}>
               Close
             </Button>
           </div>
@@ -52,4 +54,4 @@ export const NewUserPopup = observer(function NewUserPopup() {
       </div>
     </div>
   );
-});
+};

@@ -7,25 +7,24 @@
 import { useLocation, useRouter } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
 import { useRef } from "react";
-import { observer } from "mobx-react";
 
 import { CheckIcon } from "@plane/propel/icons";
 // plane imports
-import type { TCycleGroups } from "@plane/types";
+import type { TCycleGroups, ICycle } from "@plane/types";
 import { CircularProgressIndicator } from "@plane/ui";
 // components
-import { generateQueryParams, calculateCycleProgress } from "@plane/utils";
+import { calculateCycleProgress } from "@plane/utils/cycle";
 import { ListItem } from "@/components/core/list";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { CycleQuickActions } from "../quick-actions";
 import { CycleListItemAction } from "./cycle-list-item-action";
+import { getCycleOverviewHref } from "./cycle-overview-navigation";
 
 type TCyclesListItem = {
-  cycleId: string;
+  cycle: ICycle;
   handleEditCycle?: () => void;
   handleDeleteCycle?: () => void;
   handleAddToFavorites?: () => void;
@@ -35,8 +34,8 @@ type TCyclesListItem = {
   className?: string;
 };
 
-export const CyclesListItem = observer(function CyclesListItem(props: TCyclesListItem) {
-  const { cycleId, workspaceSlug, projectId, className = "" } = props;
+export const CyclesListItem = function CyclesListItem(props: TCyclesListItem) {
+  const { cycle: cycleDetails, workspaceSlug, projectId, className = "" } = props;
   // refs
   const parentRef = useRef(null);
   // router
@@ -46,10 +45,9 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
   // hooks
   const { isMobile } = usePlatformOS();
   // store hooks
-  const { getCycleById } = useCycle();
+  const cycleId = cycleDetails.id;
 
   // derived values
-  const cycleDetails = getCycleById(cycleId);
 
   if (!cycleDetails) return null;
 
@@ -63,12 +61,7 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
     e.preventDefault();
     e.stopPropagation();
 
-    const query = generateQueryParams(searchParams, ["peekCycle"]);
-    if (searchParams.has("peekCycle") && searchParams.get("peekCycle") === cycleId) {
-      void router.navigate({ href: `${pathname}?${query}` });
-    } else {
-      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekCycle=${cycleId}` });
-    }
+    void router.navigate({ href: getCycleOverviewHref(pathname, searchParams, cycleId) });
   };
 
   // handlers
@@ -108,6 +101,7 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
       quickActionElement={
         <div className="block md:hidden">
           <CycleQuickActions
+            cycle={cycleDetails}
             parentRef={parentRef}
             cycleId={cycleId}
             projectId={projectId}
@@ -120,4 +114,4 @@ export const CyclesListItem = observer(function CyclesListItem(props: TCyclesLis
       isSidebarOpen={searchParams.has("peekCycle")}
     />
   );
-});
+};

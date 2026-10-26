@@ -5,16 +5,18 @@
  */
 
 // plane web components
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 // hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-import { useProject } from "@/hooks/store/use-project";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 // components
 import { ProjectSelect } from "./select/project";
 
-const AnalyticsFilterActions = observer(function AnalyticsFilterActions() {
-  const { selectedProjects, updateSelectedProjects } = useAnalytics();
-  const { joinedProjectIds } = useProject();
+const AnalyticsFilterActions = function AnalyticsFilterActions() {
+  const { selectedProjects, updateSelectedProjects } = useAnalyticsState();
+  const { workspaceSlug } = useParams({ strict: false });
+  const joinedProjectIds = useJoinedProjectIds(workspaceSlug?.toString());
   return (
     <div className="flex items-center justify-end gap-2">
       <ProjectSelect
@@ -24,16 +26,8 @@ const AnalyticsFilterActions = observer(function AnalyticsFilterActions() {
         }}
         projectIds={joinedProjectIds}
       />
-      {/* <DurationDropdown
-        buttonVariant="border-with-text"
-        value={selectedDuration}
-        onChange={(val) => {
-          updateSelectedDuration(val);
-        }}
-        dropdownArrow
-      /> */}
     </div>
   );
-});
+};
 
 export default AnalyticsFilterActions;

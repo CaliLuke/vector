@@ -5,41 +5,40 @@
  */
 
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 import { ListFilter } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import type { TPageFilterProps, TPageNavigationTabs } from "@plane/types";
 import { Header, EHeaderVariant } from "@plane/ui";
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
 // components
 import { FiltersDropdown } from "@/components/issues/issue-layouts/filters";
+import { ControlledExpandableSearch } from "@/components/common/controlled-expandable-search";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { usePageStore } from "@/hooks/store";
-import type { EPageStoreType } from "@/hooks/store";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { workspaceRosterMemberIds } from "@/helpers/member-rosters";
+import { usePageList } from "../page-record-context";
 // local imports
 import { PageAppliedFiltersList } from "../list/applied-filters";
 import { PageFiltersSelection } from "../list/filters";
 import { PageOrderByDropdown } from "../list/order-by";
-import { PageSearchInput } from "../list/search-input";
 import { PageTabNavigation } from "../list/tab-navigation";
 
 type Props = {
   pageType: TPageNavigationTabs;
   projectId: string;
-  storeType: EPageStoreType;
   workspaceSlug: string;
 };
 
-export const PagesListHeaderRoot = observer(function PagesListHeaderRoot(props: Props) {
-  const { pageType, projectId, storeType, workspaceSlug } = props;
+export function PagesListHeaderRoot(props: Props) {
+  const { pageType, projectId, workspaceSlug } = props;
   const { t } = useTranslation();
+  const { data: currentUser } = useCurrentUser();
   // store hooks
-  const { filters, updateFilters, clearAllFilters } = usePageStore(storeType);
-  const {
-    workspace: { workspaceMemberIds },
-  } = useMember();
+  const { filters, updateFilters, clearAllFilters } = usePageList();
+  const { members } = useWorkspaceMemberRoster(workspaceSlug);
+  const workspaceMemberIds = workspaceRosterMemberIds(members, currentUser?.id);
 
   const handleRemoveFilter = useCallback(
     (key: keyof TPageFilterProps, value: string | null) => {
@@ -65,9 +64,15 @@ export const PagesListHeaderRoot = observer(function PagesListHeaderRoot(props: 
           <PageTabNavigation workspaceSlug={workspaceSlug} projectId={projectId} pageType={pageType} />
         </Header.LeftItem>
         <Header.RightItem className="items-center">
-          <PageSearchInput
-            searchQuery={filters.searchQuery}
-            updateSearchQuery={(val) => updateFilters("searchQuery", val)}
+          <ControlledExpandableSearch
+            value={filters.searchQuery}
+            onChange={(searchQuery) => updateFilters("searchQuery", searchQuery)}
+            placeholder="Search pages"
+            className="flex"
+            triggerClassName="my-auto -mr-1 shrink-0"
+            expandedFieldClassName="w-64 border-subtle px-2.5 py-1.5"
+            inputClassName="ml-2"
+            searchIconClassName="h-3.5 w-3.5"
           />
           <PageOrderByDropdown
             sortBy={filters.sortBy}
@@ -86,7 +91,8 @@ export const PagesListHeaderRoot = observer(function PagesListHeaderRoot(props: 
             <PageFiltersSelection
               filters={filters}
               handleFiltersUpdate={updateFilters}
-              memberIds={workspaceMemberIds ?? undefined}
+              memberIds={workspaceMemberIds}
+              workspaceSlug={workspaceSlug}
             />
           </FiltersDropdown>
         </Header.RightItem>
@@ -103,4 +109,4 @@ export const PagesListHeaderRoot = observer(function PagesListHeaderRoot(props: 
       )}
     </>
   );
-});
+}

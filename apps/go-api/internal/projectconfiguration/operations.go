@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -107,14 +108,32 @@ func (r *Repository) PatchEstimate(ctx context.Context, user, slug, project, est
 const estimateReadSQLForID = `SELECT jsonb_build_object('id',e.id,'created_at',e.created_at,'updated_at',e.updated_at,'created_by',e.created_by_id,'updated_by',e.updated_by_id,'deleted_at',e.deleted_at,'workspace',e.workspace_id,'project',e.project_id,'name',e.name,'description',e.description,'type',e.type,'last_used',e.last_used,'points',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',ep.id,'created_at',ep.created_at,'updated_at',ep.updated_at,'created_by',ep.created_by_id,'updated_by',ep.updated_by_id,'deleted_at',ep.deleted_at,'estimate',ep.estimate_id,'workspace',ep.workspace_id,'project',ep.project_id,'key',ep.key,'value',ep.value,'description',ep.description) ORDER BY ep.value) FROM estimate_points ep WHERE ep.estimate_id=e.id AND ep.deleted_at IS NULL),'[]'::jsonb)) FROM estimates e WHERE e.id=$1`
 
 func (r *Repository) DeleteEstimate(ctx context.Context, user, slug, project, estimateID string) error {
-	result, err := r.db.Exec(ctx, `UPDATE estimates SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$4) AND deleted_at IS NULL`, estimateID, user, project, slug)
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	writer := &Repository{db: tx}
+	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+		return err
+	}
+	result, err := tx.Exec(ctx, `UPDATE estimates SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1 AND project_id=$3 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$4) AND deleted_at IS NULL`, estimateID, user, project, slug)
 	if err != nil {
 		return err
 	}
 	if result.RowsAffected() == 0 {
 		return failure(404, "error", "The required object does not exist.")
 	}
-	return nil
+	if _, err = tx.Exec(ctx, `UPDATE projects SET estimate_id=NULL,updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND estimate_id=$4`, project, user, slug, estimateID); err != nil {
+		return err
+	}
+	if err = writer.enqueueWorkItemEffect(ctx, "soft_delete", map[string]string{"app": "db", "model": "estimate", "id": estimateID}); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
 }
 
 func (r *Repository) CreateEstimatePoint(ctx context.Context, user, slug, project, estimateID string, body io.Reader, contentType string) (json.RawMessage, error) {
@@ -210,7 +229,30 @@ func (r *Repository) PatchEstimatePoint(ctx context.Context, user, slug, project
 	return scanJSON(ctx, r.db, estimatePointReadSQL, pointID)
 }
 
-func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string, task func(context.Context, string, []any, map[string]any) error) (json.RawMessage, error) {
+func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	writer := &Repository{db: tx}
+	if err = writer.Authorize(ctx, user, slug, project, true); err != nil {
+		return nil, err
+	}
+	if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock(p.workspace_id) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2`, project, slug); err != nil {
+		return nil, err
+	}
+	result, err := writer.deleteEstimatePoint(ctx, user, slug, project, estimateID, pointID, body, contentType)
+	if err != nil {
+		return nil, err
+	}
+	if err = writer.enqueueWorkItemEffect(ctx, "soft_delete", map[string]string{"app": "db", "model": "estimatepoint", "id": pointID}); err != nil {
+		return nil, err
+	}
+	return result, tx.Commit(ctx)
+}
+
+func (r *Repository) deleteEstimatePoint(ctx context.Context, user, slug, project, estimateID, pointID string, body io.Reader, contentType string) (json.RawMessage, error) {
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
 		return nil, err
@@ -264,14 +306,12 @@ func (r *Repository) DeleteEstimatePoint(ctx context.Context, user, slug, projec
 			return nil, err
 		}
 		args := map[string]any{"type": "issue.activity.updated", "requested_data": requestedData, "actor_id": user, "issue_id": issue.ID, "project_id": project, "current_instance": current, "epoch": 0}
-		if err := task(ctx, "plane.bgtasks.issue_activities_task.issue_activity", []any{}, args); err != nil {
+		if err := r.enqueueWorkItemEffect(ctx, "activity", args); err != nil {
 			return nil, err
 		}
 	}
-	if requested != nil {
-		if _, err = r.db.Exec(ctx, `UPDATE issues SET estimate_point_id=$1,updated_at=clock_timestamp() WHERE project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND estimate_point_id=$4 AND deleted_at IS NULL`, requested, project, slug, pointID); err != nil {
-			return nil, err
-		}
+	if _, err = r.db.Exec(ctx, `UPDATE issues SET estimate_point_id=$1,updated_at=clock_timestamp() WHERE project_id=$2 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$3) AND estimate_point_id=$4 AND deleted_at IS NULL`, requested, project, slug, pointID); err != nil {
+		return nil, err
 	}
 	var oldKey int64
 	err = r.db.QueryRow(ctx, `SELECT key FROM estimate_points WHERE id=$1`, pointID).Scan(&oldKey)
@@ -341,8 +381,29 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		}
 	}
 	if method == http.MethodDelete {
-		_, err := r.db.Exec(ctx, `UPDATE labels SET deleted_at=clock_timestamp(),updated_at=clock_timestamp(),updated_by_id=$2 WHERE id=$1`, labelID, user)
-		return nil, err
+		tx, err := r.db.Begin(ctx)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+		workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, failure(404, "error", "The requested resource does not exist.")
+		}
+		if err != nil {
+			return nil, err
+		}
+		deleted, err := labelhierarchy.SoftDeleteTree(ctx, tx, labelID, user, project, workspaceID)
+		if errors.Is(err, labelhierarchy.ErrOutOfScopeChild) {
+			return nil, failure(409, "error", "The label hierarchy contains an out-of-scope child.")
+		}
+		if err != nil {
+			return nil, err
+		}
+		if !deleted {
+			return nil, failure(404, "error", "The requested resource does not exist.")
+		}
+		return nil, tx.Commit(ctx)
 	}
 	input, err := djangoinput.Parse(body, contentType)
 	if err != nil {
@@ -354,8 +415,13 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	if input.Kind != "" {
 		return nil, &HTTPError{Status: 400, Body: map[string]any{"non_field_errors": []string{"Invalid data. Expected a dictionary, but got " + input.Kind + "."}}}
 	}
+	targetID := labelID
+	if method == http.MethodPost {
+		targetID = uuid.NewString()
+	}
 	values := map[string]any{}
 	fieldErrors := map[string][]string{}
+	parentID := ""
 	validateText := func(field string, required, allowBlank, allowNull bool, maximum int) {
 		value, present := input.FieldValue(field, required, allowBlank, allowNull)
 		if !present {
@@ -384,19 +450,11 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		if parent == nil {
 			values["parent_id"] = nil
 		} else {
-			parentID, parseErr := djangoinput.UUID(parent)
+			parsedParentID, parseErr := djangoinput.UUID(parent)
 			if parseErr != nil {
 				fieldErrors["parent"] = []string{"“" + djangoinput.ScalarString(parent) + "” is not a valid UUID."}
 			} else {
-				var exists bool
-				if err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM labels WHERE id=@parent_id AND deleted_at IS NULL)`, pgx.StrictNamedArgs{"parent_id": parentID.String()}).Scan(&exists); err != nil {
-					return nil, err
-				}
-				if !exists {
-					fieldErrors["parent"] = []string{"Invalid pk \"" + djangoinput.ScalarString(parent) + "\" - object does not exist."}
-				} else {
-					values["parent_id"] = parentID.String()
-				}
+				parentID = parsedParentID.String()
 			}
 		}
 	}
@@ -412,10 +470,52 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	if len(fieldErrors) != 0 {
 		return nil, &HTTPError{Status: http.StatusBadRequest, Body: fieldErrors}
 	}
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	db := tx
+	workspaceID, err := labelhierarchy.LockProject(ctx, tx, project, slug)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, failure(404, "error", "The requested resource does not exist.")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if method != http.MethodPost {
+		var found string
+		err = tx.QueryRow(ctx, `SELECT label.id::text FROM labels label
+ JOIN projects project ON project.id=label.project_id
+ WHERE label.id=$1 AND label.project_id=$2 AND label.workspace_id=$3 AND label.deleted_at IS NULL
+ AND project.archived_at IS NULL
+ AND EXISTS (SELECT 1 FROM project_members member WHERE member.project_id=label.project_id
+  AND member.member_id=$4 AND member.is_active)
+ FOR UPDATE OF label`, labelID, project, workspaceID, user).Scan(&found)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, failure(404, "error", "The requested resource does not exist.")
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	if parentID != "" {
+		valid, validationErr := labelhierarchy.ValidateParent(ctx, tx, targetID, parentID, project, workspaceID)
+		if validationErr != nil {
+			return nil, validationErr
+		}
+		if !valid {
+			parent, _ := input.FieldValue("parent", false, false, true)
+			return nil, &HTTPError{Status: http.StatusBadRequest, Body: map[string][]string{
+				"parent": {"Invalid pk \"" + djangoinput.ScalarString(parent) + "\" - object does not exist."},
+			}}
+		}
+		values["parent_id"] = parentID
+	}
 	if src, srcOK := values["external_source"]; srcOK && truthy(src) {
 		if ext, extOK := values["external_id"]; extOK && truthy(ext) {
 			var conflictID string
-			err := r.db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL AND ($5='' OR id::text<>$5) LIMIT 1`, project, slug, src, ext, labelID).Scan(&conflictID)
+			err := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND external_source=$3 AND external_id=$4 AND deleted_at IS NULL AND ($5='' OR id::text<>$5) LIMIT 1`, project, slug, src, ext, labelID).Scan(&conflictID)
 			if err == nil {
 				return nil, &HTTPError{Status: 409, Body: map[string]any{"error": "Label with the same external id and external source already exists", "id": conflictID}}
 			}
@@ -427,7 +527,7 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	if method == http.MethodPost {
 		name := values["name"]
 		var conflictID string
-		err := r.db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND name=$3 AND deleted_at IS NULL LIMIT 1`, project, slug, name).Scan(&conflictID)
+		err := db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND name=$3 AND deleted_at IS NULL LIMIT 1`, project, slug, name).Scan(&conflictID)
 		if err == nil {
 			return nil, &HTTPError{Status: 409, Body: map[string]any{"error": "Label with the same name already exists in the project", "id": conflictID}}
 		}
@@ -442,16 +542,18 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 		if value, ok := values["parent_id"]; ok && value != nil {
 			parent = value
 		}
-		_, err = r.db.Exec(ctx, `INSERT INTO labels(id,name,color,parent_id,project_id,workspace_id,sort_order,description,external_source,external_id,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,$4,p.id,p.workspace_id,COALESCE((SELECT MAX(sort_order)+10000 FROM labels WHERE project_id=p.id AND deleted_at IS NULL),65535),$5,$6,$7,clock_timestamp(),clock_timestamp(),$8,NULL FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$9 AND w.slug=$10`, uuid.NewString(), name, color, parent, description, externalSource, externalID, user, project, slug)
+		_, err = db.Exec(ctx, `INSERT INTO labels(id,name,color,parent_id,project_id,workspace_id,sort_order,description,external_source,external_id,created_at,updated_at,created_by_id,updated_by_id) SELECT $1,$2,$3,$4,p.id,p.workspace_id,COALESCE((SELECT MAX(sort_order)+10000 FROM labels WHERE project_id=p.id AND deleted_at IS NULL),65535),$5,$6,$7,clock_timestamp(),clock_timestamp(),$8,NULL FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$9 AND w.slug=$10`, targetID, name, color, parent, description, externalSource, externalID, user, project, slug)
 		if err != nil {
 			return nil, err
 		}
-		var id string
-		err = r.db.QueryRow(ctx, `SELECT id::text FROM labels WHERE project_id=$1 AND workspace_id=(SELECT id FROM workspaces WHERE slug=$2) AND name=$3 AND created_by_id=$4 ORDER BY created_at DESC LIMIT 1`, project, slug, name, user).Scan(&id)
+		data, err := scanJSON(ctx, db, labelReadSQL, targetID)
 		if err != nil {
 			return nil, err
 		}
-		return scanJSON(ctx, r.db, labelReadSQL, id)
+		if err = tx.Commit(ctx); err != nil {
+			return nil, err
+		}
+		return data, nil
 	}
 	args := []any{labelID}
 	sets := []string{}
@@ -468,12 +570,19 @@ func (r *Repository) WriteAPILabel(ctx context.Context, user, slug, project, lab
 	}
 	if len(sets) > 0 {
 		args = append(args, user)
-		_, err = r.db.Exec(ctx, `UPDATE labels SET `+strings.Join(sets, ",")+`,updated_by_id=$`+fmt.Sprint(len(args))+`,updated_at=clock_timestamp() WHERE id=$1`, args...)
+		_, err = db.Exec(ctx, `UPDATE labels SET `+strings.Join(sets, ",")+`,updated_by_id=$`+fmt.Sprint(len(args))+`,updated_at=clock_timestamp() WHERE id=$1`, args...)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return scanJSON(ctx, r.db, labelReadSQL, labelID)
+	data, err := scanJSON(ctx, db, labelReadSQL, labelID)
+	if err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func stringValueOrDefault(values map[string]any, key, fallback string) string {
@@ -555,4 +664,15 @@ func (r *Repository) AuthorizeBulkLabels(ctx context.Context, user, slug, projec
 		return failure(403, "detail", "You do not have permission to perform this action.")
 	}
 	return nil
+}
+
+// Estimate reassignment uses the same durable work-item effect queue as edits.
+// Callers bind this repository to the transaction that changes the item values.
+func (r *Repository) enqueueWorkItemEffect(ctx context.Context, kind string, payload any) error {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.Exec(ctx, `INSERT INTO work_item_effects(id,kind,payload) VALUES($1,$2,$3)`, uuid.NewString(), kind, raw)
+	return err
 }

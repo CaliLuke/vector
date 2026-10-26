@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "react-router";
 // headless ui
 import { Dialog, Transition } from "@headlessui/react";
 // ui
@@ -64,7 +64,7 @@ export function ConfirmDiscardModal(props: Props) {
                   <Button variant="secondary" size="lg" onClick={handleClose}>
                     Keep editing
                   </Button>
-                  <Link href={onDiscardHref} className={getButtonStyling("primary", "base")}>
+                  <Link to={onDiscardHref} className={getButtonStyling("primary", "base")}>
                     Go back
                   </Link>
                 </div>

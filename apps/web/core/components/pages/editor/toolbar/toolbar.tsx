@@ -10,7 +10,7 @@ import type { EditorRefApi } from "@plane/editor";
 import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // constants
 import type { ToolbarMenuItem } from "@plane/editor";
 import { TOOLBAR_ITEMS, TYPOGRAPHY_ITEMS } from "@plane/editor";

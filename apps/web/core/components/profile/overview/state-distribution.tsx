@@ -11,7 +11,7 @@ import { PieChart } from "@plane/propel/charts/pie-chart";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import type { IUserProfileData, IUserStateDistribution } from "@plane/types";
 import { Card } from "@plane/ui";
-import { capitalizeFirstLetter } from "@plane/utils";
+import { capitalizeFirstLetter } from "@plane/utils/string";
 
 type Props = {
   stateDistribution: IUserStateDistribution[];

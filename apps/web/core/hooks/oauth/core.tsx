@@ -17,7 +17,8 @@ import GithubDarkLogo from "@/app/assets/logos/github-dark.svg?url";
 import gitlabLogo from "@/app/assets/logos/gitlab-logo.svg?url";
 import googleLogo from "@/app/assets/logos/google-logo.svg?url";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 
 export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
   //router
@@ -27,7 +28,7 @@ export const useCoreOAuthConfig = (oauthActionText: string): TOAuthConfigs => {
   // theme
   const { resolvedTheme } = useTheme();
   // store hooks
-  const { config } = useInstance();
+  const { data: config } = useQuery(instanceConfigOptions);
   // derived values
   const isOAuthEnabled =
     (config &&

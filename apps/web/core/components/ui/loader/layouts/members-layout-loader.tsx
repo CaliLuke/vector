@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 export function MembersLayoutLoader() {
   return (
     <div className="flex gap-5 overflow-x-auto py-1.5">

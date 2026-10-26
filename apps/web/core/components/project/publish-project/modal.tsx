@@ -3,341 +3,273 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
+import { useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-
-import { Controller, useForm } from "react-hook-form";
-
-// types
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, useStore } from "@tanstack/react-form";
 import { SPACE_BASE_PATH, SPACE_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
-import { GlobeIcon, NewTabIcon, CheckIcon } from "@plane/propel/icons";
+import { GlobeIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TProjectPublishLayouts, TProjectPublishSettings } from "@plane/types";
-// ui
-import { Loader, ToggleSwitch, CustomSelect, ModalCore, EModalWidth } from "@plane/ui";
-// helpers
-import { copyTextToClipboard } from "@plane/utils";
-// hooks
-import { useProjectPublish } from "@/hooks/store/use-project-publish";
+import type { TProjectPublishSettings } from "@plane/types";
+import type { TProjectCatalogueScope } from "@/queries/projects";
+import { Loader, ToggleSwitch, ModalCore, EModalWidth, Checkbox } from "@plane/ui";
+import { copyTextToClipboard } from "@plane/utils/string";
+import { projectPublishingOptions, projectPublishingMutationOptions } from "@/queries/project-publishing";
+import { useProjectDetail } from "@/hooks/use-projects";
 
-type Props = {
-  isOpen: boolean;
-  projectId: string;
-  onClose: () => void;
-};
-
-const defaultValues: Partial<TProjectPublishSettings> = {
-  is_comments_enabled: false,
-  is_reactions_enabled: false,
-  is_votes_enabled: false,
-  inbox: null,
-  view_props: {
-    list: true,
-    kanban: true,
-  },
-};
-
-const VIEW_OPTIONS: {
-  key: TProjectPublishLayouts;
-  label: string;
-}[] = [
-  { key: "list", label: "List" },
-  { key: "kanban", label: "Kanban" },
-];
-
-export const PublishProjectModal = observer(function PublishProjectModal(props: Props) {
-  const { isOpen, onClose, projectId } = props;
-  // states
-  const [isUnPublishing, setIsUnPublishing] = useState(false);
-  // router
+type Props = { isOpen: boolean; projectId: string; onClose: () => void };
+const toggleFields = [
+  { name: "is_comments_enabled", label: "Allow comments" },
+  { name: "is_reactions_enabled", label: "Allow reactions" },
+  { name: "is_votes_enabled", label: "Allow voting" },
+] as const;
+const layouts = ["list", "kanban"] as const;
+function defaults(settings: TProjectPublishSettings) {
+  return {
+    is_comments_enabled: settings.is_comments_enabled,
+    is_reactions_enabled: settings.is_reactions_enabled,
+    is_votes_enabled: settings.is_votes_enabled,
+    view_props: settings.view_props ?? { list: true, kanban: true },
+  };
+}
+export function PublishProjectModal(props: Props) {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // store hooks
-  const {
-    fetchPublishSettings,
-    getPublishSettingsByProjectID,
-    publishProject,
-    updatePublishSettings,
-    unPublishProject,
-    fetchSettingsLoader,
-  } = useProjectPublish();
-  // derived values
-  const projectPublishSettings = getPublishSettingsByProjectID(projectId);
-  const isProjectPublished = !!projectPublishSettings?.anchor;
-  // form info
-  const {
-    control,
-    formState: { isDirty, isSubmitting },
-    handleSubmit,
-    reset,
-    watch,
-  } = useForm({
-    defaultValues,
-  });
-
-  const handleClose = () => {
-    onClose();
-  };
-
-  // fetch publish settings
-  useEffect(() => {
-    if (!workspaceSlug || !isOpen) return;
-
-    if (!projectPublishSettings) {
-      fetchPublishSettings(workspaceSlug.toString(), projectId);
-    }
-  }, [fetchPublishSettings, isOpen, projectId, projectPublishSettings, workspaceSlug]);
-
-  const handlePublishProject = async (payload: Partial<TProjectPublishSettings>) => {
-    if (!workspaceSlug) return;
-    await publishProject(workspaceSlug.toString(), projectId, payload);
-  };
-
-  const handleUpdatePublishSettings = async (payload: Partial<TProjectPublishSettings>) => {
-    if (!workspaceSlug || !payload.id) return;
-
-    await updatePublishSettings(workspaceSlug.toString(), projectId, payload.id, payload).then((res) => {
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Publish settings updated successfully!",
-      });
-
-      handleClose();
-      return res;
-    });
-  };
-
-  const handleUnPublishProject = async (publishId: string) => {
-    if (!workspaceSlug || !publishId) return;
-
-    setIsUnPublishing(true);
-
-    await unPublishProject(workspaceSlug.toString(), projectId, publishId)
+  return props.isOpen ? (
+    <PublishingDialog key={`${workspaceSlug}/${props.projectId}`} {...props} workspaceSlug={workspaceSlug} />
+  ) : null;
+}
+function PublishingDialog({ workspaceSlug, projectId, onClose }: Props & { workspaceSlug: string }) {
+  const client = useQueryClient();
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const settings = useQuery(projectPublishingOptions(client, projectQuery.scope, Boolean(projectQuery.project)));
+  if (projectQuery.accessDenied)
+    return (
+      <ModalCore isOpen handleClose={onClose} width={EModalWidth.XXL}>
+        <div role="alert" className="p-5">
+          You do not have access to this project.
+        </div>
+      </ModalCore>
+    );
+  if (projectQuery.project && settings.data && !settings.isError)
+    return (
+      <PublishingForm
+        key={`${projectQuery.scope.accountId}/${projectQuery.scope.sessionGeneration}/${projectQuery.scope.projectId}`}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        projectScope={projectQuery.scope}
+        settings={settings.data}
+        onClose={onClose}
+      />
+    );
+  return (
+    <ModalCore isOpen handleClose={onClose} width={EModalWidth.XXL}>
+      <div className="p-5">
+        {projectQuery.isError || settings.isError ? (
+          <div role="alert">
+            Unable to load publishing settings.{" "}
+            <button
+              type="button"
+              onClick={() => {
+                if (projectQuery.isError) void projectQuery.retryAccess();
+                else void settings.refetch();
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <Loader>
+            <Loader.Item height="80px" />
+          </Loader>
+        )}
+      </div>
+    </ModalCore>
+  );
+}
+function PublishingForm({
+  workspaceSlug,
+  projectId,
+  projectScope,
+  settings,
+  onClose,
+}: {
+  workspaceSlug: string;
+  projectId: string;
+  projectScope: TProjectCatalogueScope;
+  settings: TProjectPublishSettings;
+  onClose: () => void;
+}) {
+  const client = useQueryClient();
+  const mutation = useMutation(projectPublishingMutationOptions(client, projectScope));
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const [unpublishError, setUnpublishError] = useState("");
+  const [settingsQuery] = useState(() =>
+    client.getQueryCache().find({ queryKey: projectPublishingOptions(client, projectScope).queryKey, exact: true })
+  );
+  const refreshProject = () => {
+    if (
+      !settingsQuery ||
+      client
+        .getQueryCache()
+        .find({ queryKey: projectPublishingOptions(client, projectScope).queryKey, exact: true }) !== settingsQuery
+    )
+      return;
+    void projectQuery
+      .refetch()
+      .then((result) => {
+        if (result.isError) throw result.error;
+        return result;
+      })
       .catch(() =>
         setToast({
           type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Something went wrong while unpublishing the project.",
+          title: "Refresh failed",
+          message: "Publishing changed, but project details could not refresh. Reload the page to refresh them.",
         })
-      )
-      .finally(() => setIsUnPublishing(false));
+      );
   };
-
-  const selectedLayouts = Object.entries(watch("view_props") ?? {})
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .filter(([key, value]) => value)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .map(([key, value]) => key)
-    .filter((l) => VIEW_OPTIONS.find((o) => o.key === l));
-
-  const handleFormSubmit = async (formData: Partial<TProjectPublishSettings>) => {
-    if (!selectedLayouts || selectedLayouts.length === 0) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please select at least one view layout to publish the project.",
-      });
-      return;
+  const form = useForm({
+    defaultValues: defaults(settings),
+    validators: {
+      onSubmit: ({ value }): string | undefined =>
+        layouts.some((layout) => value.view_props[layout]) ? undefined : "Select at least one view layout.",
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const result = await mutation.mutateAsync({ type: "save", id: settings.id, settings: value });
+      if (result.settings) formApi.reset(defaults(result.settings));
+      refreshProject();
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "Publishing settings saved." });
+    },
+  });
+  const submitting = useStore(form.store, (state) => state.isSubmitting);
+  const dirty = useStore(form.store, (state) => !state.isDefaultValue);
+  const selected = useStore(form.store, (state) => state.values.view_props);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const busy = submitting || mutation.isPending;
+  const unpublish = async () => {
+    if (!settings.id) return;
+    setUnpublishError("");
+    try {
+      await mutation.mutateAsync({ type: "unpublish", id: settings.id });
+      refreshProject();
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "Project unpublished." });
+    } catch {
+      setUnpublishError("Could not unpublish the project. Please try again.");
     }
-
-    const payload: Partial<TProjectPublishSettings> = {
-      id: formData.id,
-      is_comments_enabled: formData.is_comments_enabled,
-      is_reactions_enabled: formData.is_reactions_enabled,
-      is_votes_enabled: formData.is_votes_enabled,
-      view_props: formData.view_props,
-    };
-
-    if (formData.id && isProjectPublished) await handleUpdatePublishSettings(payload);
-    else await handlePublishProject(payload);
   };
-
-  // prefill form values for already published projects
-  useEffect(() => {
-    if (!projectPublishSettings?.anchor) return;
-
-    reset({
-      ...defaultValues,
-      ...projectPublishSettings,
-    });
-  }, [projectPublishSettings, reset]);
-
-  const SPACE_APP_URL = (SPACE_BASE_URL.trim() === "" ? window.location.origin : SPACE_BASE_URL) + SPACE_BASE_PATH;
-  const publishLink = `${SPACE_APP_URL}/issues/${projectPublishSettings?.anchor}`;
-
-  const handleCopyLink = () =>
-    copyTextToClipboard(publishLink).then(() =>
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "",
-        message: "Published page link copied successfully.",
-      })
-    );
-
   return (
-    <ModalCore isOpen={isOpen} handleClose={handleClose} width={EModalWidth.XXL}>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <div className="flex items-center justify-between gap-2 p-5">
+    <ModalCore
+      isOpen
+      handleClose={() => {
+        if (!busy) onClose();
+      }}
+      width={EModalWidth.XXL}
+    >
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.setErrorMap({ onSubmit: undefined });
+          void form.handleSubmit().catch(() => {
+            form.setErrorMap({
+              onSubmit: { form: "Could not save publishing settings. Please try again.", fields: {} },
+            });
+          });
+        }}
+        className="space-y-5 p-5"
+      >
+        <div className="flex items-center justify-between gap-2">
           <h5 className="text-18 font-medium text-secondary">Publish project</h5>
-          {isProjectPublished && (
-            <Button
-              variant="error-fill"
-              size="lg"
-              onClick={() => handleUnPublishProject(watch("id") ?? "")}
-              loading={isUnPublishing}
-            >
-              {isUnPublishing ? "Unpublishing" : "Unpublish"}
+          {settings.anchor && (
+            <Button type="button" variant="error-fill" disabled={busy} onClick={() => void unpublish()}>
+              Unpublish
             </Button>
           )}
         </div>
-
-        {/* content */}
-        {fetchSettingsLoader ? (
-          <Loader className="space-y-4 px-5">
-            <Loader.Item height="30px" />
-            <Loader.Item height="30px" />
-            <Loader.Item height="30px" />
-            <Loader.Item height="30px" />
-          </Loader>
-        ) : (
-          <div className="space-y-4 px-5">
-            {isProjectPublished && projectPublishSettings && (
-              <>
-                <div className="flex items-center justify-between gap-2 rounded-md border border-strong py-1.5 pr-1 pl-4">
-                  <a
-                    href={publishLink}
-                    className="truncate text-13 text-secondary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {publishLink}
-                  </a>
-                  <div className="flex flex-shrink-0 items-center gap-1">
-                    <a
-                      href={publishLink}
-                      className="grid size-8 place-items-center rounded-sm bg-layer-3 hover:bg-layer-3-hover"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <NewTabIcon className="size-4" />
-                    </a>
-                    <button
-                      type="button"
-                      className="h-8 rounded-sm bg-layer-3 px-3 py-2 text-11 font-medium hover:bg-layer-3-hover"
-                      onClick={handleCopyLink}
-                    >
-                      Copy link
-                    </button>
-                  </div>
+        {settings.anchor && <PublishedProjectLink anchor={settings.anchor} />}
+        <fieldset disabled={busy} className="space-y-4">
+          <legend className="mb-2 text-13">Views</legend>
+          <div className="flex gap-4">
+            {layouts.map((layout) => (
+              <label key={layout} className="flex items-center gap-2 text-13 capitalize">
+                <Checkbox
+                  checked={!!selected[layout]}
+                  onChange={() =>
+                    form.setFieldValue("view_props", (current) => ({ ...current, [layout]: !current[layout] }))
+                  }
+                />
+                {layout}
+              </label>
+            ))}
+          </div>
+          {toggleFields.map(({ name, label }) => (
+            <form.Field key={name} name={name}>
+              {(field) => (
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-13">{label}</span>
+                  <ToggleSwitch
+                    label={label}
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    disabled={busy}
+                    size="sm"
+                  />
                 </div>
-                <p className="mt-3 flex items-center gap-1 text-13 font-medium text-accent-primary">
-                  <span className="relative grid size-2.5 place-items-center">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent-primary opacity-75" />
-                    <span className="relative inline-flex size-1.5 rounded-full bg-accent-primary" />
-                  </span>
-                  This project is now live on web
-                </p>
-              </>
-            )}
-            <div className="space-y-4">
-              <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Views</div>
-                <Controller
-                  control={control}
-                  name="view_props"
-                  render={({ field: { onChange, value } }) => (
-                    <CustomSelect
-                      value={value}
-                      label={VIEW_OPTIONS.filter((o) => selectedLayouts.includes(o.key))
-                        .map((o) => o.label)
-                        .join(", ")}
-                      onChange={(val: TProjectPublishLayouts) => {
-                        if (selectedLayouts.length === 1 && selectedLayouts[0] === val) return;
-                        onChange({
-                          ...value,
-                          [val]: !value?.[val],
-                        });
-                      }}
-                      buttonClassName="border-none"
-                      placement="bottom-end"
-                    >
-                      {VIEW_OPTIONS.map((option) => (
-                        <CustomSelect.Option
-                          key={option.key}
-                          value={option.key}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          {option.label}
-                          {selectedLayouts.includes(option.key) && <CheckIcon className="size-3.5 flex-shrink-0" />}
-                        </CustomSelect.Option>
-                      ))}
-                    </CustomSelect>
-                  )}
-                />
-              </div>
-              <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow comments</div>
-                <Controller
-                  control={control}
-                  name="is_comments_enabled"
-                  render={({ field: { onChange, value } }) => (
-                    <ToggleSwitch value={!!value} onChange={onChange} size="sm" />
-                  )}
-                />
-              </div>
-              <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow reactions</div>
-                <Controller
-                  control={control}
-                  name="is_reactions_enabled"
-                  render={({ field: { onChange, value } }) => (
-                    <ToggleSwitch value={!!value} onChange={onChange} size="sm" />
-                  )}
-                />
-              </div>
-              <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow voting</div>
-                <Controller
-                  control={control}
-                  name="is_votes_enabled"
-                  render={({ field: { onChange, value } }) => (
-                    <ToggleSwitch value={!!value} onChange={onChange} size="sm" />
-                  )}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* modal handlers */}
-        <div className="relative mt-4 flex items-center justify-between border-t border-subtle px-5 py-4">
-          <div className="flex items-center gap-1 text-13 text-placeholder">
-            <GlobeIcon className="size-3.5" />
-            <div className="text-13">Anyone with the link can access</div>
-          </div>
-          {!fetchSettingsLoader && (
-            <div className="relative flex items-center gap-2">
-              <Button variant="secondary" size="lg" onClick={handleClose}>
-                Cancel
-              </Button>
-              {isProjectPublished ? (
-                isDirty && (
-                  <Button variant="primary" size="lg" type="submit" loading={isSubmitting}>
-                    {isSubmitting ? "Updating" : "Update settings"}
-                  </Button>
-                )
-              ) : (
-                <Button variant="primary" size="lg" type="submit" loading={isSubmitting}>
-                  {isSubmitting ? "Publishing" : "Publish"}
-                </Button>
               )}
-            </div>
-          )}
+            </form.Field>
+          ))}
+        </fieldset>
+        {(formError || unpublishError) && (
+          <p role="alert" className="text-13 text-danger-primary">
+            {formError || unpublishError}
+          </p>
+        )}
+        <div className="flex items-center justify-between gap-2 border-t border-subtle pt-4">
+          <span className="flex items-center gap-1 text-13 text-placeholder">
+            <GlobeIcon className="size-3.5" />
+            Anyone with the link can access
+          </span>
+          <div className="flex gap-2">
+            <Button type="button" variant="secondary" disabled={busy} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              loading={submitting}
+              disabled={busy || (!!settings.anchor && !dirty)}
+            >
+              {settings.anchor ? "Update settings" : "Publish"}
+            </Button>
+          </div>
         </div>
       </form>
     </ModalCore>
   );
-});
+}
+function PublishedProjectLink({ anchor }: { anchor: string }) {
+  const url = `${SPACE_BASE_URL.trim() || window.location.origin}${SPACE_BASE_PATH}/issues/${anchor}`;
+  const copy = useMutation({
+    mutationFn: () => copyTextToClipboard(url),
+    onSuccess: () =>
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Link copied", message: "Published page link copied successfully." }),
+  });
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 rounded-md border border-strong p-2">
+        <a className="grow truncate text-13" href={url} target="_blank" rel="noopener noreferrer">
+          {url}
+        </a>
+        <Button type="button" variant="secondary" onClick={() => copy.mutate()}>
+          Copy link
+        </Button>
+      </div>
+      <p className="text-13 text-accent-primary">This project is now live on the web.</p>
+      {copy.isError && (
+        <p role="alert" className="text-13 text-danger-primary">
+          Could not copy the link.
+        </p>
+      )}
+    </div>
+  );
+}

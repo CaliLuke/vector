@@ -6,7 +6,7 @@
 
 // plane imports
 import { ScrollArea } from "@plane/propel/scrollarea";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // local imports
 import { WorkspaceSettingsSidebarHeader } from "./header";
 import { WorkspaceSettingsSidebarItemCategories } from "./item-categories";

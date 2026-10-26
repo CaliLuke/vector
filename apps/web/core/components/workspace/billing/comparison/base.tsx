@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 // plane imports
 import { Button } from "@plane/propel/button";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // constants
 import type { TPlanePlans } from "@/components/workspace/billing/comparison/plans";
 import { ComingSoonBadge, PLANE_PLANS, PLANS_LIST } from "@/components/workspace/billing/comparison/plans";
@@ -30,7 +29,7 @@ export const shouldRenderPlanDetail = (planKey: TPlanePlans) => {
   return true;
 };
 
-export const PlansComparisonBase = observer(function PlansComparisonBase(props: TPlansComparisonBaseProps) {
+export const PlansComparisonBase = function PlansComparisonBase(props: TPlansComparisonBaseProps) {
   const { planeDetails, isSelfManaged, isCompareAllFeaturesSectionOpen, setIsCompareAllFeaturesSectionOpen } = props;
   // plan details
   const { planDetails, planHighlights, planComparison } = PLANE_PLANS;
@@ -138,4 +137,4 @@ export const PlansComparisonBase = observer(function PlansComparisonBase(props: 
       </div>
     </div>
   );
-});
+};

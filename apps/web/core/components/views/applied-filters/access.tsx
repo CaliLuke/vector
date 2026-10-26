@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // icons
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
@@ -19,7 +18,7 @@ type Props = {
   values: EViewAccess[];
 };
 
-export const AppliedAccessFilters = observer(function AppliedAccessFilters(props: Props) {
+export const AppliedAccessFilters = function AppliedAccessFilters(props: Props) {
   const { editable, handleRemove, values } = props;
   const { t } = useTranslation();
 
@@ -52,4 +51,4 @@ export const AppliedAccessFilters = observer(function AppliedAccessFilters(props
       })}
     </>
   );
-});
+};

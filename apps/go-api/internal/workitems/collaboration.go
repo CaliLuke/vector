@@ -70,6 +70,9 @@ func (r *Repository) ExecuteCollaboration(ctx context.Context, q Request, body i
 			return Result{}, err
 		}
 	}
+	if err := r.authorizeCollaborationParent(ctx, q, kind); err != nil {
+		return Result{}, err
+	}
 	if kind == "subscriber" {
 		return r.writeCollaborationSubscriber(ctx, q, body, contentType)
 	}
@@ -173,6 +176,9 @@ func (r *Repository) collaborationObject(ctx context.Context, q Request, kind, t
 		}
 		where += extra
 	}
+	if !collaborationPublic(q) {
+		where += ` AND EXISTS(` + collaborationVisibleParentSQL(q, kind, &args) + `)`
+	}
 	row, err := r.row(ctx, `SELECT to_jsonb(t) FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where, args...)
 	var missing *djangoapi.HTTPError
 	if errors.As(err, &missing) && missing.Status == 404 {
@@ -217,7 +223,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 			}
 			return Result{200, map[string]any{"subscribed": true}}, nil
 		}
-		rows, err := r.rows(ctx, `SELECT to_jsonb(m) FROM project_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.project_id=$2 AND m.is_active AND m.deleted_at IS NULL ORDER BY m.created_at DESC`, q.Slug, q.ProjectID)
+		rows, err := r.visibleCollaborationRows(ctx, q, kind, `SELECT to_jsonb(m) FROM project_members m JOIN workspaces w ON w.id=m.workspace_id WHERE w.slug=$1 AND m.project_id=$2 AND m.is_active AND m.deleted_at IS NULL ORDER BY m.created_at DESC`, q.Slug, q.ProjectID)
 		if err != nil {
 			return Result{}, err
 		}
@@ -273,7 +279,7 @@ func (r *Repository) readCollaboration(ctx context.Context, q Request, kind, tab
 	if collaborationPublic(q) && kind == "comment" {
 		ordering = "ASC"
 	}
-	rows, err := r.rows(ctx, `SELECT to_jsonb(t) FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where+` ORDER BY t.created_at `+ordering, args...)
+	rows, err := r.visibleCollaborationRows(ctx, q, kind, `SELECT to_jsonb(t) FROM `+table+` t JOIN workspaces w ON w.id=t.workspace_id JOIN projects p ON p.id=t.project_id WHERE `+where+` ORDER BY t.created_at `+ordering, args...)
 	if err != nil {
 		return Result{}, err
 	}

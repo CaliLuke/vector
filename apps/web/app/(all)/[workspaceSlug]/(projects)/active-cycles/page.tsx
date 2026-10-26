@@ -5,16 +5,15 @@
  */
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { getButtonStyling } from "@plane/propel/button";
 // components
 import { PageHead } from "@/components/core/page-title";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 
 function WorkspaceActiveCyclesPage(): React.JSX.Element | null {
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - Active Cycles` : undefined;
 
   return (
@@ -41,5 +40,5 @@ function WorkspaceActiveCyclesPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/active-cycles/")({
-  component: observer(WorkspaceActiveCyclesPage),
+  component: WorkspaceActiveCyclesPage,
 });

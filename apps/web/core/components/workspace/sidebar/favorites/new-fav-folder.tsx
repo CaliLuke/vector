@@ -6,10 +6,8 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
-import { observer } from "mobx-react";
 
-import type { SubmitHandler } from "react-hook-form";
-import { Controller, useForm } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
 import { useOutsideClickDetector } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 // plane helpers
@@ -18,144 +16,111 @@ import { FavoriteFolderIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Input } from "@plane/ui";
 // hooks
-import { useFavorite } from "@/hooks/store/use-favorite";
+import { useFavorites } from "@/hooks/use-favorites";
 
-type TForm = {
-  name: string;
-  entity_type: string;
-  parent: string | null;
-  project_id: string | null;
-  is_folder: boolean;
-};
 type TProps = {
   setCreateNewFolder: (value: boolean | string | null) => void;
   actionType: "create" | "rename";
   defaultName?: string;
   favoriteId?: string;
 };
-export const NewFavoriteFolder = observer(function NewFavoriteFolder(props: TProps) {
+export function NewFavoriteFolder(props: TProps) {
   const { setCreateNewFolder, actionType, defaultName, favoriteId } = props;
   const { t } = useTranslation();
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { addFavorite, updateFavorite, existingFolders } = useFavorite();
+  const { addFavorite, updateFavorite, existingFolders } = useFavorites(workspaceSlug);
 
   // ref
   const ref = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  // form info
-  const { handleSubmit, control, setValue, setFocus } = useForm<TForm>({
-    reValidateMode: "onChange",
-    defaultValues: {
-      name: defaultName,
+  const form = useForm({
+    defaultValues: { name: defaultName ?? "" },
+    validators: {
+      onChange: ({ value }) => {
+        const name = value.name.trim();
+        if (!name) return t("folder_name_cannot_be_empty");
+        if (name !== defaultName && existingFolders.includes(name)) return t("folder_already_exists");
+        return undefined;
+      },
+      onSubmit: (): string | undefined =>
+        actionType === "rename" && !favoriteId ? "Unable to rename this folder." : undefined,
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const name = value.name.trim();
+        if (actionType === "rename") {
+          if (!favoriteId) throw new Error("A favorite folder is required to rename.");
+          await updateFavorite(favoriteId, { name });
+        } else {
+          await addFavorite({
+            name,
+            entity_type: "folder",
+            is_folder: true,
+            parent: null,
+            project_id: null,
+          });
+        }
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("success"),
+          message: t(actionType === "rename" ? "favorite_updated_successfully" : "favorite_created_successfully"),
+        });
+        setCreateNewFolder(false);
+      } catch (error) {
+        setToast({ type: TOAST_TYPE.ERROR, title: t("error"), message: t("something_went_wrong") });
+        throw error;
+      }
     },
   });
-
-  const handleAddNewFolder: SubmitHandler<TForm> = (formData) => {
-    if (existingFolders.includes(formData.name))
-      return setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("folder_already_exists"),
-      });
-    formData = {
-      entity_type: "folder",
-      is_folder: true,
-      name: formData.name.trim(),
-      parent: null,
-      project_id: null,
-    };
-
-    if (formData.name === "")
-      return setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("folder_name_cannot_be_empty"),
-      });
-
-    addFavorite(workspaceSlug.toString(), formData)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("success"),
-          message: t("favorite_created_successfully"),
-        });
-        return;
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("something_went_wrong"),
-        });
-      });
-    setCreateNewFolder(false);
-    setValue("name", "");
-  };
-
-  const handleRenameFolder: SubmitHandler<TForm> = (formData) => {
-    if (!favoriteId) return;
-    if (existingFolders.includes(formData.name))
-      return setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("folder_already_exists"),
-      });
-    const payload = {
-      name: formData.name.trim(),
-    };
-
-    if (formData.name.trim() === "")
-      return setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("error"),
-        message: t("folder_name_cannot_be_empty"),
-      });
-
-    updateFavorite(workspaceSlug.toString(), favoriteId, payload)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("success"),
-          message: t("favorite_updated_successfully"),
-        });
-        return;
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("something_went_wrong"),
-        });
-      });
-    setCreateNewFolder(false);
-    setValue("name", "");
-  };
-
-  useEffect(() => {
-    setFocus("name");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const errors = useStore(form.store, (state) => state.errors);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
   useOutsideClickDetector(ref, () => {
-    setCreateNewFolder(false);
+    if (!isSubmitting) setCreateNewFolder(false);
   });
   return (
     <div className="flex items-center gap-1.5 px-2 py-[1px]" ref={ref}>
       <FavoriteFolderIcon className="size-4" />
-      <form onSubmit={handleSubmit(actionType === "create" ? handleAddNewFolder : handleRenameFolder)}>
-        <Controller
-          name="name"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.setErrorMap({ onSubmit: undefined });
+          void form.handleSubmit().catch(() => {
+            form.setErrorMap({ onSubmit: t("something_went_wrong") });
+          });
+        }}
+      >
+        <form.Field name="name">
+          {(field) => (
             <Input
+              name={field.name}
+              value={field.state.value}
+              onChange={(event) => field.handleChange(event.target.value)}
+              onBlur={field.handleBlur}
+              ref={inputRef}
+              disabled={isSubmitting}
               className="w-full"
               placeholder={t("new_folder")}
               aria-label={t("aria_labels.projects_sidebar.enter_folder_name")}
-              {...field}
+              hasError={errors.length > 0}
             />
           )}
-        />
+        </form.Field>
+        {errors.map((error) => (
+          <p key={error} role="alert" className="text-11 text-danger-primary">
+            {error}
+          </p>
+        ))}
+        {formError && (
+          <p role="alert" className="text-11 text-danger-primary">
+            {formError}
+          </p>
+        )}
       </form>
     </div>
   );
-});
+}

@@ -6,32 +6,36 @@
 
 import { useParams, useLocation, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { MoreHorizontal } from "lucide-react";
 
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 // components
 import { useModuleMenuItems } from "@/components/common/quick-actions-helper";
 import { ArchiveModuleModal, CreateUpdateModuleModal, DeleteModuleModal } from "@/components/modules";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import type { IModule } from "@plane/types";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 type Props = {
   parentRef: React.RefObject<HTMLDivElement | null>;
   moduleId: string;
+  module: IModule;
   projectId: string;
   workspaceSlug: string;
   customClassName?: string;
 };
 
-export const ModuleQuickActions = observer(function ModuleQuickActions(props: Props) {
+export const ModuleQuickActions = function ModuleQuickActions(props: Props) {
   const { parentRef, moduleId, projectId, workspaceSlug, customClassName } = props;
   // router
   const router = useRouter();
@@ -42,19 +46,15 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
   const [archiveModuleModal, setArchiveModuleModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
-  const { getModuleById, restoreModule } = useModule();
+  const { mutation, scope } = useProjectModules(workspaceSlug, projectId, Boolean(props.module.archived_at));
+  const mounted = useCommittedScope(JSON.stringify([scope, moduleId]));
 
   // derived values
-  const moduleDetails = getModuleById(moduleId);
+  const moduleDetails = props.module;
   // auth
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const moduleLink = `${workspaceSlug}/projects/${projectId}/modules/${moduleId}`;
   const handleCopyText = () =>
@@ -70,7 +70,8 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
 
   const handleRestoreModule = async () => {
     try {
-      await restoreModule(workspaceSlug, projectId, moduleId);
+      const result = await mutation.mutateAsync({ type: "restore", id: moduleId });
+      if (!mounted() || !result.captured.isCurrent()) return;
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Restore success",
@@ -78,6 +79,7 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
       });
       void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/archives/modules` });
     } catch (_error) {
+      if (!mounted()) return;
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
@@ -138,7 +140,7 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
             isOpen={deleteModal}
             onClose={() => setDeleteModal(false)}
             onDeleteSuccess={(deletedModule) => {
-              if (routeModuleId || peekModule) {
+              if (routeModuleId === deletedModule.id || peekModule === deletedModule.id) {
                 void router.navigate({ href: `/${workspaceSlug}/projects/${deletedModule.project_id}/modules` });
               }
             }}
@@ -190,4 +192,4 @@ export const ModuleQuickActions = observer(function ModuleQuickActions(props: Pr
       </CustomMenu>
     </>
   );
-});
+};

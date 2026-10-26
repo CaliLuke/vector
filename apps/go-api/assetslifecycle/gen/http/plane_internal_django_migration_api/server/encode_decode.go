@@ -5697,6 +5697,170 @@ func EncodePatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAtt
 	}
 }
 
+// EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse returns an
+// encoder for responses returned by the PlaneInternalDjangoMigrationAPI
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint.
+func EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder) func(context.Context, http.ResponseWriter, any) error {
+	return func(ctx context.Context, w http.ResponseWriter, v any) error {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+}
+
+// DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest returns a decoder
+// for requests sent to the PlaneInternalDjangoMigrationAPI
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint.
+func DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(mux loomhttp.Muxer, _ func(*http.Request) loomhttp.Decoder) func(*http.Request) (*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload, error) {
+	return func(r *http.Request) (*planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload, error) {
+		var payload *planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload
+		var err error
+		var (
+			slug                         string
+			entityID                     string
+			planeSessionCookieCredential *string
+
+			params = mux.Vars(r)
+		)
+		slug = params["slug"]
+		entityID = params["entity_id"]
+		err = loom.MergeErrors(err, loom.ValidateFormat("entity_id", entityID, loom.FormatUUID))
+		{
+			c, cookieErr := r.Cookie("session-id")
+			if cookieErr != nil && !errors.Is(cookieErr, http.ErrNoCookie) {
+				return payload, cookieErr
+			}
+			var planeSessionCookieCredentialRaw string
+			planeSessionCookieCredentialPresent := c != nil
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredentialRaw = c.Value
+			}
+
+			if planeSessionCookieCredentialPresent {
+				planeSessionCookieCredential = &planeSessionCookieCredentialRaw
+			}
+		}
+		if err != nil {
+			return payload, err
+		}
+		payload = NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload(slug, entityID, planeSessionCookieCredential)
+
+		return payload, nil
+	}
+}
+
+// EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkError returns an encoder
+// for errors returned by the PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk
+// PlaneInternalDjangoMigrationAPI endpoint.
+func EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkError(encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder, formatter func(ctx context.Context, err error) loomhttp.StatusCoder) func(context.Context, http.ResponseWriter, error) error {
+	encodeError := loomhttp.ErrorEncoder(encoder, formatter)
+	return func(ctx context.Context, w http.ResponseWriter, v error) error {
+		errorResponse := loom.ResolveErrorResponse(v)
+		if errorResponse.Owner == nil {
+			return encodeError(ctx, w, v)
+		}
+		switch errorResponse.Name {
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusBadRequest)
+			return enc.Encode(body)
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusUnauthorized)
+			return enc.Encode(body)
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusForbidden)
+			return enc.Encode(body)
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusNotFound)
+			return enc.Encode(body)
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusConflict)
+			return enc.Encode(body)
+		case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500":
+			//nolint:errorlint // Response ownership is already resolved.
+			res, ok := errorResponse.Owner.(planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500)
+			if !ok {
+				return encodeError(ctx, w, v)
+			}
+			enc := encoder(ctx, w)
+			var body any
+			if formatter != nil {
+				body = formatter(ctx, v)
+			} else {
+				body = res
+			}
+			w.Header().Set("loom-error", res.LoomErrorName())
+			w.WriteHeader(http.StatusInternalServerError)
+			return enc.Encode(body)
+		default:
+			return encodeError(ctx, w, v)
+		}
+	}
+}
+
 // EncodePostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkResponse
 // returns an encoder for responses returned by the
 // PlaneInternalDjangoMigrationAPI

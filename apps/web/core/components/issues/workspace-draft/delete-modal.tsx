@@ -4,103 +4,86 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
-// types
-import { PROJECT_ERROR_MESSAGES, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TWorkspaceDraftIssue } from "@plane/types";
-// ui
 import { AlertModalCore } from "@plane/ui";
-// constants
-// hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+
+import { isIssueCreator } from "../issue-delete-modal-feedback";
+
+import { useIssueConfirmation, useIssueConfirmationScope } from "../use-issue-confirmation";
 
 type Props = {
   isOpen: boolean;
   handleClose: () => void;
-  dataId?: string | null | undefined;
   data?: TWorkspaceDraftIssue;
   onSubmit?: () => Promise<void>;
 };
 
 export function WorkspaceDraftIssueDeleteIssueModal(props: Props) {
-  const { dataId, data, isOpen, handleClose, onSubmit } = props;
-  // states
-  const [isDeleting, setIsDeleting] = useState(false);
-  // store hooks
-  const { issueMap } = useIssues();
-  const { allowPermissions } = useUserPermissions();
+  const { data, isOpen } = props;
+  const { workspaceSlug, scopeKey } = useIssueConfirmationScope([data?.id, data?.created_by]);
+
+  if (!isOpen || !data?.id || !workspaceSlug) return null;
+  return (
+    <WorkspaceDraftIssueDeleteDialog key={scopeKey} {...props} workspaceSlug={workspaceSlug} scopeKey={scopeKey} />
+  );
+}
+
+type DialogProps = Props & { workspaceSlug: string; scopeKey: string };
+
+function WorkspaceDraftIssueDeleteDialog(props: DialogProps) {
+  const { data: issue, handleClose, isOpen, onSubmit, workspaceSlug, scopeKey } = props;
+  const permissions = useWorkspacePermissions(workspaceSlug);
   const { t } = useTranslation();
-  const { data: currentUser } = useUser();
+  const confirmation = useIssueConfirmation(scopeKey, permissions, handleClose);
 
-  // derived values
-  const canPerformProjectAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
+  if (!issue) return null;
 
-  useEffect(() => {
-    setIsDeleting(false);
-  }, [isOpen]);
+  const isCreator = isIssueCreator(confirmation.currentUser?.id, issue.created_by);
+  const authorized =
+    confirmation.canStart &&
+    isCreator &&
+    permissions.can([EUserPermissions.ADMIN, EUserPermissions.MEMBER, EUserPermissions.GUEST]);
 
-  if (!dataId && !data) return null;
-
-  // derived values
-  const issue = data ? data : issueMap[dataId!];
-  const isIssueCreator = issue?.created_by === currentUser?.id;
-  const authorized = isIssueCreator || canPerformProjectAdminActions;
-
-  const onClose = () => {
-    setIsDeleting(false);
-    handleClose();
+  const retryAccess = () => {
+    void Promise.all([confirmation.currentUserQuery.refetch(), permissions.membershipQuery.refetch()]);
   };
-
-  const handleIssueDelete = async () => {
-    setIsDeleting(true);
-
-    if (!authorized) {
-      setToast({
-        title: t(PROJECT_ERROR_MESSAGES.permissionError.i18n_title),
-        type: TOAST_TYPE.ERROR,
-        message:
-          PROJECT_ERROR_MESSAGES.permissionError.i18n_message && t(PROJECT_ERROR_MESSAGES.permissionError.i18n_message),
-      });
-      onClose();
-      return;
-    }
-    if (onSubmit)
-      await onSubmit()
-        .then(() => {
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: `${t("success")}!`,
-            message: t("workspace_draft_issues.toasts.deleted.success"),
-          });
-          onClose();
-        })
-        .catch((errors) => {
-          const isPermissionError = errors?.error === "Only admin or creator can delete the work item";
-          const currentError = isPermissionError
-            ? PROJECT_ERROR_MESSAGES.permissionError
-            : PROJECT_ERROR_MESSAGES.issueDeleteError;
-          setToast({
-            title: t(currentError.i18n_title),
-            type: TOAST_TYPE.ERROR,
-            message: currentError.i18n_message && t(currentError.i18n_message),
-          });
-        })
-        .finally(() => onClose());
+  const handleIssueDelete = () => {
+    confirmation.submitDelete({
+      authorized,
+      onSubmit,
+      entity: "work item",
+      successToast: {
+        title: `${t("success")}!`,
+        message: t("workspace_draft_issues.toasts.deleted.success"),
+      },
+      t,
+    });
   };
 
   return (
     <AlertModalCore
-      handleClose={onClose}
+      handleClose={confirmation.closeWhenIdle}
       handleSubmit={handleIssueDelete}
-      isSubmitting={isDeleting}
+      isSubmitting={confirmation.isPending || !confirmation.canStart || !onSubmit}
       isOpen={isOpen}
       title={t("workspace_draft_issues.delete_modal.title")}
-      content={<>{t("workspace_draft_issues.delete_modal.description")}</>}
+      content={
+        confirmation.accessError ? (
+          <span>
+            Unable to verify delete permissions. Please retry or close this dialog.{" "}
+            <button type="button" onClick={retryAccess} disabled={confirmation.isPending}>
+              Retry
+            </button>
+          </span>
+        ) : (
+          t("workspace_draft_issues.delete_modal.description")
+        )
+      }
       primaryButtonText={{
-        loading: t("deleting"),
+        loading: confirmation.canStart ? t("deleting") : "Checking permissions",
         default: t("delete"),
       }}
       secondaryButtonText={t("cancel")}

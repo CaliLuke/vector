@@ -4,33 +4,27 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { WorkItemsIcon } from "@plane/propel/icons";
 import { EInboxIssueSource } from "@plane/types";
 // hooks
-import { capitalizeFirstLetter } from "@plane/utils";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { capitalizeFirstLetter } from "@plane/utils/string";
+import type { TIssueActivity } from "@plane/types";
 // local imports
 import { IssueActivityBlockComponent } from "./";
 
-type TIssueDefaultActivity = { activityId: string; ends: "top" | "bottom" | undefined };
+type TIssueDefaultActivity = { activity: TIssueActivity; ends: "top" | "bottom" | undefined };
 
-export const IssueDefaultActivity = observer(function IssueDefaultActivity(props: TIssueDefaultActivity) {
-  const { activityId, ends } = props;
+export const IssueDefaultActivity = function IssueDefaultActivity(props: TIssueDefaultActivity) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   const source = activity.source_data?.source;
 
   return (
     <IssueActivityBlockComponent
-      activityId={activityId}
+      activity={activity}
       icon={<WorkItemsIcon width={14} height={14} className="text-secondary" aria-hidden="true" />}
       ends={ends}
     >
@@ -50,4 +44,4 @@ export const IssueDefaultActivity = observer(function IssueDefaultActivity(props
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

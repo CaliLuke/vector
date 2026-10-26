@@ -6,7 +6,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
 import { EditIcon, TrashIcon, ChevronDownIcon } from "@plane/propel/icons";
@@ -36,7 +36,7 @@ type Props = {
   isEditable?: boolean;
 };
 
-export const ProjectSettingLabelGroup = observer(function ProjectSettingLabelGroup(props: Props) {
+export const ProjectSettingLabelGroup = function ProjectSettingLabelGroup(props: Props) {
   const {
     label,
     labelChildren,
@@ -163,4 +163,4 @@ export const ProjectSettingLabelGroup = observer(function ProjectSettingLabelGro
       )}
     </LabelDndHOC>
   );
-});
+};

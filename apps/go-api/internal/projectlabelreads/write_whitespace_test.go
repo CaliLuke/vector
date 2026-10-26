@@ -19,8 +19,8 @@ func TestLabelWritesTrimPythonControlWhitespace(t *testing.T) {
 			{name: "Inner\u001fspace", color: "\u001c\u001f", wantName: "Inner\u001fspace", wantColor: ""},
 		} {
 			t.Run(method+"/"+scenario.name, func(t *testing.T) {
-				db := &writeDatabase{label: existingWriteLabel()}
-				repository := newWriteRepository(t, db, &writePublisher{db: db})
+				db := &parentWriteDatabase{label: existingWriteLabel()}
+				repository := newWriteRepository(t, db)
 				body, err := json.Marshal(map[string]string{"name": scenario.name, "color": scenario.color})
 				if err != nil {
 					t.Fatal(err)

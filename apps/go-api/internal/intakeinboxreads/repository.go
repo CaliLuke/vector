@@ -13,6 +13,9 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
+
 	"uuid"
 
 	"github.com/jackc/pgx/v5"
@@ -223,7 +226,7 @@ func (repository *Repository) intakeIssueDetail(ctx context.Context, userID uuid
 		}
 	}
 	var data []byte
-	err = repository.database.QueryRow(ctx, intakeIssueDetailSQL, intakeID, projectID, issueID).Scan(&data)
+	err = repository.database.QueryRow(ctx, intakeIssueDetailSQL, intakeID, projectID, issueID, userID).Scan(&data)
 	return scannedJSON(data, err, "get intake issue")
 }
 
@@ -758,20 +761,32 @@ func addRelationUUIDFilter(builder *whereBuilder, alias, table, owner, target, v
 	if value == "" && !present {
 		return
 	}
+	relationScope := "filtered_relation." + owner + " = " + alias + ".id"
+	liveScope := relationScope
+	if liveOnly {
+		liveScope += " AND filtered_relation.deleted_at IS NULL"
+	}
+	labelRelation := true
+	switch table {
+	case "issue_labels":
+		relationScope = issuequery.LiveIssueLabelPredicate(alias, "filtered_relation")
+		liveScope = relationScope
+	case "draft_issue_labels":
+		relationScope = issuequery.LiveDraftIssueLabelPredicate(alias, "filtered_relation")
+		liveScope = relationScope
+	default:
+		labelRelation = false
+	}
 	ids, hasNone := csvUUIDs(value)
 	if allowNone && hasNone {
-		builder.conditions = append(builder.conditions, "NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE filtered_relation."+owner+" = "+alias+".id)")
+		builder.conditions = append(builder.conditions, "NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+relationScope+")")
 	}
 	if len(ids) > 0 {
-		live := ""
-		if liveOnly {
-			live = " AND filtered_relation.deleted_at IS NULL"
-		}
-		builder.addCondition("EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE filtered_relation."+owner+" = "+alias+".id AND filtered_relation."+target+" = ANY(%s)"+live+")", ids)
+		builder.addCondition("EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+liveScope+" AND filtered_relation."+target+" = ANY(%s))", ids)
 		return
 	}
-	if present && (!hasNone || !allowNone) && liveOnly {
-		builder.conditions = append(builder.conditions, "(NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE filtered_relation."+owner+" = "+alias+".id) OR EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE filtered_relation."+owner+" = "+alias+".id AND filtered_relation.deleted_at IS NULL))")
+	if present && (!hasNone || !allowNone) && liveOnly && !labelRelation {
+		builder.conditions = append(builder.conditions, "(NOT EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+relationScope+") OR EXISTS (SELECT 1 FROM "+table+" filtered_relation WHERE "+liveScope+"))")
 	}
 }
 
@@ -992,11 +1007,12 @@ SELECT EXISTS (
   JOIN workspaces workspace ON workspace.id = member.workspace_id
   WHERE member.member_id = $1 AND workspace.slug = $2
     AND member.is_active = true AND member.deleted_at IS NULL AND workspace.deleted_at IS NULL
-    AND (member.role = 20 OR EXISTS (
-      SELECT 1 FROM issues creator_issue
-      WHERE creator_issue.id = $3
-        AND creator_issue.created_by_id = $1 AND creator_issue.deleted_at IS NULL
-    ))
+    AND member.role IN (5,15,20)
+    AND EXISTS (
+      SELECT 1 FROM draft_issues draft
+      WHERE draft.id = $3 AND draft.workspace_id = workspace.id
+        AND draft.created_by_id = $1 AND draft.deleted_at IS NULL
+    )
 )`
 
 func intakeIssueOrder(value string) string {
@@ -1102,20 +1118,21 @@ WHERE workspace.slug = $2 AND project.id = $3
 ORDER BY intake.name
 LIMIT 1`
 
-const draftIssueProjection = `json_build_object(
+var draftIssueProjection = `json_build_object(
   'id', draft.id, 'name', draft.name, 'state_id', draft.state_id, 'sort_order', draft.sort_order,
   'completed_at', draft.completed_at, 'estimate_point', draft.estimate_point_id, 'priority', draft.priority,
   'start_date', draft.start_date, 'target_date', draft.target_date, 'project_id', draft.project_id,
-  'parent_id', draft.parent_id,
+  'parent_id', ` + djangoapi.VisibleParentSQL("draft", "$1::uuid") + `,
   'cycle_id', (SELECT relation.cycle_id FROM draft_issue_cycles relation WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL ORDER BY relation.created_at DESC LIMIT 1),
   'module_ids', COALESCE((SELECT json_agg(DISTINCT relation.module_id) FROM draft_issue_modules relation JOIN modules module ON module.id = relation.module_id WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL AND module.archived_at IS NULL), '[]'::json),
-  'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM draft_issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL), '[]'::json),
+  'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM draft_issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE ` + issuequery.LiveDraftIssueLabelPredicate("draft", "relation") + `), '[]'::json),
   'assignee_ids', COALESCE((SELECT json_agg(DISTINCT relation.assignee_id) FROM draft_issue_assignees relation WHERE relation.draft_issue_id = draft.id AND relation.deleted_at IS NULL AND EXISTS (SELECT 1 FROM project_members member WHERE member.member_id = relation.assignee_id AND member.is_active = true)), '[]'::json),
   'created_at', draft.created_at, 'updated_at', draft.updated_at, 'created_by', draft.created_by_id,
-  'updated_by', draft.updated_by_id, 'type_id', draft.type_id, 'description_html', draft.description_html
+  'updated_by', draft.updated_by_id, 'type_id', draft.type_id, 'description_html', draft.description_html,
+  'custom_properties', draft.custom_properties
 )`
 
-const draftIssueListSQL = `
+var draftIssueListSQL = `
 WITH filtered AS (
   SELECT draft.*, row_number() OVER (ORDER BY draft.created_at DESC) AS ordinal
   FROM draft_issues draft
@@ -1136,7 +1153,7 @@ SELECT json_build_object(
 )
 FROM counted LEFT JOIN page draft ON true GROUP BY counted.total`
 
-const draftIssueDetailSQL = `
+var draftIssueDetailSQL = `
 SELECT ` + draftIssueProjection + `
 FROM draft_issues draft
 JOIN workspaces workspace ON workspace.id = draft.workspace_id
@@ -1144,14 +1161,14 @@ WHERE draft.id = $3 AND draft.created_by_id = $1 AND workspace.slug = $2
   AND draft.deleted_at IS NULL AND workspace.deleted_at IS NULL
 LIMIT 1`
 
-const issueLiteProjection = `json_build_object(
+var issueLiteProjection = `json_build_object(
   'id', issue.id, 'name', issue.name, 'priority', issue.priority, 'sequence_id', issue.sequence_id,
   'project_id', issue.project_id, 'created_at', issue.created_at,
-  'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL), '[]'::json),
+  'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `), '[]'::json),
   'created_by', issue.created_by_id
 )`
 
-const intakeIssueListSQL = `
+var intakeIssueListSQL = `
 WITH filtered AS (
   SELECT intake_issue.id, row_number() OVER (ORDER BY %s) AS ordinal
   FROM intake_issues intake_issue
@@ -1180,7 +1197,7 @@ LEFT JOIN intake_issues intake_issue ON intake_issue.id = page_ids.id
 LEFT JOIN issues issue ON issue.id = intake_issue.issue_id
 GROUP BY counted.total`
 
-const intakeIssueDetailSQL = `
+var intakeIssueDetailSQL = `
 SELECT json_build_object(
   'id', intake_issue.id, 'status', intake_issue.status, 'duplicate_to', intake_issue.duplicate_to_id,
   'snoozed_till', intake_issue.snoozed_till,
@@ -1194,8 +1211,8 @@ SELECT json_build_object(
     'id', issue.id, 'name', issue.name, 'state_id', issue.state_id, 'sort_order', issue.sort_order,
     'completed_at', issue.completed_at, 'estimate_point', issue.estimate_point_id, 'priority', issue.priority,
     'start_date', issue.start_date, 'target_date', issue.target_date, 'sequence_id', issue.sequence_id,
-    'project_id', issue.project_id, 'parent_id', issue.parent_id,
-    'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL), '[]'::json),
+    'project_id', issue.project_id, 'parent_id', ` + djangoapi.VisibleParentSQL("issue", "$4::uuid") + `,
+    'label_ids', COALESCE((SELECT json_agg(DISTINCT relation.label_id) FROM issue_labels relation JOIN labels label ON label.id = relation.label_id WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `), '[]'::json),
     'assignee_ids', COALESCE((SELECT json_agg(DISTINCT relation.assignee_id) FROM issue_assignees relation WHERE relation.issue_id = issue.id AND relation.deleted_at IS NULL), '[]'::json),
     'created_at', issue.created_at, 'updated_at', issue.updated_at, 'created_by', issue.created_by_id,
     'updated_by', issue.updated_by_id, 'is_draft', issue.is_draft, 'archived_at', issue.archived_at,

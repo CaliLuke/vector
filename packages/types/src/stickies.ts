@@ -15,7 +15,7 @@ export type TSticky = {
   id: string;
   logo_props: TLogoProps | undefined;
   name?: string;
-  sort_order: number | undefined;
+  sort_order: number;
   updated_at?: string | undefined;
   updated_by?: string | undefined;
   workspace: string | undefined;

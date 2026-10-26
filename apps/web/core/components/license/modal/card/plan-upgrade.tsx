@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { TALK_TO_SALES_URL } from "@plane/constants";
 import type { EProductSubscriptionEnum, IPaymentProduct, TSubscriptionPrice } from "@plane/types";
-import { calculateYearlyDiscount, getSubscriptionName, getSubscriptionPriceDetails } from "@plane/utils";
+import { calculateYearlyDiscount, getSubscriptionName, getSubscriptionPriceDetails } from "@plane/utils/subscription";
 // components
 import { BasePaidPlanCard, TalkToSalesCard } from "@/components/license";
 // local components
@@ -30,7 +29,7 @@ export type PlanUpgradeCardProps = {
   isTrialAllowed: boolean;
 };
 
-export const PlanUpgradeCard = observer(function PlanUpgradeCard(props: PlanUpgradeCardProps) {
+export const PlanUpgradeCard = function PlanUpgradeCard(props: PlanUpgradeCardProps) {
   const {
     planVariant,
     features,
@@ -112,4 +111,4 @@ export const PlanUpgradeCard = observer(function PlanUpgradeCard(props: PlanUpgr
       )}
     />
   );
-});
+};

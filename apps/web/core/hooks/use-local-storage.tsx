@@ -6,19 +6,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-export const getValueFromLocalStorage = (key: string, defaultValue: any) => {
-  if (typeof window === undefined || typeof window === "undefined") return defaultValue;
+export const getValueFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  if (typeof window === "undefined") return defaultValue;
   try {
     const item = window.localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (_error) {
-    window.localStorage.removeItem(key);
+    try {
+      window.localStorage.removeItem(key);
+    } catch (_removeError) {
+      // Storage can be unavailable in restricted browser contexts.
+    }
     return defaultValue;
   }
 };
 
-export const setValueIntoLocalStorage = (key: string, value: any) => {
-  if (typeof window === undefined || typeof window === "undefined") return false;
+export const setValueIntoLocalStorage = (key: string, value: unknown) => {
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -33,17 +37,23 @@ const useLocalStorage = <T,>(key: string, initialValue: T) => {
 
   const setValue = useCallback(
     (value: T) => {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      setValueIntoLocalStorage(key, value);
       setStoredValue(value);
-      window.dispatchEvent(new Event(`local-storage:${key}`));
+      if (typeof window !== "undefined") window.dispatchEvent(new Event(`local-storage:${key}`));
     },
     [key]
   );
 
   const clearValue = useCallback(() => {
-    window.localStorage.removeItem(key);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (_error) {
+        // Storage can be unavailable in restricted browser contexts.
+      }
+      window.dispatchEvent(new Event(`local-storage:${key}`));
+    }
     setStoredValue(null);
-    window.dispatchEvent(new Event(`local-storage:${key}`));
   }, [key]);
 
   const reHydrate = useCallback(() => {
@@ -52,6 +62,7 @@ const useLocalStorage = <T,>(key: string, initialValue: T) => {
   }, [key, initialValue]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return undefined;
     window.addEventListener(`local-storage:${key}`, reHydrate);
     return () => {
       window.removeEventListener(`local-storage:${key}`, reHydrate);

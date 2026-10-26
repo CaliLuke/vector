@@ -3,118 +3,62 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
-import { useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
-// plane imports
-import { ETabIndices } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { EmojiPicker, EmojiIconPickerTypes, Logo } from "@plane/propel/emoji-icon-picker";
 import { CloseIcon } from "@plane/propel/icons";
-// plane types
-import type { IProject } from "@plane/types";
-// plane ui
-import { getTabIndex } from "@plane/utils";
-// components
+import type { TLogoProps } from "@plane/types";
 import { CoverImage } from "@/components/common/cover-image";
 import { ImagePickerPopover } from "@/components/core/image-picker-popover";
+import { ProjectLogoPicker } from "../project-logo-picker";
 
 type Props = {
-  handleClose: () => void;
-  isMobile?: boolean;
-  handleFormOnChange?: () => void;
-  isClosable?: boolean;
-  handleTemplateSelect?: () => void;
-  showActionButtons?: boolean;
+  workspaceSlug: string;
+  onClose: () => void;
+  cover: string | null;
+  logo: TLogoProps;
+  onCoverChange: (url: string) => void;
+  onLogoChange: (value: TLogoProps) => void;
+  disabled: boolean;
+  busy: boolean;
 };
-
-function ProjectCreateHeader(props: Props) {
-  const { handleClose, isMobile = false, handleFormOnChange, isClosable = true } = props;
-  const { watch, control, setValue } = useFormContext<IProject>();
+export default function ProjectCreateHeader({
+  workspaceSlug,
+  onClose,
+  cover,
+  logo,
+  onCoverChange,
+  onLogoChange,
+  disabled,
+  busy,
+}: Props) {
   const { t } = useTranslation();
-  // derived values
-  const coverImage = watch("cover_image_url");
-
-  const [isOpen, setIsOpen] = useState(false);
-  const { getIndex } = getTabIndex(ETabIndices.PROJECT_CREATE, isMobile);
-
   return (
     <div className="group relative h-44 w-full rounded-lg">
       <CoverImage
-        src={coverImage}
+        src={cover ?? undefined}
         alt={t("project_cover_image_alt")}
-        className="absolute top-0 left-0 h-full w-full rounded-lg"
+        className="absolute inset-0 size-full rounded-lg"
       />
-      {isClosable && (
-        <div className="absolute top-2 right-2 p-2">
-          <button type="button" onClick={handleClose} tabIndex={getIndex("close")}>
-            <CloseIcon className="h-5 w-5 text-on-color" />
-          </button>
-        </div>
-      )}
+      <button
+        type="button"
+        aria-label={t("common.close")}
+        disabled={busy}
+        onClick={onClose}
+        className="absolute top-4 right-4"
+      >
+        <CloseIcon className="size-5 text-on-color" />
+      </button>
       <div className="absolute right-2 bottom-2">
-        <Controller
-          name="cover_image_url"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <ImagePickerPopover
-              label={t("change_cover")}
-              onChange={(data) => {
-                onChange(data);
-                handleFormOnChange?.();
-              }}
-              value={value ?? null}
-              tabIndex={getIndex("cover_image")}
-            />
-          )}
+        <ImagePickerPopover
+          workspaceSlug={workspaceSlug}
+          label={t("change_cover")}
+          value={cover}
+          onChange={onCoverChange}
+          disabled={disabled}
         />
       </div>
       <div className="absolute -bottom-[22px] left-3">
-        <Controller
-          name="logo_props"
-          control={control}
-          render={({ field: { value, onChange } }) => (
-            <EmojiPicker
-              iconType="material"
-              isOpen={isOpen}
-              handleToggle={(val: boolean) => setIsOpen(val)}
-              className="flex items-center justify-center"
-              buttonClassName="flex items-center justify-center"
-              label={
-                <span className="grid h-11 w-11 place-items-center rounded-md border border-subtle bg-layer-2">
-                  <Logo logo={value} size={20} />
-                </span>
-              }
-              onChange={(val: any) => {
-                let logoValue = {};
-
-                if (val?.type === "emoji")
-                  logoValue = {
-                    value: val.value,
-                  };
-                else if (val?.type === "icon") logoValue = val.value;
-
-                const newLogoProps = {
-                  in_use: val?.type,
-                  [val?.type]: logoValue,
-                };
-                setValue("logo_props", newLogoProps, {
-                  shouldDirty: true,
-                });
-                onChange(newLogoProps);
-                handleFormOnChange?.();
-                setIsOpen(false);
-              }}
-              defaultIconColor={value?.in_use && value.in_use === "icon" ? value.icon?.color : undefined}
-              defaultOpen={
-                value?.in_use && value.in_use === "emoji" ? EmojiIconPickerTypes.EMOJI : EmojiIconPickerTypes.ICON
-              }
-            />
-          )}
-        />
+        <ProjectLogoPicker value={logo} onChange={onLogoChange} disabled={disabled} />
       </div>
     </div>
   );
 }
-
-export default ProjectCreateHeader;

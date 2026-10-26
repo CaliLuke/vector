@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // icons
 import { ListFilter } from "lucide-react";
 import { ChevronDownIcon } from "@plane/propel/icons";
@@ -14,15 +14,21 @@ import { FiltersDropdown } from "@/components/issues/issue-layouts/filters";
 import { ViewFiltersSelection } from "@/components/views/filters/filter-selection";
 import { ViewOrderByDropdown } from "@/components/views/filters/order-by";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectView } from "@/hooks/store/use-project-view";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectViewListFilters } from "@/providers/project-view-list-filters";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 
-export const ViewMobileHeader = observer(function ViewMobileHeader() {
+export function ViewMobileHeader() {
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const { filters, updateFilters } = useProjectView();
-  const {
-    project: { projectMemberIds },
-  } = useMember();
+  const { filters, updateFilters } = useProjectViewListFilters();
+  const { data: currentUser } = useCurrentUser();
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const projectMemberIds = projectId
+    ? projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false)
+    : undefined;
 
   return (
     <>
@@ -55,10 +61,11 @@ export const ViewMobileHeader = observer(function ViewMobileHeader() {
               filters={filters}
               handleFiltersUpdate={updateFilters}
               memberIds={projectMemberIds ?? undefined}
+              workspaceSlug={workspaceSlug}
             />
           </FiltersDropdown>
         </div>
       </div>
     </>
   );
-});
+}

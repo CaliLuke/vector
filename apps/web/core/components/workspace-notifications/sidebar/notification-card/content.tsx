@@ -7,12 +7,9 @@
 import type { ReactNode } from "react";
 // plane imports
 import type { TNotification } from "@plane/types";
-import {
-  convertMinutesToHoursMinutesString,
-  renderFormattedDate,
-  sanitizeCommentForNotification,
-  stripAndTruncateHTML,
-} from "@plane/utils";
+import { convertMinutesToHoursMinutesString, renderFormattedDate } from "@plane/utils/datetime";
+import { sanitizeCommentForNotification } from "@plane/utils/notification";
+import { stripAndTruncateHTML } from "@plane/utils/string";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 import {

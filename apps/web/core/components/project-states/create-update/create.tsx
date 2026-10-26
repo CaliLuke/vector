@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
 import { STATE_GROUPS } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
 // components
-import { StateForm } from "@/components/project-states";
+import { StateForm } from "./form";
 
 type TStateCreate = {
   groupKey: TStateGroups;
@@ -19,20 +17,10 @@ type TStateCreate = {
   handleClose: () => void;
 };
 
-export const StateCreate = observer(function StateCreate(props: TStateCreate) {
+export const StateCreate = function StateCreate(props: TStateCreate) {
   const { groupKey, createStateCallback, handleClose } = props;
 
-  // states
-  const [loader, setLoader] = useState(false);
-
-  const onCancel = () => {
-    setLoader(false);
-    handleClose();
-  };
-
   const onSubmit = async (formData: Partial<IState>) => {
-    if (!groupKey) return { status: "error" };
-
     try {
       await createStateCallback({ ...formData, group: groupKey });
 
@@ -42,24 +30,14 @@ export const StateCreate = observer(function StateCreate(props: TStateCreate) {
         message: "State created successfully.",
       });
       handleClose();
-      return { status: "success" };
     } catch (error) {
-      const errorStatus = error as { status: number; data: { error: string } };
-      if (errorStatus?.status === 400) {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "State with that name already exists. Please try again with another name.",
-        });
-        return { status: "already_exists" };
-      } else {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: errorStatus.data.error ?? "State could not be created. Please try again.",
-        });
-        return { status: "error" };
-      }
+      const duplicate = typeof error === "object" && error !== null && "status" in error && error.status === 400;
+      throw new Error(
+        duplicate
+          ? "Another state exists with the same name. Please use a different name."
+          : "State could not be created. Please try again.",
+        { cause: error }
+      );
     }
   };
 
@@ -67,9 +45,8 @@ export const StateCreate = observer(function StateCreate(props: TStateCreate) {
     <StateForm
       data={{ name: "", description: "", color: STATE_GROUPS[groupKey].color }}
       onSubmit={onSubmit}
-      onCancel={onCancel}
-      buttonDisabled={loader}
-      buttonTitle={loader ? `Creating` : `Create`}
+      onCancel={handleClose}
+      buttonTitle="Create"
     />
   );
-});
+};

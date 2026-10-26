@@ -5,12 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TIssueServiceType } from "@plane/types";
 import { Collapsible } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // local imports
 import { RelationsCollapsibleContent } from "./content";
 import { RelationsCollapsibleTitle } from "./title";
@@ -18,15 +18,16 @@ import { RelationActionButton } from "./quick-action-button";
 
 type Props = {
   workspaceSlug: string;
+  projectId: string;
   issueId: string;
   disabled?: boolean;
   issueServiceType: TIssueServiceType;
 };
 
-export const RelationsCollapsible = observer(function RelationsCollapsible(props: Props) {
-  const { workspaceSlug, issueId, disabled = false, issueServiceType } = props;
+export const RelationsCollapsible = function RelationsCollapsible(props: Props) {
+  const { workspaceSlug, projectId, issueId, disabled = false, issueServiceType } = props;
   // store hooks
-  const { openWidgets, toggleOpenWidget } = useIssueDetail(issueServiceType);
+  const { openWidgets, toggleOpenWidget } = useIssueDetailUiState(issueServiceType);
   // derived values
   const isCollapsibleOpen = openWidgets.includes("relations");
 
@@ -35,7 +36,13 @@ export const RelationsCollapsible = observer(function RelationsCollapsible(props
       isOpen={isCollapsibleOpen}
       onToggle={() => toggleOpenWidget("relations")}
       title={
-        <RelationsCollapsibleTitle isOpen={isCollapsibleOpen} issueId={issueId} issueServiceType={issueServiceType} />
+        <RelationsCollapsibleTitle
+          isOpen={isCollapsibleOpen}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          issueServiceType={issueServiceType}
+        />
       }
       titleActionElement={
         !disabled && <RelationActionButton issueId={issueId} disabled={disabled} issueServiceType={issueServiceType} />
@@ -44,10 +51,11 @@ export const RelationsCollapsible = observer(function RelationsCollapsible(props
     >
       <RelationsCollapsibleContent
         workspaceSlug={workspaceSlug}
+        projectId={projectId}
         issueId={issueId}
         disabled={disabled}
         issueServiceType={issueServiceType}
       />
     </Collapsible>
   );
-});
+};

@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 import { useLayoutMenuItems } from "@/components/common/quick-actions-helper";
 import { Ellipsis } from "lucide-react";
 import { IconButton } from "@plane/propel/icon-button";
@@ -19,7 +19,7 @@ type Props = {
   storeType: "PROJECT" | "EPIC";
 };
 
-export const LayoutQuickActions = observer(function LayoutQuickActions(props: Props) {
+export const LayoutQuickActions = function LayoutQuickActions(props: Props) {
   const { workspaceSlug, projectId, storeType } = props;
 
   const layoutLink = `${workspaceSlug}/projects/${projectId}/${storeType === "EPIC" ? "epics" : "issues"}`;
@@ -78,4 +78,4 @@ export const LayoutQuickActions = observer(function LayoutQuickActions(props: Pr
       </CustomMenu>
     </>
   );
-});
+};

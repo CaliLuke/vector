@@ -5,12 +5,14 @@
  */
 
 import { useLocation, useRouter } from "@tanstack/react-router";
-import React, { useEffect } from "react";
-import { observer } from "mobx-react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 // hooks
-import { generateQueryParams } from "@plane/utils";
-import { useCycle } from "@/hooks/store/use-cycle";
+import { generateQueryParams } from "@plane/utils/router";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useWorkspaceCycleUniverse } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 // components
 import { CycleDetailsSidebar } from "./analytics-sidebar";
@@ -21,34 +23,38 @@ type Props = {
   isArchived?: boolean;
 };
 
-export const CyclePeekOverview = observer(function CyclePeekOverview(props: Props) {
+export const CyclePeekOverview = function CyclePeekOverview(props: Props) {
   const { projectId: propsProjectId, workspaceSlug, isArchived } = props;
   // router
   const router = useRouter();
   const pathname = useLocation({ select: (location) => location.pathname });
-  const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
+  const searchStr = useLocation({ select: (location) => location.searchStr });
+  const searchParams = useMemo(() => new URLSearchParams(searchStr), [searchStr]);
   const peekCycle = searchParams.get("peekCycle");
   // refs
   const ref = React.useRef(null);
   // store hooks
-  const { getCycleById, fetchCycleDetails, fetchArchivedCycleDetails } = useCycle();
+  const catalogue = useWorkspaceCycleUniverse(propsProjectId ? undefined : workspaceSlug);
   // derived values
-  const cycleDetails = peekCycle ? getCycleById(peekCycle.toString()) : undefined;
+  const cycleDetails = catalogue.cycles?.find((cycle) => cycle.id === peekCycle);
   const projectId = propsProjectId || cycleDetails?.project_id;
+  const detail = useCycleDetails(workspaceSlug, projectId, peekCycle ?? undefined, isArchived);
+  const current = useCommittedScope(JSON.stringify([detail.scope, peekCycle]));
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     const query = generateQueryParams(searchParams, ["peekCycle"]);
     void router.navigate({ href: `${pathname}?${query}` });
-  };
+  }, [pathname, router, searchParams]);
 
   useEffect(() => {
-    if (!peekCycle || !projectId) return;
-    if (isArchived) fetchArchivedCycleDetails(workspaceSlug, projectId, peekCycle.toString());
-    else fetchCycleDetails(workspaceSlug, projectId, peekCycle.toString());
-  }, [fetchArchivedCycleDetails, fetchCycleDetails, isArchived, peekCycle, projectId, workspaceSlug]);
-
+    if (current() && (detail.cycle === null || (!propsProjectId && catalogue.cycles !== undefined && !cycleDetails)))
+      handleClose();
+  }, [detail.cycle, current, propsProjectId, catalogue.cycles, cycleDetails, handleClose]);
   return (
     <>
+      {peekCycle && !propsProjectId && (catalogue.isError || catalogue.isAccessDenied) && (
+        <CatalogueReadFailure label="cycles" retry={catalogue.retry} />
+      )}
       {peekCycle && projectId && (
         <div
           ref={ref}
@@ -69,4 +75,4 @@ export const CyclePeekOverview = observer(function CyclePeekOverview(props: Prop
       )}
     </>
   );
-});
+};

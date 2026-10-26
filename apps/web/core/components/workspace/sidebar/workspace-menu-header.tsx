@@ -6,29 +6,26 @@
 
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useState, useRef } from "react";
-import { observer } from "mobx-react";
 
 import { MoreHorizontal, ArchiveIcon, Settings } from "lucide-react";
 import { Disclosure } from "@headlessui/react";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useOutsideClickDetector } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 import { ChevronRightIcon } from "@plane/propel/icons";
 import { EUserWorkspaceRoles } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // store hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
 export type SidebarWorkspaceMenuHeaderProps = {
   isWorkspaceMenuOpen: boolean;
   toggleWorkspaceMenu: (value: boolean) => void;
 };
 
-export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenuHeader(
-  props: SidebarWorkspaceMenuHeaderProps
-) {
+export const SidebarWorkspaceMenuHeader = function SidebarWorkspaceMenuHeader(props: SidebarWorkspaceMenuHeaderProps) {
   const { isWorkspaceMenuOpen, toggleWorkspaceMenu } = props;
   // state
   const [isMenuActive, setIsMenuActive] = useState(false);
@@ -37,14 +34,14 @@ export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenu
   // hooks
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const router = useRouter();
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { t } = useTranslation();
 
   useOutsideClickDetector(actionSectionRef, () => setIsMenuActive(false));
 
   // TODO: fix types
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const isAdmin = allowPermissions([EUserWorkspaceRoles.ADMIN] as any, EUserPermissionsLevel.WORKSPACE);
+  const isAdmin = canWorkspace([EUserWorkspaceRoles.ADMIN] as any);
 
   return (
     <div className="group/workspace-button mt-2.5 flex rounded-sm bg-surface-1 px-2 hover:bg-surface-2">
@@ -108,4 +105,4 @@ export const SidebarWorkspaceMenuHeader = observer(function SidebarWorkspaceMenu
       </Disclosure.Button>
     </div>
   );
-});
+};

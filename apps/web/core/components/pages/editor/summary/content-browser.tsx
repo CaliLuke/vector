@@ -7,7 +7,7 @@
 import { useState, useEffect, useCallback } from "react";
 // plane imports
 import type { EditorRefApi, IMarking } from "@plane/editor";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import type { THeadingComponentProps } from "./heading-components";
 import { OutlineHeading1, OutlineHeading2, OutlineHeading3 } from "./heading-components";

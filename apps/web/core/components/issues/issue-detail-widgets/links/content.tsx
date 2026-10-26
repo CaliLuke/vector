@@ -9,7 +9,7 @@ import type { TIssueServiceType } from "@plane/types";
 // components
 import { LinkList } from "../../issue-detail/links";
 // helper
-import { useLinkOperations } from "./helper";
+import { useLinkOperations } from "@/hooks/use-issue-link-operations";
 
 type Props = {
   workspaceSlug: string;
@@ -28,6 +28,8 @@ export function IssueLinksCollapsibleContent(props: Props) {
   return (
     <LinkList
       issueId={issueId}
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
       linkOperations={handleLinkOperations}
       disabled={disabled}
       issueServiceType={issueServiceType}

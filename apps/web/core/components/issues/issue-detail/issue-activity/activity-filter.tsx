@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ListFilter } from "lucide-react";
 // plane imports
 import type { TActivityFilters, TActivityFilterOption } from "@plane/constants";
@@ -13,7 +12,7 @@ import { IconButton } from "@plane/propel/icon-button";
 import { CheckIcon } from "@plane/propel/icons";
 import { PopoverMenu } from "@plane/ui";
 // helper
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // constants
 
 type TActivityFilter = {
@@ -21,7 +20,7 @@ type TActivityFilter = {
   filterOptions: TActivityFilterOption[];
 };
 
-export const ActivityFilter = observer(function ActivityFilter(props: TActivityFilter) {
+export const ActivityFilter = function ActivityFilter(props: TActivityFilter) {
   const { selectedFilters = [], filterOptions } = props;
 
   // hooks
@@ -72,4 +71,4 @@ export const ActivityFilter = observer(function ActivityFilter(props: TActivityF
       )}
     />
   );
-});
+};

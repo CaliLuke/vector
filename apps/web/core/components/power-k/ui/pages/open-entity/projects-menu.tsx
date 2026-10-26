@@ -4,29 +4,37 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+
 // plane types
 import type { IPartialProject } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // components
 import { PowerKProjectsMenu } from "@/components/power-k/menus/projects";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 
 type Props = {
   handleSelect: (project: IPartialProject) => void;
 };
 
-export const PowerKOpenProjectMenu = observer(function PowerKOpenProjectMenu(props: Props) {
+export const PowerKOpenProjectMenu = function PowerKOpenProjectMenu(props: Props) {
   const { handleSelect } = props;
   // store hooks
-  const { loader, joinedProjectIds, getPartialProjectById } = useProject();
+  const { data: workspace } = useCurrentWorkspace();
+  const projectCatalogue = useWorkspaceProjects(workspace?.slug);
+  const projectRows = projectCatalogue.projects;
+  const loader = projectCatalogue.isPending;
+  const joinedProjectIds = useJoinedProjectIds(workspace?.slug);
   // derived values
   const projectsList = joinedProjectIds
-    ? joinedProjectIds.map((id) => getPartialProjectById(id)).filter((project) => project !== undefined)
+    ? joinedProjectIds
+        .map((id) => projectRows?.find((project) => project.id === id))
+        .filter((project) => project !== undefined)
     : [];
 
-  if (loader === "init-loader") return <Spinner />;
+  if (loader) return <Spinner />;
 
   return <PowerKProjectsMenu projects={projectsList} onSelect={handleSelect} />;
-});
+};

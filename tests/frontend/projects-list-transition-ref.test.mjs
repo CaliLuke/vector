@@ -1,5 +1,9 @@
 import { createRouterFixture } from "./helpers/router.mjs";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { EUserWorkspaceRoles } from "../../packages/types/dist/index.mjs";
+import { seedPermissionQueries } from "./helpers/permission-query-fixture.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 import test from "node:test";
 import { pathToFileURL, fileURLToPath } from "node:url";
@@ -11,21 +15,9 @@ registerWebModuleHooks();
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 const webRoot = path.join(repositoryRoot, "apps/web");
-const projectStateStub = `
-  const state = globalThis.projectsListTestState ??= { loader: "init-loader", joinedProjectIds: ["project-1"] };
-  export const useProject = () => ({
-    loader: state.loader,
-    joinedProjectIds: state.joinedProjectIds,
-    getPartialProjectById: id => ({ id }),
-    updateProjectView: async () => {},
-  });
-`;
 
 const moduleStubs = {
   "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element": "export const autoScrollForElements = () => () => {};",
-  "@plane/constants": `export const EUserPermissions = { ADMIN: "ADMIN", MEMBER: "MEMBER" };
-    export const EUserPermissionsLevel = { WORKSPACE: "WORKSPACE" };
-    export const PROJECT_TRACKER_ELEMENTS = { SIDEBAR_CREATE_PROJECT_TOOLTIP: "create-tooltip", SIDEBAR_CREATE_PROJECT_BUTTON: "create-button" };`,
   "@plane/i18n": `export const useTranslation = () => ({ t: key => key });`,
   "@plane/propel/icons": `export const PlusIcon = () => null;
     export const ChevronRightIcon = () => null;
@@ -40,18 +32,14 @@ const moduleStubs = {
   "@plane/ui": `const React = globalThis.projectsListReact;
     const Item = () => React.createElement("div", { className: "project-loader-item" });
     export const Loader = Object.assign(({ children, ...props }) => React.createElement("div", { ...props, "data-testid": "project-loader" }, children), { Item });`,
-  "@plane/utils": `export const copyUrlToClipboard = async () => {};
-    export const cn = (...values) => values.flatMap(value => typeof value === "string" ? [value] : value && typeof value === "object" ? Object.entries(value).filter(([, enabled]) => enabled).map(([key]) => key) : []).join(" ");
-    export const orderJoinedProjects = () => [];`,
-  "mobx-react": "export const observer = component => component;",
-
   "@/components/project/create-project-modal": "export const CreateProjectModal = () => null;",
   "@/components/sidebar/sidebar-navigation": `const React = globalThis.projectsListReact;
     export const SidebarNavItem = ({ children }) => React.createElement("div", null, children);`,
-  "@/hooks/store/use-app-theme": `export const useAppTheme = () => ({ isExtendedProjectSidebarOpened: false, toggleExtendedProjectSidebar() {} });`,
-  "@/hooks/store/use-command-palette": `export const useCommandPalette = () => ({ toggleCreateProjectModal() {} });`,
-  "@/hooks/store/use-project": projectStateStub,
-  "@/hooks/store/user": `export const useUserPermissions = () => ({ allowPermissions: () => false });`,
+  "@/hooks/use-command-palette": `export const useCommandPalette = () => ({ toggleCreateProjectModal() {} });`,
+  "@/services/user.service":
+    "export class UserService { currentUser() { throw new Error('unexpected identity request'); } } export default new UserService();",
+  "@/services/workspace.service":
+    "export class WorkspaceService { userWorkspaces() { throw new Error('unexpected workspace request'); } workspaceMemberMe() { throw new Error('unexpected membership request'); } getWorkspaceUserProjectsRole() { throw new Error('unexpected roles request'); } }",
   "@/hooks/use-navigation-preferences": `export const useProjectNavigationPreferences = () => ({ preferences: { showLimitedProjects: false, limitedProjectsCount: 20 } });`,
   "./projects-list-item": `const React = globalThis.projectsListReact;
     export const SidebarProjectsListItem = ({ projectId }) => React.createElement("button", { type: "button", "data-project-id": projectId }, "Project " + projectId);`,
@@ -93,23 +81,18 @@ function waitForState(container, predicate, message) {
   });
 }
 
-function TestHarness() {
-  const [, setRevision] = React.useState(0);
-  React.useEffect(() => {
-    const update = () => setRevision((revision) => revision + 1);
-    window.addEventListener("projects-list-state-change", update);
-    return () => window.removeEventListener("projects-list-state-change", update);
-  }, []);
-  return React.createElement(SidebarProjectsList);
-}
-
 let SidebarProjectsList;
 
 void test("projects sidebar transitions through initial loading and closed/open disclosure without ref errors", async (t) => {
   globalThis.projectsListReact = React;
-  globalThis.projectsListTestState = { loader: "init-loader", joinedProjectIds: ["project-1"] };
   const environment = await createReactDomTestEnvironment();
   const routerFixture = createRouterFixture("/workspace/");
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, gcTime: Infinity, staleTime: Infinity },
+      mutations: { gcTime: Infinity },
+    },
+  });
   const warnings = [];
   const originalError = console.error;
   const originalWarn = console.warn;
@@ -122,17 +105,41 @@ void test("projects sidebar transitions through initial loading and closed/open 
     await environment.unmount();
     console.error = originalError;
     console.warn = originalWarn;
-    delete globalThis.projectsListTestState;
     delete globalThis.projectsListReact;
+    await client.cancelQueries();
+    client.clear();
   });
 
+  const { currentUserOptions } = await import("../../apps/web/core/queries/identity.ts");
+  client.setQueryData(currentUserOptions().queryKey, { id: "alice" });
+  await seedPermissionQueries(client, {
+    userId: "alice",
+    workspaceSlug: "workspace",
+    workspaceRole: EUserWorkspaceRoles.GUEST,
+    projectRoles: { "project-1": EUserWorkspaceRoles.MEMBER },
+  });
+  const { workspaceKeys } = await import("../../apps/web/core/queries/workspaces.ts");
+  client.setQueryData(workspaceKeys.list("alice"), [{ id: "workspace-id", slug: "workspace" }]);
+
+  const { ProjectService } = await import("../../apps/web/core/services/project/project.service.ts");
+  const projects = Promise.withResolvers();
+  t.mock.method(ProjectService.prototype, "getProjectsLite", () => projects.promise);
+
   ({ SidebarProjectsList } = await import("../../apps/web/core/components/workspace/sidebar/projects-list.tsx"));
-  await routerFixture.render(environment, React.createElement(TestHarness));
+  const { SidebarStateProvider } = await import("../../apps/web/core/providers/sidebar-state.tsx");
+  await routerFixture.render(
+    environment,
+    React.createElement(
+      QueryClientProvider,
+      { client },
+      React.createElement(SidebarStateProvider, null, React.createElement(SidebarProjectsList))
+    )
+  );
 
   const loader = environment.container.querySelector('[data-testid="project-loader"]');
   const projectRow = environment.container.querySelector('[data-project-id="project-1"]');
   assert.ok(loader, "the initial request should render project-list skeleton rows");
-  assert.ok(projectRow, "the expanded disclosure should preserve the loaded project row");
+  assert.equal(projectRow, null, "an initial catalogue load must not invent project rows");
 
   const closeButton = [
     ...environment.container.querySelectorAll('button[aria-label="aria_labels.projects_sidebar.close_projects_menu"]'),
@@ -162,8 +169,12 @@ void test("projects sidebar transitions through initial loading and closed/open 
     "closed project row should be unmounted"
   );
 
-  globalThis.projectsListTestState.loader = "loaded";
-  await React.act(() => window.dispatchEvent(new Event("projects-list-state-change")));
+  await React.act(async () => {
+    projects.resolve([
+      { id: "project-1", workspace: "workspace-id", name: "Project", identifier: "PRJ", sort_order: 1 },
+    ]);
+    await projects.promise;
+  });
   const openButton = closedButton;
   assert.ok(openButton, "the closed disclosure button should be available");
   openButton.focus();

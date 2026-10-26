@@ -6,12 +6,9 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
-import useSWR from "swr";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import type { TIssue } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 import { Loader } from "@plane/ui";
 // assets
@@ -21,9 +18,9 @@ import emptyIssueLight from "@/app/assets/empty-state/search/issues-light.webp?u
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHead } from "@/components/core/page-title";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useSidebarActions, useIssueDetailSidebarCollapsed } from "@/providers/sidebar-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
 
 // layouts
 import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
@@ -31,7 +28,7 @@ import { ProjectAuthWrapper } from "@/layouts/auth-layout/project-wrapper";
 import { useWorkItemProperties } from "@/hooks/use-issue-properties";
 import { WorkItemDetailRoot } from "@/components/browse/workItem-detail";
 
-const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element | null {
+function IssueDetailsPage(): React.JSX.Element | null {
   // router
   const router = useRouter();
   const { workspaceSlug, workItem } = Route.useParams();
@@ -39,33 +36,28 @@ const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element
   const { resolvedTheme } = useTheme();
   // store hooks
   const { t } = useTranslation();
-  const {
-    fetchIssueWithIdentifier,
-    issue: { getIssueById },
-  } = useIssueDetail();
-  const { getProjectById, getProjectByIdentifier } = useProject();
-  const { toggleIssueDetailSidebar, issueDetailSidebarCollapsed } = useAppTheme();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const issueDetailSidebarCollapsed = useIssueDetailSidebarCollapsed();
+  const { toggleIssueDetailSidebar } = useSidebarActions();
 
   const [projectIdentifier, sequence_id] = workItem.split("-");
 
-  // fetching issue details
-  const { data, isLoading, error } = useSWR<TIssue, Error>(
-    `ISSUE_DETAIL_${workspaceSlug}_${projectIdentifier}_${sequence_id}`,
-    () => fetchIssueWithIdentifier(workspaceSlug.toString(), projectIdentifier, sequence_id)
-  );
+  const projectDetails = projectRows?.find((project) => project.identifier === projectIdentifier);
+  const detail = useWorkItemByIdentifier(workspaceSlug, projectIdentifier, sequence_id, projectDetails?.id);
+  const { issue, isPending: isLoading, isError: error } = detail;
 
   // derived values
-  const projectDetails = getProjectByIdentifier(projectIdentifier);
-  const issueId = data?.id;
-  const projectId = data?.project_id ?? projectDetails?.id ?? "";
-  const issue = getIssueById(issueId?.toString() || "") || undefined;
-  const project = (issue?.project_id && getProjectById(issue?.project_id)) || undefined;
+  const issueId = issue?.id;
+  const projectId = issue?.project_id ?? projectDetails?.id ?? "";
+  const project =
+    (issue?.project_id && projectRows?.find((projectRow) => projectRow.id === issue?.project_id)) || undefined;
   const issueLoader = !issue || isLoading;
-  const pageTitle = project && issue ? `${project?.identifier}-${issue?.sequence_id} ${issue?.name}` : undefined;
+  const pageTitle = project && issue ? `${project.identifier}-${issue.sequence_id} ${issue.name}` : undefined;
 
   useWorkItemProperties(
     projectId,
-    workspaceSlug.toString(),
+    workspaceSlug,
     issueId,
     issue?.is_epic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
   );
@@ -85,12 +77,12 @@ const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element
   }, [issueDetailSidebarCollapsed, toggleIssueDetailSidebar]);
 
   useEffect(() => {
-    if (data?.is_intake) {
+    if (issue?.is_intake) {
       void router.navigate({
-        href: `/${workspaceSlug}/projects/${data.project_id}/intake/?currentTab=open&inboxIssueId=${data?.id}`,
+        href: `/${workspaceSlug}/projects/${issue.project_id}/intake/?currentTab=open&inboxIssueId=${issue.id}`,
       });
     }
-  }, [workspaceSlug, data, router]);
+  }, [workspaceSlug, issue, router]);
 
   if (error && !isLoading) {
     return (
@@ -131,7 +123,7 @@ const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element
       {workspaceSlug && projectId && issueId && (
         <ProjectAuthWrapper workspaceSlug={workspaceSlug} projectId={projectId}>
           <WorkItemDetailRoot
-            workspaceSlug={workspaceSlug.toString()}
+            workspaceSlug={workspaceSlug}
             projectId={projectId.toString()}
             issueId={issueId.toString()}
             issue={issue}
@@ -140,7 +132,7 @@ const IssueDetailsPage = observer(function IssueDetailsPage(): React.JSX.Element
       )}
     </>
   );
-});
+}
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/browse/$workItem/")({
   component: IssueDetailsPage,

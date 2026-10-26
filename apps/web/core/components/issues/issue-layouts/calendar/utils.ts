@@ -12,7 +12,7 @@ export const handleDragDrop = async (
   destinationDate: string,
   workspaceSlug: string | undefined,
   projectId: string | undefined,
-  updateIssue?: (projectId: string, issueId: string, data: Partial<TIssue>) => Promise<void>
+  updateIssue?: (projectId: string, issueId: string, data: Partial<TIssue>) => Promise<unknown>
 ) => {
   if (!workspaceSlug || !projectId || !updateIssue) return;
 
@@ -23,5 +23,5 @@ export const handleDragDrop = async (
     target_date: destinationDate,
   };
 
-  return await updateIssue(projectId, updatedIssue.id, updatedIssue);
+  await updateIssue(projectId, updatedIssue.id, updatedIssue);
 };

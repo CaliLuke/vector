@@ -4,26 +4,37 @@
  * See the LICENSE file for details.
  */
 
-import useSWR from "swr";
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
 import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
 import { EmailSettingsLoader } from "@/components/ui/loader/settings/email";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // services
-import { UserService } from "@/services/user.service";
+import { emailNotificationSettingsOptions } from "@/queries/user-settings";
 // local imports
 import { NotificationsProfileSettingsForm } from "./email-notification-form";
 
-const userService = new UserService();
-
-export const NotificationsProfileSettings = observer(function NotificationsProfileSettings() {
+export function NotificationsProfileSettings() {
   const { t } = useTranslation();
+  const { data: user } = useCurrentUser();
   // fetching user email notification settings
-  const { data, isLoading } = useSWR("CURRENT_USER_EMAIL_NOTIFICATION_SETTINGS", () =>
-    userService.currentUserEmailNotificationSettings()
-  );
+  const { data, isLoading, isError, refetch } = useQuery(emailNotificationSettingsOptions(user?.id));
+  if (isError)
+    return (
+      <div role="alert">
+        Unable to load notification settings.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void refetch();
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
 
   if (!data || isLoading) {
     return <EmailSettingsLoader />;
@@ -36,8 +47,8 @@ export const NotificationsProfileSettings = observer(function NotificationsProfi
         description={t("account_settings.notifications.description")}
       />
       <div className="mt-7">
-        <NotificationsProfileSettingsForm data={data} />
+        <NotificationsProfileSettingsForm data={data} userId={user?.id} />
       </div>
     </div>
   );
-});
+}

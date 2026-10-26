@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { cloneDeep, uniqBy } from "lodash-es";
+import cloneDeep from "lodash-es/cloneDeep.js";
+import uniqBy from "lodash-es/uniqBy.js";
 // plane imports
 import type { ChartDataType } from "@plane/types";
 // local imports

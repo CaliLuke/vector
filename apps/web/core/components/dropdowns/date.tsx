@@ -4,22 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import React, { useRef, useState } from "react";
-import { observer } from "mobx-react";
-import { createPortal } from "react-dom";
-import { usePopper } from "react-popper";
+import React, { useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { Combobox } from "@headlessui/react";
 // ui
 import type { Matcher } from "@plane/propel/calendar";
 import { Calendar } from "@plane/propel/calendar";
+import { Popover } from "@plane/propel/popover";
 import { CloseIcon } from "@plane/propel/icons";
-import { ComboDropDown } from "@plane/ui";
-import { cn, renderFormattedDate, getDate } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate, getDate } from "@plane/utils/datetime";
 // helpers
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
-import { useDropdown } from "@/hooks/use-dropdown";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
 // components
 import { DropdownButton } from "./buttons";
 // constants
@@ -44,7 +40,7 @@ type Props = TDropdownProps & {
   labelClassName?: string;
 };
 
-export const DateDropdown = observer(function DateDropdown(props: Props) {
+export function DateDropdown(props: Props) {
   const {
     buttonClassName = "",
     buttonContainerClassName,
@@ -73,46 +69,20 @@ export const DateDropdown = observer(function DateDropdown(props: Props) {
   } = props;
   // states
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  // refs
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
   // hooks
-  const { data } = useUserProfile();
+  const { data } = useCurrentUserProfile();
   const startOfWeek = data?.start_of_the_week;
-  // popper-js refs
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-  // popper-js init
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: placement ?? "bottom-start",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
-  });
-
   const isDateSelected = value && value.toString().trim() !== "";
 
-  const onOpen = () => {
-    if (referenceElement) referenceElement.focus();
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (!open) onClose?.();
   };
-
-  const { handleClose, handleKeyDown, handleOnClick } = useDropdown({
-    dropdownRef,
-    isOpen,
-    onClose,
-    onOpen,
-    setIsOpen,
-  });
 
   const dropdownOnChange = (val: Date | null) => {
     onChange(val);
     if (closeOnSelect) {
-      handleClose();
-      referenceElement?.blur();
+      handleOpenChange(false);
     }
   };
 
@@ -131,8 +101,7 @@ export const DateDropdown = observer(function DateDropdown(props: Props) {
         },
         buttonContainerClassName
       )}
-      ref={setReferenceElement}
-      onClick={handleOnClick}
+      tabIndex={tabIndex}
       disabled={disabled}
     >
       <DropdownButton
@@ -165,52 +134,37 @@ export const DateDropdown = observer(function DateDropdown(props: Props) {
   );
 
   return (
-    <ComboDropDown
-      as="div"
-      ref={dropdownRef}
-      tabIndex={tabIndex}
-      className={cn("h-full", className)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          if (!isOpen) handleKeyDown(e);
-        } else handleKeyDown(e);
-      }}
-      button={comboButton}
-      disabled={disabled}
-      renderByDefault={renderByDefault}
-    >
-      {isOpen &&
-        createPortal(
-          <Combobox.Options modal={false} data-prevent-outside-click static>
-            <div
-              className={cn(
-                "z-30 my-1 overflow-hidden rounded-md border-[0.5px] border-strong bg-surface-1 shadow-raised-200",
-                optionsClassName
-              )}
-              ref={setPopperElement}
-              style={styles.popper}
-              {...attributes.popper}
-            >
-              <Calendar
-                className="rounded-md border border-subtle p-3"
-                captionLayout="dropdown"
-                selected={getDate(value)}
-                defaultMonth={getDate(value)}
-                onSelect={(date: Date | undefined) => {
-                  dropdownOnChange(date ?? null);
-                }}
-                showOutsideDays
-                // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
-                autoFocus
-                disabled={disabledDays}
-                mode="single"
-                fixedWeeks
-                weekStartsOn={startOfWeek}
-              />
-            </div>
-          </Combobox.Options>,
-          document.body
-        )}
-    </ComboDropDown>
+    <div className={cn("h-full", className)}>
+      <Popover open={isOpen} onOpenChange={handleOpenChange}>
+        <Popover.Button render={comboButton} disabled={disabled} />
+        <Popover.Panel
+          placement={placement ?? "bottom-start"}
+          sideOffset={4}
+          initialFocus={false}
+          positionerClassName="z-30"
+          className={cn(
+            "overflow-hidden rounded-md border-[0.5px] border-strong bg-surface-1 shadow-raised-200",
+            optionsClassName
+          )}
+        >
+          <Calendar
+            className="rounded-md border border-subtle p-3"
+            captionLayout="dropdown"
+            selected={getDate(value)}
+            defaultMonth={getDate(value)}
+            onSelect={(date: Date | undefined) => {
+              dropdownOnChange(date ?? null);
+            }}
+            showOutsideDays
+            // oxlint-disable-next-line jsx_a11y/no-autofocus -- DayPicker v10 uses autoFocus to preserve the previous initialFocus behavior in the opened calendar.
+            autoFocus
+            disabled={disabledDays}
+            mode="single"
+            fixedWeeks
+            weekStartsOn={startOfWeek}
+          />
+        </Popover.Panel>
+      </Popover>
+    </div>
   );
-});
+}

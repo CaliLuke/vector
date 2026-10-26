@@ -28,13 +28,14 @@ export class SitesIssueService extends APIService {
    * @returns {Promise<TPublicIssuesResponse>} Promise resolving to a paginated list of issues
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string, params: any): Promise<TPublicIssuesResponse> {
+  async list(anchor: string, params: any, signal?: AbortSignal): Promise<TPublicIssuesResponse> {
     return this.get(`/api/public/anchor/${anchor}/issues/`, {
       params,
+      signal,
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -45,11 +46,11 @@ export class SitesIssueService extends APIService {
    * @returns {Promise<IPublicIssue>} Promise resolving to the issue details
    * @throws {Error} If the API request fails
    */
-  async retrieve(anchor: string, issueID: string): Promise<IPublicIssue> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/`)
+  async retrieve(anchor: string, issueID: string, signal?: AbortSignal): Promise<IPublicIssue> {
+    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -64,7 +65,7 @@ export class SitesIssueService extends APIService {
     return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -80,7 +81,7 @@ export class SitesIssueService extends APIService {
     return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -95,7 +96,7 @@ export class SitesIssueService extends APIService {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/votes/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -110,7 +111,7 @@ export class SitesIssueService extends APIService {
     return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -126,7 +127,7 @@ export class SitesIssueService extends APIService {
     return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -142,7 +143,7 @@ export class SitesIssueService extends APIService {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/reactions/${reactionId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -153,11 +154,11 @@ export class SitesIssueService extends APIService {
    * @returns {Promise<any>} Promise resolving to the comments
    * @throws {Error} If the API request fails
    */
-  async listComments(anchor: string, issueID: string): Promise<any> {
-    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`)
+  async listComments(anchor: string, issueID: string, signal?: AbortSignal): Promise<TIssuePublicComment[]> {
+    return this.get(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -173,7 +174,7 @@ export class SitesIssueService extends APIService {
     return this.post(`/api/public/anchor/${anchor}/issues/${issueID}/comments/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -190,7 +191,7 @@ export class SitesIssueService extends APIService {
     return this.patch(`/api/public/anchor/${anchor}/issues/${issueID}/comments/${commentId}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -206,7 +207,7 @@ export class SitesIssueService extends APIService {
     return this.delete(`/api/public/anchor/${anchor}/issues/${issueID}/comments/${commentId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -228,7 +229,7 @@ export class SitesIssueService extends APIService {
     return this.post(`/api/public/anchor/${anchor}/comments/${commentId}/reactions/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 
@@ -244,7 +245,7 @@ export class SitesIssueService extends APIService {
     return this.delete(`/api/public/anchor/${anchor}/comments/${commentId}/reactions/${reactionHex}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response;
+        throw error?.response ?? error;
       });
   }
 }

@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
@@ -15,7 +14,7 @@ import { Button } from "@plane/propel/button";
 // components
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail } from "@/hooks/use-projects";
 // local imports
 import { ArchiveRestoreProjectModal } from "../archive-restore-modal";
 import { DeleteProjectModal } from "../delete-project-modal";
@@ -24,9 +23,7 @@ type Props = {
   projectId: string;
 };
 
-export const GeneralProjectSettingsControlSection = observer(function GeneralProjectSettingsControlSection(
-  props: Props
-) {
+export function GeneralProjectSettingsControlSection(props: Props) {
   const { projectId } = props;
   // states
   const [selectProject, setSelectedProject] = useState<string | null>(null);
@@ -34,11 +31,22 @@ export const GeneralProjectSettingsControlSection = observer(function GeneralPro
   // params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { currentProjectDetails } = useProject();
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const currentProjectDetails = projectQuery.project;
   // translation
   const { t } = useTranslation();
 
-  if (!currentProjectDetails) return null;
+  if (projectQuery.isError || projectQuery.accessError)
+    return (
+      <div role="alert">
+        Unable to load project settings.{" "}
+        <button type="button" onClick={() => void projectQuery.retryAccess()}>
+          Retry
+        </button>
+      </div>
+    );
+  if (projectQuery.accessDenied) return <div role="alert">You do not have access to this project.</div>;
+  if (projectQuery.isPending || !currentProjectDetails) return null;
 
   return (
     <div className="mt-10">
@@ -86,4 +94,4 @@ export const GeneralProjectSettingsControlSection = observer(function GeneralPro
       </div>
     </div>
   );
-});
+}

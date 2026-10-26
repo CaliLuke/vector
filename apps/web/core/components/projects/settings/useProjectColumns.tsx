@@ -6,55 +6,33 @@
 
 import { useState } from "react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import type { IWorkspaceMember, TProjectMembership } from "@plane/types";
-import { renderFormattedDate } from "@plane/utils";
+import { EUserPermissions } from "@plane/constants";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // components
 import { MemberHeaderColumn } from "@/components/project/member-header-column";
 import { AccountTypeColumn, NameColumn } from "@/components/project/settings/member-columns";
+import type { RowData } from "@/components/project/settings/member-columns";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
-import type { IMemberFilters } from "@/store/member/utils";
-
-export interface RowData extends Pick<TProjectMembership, "original_role"> {
-  member: IWorkspaceMember;
-}
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import type { IMemberFilters } from "@/helpers/member-ordering";
 
 type TUseProjectColumnsProps = {
   projectId: string;
   workspaceSlug: string;
+  displayFilters: IMemberFilters;
+  handleDisplayFilterUpdate: (filters: Partial<IMemberFilters>) => void;
 };
 
 export const useProjectColumns = (props: TUseProjectColumnsProps) => {
-  const { projectId, workspaceSlug } = props;
-  // states
+  const { projectId, workspaceSlug, displayFilters, handleDisplayFilterUpdate } = props;
   const [removeMemberModal, setRemoveMemberModal] = useState<RowData | null>(null);
 
   // store hooks
-  const { data: currentUser } = useUser();
-  const { allowPermissions, getProjectRoleByWorkspaceSlugAndProjectId } = useUserPermissions();
-  const {
-    project: {
-      filters: { getFilters, updateFilters },
-    },
-  } = useMember();
+  const { data: currentUser } = useCurrentUser();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const isAdmin = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug.toString(),
-    projectId.toString()
-  );
-  const currentProjectRole =
-    getProjectRoleByWorkspaceSlugAndProjectId(workspaceSlug.toString(), projectId.toString()) ?? EUserPermissions.GUEST;
-
-  const displayFilters = getFilters(projectId);
-
-  // handlers
-  const handleDisplayFilterUpdate = (filters: Partial<IMemberFilters>) => {
-    updateFilters(projectId, filters);
-  };
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
   const columns = [
     {
@@ -73,7 +51,7 @@ export const useProjectColumns = (props: TUseProjectColumnsProps) => {
           rowData={rowData}
           workspaceSlug={workspaceSlug}
           isAdmin={isAdmin}
-          currentUser={currentUser}
+          currentUser={currentUser ?? undefined}
           setRemoveMemberModal={setRemoveMemberModal}
         />
       ),
@@ -113,12 +91,7 @@ export const useProjectColumns = (props: TUseProjectColumnsProps) => {
         />
       ),
       tdRender: (rowData: RowData) => (
-        <AccountTypeColumn
-          rowData={rowData}
-          currentProjectRole={currentProjectRole}
-          projectId={projectId}
-          workspaceSlug={workspaceSlug}
-        />
+        <AccountTypeColumn rowData={rowData} projectId={projectId} workspaceSlug={workspaceSlug} />
       ),
     },
     {

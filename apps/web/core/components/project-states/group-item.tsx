@@ -5,14 +5,13 @@
  */
 
 import { useState, useRef } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { EIconSize, STATE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon, StateGroupIcon, ChevronDownIcon } from "@plane/propel/icons";
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { StateList, StateCreate } from "@/components/project-states";
 
@@ -30,7 +29,7 @@ type TGroupItem = {
   handleExpand: (groupKey: TStateGroups) => void;
 };
 
-export const GroupItem = observer(function GroupItem(props: TGroupItem) {
+export const GroupItem = function GroupItem(props: TGroupItem) {
   const {
     groupKey,
     groupedStates,
@@ -132,4 +131,4 @@ export const GroupItem = observer(function GroupItem(props: TGroupItem) {
       )}
     </div>
   );
-});
+};

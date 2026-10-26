@@ -65,6 +65,14 @@ func (repository *Repository) PublicIntakeList(ctx context.Context, scope Public
 }
 
 func (repository *Repository) PublicIntakeCreate(ctx context.Context, scope PublicFeedbackScope, intakeID, actorID string, body io.Reader, contentType string) (Result, error) {
+	return repository.writeProjectTransaction(ctx, scope.ProjectID, func(writer *Repository) error {
+		return writer.validatePublicIntake(ctx, scope, intakeID)
+	}, func(writer *Repository) (Result, error) {
+		return writer.publicIntakeCreate(ctx, scope, intakeID, actorID, body, contentType)
+	})
+}
+
+func (repository *Repository) publicIntakeCreate(ctx context.Context, scope PublicFeedbackScope, intakeID, actorID string, body io.Reader, contentType string) (Result, error) {
 	if err := repository.validatePublicIntake(ctx, scope, intakeID); err != nil {
 		return Result{}, err
 	}
@@ -124,8 +132,19 @@ func (repository *Repository) PublicIntakeCreate(ctx context.Context, scope Publ
 		safeDescription = "<p></p>"
 	}
 	row["description_html"] = safeDescription
+	subscribers, err := repository.validateCustomValues(ctx, actorID, row, nil, nil, false, true, false)
+	if err != nil {
+		var validation *djangoapi.HTTPError
+		if errors.As(err, &validation) {
+			return Result{}, failure(400, "error", "This project cannot currently accept new feedback. Contact the project administrator.")
+		}
+		return Result{}, err
+	}
 	row, err = repository.saveIssue(ctx, actorID, row, nil)
 	if err != nil {
+		return Result{}, err
+	}
+	if err = repository.subscribePropertyMembers(ctx, actorID, row, subscribers); err != nil {
 		return Result{}, err
 	}
 	q := Request{ProjectID: scope.ProjectID, Slug: scope.WorkspaceSlug, ActorID: actorID, IssueID: row["id"].(string)}
@@ -171,6 +190,14 @@ func (repository *Repository) PublicIntakeDetail(ctx context.Context, scope Publ
 }
 
 func (repository *Repository) PublicIntakeUpdate(ctx context.Context, scope PublicFeedbackScope, intakeID, pk, actorID string, body io.Reader, contentType string) (Result, error) {
+	return repository.writeProjectTransaction(ctx, scope.ProjectID, func(writer *Repository) error {
+		return writer.validatePublicIntake(ctx, scope, intakeID)
+	}, func(writer *Repository) (Result, error) {
+		return writer.publicIntakeUpdate(ctx, scope, intakeID, pk, actorID, body, contentType)
+	})
+}
+
+func (repository *Repository) publicIntakeUpdate(ctx context.Context, scope PublicFeedbackScope, intakeID, pk, actorID string, body io.Reader, contentType string) (Result, error) {
 	if err := repository.validatePublicIntake(ctx, scope, intakeID); err != nil {
 		return Result{}, err
 	}
@@ -247,6 +274,14 @@ func (repository *Repository) PublicIntakeUpdate(ctx context.Context, scope Publ
 }
 
 func (repository *Repository) PublicIntakeDelete(ctx context.Context, scope PublicFeedbackScope, intakeID, pk, actorID string) (Result, error) {
+	return repository.writeProjectTransaction(ctx, scope.ProjectID, func(writer *Repository) error {
+		return writer.validatePublicIntake(ctx, scope, intakeID)
+	}, func(writer *Repository) (Result, error) {
+		return writer.publicIntakeDelete(ctx, scope, intakeID, pk, actorID)
+	})
+}
+
+func (repository *Repository) publicIntakeDelete(ctx context.Context, scope PublicFeedbackScope, intakeID, pk, actorID string) (Result, error) {
 	if err := repository.validatePublicIntake(ctx, scope, intakeID); err != nil {
 		return Result{}, err
 	}
@@ -283,16 +318,16 @@ func containsString(values []string, value string) bool {
 func publicIntakeIssueSelect() string {
 	return djangoapi.IssueRowSQL("issue") + `||jsonb_build_object(
  'project',issue.project_id,'workspace',issue.workspace_id,'state',issue.state_id,
- 'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,'parent',issue.parent_id,
+ 'created_by',issue.created_by_id,'updated_by',issue.updated_by_id,'parent',` + djangoapi.PublicParentSQL("issue") + `,'parent_id',` + djangoapi.PublicParentSQL("issue") + `,
  'type',issue.type_id,'estimate_point',issue.estimate_point_id,
  'assignees',COALESCE((SELECT jsonb_agg(relation.assignee_id ORDER BY relation.created_at DESC) FROM issue_assignees relation WHERE relation.issue_id=issue.id AND relation.deleted_at IS NULL),'[]'::jsonb),
- 'labels',COALESCE((SELECT jsonb_agg(relation.label_id ORDER BY relation.created_at DESC) FROM issue_labels relation WHERE relation.issue_id=issue.id AND relation.deleted_at IS NULL),'[]'::jsonb),
+ 'labels',COALESCE((SELECT jsonb_agg(relation.label_id ORDER BY relation.created_at DESC) FROM issue_labels relation WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `),'[]'::jsonb),
  'state_detail',(SELECT jsonb_build_object('id',state.id,'name',state.name,'group',state."group",'color',state.color) FROM states state WHERE state.id=issue.state_id),
  'project_detail',(SELECT (jsonb_build_object('id',project.id,'identifier',project.identifier,'name',project.name,'description',project.description,'logo_props',project.logo_props,'cover_image',project.cover_image)||` + djangoapi.FileAssetURLFieldSQL("project.cover_image_asset_id", "project.cover_image", "cover_image_url") + `) FROM projects project WHERE project.id=issue.project_id),
- 'label_details',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',label.id,'name',label.name,'color',label.color,'parent',label.parent_id) ORDER BY label.created_at DESC) FROM labels label JOIN issue_labels relation ON relation.label_id=label.id WHERE relation.issue_id=issue.id AND relation.deleted_at IS NULL AND label.deleted_at IS NULL),'[]'::jsonb),
+ 'label_details',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',label.id,'name',label.name,'color',label.color,'parent',label.parent_id) ORDER BY label.created_at DESC) FROM labels label JOIN issue_labels relation ON relation.label_id=label.id WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `),'[]'::jsonb),
  'assignee_details',COALESCE((SELECT jsonb_agg((jsonb_build_object('id',actor.id,'first_name',actor.first_name,'last_name',actor.last_name,'avatar',actor.avatar,'display_name',actor.display_name,'is_bot',actor.is_bot)||` + djangoapi.FileAssetURLFieldSQL("actor.avatar_asset_id", "actor.avatar", "avatar_url") + `) ORDER BY actor.created_at DESC) FROM users actor JOIN issue_assignees relation ON relation.assignee_id=actor.id WHERE relation.issue_id=issue.id AND relation.deleted_at IS NULL),'[]'::jsonb),
  'issue_intake',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',related_intake.id,'duplicate_to',related_intake.duplicate_to_id,'snoozed_till',related_intake.snoozed_till,'source',related_intake.source,'status',related_intake.status)) FROM intake_issues related_intake WHERE related_intake.issue_id=issue.id AND related_intake.deleted_at IS NULL),'[]'::jsonb),
- 'sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=issue.id AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft)
+ 'sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=issue.id AND ` + djangoapi.PublicRelatedIssueSQL("child", "issue") + ` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft)
  )`
 }
 

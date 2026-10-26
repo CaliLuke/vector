@@ -5,16 +5,11 @@
  */
 
 import type {
-  FILTER_FIELD_TYPE,
   TBaseFilterFieldConfig,
-  TDateFilterFieldConfig,
-  TDateRangeFilterFieldConfig,
   TFilterConfig,
   TFilterProperty,
   TFilterFieldType,
   TFilterValue,
-  TMultiSelectFilterFieldConfig,
-  TSingleSelectFilterFieldConfig,
   TSupportedFilterFieldConfigs,
   TSupportedOperators,
   TOperatorSpecificConfigs,
@@ -90,13 +85,5 @@ export type TCreateFilterConfig<P extends TFilterProperty, T> = (params: T) => T
  * @returns The created filter field config
  */
 export const createFilterFieldConfig = <T extends TFilterFieldType, V extends TFilterValue>(
-  config: T extends typeof FILTER_FIELD_TYPE.SINGLE_SELECT
-    ? TSingleSelectFilterFieldConfig<V>
-    : T extends typeof FILTER_FIELD_TYPE.MULTI_SELECT
-      ? TMultiSelectFilterFieldConfig<V>
-      : T extends typeof FILTER_FIELD_TYPE.DATE
-        ? TDateFilterFieldConfig<V>
-        : T extends typeof FILTER_FIELD_TYPE.DATE_RANGE
-          ? TDateRangeFilterFieldConfig<V>
-          : never
-): TSupportedFilterFieldConfigs<V> => config as TSupportedFilterFieldConfigs<V>;
+  config: Extract<TSupportedFilterFieldConfigs<V>, { type: T }>
+): TSupportedFilterFieldConfigs<V> => config;

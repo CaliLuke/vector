@@ -7,7 +7,7 @@
 import type {
   TIssueGroupByOptions,
   TIssueOrderByOptions,
-  IIssueDisplayProperties,
+  TIssueStandardDisplayProperty,
   IIssueFilterOptions,
   TIssue,
   EIssuesStoreType,
@@ -25,6 +25,7 @@ export type TIssueFilterPriorityObject = {
 };
 
 export enum EIssueGroupByToServerOptions {
+  type_id = "type_id",
   state = "state_id",
   priority = "priority",
   labels = "labels__id",
@@ -40,6 +41,7 @@ export enum EIssueGroupByToServerOptions {
 }
 
 export enum EIssueGroupBYServerToProperty {
+  type_id = "type_id",
   state_id = "state_id",
   priority = "priority",
   labels__id = "label_ids",
@@ -139,7 +141,7 @@ export const ISSUE_ORDER_BY_OPTIONS: {
   { key: "-priority", titleTranslationKey: "common.priority" },
 ];
 
-export const ISSUE_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = [
+export const ISSUE_DISPLAY_PROPERTIES_KEYS: TIssueStandardDisplayProperty[] = [
   "assignee",
   "start_date",
   "due_date",
@@ -158,7 +160,7 @@ export const ISSUE_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = 
   "issue_type",
 ];
 
-export const SUB_ISSUES_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = [
+export const SUB_ISSUES_DISPLAY_PROPERTIES_KEYS: TIssueStandardDisplayProperty[] = [
   "key",
   "assignee",
   "start_date",
@@ -168,13 +170,14 @@ export const SUB_ISSUES_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)
 ];
 
 export const ISSUE_DISPLAY_PROPERTIES: {
-  key: keyof IIssueDisplayProperties;
+  key: TIssueStandardDisplayProperty;
   titleTranslationKey: string;
 }[] = [
   {
     key: "key",
     titleTranslationKey: "issue.display.properties.id",
   },
+  { key: "issue_type", titleTranslationKey: "issue.display.properties.issue_type" },
   {
     key: "assignee",
     titleTranslationKey: "common.assignee",
@@ -210,7 +213,7 @@ export const ISSUE_DISPLAY_PROPERTIES: {
   { key: "cycle", titleTranslationKey: "common.cycle" },
 ];
 
-export const SPREADSHEET_PROPERTY_LIST: (keyof IIssueDisplayProperties)[] = [
+export const SPREADSHEET_PROPERTY_LIST: TIssueStandardDisplayProperty[] = [
   "state",
   "priority",
   "assignee",
@@ -228,7 +231,7 @@ export const SPREADSHEET_PROPERTY_LIST: (keyof IIssueDisplayProperties)[] = [
 ];
 
 export const SPREADSHEET_PROPERTY_DETAILS: {
-  [key in keyof IIssueDisplayProperties]: {
+  [key in TIssueStandardDisplayProperty]?: {
     i18n_title: string;
     ascendingOrderKey: TIssueOrderByOptions;
     ascendingOrderTitle: string;

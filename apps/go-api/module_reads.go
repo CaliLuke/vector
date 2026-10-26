@@ -79,7 +79,7 @@ func (service *moduleReadsService) WorkspaceList(ctx context.Context, payload *a
 	}
 	data, err := service.repository.WorkspaceList(ctx, userID, payload.Slug)
 	if err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "workspace_list", err, modulePermissionRepositoryError(err))
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
@@ -90,7 +90,7 @@ func (service *moduleReadsService) WorkspaceListOptions(ctx context.Context, pay
 		return nil, nil, err
 	}
 	if _, err := service.repository.WorkspaceList(ctx, userID, payload.Slug); err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "workspace_list_options", err, modulePermissionRepositoryError(err))
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser([]byte(`{"name":"Workspace Modules Endpoint","description":"","renders":["application/json"],"parses":["application/json","application/x-www-form-urlencoded","multipart/form-data"]}`)), nil
 }
@@ -102,21 +102,13 @@ func (service *moduleReadsService) ArchivedList(ctx context.Context, payload *ap
 	}
 	data, err := service.repository.ArchivedList(ctx, userID, payload.Slug, projectID)
 	if err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "archived_list", err, modulePermissionRepositoryError(err))
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
 
 func (service *moduleReadsService) ArchivedDetail(ctx context.Context, payload *api.ArchivedDetailPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
-	userID, projectID, moduleID, err := service.moduleIdentity(ctx, payload.ProjectID, payload.Pk)
-	if err != nil {
-		return nil, nil, err
-	}
-	data, err := service.repository.ArchivedDetail(ctx, userID, payload.Slug, projectID, moduleID)
-	if err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
-	}
-	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
+	return service.readModuleResource(ctx, "archived_detail", payload.Slug, payload.ProjectID, payload.Pk, service.repository.ArchivedDetail)
 }
 
 func (service *moduleReadsService) List(ctx context.Context, payload *api.ListPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
@@ -127,11 +119,12 @@ func (service *moduleReadsService) List(ctx context.Context, payload *api.ListPa
 	fields := optionalModuleString(payload.Fields)
 	data, err := service.repository.List(ctx, userID, payload.Slug, projectID, moduleReadFieldsRequested(fields))
 	if err != nil {
-		return nil, nil, moduleReadsRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "list", err, moduleReadsRepositoryError(err))
 	}
 	if moduleReadFieldsRequested(fields) {
 		data, err = selectModuleReadFields(data, fields)
 		if err != nil {
+			workItemLogError(ctx, "module_reads.list", "project_fields", err)
 			return nil, nil, moduleReadsInternalError()
 		}
 	}
@@ -139,15 +132,7 @@ func (service *moduleReadsService) List(ctx context.Context, payload *api.ListPa
 }
 
 func (service *moduleReadsService) ArchiveDetail(ctx context.Context, payload *api.ArchiveDetailPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
-	userID, projectID, moduleID, err := service.moduleIdentity(ctx, payload.ProjectID, payload.ModuleID)
-	if err != nil {
-		return nil, nil, err
-	}
-	data, err := service.repository.ArchiveDetail(ctx, userID, payload.Slug, projectID, moduleID)
-	if err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
-	}
-	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
+	return service.readModuleResource(ctx, "archive_detail", payload.Slug, payload.ProjectID, payload.ModuleID, service.repository.ArchiveDetail)
 }
 
 func (service *moduleReadsService) Issues(ctx context.Context, payload *api.IssuesPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
@@ -193,54 +178,55 @@ func (service *moduleReadsService) Issues(ctx context.Context, payload *api.Issu
 		return nil, nil, moduleReadsInternalError()
 	}
 	options := store.IssueListOptions{
-		Limit:           limit,
-		Page:            page,
-		OrderBy:         optionalModuleString(payload.OrderBy),
-		GroupBy:         groupBy,
-		CursorValue:     cursorValue,
-		CursorSet:       cursorPresent,
-		OrderBySet:      orderByPresent,
-		SubGroupBy:      subGroupBy,
-		State:           optionalModuleString(payload.State),
-		StateGroup:      optionalModuleString(payload.StateGroup),
-		EstimatePoint:   optionalModuleString(payload.EstimatePoint),
-		Priority:        optionalModuleString(payload.Priority),
-		Assignees:       optionalModuleString(payload.Assignees),
-		AssigneesSet:    assigneesPresent,
-		Labels:          optionalModuleString(payload.Labels),
-		LabelsSet:       labelsPresent,
-		Project:         optionalModuleString(payload.Project),
-		LoggedBy:        optionalModuleString(payload.LoggedBy),
-		CreatedBy:       optionalModuleString(payload.CreatedBy),
-		Parent:          optionalModuleString(payload.Parent),
-		Mentions:        optionalModuleString(payload.Mentions),
-		Name:            optionalModuleString(payload.Name),
-		CreatedAt:       optionalModuleString(payload.CreatedAt),
-		UpdatedAt:       optionalModuleString(payload.UpdatedAt),
-		StartDate:       optionalModuleString(payload.StartDate),
-		TargetDate:      optionalModuleString(payload.TargetDate),
-		CompletedAt:     optionalModuleString(payload.CompletedAt),
-		Cycle:           optionalModuleString(payload.Cycle),
-		CycleSet:        cyclePresent,
-		Module:          optionalModuleString(payload.Module),
-		ModuleSet:       payload.Module != nil,
-		IntakeStatus:    optionalModuleString(payload.IntakeStatus),
-		InboxStatus:     optionalModuleString(payload.InboxStatus),
-		SubIssue:        optionalModuleString(payload.SubIssue),
-		Subscriber:      optionalModuleString(payload.Subscriber),
-		SubscriberSet:   subscriberPresent,
-		StartTargetDate: optionalModuleString(payload.StartTargetDate),
-		Type:            optionalModuleString(payload.Type),
-		TypeSet:         typePresent,
-		Filters:         optionalModuleString(payload.Filters),
+		IncludeProperties: ReadServiceQueryValues(ctx).Get("include_properties") == "true",
+		Limit:             limit,
+		Page:              page,
+		OrderBy:           optionalModuleString(payload.OrderBy),
+		GroupBy:           groupBy,
+		CursorValue:       cursorValue,
+		CursorSet:         cursorPresent,
+		OrderBySet:        orderByPresent,
+		SubGroupBy:        subGroupBy,
+		State:             optionalModuleString(payload.State),
+		StateGroup:        optionalModuleString(payload.StateGroup),
+		EstimatePoint:     optionalModuleString(payload.EstimatePoint),
+		Priority:          optionalModuleString(payload.Priority),
+		Assignees:         optionalModuleString(payload.Assignees),
+		AssigneesSet:      assigneesPresent,
+		Labels:            optionalModuleString(payload.Labels),
+		LabelsSet:         labelsPresent,
+		Project:           optionalModuleString(payload.Project),
+		LoggedBy:          optionalModuleString(payload.LoggedBy),
+		CreatedBy:         optionalModuleString(payload.CreatedBy),
+		Parent:            optionalModuleString(payload.Parent),
+		Mentions:          optionalModuleString(payload.Mentions),
+		Name:              optionalModuleString(payload.Name),
+		CreatedAt:         optionalModuleString(payload.CreatedAt),
+		UpdatedAt:         optionalModuleString(payload.UpdatedAt),
+		StartDate:         optionalModuleString(payload.StartDate),
+		TargetDate:        optionalModuleString(payload.TargetDate),
+		CompletedAt:       optionalModuleString(payload.CompletedAt),
+		Cycle:             optionalModuleString(payload.Cycle),
+		CycleSet:          cyclePresent,
+		Module:            optionalModuleString(payload.Module),
+		ModuleSet:         payload.Module != nil,
+		IntakeStatus:      optionalModuleString(payload.IntakeStatus),
+		InboxStatus:       optionalModuleString(payload.InboxStatus),
+		SubIssue:          optionalModuleString(payload.SubIssue),
+		Subscriber:        optionalModuleString(payload.Subscriber),
+		SubscriberSet:     subscriberPresent,
+		StartTargetDate:   optionalModuleString(payload.StartTargetDate),
+		Type:              optionalModuleString(payload.Type),
+		TypeSet:           typePresent,
+		Filters:           optionalModuleString(payload.Filters),
 	}
 	issuePage, err := service.repository.Issues(ctx, userID, payload.Slug, projectID, moduleID, options)
 	if err != nil {
-		return nil, nil, moduleReadsRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsRepositoryError(err))
 	}
 	var issues []map[string]any
 	if err := json.Unmarshal(issuePage.Items, &issues); err != nil {
-		return nil, nil, moduleReadsInternalError()
+		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsInternalError())
 	}
 	results := any(issues)
 	count := len(issues)
@@ -266,7 +252,7 @@ func (service *moduleReadsService) Issues(ctx context.Context, payload *api.Issu
 	previousPage := page > 0
 	totalPages, err := moduleIssueTotalPages(maximumGroup, limit)
 	if err != nil {
-		return nil, nil, moduleReadsInternalError()
+		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsInternalError())
 	}
 	envelope := map[string]any{
 		"grouped_by":        nullableModuleString(groupBy),
@@ -284,7 +270,7 @@ func (service *moduleReadsService) Issues(ctx context.Context, payload *api.Issu
 	}
 	data, err := json.Marshal(envelope)
 	if err != nil {
-		return nil, nil, moduleReadsInternalError()
+		return nil, nil, moduleReadFailure(ctx, "issues", err, moduleReadsInternalError())
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
@@ -300,21 +286,13 @@ func (service *moduleReadsService) IssueDetail(ctx context.Context, payload *api
 	}
 	data, err := service.repository.IssueDetail(ctx, userID, payload.Slug, projectID, moduleID, issueID)
 	if err != nil {
-		return nil, nil, moduleReadsRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "issue_detail", err, moduleReadsRepositoryError(err))
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
 
 func (service *moduleReadsService) Links(ctx context.Context, payload *api.LinksPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
-	userID, projectID, moduleID, err := service.moduleIdentity(ctx, payload.ProjectID, payload.ModuleID)
-	if err != nil {
-		return nil, nil, err
-	}
-	data, err := service.repository.Links(ctx, userID, payload.Slug, projectID, moduleID)
-	if err != nil {
-		return nil, nil, modulePermissionRepositoryError(err)
-	}
-	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
+	return service.readModuleResource(ctx, "links", payload.Slug, payload.ProjectID, payload.ModuleID, service.repository.Links)
 }
 
 func (service *moduleReadsService) LinkDetail(ctx context.Context, payload *api.LinkDetailPayload) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
@@ -330,7 +308,7 @@ func (service *moduleReadsService) LinkDetail(ctx context.Context, payload *api.
 	}
 	data, err := service.repository.LinkDetail(ctx, userID, payload.Slug, projectID, moduleID, linkID)
 	if err != nil {
-		return nil, nil, moduleReadsLinkRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "link_detail", err, moduleReadsLinkRepositoryError(err))
 	}
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
@@ -347,7 +325,7 @@ func (service *moduleReadsService) Detail(ctx context.Context, payload *api.Deta
 	}
 	data, err := service.repository.Detail(ctx, userID, payload.Slug, projectID, moduleID)
 	if err != nil {
-		return nil, nil, moduleReadsModuleRepositoryError(err)
+		return nil, nil, moduleReadFailure(ctx, "detail", err, moduleReadsModuleRepositoryError(err))
 	}
 	_ = service.recentVisits.Record(ctx, userID, payload.Slug, "module", moduleID, projectID)
 	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
@@ -363,6 +341,22 @@ func (service *moduleReadsService) projectIdentity(ctx context.Context, projectV
 		return uuid.Nil(), uuid.Nil(), moduleReadsNotFound()
 	}
 	return userID, projectID, nil
+}
+
+func (service *moduleReadsService) readModuleResource(
+	ctx context.Context,
+	operation, slug, projectValue, moduleValue string,
+	read func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (json.RawMessage, error),
+) (*api.RawJSONResponseMetadata, io.ReadCloser, error) {
+	userID, projectID, moduleID, err := service.moduleIdentity(ctx, projectValue, moduleValue)
+	if err != nil {
+		return nil, nil, err
+	}
+	data, err := read(ctx, userID, slug, projectID, moduleID)
+	if err != nil {
+		return nil, nil, moduleReadFailure(ctx, operation, err, modulePermissionRepositoryError(err))
+	}
+	return &api.RawJSONResponseMetadata{ContentType: "application/json"}, rawJSONReadCloser(data), nil
 }
 
 func (service *moduleReadsService) moduleIdentity(ctx context.Context, projectValue, moduleValue string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
@@ -469,6 +463,14 @@ func moduleIssueParseError(detail string) error {
 
 func moduleReadsInternalError() error {
 	return &api.ModuleReadsInternalError{Message: moduleReadsInternalErrorDetail}
+}
+
+func moduleReadFailure(ctx context.Context, operation string, cause, response error) error {
+	var internal *api.ModuleReadsInternalError
+	if errors.As(response, &internal) {
+		workItemLogError(ctx, "module_reads."+operation, "read", cause)
+	}
+	return response
 }
 
 func moduleReadFieldsRequested(value string) bool {

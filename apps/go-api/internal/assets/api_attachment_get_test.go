@@ -30,6 +30,9 @@ type apiAttachmentGetRepository struct {
 	assetDeleted          bool
 	issueAssetUpdated     bool
 	issueAssetDeleted     bool
+	issueUploadActivity   map[string]any
+	issueQueueMetadata    bool
+	issueDeleteActivity   map[string]any
 	issueRows             []map[string]any
 	calls                 []string
 }
@@ -59,12 +62,12 @@ func (repository *apiAttachmentGetRepository) AssetByProjectAndID(context.Contex
 	return repository.asset, repository.assetReadErr
 }
 
-func (repository *apiAttachmentGetRepository) IssuePermission(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, bool, error) {
-	repository.calls = append(repository.calls, "IssuePermission")
-	return repository.issueFound, repository.issueMember, repository.issueCreator, nil
+func (repository *apiAttachmentGetRepository) IssueAccess(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, error) {
+	repository.calls = append(repository.calls, "IssueAccess")
+	return repository.issueFound, repository.issueMember || repository.issueCreator, nil
 }
 
-func (repository *apiAttachmentGetRepository) IssueAttachment(_ context.Context, workspaceID, projectID, issueID, assetID uuid.UUID) (FileAsset, map[string]any, error) {
+func (repository *apiAttachmentGetRepository) IssueAttachment(_ context.Context, _ uuid.UUID, workspaceID, projectID, issueID, assetID uuid.UUID) (FileAsset, map[string]any, error) {
 	repository.calls = append(repository.calls, "IssueAttachment")
 	if repository.attachmentReadErr != nil {
 		return FileAsset{}, nil, repository.attachmentReadErr
@@ -78,13 +81,8 @@ func (repository *apiAttachmentGetRepository) IssueAttachment(_ context.Context,
 	return repository.asset, row, nil
 }
 
-func (repository *apiAttachmentGetRepository) ProjectIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error) {
-	repository.calls = append(repository.calls, "ProjectIssueAttachment")
-	return repository.asset, map[string]any{"id": repository.asset.ID, "issue": uuid.NewString()}, nil
-}
-
-func (repository *apiAttachmentGetRepository) IssueAttachmentsBySlug(context.Context, string, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error) {
-	repository.calls = append(repository.calls, "IssueAttachmentsBySlug")
+func (repository *apiAttachmentGetRepository) VisibleIssueAttachments(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error) {
+	repository.calls = append(repository.calls, "VisibleIssueAttachments")
 	return repository.issueRows, nil
 }
 
@@ -94,15 +92,18 @@ func (repository *apiAttachmentGetRepository) UpdateAPIFileAssetUploaded(context
 	return nil
 }
 
-func (repository *apiAttachmentGetRepository) UpdateIssueAttachmentUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error {
+func (repository *apiAttachmentGetRepository) UpdateIssueAttachmentUploaded(_ context.Context, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, activity map[string]any, enqueueMetadata bool) error {
 	repository.calls = append(repository.calls, "UpdateIssueAttachmentUploaded")
 	repository.issueAssetUpdated = true
+	repository.issueUploadActivity = activity
+	repository.issueQueueMetadata = enqueueMetadata
 	return nil
 }
 
-func (repository *apiAttachmentGetRepository) DeleteIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error {
+func (repository *apiAttachmentGetRepository) DeleteIssueAttachment(_ context.Context, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, _ uuid.UUID, activity map[string]any) error {
 	repository.calls = append(repository.calls, "DeleteIssueAttachment")
 	repository.issueAssetDeleted = true
+	repository.issueDeleteActivity = activity
 	return nil
 }
 
@@ -157,7 +158,7 @@ func TestAPIssueAttachmentGetRequiresAuthorizedPathIssueAndAssetScope(t *testing
 	if err != nil || parsed.Query().Get("X-Amz-Signature") == "" {
 		t.Fatalf("attachment location is not signed: %q (%v)", *location, err)
 	}
-	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment"}
+	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment"}
 	if len(repository.calls) != len(wantCalls) {
 		t.Fatalf("repository calls = %v, want %v", repository.calls, wantCalls)
 	}
@@ -179,7 +180,7 @@ func TestAPIssueAttachmentGetRejectsNonmemberBeforeAssetLookup(t *testing.T) {
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("nonmember GET error = %v, want source 403", err)
 	}
-	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssuePermission"}
+	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssueAccess"}
 	if len(repository.calls) != len(wantCalls) {
 		t.Fatalf("repository calls = %v, want %v", repository.calls, wantCalls)
 	}
@@ -215,7 +216,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 			found:      false,
 			wantStatus: 404,
 			wantBody:   map[string]any{"error": "The requested resource does not exist."},
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess"},
 		},
 		{
 			name:       "member can download attachment for authorized issue",
@@ -223,7 +224,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 			member:     true,
 			asset:      FileAsset{ID: uuid.NewString(), Asset: "workspace/object.png", IsUploaded: true, Attributes: map[string]any{"name": "image.png"}},
 			wantSigned: true,
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment"},
 		},
 		{
 			name:       "issue nonmember is denied before asset lookup",
@@ -231,7 +232,7 @@ func TestAPIssueAttachmentGetResolvesSlugAfterProjectMembership(t *testing.T) {
 			member:     false,
 			wantStatus: 403,
 			wantBody:   map[string]any{"error": "You are not allowed to download this attachment"},
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess"},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -295,7 +296,7 @@ func TestAPIIssueAttachmentMutationsMapMissingIssueToSourceNotFound(t *testing.T
 			if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 404 || httpErr.Body["error"] != "The requested resource does not exist." {
 				t.Fatalf("missing issue mutation error = %v, want source 404", err)
 			}
-			wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssuePermission"}
+			wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssueAccess"}
 			if !reflect.DeepEqual(repository.calls, wantCalls) {
 				t.Fatalf("repository calls = %v, want no asset effects and calls %v", repository.calls, wantCalls)
 			}
@@ -303,7 +304,7 @@ func TestAPIIssueAttachmentMutationsMapMissingIssueToSourceNotFound(t *testing.T
 	}
 }
 
-func TestAPIIssueAttachmentCollectionGETRequiresIssuePermission(t *testing.T) {
+func TestAPIIssueAttachmentCollectionGETRequiresIssueAccess(t *testing.T) {
 	for _, test := range []struct {
 		name         string
 		workspaceErr error
@@ -324,7 +325,7 @@ func TestAPIIssueAttachmentCollectionGETRequiresIssuePermission(t *testing.T) {
 			name:       "nonmember cannot list attachment metadata",
 			issueFound: true,
 			wantStatus: 403,
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess"},
 		},
 		{
 			name:        "authorized issue returns its uploaded attachments",
@@ -335,7 +336,7 @@ func TestAPIIssueAttachmentCollectionGETRequiresIssuePermission(t *testing.T) {
 				{"id": "asset-two", "asset": "objects/two.png", "entity_type": "ISSUE_ATTACHMENT", "is_uploaded": true},
 			},
 			wantIDs:   []string{"asset-one", "asset-two"},
-			wantCalls: []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachmentsBySlug"},
+			wantCalls: []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "VisibleIssueAttachments"},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -387,7 +388,7 @@ func TestAPIssueAttachmentUploadMapsMissingIssueToSourceNotFound(t *testing.T) {
 	if !reflect.DeepEqual(httpErr.Body, wantBody) {
 		t.Fatalf("soft-deleted issue upload body = %#v, want %#v", httpErr.Body, wantBody)
 	}
-	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssuePermission"}
+	wantCalls := []string{"RelatedWorkspaceIDBySlug", "IssueAccess"}
 	if !reflect.DeepEqual(repository.calls, wantCalls) {
 		t.Fatalf("repository calls = %v, want %v", repository.calls, wantCalls)
 	}
@@ -451,7 +452,7 @@ func TestAPIIssueAttachmentPostKeepsTombstonedWorkspaceValidationOrder(t *testin
 			body:       `{"name":"file.png","type":"image/png","size":68}`,
 			wantStatus: 403,
 			wantBody:   map[string]any{"error": "You are not allowed to upload this attachment"},
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess"},
 		},
 		{
 			name:       "invalid MIME before active workspace lookup",
@@ -459,7 +460,7 @@ func TestAPIIssueAttachmentPostKeepsTombstonedWorkspaceValidationOrder(t *testin
 			body:       `{"type":"image/png"}`,
 			wantStatus: 400,
 			wantBody:   map[string]any{"error": "Invalid request.", "status": false},
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess"},
 		},
 		{
 			name:       "valid request checks active workspace after validation",
@@ -467,7 +468,7 @@ func TestAPIIssueAttachmentPostKeepsTombstonedWorkspaceValidationOrder(t *testin
 			body:       `{"name":"file.png","type":"image/png","size":68}`,
 			wantStatus: 404,
 			wantBody:   map[string]any{"error": "The requested resource does not exist."},
-			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "WorkspaceIDBySlug"},
+			wantCalls:  []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "WorkspaceIDBySlug"},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -491,43 +492,41 @@ func TestAPIIssueAttachmentPostKeepsTombstonedWorkspaceValidationOrder(t *testin
 
 func TestAPIIssueAttachmentPatchDeleteUseIssueScopedRepository(t *testing.T) {
 	for _, test := range []struct {
-		name          string
-		call          func(*LifecycleService, context.Context, string, string, string, string) error
-		asset         FileAsset
-		wantUpdated   bool
-		wantDeleted   bool
-		wantTaskNames []string
-		wantCalls     []string
+		name         string
+		call         func(*LifecycleService, context.Context, string, string, string, string) error
+		asset        FileAsset
+		wantUpdated  bool
+		wantDeleted  bool
+		wantActivity bool
+		wantMetadata bool
+		wantCalls    []string
 	}{
 		{
 			name: "PATCH confirmation",
 			call: func(service *LifecycleService, ctx context.Context, slug, projectID, issueID, assetID string) error {
 				return service.confirmIssueAttachmentV1(ctx, slug, projectID, issueID, assetID)
 			},
-			asset:       FileAsset{ID: uuid.NewString(), Asset: "workspace/object.png", IsUploaded: false},
-			wantUpdated: true,
-			wantTaskNames: []string{
-				"plane.bgtasks.issue_activities_task.issue_activity",
-				"plane.bgtasks.storage_metadata_task.get_asset_object_metadata",
-			},
-			wantCalls: []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment", "UpdateIssueAttachmentUploaded"},
+			asset:        FileAsset{ID: uuid.NewString(), Asset: "workspace/object.png", IsUploaded: false},
+			wantUpdated:  true,
+			wantActivity: true,
+			wantMetadata: true,
+			wantCalls:    []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment", "UpdateIssueAttachmentUploaded"},
 		},
 		{
 			name: "DELETE",
 			call: func(service *LifecycleService, ctx context.Context, slug, projectID, issueID, assetID string) error {
 				return service.deleteIssueAttachmentV1(ctx, slug, projectID, issueID, assetID)
 			},
-			asset:         FileAsset{ID: uuid.NewString(), Asset: "workspace/object.png", IsUploaded: true, StorageMetadata: map[string]any{"ContentLength": 68}},
-			wantDeleted:   true,
-			wantTaskNames: []string{"plane.bgtasks.issue_activities_task.issue_activity"},
-			wantCalls:     []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment", "DeleteIssueAttachment"},
+			asset:        FileAsset{ID: uuid.NewString(), Asset: "workspace/object.png", IsUploaded: true, StorageMetadata: map[string]any{"ContentLength": 68}},
+			wantDeleted:  true,
+			wantActivity: true,
+			wantCalls:    []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment", "DeleteIssueAttachment"},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			userID, projectID, issueID, assetID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 			repository := &apiAttachmentGetRepository{workspaceID: uuid.New(), asset: test.asset, issueFound: true, issueMember: true}
-			tasks := &apiAttachmentTaskRecorder{}
-			service := &LifecycleService{assets: &Service{repository: repository, tasks: tasks}}
+			service := &LifecycleService{assets: &Service{repository: repository}}
 			ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 			if err := test.call(service, ctx, "tombstoned-workspace", projectID.String(), issueID.String(), assetID.String()); err != nil {
 				t.Fatalf("mutation against surviving tombstoned-workspace rows: %v", err)
@@ -538,41 +537,29 @@ func TestAPIIssueAttachmentPatchDeleteUseIssueScopedRepository(t *testing.T) {
 			if !reflect.DeepEqual(repository.calls, test.wantCalls) {
 				t.Fatalf("repository calls = %v, want %v", repository.calls, test.wantCalls)
 			}
-			var gotTaskNames []string
-			for _, task := range tasks.tasks {
-				name, _ := task["name"].(string)
-				gotTaskNames = append(gotTaskNames, name)
-			}
-			if !reflect.DeepEqual(gotTaskNames, test.wantTaskNames) {
-				t.Fatalf("published task names = %v, want %v", gotTaskNames, test.wantTaskNames)
+			gotActivity := repository.issueUploadActivity != nil || repository.issueDeleteActivity != nil
+			if gotActivity != test.wantActivity || repository.issueQueueMetadata != test.wantMetadata {
+				t.Fatalf("transactional effects activity=%v metadata=%v, want activity=%v metadata=%v", gotActivity, repository.issueQueueMetadata, test.wantActivity, test.wantMetadata)
 			}
 		})
 	}
 }
 
-func TestAPIssueAttachmentConfirmationQueuesTheCorrectIssueScopedAsset(t *testing.T) {
+func TestAPIssueAttachmentConfirmationCapturesThePathScopedReceiptAndMetadataEffect(t *testing.T) {
 	userID, workspaceID, projectID, pathIssueID, assetID := uuid.New(), uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	workspaceCopy, projectCopy, issueCopy := workspaceID, projectID, pathIssueID
 	asset := FileAsset{ID: assetID.String(), IsUploaded: false, StorageMetadata: map[string]any{"ContentLength": 68}, WorkspaceID: &workspaceCopy, ProjectID: &projectCopy, IssueID: &issueCopy}
 	repository := &apiAttachmentGetRepository{workspaceID: workspaceID, asset: asset, issueFound: true, issueMember: true}
-	tasks := &apiAttachmentTaskRecorder{}
-	service := &LifecycleService{assets: &Service{repository: repository, tasks: tasks}}
+	service := &LifecycleService{assets: &Service{repository: repository}}
 	ctx := context.WithValue(context.Background(), assetUserKey{}, userID)
 
 	err := service.confirmIssueAttachmentV1(ctx, "workspace", projectID.String(), pathIssueID.String(), assetID.String())
 	if err != nil {
 		t.Fatalf("confirm issue-scoped attachment: %v", err)
 	}
-	if len(tasks.tasks) != 1 {
-		t.Fatalf("published tasks = %v, want one activity task", tasks.tasks)
-	}
-	kwargs, ok := tasks.tasks[0]["kwargs"].(map[string]any)
+	currentJSON, ok := repository.issueUploadActivity["current_instance"].(string)
 	if !ok {
-		t.Fatalf("activity task kwargs = %#v", tasks.tasks[0]["kwargs"])
-	}
-	currentJSON, ok := kwargs["current_instance"].(string)
-	if !ok {
-		t.Fatalf("current_instance = %#v, want serialized asset", kwargs["current_instance"])
+		t.Fatalf("current_instance = %#v, want serialized asset", repository.issueUploadActivity["current_instance"])
 	}
 	var current map[string]any
 	if err := json.Unmarshal([]byte(currentJSON), &current); err != nil {
@@ -583,6 +570,9 @@ func TestAPIssueAttachmentConfirmationQueuesTheCorrectIssueScopedAsset(t *testin
 	}
 	if current["issue"] != pathIssueID.String() {
 		t.Fatalf("current_instance issue = %#v, want path issue %s", current["issue"], pathIssueID)
+	}
+	if repository.issueQueueMetadata {
+		t.Fatal("confirmation with existing storage metadata queued an unnecessary metadata refresh")
 	}
 	if repository.calls[len(repository.calls)-2] != "IssueAttachment" || repository.calls[len(repository.calls)-1] != "UpdateIssueAttachmentUploaded" {
 		t.Fatalf("repository calls = %v, want issue-scoped lookup before upload update", repository.calls)
@@ -602,7 +592,7 @@ func TestAPIIssueAttachmentListDeniesNonmemberBeforeQuery(t *testing.T) {
 	if err == nil || !errors.As(err, &httpErr) || httpErr.Status != 403 {
 		t.Fatalf("nonmember attachment list error = %v, want 403", err)
 	}
-	if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssuePermission"}) {
+	if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssueAccess"}) {
 		t.Fatalf("nonmember attachment list calls = %v, want permission check before attachment query", repository.calls)
 	}
 }
@@ -631,7 +621,7 @@ func TestAPIIssueAttachmentGetRejectsAssetFromDifferentIssue(t *testing.T) {
 	if err == nil || location != nil || !errors.As(err, &httpErr) || httpErr.Status != 404 {
 		t.Fatalf("cross-issue attachment GET = (%v, %v), want no signed location and 404", location, err)
 	}
-	if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment"}) {
+	if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment"}) {
 		t.Fatalf("cross-issue attachment GET calls = %v, want issue-scoped lookup", repository.calls)
 	}
 }
@@ -677,7 +667,7 @@ func TestAPIIssueAttachmentMutationsRejectAssetFromDifferentIssue(t *testing.T) 
 			if len(tasks.tasks) != 0 {
 				t.Fatalf("cross-issue %s published tasks = %#v, want none", test.name, tasks.tasks)
 			}
-			if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssuePermission", "IssueAttachment"}) {
+			if !reflect.DeepEqual(repository.calls, []string{"RelatedWorkspaceIDBySlug", "IssueAccess", "IssueAttachment"}) {
 				t.Fatalf("cross-issue %s calls = %v, want issue-scoped lookup before mutation", test.name, repository.calls)
 			}
 		})

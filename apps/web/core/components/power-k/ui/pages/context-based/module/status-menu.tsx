@@ -5,7 +5,7 @@
  */
 
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
+
 // plane imports
 import { MODULE_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -19,7 +19,7 @@ type Props = {
   value: TModuleStatus;
 };
 
-export const PowerKModuleStatusMenu = observer(function PowerKModuleStatusMenu(props: Props) {
+export const PowerKModuleStatusMenu = function PowerKModuleStatusMenu(props: Props) {
   const { handleSelect, value } = props;
   // translation
   const { t } = useTranslation();
@@ -37,4 +37,4 @@ export const PowerKModuleStatusMenu = observer(function PowerKModuleStatusMenu(p
       ))}
     </Command.Group>
   );
-});
+};

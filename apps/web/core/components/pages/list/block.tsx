@@ -5,39 +5,34 @@
  */
 
 import { useRef } from "react";
-import { observer } from "mobx-react";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { PageIcon } from "@plane/propel/icons";
 // plane imports
-import { getPageName } from "@plane/utils";
+import { getPageName } from "@plane/utils/page";
+import type { TPage } from "@plane/types";
 // components
 import { ListItem } from "@/components/core/list";
 import { BlockItemAction } from "@/components/pages/list/block-item-action";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
-import { usePage } from "@/hooks/store";
+import { pageRedirectLink } from "@/helpers/page-permissions";
 
 type TPageListBlock = {
-  pageId: string;
-  storeType: EPageStoreType;
+  page: TPage;
+  projectId: string;
+  workspaceSlug: string;
 };
 
-export const PageListBlock = observer(function PageListBlock(props: TPageListBlock) {
-  const { pageId, storeType } = props;
+export function PageListBlock(props: TPageListBlock) {
+  const { page, projectId, workspaceSlug } = props;
   // refs
   const parentRef = useRef(null);
   // hooks
-  const page = usePage({
-    pageId,
-    storeType,
-  });
   const { isMobile } = usePlatformOS();
   // handle page check
-  if (!page) return null;
   // derived values
-  const { name, logo_props, getRedirectionLink } = page;
+  const { name, logo_props } = page;
 
   return (
     <ListItem
@@ -51,10 +46,12 @@ export const PageListBlock = observer(function PageListBlock(props: TPageListBlo
         </>
       }
       title={getPageName(name)}
-      itemLink={getRedirectionLink()}
-      actionableItems={<BlockItemAction page={page} parentRef={parentRef} storeType={storeType} />}
+      itemLink={pageRedirectLink(workspaceSlug, projectId, page.id)}
+      actionableItems={
+        <BlockItemAction page={page} parentRef={parentRef} projectId={projectId} workspaceSlug={workspaceSlug} />
+      }
       isMobile={isMobile}
       parentRef={parentRef}
     />
   );
-});
+}

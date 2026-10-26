@@ -5,6 +5,7 @@ package workitemhistory
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 	"testing"
 
@@ -51,6 +52,7 @@ CREATE TABLE intake_issues (id uuid PRIMARY KEY, issue_id uuid, source text, sou
 INSERT INTO workspaces(id,slug,name,logo) VALUES ('`+historyWorkspace+`','demo','Demo','');
 INSERT INTO projects(id,workspace_id,identifier,name,cover_image,logo_props,description,guest_view_all_features) VALUES ('`+historyProject+`','`+historyWorkspace+`','DEMO','Project','','{}','','false');
 INSERT INTO users(id,first_name,last_name,avatar,is_bot,display_name,user_timezone) VALUES ('`+historyUserID+`','Ada','Lovelace','',false,'Ada Lovelace','UTC');
+INSERT INTO workspace_members(id,workspace_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000502','`+historyWorkspace+`','`+historyUserID+`',15,true);
 INSERT INTO project_members(id,workspace_id,project_id,member_id,role,is_active) VALUES ('00000000-0000-4000-8000-000000000501','`+historyWorkspace+`','`+historyProject+`','`+historyUserID+`',15,true);
 INSERT INTO issues(id,workspace_id,project_id,sequence_id,name,description_json,description_html,priority,sort_order,is_draft,created_by_id,description_binary,description_stripped) VALUES ('`+historyIssue+`','`+historyWorkspace+`','`+historyProject+`',7,'Demo issue','{}','<p>Demo</p>','medium',0,false,'`+historyUserID+`',decode('616263','hex'),'Demo');
 INSERT INTO issue_versions(id,workspace_id,project_id,issue_id,name,priority,assignees,sequence_id,labels,sort_order,is_draft,modules,properties,meta,last_saved_at,owned_by_id,created_at,updated_at,created_by_id) VALUES ('`+historyVersion+`','`+historyWorkspace+`','`+historyProject+`','`+historyIssue+`','Demo issue','medium','{}',7,'{}',0,false,'{}','{}','{}','2026-10-21T12:00:00Z','`+historyUserID+`','2026-10-21T11:00:00Z','2026-10-21T11:00:00Z','`+historyUserID+`');
@@ -80,6 +82,8 @@ INSERT INTO comment_reactions(id,workspace_id,project_id,comment_id,actor_id,cre
 		UserID:     uuid.MustParse(historyUserID),
 		Timezone:   "America/Los_Angeles",
 	}
+
+	testRetainedPropertyReads(t, ctx, connection, request)
 
 	for _, operation := range []string{"meta", "versions", "version_detail", "description_versions", "description_version_detail", "history"} {
 		t.Run(operation, func(t *testing.T) {
@@ -133,6 +137,134 @@ INSERT INTO comment_reactions(id,workspace_id,project_id,comment_id,actor_id,cre
 	if err != nil || !strings.Contains(string(data), "Hello") || !strings.Contains(string(data), "👍") {
 		t.Fatalf("comment-only history = %s, err = %v", data, err)
 	}
+
+	testVisibleGuestHistory(t, ctx, connection, request)
+	testHistoryRevocationAtRead(t, ctx, connection, request)
+	testHiddenItemHistory(t, ctx, connection, request)
+}
+
+// Interpose only after the repository's permission checks, immediately before
+// its result statement, so a revoked membership cannot use a stale preflight.
+type historyReadBoundary struct {
+	database
+	beforeResult func()
+	called       bool
+}
+
+func (b *historyReadBoundary) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
+	if !b.called && strings.HasPrefix(query, "SELECT history_result.data") {
+		b.called = true
+		b.beforeResult()
+	}
+	return b.database.QueryRow(ctx, query, args...)
 }
 
 func stringAddress(value string) *string { return &value }
+
+func testVisibleGuestHistory(t *testing.T, ctx context.Context, connection *pgx.Conn, request Request) {
+	t.Run("authorized guests can read their visible item history", func(t *testing.T) {
+		for _, viewAll := range []bool{false, true} {
+			tx, err := connection.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = tx.Exec(ctx, "UPDATE project_members SET role=5"); err != nil {
+				t.Fatal(err)
+			}
+			if viewAll {
+				if _, err = tx.Exec(ctx, "UPDATE projects SET guest_view_all_features=true; UPDATE issues SET created_by_id=NULL"); err != nil {
+					t.Fatal(err)
+				}
+			}
+			scoped, err := NewRepository(tx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			local := request
+			local.Operation, local.ActivityType = "history", nil
+			result, err := scoped.Read(ctx, local)
+			if err != nil || !strings.Contains(string(result), "Hello") {
+				t.Errorf("visible guest history = %s, %v", result, err)
+			}
+			if err = tx.Rollback(ctx); err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+}
+
+func testHistoryRevocationAtRead(t *testing.T, ctx context.Context, connection *pgx.Conn, request Request) {
+	t.Run("membership revoked after preflight hides history", func(t *testing.T) {
+		tx, err := connection.Begin(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = tx.Rollback(ctx) }()
+		guarded := &historyReadBoundary{database: tx, beforeResult: func() {
+			if _, err = tx.Exec(ctx, "UPDATE workspace_members SET is_active=false"); err != nil {
+				t.Fatal(err)
+			}
+		}}
+		scoped, err := NewRepository(guarded)
+		if err != nil {
+			t.Fatal(err)
+		}
+		local := request
+		local.Operation, local.ActivityType = "history", nil
+		result, err := scoped.Read(ctx, local)
+		if !guarded.called || !errors.Is(err, ErrNotFound) || result != nil {
+			t.Fatalf("revoked read = %s, %v; boundary reached %v", result, err, guarded.called)
+		}
+	})
+}
+
+func testHiddenItemHistory(t *testing.T, ctx context.Context, connection *pgx.Conn, request Request) {
+	t.Run("history respects current item visibility", func(t *testing.T) {
+		scenarios := []struct{ name, change string }{
+			{"restricted guest", "UPDATE project_members SET role=5; UPDATE issues SET created_by_id=NULL"},
+			{"inactive workspace member", "UPDATE workspace_members SET is_active=false"},
+			{"deleted workspace member", "UPDATE workspace_members SET deleted_at=now()"},
+			{"deleted workspace", "UPDATE workspaces SET deleted_at=now()"},
+			{"deleted project", "UPDATE projects SET deleted_at=now()"},
+			{"deleted item", "UPDATE issues SET deleted_at=now()"},
+			{"private draft", "UPDATE issues SET is_draft=true"},
+		}
+		for _, scenario := range scenarios {
+			t.Run(scenario.name, func(t *testing.T) {
+				tx, err := connection.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer func() { _ = tx.Rollback(ctx) }()
+				if _, err = tx.Exec(ctx, scenario.change); err != nil {
+					t.Fatal(err)
+				}
+				scoped, err := NewRepository(tx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, activityType := range []string{"issue-comment", "issue-property"} {
+					local := request
+					local.Operation, local.ActivityType = "history", &activityType
+					result, err := scoped.Read(ctx, local)
+					if !errors.Is(err, ErrNotFound) || result != nil {
+						t.Errorf("%s exposed %s, error %v", activityType, result, err)
+					}
+				}
+				for _, operation := range []string{"meta", "history", "versions", "version_detail", "description_versions", "description_version_detail"} {
+					local := request
+					local.Operation = operation
+					local.ActivityType = nil
+					local.VersionID = uuid.MustParse(historyVersion)
+					if operation == "description_version_detail" {
+						local.VersionID = uuid.MustParse(historyDescVer)
+					}
+					result, err := scoped.Read(ctx, local)
+					if !errors.Is(err, ErrNotFound) && !errors.Is(err, ErrGuestRestricted) {
+						t.Errorf("%s exposed %s, error %v", operation, result, err)
+					}
+				}
+			})
+		}
+	})
+}

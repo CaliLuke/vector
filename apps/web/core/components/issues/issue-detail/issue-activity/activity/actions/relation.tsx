@@ -4,27 +4,22 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // types
 import type { TIssueRelationTypes } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { useTimeLineRelationOptions } from "@/components/relations";
 // local helpers
 import { IssueActivityBlockComponent } from "./";
 import { getRelationActivityContent } from "./helpers/activity";
 
-type TIssueRelationActivity = { activityId: string; ends: "top" | "bottom" | undefined };
+type TIssueRelationActivity = { activity: TIssueActivity; ends: "top" | "bottom" | undefined };
 
-export const IssueRelationActivity = observer(function IssueRelationActivity(props: TIssueRelationActivity) {
-  const { activityId, ends } = props;
+export const IssueRelationActivity = function IssueRelationActivity(props: TIssueRelationActivity) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
 
-  const activity = getActivityById(activityId);
   const ISSUE_RELATION_OPTIONS = useTimeLineRelationOptions();
   const activityContent = getRelationActivityContent(activity);
 
@@ -32,7 +27,7 @@ export const IssueRelationActivity = observer(function IssueRelationActivity(pro
   return (
     <IssueActivityBlockComponent
       icon={activity.field ? ISSUE_RELATION_OPTIONS[activity.field as TIssueRelationTypes]?.icon(14) : <></>}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       {activityContent}
@@ -43,4 +38,4 @@ export const IssueRelationActivity = observer(function IssueRelationActivity(pro
       )}
     </IssueActivityBlockComponent>
   );
-});
+};

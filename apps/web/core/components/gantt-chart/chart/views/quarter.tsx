@@ -4,19 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
 //
 import { HEADER_HEIGHT, SIDEBAR_WIDTH } from "../../constants";
-import type { IMonthBlock, IQuarterMonthBlock } from "../../views";
+import type { IQuarterMonthBlock } from "../../views";
 import { groupMonthsToQuarters } from "../../views";
 
-export const QuarterChartView = observer(function QuarterChartView(_props: any) {
-  const { currentViewData, renderView } = useTimeLineChartStore();
-  const monthBlocks: IMonthBlock[] = renderView;
+export function QuarterChartView() {
+  const { viewData: currentViewData, renderData } = useGanttChartState();
+  if (renderData.kind !== "quarter") return null;
+  const monthBlocks = renderData.data;
 
   const quarterBlocks: IQuarterMonthBlock[] = groupMonthsToQuarters(monthBlocks);
 
@@ -96,4 +96,4 @@ export const QuarterChartView = observer(function QuarterChartView(_props: any) 
         ))}
     </div>
   );
-});
+}

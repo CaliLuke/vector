@@ -16,7 +16,8 @@ type APIV1Request struct {
 }
 
 // Safe-method ProjectMemberPermission is identical to ProjectEntityPermission.
-// Label writes remain on Django, including its different POST workspace policy.
+// Label writes use the projectconfiguration repository, including its distinct
+// API v1 POST workspace policy.
 func (r *Repository) AuthorizeAPIV1(ctx context.Context, user, slug, project string, write bool) error {
 	allowed, err := djangoapi.ProjectEntityAllowed(ctx, r.database, user, slug, project, write)
 	if err != nil {
@@ -85,9 +86,9 @@ func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Re
 	}
 	for i, raw := range rows {
 		row := raw.(map[string]any)
-		projected, err := djangoapi.Serialize(ctx, r.database, row, apiLabelFields, fields, strings.Join(tokens, ","), false)
-		if err != nil {
-			return nil, err
+		projected, projectionErr := djangoapi.Serialize(ctx, r.database, row, apiLabelFields, fields, strings.Join(tokens, ","), false)
+		if projectionErr != nil {
+			return nil, projectionErr
 		}
 		if _, selected := projected["parent"]; parentExpanded && selected {
 			projected["parent"] = row["expanded_parent"]

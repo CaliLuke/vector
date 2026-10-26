@@ -4,27 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane types
 import type { IWorkspace } from "@plane/types";
 import { Spinner } from "@plane/ui";
 // components
 import { PowerKWorkspacesMenu } from "@/components/power-k/menus/workspaces";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaces } from "@/hooks/use-workspaces";
 
 type Props = {
   handleSelect: (workspace: IWorkspace) => void;
 };
 
-export const PowerKOpenWorkspaceMenu = observer(function PowerKOpenWorkspaceMenu(props: Props) {
+export function PowerKOpenWorkspaceMenu(props: Props) {
   const { handleSelect } = props;
-  // store hooks
-  const { loader, workspaces } = useWorkspace();
+  const { data: workspaces = [], isPending } = useWorkspaces();
   // derived values
-  const workspacesList = workspaces ? Object.values(workspaces) : [];
+  const workspacesList = workspaces;
 
-  if (loader) return <Spinner />;
+  if (isPending) return <Spinner />;
 
   return <PowerKWorkspacesMenu workspaces={workspacesList} onSelect={handleSelect} />;
-});
+}

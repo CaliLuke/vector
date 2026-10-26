@@ -5,10 +5,11 @@
  */
 
 import { Tab } from "@headlessui/react";
-import { observer } from "mobx-react";
+
 import { useTranslation } from "@plane/i18n";
 import type { TWorkItemFilterCondition } from "@plane/shared-state";
-import { cn, toFilterArray } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { toFilterArray } from "@plane/utils/rich-filters";
 import useLocalStorage from "@/hooks/use-local-storage";
 import { AssigneeStatComponent, type TAssigneeData } from "./assignee";
 import { LabelStatComponent, type TLabelData } from "./label";
@@ -89,7 +90,7 @@ function getProgressStatsDistribution(
   };
 }
 
-export const ProgressStats = observer(function ProgressStats(props: TProgressStatsProps) {
+export const ProgressStats = function ProgressStats(props: TProgressStatsProps) {
   const {
     distribution,
     groupedIssues,
@@ -199,4 +200,4 @@ export const ProgressStats = observer(function ProgressStats(props: TProgressSta
       </Tab.Group>
     </div>
   );
-});
+};

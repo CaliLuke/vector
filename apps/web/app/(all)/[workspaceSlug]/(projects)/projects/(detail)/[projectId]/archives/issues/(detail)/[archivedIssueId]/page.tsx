@@ -5,9 +5,7 @@
  */
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 // ui
 import { Banner } from "@plane/propel/banner";
 import { Button } from "@plane/propel/button";
@@ -18,8 +16,8 @@ import { PageHead } from "@/components/core/page-title";
 import { IssueDetailRoot } from "@/components/issues/issue-detail";
 // constants
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 
 function ArchivedIssueDetailsPage(): React.JSX.Element | null {
   // router
@@ -27,25 +25,18 @@ function ArchivedIssueDetailsPage(): React.JSX.Element | null {
   const router = useRouter();
   // states
   // hooks
-  const {
-    fetchIssue,
-    issue: { getIssueById },
-  } = useIssueDetail();
-
-  const { getProjectById } = useProject();
-
-  const { isLoading } = useSWR(`ARCHIVED_ISSUE_DETAIL_${workspaceSlug}_${projectId}_${archivedIssueId}`, () =>
-    fetchIssue(workspaceSlug, projectId, archivedIssueId)
-  );
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const detail = useWorkItemDetail(workspaceSlug, projectId, archivedIssueId);
 
   // derived values
-  const issue = getIssueById(archivedIssueId);
-  const project = issue ? getProjectById(issue?.project_id ?? "") : undefined;
-  const pageTitle = project && issue ? `${project?.identifier}-${issue?.sequence_id} ${issue?.name}` : undefined;
+  const issue = detail.issue;
+  const project = issue ? projectRows?.find((projectRow) => projectRow.id === issue.project_id) : undefined;
+  const pageTitle = project && issue ? `${project.identifier}-${issue.sequence_id} ${issue.name}` : undefined;
 
   if (!issue) return <></>;
 
-  const issueLoader = !issue || isLoading;
+  const issueLoader = detail.isPending;
 
   return (
     <>
@@ -102,5 +93,5 @@ function ArchivedIssueDetailsPage(): React.JSX.Element | null {
 export const Route = createFileRoute(
   "/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/issues/$archivedIssueId/"
 )({
-  component: observer(ArchivedIssueDetailsPage),
+  component: ArchivedIssueDetailsPage,
 });

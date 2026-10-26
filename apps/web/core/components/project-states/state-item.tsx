@@ -8,12 +8,13 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { observer } from "mobx-react";
 // Vector
 import type { TDraggableData } from "@plane/constants";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
 import { DropIndicator } from "@plane/ui";
-import { cn, getCurrentStateSequence } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getCurrentStateSequence } from "@plane/utils/work-item";
 // components
 import { StateItemTitle, StateUpdate } from "@/components/project-states";
 // helpers
@@ -28,7 +29,7 @@ type TStateItem = {
   stateItemClassName?: string;
 };
 
-export const StateItem = observer(function StateItem(props: TStateItem) {
+export function StateItem(props: TStateItem) {
   const {
     groupKey,
     groupedStates,
@@ -50,6 +51,10 @@ export const StateItem = observer(function StateItem(props: TStateItem) {
   const isDraggable = totalStates !== 1;
   const commonStateItemListProps = {
     stateCount: totalStates,
+    statePercentage:
+      (((groupedStates[state.group]?.findIndex((row) => row.id === state.id) ?? -1) + 1) /
+        Math.max(groupedStates[state.group]?.length ?? 0, 1)) *
+      100,
     state: state,
     setUpdateStateModal: setUpdateStateModal,
   };
@@ -59,8 +64,12 @@ export const StateItem = observer(function StateItem(props: TStateItem) {
       try {
         if (!payload.id) return;
         await stateOperationsCallbacks.moveStatePosition(payload.id, payload);
-      } catch (error) {
-        console.error("error", error);
+      } catch {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Error!",
+          message: "State order could not be updated. Please try again.",
+        });
       }
     },
     [stateOperationsCallbacks]
@@ -159,4 +168,4 @@ export const StateItem = observer(function StateItem(props: TStateItem) {
       <DropIndicator isVisible={isDraggedOver && closestEdge === "bottom"} />
     </Fragment>
   );
-});
+}

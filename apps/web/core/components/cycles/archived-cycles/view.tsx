@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // assets
 import AllFiltersImage from "@/app/assets/empty-state/cycle/all-filters.svg?url";
 import NameFilterImage from "@/app/assets/empty-state/cycle/name-filter.svg?url";
@@ -13,25 +12,30 @@ import { CyclesList } from "@/components/cycles/list";
 // ui
 import { CycleModuleListLayoutLoader } from "@/components/ui/loader/cycle-module-list-loader";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { visibleArchivedCycles } from "@/queries/cycle-module-selectors";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useCycleCataloguePreferences } from "@/providers/cycle-module-preferences";
 
 export interface IArchivedCyclesView {
   workspaceSlug: string;
   projectId: string;
 }
 
-export const ArchivedCyclesView = observer(function ArchivedCyclesView(props: IArchivedCyclesView) {
+export const ArchivedCyclesView = function ArchivedCyclesView(props: IArchivedCyclesView) {
   const { workspaceSlug, projectId } = props;
   // store hooks
-  const { getFilteredArchivedCycleIds, loader } = useCycle();
-  const { archivedCyclesSearchQuery } = useCycleFilter();
+  const catalogue = useProjectCycles(workspaceSlug, projectId, true);
+  const preferences = useCycleCataloguePreferences(workspaceSlug, projectId);
+  const { archivedSearch: archivedCyclesSearchQuery } = preferences;
   // derived values
-  const filteredArchivedCycleIds = getFilteredArchivedCycleIds(projectId);
+  const cycles = visibleArchivedCycles(catalogue.cycles, preferences.archivedFilters, preferences.archivedSearch);
 
-  if (loader || !filteredArchivedCycleIds) return <CycleModuleListLayoutLoader />;
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="archived cycles" retry={catalogue.retry} />;
+  if (catalogue.isPending || !cycles) return <CycleModuleListLayoutLoader />;
 
-  if (filteredArchivedCycleIds.length === 0)
+  if (cycles.length === 0)
     return (
       <div className="grid h-full w-full place-items-center">
         <div className="text-center">
@@ -51,12 +55,6 @@ export const ArchivedCyclesView = observer(function ArchivedCyclesView(props: IA
     );
 
   return (
-    <CyclesList
-      completedCycleIds={[]}
-      cycleIds={filteredArchivedCycleIds}
-      workspaceSlug={workspaceSlug}
-      projectId={projectId}
-      isArchived
-    />
+    <CyclesList completedCycles={[]} cycles={cycles} workspaceSlug={workspaceSlug} projectId={projectId} isArchived />
   );
-});
+};

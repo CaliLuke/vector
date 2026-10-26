@@ -99,19 +99,22 @@ func TestIntakeActivitySnapshotsPreserveNestedSerializerOrder(t *testing.T) {
 	}
 }
 
-func TestPublicIssueCollectionModuleAnnotationKeepsRawRelationsSeparateFromGrouping(t *testing.T) {
+func TestIssueModuleAnnotationsOmitDeletedRelationsAndModules(t *testing.T) {
 	ordinary := issueAnnotationsSQL("$1", false)
 	collection := issueCollectionAnnotationsSQL("$1")
 	for name, sql := range map[string]string{"ordinary": ordinary, "collection": collection} {
 		if !strings.Contains(sql, "WHERE m.issue_id=i.id") {
 			t.Errorf("%s module annotation lost its issue relation: %s", name, sql)
 		}
+		if !strings.Contains(sql, "m.deleted_at IS NULL AND md.deleted_at IS NULL") {
+			t.Errorf("%s module annotation must omit deleted bridges and modules: %s", name, sql)
+		}
 	}
-	if !strings.Contains(ordinary, "m.deleted_at IS NULL AND md.archived_at IS NULL") {
+	if !strings.Contains(ordinary, "md.deleted_at IS NULL AND md.archived_at IS NULL") {
 		t.Fatalf("ordinary issue annotation must keep its existing live, unarchived module policy: %s", ordinary)
 	}
-	if strings.Contains(collection, "m.deleted_at IS NULL") || strings.Contains(collection, "md.archived_at IS NULL") {
-		t.Fatalf("public collection annotation narrowed raw module relations: %s", collection)
+	if strings.Contains(collection, "md.archived_at IS NULL") {
+		t.Fatalf("public collection annotation must continue including archived modules: %s", collection)
 	}
 	if strings.Contains(collection, "pm.is_active") {
 		t.Fatalf("public collection annotation unexpectedly added active-assignee filtering: %s", collection)

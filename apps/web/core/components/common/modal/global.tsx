@@ -5,7 +5,6 @@
  */
 
 import { lazy, Suspense } from "react";
-import { observer } from "mobx-react";
 
 const ProfileSettingsModal = lazy(() =>
   import("@/components/settings/profile/modal").then((module) => ({
@@ -23,10 +22,10 @@ type TGlobalModalsProps = {
  * This includes:
  * - Profile settings modal
  */
-export const GlobalModals = observer(function GlobalModals(_props: TGlobalModalsProps) {
+export const GlobalModals = function GlobalModals(_props: TGlobalModalsProps) {
   return (
     <Suspense fallback={null}>
       <ProfileSettingsModal />
     </Suspense>
   );
-});
+};

@@ -1,10 +1,8 @@
-import { React } from "./react-dom.mjs";
+import { React } from "./react.mjs";
 
-export const WEB_SWR_CONFIG = {};
 export const TranslationProvider = ({ children }) => React.createElement(React.Fragment, null, children);
 export const Toast = () => null;
-export const StoreProvider = ({ children }) => React.createElement(React.Fragment, null, children);
-export const SWRConfig = ({ children }) => React.createElement(React.Fragment, null, children);
+export const AppStateProvider = ({ children }) => React.createElement(React.Fragment, null, children);
 export const resolveGeneralTheme = (theme) => theme;
 export const useTheme = () => ({ resolvedTheme: "light" });
 

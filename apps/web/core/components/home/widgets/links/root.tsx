@@ -4,24 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useCallback, useState } from "react";
 
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
-import type { THomeWidgetProps } from "@plane/types";
-import { useHome } from "@/hooks/store/use-home";
+import type { THomeWidgetProps, TLink } from "@plane/types";
 import { LinkCreateUpdateModal } from "./create-update-link-modal";
 import { ProjectLinkList } from "./links";
 import { useLinks } from "./use-links";
 
-export const DashboardQuickLinks = observer(function DashboardQuickLinks(props: THomeWidgetProps) {
+export const DashboardQuickLinks = function DashboardQuickLinks(props: THomeWidgetProps) {
   const { workspaceSlug } = props;
-  const { linkOperations } = useLinks(workspaceSlug);
-  const {
-    quickLinks: { isLinkModalOpen, toggleLinkModal, linkData, setLinkData, fetchLinks },
-  } = useHome();
+  const [isLinkModalOpen, toggleLinkModal] = useState(false);
+  const [linkData, setLinkData] = useState<TLink>();
+  const closeModal = useCallback(() => toggleLinkModal(false), []);
+  const { linkOperations } = useLinks(workspaceSlug, closeModal);
   const { t } = useTranslation();
 
   const handleCreateLinkModal = useCallback(() => {
@@ -29,15 +26,6 @@ export const DashboardQuickLinks = observer(function DashboardQuickLinks(props: 
     setLinkData(undefined);
   }, [toggleLinkModal, setLinkData]);
 
-  useSWR(
-    workspaceSlug ? `HOME_LINKS_${workspaceSlug}` : null,
-    workspaceSlug ? () => fetchLinks(workspaceSlug.toString()) : null,
-    {
-      revalidateIfStale: false,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false,
-    }
-  );
   return (
     <>
       <LinkCreateUpdateModal
@@ -58,9 +46,16 @@ export const DashboardQuickLinks = observer(function DashboardQuickLinks(props: 
         </div>
         <div className="flex w-full flex-wrap">
           {/* rendering links */}
-          <ProjectLinkList workspaceSlug={workspaceSlug} linkOperations={linkOperations} />
+          <ProjectLinkList
+            workspaceSlug={workspaceSlug}
+            linkOperations={linkOperations}
+            onEdit={(link) => {
+              setLinkData(link);
+              toggleLinkModal(true);
+            }}
+          />
         </div>
       </div>
     </>
   );
-});
+};

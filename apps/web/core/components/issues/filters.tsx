@@ -4,17 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useState } from "react";
-import { observer } from "mobx-react";
+import { useState } from "react";
+
 import { ChartNoAxesColumn, SlidersHorizontal } from "lucide-react";
 // plane imports
-import { EIssueFilterType, ISSUE_STORE_TO_FILTERS_MAP } from "@plane/constants";
+import { ISSUE_STORE_TO_FILTERS_MAP } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 import { EIssueLayoutTypes, EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
+import { useProjectIssueDisplayPreferences } from "@/hooks/use-project-issue-display-preferences";
 // plane web imports
 import type { TProject } from "@plane/types";
 // local imports
@@ -42,7 +41,7 @@ const LAYOUTS = [
   EIssueLayoutTypes.GANTT,
 ];
 
-export const HeaderFilters = observer(function HeaderFilters(props: Props) {
+export const HeaderFilters = function HeaderFilters(props: Props) {
   const {
     currentProjectDetails,
     projectId,
@@ -56,39 +55,21 @@ export const HeaderFilters = observer(function HeaderFilters(props: Props) {
   const [analyticsModal, setAnalyticsModal] = useState(false);
   // store hooks
   const {
-    issuesFilter: { issueFilters, updateFilters },
-  } = useIssues(storeType);
+    issueFilters: displayPreferences,
+    handleLayoutChange,
+    handleDisplayFilters,
+    handleDisplayProperties,
+  } = useProjectIssueDisplayPreferences({ workspaceSlug, projectId });
+  const displayFilters = displayPreferences?.displayFilters;
+  const displayProperties = displayPreferences?.displayProperties;
   // derived values
-  const activeLayout = issueFilters?.displayFilters?.layout;
+  const activeLayout = displayFilters?.layout;
   const layoutDisplayFiltersOptions = ISSUE_STORE_TO_FILTERS_MAP[storeType]?.layoutOptions[activeLayout];
-
-  const handleLayoutChange = useCallback(
-    (layout: EIssueLayoutTypes) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, { layout: layout });
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
-
-  const handleDisplayFilters = useCallback(
-    (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter);
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
-
-  const handleDisplayProperties = useCallback(
-    (property: Partial<IIssueDisplayProperties>) => {
-      if (!workspaceSlug || !projectId) return;
-      updateFilters(workspaceSlug, projectId, EIssueFilterType.DISPLAY_PROPERTIES, property);
-    },
-    [workspaceSlug, projectId, updateFilters]
-  );
 
   return (
     <>
       <WorkItemsModal
+        workspaceSlug={workspaceSlug}
         isOpen={analyticsModal}
         onClose={() => setAnalyticsModal(false)}
         projectDetails={currentProjectDetails ?? undefined}
@@ -108,7 +89,7 @@ export const HeaderFilters = observer(function HeaderFilters(props: Props) {
           activeLayout={activeLayout}
         />
       </div>
-      <WorkItemFiltersToggle entityType={storeType} entityId={projectId} />
+      <WorkItemFiltersToggle />
       <FiltersDropdown
         miniIcon={<SlidersHorizontal className="size-3.5" />}
         title={t("common.display")}
@@ -116,9 +97,9 @@ export const HeaderFilters = observer(function HeaderFilters(props: Props) {
       >
         <DisplayFiltersSelection
           layoutDisplayFiltersOptions={layoutDisplayFiltersOptions}
-          displayFilters={issueFilters?.displayFilters ?? {}}
+          displayFilters={displayFilters ?? {}}
           handleDisplayFiltersUpdate={handleDisplayFilters}
-          displayProperties={issueFilters?.displayProperties ?? {}}
+          displayProperties={displayProperties ?? {}}
           handleDisplayPropertiesUpdate={handleDisplayProperties}
           cycleViewDisabled={!currentProjectDetails?.cycle_view}
           moduleViewDisabled={!currentProjectDetails?.module_view}
@@ -137,4 +118,4 @@ export const HeaderFilters = observer(function HeaderFilters(props: Props) {
       )}
     </>
   );
-});
+};

@@ -4,26 +4,26 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-// icons
 import { DATE_BEFORE_FILTER_OPTIONS } from "@plane/constants";
 import { CloseIcon } from "@plane/propel/icons";
-// plane constants
-import { renderFormattedDate, capitalizeFirstLetter } from "@plane/utils";
-// helpers
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { capitalizeFirstLetter } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 type Props = {
   editable: boolean | undefined;
   handleRemove: (val: string) => void;
   values: string[];
+  options?: ReadonlyArray<{ value: string; name: string }>;
+  className?: string;
 };
 
-export const AppliedDateFilters = observer(function AppliedDateFilters(props: Props) {
-  const { editable, handleRemove, values } = props;
+export const AppliedDateFilters = function AppliedDateFilters(props: Props) {
+  const { editable, handleRemove, values, options = DATE_BEFORE_FILTER_OPTIONS, className } = props;
 
   const getDateLabel = (value: string): string => {
     let dateLabel = "";
 
-    const dateDetails = DATE_BEFORE_FILTER_OPTIONS.find((d) => d.value === value);
+    const dateDetails = options.find((d) => d.value === value);
 
     if (dateDetails) dateLabel = dateDetails.name;
     else {
@@ -42,7 +42,7 @@ export const AppliedDateFilters = observer(function AppliedDateFilters(props: Pr
   return (
     <>
       {values.map((date) => (
-        <div key={date} className="flex items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 text-11">
+        <div key={date} className={cn("flex items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 text-11", className)}>
           <span className="normal-case">{getDateLabel(date)}</span>
           {editable && (
             <button
@@ -57,4 +57,4 @@ export const AppliedDateFilters = observer(function AppliedDateFilters(props: Pr
       ))}
     </>
   );
-});
+};

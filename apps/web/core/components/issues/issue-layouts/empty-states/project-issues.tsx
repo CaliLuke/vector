@@ -4,52 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
-import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
+import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useWorkItemFilterInstance } from "@/hooks/store/work-item-filters/use-work-item-filter-instance";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { IssueListEmptyState } from "./issue-list-empty-state";
 
-export const ProjectEmptyState = observer(function ProjectEmptyState() {
-  // router
-  const { projectId } = useParams({ strict: false });
+export const ProjectEmptyState = function ProjectEmptyState() {
   // plane imports
   const { t } = useTranslation();
   // store hooks
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
-  // derived values
-  const projectWorkItemFilter = useWorkItemFilterInstance(EIssuesStoreType.PROJECT, projectId);
-
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
-
   return (
-    <div className="relative h-full w-full overflow-y-auto">
-      {projectWorkItemFilter?.hasActiveFilters ? (
-        <EmptyStateDetailed
-          assetKey="search"
-          title={t("common_empty_state.search.title")}
-          description={t("common_empty_state.search.description")}
-          actions={[
-            {
-              label: t("project_issues.empty_state.issues_empty_filter.secondary_button.text"),
-              onClick: projectWorkItemFilter?.clearFilters,
-              disabled: !canPerformEmptyStateActions || !projectWorkItemFilter,
-              variant: "secondary",
-            },
-          ]}
-        />
-      ) : (
+    <IssueListEmptyState clearFiltersLabel={t("project_issues.empty_state.issues_empty_filter.secondary_button.text")}>
+      {(canPerformEmptyStateActions) => (
         <EmptyStateDetailed
           assetKey="work-item"
           title={t("project_empty_state.work_items.title")}
@@ -66,6 +37,6 @@ export const ProjectEmptyState = observer(function ProjectEmptyState() {
           ]}
         />
       )}
-    </div>
+    </IssueListEmptyState>
   );
-});
+};

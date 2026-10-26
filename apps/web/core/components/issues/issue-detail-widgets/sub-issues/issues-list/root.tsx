@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
+import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
+
 // plane imports
 import { ListFilter } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
@@ -14,9 +14,11 @@ import type { GroupByColumnTypes, TIssue, TIssueServiceType, TSubIssueOperations
 import { EIssueServiceType, EIssuesStoreType } from "@plane/types";
 // hooks
 import { SectionEmptyState } from "@/components/empty-state/section-empty-state-root";
-import { getGroupByColumns, isWorkspaceLevel } from "@/components/issues/issue-layouts/utils";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { isWorkspaceLevel } from "@/components/issues/issue-layouts/utils";
+import { useSubWorkItemPreferences } from "@/providers/sub-work-item-preferences";
 
+import { getFilteredWorkItems, getGroupedWorkItemIds } from "@/helpers/issue-list/grouping";
+import { useWorkItemSubItems } from "@/hooks/use-work-item-detail";
 import { SubIssuesListGroup } from "./list-group";
 type Props = {
   workspaceSlug: string;
@@ -32,10 +34,10 @@ type Props = {
   ) => void;
   subIssueOperations: TSubIssueOperations;
   issueServiceType?: TIssueServiceType;
-  storeType: EIssuesStoreType;
+  storeType: Exclude<EIssuesStoreType, EIssuesStoreType.WORKSPACE_DRAFT>;
 };
 
-export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Props) {
+export const SubIssuesListRoot = function SubIssuesListRoot(props: Props) {
   const {
     workspaceSlug,
     projectId,
@@ -50,20 +52,34 @@ export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Prop
   } = props;
   const { t } = useTranslation();
   // store hooks
-  const {
-    subIssues: {
-      subIssuesByIssueId,
-      filters: { getSubIssueFilters, getGroupedSubWorkItems, getFilteredSubWorkItems, resetFilters },
-    },
-  } = useIssueDetail(issueServiceType);
-
   // derived values
-  const filters = getSubIssueFilters(rootIssueId);
-  const isRootLevel = useMemo(() => rootIssueId === parentIssueId, [rootIssueId, parentIssueId]);
+  const { preferences: filters, resetPreferences } = useSubWorkItemPreferences({
+    workspaceSlug,
+    projectId,
+    parentId: rootIssueId,
+    serviceType: issueServiceType,
+  });
+  const rootChildren = useWorkItemSubItems(workspaceSlug, projectId, rootIssueId, issueServiceType);
+  const nestedChildren = useWorkItemSubItems(
+    workspaceSlug,
+    projectId,
+    parentIssueId,
+    issueServiceType,
+    parentIssueId !== rootIssueId
+  );
+  const rootSubIssues = (rootChildren.subItems ?? []).filter((issue) => !issue.archived_at);
+  const filteredSubWorkItems = getFilteredWorkItems(rootSubIssues, filters.filters);
+  const groupedSubIssues = getGroupedWorkItemIds(
+    filteredSubWorkItems,
+    filters.displayFilters.group_by,
+    filters.displayFilters.order_by
+  );
+  const isRootLevel = rootIssueId === parentIssueId;
   const group_by = isRootLevel ? (filters?.displayFilters?.group_by ?? null) : null;
-  const filteredSubWorkItemsCount = (getFilteredSubWorkItems(rootIssueId, filters.filters ?? {}) ?? []).length;
+  const filteredSubWorkItemsCount = filteredSubWorkItems.length;
 
-  const groups = getGroupByColumns({
+  const groups = useGroupColumns({
+    workspaceSlug,
     groupBy: group_by as GroupByColumnTypes,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
@@ -71,17 +87,15 @@ export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Prop
     projectId,
   });
 
-  const getWorkItemIds = useCallback(
-    (groupId: string) => {
-      if (isRootLevel) {
-        const groupedSubIssues = getGroupedSubWorkItems(rootIssueId);
-        return groupedSubIssues?.[groupId] ?? [];
-      }
-      const subIssueIds = subIssuesByIssueId(parentIssueId);
-      return subIssueIds ?? [];
-    },
-    [isRootLevel, subIssuesByIssueId, rootIssueId, getGroupedSubWorkItems, parentIssueId]
-  );
+  const getWorkItems = (groupId: string) => {
+    const source = isRootLevel ? rootSubIssues : (nestedChildren.subItems ?? []);
+    const ids = isRootLevel ? (groupedSubIssues[groupId] ?? []) : source.map((item) => item.id);
+    const byId = new Map(source.map((item) => [item.id, item]));
+    return ids.flatMap((id) => {
+      const issue = byId.get(id);
+      return issue && !issue.archived_at ? [issue] : [];
+    });
+  };
 
   const isSubWorkItems = issueServiceType === EIssueServiceType.ISSUES;
 
@@ -102,7 +116,7 @@ export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Prop
           icon={<ListFilter />}
           customClassName={storeType !== EIssuesStoreType.EPIC ? "border-none" : ""}
           actionElement={
-            <Button variant="secondary" onClick={() => resetFilters(rootIssueId)}>
+            <Button variant="secondary" onClick={resetPreferences}>
               {t("sub_work_item.empty_state.list_filters.action")}
             </Button>
           }
@@ -111,7 +125,7 @@ export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Prop
         groups?.map((group) => (
           <SubIssuesListGroup
             key={group.id}
-            workItemIds={getWorkItemIds(group.id)}
+            workItems={getWorkItems(group.id)}
             projectId={projectId}
             workspaceSlug={workspaceSlug}
             group={group}
@@ -128,4 +142,4 @@ export const SubIssuesListRoot = observer(function SubIssuesListRoot(props: Prop
       )}
     </div>
   );
-});
+};

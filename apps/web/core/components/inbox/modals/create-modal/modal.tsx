@@ -4,11 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
 // plane imports
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import useKeypress from "@/hooks/use-keypress";
 // local imports
 import { InboxIssueCreateRoot } from "./create-root";
 
@@ -21,31 +19,19 @@ type TInboxIssueCreateModalRoot = {
 
 export function InboxIssueCreateModalRoot(props: TInboxIssueCreateModalRoot) {
   const { workspaceSlug, projectId, modalState, handleModalClose } = props;
-  // states
-  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
-  // handlers
-  const handleDuplicateIssueModal = (value: boolean) => setIsDuplicateModalOpen(value);
-
-  useKeypress("Escape", () => {
-    if (modalState) {
-      handleModalClose();
-      setIsDuplicateModalOpen(false);
-    }
-  });
-
+  if (!modalState) return null;
   return (
     <ModalCore
       isOpen={modalState}
       position={EModalPosition.TOP}
-      width={isDuplicateModalOpen ? EModalWidth.VIXL : EModalWidth.XXXXL}
+      width={EModalWidth.XXXXL}
       className="rounded-lg !bg-transparent shadow-none transition-[width] ease-linear"
     >
       <InboxIssueCreateRoot
+        key={`${workspaceSlug}/${projectId}`}
         workspaceSlug={workspaceSlug}
         projectId={projectId}
         handleModalClose={handleModalClose}
-        isDuplicateModalOpen={isDuplicateModalOpen}
-        handleDuplicateIssueModal={handleDuplicateIssueModal}
       />
     </ModalCore>
   );

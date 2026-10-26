@@ -5,20 +5,21 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ArchivedModuleLayoutRoot, ArchivedModulesHeader } from "@/components/modules";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 function ProjectArchivedModulesPage(): React.JSX.Element | null {
   // router
   const { projectId } = Route.useParams();
   // store hooks
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectRows?.find((candidate) => candidate.id === projectId);
   const pageTitle = project?.name && `${project?.name} - Archived modules`;
 
   return (
@@ -33,5 +34,5 @@ function ProjectArchivedModulesPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/modules/")({
-  component: observer(ProjectArchivedModulesPage),
+  component: ProjectArchivedModulesPage,
 });

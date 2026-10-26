@@ -5,7 +5,6 @@
  */
 
 import { Link, useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // ui
 import { MODULE_STATUS } from "@plane/constants";
@@ -16,23 +15,21 @@ import { SIDEBAR_WIDTH } from "@/components/gantt-chart/constants";
 import { getBlockViewDetails } from "@/components/issues/issue-layouts/utils";
 // constants
 // hooks
-import { useModule } from "@/hooks/store/use-module";
+import type { IModule } from "@plane/types";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type Props = {
-  moduleId: string;
+  module: IModule;
 };
 
-export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props) {
-  const { moduleId } = props;
+export const ModuleGanttBlock = function ModuleGanttBlock(props: Props) {
+  const { module: moduleDetails } = props;
   // router
   const router = useRouter();
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getModuleById } = useModule();
   // derived values
-  const moduleDetails = getModuleById(moduleId);
   // hooks
   const { isMobile } = usePlatformOS();
 
@@ -54,8 +51,10 @@ export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props)
       }
       position="top-start"
     >
-      <div
-        className="relative flex h-full w-full cursor-pointer items-center rounded-sm"
+      <button
+        type="button"
+        aria-label={`Open module ${moduleDetails?.name ?? ""}`}
+        className="relative flex h-full w-full cursor-pointer items-center rounded-sm text-left"
         style={blockStyle}
         onClick={() =>
           void router.navigate({
@@ -70,18 +69,16 @@ export const ModuleGanttBlock = observer(function ModuleGanttBlock(props: Props)
         >
           {moduleDetails?.name}
         </div>
-      </div>
+      </button>
     </Tooltip>
   );
-});
+};
 
-export const ModuleGanttSidebarBlock = observer(function ModuleGanttSidebarBlock(props: Props) {
-  const { moduleId } = props;
+export const ModuleGanttSidebarBlock = function ModuleGanttSidebarBlock(props: Props) {
+  const { module: moduleDetails } = props;
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getModuleById } = useModule();
   // derived values
-  const moduleDetails = getModuleById(moduleId);
   if (!moduleDetails) return null;
 
   return (
@@ -99,4 +96,4 @@ export const ModuleGanttSidebarBlock = observer(function ModuleGanttSidebarBlock
       <h6 className="flex-grow truncate text-13 font-medium">{moduleDetails?.name}</h6>
     </Link>
   );
-});
+};

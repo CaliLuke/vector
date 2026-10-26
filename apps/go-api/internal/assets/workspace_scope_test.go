@@ -56,7 +56,11 @@ func (repository *workspaceBoundaryRepository) AssetByWorkspaceAndID(context.Con
 	return repository.asset, nil
 }
 
-func (repository *workspaceBoundaryRepository) UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte) (bool, error) {
+func (repository *workspaceBoundaryRepository) AssetParentVisible(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error) {
+	return true, nil
+}
+
+func (repository *workspaceBoundaryRepository) UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte, bool) (bool, error) {
 	repository.calls = append(repository.calls, "UpdateWorkspaceAsset")
 	repository.updatedWorkspaceAsset = true
 	return repository.workspaceHookApplied, nil

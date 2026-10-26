@@ -4,24 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 // ui
 import { Button } from "@plane/propel/button";
 
-type Props = {
-  title: string;
-  description?: React.ReactNode;
-  image: any;
-  primaryButton?: {
-    icon?: any;
-    text: string;
-    onClick: () => void;
-  };
-  secondaryButton?: React.ReactNode;
-  disabled?: boolean;
-};
+import type { EmptyStateProps } from "@/components/common/empty-state";
 
-export function EmptyState({ title, description, image, primaryButton, secondaryButton, disabled = false }: Props) {
+export function EmptyState({
+  title,
+  description,
+  image,
+  primaryButton,
+  secondaryButton,
+  disabled = false,
+}: EmptyStateProps) {
   return (
     <div className="flex h-full w-full items-center justify-center px-5 md:px-10 lg:p-20">
       <div className="relative h-full w-full max-w-6xl">

@@ -6,14 +6,14 @@
 
 import { Link } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { AUTH_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PlaneLockup } from "@plane/propel/icons";
 import { PageHead } from "@/components/core/page-title";
 import { EAuthModes } from "@/helpers/authentication.helper";
-import { useInstance } from "@/hooks/store/use-instance";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 
 const authContentMap = {
   [EAuthModes.SIGN_IN]: {
@@ -34,10 +34,10 @@ type AuthHeaderProps = {
   type: EAuthModes;
 };
 
-export const AuthHeader = observer(function AuthHeader({ type }: AuthHeaderProps) {
+export function AuthHeader({ type }: AuthHeaderProps) {
   const { t } = useTranslation();
   // store
-  const { config } = useInstance();
+  const { data: config } = useQuery(instanceConfigOptions);
   // derived values
   const enableSignUpConfig = config?.enable_signup ?? false;
 
@@ -60,7 +60,7 @@ export const AuthHeader = observer(function AuthHeader({ type }: AuthHeaderProps
       }
     />
   );
-});
+}
 
 type TAuthHeaderBase = {
   pageTitle: string;

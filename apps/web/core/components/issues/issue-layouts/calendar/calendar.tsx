@@ -7,34 +7,21 @@
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
 // plane constants
-import type { TSupportedFilterTypeForUpdate } from "@plane/constants";
 // types
-import type {
-  TGroupedIssues,
-  TIssue,
-  TIssueMap,
-  TPaginationData,
-  ICalendarWeek,
-  TSupportedFilterForUpdate,
-} from "@plane/types";
-import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
+import type { IIssueDisplayFilterOptions, TIssue, TIssueMap, TPaginationData, ICalendarPayload } from "@plane/types";
+import { EIssueLayoutTypes } from "@plane/types";
 // ui
 import { Spinner } from "@plane/ui";
-import { renderFormattedPayloadDate, cn } from "@plane/utils";
+import { renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { cn } from "@plane/utils/common";
 // constants
 import { MONTHS_LIST } from "@plane/constants";
 // helpers
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
 import useSize from "@/hooks/use-window-size";
-// store
-import type { ICycleIssuesFilter } from "@/store/issue/cycle";
-import type { ICalendarStore } from "@/store/issue/issue_calendar_view.store";
-import type { IModuleIssuesFilter } from "@/store/issue/module";
-import type { IProjectIssuesFilter } from "@/store/issue/project";
-import type { IProjectViewIssuesFilter } from "@/store/issue/project-views";
+import type { TCalendarDates } from "@/providers/issue-layout-ui-state";
+import type { getCalendarState } from "./calendar-state";
 // local imports
 import { IssueLayoutHOC } from "../issue-layout-HOC";
 import type { TRenderQuickActions } from "../list/list-view-types";
@@ -42,14 +29,20 @@ import { CalendarHeader } from "./header";
 import { CalendarIssueBlocks } from "./issue-blocks";
 import { CalendarWeekDays } from "./week-days";
 import { CalendarWeekHeader } from "./week-header";
+import type { TCalendarDisplayFilterUpdate } from "@/hooks/use-calendar-display-filter-update";
+import { getGroupedIssueIds } from "../issue-display-ordering";
+import type { IssueListGroupedIds } from "@/queries/issue-lists";
 
 type Props = {
-  issuesFilterStore: IProjectIssuesFilter | IModuleIssuesFilter | ICycleIssuesFilter | IProjectViewIssuesFilter;
+  displayFilters: IIssueDisplayFilterOptions;
   issues: TIssueMap | undefined;
-  groupedIssueIds: TGroupedIssues;
+  groupedIssueIds: IssueListGroupedIds;
   layout: "month" | "week" | undefined;
   showWeekends: boolean;
-  issueCalendarView: ICalendarStore;
+  calendarState: ReturnType<typeof getCalendarState>;
+  activeMonthDate: Date;
+  activeWeekDate: Date;
+  updateCalendarDates: (filters: Partial<TCalendarDates>) => void;
   loadMoreIssues: (dateString: string) => void;
   getPaginationData: (groupId: string | undefined) => TPaginationData | undefined;
   getGroupIssueCount: (groupId: string | undefined) => number | undefined;
@@ -61,25 +54,30 @@ type Props = {
     sourceDate: string | undefined,
     destinationDate: string | undefined
   ) => Promise<void>;
-  addIssuesToView?: (issueIds: string[]) => Promise<any>;
+  addIssuesToView?: (issueIds: string[]) => Promise<unknown>;
   readOnly?: boolean;
-  updateFilters?: (
-    projectId: string,
-    filterType: TSupportedFilterTypeForUpdate,
-    filters: TSupportedFilterForUpdate
-  ) => Promise<void>;
+  updateFilters: TCalendarDisplayFilterUpdate;
   canEditProperties: (projectId: string | undefined) => boolean;
   isEpic?: boolean;
+  readState: {
+    isPending: boolean;
+    isError: boolean;
+    issueCount: number;
+    retry: () => Promise<void>;
+  };
 };
 
-export const CalendarChart = observer(function CalendarChart(props: Props) {
+export function CalendarChart(props: Props) {
   const {
-    issuesFilterStore,
+    displayFilters,
     issues,
     groupedIssueIds,
     layout,
     showWeekends,
-    issueCalendarView,
+    calendarState,
+    activeMonthDate,
+    activeWeekDate,
+    updateCalendarDates,
     loadMoreIssues,
     handleDragAndDrop,
     quickActions,
@@ -91,23 +89,20 @@ export const CalendarChart = observer(function CalendarChart(props: Props) {
     canEditProperties,
     readOnly = false,
     isEpic = false,
+    readState,
   } = props;
   // states
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   //refs
   const scrollableContainerRef = useRef<HTMLDivElement | null>(null);
-  // store hooks
-  const {
-    issues: { viewFlags },
-  } = useIssues(EIssuesStoreType.PROJECT);
-
   const [windowWidth] = useSize();
 
-  const { enableIssueCreation, enableQuickAdd } = viewFlags || {};
+  const enableIssueCreation = true;
+  const enableQuickAdd = true;
 
-  const calendarPayload = issueCalendarView.calendarPayload;
+  const calendarPayload: ICalendarPayload = calendarState.calendarPayload;
 
-  const allWeeksOfActiveMonth = issueCalendarView.allWeeksOfActiveMonth;
+  const allWeeksOfActiveMonth = calendarState.allWeeksOfActiveMonth;
 
   const formattedDatePayload = renderFormattedPayloadDate(selectedDate) ?? undefined;
 
@@ -115,14 +110,14 @@ export const CalendarChart = observer(function CalendarChart(props: Props) {
   useEffect(() => {
     const element = scrollableContainerRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       autoScrollForElements({
         element,
       })
     );
-  }, [scrollableContainerRef?.current]);
+  }, []);
 
   if (!calendarPayload || !formattedDatePayload)
     return (
@@ -131,18 +126,41 @@ export const CalendarChart = observer(function CalendarChart(props: Props) {
       </div>
     );
 
-  const issueIdList = groupedIssueIds ? groupedIssueIds[formattedDatePayload] : [];
+  const weekProps = {
+    selectedDate,
+    setSelectedDate,
+    handleDragAndDrop,
+    displayFilters,
+    issues,
+    groupedIssueIds,
+    loadMoreIssues,
+    getPaginationData,
+    getGroupIssueCount,
+    quickActions,
+    quickAddCallback,
+    addIssuesToView,
+    readOnly,
+    canEditProperties,
+    isEpic,
+    enableQuickIssueCreate: enableQuickAdd,
+    disableIssueCreation: !enableIssueCreation,
+  };
+  const issueIdList = getGroupedIssueIds(groupedIssueIds, formattedDatePayload) ?? [];
 
   return (
     <>
       <div className="flex h-full w-full flex-col overflow-hidden">
         <CalendarHeader
           setSelectedDate={setSelectedDate}
-          issuesFilterStore={issuesFilterStore}
+          displayFilters={displayFilters}
           updateFilters={updateFilters}
+          activeMonthDate={activeMonthDate}
+          activeWeekDate={activeWeekDate}
+          activeWeek={calendarState.activeWeek}
+          updateCalendarDates={updateCalendarDates}
         />
 
-        <IssueLayoutHOC layout={EIssueLayoutTypes.CALENDAR}>
+        <IssueLayoutHOC layout={EIssueLayoutTypes.CALENDAR} readState={readState}>
           <div
             className={cn("flex w-full flex-col overflow-y-auto md:h-full", {
               "vertical-scrollbar scrollbar-lg": windowWidth > 768,
@@ -154,53 +172,12 @@ export const CalendarChart = observer(function CalendarChart(props: Props) {
               {layout === "month" && (
                 <div className="grid h-full w-full grid-cols-1 divide-y-[0.5px] divide-subtle-1">
                   {allWeeksOfActiveMonth &&
-                    Object.values(allWeeksOfActiveMonth).map((week: ICalendarWeek, weekIndex) => (
-                      <CalendarWeekDays
-                        selectedDate={selectedDate}
-                        setSelectedDate={setSelectedDate}
-                        handleDragAndDrop={handleDragAndDrop}
-                        issuesFilterStore={issuesFilterStore}
-                        key={weekIndex}
-                        week={week}
-                        issues={issues}
-                        groupedIssueIds={groupedIssueIds}
-                        loadMoreIssues={loadMoreIssues}
-                        getPaginationData={getPaginationData}
-                        getGroupIssueCount={getGroupIssueCount}
-                        enableQuickIssueCreate={enableQuickAdd}
-                        disableIssueCreation={!enableIssueCreation}
-                        quickActions={quickActions}
-                        quickAddCallback={quickAddCallback}
-                        addIssuesToView={addIssuesToView}
-                        readOnly={readOnly}
-                        canEditProperties={canEditProperties}
-                        isEpic={isEpic}
-                      />
+                    Object.entries(allWeeksOfActiveMonth).map(([weekKey, week]) => (
+                      <CalendarWeekDays {...weekProps} key={weekKey} week={week} />
                     ))}
                 </div>
               )}
-              {layout === "week" && (
-                <CalendarWeekDays
-                  selectedDate={selectedDate}
-                  setSelectedDate={setSelectedDate}
-                  handleDragAndDrop={handleDragAndDrop}
-                  issuesFilterStore={issuesFilterStore}
-                  week={issueCalendarView.allDaysOfActiveWeek}
-                  issues={issues}
-                  groupedIssueIds={groupedIssueIds}
-                  loadMoreIssues={loadMoreIssues}
-                  getPaginationData={getPaginationData}
-                  getGroupIssueCount={getGroupIssueCount}
-                  enableQuickIssueCreate={enableQuickAdd}
-                  disableIssueCreation={!enableIssueCreation}
-                  quickActions={quickActions}
-                  quickAddCallback={quickAddCallback}
-                  addIssuesToView={addIssuesToView}
-                  readOnly={readOnly}
-                  canEditProperties={canEditProperties}
-                  isEpic={isEpic}
-                />
-              )}
+              {layout === "week" && <CalendarWeekDays {...weekProps} week={calendarState.activeWeek} />}
             </div>
 
             {/* mobile view */}
@@ -259,4 +236,4 @@ export const CalendarChart = observer(function CalendarChart(props: Props) {
       </div>
     </>
   );
-});
+}

@@ -8,7 +8,6 @@ import { useParams } from "@tanstack/react-router";
 import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Bell, CircleUser, KeyRound, LockIcon, Settings2 } from "lucide-react";
-import { observer } from "mobx-react";
 
 // plane imports
 import {
@@ -36,9 +35,7 @@ type Props = {
   updateActiveTab: (tab: TProfileSettingsTabs) => void;
 };
 
-export const ProfileSettingsSidebarItemCategories = observer(function ProfileSettingsSidebarItemCategories(
-  props: Props
-) {
+export const ProfileSettingsSidebarItemCategories = function ProfileSettingsSidebarItemCategories(props: Props) {
   const { activeTab, updateActiveTab } = props;
   // params
   const { profileTabId } = useParams({ strict: false });
@@ -75,4 +72,4 @@ export const ProfileSettingsSidebarItemCategories = observer(function ProfileSet
       {profileTabId && <ProfileSettingsSidebarWorkspaceOptions />}
     </div>
   );
-});
+};

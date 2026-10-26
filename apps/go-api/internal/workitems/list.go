@@ -41,7 +41,7 @@ func queryOptions(q Request) issuequery.Options {
 	}
 	return o
 }
-func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) {
+func (r *Repository) listIssueResults(ctx context.Context, q Request, typeIDs map[string]bool) (Result, error) {
 	op := q.Operation
 	archive := strings.HasSuffix(op, "_archived_issues")
 	v2 := strings.HasSuffix(op, "_v2_issues")
@@ -88,7 +88,10 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 				}
 				return Result{}, err
 			}
-			result, err := djangoapi.SerializeIssue(ctx, r.db, row, q.Params["fields"], q.Params["expand"])
+			if err = r.authorizeGuestItemRead(ctx, q, row); err != nil {
+				return Result{}, err
+			}
+			result, err := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
 			return Result{200, result}, err
 		}
 	}
@@ -100,6 +103,7 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 			where = append(where, `issue.parent_id IS NULL`)
 		}
 	}
+	where = append(where, "project.deleted_at IS NULL", "workspace.deleted_at IS NULL")
 	if !workspace {
 		args = append(args, q.ProjectID)
 		where = append(where, "issue.project_id=$3")
@@ -114,9 +118,7 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 	if user {
 		add(q.Params["user_id"], `(issue.created_by_id=$%[1]d OR EXISTS(SELECT 1 FROM issue_assignees a WHERE a.issue_id=issue.id AND a.assignee_id=$%[1]d) OR EXISTS(SELECT 1 FROM issue_subscribers s WHERE s.issue_id=issue.id AND s.subscriber_id=$%[1]d))`)
 	}
-	if !q.API && !user && !archive {
-		where = append(where, `(project.guest_view_all_features OR issue.created_by_id=$1 OR NOT EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=issue.project_id AND pm.member_id=$1 AND pm.is_active AND pm.role=5 AND pm.deleted_at IS NULL))`)
-	}
+	where = append(where, `(project.guest_view_all_features OR issue.created_by_id=$1 OR NOT EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=issue.project_id AND pm.member_id=$1 AND pm.is_active AND pm.role=5 AND pm.deleted_at IS NULL))`)
 	if byIDs {
 		raw := q.Params["issues"]
 		if raw == "" {
@@ -138,11 +140,15 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 	var err error
 	var deferredFilterError error
 	options := queryOptions(q)
-	if workspace && !user {
+	if workspace && !user && !usesTypeGrouping(q) {
 		options.GroupBy, options.SubGroupBy = "", ""
 	}
-	if !q.API && !v2 {
-		where, args, err = appFilters(options, where, args)
+	if !q.API {
+		flatOptions := listFilterOptions(options, v2)
+		if r.propertyFilter != nil {
+			flatOptions.Filters = ""
+		}
+		where, args, err = appFiltersWithTypes(flatOptions, where, args, typeIDs)
 		if err != nil {
 			if !errors.Is(err, issuequery.ErrInvalidComplexRange) {
 				return Result{}, err
@@ -152,12 +158,27 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 			deferredFilterError = err
 		}
 	}
+	where, args, err = r.appendDiscoveryGroupSelectors(q, where, args)
+	if err != nil {
+		return Result{}, err
+	}
 	if !q.API && q.Present["updated_at__gt"] {
 		value, e := parseQueryDateTime(q.Params["updated_at__gt"], q.Timezone)
 		if e != nil {
 			return Result{}, failure(400, "error", "Please provide valid detail")
 		}
 		add(value, `issue.updated_at>$%d`)
+	}
+	if r.propertyFilter != nil && deferredFilterError == nil {
+		options.PropertyFilter, err = r.bindPropertyFilters(ctx, where, args)
+		if err != nil {
+			return Result{}, err
+		}
+		predicate, filterErr := options.PropertyFilter.SQL(&args)
+		if filterErr != nil {
+			return Result{}, filterErr
+		}
+		where = append(where, predicate)
 	}
 	order := "issue.created_at DESC"
 	if v2 {
@@ -183,7 +204,7 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 		return Result{}, failure(400, "error", "Group by and sub group by cannot have same parameters")
 	}
 	if !q.API && !v2 && !byIDs {
-		if err = issuequery.ValidateGrouping(options.GroupBy, options.SubGroupBy); err != nil {
+		if err = r.validateDiscoveryGrouping(options.GroupBy, options.SubGroupBy); err != nil {
 			return Result{}, failure(400, "detail", err.Error())
 		}
 	}
@@ -219,13 +240,18 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 	if err != nil {
 		return Result{}, err
 	}
+	if q.Params["include_properties"] == "true" {
+		if err = r.projectDiscoveryRows(ctx, rows); err != nil {
+			return Result{}, err
+		}
+	}
 	if v2 {
 		return v2Envelope(q, rows, total, limit, page), nil
 	}
 	results := []any{}
 	for _, row := range rows {
 		if q.API {
-			value, e := djangoapi.SerializeIssue(ctx, r.db, row, q.Params["fields"], q.Params["expand"])
+			value, e := r.serializeVisibleIssue(ctx, row, q, q.Params["fields"], q.Params["expand"])
 			if e != nil {
 				return Result{}, e
 			}
@@ -262,6 +288,10 @@ func (r *Repository) listIssues(ctx context.Context, q Request) (Result, error) 
 				value["state__group"] = row["state__group"]
 			}
 		}
+		if r.propertyDiscovery != nil && q.Params["include_properties"] == "true" {
+			value["property_values"], value["properties_evaluated_at"] = row["property_values"], row["properties_evaluated_at"]
+			value["properties_revision"] = row["properties_revision"]
+		}
 		results = append(results, value)
 	}
 	if byIDs {
@@ -296,7 +326,7 @@ func apiIssueOrderSQL(raw string) string {
 	case "assignees__first_name":
 		return `(SELECT MAX(u.first_name) FROM issue_assignees a JOIN users u ON u.id=a.assignee_id WHERE a.issue_id=issue.id)` + direction
 	case "labels__name":
-		return `(SELECT MAX(l.name) FROM issue_labels a JOIN labels l ON l.id=a.label_id WHERE a.issue_id=issue.id)` + direction
+		return `(SELECT MAX(l.name) FROM issue_labels a JOIN labels l ON l.id=a.label_id WHERE ` + issuequery.LiveIssueLabelPredicate("issue", "a") + `)` + direction
 	case "issue_module__module__name":
 		return `(SELECT MAX(m.name) FROM module_issues a JOIN modules m ON m.id=a.module_id WHERE a.issue_id=issue.id)` + direction
 	case "created_at", "updated_at", "sequence_id", "sort_order", "target_date", "start_date", "completed_at", "archived_at":
@@ -311,7 +341,11 @@ func (r *Repository) expandedCompact(ctx context.Context, row map[string]any, q 
 func (r *Repository) listDetailProjection(ctx context.Context, row map[string]any, q Request) (map[string]any, error) {
 	value := projectFields(row, compactFields)
 	for _, rel := range []struct{ field, table, column string }{{"module_ids", "module_issues", "module_id"}, {"label_ids", "issue_labels", "label_id"}, {"assignee_ids", "issue_assignees", "assignee_id"}} {
-		items, err := r.rows(ctx, `SELECT jsonb_build_object('id',`+rel.column+`) FROM `+rel.table+` WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`, row["id"])
+		query := `SELECT jsonb_build_object('id',` + rel.column + `) FROM ` + rel.table + ` WHERE issue_id=$1 AND deleted_at IS NULL ORDER BY created_at DESC`
+		if rel.field == "label_ids" {
+			query = `SELECT jsonb_build_object('id',label.label_id) FROM issue_labels label JOIN issues issue ON issue.id=label.issue_id WHERE issue.id=$1 AND ` + issuequery.LiveIssueLabelPredicate("issue", "label") + ` ORDER BY label.created_at DESC`
+		}
+		items, err := r.rows(ctx, query, row["id"])
 		if err != nil {
 			return nil, err
 		}
@@ -380,6 +414,9 @@ func v2Envelope(q Request, rows []map[string]any, total, limit, page int) Result
 	end := min(total, start+limit)
 	results := []any{}
 	fields := append(append([]string{}, compactFields...), "state__group")
+	if !q.API && q.Params["include_properties"] == "true" {
+		fields = append(fields, "property_values", "properties_evaluated_at", "properties_revision")
+	}
 	if strings.ToLower(q.Params["description"]) == "true" {
 		fields = append(fields, "description_html")
 	}

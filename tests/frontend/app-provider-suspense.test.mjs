@@ -1,22 +1,22 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { createReactDomTestEnvironment, React } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 const providerFixture = new URL("./helpers/app-provider-lazy-components.mjs", import.meta.url).href;
 const aliases = new Set([
   "@/lib/b-progress/AppProgressBar",
-  "@/lib/wrappers/store-wrapper",
+  "@/lib/wrappers/profile-effects",
   "@/lib/wrappers/instance-wrapper",
-  "@/lib/store-context",
+  "@/providers/app-state",
   "next-themes",
-  "swr",
   "@plane/constants",
   "@plane/i18n",
   "@plane/propel/toast",
-  "@plane/utils",
+  "@plane/utils/theme-legacy",
 ]);
 registerHooks({
   resolve(specifier, context, nextResolve) {

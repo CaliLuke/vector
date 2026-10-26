@@ -3,7 +3,8 @@
 // WorkItemCore HTTP client encoders and decoders
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package client
 
@@ -13581,6 +13582,12 @@ func EncodeGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesRequest(encoder 
 			return loomhttp.ErrInvalidType("WorkItemCore", "GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues", "*workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload", v)
 		}
 		values := req.URL.Query()
+		if p.TypeID != nil {
+			values.Add("type_id", *p.TypeID)
+		}
+		if p.ChildTypeID != nil {
+			values.Add("child_type_id", *p.ChildTypeID)
+		}
 		if p.Search != nil {
 			values.Add("search", *p.Search)
 		}

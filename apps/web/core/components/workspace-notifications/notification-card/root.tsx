@@ -4,36 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
-import { ENotificationLoader, ENotificationQueryParamType } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // components
 import { NotificationItem } from "@/components/workspace-notifications/sidebar/notification-card/item";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 
 type TNotificationCardListRoot = {
   workspaceSlug: string;
-  workspaceId: string;
 };
 
-export const NotificationCardListRoot = observer(function NotificationCardListRoot(props: TNotificationCardListRoot) {
-  const { workspaceSlug, workspaceId } = props;
+export const NotificationCardListRoot = function NotificationCardListRoot(props: TNotificationCardListRoot) {
+  const { workspaceSlug } = props;
   // hooks
-  const { loader, paginationInfo, getNotifications, notificationIdsByWorkspaceId } = useWorkspaceNotifications();
-  const notificationIds = notificationIdsByWorkspaceId(workspaceId);
+  const { list, notificationIds } = useNotifications();
   const { t } = useTranslation();
 
-  const getNextNotifications = async () => {
-    try {
-      await getNotifications(workspaceSlug, ENotificationLoader.PAGINATION_LOADER, ENotificationQueryParamType.NEXT);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  if (!workspaceSlug || !workspaceId || !notificationIds) return <></>;
   return (
     <div>
       {notificationIds.map((notificationId: string) => (
@@ -41,15 +28,20 @@ export const NotificationCardListRoot = observer(function NotificationCardListRo
       ))}
 
       {/* fetch next page notifications */}
-      {paginationInfo && paginationInfo?.next_page_results && (
+      {list.hasNextPage && (
         <>
-          {loader === ENotificationLoader.PAGINATION_LOADER ? (
+          {list.isFetchingNextPage ? (
             <div className="flex items-center justify-center py-4 text-13 font-medium">
               <div className="text-accent-secondary">{t("loading")}...</div>
             </div>
           ) : (
             // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
-            <div className="flex items-center justify-center py-4 text-13 font-medium" onClick={getNextNotifications}>
+            <div
+              className="flex items-center justify-center py-4 text-13 font-medium"
+              onClick={() => {
+                if (!list.isFetching) void list.fetchNextPage();
+              }}
+            >
               <div className="cursor-pointer text-accent-secondary transition-all hover:text-accent-primary">
                 {t("load_more")}
               </div>
@@ -59,4 +51,4 @@ export const NotificationCardListRoot = observer(function NotificationCardListRo
       )}
     </div>
   );
-});
+};

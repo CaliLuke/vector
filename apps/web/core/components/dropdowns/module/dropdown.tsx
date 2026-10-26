@@ -6,10 +6,9 @@
 
 import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
 
 // hooks
-import { useModule } from "@/hooks/store/use-module";
+import { useProjectModules } from "@/hooks/use-modules";
 // types
 import type { TDropdownProps } from "../types";
 // local imports
@@ -37,25 +36,19 @@ type TModuleDropdownProps = TDropdownProps & {
       }
   );
 
-export const ModuleDropdown = observer(function ModuleDropdown(props: TModuleDropdownProps) {
+export const ModuleDropdown = function ModuleDropdown(props: TModuleDropdownProps) {
   const { projectId } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getModuleById, getProjectModuleIds, fetchModules } = useModule();
-  // derived values
-  const moduleIds = projectId ? getProjectModuleIds(projectId) : [];
-
-  const onDropdownOpen = () => {
-    if (!moduleIds && projectId && workspaceSlug) fetchModules(workspaceSlug.toString(), projectId);
-  };
+  const catalogue = useProjectModules(workspaceSlug, projectId);
 
   return (
     <ModuleDropdownBase
       {...props}
-      getModuleById={getModuleById}
-      moduleIds={moduleIds ?? []}
-      onDropdownOpen={onDropdownOpen}
+      modules={catalogue.modules}
+      isError={catalogue.isError || catalogue.isAccessDenied}
+      retry={catalogue.retry}
     />
   );
-});
+};

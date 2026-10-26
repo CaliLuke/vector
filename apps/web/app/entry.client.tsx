@@ -9,7 +9,7 @@ import { startTransition, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "next-themes";
 import { routeTree } from "./routeTree.gen";
-import { installLocalLogging } from "@plane/utils";
+import { installLocalLogging } from "@plane/utils/local-logging";
 
 import polyfills from "@/lib/polyfills";
 import { isStaleAssetErrorMessage, recoverFromStaleAsset } from "@/lib/stale-asset-error";

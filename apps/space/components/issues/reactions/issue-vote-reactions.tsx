@@ -4,50 +4,42 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
+import { useQuery, useMutation, useQueryClient, useIsMutating } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
 import { ArrowDown, ArrowUp } from "lucide-react";
-import { observer } from "mobx-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import { useLocation, useNavigate } from "react-router";
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // helpers
-import { queryParamGenerator } from "@/helpers/query-param-generator";
 // hooks
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
-import { useUser } from "@/hooks/store/use-user";
+
+import type { IPublicIssue } from "@plane/types";
+import { voteMutationOptions, issueActionKey } from "@/queries/issue-actions";
 import useIsInIframe from "@/hooks/use-is-in-iframe";
 
 type TIssueVotes = {
   anchor: string;
-  issueIdFromProps?: string;
+  issue: IPublicIssue;
   size?: "md" | "sm";
 };
 
-export const IssueVotes = observer(function IssueVotes(props: TIssueVotes) {
-  const { anchor, issueIdFromProps, size = "md" } = props;
+export const IssueVotes = function IssueVotes(props: TIssueVotes) {
+  const { anchor, issue, size = "md" } = props;
   // states
-  const [isSubmitting, setIsSubmitting] = useState(false);
   // router
-  const router = useRouter();
-  const pathName = usePathname();
-  const searchParams = useSearchParams();
-  // query params
-  const peekId = searchParams.get("peekId") || undefined;
-  const board = searchParams.get("board") || undefined;
-  const state = searchParams.get("state") || undefined;
-  const priority = searchParams.get("priority") || undefined;
-  const labels = searchParams.get("labels") || undefined;
-  // store hooks
-  const issueDetailsStore = useIssueDetails();
-  const { data: user } = useUser();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const signInPath = `/?${new URLSearchParams({ next_path: location.pathname + location.search })}`;
+  const client = useQueryClient();
+  const { data: user } = useQuery(currentUserOptions);
 
   const isInIframe = useIsInIframe();
 
-  const issueId = issueIdFromProps ?? issueDetailsStore.peekId;
+  const issueId = issue.id;
 
-  const votes = issueDetailsStore.details[issueId ?? ""]?.vote_items ?? [];
+  const votes = issue.vote_items ?? [];
 
   const allUpVotes = votes.filter((vote) => vote.vote === 1);
   const allDownVotes = votes.filter((vote) => vote.vote === -1);
@@ -55,35 +47,17 @@ export const IssueVotes = observer(function IssueVotes(props: TIssueVotes) {
   const isUpVotedByUser = allUpVotes.some((vote) => vote.actor_details?.id === user?.id);
   const isDownVotedByUser = allDownVotes.some((vote) => vote.actor_details?.id === user?.id);
 
-  const handleVote = async (voteValue: 1 | -1) => {
-    if (!issueId) return;
-
-    setIsSubmitting(true);
-
-    try {
-      const actionPerformed = votes.find((vote) => vote.actor_details?.id === user?.id && vote.vote === voteValue);
-
-      if (actionPerformed) await issueDetailsStore.removeIssueVote(anchor, issueId);
-      else {
-        await issueDetailsStore.addIssueVote(anchor, issueId, {
-          vote: voteValue,
-        });
-      }
-    } catch {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Vote could not be saved. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const mutation = useMutation(voteMutationOptions(client, anchor, issueId));
+  const isSubmitting = useIsMutating({ mutationKey: [...issueActionKey(anchor, issueId), "vote"] }) > 0;
+  const handleVote = (value: 1 | -1) => {
+    if (isSubmitting) return;
+    const existing = votes.some((vote) => vote.actor_details?.id === user?.id && vote.vote === value);
+    mutation.mutate(existing ? null : value);
   };
 
   const VOTES_LIMIT = 1000;
 
   // derived values
-  const { queryParam } = queryParamGenerator({ peekId, board, state, priority, labels });
   const votingDimensions = size === "sm" ? "px-1 h-6 min-w-9" : "px-2 h-7";
 
   return (
@@ -111,8 +85,8 @@ export const IssueVotes = observer(function IssueVotes(props: TIssueVotes) {
           disabled={isSubmitting}
           onClick={() => {
             if (isInIframe) return;
-            if (user) void handleVote(1);
-            else router.push(`/?next_path=${pathName}?${queryParam}`);
+            if (user) handleVote(1);
+            else void navigate(signInPath);
           }}
           className={cn(
             "flex items-center justify-center gap-x-1 overflow-hidden rounded-sm border hover:bg-layer-transparent-hover focus:outline-none",
@@ -152,8 +126,8 @@ export const IssueVotes = observer(function IssueVotes(props: TIssueVotes) {
           disabled={isSubmitting}
           onClick={() => {
             if (isInIframe) return;
-            if (user) void handleVote(-1);
-            else router.push(`/?next_path=${pathName}?${queryParam}`);
+            if (user) handleVote(-1);
+            else void navigate(signInPath);
           }}
           className={cn(
             "flex items-center justify-center gap-x-1 overflow-hidden rounded-sm border hover:bg-layer-transparent-hover focus:outline-none",
@@ -171,4 +145,4 @@ export const IssueVotes = observer(function IssueVotes(props: TIssueVotes) {
       </Tooltip>
     </div>
   );
-});
+};

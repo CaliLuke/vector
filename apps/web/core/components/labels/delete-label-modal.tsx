@@ -4,9 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useEffect, useRef } from "react";
 
 // types
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -14,61 +12,57 @@ import type { IIssueLabel } from "@plane/types";
 // ui
 import { AlertModalCore } from "@plane/ui";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
+import { useProjectLabelMutations } from "@/hooks/use-labels";
 
 type Props = {
-  isOpen: boolean;
+  workspaceSlug: string;
+  projectId: string;
   onClose: () => void;
-  data: IIssueLabel | null;
+  data: IIssueLabel;
 };
 
-export const DeleteLabelModal = observer(function DeleteLabelModal(props: Props) {
-  const { isOpen, onClose, data } = props;
-  // router
-  const { workspaceSlug, projectId } = useParams({ strict: false });
-  // store hooks
-  const { deleteLabel } = useLabel();
-  // states
-  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
-
-  const handleClose = () => {
-    onClose();
-    setIsDeleteLoading(false);
-  };
+export function DeleteLabelModal(props: Props) {
+  const { workspaceSlug, projectId, onClose, data } = props;
+  const { deleteLabel, mutation } = useProjectLabelMutations(workspaceSlug, projectId);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const handleDeletion = async () => {
-    if (!workspaceSlug || !projectId || !data) return;
-
-    setIsDeleteLoading(true);
-
-    await deleteLabel(workspaceSlug.toString(), projectId.toString(), data.id)
-      .then(() => {
-        handleClose();
-      })
-      .catch((err) => {
-        setIsDeleteLoading(false);
-        const error = err?.error || "Label could not be deleted. Please try again.";
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: error,
-        });
+    try {
+      await deleteLabel(data.id);
+      if (mounted.current) onClose();
+    } catch (err) {
+      if (!mounted.current) return;
+      const error =
+        err && typeof err === "object" && "error" in err && typeof err.error === "string"
+          ? err.error
+          : "Label could not be deleted. Please try again.";
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: error,
       });
+    }
   };
 
   return (
     <AlertModalCore
-      handleClose={handleClose}
+      handleClose={onClose}
       handleSubmit={handleDeletion}
-      isSubmitting={isDeleteLoading}
-      isOpen={isOpen}
+      isSubmitting={mutation.isPending}
+      isOpen
       title="Delete Label"
       content={
         <>
-          Are you sure you want to delete <span className="font-medium text-primary">{data?.name}</span>? This will
+          Are you sure you want to delete <span className="font-medium text-primary">{data.name}</span>? This will
           remove the label from all the work item and from any views where the label is being filtered upon.
         </>
       }
     />
   );
-});
+}

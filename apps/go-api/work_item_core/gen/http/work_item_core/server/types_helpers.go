@@ -3,7 +3,8 @@
 // WorkItemCore HTTP server types helper types
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package server
 
@@ -901,10 +902,12 @@ func NewPutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssueI
 // NewGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload builds a
 // WorkItemCore service GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues
 // endpoint payload.
-func NewGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(slug string, projectID string, search *string) *workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload {
+func NewGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(slug string, projectID string, typeID *string, childTypeID *string, search *string) *workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload {
 	v := &workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.TypeID = typeID
+	v.ChildTypeID = childTypeID
 	v.Search = search
 
 	return v

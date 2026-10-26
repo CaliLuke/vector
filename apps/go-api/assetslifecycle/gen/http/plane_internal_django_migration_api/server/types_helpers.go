@@ -1204,6 +1204,18 @@ func NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttach
 	return v
 }
 
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload builds a
+// PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint payload.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload(slug string, entityID string, planeSessionCookieCredential *string) *planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload {
+	v := &planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload{}
+	v.Slug = slug
+	v.EntityID = entityID
+	v.PlaneSessionCookieCredential = planeSessionCookieCredential
+
+	return v
+}
+
 // NewPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPayload
 // builds a PlaneInternalDjangoMigrationAPI service
 // PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk endpoint

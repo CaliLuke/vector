@@ -20,7 +20,7 @@ import type {
 export const canDisableAuthMethod = (
   configKey: TInstanceConfigurationKeys,
   authModes: TInstanceAuthenticationModes[],
-  formattedConfig: IFormattedInstanceConfiguration | undefined
+  formattedConfig: Partial<IFormattedInstanceConfiguration> | undefined
 ): boolean => {
   // Count currently enabled methods
   const enabledCount = authModes.reduce((count, method) => {

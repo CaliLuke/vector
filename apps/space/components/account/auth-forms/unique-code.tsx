@@ -4,111 +4,60 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState } from "react";
-import { CircleCheck, XCircle } from "lucide-react";
+import { AuthEmailFields } from "./auth-email-fields";
+import React, { useRef } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { CircleCheck } from "lucide-react";
 // plane imports
 import { API_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
-import { AuthService } from "@plane/services";
 import { Input, Spinner } from "@plane/ui";
+import { handleNativeAuthSubmit, submitNativeAuthForm } from "./native-auth-submit";
 // hooks
-import useTimer from "@/hooks/use-timer";
+import { useResendCodeForm } from "@plane/hooks";
 // types
 import { EAuthModes } from "@/types/auth";
-
-// services
-const authService = new AuthService();
 
 type TAuthUniqueCodeForm = {
   mode: EAuthModes;
   email: string;
   nextPath: string | undefined;
   handleEmailClear: () => void;
-  generateEmailUniqueCode: (email: string) => Promise<{ code: string } | undefined>;
-};
-
-type TUniqueCodeFormValues = {
-  email: string;
-  code: string;
-};
-
-const defaultValues: TUniqueCodeFormValues = {
-  email: "",
-  code: "",
+  generateEmailUniqueCode: (email: string) => Promise<void>;
 };
 
 export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
   const { mode, email, nextPath, handleEmailClear, generateEmailUniqueCode } = props;
-  // derived values
-  const defaultResetTimerValue = 5;
   // states
-  const [uniqueCodeFormData, setUniqueCodeFormData] = useState<TUniqueCodeFormValues>({ ...defaultValues, email });
-  const [isRequestingNewCode, setIsRequestingNewCode] = useState(false);
-  const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // timer
-  const { timer: resendTimerCode, setTimer: setResendCodeTimer } = useTimer(0);
+  const formRef = useRef<HTMLFormElement>(null);
+  const form = useForm({
+    defaultValues: { code: "" },
+    validators: { onSubmit: ({ value }) => (value.code.trim() ? undefined : "Enter your unique code.") },
+    onSubmit: () => submitNativeAuthForm(formRef.current),
+  });
+  const code = useStore(form.store, (state) => state.values.code);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const { form: resendForm, cooldown: resendTimerCode } = useResendCodeForm({
+    send: () => generateEmailUniqueCode(email),
+    onSent: () => form.setFieldValue("code", ""),
+    onError: () => setToast({ type: TOAST_TYPE.ERROR, title: "Could not resend code", message: "Please try again." }),
+  });
+  const isRequestingNewCode = useStore(resendForm.store, (state) => state.isSubmitting);
 
-  const handleFormChange = (key: keyof TUniqueCodeFormValues, value: string) =>
-    setUniqueCodeFormData((prev) => ({ ...prev, [key]: value }));
-
-  const generateNewCode = async (email: string) => {
-    try {
-      setIsRequestingNewCode(true);
-      const uniqueCode = await generateEmailUniqueCode(email);
-      setResendCodeTimer(defaultResetTimerValue);
-      handleFormChange("code", uniqueCode?.code || "");
-      setIsRequestingNewCode(false);
-    } catch {
-      setResendCodeTimer(0);
-      console.error("Error while requesting new code");
-      setIsRequestingNewCode(false);
-    }
-  };
-
-  useEffect(() => {
-    if (csrfToken === undefined)
-      authService.requestCSRFToken().then((data) => data?.csrf_token && setCsrfToken(data.csrf_token));
-  }, [csrfToken]);
-
-  const isRequestNewCodeDisabled = isRequestingNewCode || resendTimerCode > 0;
-  const isButtonDisabled = isRequestingNewCode || !uniqueCodeFormData.code || isSubmitting;
+  const isRequestNewCodeDisabled = isSubmitting || isRequestingNewCode || resendTimerCode > 0;
+  const isButtonDisabled = isRequestingNewCode || !code || isSubmitting;
 
   return (
     <form
+      ref={formRef}
       className="mt-5 space-y-4"
       method="POST"
       action={`${API_BASE_URL}/auth/spaces/${mode === EAuthModes.SIGN_IN ? "magic-sign-in" : "magic-sign-up"}/`}
-      onSubmit={() => setIsSubmitting(true)}
-      onError={() => setIsSubmitting(false)}
+      onSubmit={(event) => handleNativeAuthSubmit(event, () => form.handleSubmit())}
     >
-      <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-      <input type="hidden" value={uniqueCodeFormData.email} name="email" />
-      <input type="hidden" value={nextPath} name="next_path" />
-      <div className="space-y-1">
-        <label className="text-13 font-medium text-tertiary" htmlFor="email">
-          Email
-        </label>
-        <div className={`relative flex items-center rounded-md border border-subtle bg-surface-1`}>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={uniqueCodeFormData.email}
-            onChange={(e) => handleFormChange("email", e.target.value)}
-            placeholder="name@company.com"
-            className={`h-10 w-full border-0 disable-autofill-style placeholder:text-placeholder`}
-            autoComplete="off"
-            disabled
-          />
-          {uniqueCodeFormData.email.length > 0 && (
-            <XCircle
-              className="absolute right-3 h-5 w-5 stroke-placeholder hover:cursor-pointer"
-              onClick={handleEmailClear}
-            />
-          )}
-        </div>
-      </div>
+      <input type="hidden" name="csrfmiddlewaretoken" />
+      <AuthEmailFields email={email} nextPath={nextPath} onClear={handleEmailClear} />
 
       <div className="space-y-1">
         <label className="text-13 font-medium text-tertiary" htmlFor="code">
@@ -116,8 +65,10 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
         </label>
         <Input
           name="code"
-          value={uniqueCodeFormData.code}
-          onChange={(e) => handleFormChange("code", e.target.value)}
+          id="code"
+          readOnly={isSubmitting}
+          value={code}
+          onChange={(e) => form.setFieldValue("code", e.target.value)}
           placeholder="123456"
           className="h-10 w-full border border-subtle !bg-surface-1 pr-12 disable-autofill-style placeholder:text-placeholder"
           autoComplete="off"
@@ -130,7 +81,11 @@ export function AuthUniqueCodeForm(props: TAuthUniqueCodeForm) {
           </p>
           <button
             type="button"
-            onClick={() => generateNewCode(uniqueCodeFormData.email)}
+            onClick={() =>
+              void resendForm.handleSubmit().catch(() => {
+                // The failed resend is already reported by the onError callback.
+              })
+            }
             className={`${
               isRequestNewCodeDisabled
                 ? "text-placeholder"

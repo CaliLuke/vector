@@ -39,9 +39,11 @@ const (
 type assetsTransportRepo struct {
 	*assetdomain.PostgresRepository
 	denyWorkspaceMember bool
+	denyAssetParent     bool
 	legacyAssets        []map[string]any
 	permissionChecks    *int
 	duplicateCreates    *int
+	draftAssociation    func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []uuid.UUID) error
 }
 
 type assetsTransportSession struct {
@@ -59,6 +61,10 @@ func (session *assetsTransportSession) InspectReadServiceSessionWithoutTimezone(
 	return session.InspectReadServiceSession(ctx, request)
 }
 
+func (repo assetsTransportRepo) BulkAssociateDraftAssets(ctx context.Context, workspace, actor, draft uuid.UUID, ids []uuid.UUID) error {
+	return repo.draftAssociation(ctx, workspace, actor, draft, ids)
+}
+
 func (assetsTransportRepo) CreateUserUpload(context.Context, uuid.UUID, uuid.UUID, string, []byte, int64, string) error {
 	return nil
 }
@@ -74,13 +80,13 @@ func (assetsTransportRepo) RelatedWorkspaceIDBySlug(context.Context, string) (uu
 func (repo assetsTransportRepo) IssueAttachmentsBySlug(context.Context, string, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error) {
 	return repo.legacyAssets, nil
 }
-func (repo assetsTransportRepo) WorkspaceAssetsByKey(context.Context, string) ([]map[string]any, error) {
+func (repo assetsTransportRepo) WorkspaceAssetsByKey(context.Context, string, uuid.UUID, uuid.UUID) ([]map[string]any, error) {
 	return repo.legacyAssets, nil
 }
 func (repo assetsTransportRepo) UserAssetsByKey(context.Context, uuid.UUID, string) ([]map[string]any, error) {
 	return repo.legacyAssets, nil
 }
-func (assetsTransportRepo) UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, bool) error {
+func (assetsTransportRepo) UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, *uuid.UUID, uuid.UUID, bool) error {
 	return nil
 }
 func (repo assetsTransportRepo) WorkspaceMemberBySlug(context.Context, uuid.UUID, string) (bool, error) {
@@ -101,25 +107,25 @@ func (assetsTransportRepo) AssetByID(context.Context, uuid.UUID) (assetdomain.Fi
 func (assetsTransportRepo) AssetByProjectAndID(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
 	return assetdomain.FileAsset{ID: assetsTransportAssetID, Asset: "workspace/avatar.png", EntityType: "USER_AVATAR", Attributes: map[string]any{"type": "image/png"}, IsUploaded: true}, nil
 }
-func (assetsTransportRepo) DeleteProjectAsset(context.Context, uuid.UUID, uuid.UUID) error {
+func (assetsTransportRepo) DeleteProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error {
 	return nil
 }
-func (assetsTransportRepo) UpdateProjectAsset(context.Context, uuid.UUID, uuid.UUID, []byte) error {
+func (assetsTransportRepo) UpdateProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, []byte, bool) error {
 	return nil
 }
 func (assetsTransportRepo) UserAssetByID(context.Context, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
 	return assetdomain.FileAsset{}, assetdomain.ErrNotFound
 }
-func (assetsTransportRepo) UpdateUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool) error {
+func (assetsTransportRepo) UpdateUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool, bool) error {
 	return nil
 }
-func (assetsTransportRepo) UpdateLegacyUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte) error {
+func (assetsTransportRepo) UpdateLegacyUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool) error {
 	return nil
 }
 func (assetsTransportRepo) DeleteUserAsset(context.Context, uuid.UUID, uuid.UUID) error {
 	return nil
 }
-func (assetsTransportRepo) RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID) error {
+func (assetsTransportRepo) RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error {
 	return nil
 }
 func (assetsTransportRepo) AssetByWorkspaceAndID(context.Context, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
@@ -128,19 +134,19 @@ func (assetsTransportRepo) AssetByWorkspaceAndID(context.Context, uuid.UUID, uui
 func (assetsTransportRepo) DeleteWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error {
 	return nil
 }
-func (assetsTransportRepo) UpdateWorkspaceAssetUploaded(context.Context, uuid.UUID, uuid.UUID, bool) error {
+func (assetsTransportRepo) UpdateWorkspaceAssetUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, bool, bool) error {
 	return nil
 }
-func (assetsTransportRepo) UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte) (bool, error) {
+func (assetsTransportRepo) UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte, bool) (bool, error) {
 	return true, nil
 }
 func (assetsTransportRepo) AssetByWorkspaceAndIDIncludingDeleted(context.Context, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
 	return assetdomain.FileAsset{}, assetdomain.ErrNotFound
 }
-func (assetsTransportRepo) WorkspaceAssetExists(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
+func (assetsTransportRepo) WorkspaceAssetExists(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error) {
 	return false, nil
 }
-func (assetsTransportRepo) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
+func (assetsTransportRepo) AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (assetdomain.FileAsset, error) {
 	return assetdomain.FileAsset{}, assetdomain.ErrNotFound
 }
 func (assetsTransportRepo) ProjectBelongsToWorkspace(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
@@ -151,6 +157,9 @@ func (assetsTransportRepo) WorkspaceMemberByID(context.Context, uuid.UUID, uuid.
 }
 func (assetsTransportRepo) WorkspaceRole(context.Context, uuid.UUID, uuid.UUID) (int, error) {
 	return 20, nil
+}
+func (repo assetsTransportRepo) AssetParentVisible(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error) {
+	return !repo.denyAssetParent, nil
 }
 func (assetsTransportRepo) CreateWorkspaceEntityUpload(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, string, []byte, int64, string, string, bool) error {
 	return nil
@@ -171,7 +180,7 @@ func (repo assetsTransportRepo) CreateDuplicate(context.Context, assetdomain.Fil
 	return nil
 }
 
-func (assetsTransportRepo) MarkDuplicateUploaded(context.Context, uuid.UUID) error {
+func (assetsTransportRepo) MarkDuplicateUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error {
 	return nil
 }
 func (assetsTransportRepo) PublicProjectBoard(context.Context, string, bool) (uuid.UUID, uuid.UUID, string, bool, error) {
@@ -333,7 +342,10 @@ func TestAssetsLifecycleGeneratedMountsOwnEveryContractOperation(t *testing.T) {
 	for _, mount := range server.Mounts {
 		mounts[mount.Verb+" "+mount.Pattern] = struct{}{}
 	}
-	if len(mounts) != manifest.OperationCount {
+	if _, ok := mounts["POST /api/assets/v2/workspaces/{slug}/{entity_id}/bulk/"]; !ok {
+		t.Fatal("Vector draft association route is not mounted")
+	}
+	if len(mounts) != manifest.OperationCount+1 {
 		t.Fatalf("generated server mounts %d distinct method/path operations, manifest has %d", len(mounts), manifest.OperationCount)
 	}
 	for id, operation := range manifest.Operations {
@@ -372,6 +384,32 @@ func TestAssetsLifecycleLegacyAssetGetResponsesEncodePopulatedDataUnion(t *testi
 				t.Fatalf("response = %#v; want status=true and one serialized asset", body)
 			}
 		})
+	}
+}
+
+func TestAssetsLifecycleLegacyWorkspaceGetOmitsInvisibleParentAssets(t *testing.T) {
+	request := httptest.NewRequest(http.MethodGet, "/api/workspaces/file-assets/"+assetsTransportWorkspaceID+"/logo.png/", nil)
+	request.AddCookie(&http.Cookie{Name: "session-id", Value: "valid"})
+	response := httptest.NewRecorder()
+	assetsTransportHandlerWith(t, assetsTransportRepo{
+		legacyAssets:    assetsLifecycleFixtureAssetRows(t),
+		denyAssetParent: true,
+	}, &assetsTransportThrottleCache{}).ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s; want a legacy not-found response", response.Code, response.Body.String())
+	}
+	var body struct {
+		Status bool `json:"status"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response body %q: %v", response.Body.String(), err)
+	}
+	if body.Status {
+		t.Fatalf("invisible parent asset was returned: %s", response.Body.String())
+	}
+	if strings.Contains(response.Body.String(), "assets-fixture.png") || strings.Contains(response.Body.String(), assetsTransportAssetID) {
+		t.Fatalf("response exposed the filtered asset: %s", response.Body.String())
 	}
 }
 

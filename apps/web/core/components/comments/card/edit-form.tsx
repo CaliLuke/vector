@@ -4,121 +4,110 @@
  * See the LICENSE file for details.
  */
 
+import type { CommentActions } from "@/components/comments/types";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import type { RefObject } from "react";
 import { useEffect, useRef } from "react";
-import { observer } from "mobx-react";
-import { useForm } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
+import { EFileAssetType } from "@plane/types";
 import type { EditorRefApi } from "@plane/editor";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 // plane imports
-import type { TCommentsOperations, TIssueComment } from "@plane/types";
-import { cn, isCommentEmpty } from "@plane/utils";
+import type { TIssueComment } from "@plane/types";
+import { cn } from "@plane/utils/common";
+import { isCommentEmpty } from "@plane/utils/string";
+import { FormErrors } from "@plane/ui";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 
 type Props = {
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   comment: TIssueComment;
-  isEditing: boolean;
   projectId?: string;
-  readOnlyEditorRef: EditorRefApi | null;
+  readOnlyEditorRef: RefObject<EditorRefApi | null>;
   setIsEditing: (isEditing: boolean) => void;
   workspaceId: string;
   workspaceSlug: string;
 };
 
-export const CommentCardEditForm = observer(function CommentCardEditForm(props: Props) {
-  const {
-    activityOperations,
-    comment,
-    isEditing,
-    projectId,
-    readOnlyEditorRef,
-    setIsEditing,
-    workspaceId,
-    workspaceSlug,
-  } = props;
+export function CommentCardEditForm(props: Props) {
+  const { activityOperations, comment, projectId, readOnlyEditorRef, setIsEditing, workspaceId, workspaceSlug } = props;
   // refs
   const editorRef = useRef<EditorRefApi>(null);
-  // form info
-  const {
-    formState: { isSubmitting },
-    handleSubmit,
-    setFocus,
-    watch,
-    setValue,
-  } = useForm<Partial<TIssueComment>>({
-    defaultValues: { comment_html: comment?.comment_html },
+  const current = useCommittedScope(JSON.stringify([workspaceSlug, projectId, comment.id]));
+  const form = useForm({
+    defaultValues: { comment_html: comment.comment_html ?? "" },
+    onSubmit: async ({ value }) => {
+      if (isCommentEmpty(value.comment_html) || !editorRef.current?.isEditorReadyToDiscard())
+        throw new Error("Enter a comment and wait for the editor before saving.");
+      await activityOperations.updateComment(comment.id, value);
+      if (!current() || !activityOperations.isCurrent()) return;
+      readOnlyEditorRef.current?.setEditorValue(value.comment_html);
+      setIsEditing(false);
+    },
   });
-  const commentHTML = watch("comment_html");
-
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const commentHTML = useStore(form.store, (state) => state.values.comment_html);
   const isEmpty = isCommentEmpty(commentHTML);
-  const isEditorReadyToDiscard = editorRef.current?.isEditorReadyToDiscard();
-  const isSubmitButtonDisabled = isSubmitting || !isEditorReadyToDiscard;
-  const isDisabled = isSubmitting || isEmpty || isSubmitButtonDisabled;
-
-  const onEnter = async (formData: Partial<TIssueComment>) => {
-    if (isSubmitting || !comment) return;
-
-    setIsEditing(false);
-
-    await activityOperations.updateComment(comment.id, formData);
-
-    editorRef.current?.setEditorValue(formData?.comment_html ?? "<p></p>");
-    readOnlyEditorRef?.setEditorValue(formData?.comment_html ?? "<p></p>");
-  };
-
   useEffect(() => {
-    if (isEditing) {
-      setFocus("comment_html");
-    }
-  }, [isEditing, setFocus]);
+    editorRef.current?.focus("end");
+  }, []);
 
   return (
-    <form className="flex flex-col gap-2">
-      <div
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey && !isEmpty) handleSubmit(onEnter)(e);
-        }}
-      >
-        <LiteTextEditor
-          editable
-          workspaceId={workspaceId}
-          workspaceSlug={workspaceSlug}
-          ref={editorRef}
-          id={comment.id}
-          initialValue={commentHTML ?? ""}
-          value={null}
-          onChange={(_comment_json, comment_html) => setValue("comment_html", comment_html)}
-          onEnterKeyPress={(e) => {
-            if (!isEmpty && !isSubmitting) {
-              handleSubmit(onEnter)(e);
-            }
+    <form
+      className="flex flex-col gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch(() => {});
+      }}
+    >
+      <div inert={isSubmitting}>
+        <form.Field
+          name="comment_html"
+          validators={{
+            onSubmit: ({ value }) => {
+              if (isCommentEmpty(value)) return "Enter a comment before saving.";
+              return editorRef.current?.isEditorReadyToDiscard() ? undefined : "Comment editor is still loading.";
+            },
           }}
-          showSubmitButton={false}
-          uploadFile={async (blockId, file) => {
-            const { asset_id } = await activityOperations.uploadCommentAsset(blockId, file, comment.id);
-            return asset_id;
-          }}
-          duplicateFile={async (assetId: string) => {
-            const { asset_id } = await activityOperations.duplicateCommentAsset(assetId, comment.id);
-            return asset_id;
-          }}
-          projectId={projectId}
-          parentClassName="p-2 bg-surface-1"
-          displayConfig={{
-            fontSize: "small-font",
-          }}
-        />
+        >
+          {(field) => (
+            <>
+              <LiteTextEditor
+                editable
+                workspaceId={workspaceId}
+                workspaceSlug={workspaceSlug}
+                ref={editorRef}
+                id={comment.id}
+                initialValue={field.state.value ?? ""}
+                value={null}
+                onChange={(_comment_json, comment_html) => field.handleChange(comment_html)}
+                onEnterKeyPress={(e) => {
+                  e?.preventDefault();
+                  form.setErrorMap({ onSubmit: undefined });
+                  void form.handleSubmit().catch(() => {});
+                }}
+                showSubmitButton={false}
+                fileAsset={{ entity_identifier: comment.id, entity_type: EFileAssetType.COMMENT_DESCRIPTION }}
+                projectId={projectId}
+                parentClassName="p-2 bg-surface-1"
+                displayConfig={{ fontSize: "small-font" }}
+              />
+              <FormErrors errors={field.state.meta.errors} />
+            </>
+          )}
+        </form.Field>
       </div>
       <div className="flex gap-2 self-end">
         {!isEmpty && (
           <button
-            type="button"
-            onClick={handleSubmit(onEnter)}
-            disabled={isDisabled}
+            type="submit"
+            aria-label="Save comment"
+            disabled={isSubmitting}
             className={cn(
               "group grid size-7 place-items-center rounded-lg border border-success-subtle bg-success-subtle shadow-raised-100 duration-300",
-              isDisabled ? "" : "hover:bg-success-subtle-1"
+              isSubmitting ? "" : "hover:bg-success-subtle-1"
             )}
           >
             <CheckIcon className="size-4 text-success-primary" />
@@ -127,12 +116,13 @@ export const CommentCardEditForm = observer(function CommentCardEditForm(props: 
         <button
           type="button"
           disabled={isSubmitting}
+          aria-label="Cancel editing"
           className={cn(
             "group grid size-7 place-items-center rounded-lg border border-danger-subtle bg-danger-subtle shadow-raised-100 duration-300",
             isSubmitting ? "" : "hover:bg-danger-subtle-hover"
           )}
           onClick={() => {
-            setIsEditing(false);
+            if (current()) setIsEditing(false);
             editorRef.current?.setEditorValue(comment.comment_html ?? "<p></p>");
           }}
         >
@@ -141,4 +131,4 @@ export const CommentCardEditForm = observer(function CommentCardEditForm(props: 
       </div>
     </form>
   );
-});
+}

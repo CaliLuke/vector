@@ -5,16 +5,19 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 import type { TCycleEstimateType } from "@plane/types";
 import { EEstimateSystem } from "@plane/types";
 import { CustomSelect } from "@plane/ui";
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useCycle } from "@/hooks/store/use-cycle";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { cycleHasPoints } from "@/queries/cycle-module-selectors";
 // local imports
 import { cycleEstimateOptions } from "../analytics-sidebar/issue-progress";
 
 type TProps = {
+  isArchived?: boolean;
   value: TCycleEstimateType;
   onChange: (value: TCycleEstimateType) => Promise<void>;
   showDefault?: boolean;
@@ -22,12 +25,13 @@ type TProps = {
   cycleId: string;
 };
 
-export const EstimateTypeDropdown = observer(function EstimateTypeDropdown(props: TProps) {
-  const { value, onChange, projectId, cycleId, showDefault = false } = props;
-  const { getIsPointsDataAvailable } = useCycle();
-  const { areEstimateEnabledByProjectId, currentProjectEstimateType } = useProjectEstimates();
-  const isCurrentProjectEstimateEnabled = projectId && areEstimateEnabledByProjectId(projectId) ? true : false;
-  return (getIsPointsDataAvailable(cycleId) || isCurrentProjectEstimateEnabled) &&
+export const EstimateTypeDropdown = function EstimateTypeDropdown(props: TProps) {
+  const { value, onChange, projectId, cycleId, showDefault = false, isArchived } = props;
+  const { workspaceSlug } = useParams({ strict: false });
+  const { cycle } = useCycleDetails(workspaceSlug, projectId, cycleId, isArchived);
+  const { isEnabled: isCurrentProjectEstimateEnabled, activeEstimate } = useProjectEstimates(workspaceSlug, projectId);
+  const currentProjectEstimateType = activeEstimate?.type;
+  return (cycleHasPoints(cycle ?? undefined) || isCurrentProjectEstimateEnabled) &&
     currentProjectEstimateType !== EEstimateSystem.CATEGORIES ? (
     <div className="relative flex items-center gap-2">
       <CustomSelect
@@ -47,4 +51,4 @@ export const EstimateTypeDropdown = observer(function EstimateTypeDropdown(props
   ) : showDefault ? (
     <span className="capitalize">{cycleEstimateOptions.find((v) => v.value === value)?.label ?? value}</span>
   ) : null;
-});
+};

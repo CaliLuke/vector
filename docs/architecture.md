@@ -26,8 +26,284 @@ Static response fixtures remain for contract regression tests. No Python code or
 The main web application uses React, Vite, and TanStack Router. `apps/web/routes.ts` defines the
 virtual route tree; route modules own their components, redirects, metadata, and route parameters.
 TanStack generates `apps/web/app/routeTree.gen.ts` and splits route components during builds.
-Components use TanStack navigation APIs directly. Admin and public project pages retain React Router.
-MobX owns client state, with SWR and Axios handling existing data access.
+Components use TanStack navigation APIs directly. Admin and public project pages use React Router APIs directly;
+there are no Next.js routing adapters.
+Shared searchable pickers use Headless UI's native Combobox open state. `ComboSearchInput` owns search-key
+behavior: Escape clears a nonempty search before closing the picker, and an empty-search Escape restores
+trigger focus. Calendar pickers use the existing Base UI Popover with controlled visibility. Creation-form
+Escape shortcuts are scoped to their form element and ignore already-handled events, so nested pickers do
+not dismiss the surrounding draft.
+
+TanStack Query owns request scheduling, cache identity, retries, and query invalidation in all three browser
+applications. Each mounted application provider creates its own QueryClient. Sign-out clears private query data
+and remounts private React state. Separate provider instances never share private query clients.
+Query keys are structured arrays that include request scope and parameters. Queries use `skipToken` until their
+required inputs are available. Shared keys live in `packages/constants/src/query-keys.ts`. Axios is the transport;
+new query functions pass the cancellation signal to it.
+
+Admin no longer uses MobX. Instance information, configurations, authenticated users, and paginated workspaces
+live in Query. React owns sidebar collapse and dialog visibility; next-themes owns the theme. OAuth providers
+share one form and settings page, with provider-specific fields and callback instructions supplied as data.
+TanStack Form owns admin field values, validation, submission state, and saved-value comparisons. Shared field
+components use its native form contexts. Configuration mutations preserve failed drafts and reset defaults only
+after successful saves. SMTP security is one form choice mapped to mutually exclusive API flags; test emails use
+saved configurations. Admin has no React Hook Form dependency.
+
+Web instance information, notifications, home widgets, quick links, and stickies also use Query as their only
+server-data owner. Instance consumers share a cancellable query through the existing instance service;
+there is no instance store or store hook. The instance gate renders loading, maintenance, or setup from
+the query state, and cached configuration updates reach authentication, onboarding, uploads, and integrations.
+Notification filters, selected notifications, widget settings visibility, and sticky searches live in scoped React
+providers. Mutations update or invalidate their workspace's cache; sticky autosaves serialize per sticky.
+
+Current-user identity, profile, account settings and email notification preferences live in native Query caches.
+Profile and settings keys include the account ID, and canonical responses are checked against that account.
+Account and profile writes serialize within their respective mutation scopes. Sign-out confirms server session
+revocation before clearing private caches. A session generation remounts private
+React state, including unsaved Form drafts; late mutations cannot restore a previous session's data. Authentication
+waits for profile, settings and workspace bootstrap before choosing the destination and exposes failed loads for retry.
+Page permissions and member ordering receive the current-user ID explicitly; calendar views receive the native
+profile's week-start preference.
+
+Command-palette dialogs, Power K navigation, and command registration live in React contexts beneath the
+session boundary. Shortcut registration belongs to its mounted provider; cleanup cannot remove a newer
+registration. Signing out clears open dialogs and command context with the other private UI state.
+
+Workspace membership and project roles live in native Query caches scoped to the account and workspace. Project-role
+keys also include the canonical workspace membership revision. Pending, inactive, and failed permission reads deny
+access; project metadata and member rosters do not grant current-user permissions. Page policies receive these roles
+explicitly. Joined-project selectors combine native membership with native project catalogues for ordering and display.
+Join and leave actions use native mutations. Accepted writes reconcile captured queries only while their account,
+session, and query identities still match; joining waits for canonical roles instead of inferring access. Project
+metadata comes from separate native catalogue and detail queries and never grants permission.
+
+New scoped reads and writes require a successfully verified current-user query. An accepted
+work-item receipt can still reconcile after a transient verification failure when its account,
+session, permission query instances, membership revision and roles remain unchanged. Explicit
+authorization failures reject reconciliation even when Query retains older permission data.
+Canonical receipt application precedes ancillary refreshes; those refreshes retain their own
+read guards and errors, so their failure does not turn an accepted save into a retryable write.
+
+Member settings, selection controls, issue grouping, and migrated summary displays use native workspace roster queries. Their keys include the account,
+workspace, membership revision, and guest/full response projection, so a restricted response cannot inherit
+private fields from an earlier full roster. Project roster queries additionally capture the project role and
+require current canonical access. Both reads forward cancellation and reject results after the session,
+permission revision, or query instance changes. Hooks expose roster records only after successful reads;
+disabling a project roster hides its derived members without discarding its cached response. Generic member
+summaries derive from these authorized roster projections; no legacy member store remains.
+Workspace invitations use a separate scoped query. Roster and invitation mutations capture their original session and
+query identities, reconcile only still-current data, and preserve accepted writes when a follow-up refresh fails.
+Project roster writes serialize per project; workspace member writes serialize per member. Role changes enforce
+canonical workspace and project permissions, including actor rank and guest role limits. Member-table filters,
+searches, and unsent invitation dialogs live in React state scoped to the workspace or project. Failed prerequisite
+permission reads expose retry controls instead of appearing as empty member lists.
+
+Workspace catalogue records also live only in Query, keyed by the current account. Screens select workspace
+metadata by route slug or record ID from the shared list; a refresh replaces the full catalogue so removed
+memberships do not linger. Create, update and delete mutations preserve canonical server records and guard
+cache writes against replaced queries and account sessions. Project, label, view and favorite selectors receive
+workspace identity explicitly.
+
+Workspace navigation preferences use account- and workspace-scoped Query data. Native mutation scopes serialize
+writes within each session; pending mutation variables provide the shared optimistic display. Each action sends
+only changed fields, so a failed reorder cannot leak into a later pin update. Sidebar acknowledgements merge
+accepted fields before refreshing; workspace-property responses replace the canonical record. Session and query
+identity checks prevent late saves from restoring cleared data. Immediate failures show scoped feedback, while
+the project-count Form keeps its draft for retry. App-rail display preferences remain browser-local.
+
+Issue notification subscriptions use user- and work-item-scoped Query data and serialized native mutations.
+Changing the work item discards pending feedback, and late saves cannot overwrite or cancel a replacement query.
+
+Personal API-token records live in Query, with cancellable list requests and native create/delete mutations.
+Mutations update the current session's list only; responses from cleared sessions cannot restore private data.
+The create dialog owns the one-time secret, and list cache entries omit it. Closing the dialog prevents a late
+response from displaying or downloading its secret. Failed token submissions retain their form drafts.
+
+Workspace webhook records also live in Query, with cancellable list/detail reads and serialized
+update, secret-regeneration, and delete mutations per webhook. Cache writes apply only to captured
+queries that still belong to the current session. One-time secrets stay in the active dialog/page,
+outside query and mutation results; changing scope or closing the view invalidates late feedback
+and secret downloads. Failed webhook edits retain their native Form drafts. Workspace membership
+and permission checks use the shared native permission queries.
+
+Web editor uploads and asset duplication use native mutations. Each editor owns its upload progress and
+abort controllers; changing workspace, project, or entity cancels that editor's pending operations. Upload
+cancellation propagates through signing, object storage, and finalization. Mutations do not automatically
+retry asset creation. Editors declare their asset scope and receive completed asset IDs for form attachment
+finalization. Image actions read the current file handlers from editor storage, and concurrent image uploads
+keep the editor busy until all active upload controls finish. There is no root editor asset store.
+
+Editor link creation and editing use native TanStack Form drafts, validation and submission errors.
+Drafts reset when the editor or edited link changes. Link edits preserve unrelated marks and selection;
+stale link targets are rejected without changing the document. Failed commands retain the editable draft.
+
+Issue titles use native Form drafts and serialized Query autosaves in detail, peek and intake views.
+Title and description writes share an issue-scoped mutation queue. Each editor reports its own save
+status; the header and navigation guard remain unsaved until both editors succeed. Failed drafts can
+be retried, and leaving an editor flushes an unsent revision without duplicating a pending retry.
+Native issue queries own the server records. The text-save boundary propagates primary write
+failures and keeps ancillary activity refresh failures separate.
+
+Avatar, workspace-logo and cover selection use TanStack Form with native upload/deletion mutations.
+Avatar and logo dialogs share one form component and receive their owner callbacks explicitly; the workspace
+modal has no router or store dependency. Successful asset operations are retained while a failed owner update
+is retried, so retrying does not create or delete the same asset again. User uploads share the cancellable
+signing/storage/finalization transport. Preview components release their object URLs on replacement or unmount.
+Avatar changes save independently of unrelated profile drafts.
+Asset finalization is idempotent for avatars, covers and workspace logos: confirming the current asset does not
+retire it. Deletion clears an owner reference only when it still points to the deleted asset. Database regressions
+cover replacement, repeated confirmation, deleting unused/current uploads and rejecting another owner.
+
+The existing-work-item selection dialog uses a cancellable project search query and native Form submission.
+Selections persist across searches and failed submissions, and selecting all affects only the visible results.
+Changing the workspace/project or relation scope resets the dialog and cancels the old search; an old submission
+cannot close the replacement dialog. The unused project multi-selection dialog has been removed.
+
+Public pages no longer use MobX. Publishing settings, authenticated users, lookups, grouped issues, paginated
+state lists, issue details, votes, reactions, and comments live in scoped Query caches. The URL owns layout and
+filters; React owns peek mode and editor drafts. Failed mutations retain published data and editable drafts.
+Comment attachment finalization can retry independently without posting the comment again.
+
+Generic member identity now comes from workspace-scoped roster queries. Page authors,
+activity actors, attachment/link attribution, editor mentions, and assignee-name ordering
+use those query projections; there is no generic member loader or member root store.
+Historical attribution retains inactive members returned by the authorized roster response.
+Editor plugins read current committed identity callbacks without recreating the editor or
+its undo history. Page exports wait for roster readiness and preserve failed Form submissions
+for retry.
+
+Project tab preferences use account-, workspace- and project-scoped Query data. The
+active project wrapper owns loading; sidebar rows observe cached preferences without
+starting per-row requests. Native mutation scopes serialize writes, and pending
+variables provide the visible overlay. Hide/show actions compose against the latest
+accepted preferences so failed changes cannot leak into later saves. Late responses
+cannot restore replaced queries or cleared sessions. Project issue layouts also read these
+native preferences and pass explicit filter snapshots to list requests. Mutations reconcile
+the active project list only while its route, session, permission queries, preference query,
+and request generation remain current. Off-view writes update their entities without altering
+the active list. Failed preference reads invalidate captured list inputs even when older data
+remains cached. Layouts reload from changed Query preferences; completing a save does not
+imperatively refresh a list from the previous route. Project column collapse uses scoped
+React state and the existing account/project local-storage format. Profile and archive filters
+also use account-scoped React preferences, with stable request inputs. Cycle, module and
+workspace-view preferences have their own explicit React scopes.
+
+Favorites use an account- and workspace-scoped Query collection, including folder children.
+Canonical membership and project-role revisions gate reads and writes; pending native mutations
+provide the optimistic display without a second record store. Accepted entity deletions invalidate
+favorites without turning a failed follow-up read into a failed deletion. The API validates entity,
+project and folder ownership. Folder moves serialize on the actor's workspace membership before
+checking ancestry, preventing concurrent reciprocal moves from creating cycles.
+
+Workspace-view metadata uses a native Query collection scoped to the account, session,
+workspace and canonical membership revision. Screens select exact view IDs from the
+authorized list; create, update and delete mutations reconcile only captured current
+queries. Retry recovers failed identity or membership reads before loading views.
+Dialog completion checks its route, session and lifetime before navigating, closing or
+updating local filters. The old global-view store, hook and workspace issue-filter
+store are removed. Saved custom-view filters come from the native metadata query;
+scoped React state owns working filter and display drafts. Static-view display
+preferences persist under explicit account, workspace and view identities. Legacy
+unowned local preferences are ignored without rewriting other domains' records.
+Saving clears only the submitted, accepted draft; metadata-only edits preserve
+unrelated working filters. Canonical editor resets do not mark pristine filters dirty.
+
+Project-view metadata also uses native Query collections and detail records. Its keys
+include the session, membership revision, and effective and actual project roles.
+Accepted writes reconcile only the captured query instances; a replacement detail query
+cannot receive an older write's response. Scoped React drafts own view filters and display
+preferences. Calendar, group collapse, and Gantt consumers read those same preferences.
+Pagination carries the immutable view input and preserves the accepted full-read generation.
+Favorite rows request project-view details only for view entities.
+
+Workspace issue reads receive explicit immutable filter snapshots. Read guards track
+account, route, permissions and current inputs. Each accepted full read owns a pagination
+generation; its groups have independent native infinite queries. Mutations capture exact
+query instances before transport, cancel older reads, and apply accepted canonical records
+before ancillary invalidation. The generic rich-filter editor owns its immutable expression
+and unsaved draft in React.
+
+Sidebar preferences and transient open/peek state live in React contexts. Persisted choices retain
+their browser-local storage keys across session remounts; transient values reset. Hydration preserves
+viewport defaults already chosen by mounted consumers, so a saved desktop preference cannot reopen
+the mobile sidebar. There is no sidebar ThemeStore.
+
+Analytics reads and project counts live in native Query caches. Keys and response guards include
+the account, session, workspace membership and project-role snapshot. Failed refreshes hide
+cached totals and exports. React owns separate dashboard and modal filter drafts; scope changes
+and closing a modal discard its draft. The modal's close control remains available while access
+loads or fails. Project metadata and chart state names come from their native catalogues.
+
+Project and workspace estimate catalogues live in native Query caches. Keys include the account,
+session, membership revision, and both effective and actual project roles. The estimate models
+and their legacy hooks are removed. Settings use native Form drafts and serialized mutations;
+the native project detail query owns its selected-estimate pointer.
+Deletion clears only a matching pointer and records durable cleanup in the same transaction.
+Issue ordering and parent statistics receive explicit immutable point projections. Point-order
+changes reorder loaded rows without reloading the issue list; numeric-value changes refresh
+visible parent statistics through guarded reads. Failed catalogue reads expose retry controls
+instead of presenting stale order or totals. Accepted mutations retain their captured access
+lineage, while new and ancillary reads require verified access.
+
+Cycle and module numeric totals, distributions, and burndown reads resolve only live estimate
+points and live numeric systems in the issue's project and workspace. Soft deletion takes effect
+in these reads immediately, before durable cleanup removes dependent rows. A still-live inactive
+system continues to contribute points assigned to existing issues.
+
+Project and workspace label catalogues live in native Query caches. Permission revisions and
+session identity scope each catalogue; serialized mutations apply accepted canonical responses
+only to their captured caches. Label names, tree order and group columns derive from those
+catalogues. A changed label-ID set requires a guarded full
+issue-list read before grouped rows display; pagination and mutation projections do not count
+as that full-read receipt. Current issue labels require both a live relationship and a live
+label in the same project and workspace across lists, details, activity expansion, analytics
+and current-row exports. Draft labels use the same rule with nullable project ownership;
+a projectless draft can retain only projectless labels in its workspace. Label writers serialize on the project row
+and validate live, same-project ancestry before assigning a parent. Deletion marks the root and its descendants
+and records one durable cleanup effect per changed label atomically. A tree with a foreign child reference,
+including an already-deleted child, is rejected before any deletion or cleanup is admitted. Accepted deletes
+remove the known branch from the native Query cache and refetch the canonical catalogue to reconcile concurrent moves.
+
+Project, intake, and workspace states use native Query reads. The state store and its
+global hook are removed. Keys include account/session identity, membership revision,
+and project-role scope; failed access verification hides cached rows and exposes Retry.
+State-name ordering and parent statistics consume explicit current projections instead
+of a second state map. Serialized writes invalidate only the query instances captured
+before submission, so an older completion cannot refresh replacement queries.
+
+Project catalogues and details live in scoped Query caches, including partial navigation records and full
+settings records. Native mutations reconcile captured cache instances and refresh canonical counts after
+intake changes. React owns project-list filters; workspace changes clear search and temporary display flags
+while preserving each workspace's saved sort order. Project classes and the old project hooks are removed.
+
+Project pages use native list, detail and version queries. React contexts own the mounted editor reference,
+assets and sync status. Optimistic writes preserve newer collaboration changes and roll back only their
+captured value. Collaborative title persistence belongs to the collaboration service; editor events
+update the visible Query records without issuing duplicate REST writes. Page mutations expose one operation
+per hook; no page store or generic mutation facade remains.
+
+Intake uses scoped infinite-list and detail queries, with React filter/sort preferences. Accepted status changes
+retain their canonical detail response while list counts refresh. An acceptance editor remains open until its
+following work-item edit succeeds; failed ancillary list reads do not discard that editor. The old inbox stores
+and hook are removed.
+
+Cycles and modules use native catalogues, details, links and analytics queries. Grouped issue layouts use
+complete authorized active and archived catalogues. React owns catalogue and issue-list preferences. Parent
+statistics use explicit captured Query owners and guarded rollback receipts. Successful removal writes put an
+explicit null receipt in the captured detail query; the surviving route owner handles navigation after a row or
+modal unmounts. Missing or denied reads do not imply accepted removal. Issue creation keeps its accepted ID
+while failed cycle/module assignment steps retry, including inline creation.
+
+Work-item details, identifier lookups, sub-items and every list family use native TanStack Query.
+There is no RootStore, mutable issue entity map, or store-loader query facade. Query owns
+records, pagination, cancellation and invalidation; React providers own transient layout,
+peek and preference state. Native infinite-query observers retain each group's cursor and
+loading state, and their React subscriptions end with the mounted list. Fresh queries reuse
+the application freshness policy instead of refetching to initialize removed stores.
+Primary write failures propagate to Form or mutation callers for retry. Issue PATCH
+accepts the API's HTTP 204 response and invalidates its captured list and detail queries;
+an empty success body is not a failed save. Responses containing a canonical row reconcile
+that row before ancillary refreshes. A failed refresh does not repeat an accepted write.
 
 The browser applications retain substantial Plane-derived code.
 Existing API paths, database names, internal `@plane/*` imports, and configuration keys remain compatible.
@@ -44,5 +320,71 @@ HTTP routing, credential extraction, or transport validation paths.
 Request transactions record durable work. Workers execute that work with retries and persisted status.
 Do not replace durable effects with detached goroutines.
 
+Draft publication records the item, relationships, asset ownership, consumed-draft
+identity and effect outbox in one transaction. A lifecycle-owned worker admits
+committed effects to the existing native workflows with stable IDs. Admission
+status does not imply execution success; native workflow status owns completion.
+Startup requires `--go-background-tasks` so effects cannot be stranded in the
+retired legacy-only mode. Both deployment Compose files set this flag.
+
 The route inventory records 639 retired Python application operations. Supplemental authentication redirects also run in Go.
 Historical fixtures document compatibility and intentional corrections. They are not a second production backend.
+
+All browser apps now use TanStack Form for the migrated editing and authentication
+flows, and React Hook Form has been removed from dependencies. Native fields own
+validation and draft values. Submission state locks edits and dismissal; failed
+requests retain drafts. Creation workflows keep completed durable steps so retries
+can finish attachment finalization or setup without creating the entity twice.
+Estimate values use a native array field with stable row identities. Invitation
+selection shares one form between onboarding and the invitations page. Shared UI
+renders form errors and native form/modal frames without emulating a form library.
+
+Project work-item searches include the account, session, workspace membership, project role and workspace role catalogue in their Query keys. Reads validate the same permission-query instances before and after transport; stale or cancelled results cannot repopulate replaced caches. Failed access verification hides cached choices and disables submission while retaining the selection for recovery. Parent and duplicate selection share a native Form and a scoped, cancellable Query.
+They retain rejected selections and close after the save completes. Cycle transfer
+uses a Query mutation; retries after a successful transfer refresh the affected
+cycle data without repeating the transfer.
+
+The view filter editor owns its recursive expression separately from the native
+Form metadata fields. With TanStack Form 1.33.5 and TypeScript 7.0.2, storing the
+bounded `rich_filters` value in `defaultValues` compiles, but registering it through
+`form.Field` fails with TS2589. The public `setFieldValue` API uses the same recursive
+path types. Upstream tracking is [issue #1830](https://github.com/TanStack/form/issues/1830).
+Move the expression
+into Form when its recursive value API compiles with this type, keeping the
+regression that preserves edited filters across failed saves.
+
+Calendar navigation dates are React state scoped to the identity session. Calendar
+weeks derive from the current profile preference. Each mounted Kanban board owns
+its drag state; per-card ownership releases a drag on teardown without clearing
+another card's active drag.
+
+Application attachment collection reads apply the shared item visibility predicate
+in the SQL statement that returns metadata. An earlier project-membership check
+cannot authorize a read after item visibility or membership changes. Raw attachment
+snapshots used inside write workflows remain separate from authorized collection
+reads.
+
+Sub-item filter and display preferences are React state scoped to the identity
+session, workspace, project, parent item, and service family. Filtering and grouping
+derive from current item rows with pure helpers; preference state contains no
+server records. Reset restores the default display properties for that scope.
+
+Rich-filter editing no longer uses a global instance registry. Mounted React editors own
+expressions, conversion errors, visibility and accepted save baselines. Pure shared
+operations preserve nested logical groups, committed empty values and wire representations.
+The route provider shares filter visibility/status and a stable clear action between the
+header and list. Shared-state no longer depends on MobX.
+
+Workspace drafts use scoped native list/detail queries and serialized mutations. Reviewed
+edits capture account, session, membership and exact query owners before submitting;
+late receipts cannot alter replacement queries. Accepted rows reconcile idempotently;
+canonical list and membership refreshes own counts and cannot reject an accepted write.
+Accepted deletion and publication keep a null detail receipt in the captured query, preserving
+its identity while list and membership counts refresh. Reads started during a write are
+cancelled before its accepted receipt is applied. Draft publication keeps the existing reviewed-edit identity and attachment retry flow.
+
+Private attachment reads and mutations enforce issue, comment-parent, and page visibility
+in their SQL statements. Page assets retain their exact project-link context. Attachment
+activity and metadata effects commit with the primary database write. Irreversible legacy
+attachment removal records the captured storage key for durable deletion; restorable asset
+soft-deletes retain their storage objects.

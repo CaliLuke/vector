@@ -5,58 +5,52 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { Popover } from "@plane/propel/popover";
 import { Tooltip } from "@plane/propel/tooltip";
 import { ControlLink } from "@plane/ui";
-import { findTotalDaysInRange, generateWorkItemLink } from "@plane/utils";
+import { findTotalDaysInRange } from "@plane/utils/datetime";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import { SIDEBAR_WIDTH } from "@/components/gantt-chart/constants";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useIssueFilterPreferences } from "@/hooks/use-issue-filter-preferences";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+import { useRouteProjectStates } from "@/hooks/use-project-states";
 import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-redirection";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import type { TIssue } from "@plane/types";
 // local imports
-import { WorkItemPreviewCard } from "../../preview-card";
+import { IssuePreviewPopoverPanel } from "../preview-popover-panel";
 import { getBlockViewDetails } from "../utils";
 import type { GanttStoreType } from "./base-gantt-root";
 
 type Props = {
-  issueId: string;
+  issue: TIssue;
   isEpic?: boolean;
 };
 
-export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
-  const { issueId, isEpic } = props;
+export function IssueGanttBlock(props: Props) {
+  const { issue, isEpic } = props;
   // router
   const { workspaceSlug: routerWorkspaceSlug } = useParams({ strict: false });
   const workspaceSlug = routerWorkspaceSlug?.toString();
-  // store hooks
-  const { getProjectStates } = useProjectState();
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
   // hooks
   const { isMobile } = usePlatformOS();
   const { handleRedirection } = useIssuePeekOverviewRedirection(isEpic);
 
   // derived values
-  const issueDetails = getIssueById(issueId);
-  const stateDetails =
-    issueDetails && getProjectStates(issueDetails?.project_id)?.find((state) => state?.id == issueDetails?.state_id);
+  const { states } = useRouteProjectStates(issue.project_id);
+  const stateDetails = states?.find((state) => state.id === issue.state_id);
 
-  const { blockStyle } = getBlockViewDetails(issueDetails, stateDetails?.color ?? "");
+  const { blockStyle } = getBlockViewDetails(issue, stateDetails?.color ?? "");
 
-  const handleIssuePeekOverview = () => handleRedirection(workspaceSlug, issueDetails, isMobile);
+  const handleIssuePeekOverview = () => handleRedirection(workspaceSlug, issue, isMobile);
 
-  const duration = findTotalDaysInRange(issueDetails?.start_date, issueDetails?.target_date) || 0;
+  const duration = findTotalDaysInRange(issue.start_date, issue.target_date) || 0;
 
   return (
     <Popover>
@@ -67,7 +61,7 @@ export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
         render={
           // oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions
           <div
-            id={`issue-${issueId}`}
+            id={`issue-${issue.id}`}
             className="space-between relative flex h-full w-full cursor-pointer items-center rounded-sm"
             style={blockStyle}
             onClick={handleIssuePeekOverview}
@@ -77,87 +71,73 @@ export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
               className="sticky w-auto flex-1 truncate overflow-hidden px-2.5 py-1 text-13 text-primary"
               style={{ left: `${SIDEBAR_WIDTH}px` }}
             >
-              {issueDetails?.name}
+              {issue.name}
             </div>
           </div>
         }
       />
-      <Popover.Panel side="bottom" align="start">
-        <>
-          {issueDetails && issueDetails?.project_id && (
-            <WorkItemPreviewCard
-              projectId={issueDetails.project_id}
-              stateDetails={{
-                id: issueDetails.state_id ?? undefined,
-              }}
-              workItem={issueDetails}
-            />
-          )}
-        </>
-      </Popover.Panel>
+      <IssuePreviewPopoverPanel issue={issue} />
     </Popover>
   );
-});
+}
 
 // rendering issues on gantt sidebar
-export const IssueGanttSidebarBlock = observer(function IssueGanttSidebarBlock(props: Props) {
-  const { issueId, isEpic = false } = props;
+export function IssueGanttSidebarBlock(props: Props) {
+  const { issue, isEpic = false } = props;
   // router
   const { workspaceSlug: routerWorkspaceSlug } = useParams({ strict: false });
   const workspaceSlug = routerWorkspaceSlug?.toString();
-  // store hooks
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
   const { isMobile } = usePlatformOS();
-  const storeType = useIssueStoreType() as GanttStoreType;
-  const { issuesFilter } = useIssues(storeType);
-  const { getProjectIdentifierById } = useProject();
+  const storeType = useIssueListType() as GanttStoreType;
+  const { issueFilters } = useIssueFilterPreferences(storeType);
+  const displayProperties = issueFilters?.displayProperties;
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   // handlers
   const { handleRedirection } = useIssuePeekOverviewRedirection(isEpic);
 
   // derived values
-  const issueDetails = getIssueById(issueId);
-  const projectIdentifier = getProjectIdentifierById(issueDetails?.project_id);
+  const projectIdentifier = projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "";
 
   const handleIssuePeekOverview = (e: any) => {
     e.stopPropagation(true);
     e.preventDefault();
-    handleRedirection(workspaceSlug, issueDetails, isMobile);
+    handleRedirection(workspaceSlug, issue, isMobile);
   };
 
   const workItemLink = generateWorkItemLink({
     workspaceSlug,
-    projectId: issueDetails?.project_id,
-    issueId,
+    projectId: issue.project_id,
+    issueId: issue.id,
     projectIdentifier,
-    sequenceId: issueDetails?.sequence_id,
+    sequenceId: issue.sequence_id,
     isEpic,
   });
 
   return (
     <ControlLink
-      id={`issue-${issueId}`}
+      id={`issue-${issue.id}`}
       href={workItemLink}
       onClick={handleIssuePeekOverview}
       className="line-clamp-1 w-full cursor-pointer text-13 text-primary"
-      disabled={!!issueDetails?.tempId}
+      disabled={!!issue.tempId}
     >
       <div className="relative flex h-full w-full cursor-pointer items-center gap-2">
-        {issueDetails?.project_id && (
+        {issue.project_id && (
           <IssueIdentifier
-            issueId={issueDetails.id}
-            projectId={issueDetails.project_id}
+            workspaceSlug={workspaceSlug}
+            issueId={issue.id}
+            projectId={issue.project_id}
             size="xs"
             variant="tertiary"
-            displayProperties={issuesFilter?.issueFilters?.displayProperties}
+            displayProperties={displayProperties}
           />
         )}
-        <Tooltip tooltipContent={issueDetails?.name} isMobile={isMobile}>
-          <span className="flex-grow truncate text-13 font-medium">{issueDetails?.name}</span>
+        <Tooltip tooltipContent={issue.name} isMobile={isMobile}>
+          <span className="flex-grow truncate text-13 font-medium">{issue.name}</span>
         </Tooltip>
       </div>
     </ControlLink>
   );
-});
+}

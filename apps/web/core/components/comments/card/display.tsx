@@ -4,18 +4,19 @@
  * See the LICENSE file for details.
  */
 
+import type { CommentActions } from "@/components/comments/types";
 import { useLocation } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
-import { observer } from "mobx-react";
+import { useState } from "react";
 
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import { useHashScroll } from "@plane/hooks";
 import { GlobeIcon, LockIcon } from "@plane/propel/icons";
 import { EIssueCommentAccessSpecifier } from "@plane/types";
-import type { TCommentsOperations, TIssueComment } from "@plane/types";
-import { calculateTimeAgo, cn, getFileURL, renderFormattedDate, renderFormattedTime } from "@plane/utils";
+import type { IWorkspaceMember, TIssueComment } from "@plane/types";
+import { calculateTimeAgo, renderFormattedDate, renderFormattedTime } from "@plane/utils/datetime";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { LiteTextEditor } from "@/components/editor/lite-text";
 // local imports
@@ -23,10 +24,11 @@ import { CommentReactions } from "../comment-reaction";
 import { CommentCardEditForm } from "./edit-form";
 import { EmojiReactionButton, EmojiReactionPicker } from "@plane/propel/emoji-reaction";
 import { Avatar, Tooltip } from "@plane/ui";
-import { useMember } from "@/hooks/store/use-member";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useCommentHighlight } from "./use-comment-highlight";
 
 export type TCommentCardDisplayProps = {
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   comment: TIssueComment;
   disabled: boolean;
   entityId: string;
@@ -41,73 +43,33 @@ export type TCommentCardDisplayProps = {
   renderQuickActions?: () => ReactNode;
 };
 
-export const CommentCardDisplay = observer(function CommentCardDisplay(props: TCommentCardDisplayProps) {
-  const {
-    activityOperations,
-    comment,
-    disabled,
-    projectId,
-    readOnlyEditorRef,
-    showAccessSpecifier,
-    workspaceId,
-    workspaceSlug,
-    isEditing = false,
-    setIsEditing,
-    renderFooter,
-    renderQuickActions,
-  } = props;
-  // states
-  const [highlightClassName, setHighlightClassName] = useState("");
-  // state
+type CommentHeaderProps = Pick<
+  TCommentCardDisplayProps,
+  "activityOperations" | "comment" | "disabled" | "showAccessSpecifier" | "renderQuickActions"
+> & {
+  displayName: string | undefined;
+  avatarUrl: string | undefined;
+};
+
+function commentAuthor(comment: TIssueComment, member: IWorkspaceMember["member"] | undefined) {
+  const actor = comment.actor_detail;
+  return {
+    displayName: actor?.is_bot ? `${actor.first_name}Bot` : (member?.display_name ?? actor?.display_name),
+    avatarUrl: member?.avatar_url ?? actor?.avatar_url,
+  };
+}
+
+const CommentCardHeader = function CommentCardHeader(props: CommentHeaderProps) {
+  const { activityOperations, comment, disabled, showAccessSpecifier, renderQuickActions, displayName, avatarUrl } =
+    props;
   const [isPickerOpen, setIsPickerOpen] = useState(false);
-  // store hooks
-  const { getUserDetails } = useMember();
-  // derived values
-  const userDetails = getUserDetails(comment?.actor);
-  const displayName = comment?.actor_detail?.is_bot
-    ? comment?.actor_detail?.first_name + `Bot`
-    : (userDetails?.display_name ?? comment?.actor_detail?.display_name);
-  const avatarUrl = userDetails?.avatar_url ?? comment?.actor_detail?.avatar_url;
-
-  const userReactions = activityOperations.userReactions(comment.id);
-
-  // navigation
-  const pathname = useLocation({ select: (location) => location.pathname });
-  // derived values
-  const commentBlockId = `comment-${comment?.id}`;
-  // Check if there are any reactions to determine if we should render the footer
-  const reactionIds = activityOperations.reactionIds(comment.id);
-  const hasReactions = reactionIds && Object.keys(reactionIds).some((key) => reactionIds[key]?.length > 0);
-
-  // scroll to comment
-  const { isHashMatch } = useHashScroll({
-    elementId: commentBlockId,
-    pathname,
-  });
-
-  useEffect(() => {
-    if (!isHashMatch) return;
-    setHighlightClassName("border-accent-strong");
-    const timeout = setTimeout(() => {
-      setHighlightClassName("");
-    }, 8000);
-
-    return () => clearTimeout(timeout);
-  }, [isHashMatch]);
-
-  const handleEmojiSelect = useCallback(
-    (emoji: string) => {
-      if (!userReactions) return;
-      // emoji is already in decimal string format from EmojiReactionPicker
-      void activityOperations.react(comment.id, emoji, userReactions);
-    },
-    [activityOperations, comment.id, userReactions]
-  );
-
-  const shouldRenderReactions = hasReactions && !disabled;
+  const handleEmojiSelect = (emoji: string) => {
+    if (!activityOperations.isVerified()) return;
+    void activityOperations.react(comment.id, emoji).catch(() => {});
+  };
 
   return (
-    <div id={commentBlockId} className="relative flex flex-col gap-2">
+    <>
       {showAccessSpecifier && (
         <div className="absolute top-2.5 right-2.5 z-[1] text-tertiary">
           {comment.access === EIssueCommentAccessSpecifier.INTERNAL ? (
@@ -118,7 +80,7 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
         </div>
       )}
       <div className="relative mb-3 flex w-full items-center gap-2">
-        <Avatar size="sm" name={displayName} src={getFileURL(avatarUrl)} className="shrink-0" />
+        <Avatar size="sm" name={displayName} src={getFileURL(avatarUrl ?? "")} className="shrink-0" />
         <div className="flex flex-1 flex-wrap items-center gap-1">
           <div className="text-caption-sm-medium">{displayName}</div>
           <div className="text-caption-sm-regular text-tertiary">
@@ -148,43 +110,131 @@ export const CommentCardDisplay = observer(function CommentCardDisplay(props: TC
           </div>
         )}
       </div>
-      {isEditing && setIsEditing ? (
-        <CommentCardEditForm
-          activityOperations={activityOperations}
-          comment={comment}
-          isEditing={isEditing}
-          readOnlyEditorRef={readOnlyEditorRef.current}
-          setIsEditing={setIsEditing}
-          projectId={projectId}
-          workspaceId={workspaceId}
-          workspaceSlug={workspaceSlug}
-        />
-      ) : (
-        <>
-          <LiteTextEditor
-            editable={false}
-            ref={readOnlyEditorRef}
-            id={comment.id}
-            initialValue={comment.comment_html ?? ""}
-            workspaceId={workspaceId}
-            workspaceSlug={workspaceSlug}
-            containerClassName={cn("!py-1 transition-[border-color] duration-500", highlightClassName)}
-            projectId={projectId?.toString()}
-            displayConfig={{
-              fontSize: "small-font",
-            }}
-            parentClassName="border-none"
-          />
-          {shouldRenderReactions &&
-            (renderFooter ? (
-              renderFooter(
-                <CommentReactions comment={comment} disabled={disabled} activityOperations={activityOperations} />
-              )
-            ) : (
-              <CommentReactions comment={comment} disabled={disabled} activityOperations={activityOperations} />
-            ))}
-        </>
-      )}
+    </>
+  );
+};
+
+type CommentBodyProps = Pick<
+  TCommentCardDisplayProps,
+  | "activityOperations"
+  | "comment"
+  | "disabled"
+  | "projectId"
+  | "readOnlyEditorRef"
+  | "workspaceId"
+  | "workspaceSlug"
+  | "isEditing"
+  | "setIsEditing"
+  | "renderFooter"
+> & { highlightClassName: string };
+
+const CommentCardBody = function CommentCardBody(props: CommentBodyProps) {
+  const {
+    activityOperations,
+    comment,
+    disabled,
+    projectId,
+    readOnlyEditorRef,
+    workspaceId,
+    workspaceSlug,
+    isEditing,
+    setIsEditing,
+    renderFooter,
+    highlightClassName,
+  } = props;
+  const hasReactions = comment.comment_reactions.length > 0;
+  const shouldRenderReactions = hasReactions && !disabled;
+
+  if (isEditing && setIsEditing) {
+    return (
+      <CommentCardEditForm
+        activityOperations={activityOperations}
+        comment={comment}
+        readOnlyEditorRef={readOnlyEditorRef}
+        setIsEditing={setIsEditing}
+        projectId={projectId}
+        workspaceId={workspaceId}
+        workspaceSlug={workspaceSlug}
+      />
+    );
+  }
+
+  return (
+    <>
+      <LiteTextEditor
+        editable={false}
+        ref={readOnlyEditorRef}
+        id={comment.id}
+        initialValue={comment.comment_html ?? ""}
+        workspaceId={workspaceId}
+        workspaceSlug={workspaceSlug}
+        containerClassName={cn("!py-1 transition-[border-color] duration-500", highlightClassName)}
+        projectId={projectId?.toString()}
+        displayConfig={{ fontSize: "small-font" }}
+        parentClassName="border-none"
+      />
+      {shouldRenderReactions &&
+        (renderFooter ? (
+          renderFooter(
+            <CommentReactions comment={comment} disabled={disabled} activityOperations={activityOperations} />
+          )
+        ) : (
+          <CommentReactions comment={comment} disabled={disabled} activityOperations={activityOperations} />
+        ))}
+    </>
+  );
+};
+
+export const CommentCardDisplay = function CommentCardDisplay(props: TCommentCardDisplayProps) {
+  const {
+    activityOperations,
+    comment,
+    disabled,
+    projectId,
+    readOnlyEditorRef,
+    showAccessSpecifier,
+    workspaceId,
+    workspaceSlug,
+    isEditing = false,
+    setIsEditing,
+    renderFooter,
+    renderQuickActions,
+  } = props;
+  // store hooks
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  // derived values
+  const { displayName, avatarUrl } = commentAuthor(comment, memberById(comment.actor)?.member);
+
+  // navigation
+  const pathname = useLocation({ select: (location) => location.pathname });
+  // derived values
+  const commentBlockId = `comment-${comment.id}`;
+  const highlightClassName = useCommentHighlight(commentBlockId, pathname);
+
+  return (
+    <div id={commentBlockId} className="relative flex flex-col gap-2">
+      <CommentCardHeader
+        activityOperations={activityOperations}
+        comment={comment}
+        disabled={disabled}
+        showAccessSpecifier={showAccessSpecifier}
+        displayName={displayName}
+        avatarUrl={avatarUrl}
+        renderQuickActions={renderQuickActions}
+      />
+      <CommentCardBody
+        activityOperations={activityOperations}
+        comment={comment}
+        disabled={disabled}
+        projectId={projectId}
+        readOnlyEditorRef={readOnlyEditorRef}
+        workspaceId={workspaceId}
+        workspaceSlug={workspaceSlug}
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+        renderFooter={renderFooter}
+        highlightClassName={highlightClassName}
+      />
     </div>
   );
-});
+};

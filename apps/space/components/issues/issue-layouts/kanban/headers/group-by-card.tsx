@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Circle } from "lucide-react";
 // types
 import type { TIssueGroupByOptions } from "@plane/types";
@@ -16,7 +15,7 @@ interface IHeaderGroupByCard {
   count: number;
 }
 
-export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHeaderGroupByCard) {
+export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupByCard) {
   const { icon, title, count } = props;
 
   return (
@@ -32,4 +31,4 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
       </div>
     </>
   );
-});
+};

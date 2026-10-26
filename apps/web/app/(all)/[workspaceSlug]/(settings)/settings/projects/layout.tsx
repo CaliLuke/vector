@@ -6,10 +6,9 @@
 
 import { createFileRoute, useParams, Outlet, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { observer } from "mobx-react";
 
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 
 // types
 
@@ -19,7 +18,7 @@ function ProjectSettingsLayout(): React.JSX.Element | null {
   // router
   const router = useRouter();
   // store hooks
-  const { joinedProjectIds } = useProject();
+  const joinedProjectIds = useJoinedProjectIds(typeof workspaceSlug === "string" ? workspaceSlug : undefined);
 
   useEffect(() => {
     if (projectId) return;
@@ -32,5 +31,5 @@ function ProjectSettingsLayout(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects")({
-  component: observer(ProjectSettingsLayout),
+  component: ProjectSettingsLayout,
 });

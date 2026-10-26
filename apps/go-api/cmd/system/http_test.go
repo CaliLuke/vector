@@ -1829,11 +1829,11 @@ func TestWorkspaceContentHTTPMounts(t *testing.T) {
 func TestWorkspaceMemberMeAndAnalyticViewsHTTPMounts(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithWorkspaceReplacements(
+	handler := buildHTTPHandlerWithReplacementServices(
 		ctx, systemEndpoints, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		workspacemembermeapi.NewEndpoints(workspaceMemberMeHTTPStub{}),
 		analyticviewsapi.NewEndpoints(analyticViewsHTTPStub{}),
-		workspacerecentvisitsapi.NewEndpoints(workspaceRecentVisitsHTTPStub{}),
+		workspacerecentvisitsapi.NewEndpoints(workspaceRecentVisitsHTTPStub{}), nil, nil,
 	)
 	id := "00000000-0000-4000-8000-000000000011"
 	for _, testCase := range []struct {
@@ -4923,11 +4923,9 @@ func TestProjectMembershipReadsJSONNegotiation(t *testing.T) {
 func TestWorkspaceFavoritesHTTPMountsAndDjangoProtocol(t *testing.T) {
 	ctx := newLogContext(context.Background(), io.Discard, false)
 	systemEndpoints := system.NewEndpoints(systemapi.NewSystem())
-	handler := newHTTPHandlerWithWorkspaceReplacements(
-		ctx, systemEndpoints, false,
-		nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil,
-		workspacefavoritesapi.NewEndpoints(workspaceFavoritesHTTPStub{}),
+	handler := buildHTTPHandlerWithReplacementServices(
+		ctx, systemEndpoints, false, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, workspacefavoritesapi.NewEndpoints(workspaceFavoritesHTTPStub{}),
 	)
 	id := "00000000-0000-4000-8000-000000000011"
 	collection := "/api/workspaces/acme/user-favorites/"

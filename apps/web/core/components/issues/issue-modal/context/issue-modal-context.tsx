@@ -3,79 +3,13 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
 import { createContext } from "react";
-// ce imports
-import type { UseFormReset, UseFormWatch } from "react-hook-form";
-// plane imports
-import type { EditorRefApi } from "@plane/editor";
-import type { ISearchIssueResponse, TIssue, TIssuePropertyValues, TIssuePropertyValueErrors } from "@plane/types";
-
-export type TPropertyValuesValidationProps = {
-  projectId: string | null;
-  workspaceSlug: string;
-  watch: UseFormWatch<TIssue>;
-};
-
-export type TActiveAdditionalPropertiesProps = {
-  projectId: string | null;
-  workspaceSlug: string;
-  watch: UseFormWatch<TIssue>;
-};
-
-export type TCreateUpdatePropertyValuesProps = {
-  issueId: string;
-  projectId: string;
-  workspaceSlug: string;
-  issueTypeId: string | null | undefined;
-  isDraft?: boolean;
-};
-
-export type TCreateSubWorkItemProps = {
-  workspaceSlug: string;
-  projectId: string;
-  parentId: string;
-};
-
-export type THandleTemplateChangeProps = {
-  workspaceSlug: string;
-  reset: UseFormReset<TIssue>;
-  editorRef: React.MutableRefObject<EditorRefApi | null>;
-};
-
-export type THandleProjectEntitiesFetchProps = {
-  workItemProjectId: string | null | undefined;
-  workItemTypeId: string | undefined;
-  workspaceSlug: string;
-};
-
-export type THandleParentWorkItemDetailsProps = {
-  workspaceSlug: string;
-  parentId: string | undefined;
-  parentProjectId: string | undefined;
-  isParentEpic: boolean;
-};
-
+import type { Dispatch, SetStateAction } from "react";
+import type { ISearchIssueResponse } from "@plane/types";
 export type TIssueModalContext = {
   allowedProjectIds: string[];
-  workItemTemplateId: string | null;
-  setWorkItemTemplateId: React.Dispatch<React.SetStateAction<string | null>>;
-  isApplyingTemplate: boolean;
-  setIsApplyingTemplate: React.Dispatch<React.SetStateAction<boolean>>;
+  defaultProjectId: string | undefined;
   selectedParentIssue: ISearchIssueResponse | null;
-  setSelectedParentIssue: React.Dispatch<React.SetStateAction<ISearchIssueResponse | null>>;
-  issuePropertyValues: TIssuePropertyValues;
-  setIssuePropertyValues: React.Dispatch<React.SetStateAction<TIssuePropertyValues>>;
-  issuePropertyValueErrors: TIssuePropertyValueErrors;
-  setIssuePropertyValueErrors: React.Dispatch<React.SetStateAction<TIssuePropertyValueErrors>>;
-  getIssueTypeIdOnProjectChange: (projectId: string) => string | null;
-  getActiveAdditionalPropertiesLength: (props: TActiveAdditionalPropertiesProps) => number;
-  handlePropertyValuesValidation: (props: TPropertyValuesValidationProps) => boolean;
-  handleCreateUpdatePropertyValues: (props: TCreateUpdatePropertyValuesProps) => Promise<void>;
-  handleProjectEntitiesFetch: (props: THandleProjectEntitiesFetchProps) => Promise<void>;
-  handleTemplateChange: (props: THandleTemplateChangeProps) => Promise<void>;
-  handleConvert: (workspaceSlug: string, data: Partial<TIssue>) => Promise<void>;
-  handleCreateSubWorkItem: (props: TCreateSubWorkItemProps) => Promise<void>;
+  setSelectedParentIssue: Dispatch<SetStateAction<ISearchIssueResponse | null>>;
 };
-
 export const IssueModalContext = createContext<TIssueModalContext | undefined>(undefined);

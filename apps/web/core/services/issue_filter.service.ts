@@ -58,52 +58,45 @@ export class IssueFiltersService extends APIService {
   async fetchCycleIssueFilters(
     workspaceSlug: string,
     projectId: string,
-    cycleId: string
+    cycleId: string,
+    signal?: AbortSignal
   ): Promise<IIssueFiltersResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/user-properties/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/user-properties/`, {
+      signal,
+    }).then((response) => response?.data);
   }
   async patchCycleIssueFilters(
     workspaceSlug: string,
     projectId: string,
     cycleId: string,
     data: Partial<IIssueFiltersResponse>
-  ): Promise<any> {
-    return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/user-properties/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  ): Promise<IIssueFiltersResponse> {
+    return this.patch(
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/user-properties/`,
+      data
+    ).then((response) => response?.data);
   }
 
   // module issue filters
   async fetchModuleIssueFilters(
     workspaceSlug: string,
     projectId: string,
-    moduleId: string
+    moduleId: string,
+    signal?: AbortSignal
   ): Promise<IIssueFiltersResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/user-properties/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/user-properties/`, {
+      signal,
+    }).then((response) => response?.data);
   }
   async patchModuleIssueFilters(
     workspaceSlug: string,
     projectId: string,
     moduleId: string,
     data: Partial<IIssueFiltersResponse>
-  ): Promise<any> {
+  ): Promise<IIssueFiltersResponse> {
     return this.patch(
       `/api/workspaces/${workspaceSlug}/projects/${projectId}/modules/${moduleId}/user-properties/`,
       data
-    )
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    ).then((response) => response?.data);
   }
 }

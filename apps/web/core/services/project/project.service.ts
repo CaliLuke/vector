@@ -44,24 +44,24 @@ export class ProjectService extends APIService {
       });
   }
 
-  async getProjectsLite(workspaceSlug: string): Promise<TPartialProject[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/`)
+  async getProjectsLite(workspaceSlug: string, signal?: AbortSignal): Promise<TPartialProject[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
       });
   }
 
-  async getProjects(workspaceSlug: string): Promise<TProject[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/details/`)
+  async getProjects(workspaceSlug: string, signal?: AbortSignal): Promise<TProject[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/details/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
       });
   }
 
-  async getProject(workspaceSlug: string, projectId: string): Promise<TProject> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`)
+  async getProject(workspaceSlug: string, projectId: string, signal?: AbortSignal): Promise<TProject> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
@@ -70,10 +70,12 @@ export class ProjectService extends APIService {
 
   async getProjectAnalyticsCount(
     workspaceSlug: string,
-    params?: TProjectAnalyticsCountParams
+    params?: TProjectAnalyticsCountParams,
+    signal?: AbortSignal
   ): Promise<TProjectAnalyticsCount[]> {
     return this.get(`/api/workspaces/${workspaceSlug}/project-stats/`, {
       params,
+      signal,
     })
       .then((response) => response?.data)
       .catch((error) => {
@@ -98,11 +100,15 @@ export class ProjectService extends APIService {
   }
 
   // User Properties
-  async getProjectUserProperties(workspaceSlug: string, projectId: string): Promise<IProjectUserPropertiesResponse> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`)
+  async getProjectUserProperties(
+    workspaceSlug: string,
+    projectId: string,
+    signal?: AbortSignal
+  ): Promise<IProjectUserPropertiesResponse> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/user-properties/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -187,14 +193,16 @@ export class ProjectService extends APIService {
   async projectIssuesSearch(
     workspaceSlug: string,
     projectId: string,
-    params: TProjectIssuesSearchParams
+    params: TProjectIssuesSearchParams,
+    signal?: AbortSignal
   ): Promise<ISearchIssueResponse[]> {
     return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectId}/search-issues/`, {
       params,
+      signal,
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

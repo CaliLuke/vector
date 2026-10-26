@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { sortBy } from "lodash-es";
+import sortBy from "lodash-es/sortBy.js";
 // plane imports
 import type { TProject, TProjectDisplayFilters, TProjectFilters, TProjectOrderByOptions } from "@plane/types";
 // local imports

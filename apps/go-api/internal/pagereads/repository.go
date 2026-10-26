@@ -11,6 +11,7 @@ import (
 
 	"uuid"
 
+	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -840,7 +841,7 @@ WHERE workspace.slug = $2
 LIMIT 1
 `
 
-const pageDescriptionSQL = `
+var pageDescriptionSQL = `
 SELECT COALESCE(page.description_binary, ''::bytea)
 FROM pages page
 JOIN workspaces workspace ON workspace.id = page.workspace_id
@@ -861,7 +862,7 @@ WHERE workspace.slug = $2
   AND page.deleted_at IS NULL
   AND project.deleted_at IS NULL
   AND workspace.deleted_at IS NULL
-  AND (page.owned_by_id = $1 OR page.access = 0)
+  AND ` + djangoapi.PageVisibleSQL("page", "$1", "page.workspace_id", "$3") + `
 LIMIT 1
 `
 

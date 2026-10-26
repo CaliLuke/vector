@@ -5,96 +5,58 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import React, { useState } from "react";
-import { observer } from "mobx-react";
+import React from "react";
 
-import { usePopper } from "react-popper";
+import { useCalendarHeaderPopover } from "./use-calendar-header-popover";
 import { MoreVerticalIcon } from "lucide-react";
 import { Popover, Transition } from "@headlessui/react";
 // hooks
 // ui
 // icons
-import type { TSupportedFilterTypeForUpdate } from "@plane/constants";
-import { EIssueFilterType } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CheckIcon, ChevronUpIcon } from "@plane/propel/icons";
-import type { TCalendarLayouts, TSupportedFilterForUpdate } from "@plane/types";
+import type { IIssueDisplayFilterOptions, TCalendarLayouts } from "@plane/types";
 import { ToggleSwitch } from "@plane/ui";
 // types
 // constants
 import { CALENDAR_LAYOUTS } from "@plane/constants";
-import { useCalendarView } from "@/hooks/store/use-calendar-view";
+import type { TCalendarDisplayFilterUpdate } from "@/hooks/use-calendar-display-filter-update";
 import useSize from "@/hooks/use-window-size";
-import type { ICycleIssuesFilter } from "@/store/issue/cycle";
-import type { IModuleIssuesFilter } from "@/store/issue/module";
-import type { IProjectIssuesFilter } from "@/store/issue/project";
-import type { IProjectViewIssuesFilter } from "@/store/issue/project-views";
 
 interface ICalendarHeader {
-  issuesFilterStore: IProjectIssuesFilter | IModuleIssuesFilter | ICycleIssuesFilter | IProjectViewIssuesFilter;
-  updateFilters?: (
-    projectId: string,
-    filterType: TSupportedFilterTypeForUpdate,
-    filters: TSupportedFilterForUpdate
-  ) => Promise<void>;
+  displayFilters: IIssueDisplayFilterOptions;
+  updateFilters: TCalendarDisplayFilterUpdate;
 }
 
-export const CalendarOptionsDropdown = observer(function CalendarOptionsDropdown(props: ICalendarHeader) {
-  const { issuesFilterStore, updateFilters } = props;
+export const CalendarOptionsDropdown = function CalendarOptionsDropdown(props: ICalendarHeader) {
+  const { displayFilters, updateFilters } = props;
 
   const { t } = useTranslation();
 
   const { projectId } = useParams({ strict: false });
 
-  const issueCalendarView = useCalendarView();
   const [windowWidth] = useSize();
 
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const { setReferenceElement, setPopperElement, styles, attributes } = useCalendarHeaderPopover();
 
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: "auto",
-    modifiers: [
-      {
-        name: "preventOverflow",
-        options: {
-          padding: 12,
-        },
-      },
-    ],
-  });
-
-  const calendarLayout = issuesFilterStore.issueFilters?.displayFilters?.calendar?.layout ?? "month";
-  const showWeekends = issuesFilterStore.issueFilters?.displayFilters?.calendar?.show_weekends ?? false;
+  const calendarLayout = displayFilters.calendar?.layout ?? "month";
+  const showWeekends = displayFilters.calendar?.show_weekends ?? false;
 
   const handleLayoutChange = (layout: TCalendarLayouts, closePopover: any) => {
-    if (!updateFilters || !projectId) return;
+    if (!projectId) return;
 
-    updateFilters(projectId?.toString(), EIssueFilterType.DISPLAY_FILTERS, {
-      calendar: {
-        ...issuesFilterStore.issueFilters?.displayFilters?.calendar,
-        layout,
-      },
-    });
+    void updateFilters(projectId.toString(), { calendar: { layout } });
 
-    issueCalendarView.updateCalendarPayload(
-      layout === "month"
-        ? issueCalendarView.calendarFilters.activeMonthDate
-        : issueCalendarView.calendarFilters.activeWeekDate
-    );
     if (windowWidth <= 768) closePopover(); // close the popover on mobile
   };
 
   const handleToggleWeekends = () => {
-    const showWeekends = issuesFilterStore.issueFilters?.displayFilters?.calendar?.show_weekends ?? false;
+    const showWeekends = displayFilters.calendar?.show_weekends ?? false;
 
-    if (!updateFilters || !projectId) return;
+    if (!projectId) return;
 
-    updateFilters(projectId?.toString(), EIssueFilterType.DISPLAY_FILTERS, {
-      calendar: {
-        ...issuesFilterStore.issueFilters?.displayFilters?.calendar,
-        show_weekends: !showWeekends,
-      },
+    void updateFilters(projectId.toString(), {
+      calendar: { show_weekends: !showWeekends },
     });
   };
 
@@ -170,4 +132,4 @@ export const CalendarOptionsDropdown = observer(function CalendarOptionsDropdown
       )}
     </Popover>
   );
-});
+};

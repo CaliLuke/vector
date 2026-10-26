@@ -4,13 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
 import type { TQuickAddIssueButton } from "../root";
 
-export const SpreadsheetAddIssueButton = observer(function SpreadsheetAddIssueButton(props: TQuickAddIssueButton) {
+export const SpreadsheetAddIssueButton = function SpreadsheetAddIssueButton(props: TQuickAddIssueButton) {
   const { onClick, isEpic = false } = props;
   const { t } = useTranslation();
   return (
@@ -25,4 +23,4 @@ export const SpreadsheetAddIssueButton = observer(function SpreadsheetAddIssueBu
       </button>
     </div>
   );
-});
+};

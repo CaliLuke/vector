@@ -6,9 +6,8 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 // components
@@ -16,7 +15,7 @@ import { PageHead } from "@/components/core/page-title";
 import { DownloadActivityButton } from "@/components/profile/activity/download-button";
 import { WorkspaceActivityListPage } from "@/components/profile/activity/workspace-activity-list";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
 const PER_PAGE = 100;
 
@@ -26,7 +25,8 @@ function ProfileActivityPage(): React.JSX.Element | null {
   const [totalPages, setTotalPages] = useState(0);
   const [resultsCount, setResultsCount] = useState(0);
   // router
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug } = Route.useParams();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   //hooks
   const { t } = useTranslation();
 
@@ -48,10 +48,7 @@ function ProfileActivityPage(): React.JSX.Element | null {
       />
     );
 
-  const canDownloadActivity = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canDownloadActivity = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <>
@@ -77,5 +74,5 @@ function ProfileActivityPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/profile/$userId/activity")({
-  component: observer(ProfileActivityPage),
+  component: ProfileActivityPage,
 });

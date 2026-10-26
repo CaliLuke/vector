@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // types
 import type { TIssue } from "@plane/types";
 // components
@@ -17,7 +16,7 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetEstimateColumn = observer(function SpreadsheetEstimateColumn(props: Props) {
+export const SpreadsheetEstimateColumn = function SpreadsheetEstimateColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (
@@ -37,4 +36,4 @@ export const SpreadsheetEstimateColumn = observer(function SpreadsheetEstimateCo
       />
     </div>
   );
-});
+};

@@ -6,19 +6,19 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import type { TNotificationTab } from "@plane/constants";
 import { NOTIFICATION_TABS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Header, Row, ERowVariant, EHeaderVariant, ContentWrapper } from "@plane/ui";
-import { cn, getNumberCount } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getNumberCount } from "@plane/utils/string";
 // components
 import { CountChip } from "@/components/common/count-chip";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useNotifications } from "@/components/workspace-notifications/provider";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
 // local imports
 import { NotificationEmptyState } from "./empty-state";
 import { AppliedFilters } from "./filters/applied-filter";
@@ -26,23 +26,22 @@ import { NotificationSidebarHeader } from "./header";
 import { NotificationsLoader } from "./loader";
 import { NotificationCardListRoot } from "../notification-card/root";
 
-export const NotificationsSidebarRoot = observer(function NotificationsSidebarRoot() {
+export const NotificationsSidebarRoot = function NotificationsSidebarRoot() {
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
-  const { getWorkspaceBySlug } = useWorkspace();
+  const { data: workspace } = useWorkspaceBySlug(workspaceSlug);
   const {
     currentSelectedNotificationId,
     unreadNotificationsCount,
-    loader,
-    notificationIdsByWorkspaceId,
+    list,
+    notificationIds,
     currentNotificationTab,
     setCurrentNotificationTab,
-  } = useWorkspaceNotifications();
+  } = useNotifications();
 
   const { t } = useTranslation();
+
   // derived values
-  const workspace = workspaceSlug ? getWorkspaceBySlug(workspaceSlug.toString()) : undefined;
-  const notificationIds = workspace ? notificationIdsByWorkspaceId(workspace.id) : undefined;
 
   const handleTabClick = useCallback(
     (tabValue: TNotificationTab) => {
@@ -100,15 +99,27 @@ export const NotificationsSidebarRoot = observer(function NotificationsSidebarRo
         <AppliedFilters workspaceSlug={workspaceSlug.toString()} />
 
         {/* rendering notifications */}
-        {loader === "init-loader" ? (
+        {list.isPending ? (
           <div className="relative h-full w-full overflow-hidden">
             <NotificationsLoader />
+          </div>
+        ) : list.isError ? (
+          <div role="alert" className="p-4 text-body-sm-regular">
+            <p>Unable to load notifications.</p>
+            <button
+              type="button"
+              onClick={() => {
+                void list.refetch();
+              }}
+            >
+              Try again
+            </button>
           </div>
         ) : (
           <>
             {notificationIds && notificationIds.length > 0 ? (
               <ContentWrapper variant={ERowVariant.HUGGING}>
-                <NotificationCardListRoot workspaceSlug={workspaceSlug.toString()} workspaceId={workspace?.id} />
+                <NotificationCardListRoot workspaceSlug={workspaceSlug.toString()} />
               </ContentWrapper>
             ) : (
               <div className="relative flex h-full w-full items-center justify-center">
@@ -120,4 +131,4 @@ export const NotificationsSidebarRoot = observer(function NotificationsSidebarRo
       </div>
     </div>
   );
-});
+};

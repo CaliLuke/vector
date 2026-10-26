@@ -90,6 +90,9 @@ type Service interface {
 	// This enables timezone conversion according
 	// to the user set timezone
 	PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk(context.Context, *PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkPayload, io.ReadCloser) (err error)
+	// Associate completed uploads with an active private draft owned by the
+	// current user.
+	PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk(context.Context, *PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload, io.ReadCloser) (err error)
 	// This enables timezone conversion according
 	// to the user set timezone
 	PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk(context.Context, *PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPayload, io.ReadCloser) (err error)
@@ -290,7 +293,7 @@ const ServiceName = "PlaneInternalDjangoMigrationAPI"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [81]string{"GetAPIAssetsV2StaticByAssetID", "DeleteAPIAssetsV2UserAssets", "PatchAPIAssetsV2UserAssets", "PostAPIAssetsV2UserAssets", "DeleteAPIAssetsV2UserAssetsByAssetID", "PatchAPIAssetsV2UserAssetsByAssetID", "PostAPIAssetsV2UserAssetsByAssetID", "DeleteAPIAssetsV2WorkspacesBySlug", "GetAPIAssetsV2WorkspacesBySlug", "PatchAPIAssetsV2WorkspacesBySlug", "PostAPIAssetsV2WorkspacesBySlug", "GetAPIAssetsV2WorkspacesBySlugCheckByAssetID", "GetAPIAssetsV2WorkspacesBySlugDownloadByAssetID", "PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PostAPIAssetsV2WorkspacesBySlugRestoreByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugByAssetID", "GetAPIAssetsV2WorkspacesBySlugByAssetID", "PatchAPIAssetsV2WorkspacesBySlugByAssetID", "PostAPIAssetsV2WorkspacesBySlugByAssetID", "DeleteAPIPublicAssetsV2AnchorByAnchor", "GetAPIPublicAssetsV2AnchorByAnchor", "PatchAPIPublicAssetsV2AnchorByAnchor", "PostAPIPublicAssetsV2AnchorByAnchor", "PostAPIPublicAssetsV2AnchorByAnchorRestoreByPk", "PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulk", "DeleteAPIPublicAssetsV2AnchorByAnchorByPk", "GetAPIPublicAssetsV2AnchorByAnchorByPk", "PatchAPIPublicAssetsV2AnchorByAnchorByPk", "PostAPIPublicAssetsV2AnchorByAnchorByPk", "DeleteAPIUsersFileAssets", "GetAPIUsersFileAssets", "PostAPIUsersFileAssets", "DeleteAPIUsersFileAssetsByAssetKey", "GetAPIUsersFileAssetsByAssetKey", "PostAPIUsersFileAssetsByAssetKey", "PostAPIV1AssetsUserAssets", "PostAPIV1AssetsUserAssetsServer", "DeleteAPIV1AssetsUserAssetsByAssetID", "PatchAPIV1AssetsUserAssetsByAssetID", "DeleteAPIV1AssetsUserAssetsByAssetIDServer", "PatchAPIV1AssetsUserAssetsByAssetIDServer", "PostAPIV1WorkspacesBySlugAssets", "GetAPIV1WorkspacesBySlugAssetsByAssetID", "PatchAPIV1WorkspacesBySlugAssetsByAssetID", "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", "PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestore", "DeleteAPIWorkspacesBySlugFileAssets", "GetAPIWorkspacesBySlugFileAssets", "PostAPIWorkspacesBySlugFileAssets", "DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk"}
+var MethodNames = [82]string{"GetAPIAssetsV2StaticByAssetID", "DeleteAPIAssetsV2UserAssets", "PatchAPIAssetsV2UserAssets", "PostAPIAssetsV2UserAssets", "DeleteAPIAssetsV2UserAssetsByAssetID", "PatchAPIAssetsV2UserAssetsByAssetID", "PostAPIAssetsV2UserAssetsByAssetID", "DeleteAPIAssetsV2WorkspacesBySlug", "GetAPIAssetsV2WorkspacesBySlug", "PatchAPIAssetsV2WorkspacesBySlug", "PostAPIAssetsV2WorkspacesBySlug", "GetAPIAssetsV2WorkspacesBySlugCheckByAssetID", "GetAPIAssetsV2WorkspacesBySlugDownloadByAssetID", "PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectID", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDDownloadByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachments", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk", "DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "PostAPIAssetsV2WorkspacesBySlugRestoreByAssetID", "DeleteAPIAssetsV2WorkspacesBySlugByAssetID", "GetAPIAssetsV2WorkspacesBySlugByAssetID", "PatchAPIAssetsV2WorkspacesBySlugByAssetID", "PostAPIAssetsV2WorkspacesBySlugByAssetID", "DeleteAPIPublicAssetsV2AnchorByAnchor", "GetAPIPublicAssetsV2AnchorByAnchor", "PatchAPIPublicAssetsV2AnchorByAnchor", "PostAPIPublicAssetsV2AnchorByAnchor", "PostAPIPublicAssetsV2AnchorByAnchorRestoreByPk", "PostAPIPublicAssetsV2AnchorByAnchorByEntityIDBulk", "DeleteAPIPublicAssetsV2AnchorByAnchorByPk", "GetAPIPublicAssetsV2AnchorByAnchorByPk", "PatchAPIPublicAssetsV2AnchorByAnchorByPk", "PostAPIPublicAssetsV2AnchorByAnchorByPk", "DeleteAPIUsersFileAssets", "GetAPIUsersFileAssets", "PostAPIUsersFileAssets", "DeleteAPIUsersFileAssetsByAssetKey", "GetAPIUsersFileAssetsByAssetKey", "PostAPIUsersFileAssetsByAssetKey", "PostAPIV1AssetsUserAssets", "PostAPIV1AssetsUserAssetsServer", "DeleteAPIV1AssetsUserAssetsByAssetID", "PatchAPIV1AssetsUserAssetsByAssetID", "DeleteAPIV1AssetsUserAssetsByAssetIDServer", "PatchAPIV1AssetsUserAssetsByAssetIDServer", "PostAPIV1WorkspacesBySlugAssets", "GetAPIV1WorkspacesBySlugAssetsByAssetID", "PatchAPIV1WorkspacesBySlugAssetsByAssetID", "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "PostAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "PatchAPIV1WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", "PostAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachments", "DeleteAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "GetAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "PatchAPIV1WorkspacesBySlugProjectsByProjectIDWorkItemsByIssueIDAttachmentsByPk", "DeleteAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "GetAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKey", "PostAPIWorkspacesFileAssetsByWorkspaceIDByAssetKeyRestore", "DeleteAPIWorkspacesBySlugFileAssets", "GetAPIWorkspacesBySlugFileAssets", "PostAPIWorkspacesBySlugFileAssets", "DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "PostAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachments", "DeleteAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDIssueAttachmentsByPk"}
 
 // DeleteAPIAssetsV2UserAssetsByAssetIDPayload is the payload type of the
 // PlaneInternalDjangoMigrationAPI service DeleteAPIAssetsV2UserAssetsByAssetID
@@ -2260,6 +2263,27 @@ type PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus413 map[string]loom.JSONValue
 type PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus429 map[string]loom.JSONValue
 
 type PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus500 map[string]loom.JSONValue
+
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload is the payload type of
+// the PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk method.
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload struct {
+	EntityID                     string  `json:"entity_id"`
+	Slug                         string  `json:"slug"`
+	PlaneSessionCookieCredential *string `json:"planeSessionCookieCredential,omitzero"`
+}
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400 map[string]loom.JSONValue
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401 map[string]loom.JSONValue
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403 map[string]loom.JSONValue
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404 map[string]loom.JSONValue
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409 map[string]loom.JSONValue
+
+type PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500 map[string]loom.JSONValue
 
 // PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetIDPayload is the
 // payload type of the PlaneInternalDjangoMigrationAPI service
@@ -8474,6 +8498,66 @@ func (e PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus500) Error() string {
 // LoomErrorName returns the error name.
 func (e PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus500) LoomErrorName() string {
 	return "PostAPIAssetsV2WorkspacesBySlugByAssetIDStatus500"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409"
+}
+
+// Error returns an error description.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500) Error() string {
+	return ""
+}
+
+// LoomErrorName returns the error name.
+func (e PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500) LoomErrorName() string {
+	return "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500"
 }
 
 // Error returns an error description.

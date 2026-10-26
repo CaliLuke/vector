@@ -7,7 +7,8 @@
 // plane imports
 import { MAX_FILE_SIZE } from "@plane/constants";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 
 type TReturnProps = {
   maxFileSize: number;
@@ -15,7 +16,7 @@ type TReturnProps = {
 
 export const useFileSize = (): TReturnProps => {
   // store hooks
-  const { config } = useInstance();
+  const { data: config } = useQuery(instanceConfigOptions);
 
   return {
     maxFileSize: config?.file_size_limit ?? MAX_FILE_SIZE,

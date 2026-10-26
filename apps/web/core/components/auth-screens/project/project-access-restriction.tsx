@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
@@ -16,7 +15,7 @@ type TProps = {
   errorStatusCode: number | undefined;
 };
 
-export const ProjectAccessRestriction = observer(function ProjectAccessRestriction(props: TProps) {
+export const ProjectAccessRestriction = function ProjectAccessRestriction(props: TProps) {
   const { isWorkspaceAdmin, handleJoinProject, isJoinButtonDisabled, errorStatusCode } = props;
   // plane hooks
   const { t } = useTranslation();
@@ -73,4 +72,4 @@ export const ProjectAccessRestriction = observer(function ProjectAccessRestricti
       />
     </div>
   );
-});
+};

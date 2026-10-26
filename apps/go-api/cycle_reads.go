@@ -371,15 +371,16 @@ func cycleIssueOptions(ctx context.Context, payload any) (store.IssueListOptions
 	}
 	cursor := values[normalizePayloadName("cursor")]
 	return store.IssueListOptions{
-		OrderBy:       values[normalizePayloadName("order_by")],
-		GroupBy:       values[normalizePayloadName("group_by")],
-		SubGroupBy:    values[normalizePayloadName("sub_group_by")],
-		Cursor:        cursor,
-		CursorSet:     cursor != "" || ReadServiceQueryPresent(ctx, "cursor"),
-		PerPage:       perPage,
-		PerPageSet:    perPageSet,
-		Filters:       filters,
-		ComplexFilter: values[normalizePayloadName("filters")],
+		IncludeProperties: ReadServiceQueryValues(ctx).Get("include_properties") == "true",
+		OrderBy:           values[normalizePayloadName("order_by")],
+		GroupBy:           values[normalizePayloadName("group_by")],
+		SubGroupBy:        values[normalizePayloadName("sub_group_by")],
+		Cursor:            cursor,
+		CursorSet:         cursor != "" || ReadServiceQueryPresent(ctx, "cursor"),
+		PerPage:           perPage,
+		PerPageSet:        perPageSet,
+		Filters:           filters,
+		ComplexFilter:     values[normalizePayloadName("filters")],
 	}, nil
 }
 

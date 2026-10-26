@@ -4,28 +4,37 @@
  * See the LICENSE file for details.
  */
 
+import { logoPropsFromSelection } from "@/helpers/emoji.helper";
+import type { TPage } from "@plane/types";
+
 import { useState } from "react";
-import { observer } from "mobx-react";
 import { SmilePlus } from "lucide-react";
 // plane imports
 import { EmojiPicker, EmojiIconPickerTypes } from "@plane/propel/emoji-icon-picker";
-import { cn } from "@plane/utils";
+import type { TChangeHandlerProps } from "@plane/propel/emoji-icon-picker";
+import { cn } from "@plane/utils/common";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
+import { useUpdateProjectPage } from "@/hooks/use-project-pages";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageEditorHeaderLogoPicker } from "./logo-picker";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
   projectId?: string;
+  workspaceSlug: string;
 };
 
-export const PageEditorHeaderRoot = observer(function PageEditorHeaderRoot(props: Props) {
-  const { page } = props;
+export function PageEditorHeaderRoot(props: Props) {
+  const { page, projectId, workspaceSlug } = props;
   // states
   const [isLogoPickerOpen, setIsLogoPickerOpen] = useState(false);
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
   // derived values
-  const { isContentEditable, logo_props, name, updatePageLogo } = page;
+  const { logo_props, name } = page;
+  const update = useUpdateProjectPage(workspaceSlug, projectId ?? page.project_ids?.[0], page.id);
+  const updatePageLogo = (value: TChangeHandlerProps) =>
+    update.mutateAsync({ logo_props: logoPropsFromSelection(value) });
   const isLogoSelected = !!logo_props?.in_use;
   const isTitleEmpty = !name || name.trim() === "";
 
@@ -70,7 +79,12 @@ export const PageEditorHeaderRoot = observer(function PageEditorHeaderRoot(props
           </div>
         )}
       </div>
-      <PageEditorHeaderLogoPicker className="mt-2 flex w-full flex-shrink-0" page={page} />
+      <PageEditorHeaderLogoPicker
+        className="mt-2 flex w-full flex-shrink-0"
+        page={page}
+        projectId={projectId}
+        workspaceSlug={workspaceSlug}
+      />
     </>
   );
-});
+}

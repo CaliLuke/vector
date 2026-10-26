@@ -4,11 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@plane/propel/button";
 import { CloseIcon, LabelFilledIcon } from "@plane/propel/icons";
 // types
-import { useLabel } from "@/hooks/store/use-label";
+import { useProjectLabels } from "@/hooks/use-labels";
 import type { TLabelOperations } from "./root";
 
 type TLabelListItem = {
@@ -21,26 +21,34 @@ type TLabelListItem = {
   disabled: boolean;
 };
 
-export const LabelListItem = observer(function LabelListItem(props: TLabelListItem) {
+export function LabelListItem(props: TLabelListItem) {
   const { workspaceSlug, projectId, issueId, labelId, values, labelOperations, disabled } = props;
   // hooks
-  const { getLabelById } = useLabel();
+  const { getLabelById } = useProjectLabels(workspaceSlug, projectId);
 
   const label = getLabelById(labelId);
 
-  const handleLabel = async () => {
-    if (values && !disabled) {
-      const currentLabels = values.filter((_labelId) => _labelId !== labelId);
-      await labelOperations.updateIssue(workspaceSlug, projectId, issueId, { label_ids: currentLabels });
-    }
-  };
+  const removal = useMutation({
+    mutationFn: async () => {
+      if (values && !disabled) {
+        const currentLabels = values.filter((_labelId) => _labelId !== labelId);
+        await labelOperations.updateIssue(workspaceSlug, projectId, issueId, { label_ids: currentLabels });
+      }
+    },
+  });
 
   if (!label) return <></>;
   return (
-    <Button variant="tertiary" size="sm" key={labelId} onClick={handleLabel} disabled={disabled}>
+    <Button
+      variant="tertiary"
+      size="sm"
+      key={labelId}
+      onClick={() => removal.mutate()}
+      disabled={disabled || removal.isPending}
+    >
       <LabelFilledIcon className="size-3" color={label.color ?? "#000000"} />
       <span className="text-body-xs-regular">{label.name}</span>
       {!disabled && <CloseIcon className="h-2.5 w-2.5 transition-all group-hover:text-danger-primary" />}
     </Button>
   );
-});
+}

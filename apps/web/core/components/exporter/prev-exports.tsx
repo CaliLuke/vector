@@ -5,8 +5,8 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR, { mutate } from "swr";
+
+import { useQuery, skipToken, useQueryClient } from "@tanstack/react-query";
 import { MoveLeft, MoveRight, RefreshCw } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -32,7 +32,8 @@ type Props = {
   setCursor: (cursor: string) => void;
 };
 type RowData = IExportData;
-export const PrevExports = observer(function PrevExports(props: Props) {
+export const PrevExports = function PrevExports(props: Props) {
+  const queryClient = useQueryClient();
   // props
   const { workspaceSlug, cursor, per_page, setCursor } = props;
   // state
@@ -41,22 +42,27 @@ export const PrevExports = observer(function PrevExports(props: Props) {
   const { t } = useTranslation();
   const columns = useExportColumns();
 
-  const { data: exporterServices } = useSWR(
-    workspaceSlug && cursor ? EXPORT_SERVICES_LIST(workspaceSlug, cursor, `${per_page}`) : null,
-    workspaceSlug && cursor ? () => integrationService.getExportsServicesList(workspaceSlug, cursor, per_page) : null
-  );
+  const { data: exporterServices } = useQuery({
+    queryKey: EXPORT_SERVICES_LIST(workspaceSlug, cursor, `${per_page}`),
+    queryFn:
+      workspaceSlug && cursor
+        ? () => integrationService.getExportsServicesList(workspaceSlug, cursor, per_page)
+        : skipToken,
+  });
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await mutate(EXPORT_SERVICES_LIST(workspaceSlug, `${cursor}`, `${per_page}`));
+      await queryClient.invalidateQueries({
+        queryKey: EXPORT_SERVICES_LIST(workspaceSlug, `${cursor}`, `${per_page}`),
+      });
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error("Failed to refresh export services list", error);
     } finally {
       setRefreshing(false);
     }
-  }, [workspaceSlug, cursor, per_page]);
+  }, [workspaceSlug, cursor, per_page, queryClient]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -138,4 +144,4 @@ export const PrevExports = observer(function PrevExports(props: Props) {
       </div>
     </div>
   );
-});
+};

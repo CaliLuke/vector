@@ -9,3 +9,5 @@ export * from "./filters";
 export * from "./helpers";
 export * from "./layout-selection";
 export * from "./mobile-layout-selection";
+export * from "./parent-issue-layout-selection";
+export * from "./parent-issue-mobile-header";

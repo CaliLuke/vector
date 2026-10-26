@@ -5,38 +5,27 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // components
-import type { TIssuePriorities, TIssueServiceType } from "@plane/types";
-import { EIssueServiceType } from "@plane/types";
+import type { TIssuePriorities } from "@plane/types";
+import type { TIssue } from "@plane/types";
 import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 // types
 import type { TRelationIssueOperations } from "../issue-detail-widgets/relations/helper";
 
 type Props = {
   workspaceSlug: string;
   issueId: string;
+  issue: TIssue;
   disabled: boolean;
   issueOperations: TRelationIssueOperations;
-  issueServiceType?: TIssueServiceType;
 };
 
-export const RelationIssueProperty = observer(function RelationIssueProperty(props: Props) {
-  const { workspaceSlug, issueId, disabled, issueOperations, issueServiceType = EIssueServiceType.ISSUES } = props;
-  // hooks
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail(issueServiceType);
-
-  // derived value
-  const issue = getIssueById(issueId);
-
-  // if issue is not found, return empty
-  if (!issue) return <></>;
+export const RelationIssueProperty = function RelationIssueProperty(props: Props) {
+  const { workspaceSlug, issueId, issue, disabled, issueOperations } = props;
 
   // handlers
   const handleStateChange = (val: string) =>
@@ -81,6 +70,7 @@ export const RelationIssueProperty = observer(function RelationIssueProperty(pro
 
       <div className="h-5 flex-shrink-0">
         <MemberDropdown
+          workspaceSlug={workspaceSlug}
           value={issue.assignee_ids}
           projectId={issue.project_id ?? undefined}
           onChange={handleAssigneeChange}
@@ -92,4 +82,4 @@ export const RelationIssueProperty = observer(function RelationIssueProperty(pro
       </div>
     </div>
   );
-});
+};

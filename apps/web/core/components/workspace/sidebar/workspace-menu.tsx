@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
@@ -18,7 +17,7 @@ import useLocalStorage from "@/hooks/use-local-storage";
 import { SidebarWorkspaceMenuHeader } from "./workspace-menu-header";
 import { SidebarWorkspaceMenuItem } from "./workspace-menu-item";
 
-export const SidebarWorkspaceMenu = observer(function SidebarWorkspaceMenu() {
+export const SidebarWorkspaceMenu = function SidebarWorkspaceMenu() {
   // router params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // local storage
@@ -70,4 +69,4 @@ export const SidebarWorkspaceMenu = observer(function SidebarWorkspaceMenu() {
       </Transition>
     </Disclosure>
   );
-});
+};

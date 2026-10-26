@@ -4,25 +4,24 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useSearchParams } from "react-router";
 import { Eye, EyeOff } from "lucide-react";
 // plane internal packages
-import type { EAdminAuthErrorCodes, TAdminAuthErrorInfo } from "@plane/constants";
+import type { EAdminAuthErrorCodes } from "@plane/constants";
 import { API_BASE_URL } from "@plane/constants";
 import { Button } from "@plane/propel/button";
-import { AuthService } from "@plane/services";
-import { Input, Spinner } from "@plane/ui";
+import { Input, AuthEmailInput, Spinner } from "@plane/ui";
 // components
 import { Banner } from "@/components/common/banner";
 // local components
 import { FormHeader } from "@/components/instance/form-header";
 import { AuthBanner } from "./auth-banner";
 import { AuthHeader } from "./auth-header";
-import { authErrorHandler } from "./auth-helpers";
+import { authErrorHandler, submitInstanceAuthForm } from "./auth-helpers";
 
 // service initialization
-const authService = new AuthService();
 
 // error codes
 enum EErrorCodes {
@@ -51,28 +50,25 @@ const defaultFromData: TFormData = {
 
 export function InstanceSignInForm() {
   // search params
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const emailParam = searchParams.get("email") || undefined;
   const errorCode = searchParams.get("error_code") || undefined;
   const errorMessage = searchParams.get("error_message") || undefined;
   // state
   const [showPassword, setShowPassword] = useState(false);
-  const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
-  const [formData, setFormData] = useState<TFormData>(defaultFromData);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorInfo, setErrorInfo] = useState<TAdminAuthErrorInfo | undefined>(undefined);
-
-  const handleFormChange = (key: keyof TFormData, value: string | boolean) =>
-    setFormData((prev) => ({ ...prev, [key]: value }));
-
-  useEffect(() => {
-    if (csrfToken === undefined)
-      authService.requestCSRFToken().then((data) => data?.csrf_token && setCsrfToken(data.csrf_token));
-  }, [csrfToken]);
-
-  useEffect(() => {
-    if (emailParam) setFormData((prev) => ({ ...prev, email: emailParam }));
-  }, [emailParam]);
+  const formRef = useRef<HTMLFormElement>(null);
+  const form = useForm({
+    defaultValues: { ...defaultFromData, email: emailParam ?? "" },
+    validators: {
+      onSubmit: ({ value }) => (!value.email || !value.password ? "Complete the required fields." : undefined),
+    },
+    onSubmit: () => submitInstanceAuthForm(formRef.current),
+  });
+  const formData = useStore(form.store, (state) => state.values);
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const [dismissedErrorCode, setDismissedErrorCode] = useState<string>();
+  const errorInfo =
+    errorCode && errorCode !== dismissedErrorCode ? authErrorHandler(errorCode as EAdminAuthErrorCodes) : undefined;
 
   // derived values
   const errorData: TError = useMemo(() => {
@@ -99,15 +95,6 @@ export function InstanceSignInForm() {
     [formData.email, formData.password, isSubmitting]
   );
 
-  useEffect(() => {
-    if (errorCode) {
-      const errorDetail = authErrorHandler(errorCode?.toString() as EAdminAuthErrorCodes);
-      if (errorDetail) {
-        setErrorInfo(errorDetail);
-      }
-    }
-  }, [errorCode]);
-
   return (
     <>
       <AuthHeader />
@@ -118,35 +105,33 @@ export function InstanceSignInForm() {
             subHeading="Configure instance-wide settings to secure your instance"
           />
           <form
+            ref={formRef}
             className="space-y-4"
             method="POST"
             action={`${API_BASE_URL}/api/instances/admins/sign-in/`}
-            onSubmit={() => setIsSubmitting(true)}
-            onError={() => setIsSubmitting(false)}
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
           >
             {errorData.type && errorData?.message ? (
               <Banner type="error" message={errorData?.message} />
             ) : (
-              <>{errorInfo && <AuthBanner bannerData={errorInfo} handleBannerData={setErrorInfo} />}</>
+              <>
+                {errorInfo && (
+                  <AuthBanner bannerData={errorInfo} handleBannerData={() => setDismissedErrorCode(errorCode)} />
+                )}
+              </>
             )}
-            <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken ?? ""} />
+            <input type="hidden" name="csrfmiddlewaretoken" />
 
-            <div className="w-full space-y-1">
-              <label className="text-13 font-medium text-tertiary" htmlFor="email">
-                Email <span className="text-danger-primary">*</span>
-              </label>
-              <Input
-                className="w-full border border-subtle !bg-surface-1 placeholder:text-placeholder"
-                id="email"
-                name="email"
-                type="email"
-                inputSize="md"
-                placeholder="name@company.com"
-                value={formData.email}
-                onChange={(e) => handleFormChange("email", e.target.value)}
-                autoComplete="off"
-              />
-            </div>
+            <AuthEmailInput
+              label="Email *"
+              readOnly={isSubmitting}
+              value={formData.email}
+              onChange={(event) => form.setFieldValue("email", event.target.value)}
+              autoComplete="email"
+            />
 
             <div className="w-full space-y-1">
               <label className="text-13 font-medium text-tertiary" htmlFor="password">
@@ -154,6 +139,7 @@ export function InstanceSignInForm() {
               </label>
               <div className="relative">
                 <Input
+                  readOnly={isSubmitting}
                   className="w-full border border-subtle !bg-surface-1 placeholder:text-placeholder"
                   id="password"
                   name="password"
@@ -161,7 +147,7 @@ export function InstanceSignInForm() {
                   inputSize="md"
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => handleFormChange("password", e.target.value)}
+                  onChange={(e) => form.setFieldValue("password", e.target.value)}
                   autoComplete="off"
                 />
                 {showPassword ? (

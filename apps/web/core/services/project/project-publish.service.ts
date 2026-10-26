@@ -16,8 +16,12 @@ export class ProjectPublishService extends APIService {
     super(API_BASE_URL);
   }
 
-  async fetchPublishSettings(workspaceSlug: string, projectID: string): Promise<TProjectPublishSettings> {
-    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`)
+  async fetchPublishSettings(
+    workspaceSlug: string,
+    projectID: string,
+    signal?: AbortSignal
+  ): Promise<TProjectPublishSettings> {
+    return this.get(`/api/workspaces/${workspaceSlug}/projects/${projectID}/project-deploy-boards/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;

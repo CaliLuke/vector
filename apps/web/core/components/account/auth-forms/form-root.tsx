@@ -6,7 +6,6 @@
 
 import { useLocation, useRouter } from "@tanstack/react-router";
 import React, { useState } from "react";
-import { observer } from "mobx-react";
 
 import { EAuthModes, EAuthSteps } from "@plane/constants";
 import type { IEmailCheckData } from "@plane/types";
@@ -14,12 +13,14 @@ import type { IEmailCheckData } from "@plane/types";
 import type { TAuthErrorInfo } from "@/helpers/authentication.helper";
 import { authErrorHandler } from "@/helpers/authentication.helper";
 // hooks
-import { useInstance } from "@/hooks/store/use-instance";
+import { useQuery } from "@tanstack/react-query";
+import { instanceConfigOptions } from "@/queries/instance";
 
 // services
-import { AuthService } from "@/services/auth.service";
+import { authService } from "@/services/auth.service";
 // local components
-import { AuthEmailForm } from "./email";
+import { EmailEntryForm } from "@plane/ui";
+import { useTranslation } from "@plane/i18n";
 import { AuthPasswordForm } from "./password";
 import { AuthUniqueCodeForm } from "./unique-code";
 
@@ -34,9 +35,8 @@ type TAuthFormRoot = {
   currentAuthMode: EAuthModes;
 };
 
-const authService = new AuthService();
-
-export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot) {
+export function AuthFormRoot(props: TAuthFormRoot) {
+  const { t } = useTranslation();
   const { authStep, authMode, email, setEmail, setAuthMode, setAuthStep, setErrorInfo, currentAuthMode } = props;
   // router
   const router = useRouter();
@@ -46,7 +46,7 @@ export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot)
   // states
   const [isExistingEmail, setIsExistingEmail] = useState(false);
   // hooks
-  const { config } = useInstance();
+  const { data: config } = useQuery(instanceConfigOptions);
 
   const isSMTPConfigured = config?.is_smtp_configured || false;
 
@@ -91,21 +91,31 @@ export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot)
   };
 
   // generating the unique code
-  const generateEmailUniqueCode = async (email: string): Promise<{ code: string } | undefined> => {
+  const generateEmailUniqueCode = async (email: string): Promise<void> => {
     if (!isSMTPConfigured) return;
     const payload = { email: email };
-    return await authService
-      .generateUniqueCode(payload)
-      .then(() => ({ code: "" }))
-      .catch((error) => {
-        const errorhandler = authErrorHandler(error?.error_code?.toString());
-        if (errorhandler?.type) setErrorInfo(errorhandler);
-        throw error;
-      });
+    return await authService.generateUniqueCode(payload).catch((error) => {
+      const errorhandler = authErrorHandler(error?.error_code?.toString());
+      if (errorhandler?.type) setErrorInfo(errorhandler);
+      throw error;
+    });
   };
 
   if (authStep === EAuthSteps.EMAIL) {
-    return <AuthEmailForm defaultEmail={email} onSubmit={handleEmailVerification} />;
+    return (
+      <EmailEntryForm
+        defaultEmail={email}
+        onSubmit={handleEmailVerification}
+        labels={{
+          email: t("auth.common.email.label"),
+          placeholder: t("auth.common.email.placeholder"),
+          clear: t("aria_labels.auth_forms.clear_email"),
+          invalid: t("auth.common.email.errors.invalid"),
+          continue: t("common.continue"),
+          failure: t("common.errors.default.message"),
+        }}
+      />
+    );
   }
   if (authStep === EAuthSteps.UNIQUE_CODE) {
     return (
@@ -136,4 +146,4 @@ export const AuthFormRoot = observer(function AuthFormRoot(props: TAuthFormRoot)
   }
 
   return <></>;
-});
+}

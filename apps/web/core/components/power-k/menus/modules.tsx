@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ModuleStatusIcon } from "@plane/propel/icons";
 import type { IModule } from "@plane/types";
@@ -18,7 +18,7 @@ type Props = {
   value?: string[];
 };
 
-export const PowerKModulesMenu = observer(function PowerKModulesMenu({ modules, onSelect, value }: Props) {
+export const PowerKModulesMenu = function PowerKModulesMenu({ modules, onSelect, value }: Props) {
   return (
     <PowerKMenuBuilder
       items={modules}
@@ -31,4 +31,4 @@ export const PowerKModulesMenu = observer(function PowerKModulesMenu({ modules, 
       emptyText="No modules found"
     />
   );
-});
+};

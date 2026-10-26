@@ -5,8 +5,8 @@
  */
 
 import { useState } from "react";
-import { concat, uniq } from "lodash-es";
-import { observer } from "mobx-react";
+import concat from "lodash-es/concat.js";
+import uniq from "lodash-es/uniq.js";
 import { PAST_DURATION_FILTER_OPTIONS } from "@plane/constants";
 import type { TInboxIssueFilterDateKeys } from "@plane/types";
 // components
@@ -14,7 +14,7 @@ import { DateFilterModal } from "@/components/core/filters/date-filter-modal";
 import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
 // constants
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 
 type Props = {
   filterKey: TInboxIssueFilterDateKeys;
@@ -27,15 +27,15 @@ const isDate = (date: string) => {
   return datePattern.test(date);
 };
 
-export const FilterDate = observer(function FilterDate(props: Props) {
+export const FilterDate = function FilterDate(props: Props) {
   const { filterKey, label, searchQuery } = props;
   // hooks
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
+  const { filters, setFilter } = useIntakePreferences();
   // state
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [isDateFilterModalOpen, setIsDateFilterModalOpen] = useState(false);
   // derived values
-  const filterValue: string[] = inboxFilters?.[filterKey] || [];
+  const filterValue: string[] = filters?.[filterKey] || [];
   const appliedFiltersCount = filterValue?.length ?? 0;
   const filteredOptions = PAST_DURATION_FILTER_OPTIONS.filter((d) =>
     d.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -51,7 +51,7 @@ export const FilterDate = observer(function FilterDate(props: Props) {
   const handleCustomDate = () => {
     if (isCustomDateSelected()) {
       const updateAppliedFilters = filterValue?.filter((f) => !isDate(f.split(";")[0])) || [];
-      handleInboxIssueFilters(filterKey, updateAppliedFilters);
+      setFilter(filterKey, updateAppliedFilters);
     } else {
       setIsDateFilterModalOpen(true);
     }
@@ -63,7 +63,7 @@ export const FilterDate = observer(function FilterDate(props: Props) {
         <DateFilterModal
           handleClose={() => setIsDateFilterModalOpen(false)}
           isOpen={isDateFilterModalOpen}
-          onSelect={(val) => handleInboxIssueFilters(filterKey, val)}
+          onSelect={(val) => setFilter(filterKey, val)}
           title="Created date"
         />
       )}
@@ -80,7 +80,7 @@ export const FilterDate = observer(function FilterDate(props: Props) {
                 <FilterOption
                   key={option.value}
                   isChecked={filterValue?.includes(option.value) ? true : false}
-                  onClick={() => handleInboxIssueFilters(filterKey, handleFilterValue(option.value))}
+                  onClick={() => setFilter(filterKey, handleFilterValue(option.value))}
                   title={option.name}
                   multiple={false}
                 />
@@ -99,4 +99,4 @@ export const FilterDate = observer(function FilterDate(props: Props) {
       )}
     </>
   );
-});
+};

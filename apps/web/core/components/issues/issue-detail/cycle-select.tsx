@@ -5,15 +5,14 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 // hooks
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 // ui
 // helpers
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
 // types
 import type { TIssueOperations } from "./root";
 
@@ -26,17 +25,14 @@ type TIssueCycleSelect = {
   disabled?: boolean;
 };
 
-export const IssueCycleSelect = observer(function IssueCycleSelect(props: TIssueCycleSelect) {
+export const IssueCycleSelect = function IssueCycleSelect(props: TIssueCycleSelect) {
   const { className = "", workspaceSlug, projectId, issueId, issueOperations, disabled = false } = props;
   const { t } = useTranslation();
   // states
   const [isUpdating, setIsUpdating] = useState(false);
   // store hooks
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail();
+  const { issue } = useWorkItemDetail(workspaceSlug, projectId, issueId);
   // derived values
-  const issue = getIssueById(issueId);
   const disableSelect = disabled || isUpdating;
 
   const handleIssueCycleChange = async (cycleId: string | null) => {
@@ -65,4 +61,4 @@ export const IssueCycleSelect = observer(function IssueCycleSelect(props: TIssue
       />
     </div>
   );
-});
+};

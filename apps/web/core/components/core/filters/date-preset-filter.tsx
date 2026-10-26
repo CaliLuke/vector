@@ -5,9 +5,9 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
-import { isInDateFormat } from "@plane/utils";
+import { isInDateFormat } from "@plane/utils/datetime";
 import { DateFilterModal } from "@/components/core/filters/date-filter-modal";
 import { FilterHeader } from "@/components/issues/issue-layouts/filters/header/helpers/filter-header";
 import { FilterOption } from "@/components/issues/issue-layouts/filters/header/helpers/filter-option";
@@ -17,17 +17,24 @@ type DatePresetFilterProps = {
   handleUpdate: (value: string | string[]) => void;
   searchQuery: string;
   title: string;
+  options?: ReadonlyArray<{ value: string; name: string }>;
+  multiple?: boolean;
 };
 
-export const DatePresetFilter = observer(function DatePresetFilter(props: DatePresetFilterProps) {
-  const { appliedFilters, handleUpdate, searchQuery, title } = props;
+export const DatePresetFilter = function DatePresetFilter(props: DatePresetFilterProps) {
+  const {
+    appliedFilters,
+    handleUpdate,
+    searchQuery,
+    title,
+    options = DATE_AFTER_FILTER_OPTIONS,
+    multiple = true,
+  } = props;
   const [previewEnabled, setPreviewEnabled] = useState(true);
   const [isDateFilterModalOpen, setIsDateFilterModalOpen] = useState(false);
 
   const appliedFiltersCount = appliedFilters?.length ?? 0;
-  const filteredOptions = DATE_AFTER_FILTER_OPTIONS.filter((option) =>
-    option.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOptions = options.filter((option) => option.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   const isCustomDateSelected = () => {
     const isValidDateSelected = appliedFilters?.filter((filter) => isInDateFormat(filter.split(";")[0])) || [];
@@ -68,10 +75,15 @@ export const DatePresetFilter = observer(function DatePresetFilter(props: DatePr
                   isChecked={Boolean(appliedFilters?.includes(option.value))}
                   onClick={() => handleUpdate(option.value)}
                   title={option.name}
-                  multiple
+                  multiple={multiple}
                 />
               ))}
-              <FilterOption isChecked={isCustomDateSelected()} onClick={handleCustomDate} title="Custom" multiple />
+              <FilterOption
+                isChecked={isCustomDateSelected()}
+                onClick={handleCustomDate}
+                title="Custom"
+                multiple={multiple}
+              />
             </>
           ) : (
             <p className="text-11 text-placeholder italic">No matches found</p>
@@ -80,4 +92,4 @@ export const DatePresetFilter = observer(function DatePresetFilter(props: DatePr
       )}
     </>
   );
-});
+};

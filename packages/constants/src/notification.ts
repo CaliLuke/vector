@@ -17,20 +17,6 @@ export enum ENotificationFilterType {
   SUBSCRIBED = "subscribed",
 }
 
-export enum ENotificationLoader {
-  INIT_LOADER = "init-loader",
-  MUTATION_LOADER = "mutation-loader",
-  PAGINATION_LOADER = "pagination-loader",
-  REFRESH = "refresh",
-  MARK_ALL_AS_READY = "mark-all-as-read",
-}
-
-export enum ENotificationQueryParamType {
-  INIT = "init",
-  CURRENT = "current",
-  NEXT = "next",
-}
-
 export type TNotificationTab = ENotificationTab.ALL | ENotificationTab.MENTIONS;
 
 export const NOTIFICATION_TABS = [

@@ -1,16 +1,20 @@
+import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
+import { DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 import type { TModuleDisplayFilters, TModuleFilters } from "@plane/types";
 // components
 import { Header, EHeaderVariant, Tag } from "@plane/ui";
-import { replaceUnderscoreIfSnakeCase } from "@plane/utils";
-import { AppliedDateFilters, AppliedMembersFilters, AppliedStatusFilters } from "@/components/modules";
+import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
+import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
+import { AppliedDateFilters } from "@/components/common/applied-filters/date";
+import { AppliedStatusFilters } from "./status";
 // helpers
 // types
 
@@ -24,10 +28,11 @@ type Props = {
   isArchived?: boolean;
 };
 
-const MEMBERS_FILTERS = ["lead", "members"];
-const DATE_FILTERS = ["start_date", "target_date"];
+const MEMBERS_FILTERS = new Set<string>(["lead", "members"]);
+const DATE_FILTERS = new Set<string>(["start_date", "target_date"]);
 
 export function ModuleAppliedFiltersList(props: Props) {
+  const { workspaceSlug } = useParams({ strict: false });
   const {
     appliedFilters,
     isFavoriteFilterApplied,
@@ -64,15 +69,19 @@ export function ModuleAppliedFiltersList(props: Props) {
                     values={value}
                   />
                 )}
-                {DATE_FILTERS.includes(filterKey) && (
+                {DATE_FILTERS.has(filterKey) && (
                   <AppliedDateFilters
+                    options={DATE_AFTER_FILTER_OPTIONS}
+                    className="p-1"
                     editable={isEditingAllowed}
                     handleRemove={(val) => handleRemoveFilter(filterKey, val)}
                     values={value}
                   />
                 )}
-                {MEMBERS_FILTERS.includes(filterKey) && (
+                {MEMBERS_FILTERS.has(filterKey) && (
                   <AppliedMembersFilters
+                    className="p-1"
+                    workspaceSlug={workspaceSlug}
                     editable={isEditingAllowed}
                     handleRemove={(val) => handleRemoveFilter(filterKey, val)}
                     values={value}

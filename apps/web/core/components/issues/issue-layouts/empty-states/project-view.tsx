@@ -4,25 +4,23 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // components
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
-export const ProjectViewEmptyState = observer(function ProjectViewEmptyState() {
+export function ProjectViewEmptyState() {
   // store hooks
   const { toggleCreateIssueModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
 
   // auth
-  const isCreatingIssueAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const isCreatingIssueAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     // TODO: Add translation
@@ -42,4 +40,4 @@ export const ProjectViewEmptyState = observer(function ProjectViewEmptyState() {
       ]}
     />
   );
-});
+}

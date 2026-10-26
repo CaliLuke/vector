@@ -30,7 +30,7 @@ export function isSortableDragData(
 
 function Draggable({ children, data, className }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState<boolean>(false); // NEW
+  const [dragging, setDragging] = useState<boolean>(false);
   const [isDraggedOver, setIsDraggedOver] = useState(false);
 
   const [closestEdge, setClosestEdge] = useState<string | null>(null);
@@ -38,11 +38,11 @@ function Draggable({ children, data, className }: Props) {
     const el = ref.current;
 
     if (el) {
-      combine(
+      return combine(
         draggable({
           element: el,
-          onDragStart: () => setDragging(true), // NEW
-          onDrop: () => setDragging(false), // NEW
+          onDragStart: () => setDragging(true),
+          onDrop: () => setDragging(false),
           getInitialData: () => data,
         }),
         dropTargetForElements({
@@ -68,6 +68,7 @@ function Draggable({ children, data, className }: Props) {
         })
       );
     }
+    return undefined;
   }, [data]);
 
   return (

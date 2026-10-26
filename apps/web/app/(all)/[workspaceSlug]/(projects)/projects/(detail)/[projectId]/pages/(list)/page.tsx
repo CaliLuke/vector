@@ -4,29 +4,25 @@
  * See the LICENSE file for details.
  */
 
-import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { useTheme } from "next-themes";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
-import { useTranslation } from "@plane/i18n";
+import { EUserPermissions } from "@plane/constants";
 import type { TPageNavigationTabs } from "@plane/types";
-import { EUserProjectRoles } from "@plane/types";
 // assets
 import darkPagesAsset from "@/app/assets/empty-state/disabled-feature/pages-dark.webp?url";
 import lightPagesAsset from "@/app/assets/empty-state/disabled-feature/pages-light.webp?url";
 // components
 import { PageHead } from "@/components/core/page-title";
-import { DetailedEmptyState } from "@/components/empty-state/detailed-empty-state-root";
+import { ProjectFeatureDisabledState } from "@/components/empty-state/project-feature-disabled";
 import { PagesListRoot } from "@/components/pages/list/root";
 import { PagesListView } from "@/components/pages/pages-list-view";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject, useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 // plane web hooks
-import { EPageStoreType } from "@/hooks/store";
 
 const getPageType = (pageType?: string | null): TPageNavigationTabs => {
   if (pageType === "private") return "private";
@@ -36,57 +32,44 @@ const getPageType = (pageType?: string | null): TPageNavigationTabs => {
 
 function ProjectPagesPage(): React.JSX.Element | null {
   // router
-  const router = useRouter();
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const type = searchParams.get("type");
   const { workspaceSlug, projectId } = Route.useParams();
   // theme hook
   const { resolvedTheme } = useTheme();
-  // plane hooks
-  const { t } = useTranslation();
   // store hooks
-  const { getProjectById, currentProjectDetails } = useProject();
-  const { allowPermissions } = useUserPermissions();
+  const projectQuery = useRouteProject();
+  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug);
+  const currentProjectDetails = projectQuery.project;
+  const { can } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectCatalogue.projects?.find((row) => row.id === projectId);
   const pageTitle = project?.name ? `${project?.name} - Pages` : undefined;
-  const canPerformEmptyStateActions = allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT);
+  const canPerformEmptyStateActions = can([EUserPermissions.ADMIN]);
   const resolvedPath = resolvedTheme === "light" ? lightPagesAsset : darkPagesAsset;
   const pageType = getPageType(type);
 
   // No access to cycle
   if (currentProjectDetails?.page_view === false)
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <DetailedEmptyState
-          title={t("disabled_project.empty_state.page.title")}
-          description={t("disabled_project.empty_state.page.description")}
-          assetPath={resolvedPath}
-          primaryButton={{
-            text: t("disabled_project.empty_state.page.primary_button.text"),
-            onClick: () => {
-              void router.navigate({ href: `/${workspaceSlug}/settings/projects/${projectId}/features` });
-            },
-            disabled: !canPerformEmptyStateActions,
-          }}
-        />
-      </div>
+      <ProjectFeatureDisabledState
+        feature="page"
+        assetPath={resolvedPath}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        isManageDisabled={!canPerformEmptyStateActions}
+      />
     );
   return (
     <>
       <PageHead title={pageTitle} />
-      <PagesListView
-        pageType={pageType}
-        projectId={projectId}
-        storeType={EPageStoreType.PROJECT}
-        workspaceSlug={workspaceSlug}
-      >
-        <PagesListRoot pageType={pageType} storeType={EPageStoreType.PROJECT} />
+      <PagesListView pageType={pageType} projectId={projectId} workspaceSlug={workspaceSlug}>
+        <PagesListRoot pageType={pageType} workspaceSlug={workspaceSlug} />
       </PagesListView>
     </>
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/")({
-  component: observer(ProjectPagesPage),
+  component: ProjectPagesPage,
 });

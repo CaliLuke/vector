@@ -18,7 +18,7 @@ const (
 	writeParent  = "33333333-3333-4333-8333-333333333333"
 )
 
-type writeDatabase struct {
+type parentWriteDatabase struct {
 	label   Label
 	queries []string
 	args    [][]any
@@ -26,13 +26,38 @@ type writeDatabase struct {
 	saved   bool
 }
 
-func (db *writeDatabase) QueryRow(_ context.Context, query string, args ...any) pgx.Row {
+type writeTransaction struct {
+	pgx.Tx
+	database *parentWriteDatabase
+}
+
+func (db *parentWriteDatabase) Begin(context.Context) (pgx.Tx, error) {
+	return &writeTransaction{database: db}, nil
+}
+
+func (tx *writeTransaction) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
+	return tx.database.QueryRow(ctx, query, args...)
+}
+
+func (*writeTransaction) Commit(context.Context) error   { return nil }
+func (*writeTransaction) Rollback(context.Context) error { return nil }
+
+func (db *parentWriteDatabase) QueryRow(_ context.Context, query string, args ...any) pgx.Row {
 	db.queries = append(db.queries, query)
 	db.args = append(db.args, args)
 	if db.row != nil {
 		return db.row(query, args)
 	}
 	switch {
+	case strings.Contains(query, "FOR UPDATE OF project"):
+		return stringRow("workspace")
+	case strings.Contains(query, "FOR KEY SHARE"):
+		if args[0] == writeParent {
+			return stringRow(writeParent)
+		}
+		return rowFunc(func(...any) error { return pgx.ErrNoRows })
+	case strings.Contains(query, "WITH RECURSIVE ancestry"):
+		return boolPairRow(false, false)
 	case strings.Contains(query, "SELECT EXISTS"):
 		return boolRow(false)
 	case strings.Contains(query, "UPDATE labels SET"):
@@ -54,6 +79,21 @@ func (db *writeDatabase) QueryRow(_ context.Context, query string, args ...any) 
 	}
 }
 
+func stringRow(value string) pgx.Row {
+	return rowFunc(func(destinations ...any) error {
+		*destinations[0].(*string) = value
+		return nil
+	})
+}
+
+func boolPairRow(first, second bool) pgx.Row {
+	return rowFunc(func(destinations ...any) error {
+		*destinations[0].(*bool) = first
+		*destinations[1].(*bool) = second
+		return nil
+	})
+}
+
 func writeLabelRow(label Label) pgx.Row {
 	return rowFunc(func(destinations ...any) error {
 		*destinations[0].(*string) = label.ID
@@ -72,22 +112,9 @@ func existingWriteLabel() Label {
 	return Label{ID: writeID, Name: "Alpha", Color: "#111111", ProjectID: &project, WorkspaceID: "workspace", SortOrder: 10}
 }
 
-type writePublisher struct {
-	db       *writeDatabase
-	args     []string
-	err      error
-	sawSaved bool
-}
-
-func (p *writePublisher) SoftDelete(_ context.Context, database, model, id string) error {
-	p.sawSaved = p.db.saved
-	p.args = []string{database, model, id}
-	return p.err
-}
-
-func newWriteRepository(t *testing.T, db *writeDatabase, publisher *writePublisher) *WriteRepository {
+func newWriteRepository(t *testing.T, db *parentWriteDatabase) *WriteRepository {
 	t.Helper()
-	repository, err := NewWriteRepository(db, publisher)
+	repository, err := NewWriteRepository(db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,31 +132,9 @@ func assertWriteHTTPError(t *testing.T, err error, status int, body map[string]a
 	}
 }
 
-func TestDeleteSavesBeforePublishingAndPreservesTaskArgumentsOnFailure(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	publishError := errors.New("broker unavailable")
-	publisher := &writePublisher{db: db, err: publishError}
-	repository := newWriteRepository(t, db, publisher)
-
-	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodDelete, strings.NewReader(`{"ignored":`), "text/plain")
-
-	if !errors.Is(err, publishError) {
-		t.Fatalf("error = %v", err)
-	}
-	if !db.saved || !publisher.sawSaved {
-		t.Fatal("soft delete was not saved before task publication")
-	}
-	if !reflect.DeepEqual(publisher.args, []string{"db", "label", writeID}) {
-		t.Fatalf("task args = %v", publisher.args)
-	}
-	if len(db.queries) != 2 || !strings.Contains(db.queries[1], "deleted_at=clock_timestamp()") {
-		t.Fatalf("queries = %v", db.queries)
-	}
-}
-
 func TestPutMissingTargetPrecedesMalformedBody(t *testing.T) {
-	db := &writeDatabase{row: func(string, []any) pgx.Row { return rowFunc(func(...any) error { return pgx.ErrNoRows }) }}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{row: func(string, []any) pgx.Row { return rowFunc(func(...any) error { return pgx.ErrNoRows }) }}
+	repository := newWriteRepository(t, db)
 
 	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPut, strings.NewReader(`{"name":`), "application/json")
 
@@ -140,13 +145,13 @@ func TestPutMissingTargetPrecedesMalformedBody(t *testing.T) {
 }
 
 func TestPatchExactDuplicatePrecedesMissingTarget(t *testing.T) {
-	db := &writeDatabase{row: func(query string, _ []any) pgx.Row {
+	db := &parentWriteDatabase{row: func(query string, _ []any) pgx.Row {
 		if strings.Contains(query, "SELECT EXISTS") {
 			return boolRow(true)
 		}
 		return rowFunc(func(...any) error { return pgx.ErrNoRows })
 	}}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	repository := newWriteRepository(t, db)
 
 	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"name":"Beta"}`), "application/json")
 
@@ -166,9 +171,9 @@ func TestPatchOmittedParentPreservesItAndNullClearsIt(t *testing.T) {
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
 			parent := writeParent
-			db := &writeDatabase{label: existingWriteLabel()}
+			db := &parentWriteDatabase{label: existingWriteLabel()}
 			db.label.Parent = &parent
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			repository := newWriteRepository(t, db)
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(scenario.body), "application/json")
 			if err != nil {
 				t.Fatal(err)
@@ -186,37 +191,29 @@ func TestPatchOmittedParentPreservesItAndNullClearsIt(t *testing.T) {
 	}
 }
 
-func TestPatchValidParentCanBelongToAnotherProject(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
+func TestPatchRejectsParentOutsideProject(t *testing.T) {
+	db := &parentWriteDatabase{label: existingWriteLabel()}
 	db.row = func(query string, _ []any) pgx.Row {
-		if strings.Contains(query, "SELECT EXISTS") {
-			return boolRow(true)
+		if strings.Contains(query, "FOR UPDATE OF project") {
+			return stringRow("workspace")
 		}
-		if strings.Contains(query, "UPDATE labels SET") {
-			parent := writeParent
-			db.label.Parent = &parent
-			db.saved = true
+		if strings.Contains(query, "FOR KEY SHARE") {
+			return rowFunc(func(...any) error { return pgx.ErrNoRows })
 		}
 		return writeLabelRow(db.label)
 	}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	repository := newWriteRepository(t, db)
 
-	label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"parent":"`+writeParent+`"}`), "application/json")
-
-	if err != nil {
-		t.Fatal(err)
-	}
-	if label.Parent == nil || *label.Parent != writeParent {
-		t.Fatalf("parent = %v", label.Parent)
-	}
-	if len(db.args) < 2 || db.args[1][0] != writeParent {
-		t.Fatalf("parent lookup args = %v", db.args)
+	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"parent":"`+writeParent+`"}`), "application/json")
+	assertWriteHTTPError(t, err, 400, map[string]any{"parent": []string{`Invalid pk "` + writeParent + `" - object does not exist.`}})
+	if db.saved {
+		t.Fatal("out-of-project parent changed the label")
 	}
 }
 
 func TestPatchNaNSortOrderIsPassedToPersistence(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	repository := newWriteRepository(t, db)
 
 	label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(`{"sort_order":"NaN"}`), "application/json")
 
@@ -242,8 +239,8 @@ func TestPatchPythonFloatSyntaxAndOverflowArePersisted(t *testing.T) {
 		{"overflow", `{"sort_order":"1e10000"}`, 0, true},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 
 			label, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(scenario.body), "application/json")
 
@@ -271,8 +268,8 @@ func TestPatchParentPrimaryKeyCoercionMatchesRecordedCases(t *testing.T) {
 		{"boolean", `{"parent":true}`, "Incorrect type. Expected pk value, received bool."},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, http.MethodPatch, strings.NewReader(scenario.body), "application/json")
 

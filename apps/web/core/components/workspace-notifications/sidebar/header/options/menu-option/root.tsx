@@ -5,7 +5,6 @@
  */
 
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
 import { CheckCircle, Clock, MoreVertical } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 // plane imports
@@ -13,7 +12,7 @@ import { ArchiveIcon, CheckIcon } from "@plane/propel/icons";
 import type { TNotificationFilter } from "@plane/types";
 import { PopoverMenu } from "@plane/ui";
 // hooks
-import { useWorkspaceNotifications } from "@/hooks/store/notifications";
+import { useNotifications } from "@/components/workspace-notifications/provider";
 // local imports
 import { NotificationMenuOptionItem } from "./menu-item";
 import { IconButton } from "@plane/propel/icon-button";
@@ -28,9 +27,9 @@ export type TPopoverMenuOptions = {
   onClick?: (() => void) | undefined;
 };
 
-export const NotificationHeaderMenuOption = observer(function NotificationHeaderMenuOption() {
+export const NotificationHeaderMenuOption = function NotificationHeaderMenuOption() {
   // hooks
-  const { filters, updateFilters, updateBulkFilters } = useWorkspaceNotifications();
+  const { filters, updateFilters, updateBulkFilters } = useNotifications();
   const { t } = useTranslation();
 
   const handleFilterChange = (filterType: keyof TNotificationFilter, filterValue: boolean) =>
@@ -89,4 +88,4 @@ export const NotificationHeaderMenuOption = observer(function NotificationHeader
       }}
     />
   );
-});
+};

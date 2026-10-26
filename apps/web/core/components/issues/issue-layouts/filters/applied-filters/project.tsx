@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { CloseIcon } from "@plane/propel/icons";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 type Props = {
   handleRemove: (val: string) => void;
@@ -16,15 +15,15 @@ type Props = {
   editable: boolean | undefined;
 };
 
-export const AppliedProjectFilters = observer(function AppliedProjectFilters(props: Props) {
+export function AppliedProjectFilters(props: Props) {
   const { handleRemove, values, editable } = props;
   // store hooks
-  const { projectMap } = useProject();
+  const projectRows = useWorkspaceProjectDetails().projects;
 
   return (
     <>
       {values.map((projectId) => {
-        const projectDetails = projectMap?.[projectId] ?? null;
+        const projectDetails = projectRows?.find((project) => project.id === projectId) ?? null;
 
         if (!projectDetails) return null;
 
@@ -48,4 +47,4 @@ export const AppliedProjectFilters = observer(function AppliedProjectFilters(pro
       })}
     </>
   );
-});
+}

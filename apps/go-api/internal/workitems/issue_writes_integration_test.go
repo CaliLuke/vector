@@ -19,7 +19,8 @@ func TestAPICreateDefaultIssueTypeMatchesDjangoFirstPrimaryKey(t *testing.T) {
 		}
 		defer conn.Close(ctx)
 		_, err = conn.Exec(ctx, `
-CREATE TABLE issue_types(id uuid PRIMARY KEY, is_default boolean NOT NULL, deleted_at timestamptz, created_at timestamptz NOT NULL);
+CREATE TABLE work_item_type_settings(workspace_id uuid PRIMARY KEY, enabled boolean NOT NULL);
+CREATE TABLE issue_types(id uuid PRIMARY KEY, workspace_id uuid, is_default boolean NOT NULL, deleted_at timestamptz, created_at timestamptz NOT NULL);
 CREATE TABLE project_issue_types(project_id uuid NOT NULL, issue_type_id uuid NOT NULL);
 INSERT INTO issue_types(id,is_default,created_at) VALUES
  ('00000000-0000-4000-8000-000000000001',true,'2024-01-01T00:00:00Z'),

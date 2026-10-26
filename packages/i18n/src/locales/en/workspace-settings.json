@@ -6,6 +6,7 @@
     "copy_key": "Copy and save this secret key in Vector Pages. You can't see this key after you hit Close. A CSV file containing the key has been downloaded.",
     "token_copied": "Token copied to clipboard.",
     "settings": {
+      "work_item_types": { "title": "Work item Types", "hierarchy": "Hierarchy" },
       "general": {
         "title": "General",
         "upload_logo": "Upload logo",

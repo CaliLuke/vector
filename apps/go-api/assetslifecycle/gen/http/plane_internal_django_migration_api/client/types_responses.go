@@ -4464,6 +4464,114 @@ func NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttach
 	return v
 }
 
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500
+// builds a PlaneInternalDjangoMigrationAPI service
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk endpoint
+// PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500 error.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500(body map[string]loom.JSONValue) planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500 {
+	var v map[string]loom.JSONValue
+	if body != nil {
+		v = make(map[string]loom.JSONValue, len(body))
+		for key, val := range body {
+			tk := key
+			tv := val
+			v[tk] = tv
+		}
+	}
+
+	return v
+}
+
 // NewPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkStatus400
 // builds a PlaneInternalDjangoMigrationAPI service
 // PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk endpoint

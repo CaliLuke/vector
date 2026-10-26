@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { Loader } from "lucide-react";
 import { CloseIcon } from "@plane/propel/icons";
 // plane imports
@@ -13,7 +13,7 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IState, TStateOperationsCallbacks } from "@plane/types";
 import { AlertModalCore } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
@@ -24,7 +24,7 @@ type TStateDelete = {
   shouldTrackEvents?: boolean;
 };
 
-export const StateDelete = observer(function StateDelete(props: TStateDelete) {
+export const StateDelete = function StateDelete(props: TStateDelete) {
   const { totalStates, state, deleteStateCallback } = props;
   // hooks
   const { isMobile } = usePlatformOS();
@@ -102,4 +102,4 @@ export const StateDelete = observer(function StateDelete(props: TStateDelete) {
       </Tooltip>
     </>
   );
-});
+};

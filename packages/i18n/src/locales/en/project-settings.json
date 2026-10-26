@@ -318,6 +318,7 @@
         }
       }
     },
+    "releases": { "heading": "Releases" },
     "work_item_types": {
       "heading": "Work item Types",
       "description": "Create and customize different types of work items with unique properties"

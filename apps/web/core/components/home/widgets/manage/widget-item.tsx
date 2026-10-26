@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
+import { treeDropHandlers } from "@/lib/tree-drop-instruction";
+import { renderNativeDragPreview } from "@/lib/native-drag-preview";
 import React, { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -13,44 +13,39 @@ import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapt
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { observer } from "mobx-react";
+import { attachReorderInstruction } from "@/lib/tree-drop-instruction";
 
-import { createRoot } from "react-dom/client";
 // plane types
 import { useTranslation } from "@plane/i18n";
-import type { InstructionType } from "@plane/types";
+import type { InstructionType, TWidgetEntityData } from "@plane/types";
 // plane ui
 import { DropIndicator, ToggleSwitch } from "@plane/ui";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useHome } from "@/hooks/store/use-home";
 import { HOME_WIDGETS_LIST } from "../../home-dashboard-widgets";
 import { WidgetItemDragHandle } from "./widget-item-drag-handle";
 import { getCanDrop } from "./widget.helpers";
 
 type Props = {
-  widgetId: string;
+  widget: TWidgetEntityData;
+  disabled: boolean;
   isLastChild: boolean;
   handleDrop: (self: DropTargetRecord, source: ElementDragPayload, location: DragLocationHistory) => void;
-  handleToggle: (workspaceSlug: string, widgetKey: string, is_enabled: boolean) => void;
+  handleToggle: () => void;
 };
 
-export const WidgetItem = observer(function WidgetItem(props: Props) {
+export const WidgetItem = function WidgetItem(props: Props) {
   // props
-  const { widgetId, isLastChild, handleDrop, handleToggle } = props;
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { widget, disabled, isLastChild, handleDrop, handleToggle } = props;
   //state
   const [isDragging, setIsDragging] = useState(false);
   const [instruction, setInstruction] = useState<InstructionType | undefined>(undefined);
   //ref
   const elementRef = useRef<HTMLDivElement>(null);
   // hooks
-  const { widgetsMap } = useHome();
   const { t } = useTranslation();
   // derived values
-  const widget = widgetsMap[widgetId];
   const widgetTitle = HOME_WIDGETS_LIST[widget.key]?.title;
 
   // drag and drop
@@ -73,12 +68,12 @@ export const WidgetItem = observer(function WidgetItem(props: Props) {
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
           setCustomNativeDragPreview({
             getOffset: pointerOutsideOfPreview({ x: "0px", y: "0px" }),
-            render: ({ container }) => {
-              const root = createRoot(container);
-              root.render(<div className="rounded-sm bg-surface-1 p-1 pr-2 text-13">{widget.key}</div>);
-              return () => root.unmount();
-            },
             nativeSetDragImage,
+            render: ({ container }) =>
+              renderNativeDragPreview(
+                container,
+                <div className="rounded-sm bg-surface-1 p-1 pr-2 text-13">{widget.key}</div>
+              ),
           });
         },
       }),
@@ -88,36 +83,11 @@ export const WidgetItem = observer(function WidgetItem(props: Props) {
         onDragStart: () => {
           setIsDragging(true);
         },
-        getData: ({ input, element }) => {
-          const blockedStates: InstructionType[] = ["make-child"];
-          if (!isLastChild) {
-            blockedStates.push("reorder-below");
-          }
-
-          return attachInstruction(initialData, {
-            input,
-            element,
-            currentLevel: 1,
-            indentPerLevel: 0,
-            mode: isLastChild ? "last-in-group" : "standard",
-            block: blockedStates,
-          });
-        },
-        onDrag: ({ self, source, location }) => {
-          const instruction = getInstructionFromPayload(self, source, location);
-          setInstruction(instruction);
-        },
-        onDragLeave: () => {
-          setInstruction(undefined);
-        },
-        onDrop: ({ self, source, location }) => {
-          setInstruction(undefined);
-          handleDrop(self, source, location);
-        },
+        getData: (target) => attachReorderInstruction(initialData, target, isLastChild),
+        ...treeDropHandlers(setInstruction, handleDrop),
       })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elementRef?.current, isDragging, isLastChild, widget.key]);
+  }, [handleDrop, isLastChild, widget]);
 
   return (
     <div className="">
@@ -135,12 +105,9 @@ export const WidgetItem = observer(function WidgetItem(props: Props) {
           <WidgetItemDragHandle sort_order={widget.sort_order} isDragging={isDragging} />
           <div>{t(widgetTitle, { count: 1 })}</div>
         </div>
-        <ToggleSwitch
-          value={widget.is_enabled}
-          onChange={() => handleToggle(workspaceSlug.toString(), widget.key, !widget.is_enabled)}
-        />
+        <ToggleSwitch value={widget.is_enabled} onChange={handleToggle} disabled={disabled} />
       </div>
       {isLastChild && <DropIndicator isVisible={instruction === "reorder-below"} />}
     </div>
   );
-});
+};

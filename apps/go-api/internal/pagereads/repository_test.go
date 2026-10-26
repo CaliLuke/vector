@@ -513,7 +513,7 @@ func TestDescriptionReturnsRawBinaryAndCoalescesNullToEmpty(t *testing.T) {
 	query := database.queries[1]
 	for _, fragment := range []string{
 		"COALESCE(page.description_binary, ''::bytea)", "project_page.deleted_at IS NULL",
-		"project_member.is_active = true", "page.owned_by_id = $1 OR page.access = 0",
+		"project_member.is_active = true", "page.owned_by_id=$1 OR page.access=0",
 	} {
 		if !strings.Contains(query, fragment) {
 			t.Errorf("description query missing %q", fragment)

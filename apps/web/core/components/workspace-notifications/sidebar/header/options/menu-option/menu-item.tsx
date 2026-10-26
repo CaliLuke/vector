@@ -4,15 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // local imports
 import type { TPopoverMenuOptions } from "./root";
 
 type Props = Omit<TPopoverMenuOptions, "key">;
 
-export const NotificationMenuOptionItem = observer(function NotificationMenuOptionItem(props: Props) {
+export const NotificationMenuOptionItem = function NotificationMenuOptionItem(props: Props) {
   const { type, label = "", isActive, prependIcon, appendIcon, onClick } = props;
 
   if (type === "menu-item")
@@ -37,4 +36,4 @@ export const NotificationMenuOptionItem = observer(function NotificationMenuOpti
     );
 
   return <div className="border-b border-subtle" />;
-});
+};

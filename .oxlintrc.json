@@ -49,6 +49,18 @@
     "typescript/no-explicit-any": "warn",
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@plane/utils",
+            "allowTypeImports": true,
+            "message": "Import runtime utilities from their module subpaths to avoid loading unrelated utility dependencies."
+          }
+        ]
+      }
+    ],
     "import/no-unassigned-import": [
       "warn",
       {

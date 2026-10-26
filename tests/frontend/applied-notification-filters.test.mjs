@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
-import { createReactDomTestEnvironment, React, act } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, act } from "./helpers/react.mjs";
 
 globalThis.__appliedNotificationFiltersTest = {
   filters: { type: { assigned: true, created: false, subscribed: false } },
@@ -15,7 +16,7 @@ registerWebModuleHooks();
 registerHooks({
   resolve(specifier, context, nextResolve) {
     const substitutes = {
-      "@/hooks/store/notifications": `export const useWorkspaceNotifications = () => ({
+      "@/components/workspace-notifications/provider": `export const useNotifications = () => ({
         filters: globalThis.__appliedNotificationFiltersTest.filters,
         updateFilters: (...args) => globalThis.__appliedNotificationFiltersTest.calls.push(args),
       });`,

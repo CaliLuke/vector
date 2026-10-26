@@ -5,12 +5,12 @@
  */
 
 import { useMemo } from "react";
-import { isEmpty } from "lodash-es";
-import { observer } from "mobx-react";
+import isEmpty from "lodash-es/isEmpty.js";
+
 import { SlidersHorizontal } from "lucide-react";
 // plane imports
 import type { IIssueDisplayFilterOptions, ILayoutDisplayFiltersOptions, IIssueDisplayProperties } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import {
   FilterDisplayProperties,
@@ -28,7 +28,7 @@ type TSubIssueDisplayFiltersProps = {
   isEpic?: boolean;
 };
 
-export const SubIssueDisplayFilters = observer(function SubIssueDisplayFilters(props: TSubIssueDisplayFiltersProps) {
+export const SubIssueDisplayFilters = function SubIssueDisplayFilters(props: TSubIssueDisplayFiltersProps) {
   const {
     isEpic = false,
     displayProperties,
@@ -104,4 +104,4 @@ export const SubIssueDisplayFilters = observer(function SubIssueDisplayFilters(p
       )}
     </>
   );
-});
+};

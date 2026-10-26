@@ -4,8 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import { differenceInDays, format, formatDistanceToNow, isAfter, isEqual, isValid, parseISO } from "date-fns";
-import { isNumber } from "lodash-es";
+import { differenceInDays } from "date-fns/differenceInDays";
+import { format } from "date-fns/format";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
+import { isAfter } from "date-fns/isAfter";
+import { isEqual } from "date-fns/isEqual";
+import { isValid } from "date-fns/isValid";
+import { parseISO } from "date-fns/parseISO";
+import isNumber from "lodash-es/isNumber.js";
 
 // Format Date Helpers
 /**

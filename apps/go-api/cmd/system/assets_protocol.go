@@ -55,6 +55,10 @@ func assetsReadServiceProtocols() []readServiceProtocol {
 		}
 		result = append(result, protocol)
 	}
+	// Vector-owned draft association is outside the frozen migration metadata.
+	draft := newSessionServiceProtocol("/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/", "POST, OPTIONS", "Draft assets", false)
+	draft.csrfForAuthenticatedSession = true
+	result = append(result, draft)
 	return result
 }
 

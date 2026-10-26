@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { subDays } from "date-fns";
+import { subDays } from "date-fns/subDays";
 // plane imports
 import { EPastDurationFilters } from "@plane/constants";
 // local imports

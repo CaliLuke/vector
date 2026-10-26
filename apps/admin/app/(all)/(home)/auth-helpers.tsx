@@ -4,7 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
+import { AuthService } from "@plane/services";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { Link } from "react-router";
 // plane packages
 import type { TAdminAuthErrorInfo } from "@plane/constants";
 import { SUPPORT_EMAIL, EAdminAuthErrorCodes } from "@plane/constants";
@@ -50,7 +52,7 @@ const errorCodeMessages: {
     message: () => (
       <div>
         Admin user already exists.&nbsp;
-        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
+        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" to={`/admin`}>
           Sign In
         </Link>
         &nbsp;now.
@@ -62,7 +64,7 @@ const errorCodeMessages: {
     message: () => (
       <div>
         Admin user does not exist.&nbsp;
-        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
+        <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" to={`/admin`}>
           Sign In
         </Link>
         &nbsp;now.
@@ -98,3 +100,12 @@ export const authErrorHandler = (errorCode: EAdminAuthErrorCodes, email?: string
 
   return undefined;
 };
+
+const authService = new AuthService();
+export async function submitInstanceAuthForm(form: HTMLFormElement | null) {
+  try {
+    await authService.submitForm(form);
+  } catch {
+    setToast({ type: TOAST_TYPE.ERROR, title: "Could not continue", message: "Please try again." });
+  }
+}

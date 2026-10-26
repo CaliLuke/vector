@@ -4,33 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 
-export const NavbarTheme = observer(function NavbarTheme() {
-  // states
-  const [appTheme, setAppTheme] = useState("light");
-  // theme
-  const { setTheme, theme } = useTheme();
-
-  const handleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
-  useEffect(() => {
-    if (!theme) return;
-    setAppTheme(theme);
-  }, [theme]);
-
+export function NavbarTheme() {
+  const { setTheme, resolvedTheme } = useTheme();
   return (
     <button
       type="button"
-      onClick={handleTheme}
+      aria-label="Toggle color theme"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       className="relative grid size-7 place-items-center rounded-sm bg-layer-transparent text-primary hover:bg-layer-transparent-hover"
     >
-      {appTheme === "light" ? <Moon className="size-3.5 shrink-0" /> : <Sun className="size-3.5 shrink-0" />}
+      <Moon className="size-3.5 shrink-0 dark:hidden" />
+      <Sun className="hidden size-3.5 shrink-0 dark:block" />
     </button>
   );
-});
+}

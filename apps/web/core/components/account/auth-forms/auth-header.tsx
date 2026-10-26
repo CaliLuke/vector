@@ -4,8 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery, skipToken } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
 import type { IWorkspaceMemberInvitation } from "@plane/types";
 // components
@@ -57,19 +56,21 @@ const Titles = {
 
 const workSpaceService = new WorkspaceService();
 
-export const AuthHeader = observer(function AuthHeader(props: TAuthHeader) {
+export const AuthHeader = function AuthHeader(props: TAuthHeader) {
   const { workspaceSlug, invitationId, invitationEmail, authMode, currentAuthStep } = props;
   // plane imports
   const { t } = useTranslation();
 
-  const { data: invitation, isLoading } = useSWR(
-    workspaceSlug && invitationId ? `WORKSPACE_INVITATION_${workspaceSlug}_${invitationId}` : null,
-    async () => workspaceSlug && invitationId && workSpaceService.getWorkspaceInvitation(workspaceSlug, invitationId),
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    }
-  );
+  const { data: invitation, isLoading } = useQuery({
+    queryKey: ["WORKSPACE_INVITATION", workspaceSlug, invitationId],
+    queryFn:
+      workspaceSlug && invitationId
+        ? async () =>
+            workspaceSlug && invitationId && workSpaceService.getWorkspaceInvitation(workspaceSlug, invitationId)
+        : skipToken,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
 
   const getHeaderSubHeader = (
     step: EAuthSteps,
@@ -107,7 +108,7 @@ export const AuthHeader = observer(function AuthHeader(props: TAuthHeader) {
     );
 
   return <AuthHeaderBase subHeader={subHeader} header={header} />;
-});
+};
 
 type TAuthHeaderBase = {
   header: React.ReactNode;

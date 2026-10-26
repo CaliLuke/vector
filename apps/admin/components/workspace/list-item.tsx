@@ -4,30 +4,21 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 // plane internal packages
 import { WEB_BASE_URL } from "@plane/constants";
 import { NewTabIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import { getFileURL } from "@plane/utils";
-// hooks
-import { useWorkspace } from "@/hooks/store";
+import { getFileURL } from "@plane/utils/file";
+import type { IWorkspace } from "@plane/types";
 
 type TWorkspaceListItemProps = {
-  workspaceId: string;
+  workspace: IWorkspace;
 };
 
-export const WorkspaceListItem = observer(function WorkspaceListItem({ workspaceId }: TWorkspaceListItemProps) {
-  // store hooks
-  const { getWorkspaceById } = useWorkspace();
-  // derived values
-  const workspace = getWorkspaceById(workspaceId);
-
-  if (!workspace) return null;
+export const WorkspaceListItem = function WorkspaceListItem({ workspace }: TWorkspaceListItemProps) {
   return (
     <a
-      key={workspaceId}
+      key={workspace.id}
       href={`${WEB_BASE_URL}/${encodeURIComponent(workspace.slug)}`}
       target="_blank"
       className="group flex items-center justify-between gap-2.5 truncate rounded-lg border border-subtle bg-layer-1 p-3 hover:border-subtle-1 hover:bg-layer-1-hover hover:shadow-raised-100"
@@ -86,4 +77,4 @@ export const WorkspaceListItem = observer(function WorkspaceListItem({ workspace
       </div>
     </a>
   );
-});
+};

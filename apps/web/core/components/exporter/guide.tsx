@@ -6,16 +6,16 @@
 
 import { useParams, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
-import { mutate } from "swr";
+import { useQueryClient } from "@tanstack/react-query";
 // constants
 import { EXPORT_SERVICES_LIST } from "@plane/constants";
 // local imports
 import { ExportForm } from "./export-form";
 import { PrevExports } from "./prev-exports";
 
-export const ExportGuide = observer(function ExportGuide() {
+export const ExportGuide = function ExportGuide() {
+  const queryClient = useQueryClient();
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
@@ -30,10 +30,12 @@ export const ExportGuide = observer(function ExportGuide() {
         <ExportForm
           workspaceSlug={workspaceSlug}
           provider={provider}
-          mutateServices={() => mutate(EXPORT_SERVICES_LIST(workspaceSlug, `${cursor}`, `${per_page}`))}
+          mutateServices={() =>
+            queryClient.invalidateQueries({ queryKey: EXPORT_SERVICES_LIST(workspaceSlug, `${cursor}`, `${per_page}`) })
+          }
         />
         <PrevExports workspaceSlug={workspaceSlug} cursor={cursor} per_page={per_page} setCursor={setCursor} />
       </div>
     </>
   );
-});
+};

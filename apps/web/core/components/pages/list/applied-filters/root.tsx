@@ -1,3 +1,4 @@
+import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -9,7 +10,7 @@ import { CloseIcon } from "@plane/propel/icons";
 // plane imports
 import type { TPageFilterProps } from "@plane/types";
 import { Tag } from "@plane/ui";
-import { replaceUnderscoreIfSnakeCase } from "@plane/utils";
+import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
 // components
 import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedMembersFilters } from "@/components/common/applied-filters/members";
@@ -25,6 +26,7 @@ const MEMBERS_FILTERS = ["created_by"];
 const DATE_FILTERS = ["created_at"];
 
 export function PageAppliedFiltersList(props: Props) {
+  const { workspaceSlug } = useParams({ strict: false });
   const { appliedFilters, handleClearAllFilters, handleRemoveFilter, alwaysAllowEditing } = props;
   const { t } = useTranslation();
 
@@ -54,6 +56,7 @@ export function PageAppliedFiltersList(props: Props) {
               )}
               {MEMBERS_FILTERS.includes(filterKey) && (
                 <AppliedMembersFilters
+                  workspaceSlug={workspaceSlug}
                   editable={isEditingAllowed}
                   handleRemove={(val) => handleRemoveFilter(filterKey, val)}
                   values={Array.isArray(value) ? value : []}

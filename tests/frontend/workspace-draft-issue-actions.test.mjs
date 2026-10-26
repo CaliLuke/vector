@@ -1,92 +1,65 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
 import test from "node:test";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
-const requireFromWeb = createRequire(new URL("../../apps/web/package.json", import.meta.url));
-const mobx = requireFromWeb("mobx");
-globalThis.__workspaceDraftMobx = mobx;
-globalThis.__workspaceDraftMobxUtils = requireFromWeb("mobx-utils");
-globalThis.__workspaceDraftService = {
-  createIssue: async () => undefined,
-};
 registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const exports = {
-      mobx: ["action", "computed", "makeObservable", "observable", "runInAction"],
-      "mobx-utils": ["computedFn"],
-    }[specifier];
-    if (exports) {
-      const source = specifier === "mobx" ? "__workspaceDraftMobx" : "__workspaceDraftMobxUtils";
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent(exports.map((name) => `export const ${name} = globalThis.${source}.${name};`).join("\n"))}`,
-      };
-    }
-    if (specifier === "@/services/issue/workspace_draft.service") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export default globalThis.__workspaceDraftService;")}`,
-      };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+const { webRequire } = await import("./helpers/react.mjs");
+const { MutationObserver, QueryClient } = webRequire("@tanstack/react-query");
+const { EUserWorkspaceRoles } = webRequire("@plane/types");
+const { workspaceDraftKeys, workspaceDraftMutationOptions } =
+  await import("../../apps/web/core/queries/workspace-drafts.ts");
+const { identityKeys } = await import("../../apps/web/core/queries/identity.ts");
+const { permissionKeys } = await import("../../apps/web/core/queries/permissions.ts");
+const { WorkspaceDraftService } = await import("../../apps/web/core/services/issue/workspace_draft.service.ts");
 
-const { WorkspaceDraftIssues } = await import("../../apps/web/core/store/issue/workspace-draft/issue.store.ts");
+const scope = {
+  accountId: "owner",
+  sessionGeneration: 0,
+  workspaceSlug: "default",
+  membershipRole: EUserWorkspaceRoles.ADMIN,
+  membershipRevision: "membership-v1",
+};
+const draft = { id: "draft", name: "Original", created_by: "owner", updated_by: "owner", is_draft: true };
 
-function setup() {
-  const workspaceUserInfo = mobx.observable({ default: { draft_issue_count: 0 } });
-  const store = new WorkspaceDraftIssues({
-    workspaceSlug: "default",
-    rootStore: { user: { permission: { workspaceUserInfo } } },
+function setup(t) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  t.after(() => client.clear());
+  client.setQueryData(identityKeys.currentUser(), { id: scope.accountId });
+  client.setQueryData(permissionKeys.workspaceMembership(scope.accountId, scope.workspaceSlug), {
+    is_active: true,
+    role: scope.membershipRole,
+    updated_at: scope.membershipRevision,
   });
-  return { store, workspaceUserInfo };
+  const key = workspaceDraftKeys.list(scope);
+  client.setQueryData(key, {
+    pages: [{ results: [draft], total_count: 1, next_page_results: false }],
+    pageParams: ["50:0:0"],
+  });
+  return { client, key };
 }
 
-test("creating a workspace draft issue clears its observed loader in an action", async (t) => {
-  mobx.configure({ enforceActions: "always" });
-  t.after(() => mobx.configure({ enforceActions: "observed" }));
-  const warnings = [];
-  t.mock.method(console, "warn", (message) => warnings.push(message));
-  const created = { id: "draft-1", created_at: "2026-10-10T12:00:00Z" };
-  globalThis.__workspaceDraftService.createIssue = async () => created;
-  const { store, workspaceUserInfo } = setup();
-  const snapshots = [];
-  const dispose = mobx.autorun(() =>
-    snapshots.push({ loader: store.loader, ids: [...(store.issueMapIds.default ?? [])] })
-  );
-  t.after(dispose);
+await test("a failed workspace draft edit preserves the accepted list record for retry", async (t) => {
+  const { client, key } = setup(t);
+  const failure = new Error("draft update failed");
+  t.mock.method(WorkspaceDraftService.prototype, "updateIssue", async () => {
+    throw failure;
+  });
+  const mutation = new MutationObserver(client, workspaceDraftMutationOptions(client, scope));
 
-  const result = await store.createIssue("default", { name: "Draft" });
+  await assert.rejects(mutation.mutate({ kind: "update", issueId: "draft", data: { name: "Unsaved" } }), failure);
 
-  assert.equal(result, created);
-  assert.deepEqual(snapshots, [
-    { loader: undefined, ids: [] },
-    { loader: "create", ids: [] },
-    { loader: undefined, ids: ["draft-1"] },
-  ]);
-  assert.equal(workspaceUserInfo.default.draft_issue_count, 1);
-  assert.deepEqual(warnings, []);
+  assert.equal(client.getQueryData(key).pages[0].results[0].name, "Original");
 });
 
-test("failed draft creation clears its observed loader in an action", async (t) => {
-  mobx.configure({ enforceActions: "always" });
-  t.after(() => mobx.configure({ enforceActions: "observed" }));
-  const warnings = [];
-  t.mock.method(console, "warn", (message) => warnings.push(message));
-  const failure = new Error("create failed");
-  globalThis.__workspaceDraftService.createIssue = async () => {
+await test("a failed draft deletion leaves the row available for another attempt", async (t) => {
+  const { client, key } = setup(t);
+  const failure = new Error("draft delete failed");
+  t.mock.method(WorkspaceDraftService.prototype, "deleteIssue", async () => {
     throw failure;
-  };
-  const { store } = setup();
-  const loaders = [];
-  const dispose = mobx.autorun(() => loaders.push(store.loader));
-  t.after(dispose);
+  });
+  const mutation = new MutationObserver(client, workspaceDraftMutationOptions(client, scope));
 
-  await assert.rejects(store.createIssue("default", { name: "Draft" }), failure);
+  await assert.rejects(mutation.mutate({ kind: "delete", issueId: "draft" }), failure);
 
-  assert.deepEqual(loaders, [undefined, "create", undefined]);
-  assert.deepEqual(warnings, []);
+  assert.deepEqual(client.getQueryData(key).pages[0].results, [draft]);
 });

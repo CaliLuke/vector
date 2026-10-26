@@ -4,13 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import type { Control } from "react-hook-form";
-import { Controller } from "react-hook-form";
 import type { IWebhook } from "@plane/types";
 import { Checkbox } from "@plane/ui";
 
+export type WebhookEvents = Pick<IWebhook, "project" | "cycle" | "module" | "issue" | "issue_comment">;
+
 export const INDIVIDUAL_WEBHOOK_OPTIONS: {
-  key: keyof IWebhook;
+  key: keyof WebhookEvents;
   label: string;
   description: string;
 }[] = [
@@ -42,29 +42,29 @@ export const INDIVIDUAL_WEBHOOK_OPTIONS: {
 ];
 
 type Props = {
-  control: Control<IWebhook, any>;
+  value: WebhookEvents;
+  onChange: (key: keyof WebhookEvents, value: boolean) => void;
+  disabled?: boolean;
 };
 
-export function WebhookIndividualEventOptions({ control }: Props) {
+export function WebhookIndividualEventOptions({ value, onChange, disabled }: Props) {
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-8 px-6 lg:grid-cols-2">
       {INDIVIDUAL_WEBHOOK_OPTIONS.map((option) => (
-        <Controller
-          key={option.key}
-          control={control}
-          name={option.key}
-          render={({ field: { onChange, value } }) => (
-            <div>
-              <div className="flex items-center gap-2">
-                <Checkbox id={option.key} onChange={() => onChange(!value)} checked={value === true} />
-                <label className="text-13" htmlFor={option.key}>
-                  {option.label}
-                </label>
-              </div>
-              <p className="mt-0.5 ml-6 text-11 text-tertiary">{option.description}</p>
-            </div>
-          )}
-        />
+        <div key={option.key}>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id={option.key}
+              onChange={() => onChange(option.key, !value[option.key])}
+              checked={value[option.key]}
+              disabled={disabled}
+            />
+            <label className="text-13" htmlFor={option.key}>
+              {option.label}
+            </label>
+          </div>
+          <p className="mt-0.5 ml-6 text-11 text-tertiary">{option.description}</p>
+        </div>
       ))}
     </div>
   );

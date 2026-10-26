@@ -18,11 +18,11 @@ export class APITokenService extends APIService {
    * @returns {Promise<IApiToken[]>} Array of API tokens associated with the workspace
    * @throws {Error} Throws response data if the request fails
    */
-  async list(): Promise<IApiToken[]> {
-    return this.get(`/api/users/api-tokens/`)
+  async list(signal?: AbortSignal): Promise<IApiToken[]> {
+    return this.get(`/api/users/api-tokens/`, {}, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -36,7 +36,7 @@ export class APITokenService extends APIService {
     return this.get(`/api/users/api-tokens/${tokenId}`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -50,7 +50,7 @@ export class APITokenService extends APIService {
     return this.post(`/api/users/api-tokens/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -64,7 +64,7 @@ export class APITokenService extends APIService {
     return this.delete(`/api/users/api-tokens/${tokenId}`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

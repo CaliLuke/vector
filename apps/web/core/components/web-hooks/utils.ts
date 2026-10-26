@@ -6,7 +6,7 @@
 
 // helpers
 import type { IWebhook, IWorkspace } from "@plane/types";
-import { renderFormattedPayloadDate } from "@plane/utils";
+import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 // types
 
 export const getCurrentHookAsCSV = (

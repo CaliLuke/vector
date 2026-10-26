@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
 import { Outlet } from "react-router";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
-import useSWR from "swr";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { PoweredBy } from "@/components/common/powered-by";
@@ -15,8 +15,6 @@ import { SomethingWentWrongError } from "@/components/issues/issue-layouts/error
 import { IssuesNavbarRoot } from "@/components/issues/navbar";
 // hooks
 import { PageNotFound } from "@/components/ui/not-found";
-import { usePublish, usePublishList } from "@/hooks/store/publish";
-import { useIssueFilter } from "@/hooks/store/use-issue-filter";
 import type { Route } from "./+types/layout";
 
 const DEFAULT_TITLE = "Vector";
@@ -95,40 +93,17 @@ export function shouldRevalidate({ currentParams, nextParams }: ShouldRevalidate
 
 function IssuesLayout(props: Route.ComponentProps) {
   const { anchor } = props.params;
-  // store hooks
-  const { fetchPublishSettings } = usePublishList();
-  const publishSettings = usePublish(anchor);
-  const { updateLayoutOptions } = useIssueFilter();
-  // fetch publish settings
-  const { error } = useSWR(
-    anchor ? `PUBLISH_SETTINGS_${anchor}` : null,
-    anchor
-      ? async () => {
-          const response = await fetchPublishSettings(anchor);
-          if (response.view_props) {
-            updateLayoutOptions({
-              list: !!response.view_props.list,
-              kanban: !!response.view_props.kanban,
-              calendar: !!response.view_props.calendar,
-              gantt: !!response.view_props.gantt,
-              spreadsheet: !!response.view_props.spreadsheet,
-            });
-          }
-        }
-      : null
-  );
+  const { data: publishSettings, error } = useQuery(publishSettingsOptions(anchor));
 
-  if (!publishSettings && !error) {
+  if (error && "status" in error && error.status === 404) return <PageNotFound />;
+  if (error) return <SomethingWentWrongError />;
+  if (!publishSettings) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-surface-1">
         <LogoSpinner />
       </div>
     );
   }
-
-  if (error?.status === 404) return <PageNotFound />;
-
-  if (error) return <SomethingWentWrongError />;
 
   return (
     <>
@@ -145,4 +120,4 @@ function IssuesLayout(props: Route.ComponentProps) {
   );
 }
 
-export default observer(IssuesLayout);
+export default IssuesLayout;

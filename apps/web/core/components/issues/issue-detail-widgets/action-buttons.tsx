@@ -12,6 +12,7 @@ import { LinkIcon, ViewsIcon, RelationPropertyIcon } from "@plane/propel/icons";
 import type { TIssueServiceType, TWorkItemWidgets } from "@plane/types";
 // local imports
 import { IssueAttachmentActionButton } from "./attachments";
+import { useAttachmentOperations } from "./attachments/helper";
 import { IssueLinksActionButton } from "./links";
 import { RelationActionButton } from "./relations";
 import { SubIssuesActionButton } from "./sub-issues";
@@ -30,6 +31,7 @@ export function IssueDetailWidgetActionButtons(props: Props) {
   const { workspaceSlug, projectId, issueId, disabled, issueServiceType, hideWidgets } = props;
   // translation
   const { t } = useTranslation();
+  const attachmentHelpers = useAttachmentOperations(workspaceSlug, projectId, issueId, issueServiceType);
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -77,8 +79,7 @@ export function IssueDetailWidgetActionButtons(props: Props) {
       {!hideWidgets?.includes("attachments") && (
         <IssueAttachmentActionButton
           workspaceSlug={workspaceSlug}
-          projectId={projectId}
-          issueId={issueId}
+          attachmentHelpers={attachmentHelpers}
           customButton={
             <IssueDetailWidgetButton
               title={t("common.attach")}
@@ -87,7 +88,6 @@ export function IssueDetailWidgetActionButtons(props: Props) {
             />
           }
           disabled={disabled}
-          issueServiceType={issueServiceType}
         />
       )}
     </div>

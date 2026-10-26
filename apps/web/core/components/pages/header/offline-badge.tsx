@@ -4,23 +4,26 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
 // plane imports
 import { Tooltip } from "@plane/propel/tooltip";
 // hooks
 import useOnlineStatus from "@/hooks/use-online-status";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageOfflineBadge = observer(function PageOfflineBadge({ page }: Props) {
+export function PageOfflineBadge({ page, workspaceSlug }: Props) {
   // use online status
   const { isOnline } = useOnlineStatus();
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
 
-  if (!page.isContentEditable || isOnline) return null;
+  if (!isContentEditable || isOnline) return null;
 
   return (
     <Tooltip
@@ -33,4 +36,4 @@ export const PageOfflineBadge = observer(function PageOfflineBadge({ page }: Pro
       </div>
     </Tooltip>
   );
-});
+}

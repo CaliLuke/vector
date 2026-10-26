@@ -26,6 +26,9 @@ type Server struct {
 	VersionDetail            http.Handler
 	DescriptionVersions      http.Handler
 	DescriptionVersionDetail http.Handler
+	PropertyHistory          http.Handler
+	PropertyVersions         http.Handler
+	PropertyVersionDetail    http.Handler
 }
 
 // MountPoint holds information about the mounted endpoints.
@@ -55,12 +58,18 @@ func New(e *workitemhistory.Endpoints, mux loomhttp.Muxer, decoder func(*http.Re
 			{"VersionDetail", "GET", "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/"},
 			{"DescriptionVersions", "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/"},
 			{"DescriptionVersionDetail", "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/"},
+			{"PropertyHistory", "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/"},
+			{"PropertyVersions", "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/"},
+			{"PropertyVersionDetail", "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/history/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/meta/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/versions/{pk}/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/"},
 			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/"},
+			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/"},
+			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/"},
+			{"CORS preflight", "OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/"},
 		},
 		History:                  NewHistoryHandler(e.History, mux, decoder, encoder, errhandler, formatter),
 		Meta:                     NewMetaHandler(e.Meta, mux, decoder, encoder, errhandler, formatter),
@@ -68,6 +77,9 @@ func New(e *workitemhistory.Endpoints, mux loomhttp.Muxer, decoder func(*http.Re
 		VersionDetail:            NewVersionDetailHandler(e.VersionDetail, mux, decoder, encoder, errhandler, formatter),
 		DescriptionVersions:      NewDescriptionVersionsHandler(e.DescriptionVersions, mux, decoder, encoder, errhandler, formatter),
 		DescriptionVersionDetail: NewDescriptionVersionDetailHandler(e.DescriptionVersionDetail, mux, decoder, encoder, errhandler, formatter),
+		PropertyHistory:          NewPropertyHistoryHandler(e.PropertyHistory, mux, decoder, encoder, errhandler, formatter),
+		PropertyVersions:         NewPropertyVersionsHandler(e.PropertyVersions, mux, decoder, encoder, errhandler, formatter),
+		PropertyVersionDetail:    NewPropertyVersionDetailHandler(e.PropertyVersionDetail, mux, decoder, encoder, errhandler, formatter),
 	}
 }
 
@@ -84,6 +96,9 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.VersionDetail = m(s.VersionDetail)
 	s.DescriptionVersions = m(s.DescriptionVersions)
 	s.DescriptionVersionDetail = m(s.DescriptionVersionDetail)
+	s.PropertyHistory = m(s.PropertyHistory)
+	s.PropertyVersions = m(s.PropertyVersions)
+	s.PropertyVersionDetail = m(s.PropertyVersionDetail)
 }
 
 // MethodNames returns the methods served.
@@ -111,12 +126,24 @@ func Mount(mux loomhttp.Muxer, h *Server) {
 	mux.Handle("OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/description-versions/{pk}/", func(w http.ResponseWriter, r *http.Request) {
 		h.corsPolicy.HandlePreflight(w, r, []string{"GET"})
 	})
+	mux.Handle("OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/", func(w http.ResponseWriter, r *http.Request) {
+		h.corsPolicy.HandlePreflight(w, r, []string{"GET"})
+	})
+	mux.Handle("OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/", func(w http.ResponseWriter, r *http.Request) {
+		h.corsPolicy.HandlePreflight(w, r, []string{"GET"})
+	})
+	mux.Handle("OPTIONS", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/", func(w http.ResponseWriter, r *http.Request) {
+		h.corsPolicy.HandlePreflight(w, r, []string{"GET"})
+	})
 	MountHistoryHandler(mux, h.History, h.corsPolicy)
 	MountMetaHandler(mux, h.Meta, h.corsPolicy)
 	MountVersionsHandler(mux, h.Versions, h.corsPolicy)
 	MountVersionDetailHandler(mux, h.VersionDetail, h.corsPolicy)
 	MountDescriptionVersionsHandler(mux, h.DescriptionVersions, h.corsPolicy)
 	MountDescriptionVersionDetailHandler(mux, h.DescriptionVersionDetail, h.corsPolicy)
+	MountPropertyHistoryHandler(mux, h.PropertyHistory, h.corsPolicy)
+	MountPropertyVersionsHandler(mux, h.PropertyVersions, h.corsPolicy)
+	MountPropertyVersionDetailHandler(mux, h.PropertyVersionDetail, h.corsPolicy)
 }
 
 // Mount configures the mux to serve the work_item_history endpoints.
@@ -389,6 +416,144 @@ func NewDescriptionVersionDetailHandler(
 			return
 		}
 		o := res.(*workitemhistory.DescriptionVersionDetailResponseData)
+		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
+			return encodeResponse(ctx, w, o.Result)
+		}, encodeError, errhandler)
+		return
+	})
+}
+
+// MountPropertyHistoryHandler configures the mux to serve the
+// "work_item_history" service "property_history" endpoint.
+func MountPropertyHistoryHandler(mux loomhttp.Muxer, h http.Handler, corsPolicy loomhttp.RuntimeCORSPolicy) {
+	h = corsPolicy.Handler(loomhttp.AsHandlerFunc(h))
+	loomhttp.MountHandler(mux, "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/", h)
+}
+
+// NewPropertyHistoryHandler creates a HTTP handler which loads the HTTP
+// request and calls the "work_item_history" service "property_history"
+// endpoint.
+func NewPropertyHistoryHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodePropertyHistoryRequest(mux, decoder)
+		encodeResponse = EncodePropertyHistoryResponse(encoder)
+		encodeError    = EncodePropertyHistoryError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lifecycle := loomhttp.NewHandlerLifecycle(w, r, "work_item_history", "property_history")
+		defer lifecycle.End()
+		ctx := lifecycle.Context()
+		w = lifecycle.Writer()
+		payload, err := decodeRequest(r)
+		if err != nil {
+			lifecycle.DecodeFailed(err, encodeError, errhandler)
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			lifecycle.HandlerFailed(err, false, encodeError, errhandler)
+			return
+		}
+		o := res.(*workitemhistory.PropertyHistoryResponseData)
+		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
+			return encodeResponse(ctx, w, o.Result)
+		}, encodeError, errhandler)
+		return
+	})
+}
+
+// MountPropertyVersionsHandler configures the mux to serve the
+// "work_item_history" service "property_versions" endpoint.
+func MountPropertyVersionsHandler(mux loomhttp.Muxer, h http.Handler, corsPolicy loomhttp.RuntimeCORSPolicy) {
+	h = corsPolicy.Handler(loomhttp.AsHandlerFunc(h))
+	loomhttp.MountHandler(mux, "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/", h)
+}
+
+// NewPropertyVersionsHandler creates a HTTP handler which loads the HTTP
+// request and calls the "work_item_history" service "property_versions"
+// endpoint.
+func NewPropertyVersionsHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodePropertyVersionsRequest(mux, decoder)
+		encodeResponse = EncodePropertyVersionsResponse(encoder)
+		encodeError    = EncodePropertyVersionsError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lifecycle := loomhttp.NewHandlerLifecycle(w, r, "work_item_history", "property_versions")
+		defer lifecycle.End()
+		ctx := lifecycle.Context()
+		w = lifecycle.Writer()
+		payload, err := decodeRequest(r)
+		if err != nil {
+			lifecycle.DecodeFailed(err, encodeError, errhandler)
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			lifecycle.HandlerFailed(err, false, encodeError, errhandler)
+			return
+		}
+		o := res.(*workitemhistory.PropertyVersionsResponseData)
+		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
+			return encodeResponse(ctx, w, o.Result)
+		}, encodeError, errhandler)
+		return
+	})
+}
+
+// MountPropertyVersionDetailHandler configures the mux to serve the
+// "work_item_history" service "property_version_detail" endpoint.
+func MountPropertyVersionDetailHandler(mux loomhttp.Muxer, h http.Handler, corsPolicy loomhttp.RuntimeCORSPolicy) {
+	h = corsPolicy.Handler(loomhttp.AsHandlerFunc(h))
+	loomhttp.MountHandler(mux, "GET", "/api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/", h)
+}
+
+// NewPropertyVersionDetailHandler creates a HTTP handler which loads the HTTP
+// request and calls the "work_item_history" service "property_version_detail"
+// endpoint.
+func NewPropertyVersionDetailHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodePropertyVersionDetailRequest(mux, decoder)
+		encodeResponse = EncodePropertyVersionDetailResponse(encoder)
+		encodeError    = EncodePropertyVersionDetailError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lifecycle := loomhttp.NewHandlerLifecycle(w, r, "work_item_history", "property_version_detail")
+		defer lifecycle.End()
+		ctx := lifecycle.Context()
+		w = lifecycle.Writer()
+		payload, err := decodeRequest(r)
+		if err != nil {
+			lifecycle.DecodeFailed(err, encodeError, errhandler)
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			lifecycle.HandlerFailed(err, false, encodeError, errhandler)
+			return
+		}
+		o := res.(*workitemhistory.PropertyVersionDetailResponseData)
 		lifecycle.WriteRawBody(o.Body, func(ctx context.Context, w http.ResponseWriter) error {
 			return encodeResponse(ctx, w, o.Result)
 		}, encodeError, errhandler)

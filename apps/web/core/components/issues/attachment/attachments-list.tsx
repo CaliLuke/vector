@@ -4,9 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 // types
 import type { TAttachmentHelpers } from "../issue-detail-widgets/attachments/helper";
 // components
@@ -14,35 +12,37 @@ import { IssueAttachmentsDetail } from "./attachment-detail";
 import { IssueAttachmentsUploadDetails } from "./attachment-upload-details";
 
 type TIssueAttachmentsList = {
-  issueId: string;
+  workspaceSlug: string;
   attachmentHelpers: TAttachmentHelpers;
   disabled?: boolean;
 };
 
-export const IssueAttachmentsList = observer(function IssueAttachmentsList(props: TIssueAttachmentsList) {
-  const { issueId, attachmentHelpers, disabled } = props;
-  // store hooks
-  const {
-    attachment: { getAttachmentsByIssueId },
-  } = useIssueDetail();
+export function IssueAttachmentsList(props: TIssueAttachmentsList) {
+  const { workspaceSlug, attachmentHelpers, disabled } = props;
   // derived values
   const { snapshot: attachmentSnapshot } = attachmentHelpers;
   const { uploadStatus } = attachmentSnapshot;
-  const issueAttachments = getAttachmentsByIssueId(issueId);
+  const issueAttachments = attachmentSnapshot.attachments;
 
   return (
     <>
-      {uploadStatus?.map((uploadStatus) => (
-        <IssueAttachmentsUploadDetails key={uploadStatus.id} uploadStatus={uploadStatus} />
+      {uploadStatus?.map((status) => (
+        <IssueAttachmentsUploadDetails key={status.id} uploadStatus={status} />
       ))}
-      {issueAttachments?.map((attachmentId) => (
+      {attachmentSnapshot.isError && (
+        <button type="button" className="text-11 text-danger-primary" onClick={() => void attachmentSnapshot.retry()}>
+          Retry
+        </button>
+      )}
+      {issueAttachments?.map((attachment) => (
         <IssueAttachmentsDetail
-          key={attachmentId}
-          attachmentId={attachmentId}
+          key={attachment.id}
+          attachment={attachment}
           disabled={disabled}
           attachmentHelpers={attachmentHelpers}
+          workspaceSlug={workspaceSlug}
         />
       ))}
     </>
   );
-});
+}

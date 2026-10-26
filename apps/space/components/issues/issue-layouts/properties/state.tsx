@@ -4,15 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 // plane ui
 import { StateGroupIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TStateGroups } from "@plane/types";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 //hooks
-import { useStates } from "@/hooks/store/use-state";
+import { statesOptions } from "@/queries/lookups";
 
 type Props = {
   shouldShowBorder?: boolean;
@@ -28,12 +30,11 @@ type Props = {
     }
 );
 
-export const IssueBlockState = observer(function IssueBlockState(props: Props) {
+export const IssueBlockState = function IssueBlockState(props: Props) {
   const { shouldShowBorder = true } = props;
-  // store hooks
-  const { getStateById } = useStates();
+  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
   // derived values
-  const state = "stateId" in props ? getStateById(props.stateId) : props.stateDetails;
+  const state = "stateId" in props ? states.find((item) => item.id === props.stateId) : props.stateDetails;
   if (!state) return null;
 
   return (
@@ -50,4 +51,4 @@ export const IssueBlockState = observer(function IssueBlockState(props: Props) {
       </div>
     </Tooltip>
   );
-});
+};

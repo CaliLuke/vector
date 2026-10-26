@@ -5,7 +5,14 @@
  */
 
 // plane imports
-import type { TFilterExpression, TFilterGroupNode, TFilterProperty } from "@plane/types";
+import type {
+  TFilterBooleanGroupNode,
+  TFilterConditionNode,
+  TFilterExpression,
+  TFilterGroupNode,
+  TFilterProperty,
+  TFilterValue,
+} from "@plane/types";
 // local imports
 import { isConditionNode, isGroupNode } from "../../types/core";
 import { getGroupChildren } from "../../types/shared";
@@ -52,7 +59,7 @@ const createGroupTransformResult = <P extends TFilterProperty>(
  * Handles child collection, null filtering, and empty group removal.
  */
 export const transformGroupWithChildren = <P extends TFilterProperty>(
-  group: TFilterGroupNode<P>,
+  group: TFilterBooleanGroupNode<P>,
   transformFn: TTreeTransformFn<P>
 ): TTreeTransformResult<P> => {
   const children = getGroupChildren(group);
@@ -81,7 +88,7 @@ export const transformGroupWithChildren = <P extends TFilterProperty>(
   const updatedGroup: TFilterGroupNode<P> = {
     ...group,
     children: transformedChildren,
-  } as TFilterGroupNode<P>;
+  };
 
   return createGroupTransformResult(updatedGroup, shouldNotify);
 };
@@ -166,13 +173,15 @@ export const removeNodeFromExpression = <P extends TFilterProperty>(
  * @returns The sanitized expression or null if no valid conditions remain
  */
 export const sanitizeAndStabilizeExpression = <P extends TFilterProperty>(
-  expression: TFilterExpression<P> | null
+  expression: TFilterExpression<P> | null,
+  acceptsCondition: (condition: TFilterConditionNode<P, TFilterValue>) => boolean = (condition) =>
+    hasValidValue(condition.value)
 ): TFilterExpression<P> | null => {
   const result = transformExpressionTree(expression, (node) => {
     // Only transform condition nodes - check if they have valid values
     if (isConditionNode(node)) {
       return {
-        expression: hasValidValue(node.value) ? node : null,
+        expression: acceptsCondition(node) ? node : null,
         shouldNotify: false,
       };
     }

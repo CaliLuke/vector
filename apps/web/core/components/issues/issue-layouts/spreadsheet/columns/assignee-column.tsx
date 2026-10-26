@@ -1,3 +1,4 @@
+import { useParams } from "@tanstack/react-router";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -5,7 +6,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // types
 import type { TIssue } from "@plane/types";
 // components
@@ -18,12 +19,14 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetAssigneeColumn = observer(function SpreadsheetAssigneeColumn(props: Props) {
+export const SpreadsheetAssigneeColumn = function SpreadsheetAssigneeColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
+  const { workspaceSlug } = useParams({ strict: false });
 
   return (
     <div className="h-11 border-b-[0.5px] border-subtle">
       <MemberDropdown
+        workspaceSlug={workspaceSlug}
         value={issue?.assignee_ids ?? []}
         onChange={(data) => {
           onChange(
@@ -49,4 +52,4 @@ export const SpreadsheetAssigneeColumn = observer(function SpreadsheetAssigneeCo
       />
     </div>
   );
-});
+};

@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // types
 import type { TIssue } from "@plane/types";
 // components
@@ -18,7 +18,7 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetPriorityColumn = observer(function SpreadsheetPriorityColumn(props: Props) {
+export const SpreadsheetPriorityColumn = function SpreadsheetPriorityColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (
@@ -34,4 +34,4 @@ export const SpreadsheetPriorityColumn = observer(function SpreadsheetPriorityCo
       />
     </div>
   );
-});
+};

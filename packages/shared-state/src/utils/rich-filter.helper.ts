@@ -5,11 +5,21 @@
  */
 
 // plane imports
-import type { TBuildFilterExpressionParams, TExternalFilter, TFilterProperty, TFilterValue } from "@plane/types";
-import { LOGICAL_OPERATOR } from "@plane/types";
-import { getOperatorForPayload } from "@plane/utils";
-// local imports
-import { FilterInstance } from "../store/rich-filters/filter";
+import type {
+  TBuildFilterExpressionParams,
+  TExternalFilter,
+  TFilterExpression,
+  TFilterProperty,
+  TFilterValue,
+} from "@plane/types";
+import {
+  createAndGroupNode,
+  createConditionNode,
+  createNotGroupNode,
+  getOperatorForPayload,
+  hasValidValue,
+  sanitizeAndStabilizeExpression,
+} from "@plane/utils/rich-filters";
 
 /**
  * Builds a temporary filter expression from conditions.
@@ -25,24 +35,16 @@ export const buildTempFilterExpressionFromConditions = <
   params: TBuildFilterExpressionParams<P, V, E>
 ): E | undefined => {
   const { conditions, adapter } = params;
-  let tempExpression: E | undefined = undefined;
-  const tempFilterInstance = new FilterInstance<P, E>({
-    adapter,
-    onExpressionChange: (expression) => {
-      tempExpression = expression;
-    },
-  });
+  let expression: TFilterExpression<P> | null = null;
   for (const condition of conditions) {
     const { operator, isNegation } = getOperatorForPayload(condition.operator);
-    tempFilterInstance.addCondition(
-      LOGICAL_OPERATOR.AND,
-      {
-        property: condition.property,
-        operator,
-        value: condition.value,
-      },
-      isNegation
-    );
+    const node = createConditionNode({ property: condition.property, operator, value: condition.value });
+    const next = isNegation ? createNotGroupNode(node) : node;
+    expression = expression ? createAndGroupNode([expression, next]) : next;
   }
-  return tempExpression;
+  if (!expression) return undefined;
+  const hasAppliedCondition = conditions.some((condition) => hasValidValue(condition.value));
+  return hasAppliedCondition
+    ? adapter.toExternal(sanitizeAndStabilizeExpression(expression, (condition) => hasValidValue(condition.value)))
+    : undefined;
 };

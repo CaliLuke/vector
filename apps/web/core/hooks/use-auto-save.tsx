@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useRef } from "react";
-import { debounce } from "lodash-es";
+import debounce from "lodash-es/debounce.js";
 
 const AUTO_SAVE_TIME = 30000;
 

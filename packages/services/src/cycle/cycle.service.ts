@@ -7,14 +7,14 @@
 import type { AxiosInstance } from "axios";
 import { API_BASE_URL } from "@plane/constants";
 import type { CycleDateCheckData, ICycle, TIssuesResponse, IWorkspaceActiveCyclesResponse } from "@plane/types";
-import { APIService } from "../api.service";
+import { CycleOperationsService } from "./cycle-operations.service";
 
 /**
  * Service class for managing cycles within a workspace and project context.
- * Extends APIService to handle HTTP requests to the cycle-related endpoints.
- * @extends {APIService}
+ * Extends CycleOperationsService to handle HTTP requests to the cycle-related endpoints.
+ * @extends {CycleOperationsService}
  */
-export class CycleService extends APIService {
+export class CycleService extends CycleOperationsService {
   constructor(BASE_URL?: string, configureAxiosInstance?: (axiosInstance: AxiosInstance) => void) {
     super(BASE_URL || API_BASE_URL, configureAxiosInstance);
   }

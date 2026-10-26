@@ -4,7 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import { attachInstruction, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
+import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
+import type {
+  ElementDragPayload,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import type { IPragmaticPayloadLocation, InstructionType, TDropTarget } from "@plane/types";
 
 type TreeDropTargetData = {
@@ -54,3 +59,32 @@ export const getTreeDropInstruction = (
 
   return instruction;
 };
+
+/** Flat reordering permits an upper edge and the final item's lower edge. */
+export function attachReorderInstruction(
+  data: Record<string, unknown>,
+  target: Pick<Parameters<typeof attachInstruction>[1], "input" | "element">,
+  isLastChild: boolean
+) {
+  return attachInstruction(data, {
+    ...target,
+    currentLevel: 1,
+    indentPerLevel: 0,
+    mode: isLastChild ? "last-in-group" : "standard",
+    block: isLastChild ? ["make-child"] : ["make-child", "reorder-below"],
+  });
+}
+
+export function treeDropHandlers(
+  setInstruction: (instruction: InstructionType | undefined) => void,
+  drop: (self: DropTargetRecord, source: ElementDragPayload, location: DragLocationHistory) => void
+): Pick<Parameters<typeof dropTargetForElements>[0], "onDrag" | "onDragLeave" | "onDrop"> {
+  return {
+    onDrag: ({ self, source, location }) => setInstruction(getTreeDropInstruction(self, source, location)),
+    onDragLeave: () => setInstruction(undefined),
+    onDrop: ({ self, source, location }) => {
+      setInstruction(undefined);
+      drop(self, source, location);
+    },
+  };
+}

@@ -5,18 +5,18 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { CircleDashed } from "lucide-react";
 import { ALL_ISSUES } from "@plane/constants";
 import { ChevronRightIcon } from "@plane/propel/icons";
 import type { IGroupByColumn, TIssue, TIssueServiceType, TSubIssueOperations } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
 import { Collapsible } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { SubIssuesListItem } from "./list-item";
 
 interface TSubIssuesListGroupProps {
-  workItemIds: string[];
+  workItems: TIssue[];
   projectId: string;
   workspaceSlug: string;
   group: IGroupByColumn;
@@ -30,11 +30,11 @@ interface TSubIssuesListGroupProps {
     issue?: TIssue | null
   ) => void;
   subIssueOperations: TSubIssueOperations;
-  storeType?: EIssuesStoreType;
+  storeType?: Exclude<EIssuesStoreType, EIssuesStoreType.WORKSPACE_DRAFT>;
   spacingLeft?: number;
 }
 
-export const SubIssuesListGroup = observer(function SubIssuesListGroup(props: TSubIssuesListGroupProps) {
+export const SubIssuesListGroup = function SubIssuesListGroup(props: TSubIssuesListGroupProps) {
   const {
     group,
     serviceType,
@@ -45,7 +45,7 @@ export const SubIssuesListGroup = observer(function SubIssuesListGroup(props: TS
     workspaceSlug,
     handleIssueCrudState,
     subIssueOperations,
-    workItemIds,
+    workItems,
     storeType = EIssuesStoreType.PROJECT,
     spacingLeft = 0,
   } = props;
@@ -55,7 +55,7 @@ export const SubIssuesListGroup = observer(function SubIssuesListGroup(props: TS
   // states
   const [isCollapsibleOpen, setIsCollapsibleOpen] = useState(true);
 
-  if (!workItemIds.length) return null;
+  if (!workItems.length) return null;
 
   return (
     <>
@@ -75,20 +75,20 @@ export const SubIssuesListGroup = observer(function SubIssuesListGroup(props: TS
                 {group.icon ?? <CircleDashed className="size-3.5" strokeWidth={2} />}
               </div>
               <span className="text-13 font-medium text-primary">{group.name}</span>
-              <span className="text-13 text-placeholder">{workItemIds.length}</span>
+              <span className="text-13 text-placeholder">{workItems.length}</span>
             </div>
           )
         }
         buttonClassName={cn("hidden", !isAllIssues && "block")}
       >
-        {workItemIds?.map((workItemId) => (
+        {workItems.map((issue) => (
           <SubIssuesListItem
-            key={workItemId}
+            key={issue.id}
             workspaceSlug={workspaceSlug}
             projectId={projectId}
             parentIssueId={parentIssueId}
             rootIssueId={rootIssueId}
-            issueId={workItemId}
+            issue={issue}
             canEdit={canEdit}
             handleIssueCrudState={handleIssueCrudState}
             subIssueOperations={subIssueOperations}
@@ -100,4 +100,4 @@ export const SubIssuesListGroup = observer(function SubIssuesListGroup(props: TS
       </Collapsible>
     </>
   );
-});
+};

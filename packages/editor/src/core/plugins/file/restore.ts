@@ -8,7 +8,7 @@ import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 // plane imports
-import { CORE_EXTENSIONS } from "@plane/utils";
+import { CORE_EXTENSIONS } from "@plane/utils/editor/common";
 // helpers
 import { CORE_ASSETS_META_DATA_RECORD } from "@/helpers/assets";
 // plane editor imports

@@ -5,14 +5,13 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { useState } from "react";
 // types
 import { Button } from "@plane/propel/button";
 import type { IProject } from "@plane/types";
 // ui
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useJoinProject } from "@/hooks/use-permissions";
 
 // type
 type TJoinProjectModalProps = {
@@ -24,28 +23,15 @@ type TJoinProjectModalProps = {
 
 export function JoinProjectModal(props: TJoinProjectModalProps) {
   const { handleClose, isOpen, project, workspaceSlug } = props;
-  // states
-  const [isJoiningLoading, setIsJoiningLoading] = useState(false);
-  // store hooks
-  const { joinProject } = useUserPermissions();
-  // router
+  const joinProject = useJoinProject(workspaceSlug, project.id);
   const router = useRouter();
-
-  const handleJoin = async () => {
-    setIsJoiningLoading(true);
-
-    await joinProject(workspaceSlug, project.id)
-      .then(() => {
+  const handleJoin = () => {
+    joinProject.mutate(undefined, {
+      onSuccess: () => {
         void router.navigate({ href: `/${workspaceSlug}/projects/${project.id}/issues` });
         handleClose();
-        return;
-      })
-      .catch(() => {
-        console.error("Error joining project");
-      })
-      .finally(() => {
-        setIsJoiningLoading(false);
-      });
+      },
+    });
   };
 
   return (
@@ -56,14 +42,25 @@ export function JoinProjectModal(props: TJoinProjectModalProps) {
           Are you sure you want to join the project <span className="font-semibold break-words">{project?.name}</span>?
           Please click the &apos;Join Project&apos; button below to continue.
         </p>
-        <div className="space-y-3" />
+        {joinProject.isError && (
+          <p role="alert" className="text-danger-primary">
+            Unable to join this project. Please try again.
+          </p>
+        )}
       </div>
       <div className="mt-5 flex justify-end gap-2 px-5 pb-8 sm:px-6 sm:pb-6">
         <Button variant="secondary" size="lg" onClick={handleClose}>
           Cancel
         </Button>
-        <Button variant="primary" size="lg" tabIndex={1} type="submit" onClick={handleJoin} loading={isJoiningLoading}>
-          {isJoiningLoading ? "Joining..." : "Join Project"}
+        <Button
+          variant="primary"
+          size="lg"
+          type="submit"
+          onClick={handleJoin}
+          loading={joinProject.isPending}
+          disabled={joinProject.isPending}
+        >
+          {joinProject.isPending ? "Joining..." : "Join Project"}
         </Button>
       </div>
     </ModalCore>

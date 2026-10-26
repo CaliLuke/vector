@@ -5,33 +5,33 @@
  */
 
 import { Link, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { History, MessageSquare } from "lucide-react";
 // plane imports
 import type { IUserActivityResponse } from "@plane/types";
-import { calculateTimeAgo, getFileURL } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { ActivityIcon, ActivityMessage, IssueLink } from "@/components/core/activity";
 import { RichTextEditor } from "@/components/editor/rich-text";
 import { ActivitySettingsLoader } from "@/components/ui/loader/settings/activity";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser } from "@/hooks/store/user";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type Props = {
   activity: IUserActivityResponse | undefined;
 };
 
-export const ActivityList = observer(function ActivityList(props: Props) {
+export const ActivityList = function ActivityList(props: Props) {
   const { activity } = props;
   // params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { data: currentUser } = useUser();
-  const { getWorkspaceBySlug } = useWorkspace();
+  const { data: currentUser } = useCurrentUser();
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
   // derived values
-  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
+  const workspaceId = workspaceDetails?.id ?? "";
 
   // TODO: refactor this component
   return (
@@ -185,4 +185,4 @@ export const ActivityList = observer(function ActivityList(props: Props) {
       )}
     </>
   );
-});
+};

@@ -13,13 +13,13 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestConfigureHTTPTracingIsTransparentWithoutExporter(t *testing.T) {
+func TestConfigureHTTPObservabilityIsTransparentWithoutExporter(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
 	t.Setenv("OTEL_SDK_DISABLED", "")
 
-	wrap, shutdown, err := ConfigureHTTPTracing(context.Background(), "test-service")
+	wrap, _, shutdown, err := ConfigureHTTPObservability(context.Background(), "test-service")
 	if err != nil {
-		t.Fatalf("ConfigureHTTPTracing() error = %v", err)
+		t.Fatalf("ConfigureHTTPObservability() error = %v", err)
 	}
 
 	called := false
@@ -41,13 +41,13 @@ func TestConfigureHTTPTracingIsTransparentWithoutExporter(t *testing.T) {
 	}
 }
 
-func TestConfigureHTTPTracingHonorsDisabledSDK(t *testing.T) {
+func TestConfigureHTTPObservabilityHonorsDisabledSDK(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://127.0.0.1:1")
 	t.Setenv("OTEL_SDK_DISABLED", "TRUE")
 
-	wrap, shutdown, err := ConfigureHTTPTracing(context.Background(), "test-service")
+	wrap, _, shutdown, err := ConfigureHTTPObservability(context.Background(), "test-service")
 	if err != nil {
-		t.Fatalf("ConfigureHTTPTracing() error = %v", err)
+		t.Fatalf("ConfigureHTTPObservability() error = %v", err)
 	}
 	if wrap == nil || shutdown == nil {
 		t.Fatal("disabled tracing did not return transparent lifecycle functions")
@@ -59,7 +59,7 @@ type exportedHTTPSpans struct {
 	clientAddresses []string
 }
 
-func TestConfigureHTTPTracingExportsStableServiceSpan(t *testing.T) {
+func TestConfigureHTTPObservabilityExportsStableServiceSpan(t *testing.T) {
 	exported := make(chan exportedHTTPSpans, 1)
 	receiver := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		if request.URL.Path != "/v1/traces" {
@@ -97,9 +97,9 @@ func TestConfigureHTTPTracingExportsStableServiceSpan(t *testing.T) {
 	t.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
 	t.Setenv("OTEL_SDK_DISABLED", "")
 
-	wrap, shutdown, err := ConfigureHTTPTracing(context.Background(), "plane-go-api-test")
+	wrap, _, shutdown, err := ConfigureHTTPObservability(context.Background(), "plane-go-api-test")
 	if err != nil {
-		t.Fatalf("ConfigureHTTPTracing() error = %v", err)
+		t.Fatalf("ConfigureHTTPObservability() error = %v", err)
 	}
 	policy, err := loomhttp.NewRequestMetadataPolicy(nil, []netip.Prefix{netip.MustParsePrefix("10.0.0.0/8")})
 	if err != nil {

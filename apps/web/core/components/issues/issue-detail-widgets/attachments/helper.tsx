@@ -9,9 +9,8 @@ import { setPromiseToast, TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-// types
-import type { TAttachmentUploadStatus } from "@/store/issue/issue-details/attachment.store";
+import { useIssueAttachments } from "@/hooks/use-issue-resources";
+import type { TAttachmentUploadStatus } from "@/hooks/use-issue-resources";
 
 export type TAttachmentOperations = {
   create: (file: File) => Promise<void>;
@@ -19,10 +18,15 @@ export type TAttachmentOperations = {
 };
 
 export type TAttachmentSnapshot = {
-  uploadStatus: TAttachmentUploadStatus[] | undefined;
+  uploadStatus: readonly TAttachmentUploadStatus[];
+  attachments: readonly import("@plane/types").TIssueAttachment[] | undefined;
+  isError: boolean;
+  isDenied: boolean;
+  retry: () => Promise<unknown>;
 };
 
 export type TAttachmentHelpers = {
+  uploadScopeKey: string;
   operations: TAttachmentOperations;
   snapshot: TAttachmentSnapshot;
 };
@@ -33,15 +37,14 @@ export const useAttachmentOperations = (
   issueId: string,
   issueServiceType: TIssueServiceType = EIssueServiceType.ISSUES
 ): TAttachmentHelpers => {
-  const {
-    attachment: { createAttachment, removeAttachment, getAttachmentsUploadStatusByIssueId },
-  } = useIssueDetail(issueServiceType);
+  const resources = useIssueAttachments({ workspaceSlug, projectId, issueId, serviceType: issueServiceType });
+  const { create, remove, uploadStatus, attachments, query, isError, retry } = resources;
 
   const attachmentOperations: TAttachmentOperations = useMemo(
     () => ({
       create: async (file) => {
         if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing required fields");
-        const attachmentUploadPromise = createAttachment(workspaceSlug, projectId, issueId, file);
+        const attachmentUploadPromise = create(file);
         setPromiseToast(attachmentUploadPromise, {
           loading: "Uploading attachment...",
           success: {
@@ -59,7 +62,7 @@ export const useAttachmentOperations = (
       remove: async (attachmentId) => {
         try {
           if (!workspaceSlug || !projectId || !issueId) throw new Error("Missing required fields");
-          await removeAttachment(workspaceSlug, projectId, issueId, attachmentId);
+          await remove(attachmentId);
           setToast({
             message: "The attachment has been successfully removed",
             type: TOAST_TYPE.SUCCESS,
@@ -71,15 +74,22 @@ export const useAttachmentOperations = (
             type: TOAST_TYPE.ERROR,
             title: "Attachment not removed",
           });
+          throw _error;
         }
       },
     }),
-    [workspaceSlug, projectId, issueId, createAttachment, removeAttachment]
+    [create, issueId, projectId, remove, workspaceSlug]
   );
-  const attachmentsUploadStatus = getAttachmentsUploadStatusByIssueId(issueId);
 
   return {
+    uploadScopeKey: resources.uploadScopeKey,
     operations: attachmentOperations,
-    snapshot: { uploadStatus: attachmentsUploadStatus },
+    snapshot: {
+      uploadStatus,
+      attachments,
+      isError: query.isError || isError,
+      isDenied: resources.isDenied,
+      retry: () => (isError ? retry() : query.refetch()),
+    },
   };
 };

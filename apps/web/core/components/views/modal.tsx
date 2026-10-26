@@ -5,21 +5,17 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // types
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IProjectView } from "@plane/types";
-import { EIssuesStoreType } from "@plane/types";
 // ui
-import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
-// hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useWorkItemFilters } from "@/hooks/store/work-item-filters/use-work-item-filters";
 
-import useKeypress from "@/hooks/use-keypress";
+// hooks
+import { useProjectViewMutations } from "@/hooks/use-project-views";
+
 // local imports
-import { ProjectViewForm } from "./form";
+import { ViewForm } from "./form";
 
 type Props = {
   data?: IProjectView | null;
@@ -30,24 +26,19 @@ type Props = {
   projectId: string;
 };
 
-export const CreateUpdateProjectViewModal = observer(function CreateUpdateProjectViewModal(props: Props) {
+export const CreateUpdateProjectViewModal = function CreateUpdateProjectViewModal(props: Props) {
   const { data, isOpen, onClose, preLoadedData, workspaceSlug, projectId } = props;
   // router
   const router = useRouter();
-  // store hooks
-  const { createView, updateView } = useProjectView();
-  const {
-    issuesFilter: { mutateFilters },
-  } = useIssues(EIssuesStoreType.PROJECT_VIEW);
-  const { resetExpression } = useWorkItemFilters();
+  const { create, update } = useProjectViewMutations(workspaceSlug, projectId);
 
   const handleClose = () => {
     onClose();
   };
 
-  const handleCreateView = async (payload: IProjectView) => {
+  const handleCreateView = async (payload: Partial<IProjectView>) => {
     try {
-      const res = await createView(workspaceSlug, projectId, payload);
+      const res = await create.mutateAsync(payload);
       handleClose();
       void router.navigate({ href: `/${workspaceSlug}/projects/${projectId}/views/${res.id}` });
       setToast({
@@ -55,49 +46,45 @@ export const CreateUpdateProjectViewModal = observer(function CreateUpdateProjec
         title: "Success!",
         message: "View created successfully.",
       });
-    } catch (_error) {
+    } catch (error) {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
         message: "Failed to create view. Please try again.",
       });
+      throw error;
     }
   };
 
-  const handleUpdateView = async (payload: IProjectView) => {
+  const handleUpdateView = async (payload: Partial<IProjectView>) => {
     try {
-      const viewDetails = await updateView(workspaceSlug, projectId, data?.id as string, payload);
-      mutateFilters(workspaceSlug, viewDetails.id, viewDetails);
-      resetExpression(EIssuesStoreType.PROJECT_VIEW, viewDetails.id, viewDetails.rich_filters);
+      await update.mutateAsync({ viewId: data!.id, data: payload });
       handleClose();
-    } catch (_error) {
+    } catch (error) {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Error!",
         message: "Failed to update view. Please try again.",
       });
+      throw error;
     }
   };
 
-  const handleFormSubmit = async (formData: IProjectView) => {
+  const handleFormSubmit = async (formData: Partial<IProjectView>) => {
     if (!data) await handleCreateView(formData);
     else await handleUpdateView(formData);
   };
 
-  useKeypress("Escape", () => {
-    if (isOpen) handleClose();
-  });
-
+  if (!isOpen) return null;
   return (
-    <ModalCore isOpen={isOpen} position={EModalPosition.TOP} width={EModalWidth.XXL}>
-      <ProjectViewForm
-        data={data}
-        handleClose={handleClose}
-        handleFormSubmit={handleFormSubmit}
-        preLoadedData={preLoadedData}
-        projectId={projectId}
-        workspaceSlug={workspaceSlug}
-      />
-    </ModalCore>
+    <ViewForm
+      key={JSON.stringify([workspaceSlug, projectId, data?.id ?? "new"])}
+      data={data}
+      handleClose={handleClose}
+      handleFormSubmit={handleFormSubmit}
+      preLoadedData={preLoadedData}
+      projectId={projectId}
+      workspaceSlug={workspaceSlug}
+    />
   );
-});
+};

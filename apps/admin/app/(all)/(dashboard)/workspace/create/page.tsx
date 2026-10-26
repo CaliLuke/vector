@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
 import { PageWrapper } from "@/components/common/page-wrapper";
 // types
@@ -12,7 +11,7 @@ import type { Route } from "./+types/page";
 // local
 import { WorkspaceCreateForm } from "./form";
 
-const WorkspaceCreatePage = observer(function WorkspaceCreatePage(_props: Route.ComponentProps) {
+const WorkspaceCreatePage = function WorkspaceCreatePage(_props: Route.ComponentProps) {
   return (
     <PageWrapper
       header={{
@@ -23,7 +22,7 @@ const WorkspaceCreatePage = observer(function WorkspaceCreatePage(_props: Route.
       <WorkspaceCreateForm />
     </PageWrapper>
   );
-});
+};
 
 export const meta: Route.MetaFunction = () => [{ title: "Create Workspace - God Mode" }];
 

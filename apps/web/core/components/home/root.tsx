@@ -4,15 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import useSWR from "swr";
 // plane imports
 import { ContentWrapper } from "@plane/ui";
 // hooks
-import { useHome } from "@/hooks/store/use-home";
-import { useUserProfile, useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useCurrentUserProfile, useUpdateUserTourCompleted } from "@/hooks/use-current-user-profile";
 // plane web imports
 import { TourRoot } from "@/components/onboarding/tour/root";
 // local imports
@@ -20,22 +16,11 @@ import { DashboardWidgets } from "./home-dashboard-widgets";
 import { UserGreetingsView } from "../user/user-greetings";
 import { HomePeekOverviewsRoot } from "../issues/peek-overview/peek-overviews";
 
-export const WorkspaceHomeView = observer(function WorkspaceHomeView() {
+export const WorkspaceHomeView = function WorkspaceHomeView() {
   // store hooks
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { data: currentUser } = useUser();
-  const { data: currentUserProfile, updateTourCompleted } = useUserProfile();
-  const { fetchWidgets } = useHome();
-
-  useSWR(
-    workspaceSlug ? `HOME_DASHBOARD_WIDGETS_${workspaceSlug}` : null,
-    workspaceSlug ? () => fetchWidgets(workspaceSlug?.toString()) : null,
-    {
-      revalidateIfStale: true,
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-    }
-  );
+  const { data: currentUser } = useCurrentUser();
+  const { data: currentUserProfile } = useCurrentUserProfile();
+  const { mutateAsync: updateTourCompleted } = useUpdateUserTourCompleted();
 
   const handleTourCompleted = async () => {
     try {
@@ -45,7 +30,6 @@ export const WorkspaceHomeView = observer(function WorkspaceHomeView() {
     }
   };
 
-  // TODO: refactor loader implementation
   return (
     <>
       {currentUserProfile && !currentUserProfile.is_tour_completed && (
@@ -64,4 +48,4 @@ export const WorkspaceHomeView = observer(function WorkspaceHomeView() {
       </>
     </>
   );
-});
+};

@@ -4,12 +4,11 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { isNil } from "lodash-es";
-import { observer } from "mobx-react";
+import isNil from "lodash-es/isNil.js";
+
 import { Bell, BellOff } from "lucide-react";
 // plane-i18n
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // UI
 import { Button } from "@plane/propel/button";
@@ -17,8 +16,10 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EIssueServiceType } from "@plane/types";
 import { Loader } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { issueSubscriptionOptions, updateIssueSubscriptionOptions } from "@/queries/issue-subscription";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 export type TIssueSubscription = {
   workspaceSlug: string;
@@ -27,50 +28,57 @@ export type TIssueSubscription = {
   serviceType?: EIssueServiceType;
 };
 
-export const IssueSubscription = observer(function IssueSubscription(props: TIssueSubscription) {
+export function IssueSubscription(props: TIssueSubscription) {
+  return (
+    <IssueSubscriptionContent
+      key={`${props.workspaceSlug}/${props.projectId}/${props.serviceType}/${props.issueId}`}
+      {...props}
+    />
+  );
+}
+
+const IssueSubscriptionContent = function IssueSubscriptionContent(props: TIssueSubscription) {
   const { workspaceSlug, projectId, issueId, serviceType = EIssueServiceType.ISSUES } = props;
   const { t } = useTranslation();
-  // hooks
-  const {
-    subscription: { getSubscriptionByIssueId },
-    createSubscription,
-    removeSubscription,
-  } = useIssueDetail(serviceType);
-  // state
-  const [loading, setLoading] = useState(false);
-  // hooks
-  const { allowPermissions } = useUserPermissions();
+  const client = useQueryClient();
+  const { data: user } = useCurrentUser();
+  const scope = { userId: user?.id, workspaceSlug, projectId, issueId, serviceType };
+  const subscription = useQuery(issueSubscriptionOptions(scope));
+  const mutation = useMutation(updateIssueSubscriptionOptions(client, scope));
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const isSubscribed = subscription.data;
+  const loading = mutation.isPending;
+  const isEditable = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  const isSubscribed = getSubscriptionByIssueId(issueId);
-  const isEditable = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
-
-  const handleSubscription = async () => {
-    setLoading(true);
-    try {
-      if (isSubscribed) await removeSubscription(workspaceSlug, projectId, issueId);
-      else await createSubscription(workspaceSlug, projectId, issueId);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: t("toast.success"),
-        message: isSubscribed
-          ? t("issue.subscription.actions.unsubscribed")
-          : t("issue.subscription.actions.subscribed"),
-      });
-      setLoading(false);
-    } catch {
-      setLoading(false);
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("toast.error"),
-        message: t("common.error.message"),
-      });
-    }
+  const handleSubscription = () => {
+    mutation.mutate(!isSubscribed, {
+      onSuccess: () =>
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: t("toast.success"),
+          message: isSubscribed
+            ? t("issue.subscription.actions.unsubscribed")
+            : t("issue.subscription.actions.subscribed"),
+        }),
+      onError: () =>
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: t("toast.error"),
+          message: t("common.error.message"),
+        }),
+    });
   };
+
+  if (subscription.isError)
+    return (
+      <Button
+        onClick={() => {
+          void subscription.refetch();
+        }}
+      >
+        Retry subscription
+      </Button>
+    );
 
   if (isNil(isSubscribed))
     return (
@@ -102,4 +110,4 @@ export const IssueSubscription = observer(function IssueSubscription(props: TIss
       </Button>
     </div>
   );
-});
+};

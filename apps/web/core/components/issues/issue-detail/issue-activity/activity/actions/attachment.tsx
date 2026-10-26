@@ -4,36 +4,30 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Paperclip } from "lucide-react";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent, IssueLink } from "./";
 
-type TIssueAttachmentActivity = { activityId: string; showIssue?: boolean; ends: "top" | "bottom" | undefined };
+type TIssueAttachmentActivity = { activity: TIssueActivity; showIssue?: boolean; ends: "top" | "bottom" | undefined };
 
-export const IssueAttachmentActivity = observer(function IssueAttachmentActivity(props: TIssueAttachmentActivity) {
-  const { activityId, showIssue = true, ends } = props;
+export const IssueAttachmentActivity = function IssueAttachmentActivity(props: TIssueAttachmentActivity) {
+  const { activity, showIssue = true, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
       icon={<Paperclip size={14} className="text-secondary" aria-hidden="true" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
         {activity.verb === "created" ? `uploaded a new attachment` : `removed an attachment`}
         {showIssue && (activity.verb === "created" ? ` to ` : ` from `)}
-        {showIssue && <IssueLink activityId={activityId} />}.
+        {showIssue && <IssueLink activity={activity} />}.
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

@@ -4,28 +4,30 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
 import { Star } from "lucide-react";
 // ui
 import { IconButton } from "@plane/propel/icon-button";
 // hooks
 import { usePageOperations } from "@/hooks/use-page-operations";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageFavoriteControl = observer(function PageFavoriteControl({ page }: Props) {
-  // derived values
-  const { is_favorite, canCurrentUserFavoritePage } = page;
+export function PageFavoriteControl({ page, workspaceSlug }: Props) {
+  const { canCurrentUserFavoritePage } = usePagePermissions(page, workspaceSlug);
   // page operations
-  const { pageOperations } = usePageOperations({
+  const { pageOperations, isFavorite, isFavoriteReady } = usePageOperations({
     page,
+    workspaceSlug,
   });
 
-  if (!canCurrentUserFavoritePage) return null;
+  if (!canCurrentUserFavoritePage || !isFavoriteReady) return null;
 
   return (
     <IconButton
@@ -33,12 +35,12 @@ export const PageFavoriteControl = observer(function PageFavoriteControl({ page 
       size="lg"
       icon={Star}
       onClick={() => {
-        pageOperations.toggleFavorite();
+        void pageOperations.toggleFavorite();
       }}
-      aria-label={is_favorite ? "Remove favorite" : "Add to favorites"}
+      aria-label={isFavorite ? "Remove favorite" : "Add to favorites"}
       className={
-        is_favorite ? "[&_svg]:fill-(--color-label-yellow-icon) [&_svg]:stroke-(--color-label-yellow-icon)" : ""
+        isFavorite ? "[&_svg]:fill-(--color-label-yellow-icon) [&_svg]:stroke-(--color-label-yellow-icon)" : ""
       }
     />
   );
-});
+}

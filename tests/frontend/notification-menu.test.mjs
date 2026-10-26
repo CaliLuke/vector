@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createRequire, registerHooks } from "node:module";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
+import { resolvePackageStub } from "./helpers/module-stubs.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const requireFromWeb = createRequire(new URL("../../apps/web/package.json", import.meta.url));
@@ -25,27 +26,25 @@ globalThis.__notificationMenuTest = { React, notifications };
 // unconditionally here so the test exercises their render callback and actions
 // without depending on positioning, translation, or the application singleton.
 const substitutes = {
-  "@/hooks/store/notifications":
-    "export const useWorkspaceNotifications = () => globalThis.__notificationMenuTest.notifications;",
+  "@/components/workspace-notifications/provider":
+    "export const useNotifications = () => globalThis.__notificationMenuTest.notifications;",
   "@plane/i18n": "export const useTranslation = () => ({ t: key => key });",
   "@plane/ui": `export function PopoverMenu({ data, render }) {
     return globalThis.__notificationMenuTest.React.createElement('div', null, data.map(render));
   }`,
   "@plane/propel/icons": "export const ArchiveIcon = () => null; export const CheckIcon = () => null;",
   "@plane/propel/icon-button": "export const IconButton = () => null;",
-  "@plane/utils": "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
+  "@plane/utils/common":
+    "export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');",
 };
 
 registerWebModuleHooks();
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (Object.hasOwn(substitutes, specifier)) {
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(substitutes[specifier])}` };
-    }
     if (Object.hasOwn(reactModules, specifier)) {
       return { shortCircuit: true, url: reactModules[specifier] };
     }
-    return nextResolve(specifier, context);
+    return resolvePackageStub(specifier, substitutes, context, nextResolve);
   },
 });
 

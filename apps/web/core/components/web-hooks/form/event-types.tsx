@@ -10,6 +10,7 @@ import type { TWebhookEventTypes } from "@plane/types";
 
 type Props = {
   value: string;
+  disabled?: boolean;
   onChange: (value: TWebhookEventTypes) => void;
 };
 
@@ -25,7 +26,7 @@ const WEBHOOK_EVENT_TYPES: { key: TWebhookEventTypes; i18n_label: string }[] = [
 ];
 
 export function WebhookOptions(props: Props) {
-  const { value, onChange } = props;
+  const { value, onChange, disabled } = props;
   const { t } = useTranslation();
 
   return (
@@ -37,6 +38,7 @@ export function WebhookOptions(props: Props) {
             <input
               id={option.key}
               type="radio"
+              disabled={disabled}
               value={option.key}
               checked={value == option.key}
               onChange={() => onChange(option.key)}

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { webRequire } from "./helpers/react-dom.mjs";
+import { webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const { attachInstruction } = webRequire("@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item");
@@ -62,4 +62,38 @@ await test("foreign drag payloads cannot produce a tree placement", () => {
     getTreeDropInstruction({ data: { id: "target", parentId: [], isGroup: true, isChild: false } }, item, location),
     undefined
   );
+});
+
+const { treeDropPositionTarget } = await import("../../apps/web/helpers/tree-drop-position.ts");
+const rowElement = { getBoundingClientRect: () => ({ top: 0, bottom: 100, height: 100, left: 0, right: 100 }) };
+
+await test("flat row hitboxes keep the final lower edge and regular row placement", () => {
+  const positions = [];
+  const last = treeDropPositionTarget("last", true, (position) => positions.push(position));
+  const row = treeDropPositionTarget("row", false, (position) => positions.push(position));
+  const below = last.getData({ element: rowElement, input: { clientX: 50, clientY: 99 } });
+  const above = row.getData({ element: rowElement, input: { clientX: 50, clientY: 1 } });
+  last.onDrag({ self: { data: below } });
+  row.onDrag({ self: { data: above } });
+  row.onDragLeave();
+  assert.deepEqual(positions, ["DRAG_BELOW", "DRAG_OVER", undefined]);
+  assert.equal(below.id, "last");
+  assert.equal(above.id, "row");
+});
+
+await test("flat row drops clear feedback and retain source, destination, and placement", () => {
+  const positions = [];
+  const drops = [];
+  const source = { data: { id: "source" }, element: { id: "dragged-row" } };
+  const rowTarget = treeDropPositionTarget(
+    "last",
+    true,
+    (position) => positions.push(position),
+    (...args) => drops.push(args)
+  );
+  const data = rowTarget.getData({ element: rowElement, input: { clientX: 50, clientY: 99 } });
+  rowTarget.onDrop({ self: { data }, source });
+  rowTarget.onDrop({ self: { data: { id: "unrecognized" } }, source });
+  assert.deepEqual(drops, [["source", "last", true, source.element]]);
+  assert.deepEqual(positions, [undefined, undefined]);
 });

@@ -6769,6 +6769,24 @@
             "$ref": "#/components/parameters/PathProjectID_28ef2be3"
           },
           {
+            "name": "type_id",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "child_type_id",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "$ref": "#/components/parameters/QuerySearch_8f34659f"
           }
         ],

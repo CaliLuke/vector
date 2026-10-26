@@ -4,9 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-
 import type { TProjectActivity } from "@plane/types";
+import { useWorkspaceById } from "@/hooks/use-workspaces";
 import { ActivityBlockComponent } from "./activity-block";
 import { iconsMap, messages } from "./helper";
 
@@ -16,15 +15,16 @@ type TActivityItem = {
   ends?: "top" | "bottom" | undefined;
 };
 
-export const ActivityItem = observer(function ActivityItem(props: TActivityItem) {
+export function ActivityItem(props: TActivityItem) {
   const { activity, ends } = props;
+  const { data: workspaceDetail } = useWorkspaceById(activity.workspace);
 
   if (!activity) return null;
 
   const activityType = activity.field;
   if (!activityType) return null;
 
-  const { message, customUserName } = messages(activity);
+  const { message, customUserName } = messages(activity, workspaceDetail);
   const icon = iconsMap[activityType] || iconsMap.default;
 
   return (
@@ -32,4 +32,4 @@ export const ActivityItem = observer(function ActivityItem(props: TActivityItem)
       <>{message}</>
     </ActivityBlockComponent>
   );
-});
+}

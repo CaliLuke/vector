@@ -4,21 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useSidebar } from "@/providers/sidebar";
+import { Link, useLocation, matchPath } from "react-router";
 // plane internal packages
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useTheme } from "@/hooks/store";
 import { useSidebarMenu } from "@/hooks/use-sidebar-menu";
 
-export const AdminSidebarMenu = observer(function AdminSidebarMenu() {
+export const AdminSidebarMenu = function AdminSidebarMenu() {
   // router
-  const pathName = usePathname();
-  // store hooks
-  const { isSidebarCollapsed, toggleSidebar } = useTheme();
+  const { pathname: pathName } = useLocation();
+  const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   // derived values
   const sidebarMenu = useSidebarMenu();
 
@@ -31,9 +28,9 @@ export const AdminSidebarMenu = observer(function AdminSidebarMenu() {
   return (
     <div className="vertical-scrollbar flex scrollbar-sm h-full w-full flex-col gap-2.5 overflow-y-scroll px-4 py-4">
       {sidebarMenu.map((item) => {
-        const isActive = item.href === pathName || pathName?.startsWith(item.href);
+        const isActive = matchPath({ path: item.href, end: false }, pathName) !== null;
         return (
-          <Link key={item.href} href={item.href} onClick={handleItemClick}>
+          <Link key={item.href} to={item.href} onClick={handleItemClick} aria-current={isActive ? "page" : undefined}>
             <div>
               <Tooltip tooltipContent={item.name} position="right" className="ml-2" disabled={!isSidebarCollapsed}>
                 <div
@@ -61,4 +58,4 @@ export const AdminSidebarMenu = observer(function AdminSidebarMenu() {
       })}
     </div>
   );
-});
+};

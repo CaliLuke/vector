@@ -1,25 +1,26 @@
-// oxlint-disable no-shadow
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
 
-import { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
+// oxlint-disable no-shadow
+import { workItemServiceType } from "@/helpers/work-item-service-type";
+import { useRef } from "react";
+
 // plane imports
 import type { EditorRefApi } from "@plane/editor";
-import type { TNameDescriptionLoader } from "@plane/types";
 import { EFileAssetType, EIssueServiceType } from "@plane/types";
 // components
 import { DescriptionVersionsRoot } from "@/components/core/description-versions";
-import { DescriptionInput } from "@/components/editor/rich-text/description-input";
+import { IssueDescriptionInput } from "@/components/issues/description-input";
 import { IssueTypeSwitcher } from "@/components/issues/issue-type-switcher";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
-import { useUser } from "@/hooks/store/user";
-import useReloadConfirmations from "@/hooks/use-reload-confirmation";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useTextSaveStatus } from "../use-text-save-status";
 import useSize from "@/hooks/use-window-size";
 // services
 import { WorkItemVersionService } from "@/services/issue";
@@ -44,32 +45,24 @@ type Props = {
   isArchived: boolean;
 };
 
-export const IssueMainContent = observer(function IssueMainContent(props: Props) {
+export const IssueMainContent = function IssueMainContent(props: Props) {
   const { workspaceSlug, projectId, issueId, issueOperations, isEditable, isArchived } = props;
   // refs
   const editorRef = useRef<EditorRefApi>(null);
   // states
-  const [isSubmitting, setIsSubmitting] = useState<TNameDescriptionLoader>("saved");
+  const {
+    status: isSubmitting,
+    setTitleStatus,
+    setDescriptionStatus,
+  } = useTextSaveStatus(`${workspaceSlug}/${projectId}/${issueId}`);
   // hooks
   const windowSize = useSize();
-  const { data: currentUser } = useUser();
-  const { getUserDetails } = useMember();
-  const {
-    issue: { getIssueById },
-    peekIssue,
-  } = useIssueDetail();
-  const { setShowAlert } = useReloadConfirmations(isSubmitting === "submitting");
+  const { data: currentUser } = useCurrentUser();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { peekIssue } = useIssueDetailUiState();
+  const record = useWorkItemDetailRecord();
   // derived values
-  const issue = issueId ? getIssueById(issueId) : undefined;
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    if (isSubmitting === "submitted") {
-      setShowAlert(false);
-      timer = setTimeout(() => setIsSubmitting("saved"), 2000);
-    } else if (isSubmitting === "submitting") setShowAlert(true);
-    return () => clearTimeout(timer);
-  }, [isSubmitting, setShowAlert, setIsSubmitting]);
+  const issue = issueId === record?.issueId ? record.issue : undefined;
 
   if (!issue || !issue.project_id) return <></>;
 
@@ -78,18 +71,16 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
   return (
     <>
       <div className="space-y-4 rounded-lg">
-        {issue.parent_id && (
-          <IssueParentDetail
-            workspaceSlug={workspaceSlug}
-            projectId={projectId}
-            issueId={issueId}
-            issue={issue}
-            issueOperations={issueOperations}
-          />
-        )}
+        <IssueParentDetail
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          issueId={issueId}
+          issue={issue}
+          issueOperations={issueOperations}
+        />
 
         <div className="mb-2.5 flex items-center justify-between gap-4">
-          <IssueTypeSwitcher issueId={issueId} disabled={isArchived || !isEditable} />
+          <IssueTypeSwitcher workspaceSlug={workspaceSlug} issueId={issueId} disabled={isArchived || !isEditable} />
           <div className="flex items-center gap-3">
             <NameDescriptionUpdateStatus isSubmitting={isSubmitting} />
           </div>
@@ -99,15 +90,14 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           workspaceSlug={workspaceSlug}
           projectId={issue.project_id}
           issueId={issue.id}
-          isSubmitting={isSubmitting}
-          setIsSubmitting={(value) => setIsSubmitting(value)}
+          setIsSubmitting={setTitleStatus}
           issueOperations={issueOperations}
           disabled={isArchived || !isEditable}
           value={issue.name}
           containerClassName="-ml-3"
         />
 
-        <DescriptionInput
+        <IssueDescriptionInput
           issueSequenceId={issue.sequence_id}
           containerClassName="-ml-6 border-none p-0! pl-6!"
           disabled={isArchived || !isEditable}
@@ -116,26 +106,20 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
           fileAssetType={EFileAssetType.ISSUE_DESCRIPTION}
           initialValue={issue.description_html}
           key={issue.id}
-          onSubmit={async (value, isMigrationUpdate) => {
-            if (!issue.id || !issue.project_id) return;
-            await issueOperations.update(workspaceSlug, issue.project_id, issue.id, {
-              description_html: value.description_html,
-              ...(isMigrationUpdate ? { skip_activity: "true" } : {}),
-            });
-          }}
+          issueOperations={issueOperations}
           projectId={issue.project_id}
-          setIsSubmitting={(value) => setIsSubmitting(value)}
+          setIsSubmitting={setDescriptionStatus}
           workspaceSlug={workspaceSlug}
         />
 
         <div className="flex items-center justify-between gap-2">
           {currentUser && (
             <IssueReaction
+              serviceType={workItemServiceType(issue)}
               className="flex-shrink-0"
               workspaceSlug={workspaceSlug}
               projectId={projectId}
               issueId={issueId}
-              currentUser={currentUser}
               disabled={isArchived}
             />
           )}
@@ -143,8 +127,8 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
             <DescriptionVersionsRoot
               className="flex-shrink-0"
               entityInformation={{
-                createdAt: issue.created_at ? new Date(issue.created_at) : new Date(),
-                createdByDisplayName: getUserDetails(issue.created_by ?? "")?.display_name ?? "",
+                createdAt: new Date(issue.created_at ?? 0),
+                createdByDisplayName: memberById(issue.created_by ?? "")?.member.display_name ?? "",
                 id: issueId,
                 isRestoreDisabled: !isEditable || isArchived,
               }}
@@ -181,7 +165,13 @@ export const IssueMainContent = observer(function IssueMainContent(props: Props)
         />
       )}
 
-      <IssueActivity workspaceSlug={workspaceSlug} projectId={projectId} issueId={issueId} disabled={isArchived} />
+      <IssueActivity
+        serviceType={workItemServiceType(issue)}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        issueId={issueId}
+        disabled={isArchived}
+      />
     </>
   );
-});
+};

@@ -4,15 +4,16 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { instanceConfigurationsOptions, updateConfigurationsOptions } from "@/queries/instance";
+import { notifyConfigurationSave } from "@/helpers/configuration-save";
 import { useTheme } from "next-themes";
-import useSWR from "swr";
 // plane internal packages
-import { setPromiseToast, setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { TInstanceConfigurationKeys, TInstanceAuthenticationModes } from "@plane/types";
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
+import type { TInstanceConfigurationKeys } from "@plane/types";
 import { Loader, ToggleSwitch } from "@plane/ui";
-import { cn, resolveGeneralTheme } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { resolveGeneralTheme } from "@plane/utils/theme-legacy";
 // components
 import { PageWrapper } from "@/components/common/page-wrapper";
 import { AuthenticationMethodCard } from "@/components/authentication/authentication-method-card";
@@ -20,95 +21,53 @@ import { AuthenticationMethodCard } from "@/components/authentication/authentica
 import { canDisableAuthMethod } from "@/helpers/authentication";
 // hooks
 import { useAuthenticationModes } from "@/hooks/oauth";
-import { useInstance } from "@/hooks/store";
 // types
 import type { Route } from "./+types/page";
 
-const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(_props: Route.ComponentProps) {
+const InstanceAuthenticationPage = function InstanceAuthenticationPage(_props: Route.ComponentProps) {
   // theme
   const { resolvedTheme: resolvedThemeAdmin } = useTheme();
   const resolvedTheme = resolveGeneralTheme(resolvedThemeAdmin);
-  // Ref to store authentication modes for validation (avoids circular dependency)
-  const authenticationModesRef = useRef<TInstanceAuthenticationModes[]>([]);
   // state
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  // store hooks
-  const { fetchInstanceConfigurations, formattedConfig, updateInstanceConfigurations } = useInstance();
+  const { data: formattedConfig } = useQuery(instanceConfigurationsOptions);
+  const queryClient = useQueryClient();
+  const { mutateAsync: updateInstanceConfigurations, isPending: isSubmitting } = useMutation(
+    updateConfigurationsOptions(queryClient)
+  );
   // derived values
   const enableSignUpConfig = formattedConfig?.ENABLE_SIGNUP ?? "";
 
-  useSWR("INSTANCE_CONFIGURATIONS", () => fetchInstanceConfigurations());
+  function updateConfig(key: TInstanceConfigurationKeys, value: string): void {
+    // Check if trying to disable (value === "0")
+    if (value === "0") {
+      // Check if this key is an authentication method key
+      const isAuthMethodKey = authenticationModes.some((method) => method.enabledConfigKey === key);
 
-  // Create updateConfig with validation - uses authenticationModesRef for current modes
-  const updateConfig = useCallback(
-    (key: TInstanceConfigurationKeys, value: string): void => {
-      // Check if trying to disable (value === "0")
-      if (value === "0") {
-        // Check if this key is an authentication method key
-        const currentAuthModes = authenticationModesRef.current;
-        const isAuthMethodKey = currentAuthModes.some((method) => method.enabledConfigKey === key);
+      // Only validate if this is an authentication method key
+      if (isAuthMethodKey) {
+        const canDisable = canDisableAuthMethod(key, authenticationModes, formattedConfig);
 
-        // Only validate if this is an authentication method key
-        if (isAuthMethodKey) {
-          const canDisable = canDisableAuthMethod(key, currentAuthModes, formattedConfig);
-
-          if (!canDisable) {
-            setToast({
-              type: TOAST_TYPE.ERROR,
-              title: "Cannot disable authentication",
-              message:
-                "At least one authentication method must remain enabled. Please enable another method before disabling this one.",
-            });
-            return;
-          }
+        if (!canDisable) {
+          setToast({
+            type: TOAST_TYPE.ERROR,
+            title: "Cannot disable authentication",
+            message:
+              "At least one authentication method must remain enabled. Please enable another method before disabling this one.",
+          });
+          return;
         }
       }
+    }
 
-      // Proceed with the update
-      setIsSubmitting(true);
+    notifyConfigurationSave(updateInstanceConfigurations({ [key]: value }));
+  }
 
-      const payload = {
-        [key]: value,
-      };
-
-      const updateConfigPromise = updateInstanceConfigurations(payload);
-
-      setPromiseToast(updateConfigPromise, {
-        loading: "Saving configuration",
-        success: {
-          title: "Success",
-          message: () => "Configuration saved successfully",
-        },
-        error: {
-          title: "Error",
-          message: () => "Failed to save configuration",
-        },
-      });
-
-      void updateConfigPromise
-        .then(() => {
-          setIsSubmitting(false);
-          return undefined;
-        })
-        .catch((err) => {
-          console.error(err);
-          setIsSubmitting(false);
-        });
-    },
-    [formattedConfig, updateInstanceConfigurations]
-  );
-
-  // Get authentication modes - this will use updateConfig which includes validation
   const authenticationModes = useAuthenticationModes({
+    config: formattedConfig,
     disabled: isSubmitting,
     updateConfig,
     resolvedTheme,
   });
-
-  // Update ref with latest authentication modes (updateConfig reads it only from event handlers)
-  useEffect(() => {
-    authenticationModesRef.current = authenticationModes;
-  }, [authenticationModes]);
 
   return (
     <PageWrapper
@@ -133,7 +92,7 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
                 <ToggleSwitch
                   value={Boolean(parseInt(enableSignUpConfig))}
                   onChange={() => {
-                    if (Boolean(parseInt(enableSignUpConfig)) === true) {
+                    if (parseInt(enableSignUpConfig)) {
                       updateConfig("ENABLE_SIGNUP", "0");
                     } else {
                       updateConfig("ENABLE_SIGNUP", "1");
@@ -169,7 +128,7 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
       )}
     </PageWrapper>
   );
-});
+};
 
 export const meta: Route.MetaFunction = () => [{ title: "Authentication Settings - Vector Web" }];
 

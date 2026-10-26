@@ -4,52 +4,42 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { INBOX_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { CloseIcon } from "@plane/propel/icons";
 import type { TInboxIssueStatus } from "@plane/types";
 // constants
-import { Tag } from "@plane/ui";
 // hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 import { InboxStatusIcon } from "../../inbox-status-icon";
+import { InboxAppliedFilterGroup, toggleAppliedFilterValue } from "./shared";
 
-export const InboxIssueAppliedFiltersStatus = observer(function InboxIssueAppliedFiltersStatus() {
+function getStatusOptionDetail(status: TInboxIssueStatus) {
+  return INBOX_STATUS.find((option) => option.status === status) || undefined;
+}
+
+export const InboxIssueAppliedFiltersStatus = function InboxIssueAppliedFiltersStatus() {
   // hooks
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
+  const { filters, setFilter } = useIntakePreferences();
   const { t } = useTranslation();
   // derived values
-  const filteredValues = inboxFilters?.status || [];
-  const currentOptionDetail = (status: TInboxIssueStatus) => INBOX_STATUS.find((s) => s.status === status) || undefined;
-
-  const handleFilterValue = (value: TInboxIssueStatus): TInboxIssueStatus[] =>
-    filteredValues?.includes(value) ? filteredValues.filter((v) => v !== value) : [...filteredValues, value];
-
-  if (filteredValues.length === 0) return <></>;
-  return (
-    <Tag>
-      <div className="text-11 text-secondary">Status</div>
-      {filteredValues.map((value) => {
-        const optionDetail = currentOptionDetail(value);
-        if (!optionDetail) return <></>;
-        return (
-          <div key={value} className="relative flex items-center gap-1 rounded-sm bg-layer-1 p-1 text-11">
-            <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
-              <InboxStatusIcon type={optionDetail?.status} />
-            </div>
-            <div className="truncate text-11">{t(optionDetail?.i18n_title)}</div>
-            {handleFilterValue(optionDetail?.status).length >= 1 && (
-              <div
-                className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-                onClick={() => handleInboxIssueFilters("status", handleFilterValue(optionDetail?.status))}
-              >
-                <CloseIcon className={`h-3 w-3`} />
-              </div>
-            )}
+  const filteredValues = filters?.status || [];
+  const options = filteredValues.flatMap((value) => {
+    const optionDetail = getStatusOptionDetail(value);
+    if (!optionDetail) return [];
+    const nextValues = toggleAppliedFilterValue(filteredValues, optionDetail.status);
+    return [
+      {
+        key: String(value),
+        leading: (
+          <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
+            <InboxStatusIcon type={optionDetail.status} />
           </div>
-        );
-      })}
-    </Tag>
-  );
-});
+        ),
+        label: t(optionDetail.i18n_title),
+        onRemove: nextValues.length >= 1 ? () => setFilter("status", nextValues) : undefined,
+      },
+    ];
+  });
+
+  return <InboxAppliedFilterGroup label="Status" options={options} hasFilters={filteredValues.length > 0} />;
+};

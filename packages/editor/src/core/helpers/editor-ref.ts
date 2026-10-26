@@ -9,11 +9,12 @@ import type { Editor } from "@tiptap/core";
 import { DOMSerializer } from "@tiptap/pm/model";
 import * as Y from "yjs";
 // plane imports
-import { convertHTMLToMarkdown } from "@plane/utils";
+import { convertHTMLToMarkdown } from "@plane/utils/editor/markdown-parser";
 // components
 import { getEditorMenuItems } from "@/components/menus";
 // constants
 import { CORE_EXTENSIONS } from "@/constants/extension";
+import { ECustomImageStatus } from "@/extensions/custom-image/types";
 import { CORE_EDITOR_META } from "@/constants/meta";
 // types
 import type { EditorRefApi, IEditorProps, TEditorCommands } from "@/types";
@@ -26,6 +27,21 @@ type TArgs = Pick<IEditorProps, "getEditorMetaData"> & {
   editor: Editor | null;
   provider: HocuspocusProvider | undefined;
 };
+
+function readyToDiscard(editor: Editor | null) {
+  const uploading = editor?.storage.utility?.uploadInProgress ?? true;
+  if (!editor || uploading) return false;
+  let provisionalImage = false;
+  editor.state.doc.descendants((node) => {
+    if (
+      node.attrs.status === ECustomImageStatus.DUPLICATING ||
+      node.attrs.status === ECustomImageStatus.DUPLICATION_FAILED ||
+      (node.attrs.status === ECustomImageStatus.UPLOADING && !node.attrs.src)
+    )
+      provisionalImage = true;
+  });
+  return !provisionalImage;
+}
 
 export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
   const { editor, getEditorMetaData, provider } = args;
@@ -191,7 +207,7 @@ export const getEditorRefHelpers = (args: TArgs): EditorRefApi => {
         editor.chain().focus().deleteRange({ from, to }).insertContent(contentHTML).run();
       }
     },
-    isEditorReadyToDiscard: () => editor?.storage?.utility?.uploadInProgress === false,
+    isEditorReadyToDiscard: () => readyToDiscard(editor),
     isMenuItemActive: (props) => {
       const { itemKey } = props;
       const editorItems = getEditorMenuItems(editor);

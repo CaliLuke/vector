@@ -5,17 +5,16 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { addDays } from "date-fns";
-import { observer } from "mobx-react";
+import { addDays } from "date-fns/addDays";
 import { PlusIcon } from "@plane/propel/icons";
 // ui
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IBlockUpdateData, IGanttBlock } from "@plane/types";
 // helpers
-import { renderFormattedDate, renderFormattedPayloadDate } from "@plane/utils";
+import { renderFormattedDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../contexts/chart-state";
 //
 
 type Props = {
@@ -23,7 +22,7 @@ type Props = {
   blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
 };
 
-export const ChartAddBlock = observer(function ChartAddBlock(props: Props) {
+export function ChartAddBlock(props: Props) {
   const { block, blockUpdateHandler } = props;
   // states
   const [isButtonVisible, setIsButtonVisible] = useState(false);
@@ -34,7 +33,7 @@ export const ChartAddBlock = observer(function ChartAddBlock(props: Props) {
   // hooks
   const { isMobile } = usePlatformOS();
   // chart hook
-  const { currentViewData, currentView } = useTimeLineChartStore();
+  const { viewData: currentViewData, currentView } = useGanttChartState();
 
   const handleButtonClick = () => {
     if (!currentViewData) return;
@@ -103,4 +102,4 @@ export const ChartAddBlock = observer(function ChartAddBlock(props: Props) {
       )}
     </div>
   );
-});
+}

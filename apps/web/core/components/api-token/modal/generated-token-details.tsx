@@ -11,7 +11,8 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IApiToken } from "@plane/types";
 // ui
-import { renderFormattedDate, renderFormattedTime, copyTextToClipboard } from "@plane/utils";
+import { renderFormattedDate, renderFormattedTime } from "@plane/utils/datetime";
+import { copyTextToClipboard } from "@plane/utils/string";
 // helpers
 // types
 import { usePlatformOS } from "@/hooks/use-platform-os";

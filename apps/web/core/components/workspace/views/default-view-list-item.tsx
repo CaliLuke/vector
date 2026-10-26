@@ -5,15 +5,14 @@
  */
 
 import { Link, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { useTranslation } from "@plane/i18n";
 // helpers
-import { truncateText } from "@plane/utils";
+import { truncateText } from "@plane/utils/string";
 
 type Props = { view: { key: string; i18n_label: string } };
 
-export const GlobalDefaultViewListItem = observer(function GlobalDefaultViewListItem(props: Props) {
+export const GlobalDefaultViewListItem = function GlobalDefaultViewListItem(props: Props) {
   const { view } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
@@ -37,4 +36,4 @@ export const GlobalDefaultViewListItem = observer(function GlobalDefaultViewList
       </Link>
     </div>
   );
-});
+};

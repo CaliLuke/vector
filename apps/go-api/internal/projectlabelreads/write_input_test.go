@@ -29,8 +29,8 @@ func TestPostFieldValidationMatchesRecordedSerializerCases(t *testing.T) {
 		{"unpaired surrogate", `{"name":"surrogate\ud800"}`, map[string]any{"name": []string{"Surrogate characters are not allowed: U+D800."}}},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(scenario.body), "application/json")
 			assertWriteHTTPError(t, err, 400, scenario.want)
 			if db.saved {
@@ -41,8 +41,17 @@ func TestPostFieldValidationMatchesRecordedSerializerCases(t *testing.T) {
 }
 
 func TestPostCollectsIndependentFieldErrors(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	db.row = func(query string, _ []any) pgx.Row {
+		if strings.Contains(query, "FOR KEY SHARE") {
+			return rowFunc(func(...any) error { return pgx.ErrNoRows })
+		}
+		if strings.Contains(query, "FOR UPDATE OF project") {
+			return stringRow("workspace")
+		}
+		return writeLabelRow(db.label)
+	}
+	repository := newWriteRepository(t, db)
 
 	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(`{"color":null,"name":null,"parent":"`+writeParent+`","sort_order":"invalid"}`), "application/json")
 
@@ -68,8 +77,11 @@ func TestPostNameCollisionUsesGlobalExactThenProjectCasefoldValidation(t *testin
 		{"project casefold", false, true, "LABEL_NAME_ALREADY_EXISTS"},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {
-			db := &writeDatabase{}
+			db := &parentWriteDatabase{}
 			db.row = func(query string, args []any) pgx.Row {
+				if strings.Contains(query, "FOR UPDATE OF project") {
+					return stringRow("workspace")
+				}
 				if !strings.Contains(query, "SELECT EXISTS") {
 					t.Fatalf("unexpected query: %s", query)
 				}
@@ -78,17 +90,17 @@ func TestPostNameCollisionUsesGlobalExactThenProjectCasefoldValidation(t *testin
 				}
 				return boolRow(scenario.project)
 			}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			repository := newWriteRepository(t, db)
 			name := "Alpha"
 			if scenario.name == "project casefold" {
 				name = "alpha"
 			}
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(`{"name":"`+name+`"}`), "application/json")
 			assertWriteHTTPError(t, err, 400, map[string]any{"name": []string{scenario.want}})
-			if len(db.queries) != 2 && !scenario.global {
+			if len(db.queries) != 3 && !scenario.global {
 				t.Fatalf("queries = %v", db.queries)
 			}
-			if len(db.queries) != 1 && scenario.global {
+			if len(db.queries) != 2 && scenario.global {
 				t.Fatalf("queries = %v", db.queries)
 			}
 		})
@@ -96,8 +108,8 @@ func TestPostNameCollisionUsesGlobalExactThenProjectCasefoldValidation(t *testin
 }
 
 func TestPostNumericNameAndBooleanSortOrderAreAccepted(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	repository := newWriteRepository(t, db)
 
 	label, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(`{"name":123,"sort_order":true}`), "application/json")
 
@@ -117,8 +129,8 @@ func TestPostNumericNameAndBooleanSortOrderAreAccepted(t *testing.T) {
 }
 
 func TestPostValidSurrogatePairIsAccepted(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	repository := newWriteRepository(t, db)
 
 	label, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(`{"name":"rocket \ud83d\ude80"}`), "application/json")
 
@@ -180,8 +192,8 @@ func TestParseLabelInputRejectsMalformedUnsupportedAndNonObjectJSON(t *testing.T
 func TestPostAndPutNullJSONReturnNoDataProvided(t *testing.T) {
 	for _, method := range []string{http.MethodPost, http.MethodPut} {
 		t.Run(method, func(t *testing.T) {
-			db := &writeDatabase{label: existingWriteLabel()}
-			repository := newWriteRepository(t, db, &writePublisher{db: db})
+			db := &parentWriteDatabase{label: existingWriteLabel()}
+			repository := newWriteRepository(t, db)
 			_, err := repository.Write(context.Background(), "user", "workspace", writeProject, writeID, method, strings.NewReader(`null`), "application/json")
 			assertWriteHTTPError(t, err, 400, map[string]any{"non_field_errors": []string{"No data provided"}})
 			if db.saved {
@@ -192,8 +204,8 @@ func TestPostAndPutNullJSONReturnNoDataProvided(t *testing.T) {
 }
 
 func TestPostMultipartFileValueIsNotAString(t *testing.T) {
-	db := &writeDatabase{label: existingWriteLabel()}
-	repository := newWriteRepository(t, db, &writePublisher{db: db})
+	db := &parentWriteDatabase{label: existingWriteLabel()}
+	repository := newWriteRepository(t, db)
 	body := "--plane\r\nContent-Disposition: form-data; name=\"name\"; filename=\"label.txt\"\r\nContent-Type: text/plain\r\n\r\nFile contents\r\n--plane--\r\n"
 
 	_, err := repository.Write(context.Background(), "user", "workspace", writeProject, "", http.MethodPost, strings.NewReader(body), "multipart/form-data; boundary=plane")

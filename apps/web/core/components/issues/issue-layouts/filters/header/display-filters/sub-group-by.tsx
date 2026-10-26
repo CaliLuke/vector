@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
+
 import { ISSUE_GROUP_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { IIssueDisplayFilterOptions, TIssueGroupByOptions } from "@plane/types";
@@ -20,7 +20,7 @@ type Props = {
   ignoreGroupedFilters: Partial<TIssueGroupByOptions>[];
 };
 
-export const FilterSubGroupBy = observer(function FilterSubGroupBy(props: Props) {
+export const FilterSubGroupBy = function FilterSubGroupBy(props: Props) {
   // hooks
   const { t } = useTranslation();
 
@@ -58,4 +58,4 @@ export const FilterSubGroupBy = observer(function FilterSubGroupBy(props: Props)
       )}
     </>
   );
-});
+};

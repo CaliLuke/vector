@@ -4,22 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useState } from "react";
-import { observer } from "mobx-react";
-import type { FileRejection } from "react-dropzone";
-import { useDropzone } from "react-dropzone";
 import { UploadCloud } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 // plane web hooks
-import { useFileSize } from "@/hooks/use-file-size";
 // types
 import type { TAttachmentHelpers } from "../issue-detail-widgets/attachments/helper";
 // components
+import { AttachmentUploadError } from "./upload-error";
+import { useAttachmentDropzone } from "./use-attachment-dropzone";
 import { IssueAttachmentsListItem } from "./attachment-list-item";
 import { IssueAttachmentsUploadItem } from "./attachment-list-upload-item";
 // types
@@ -27,94 +23,49 @@ import { IssueAttachmentDeleteModal } from "./delete-attachment-modal";
 
 type TIssueAttachmentItemList = {
   workspaceSlug: string;
-  projectId: string;
-  issueId: string;
   attachmentHelpers: TAttachmentHelpers;
   disabled?: boolean;
   issueServiceType?: TIssueServiceType;
 };
 
-export const IssueAttachmentItemList = observer(function IssueAttachmentItemList(props: TIssueAttachmentItemList) {
-  const {
-    workspaceSlug,
-    projectId,
-    issueId,
-    attachmentHelpers,
-    disabled,
-    issueServiceType = EIssueServiceType.ISSUES,
-  } = props;
+export function IssueAttachmentItemList(props: TIssueAttachmentItemList) {
+  return <IssueAttachmentItemListContent key={props.attachmentHelpers.uploadScopeKey} {...props} />;
+}
+
+const IssueAttachmentItemListContent = function IssueAttachmentItemListContent(props: TIssueAttachmentItemList) {
+  const { workspaceSlug, attachmentHelpers, disabled, issueServiceType = EIssueServiceType.ISSUES } = props;
   const { t } = useTranslation();
   // states
-  const [isUploading, setIsUploading] = useState(false);
   // store hooks
-  const {
-    attachment: { getAttachmentsByIssueId },
-    attachmentDeleteModalId,
-    toggleDeleteAttachmentModal,
-    fetchActivities,
-  } = useIssueDetail(issueServiceType);
+  const { attachmentDeleteModalId, toggleDeleteAttachmentModal } = useIssueDetailUiState(issueServiceType);
   const { operations: attachmentOperations, snapshot: attachmentSnapshot } = attachmentHelpers;
   const { create: createAttachment } = attachmentOperations;
   const { uploadStatus } = attachmentSnapshot;
   // file size
-  const { maxFileSize } = useFileSize();
   // derived values
-  const issueAttachments = getAttachmentsByIssueId(issueId);
+  const issueAttachments = attachmentSnapshot.attachments;
 
-  // handlers
-  const handleFetchPropertyActivities = useCallback(() => {
-    fetchActivities(workspaceSlug, projectId, issueId);
-  }, [fetchActivities, workspaceSlug, projectId, issueId]);
-
-  const onDrop = useCallback(
-    (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
-      const totalAttachedFiles = acceptedFiles.length + rejectedFiles.length;
-
-      if (rejectedFiles.length === 0) {
-        const currentFile: File = acceptedFiles[0];
-        if (!currentFile || !workspaceSlug) return;
-
-        setIsUploading(true);
-        createAttachment(currentFile)
-          .catch(() => {
-            setToast({
-              type: TOAST_TYPE.ERROR,
-              title: t("toast.error"),
-              message: t("attachment.error"),
-            });
-          })
-          .finally(() => {
-            handleFetchPropertyActivities();
-            setIsUploading(false);
-          });
-        return;
-      }
-
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("toast.error"),
-        message:
-          totalAttachedFiles > 1
-            ? t("attachment.only_one_file_allowed")
-            : t("attachment.file_size_limit", { size: maxFileSize / 1024 / 1024 }),
-      });
-      return;
-    },
-    [createAttachment, maxFileSize, workspaceSlug, handleFetchPropertyActivities]
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    maxSize: maxFileSize,
-    multiple: false,
-    disabled: isUploading || disabled,
+  const { getRootProps, getInputProps, isDragActive, isUploading, error, canRetry, retry } = useAttachmentDropzone({
+    workspaceSlug,
+    create: createAttachment,
+    disabled,
   });
 
   return (
     <>
-      {uploadStatus?.map((uploadStatus) => (
-        <IssueAttachmentsUploadItem key={uploadStatus.id} uploadStatus={uploadStatus} />
+      {uploadStatus?.map((status) => (
+        <IssueAttachmentsUploadItem key={status.id} uploadStatus={status} />
       ))}
+      {attachmentSnapshot.isError && (
+        <button
+          type="button"
+          className="px-2 text-11 text-danger-primary"
+          onClick={() => void attachmentSnapshot.retry()}
+        >
+          {t("common.retry")}
+        </button>
+      )}
+      <AttachmentUploadError error={error} canRetry={canRetry} retry={retry} disabled={!!disabled || isUploading} />
       {issueAttachments && (
         <>
           {attachmentDeleteModalId && (
@@ -122,8 +73,7 @@ export const IssueAttachmentItemList = observer(function IssueAttachmentItemList
               isOpen={Boolean(attachmentDeleteModalId)}
               onClose={() => toggleDeleteAttachmentModal(null)}
               attachmentOperations={attachmentOperations}
-              attachmentId={attachmentDeleteModalId}
-              issueServiceType={issueServiceType}
+              attachment={issueAttachments.find((attachment) => attachment.id === attachmentDeleteModalId)}
             />
           )}
           <div
@@ -141,12 +91,12 @@ export const IssueAttachmentItemList = observer(function IssueAttachmentItemList
                 </div>
               </div>
             )}
-            {issueAttachments?.map((attachmentId) => (
+            {issueAttachments?.map((attachment) => (
               <IssueAttachmentsListItem
-                key={attachmentId}
-                attachmentId={attachmentId}
+                key={attachment.id}
+                attachment={attachment}
                 disabled={disabled}
-                issueServiceType={issueServiceType}
+                onDelete={toggleDeleteAttachmentModal}
               />
             ))}
           </div>
@@ -154,4 +104,4 @@ export const IssueAttachmentItemList = observer(function IssueAttachmentItemList
       )}
     </>
   );
-});
+};

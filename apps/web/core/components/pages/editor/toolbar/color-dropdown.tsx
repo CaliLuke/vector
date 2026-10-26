@@ -11,7 +11,7 @@ import { Popover } from "@headlessui/react";
 import { COLORS_LIST } from "@plane/editor";
 import type { TEditorCommands } from "@plane/editor";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   handleColorSelect: (

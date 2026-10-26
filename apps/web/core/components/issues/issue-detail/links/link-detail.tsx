@@ -7,33 +7,32 @@
 import { NewTabIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
-import { getIconForLink, copyTextToClipboard, calculateTimeAgo } from "@plane/utils";
+import { getIconForLink } from "@plane/utils/get-icon-for-link";
+import { copyTextToClipboard } from "@plane/utils/string";
+import { calculateTimeAgo } from "@plane/utils/datetime";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useMember } from "@/hooks/store/use-member";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // types
 import type { TLinkOperationsModal } from "./create-update-link-modal";
+import type { TIssueLink } from "@plane/types";
 
 export type TIssueLinkDetail = {
-  linkId: string;
+  link: TIssueLink;
   linkOperations: TLinkOperationsModal;
   isNotAllowed: boolean;
+  workspaceSlug: string;
 };
 
 export function IssueLinkDetail(props: TIssueLinkDetail) {
   // props
-  const { linkId, linkOperations, isNotAllowed } = props;
+  const { link, linkOperations, isNotAllowed, workspaceSlug } = props;
   // hooks
-  const {
-    toggleIssueLinkModal: toggleIssueLinkModalStore,
-    link: { getLinkById },
-    setIssueLinkData,
-  } = useIssueDetail();
-  const { getUserDetails } = useMember();
+  const { toggleIssueLinkModal: toggleIssueLinkModalStore, setIssueLinkData } = useIssueDetailUiState();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const { isMobile } = usePlatformOS();
-  const linkDetail = getLinkById(linkId);
-  if (!linkDetail) return <></>;
+  const linkDetail = link;
 
   const Icon = getIconForLink(linkDetail.url);
 
@@ -42,10 +41,10 @@ export function IssueLinkDetail(props: TIssueLinkDetail) {
     setIssueLinkData(linkDetail);
   };
 
-  const createdByDetails = getUserDetails(linkDetail.created_by_id);
+  const createdByDetails = memberById(linkDetail.created_by_id)?.member;
 
   return (
-    <div key={linkId}>
+    <div key={link.id}>
       <div className="relative flex flex-col rounded-md bg-surface-2 p-2.5">
         <div
           className="flex w-full cursor-pointer items-start justify-between gap-2"

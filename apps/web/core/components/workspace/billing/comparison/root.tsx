@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import type { EProductSubscriptionEnum, TBillingFrequency } from "@plane/types";
 // components
@@ -21,7 +20,7 @@ type TPlansComparisonProps = {
   setIsCompareAllFeaturesSectionOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const PlansComparison = observer(function PlansComparison(props: TPlansComparisonProps) {
+export const PlansComparison = function PlansComparison(props: TPlansComparisonProps) {
   const {
     isCompareAllFeaturesSectionOpen,
     getBillingFrequency,
@@ -51,4 +50,4 @@ export const PlansComparison = observer(function PlansComparison(props: TPlansCo
       setIsCompareAllFeaturesSectionOpen={setIsCompareAllFeaturesSectionOpen}
     />
   );
-});
+};

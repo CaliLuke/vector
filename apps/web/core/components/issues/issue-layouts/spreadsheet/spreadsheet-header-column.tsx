@@ -6,8 +6,8 @@
 
 import { useRef } from "react";
 //types
-import { observer } from "mobx-react";
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
+
+import type { TIssueStandardDisplayProperty, IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 //components
 import { shouldRenderColumn } from "@/helpers/issue-filter.helper";
 import { WithDisplayPropertiesHOC } from "../properties/with-display-properties-HOC";
@@ -15,19 +15,26 @@ import { HeaderColumn } from "./columns/header-column";
 
 interface Props {
   displayProperties: IIssueDisplayProperties;
-  property: keyof IIssueDisplayProperties;
+  property: TIssueStandardDisplayProperty;
   isEstimateEnabled: boolean;
   displayFilters: IIssueDisplayFilterOptions;
   handleDisplayFilterUpdate: (data: Partial<IIssueDisplayFilterOptions>) => void;
   isEpic?: boolean;
 }
-export const SpreadsheetHeaderColumn = observer(function SpreadsheetHeaderColumn(props: Props) {
-  const { displayProperties, displayFilters, property, handleDisplayFilterUpdate, isEpic = false } = props;
+export const SpreadsheetHeaderColumn = function SpreadsheetHeaderColumn(props: Props) {
+  const {
+    displayProperties,
+    displayFilters,
+    property,
+    handleDisplayFilterUpdate,
+    isEstimateEnabled,
+    isEpic = false,
+  } = props;
 
   //hooks
   const tableHeaderCellRef = useRef<HTMLTableCellElement | null>(null);
 
-  const shouldRenderProperty = shouldRenderColumn(property);
+  const shouldRenderProperty = shouldRenderColumn(property, isEstimateEnabled);
 
   return (
     <WithDisplayPropertiesHOC
@@ -52,4 +59,4 @@ export const SpreadsheetHeaderColumn = observer(function SpreadsheetHeaderColumn
       </th>
     </WithDisplayPropertiesHOC>
   );
-});
+};

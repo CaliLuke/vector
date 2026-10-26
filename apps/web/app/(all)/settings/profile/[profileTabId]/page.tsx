@@ -5,7 +5,7 @@
  */
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
 import { PROFILE_SETTINGS_TABS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -16,7 +16,7 @@ import { PageHead } from "@/components/core/page-title";
 import { ProfileSettingsContent } from "@/components/settings/profile/content";
 import { ProfileSettingsSidebarRoot } from "@/components/settings/profile/sidebar";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 // local imports
 
@@ -25,7 +25,7 @@ function ProfileSettingsPage(): React.JSX.Element | null {
   // router
   const router = useRouter();
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   // translation
   const { t } = useTranslation();
   // derived values
@@ -59,5 +59,5 @@ function ProfileSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/settings/profile/$profileTabId/")({
-  component: observer(ProfileSettingsPage),
+  component: ProfileSettingsPage,
 });

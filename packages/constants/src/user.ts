@@ -4,6 +4,9 @@
  * See the LICENSE file for details.
  */
 
+import { EUserPermissions } from "@plane/types";
+export { EUserPermissions } from "@plane/types";
+
 export enum EAuthenticationPageType {
   STATIC = "STATIC",
   NOT_AUTHENTICATED = "NOT_AUTHENTICATED",
@@ -33,11 +36,6 @@ export enum EUserPermissionsLevel {
 
 export type TUserPermissionsLevel = EUserPermissionsLevel;
 
-export enum EUserPermissions {
-  ADMIN = 20,
-  MEMBER = 15,
-  GUEST = 5,
-}
 export type TUserPermissions = EUserPermissions;
 
 export type TUserAllowedPermissionsObject = {

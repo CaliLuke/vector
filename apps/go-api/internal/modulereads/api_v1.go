@@ -30,7 +30,7 @@ var apiModuleFields = strings.Fields("id created_at updated_at deleted_at create
 var apiModuleCounts = strings.Fields("total_issues cancelled_issues completed_issues started_issues unstarted_issues backlog_issues")
 
 // ReadAPIV1 retains the API source contract; app modules have different permissions and querysets.
-func (r *Repository) ReadAPIV1(ctx context.Context, _ string, request APIV1Request) (any, error) {
+func (r *Repository) ReadAPIV1(ctx context.Context, user string, request APIV1Request) (any, error) {
 	p := request.Params
 	detail := request.Operation == "detail"
 	limit, page, offset := 1000, 0, 0
@@ -59,7 +59,7 @@ func (r *Repository) ReadAPIV1(ctx context.Context, _ string, request APIV1Reque
 	for i, raw := range rows {
 		row := raw.(map[string]any)
 		if request.Operation == "issues" {
-			rows[i], err = djangoapi.SerializeIssue(ctx, r.database, row, p["fields"], p["expand"])
+			rows[i], err = djangoapi.SerializeVisibleIssue(ctx, r.database, row, p["fields"], p["expand"], user)
 		} else {
 			fields, expand := p["fields"], p["expand"]
 			declared := append([]string{}, apiModuleFields...)

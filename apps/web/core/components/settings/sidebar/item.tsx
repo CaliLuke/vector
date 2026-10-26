@@ -8,7 +8,7 @@ import { Link } from "@tanstack/react-router";
 import React from "react";
 
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import type { LucideIcon } from "lucide-react";
 import type { ISvgIcons } from "@plane/propel/icons";
 

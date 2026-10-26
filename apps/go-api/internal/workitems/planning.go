@@ -14,15 +14,24 @@ import (
 )
 
 func (r *Repository) planning(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
-	if !q.API {
-		// Inherited update has no action decorator; its missing pk lookup fails first.
-		if q.Method == "PATCH" || q.Method == "PUT" {
-			return Result{}, errors.New("planning update expected pk route keyword")
-		}
-		if err := r.allowProject(ctx, q, []int{15, 20}, false); err != nil {
-			return Result{}, err
-		}
+	// Preserve the unsupported inherited-update contract before database access.
+	if !q.API && (q.Method == "PATCH" || q.Method == "PUT") {
+		return Result{}, errors.New("planning update expected pk route keyword")
 	}
+	return r.projectRequest(ctx, q, body, contentType, (*Repository).authorizePlanning, (*Repository).planningTransaction)
+}
+
+func (r *Repository) authorizePlanning(ctx context.Context, q Request) error {
+	if err := r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
+		return err
+	}
+	if !q.API {
+		return r.allowProject(ctx, q, []int{15, 20}, false)
+	}
+	return nil
+}
+
+func (r *Repository) planningTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	if strings.HasSuffix(q.Operation, "_transfer_issues") {
 		return r.transferCycle(ctx, q, body, contentType)
 	}
@@ -163,7 +172,7 @@ func (r *Repository) planning(ctx context.Context, q Request, body io.Reader, co
 	if !q.API {
 		return Result{201, map[string]any{"message": "success"}}, nil
 	}
-	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug)
+	rows, err := r.rows(ctx, `SELECT to_jsonb(link)||jsonb_build_object('sub_issues_count',(SELECT COUNT(*) FROM issues child WHERE child.parent_id=link.issue_id AND `+djangoapi.IssueVisibleSQL("child", "$4::uuid", "link.workspace_id")+` AND child.deleted_at IS NULL AND child.archived_at IS NULL AND NOT child.is_draft AND NOT EXISTS(SELECT 1 FROM states s WHERE s.id=child.state_id AND s."group"='triage'))) FROM `+kind+`_issues link JOIN projects p ON p.id=link.project_id JOIN workspaces w ON w.id=link.workspace_id WHERE link.`+kind+`_id=$1 AND link.project_id=$2 AND w.slug=$3 AND p.archived_at IS NULL AND link.deleted_at IS NULL ORDER BY link.created_at DESC`, q.Params[kind+"_id"], q.ProjectID, q.Slug, q.ActorID)
 	if err != nil {
 		return Result{}, err
 	}

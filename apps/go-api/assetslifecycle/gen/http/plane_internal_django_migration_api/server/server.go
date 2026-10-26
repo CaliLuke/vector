@@ -45,6 +45,7 @@ type Server struct {
 	DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk http.Handler
 	GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk    http.Handler
 	PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk  http.Handler
+	PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk                                      http.Handler
 	PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk                   http.Handler
 	DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk                           http.Handler
 	GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk                              http.Handler
@@ -148,6 +149,7 @@ func New(e *planeinternaldjangomigrationapi.Endpoints, mux loomhttp.Muxer, decod
 			{"DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "DELETE", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/"},
 			{"GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "GET", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/"},
 			{"PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", "PATCH", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/issues/{issue_id}/attachments/{pk}/"},
+			{"PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", "POST", "/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/"},
 			{"PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk", "POST", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{entity_id}/bulk/"},
 			{"DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "DELETE", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/"},
 			{"GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk", "GET", "/api/assets/v2/workspaces/{slug}/projects/{project_id}/{pk}/"},
@@ -230,6 +232,7 @@ func New(e *planeinternaldjangomigrationapi.Endpoints, mux loomhttp.Muxer, decod
 		DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk: NewDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk, mux, decoder, encoder, errhandler, formatter),
 		GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk:    NewGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk, mux, decoder, encoder, errhandler, formatter),
 		PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk:  NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(e.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk, mux, decoder, encoder, errhandler, formatter),
+		PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk:                                      NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler(e.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk, mux, decoder, encoder, errhandler, formatter),
 		PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk:                   NewPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkHandler(e.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk, mux, decoder, encoder, errhandler, formatter),
 		DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk:                           NewDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkHandler(e.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk, mux, decoder, encoder, errhandler, formatter),
 		GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk:                              NewGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkHandler(e.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk, mux, decoder, encoder, errhandler, formatter),
@@ -321,6 +324,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(s.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	s.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(s.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	s.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk = m(s.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
+	s.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk = m(s.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk)
 	s.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk = m(s.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk)
 	s.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk = m(s.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
 	s.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk = m(s.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
@@ -412,6 +416,7 @@ func Mount(mux loomhttp.Muxer, h *Server) {
 	MountDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(mux, h.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	MountGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(mux, h.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
 	MountPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkHandler(mux, h.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk)
+	MountPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler(mux, h.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk)
 	MountPostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulkHandler(mux, h.PostAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByEntityIDBulk)
 	MountDeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkHandler(mux, h.DeleteAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
 	MountGetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPkHandler(mux, h.GetAPIAssetsV2WorkspacesBySlugProjectsByProjectIDByPk)
@@ -1709,6 +1714,52 @@ func NewPatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttach
 			return
 		}
 		data := &planeinternaldjangomigrationapi.PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPkRequestData{Payload: payload, Body: r.Body}
+		res, err := endpoint(ctx, data)
+		if err != nil {
+			lifecycle.HandlerFailed(err, false, encodeError, errhandler)
+			return
+		}
+		lifecycle.EncodeResponse(func(ctx context.Context, w http.ResponseWriter) error {
+			return encodeResponse(ctx, w, res)
+		}, encodeError, errhandler)
+	})
+}
+
+// MountPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler configures the mux
+// to serve the "PlaneInternalDjangoMigrationAPI" service
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" endpoint.
+func MountPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler(mux loomhttp.Muxer, h http.Handler) {
+	loomhttp.MountHandler(mux, "POST", "/api/assets/v2/workspaces/{slug}/{entity_id}/bulk/", h)
+}
+
+// NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler creates a HTTP
+// handler which loads the HTTP request and calls the
+// "PlaneInternalDjangoMigrationAPI" service
+// "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk" endpoint.
+func NewPostAPIAssetsV2WorkspacesBySlugByEntityIDBulkHandler(
+	endpoint loom.Endpoint,
+	mux loomhttp.Muxer,
+	decoder func(*http.Request) loomhttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) loomhttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(ctx context.Context, err error) loomhttp.StatusCoder,
+) http.Handler {
+	var (
+		decodeRequest  = DecodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequest(mux, decoder)
+		encodeResponse = EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkResponse(encoder)
+		encodeError    = EncodePostAPIAssetsV2WorkspacesBySlugByEntityIDBulkError(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lifecycle := loomhttp.NewHandlerLifecycle(w, r, "PlaneInternalDjangoMigrationAPI", "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk")
+		defer lifecycle.End()
+		ctx := lifecycle.Context()
+		w = lifecycle.Writer()
+		payload, err := decodeRequest(r)
+		if err != nil {
+			lifecycle.DecodeFailed(err, encodeError, errhandler)
+			return
+		}
+		data := &planeinternaldjangomigrationapi.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkRequestData{Payload: payload, Body: r.Body}
 		res, err := endpoint(ctx, data)
 		if err != nil {
 			lifecycle.HandlerFailed(err, false, encodeError, errhandler)

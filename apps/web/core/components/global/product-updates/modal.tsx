@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // ui
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 // components
@@ -18,7 +17,7 @@ export type ProductUpdatesModalProps = {
   handleClose: () => void;
 };
 
-export const ProductUpdatesModal = observer(function ProductUpdatesModal(props: ProductUpdatesModalProps) {
+export function ProductUpdatesModal(props: ProductUpdatesModalProps) {
   const { isOpen, handleClose } = props;
 
   return (
@@ -28,4 +27,4 @@ export const ProductUpdatesModal = observer(function ProductUpdatesModal(props: 
       <ProductUpdatesFooter />
     </ModalCore>
   );
-});
+}

@@ -4,8 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { Fragment, useEffect, useState } from "react";
-import { observer } from "mobx-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/instance";
+import { useSidebar } from "@/providers/sidebar";
+import { Fragment, useRef } from "react";
+import { useForm, useStore } from "@tanstack/react-form";
+import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { useTheme as useNextTheme } from "next-themes";
 import { LogOut, UserCog2, Palette } from "lucide-react";
 import { Menu, Transition } from "@headlessui/react";
@@ -13,28 +17,40 @@ import { Menu, Transition } from "@headlessui/react";
 import { API_BASE_URL } from "@plane/constants";
 import { AuthService } from "@plane/services";
 import { Avatar } from "@plane/ui";
-import { getFileURL, cn } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useTheme, useUser } from "@/hooks/store";
 
 // service initialization
 const authService = new AuthService();
 
-export const AdminSidebarDropdown = observer(function AdminSidebarDropdown() {
-  // store hooks
-  const { isSidebarCollapsed } = useTheme();
-  const { currentUser, signOut } = useUser();
+export const AdminSidebarDropdown = function AdminSidebarDropdown() {
+  const { isSidebarCollapsed } = useSidebar();
+  const { data: currentUser } = useQuery(currentUserOptions);
+  const queryClient = useQueryClient();
   // hooks
   const { resolvedTheme, setTheme } = useNextTheme();
   // state
-  const [csrfToken, setCsrfToken] = useState<string | undefined>(undefined);
+  const formElement = useRef<HTMLFormElement>(null);
+  const form = useForm({
+    defaultValues: {},
+    onSubmit: async () => {
+      try {
+        await authService.submitForm(formElement.current);
+        queryClient.clear();
+        setTheme("system");
+      } catch (error) {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Unable to sign out", message: "Please try again." });
+        throw error;
+      }
+    },
+  });
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
 
   const handleThemeSwitch = () => {
     const newTheme = resolvedTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
   };
-
-  const handleSignOut = () => signOut();
 
   const getSidebarMenuItems = () => (
     <Menu.Items
@@ -60,11 +76,28 @@ export const AdminSidebarDropdown = observer(function AdminSidebarDropdown() {
         </Menu.Item>
       </div>
       <div className="py-2">
-        <form method="POST" action={`${API_BASE_URL}/api/instances/admins/sign-out/`} onSubmit={handleSignOut}>
-          <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken ?? ""} />
+        <form
+          method="POST"
+          action={`${API_BASE_URL}/api/instances/admins/sign-out/`}
+          ref={formElement}
+          onSubmit={(event) => {
+            event.preventDefault();
+            void form.handleSubmit().catch(() => {
+              // The sign-out failure is already reported with a toast.
+            });
+          }}
+        >
+          <input type="hidden" name="csrfmiddlewaretoken" defaultValue="" />
           <Menu.Item
             as="button"
-            type="submit"
+            type="button"
+            disabled={isSubmitting}
+            onClick={(event) => {
+              event.preventDefault();
+              void form.handleSubmit().catch(() => {
+                // The sign-out failure is already reported with a toast.
+              });
+            }}
             className="flex w-full items-center gap-2 rounded-sm px-2 py-1 hover:bg-layer-1-hover"
           >
             <LogOut className="h-4 w-4 stroke-[1.5]" />
@@ -74,11 +107,6 @@ export const AdminSidebarDropdown = observer(function AdminSidebarDropdown() {
       </div>
     </Menu.Items>
   );
-
-  useEffect(() => {
-    if (csrfToken === undefined)
-      void authService.requestCSRFToken().then((data) => data?.csrf_token && setCsrfToken(data.csrf_token));
-  }, [csrfToken]);
 
   return (
     <div className="flex max-h-header items-center gap-x-5 gap-y-2 border-b border-subtle px-4 py-2.5">
@@ -148,4 +176,4 @@ export const AdminSidebarDropdown = observer(function AdminSidebarDropdown() {
       )}
     </div>
   );
-});
+};

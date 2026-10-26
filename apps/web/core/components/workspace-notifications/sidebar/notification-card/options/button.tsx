@@ -7,7 +7,7 @@
 import type { ReactNode } from "react";
 import { Tooltip } from "@plane/propel/tooltip";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
@@ -15,11 +15,12 @@ type TNotificationItemOptionButton = {
   tooltipContent?: string;
   buttonClassName?: string;
   callBack: () => void;
+  disabled?: boolean;
   children: ReactNode;
 };
 
 export function NotificationItemOptionButton(props: TNotificationItemOptionButton) {
-  const { tooltipContent = "", buttonClassName = "", children, callBack } = props;
+  const { tooltipContent = "", buttonClassName = "", children, callBack, disabled } = props;
   // hooks
   const { isMobile } = usePlatformOS();
 
@@ -27,6 +28,7 @@ export function NotificationItemOptionButton(props: TNotificationItemOptionButto
     <Tooltip tooltipContent={tooltipContent} isMobile={isMobile}>
       <button
         type="button"
+        disabled={disabled}
         className={cn(
           "relative flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-xs bg-layer-1 outline-none hover:bg-surface-2",
           buttonClassName

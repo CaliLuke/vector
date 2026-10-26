@@ -1,26 +1,28 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 
 const customMenuUrl = new URL("../../packages/ui/src/dropdowns/custom-menu.tsx", import.meta.url).href;
 const packageStubs = {
-  "mobx-react": "export const observer = component => component;",
   "@plane/i18n": "export const useTranslation = () => ({ t: key => key });",
   "@plane/propel/icons":
     "export const TrashIcon = () => null; export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null;",
   "@plane/propel/tooltip": `export { Tooltip } from ${JSON.stringify(new URL("../../packages/propel/src/tooltip/root.tsx", import.meta.url).href)};`,
   "@plane/types": "export const EIssueServiceType = { ISSUES: 'issues' };",
   "@plane/ui": `export { CustomMenu } from ${JSON.stringify(customMenuUrl)};`,
-  "@plane/utils":
-    "export const convertBytesToSize = value => `${value} bytes`; export const getFileExtension = value => value.split('.').pop(); export const getFileName = value => value.split('.').slice(0, -1).join('.'); export const getFileURL = value => value; export const renderFormattedDate = () => 'today';",
+  "@plane/utils/attachment":
+    "export const convertBytesToSize = value => `${value} bytes`;\nexport const getFileExtension = value => value.split('.').pop();\nexport const getFileName = value => value.split('.').slice(0, -1).join('.');",
+  "@plane/utils/file": "export const getFileURL = value => value;",
+  "@plane/utils/datetime": "export const renderFormattedDate = () => 'today';",
   "@/components/dropdowns/member/avatar": "export const ButtonAvatars = () => null;",
   "@/components/icons": "export const getFileIcon = () => null;",
-  "@/hooks/store/use-issue-detail": `export const useIssueDetail = () => ({ attachment: { getAttachmentById: () => ({ attributes: { name: 'report.pdf', size: 68 }, asset_url: 'https://files.test/report.pdf', created_by: null, updated_at: '2026-10-19T00:00:00Z' }) }, toggleDeleteAttachmentModal: value => globalThis.__attachmentCalls.push(['delete', value]) });`,
-  "@/hooks/store/use-member": "export const useMember = () => ({ getUserDetails: () => undefined });",
+  "@tanstack/react-router": 'export const useParams = () => ({ workspaceSlug: "acme" });',
+  "@/hooks/use-member-rosters": "export const useWorkspaceMemberRoster = () => ({ membersById: new Map() });",
   "@/hooks/use-platform-os": "export const usePlatformOS = () => ({ isMobile: false });",
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "react-popper": "export const usePopper = () => ({ styles: { popper: {} }, attributes: { popper: {} } });",
@@ -41,11 +43,23 @@ registerHooks({
   },
 });
 
-globalThis.__attachmentCalls = [];
+globalThis.attachmentCalls = [];
 async function renderAttachment(environment, props) {
   const { IssueAttachmentsListItem } =
     await import("../../apps/web/core/components/issues/attachment/attachment-list-item.tsx");
-  await environment.render(React.createElement(IssueAttachmentsListItem, props));
+  await environment.render(
+    React.createElement(IssueAttachmentsListItem, {
+      attachment: {
+        id: "attachment-1",
+        attributes: { name: "report.pdf", size: 68 },
+        asset_url: "https://files.test/report.pdf",
+        created_by: null,
+        updated_at: "2026-10-19T00:00:00Z",
+      },
+      onDelete: (attachmentId) => globalThis.attachmentCalls.push(["delete", attachmentId]),
+      ...props,
+    })
+  );
 }
 
 async function waitFor(condition, message) {
@@ -131,7 +145,7 @@ test("attachment menu keeps its delete action when opened by pointer", async (t)
   );
   assert.ok(deleteItem);
   await React.act(async () => deleteItem.querySelector("button").click());
-  assert.deepEqual(globalThis.__attachmentCalls, [["delete", "attachment-1"]]);
+  assert.deepEqual(globalThis.attachmentCalls, [["delete", "attachment-1"]]);
 });
 
 test("disabled attachment menu does not open", async (t) => {

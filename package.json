@@ -17,7 +17,7 @@
     "test:local-stack": "go -C apps/go-api test ./internal/devtools",
     "test:local-logs": "go -C apps/go-api test ./internal/devtools && node --test tests/frontend/local-logging.test.mjs",
     "test:issue-loading": "node --test tests/frontend/project-issues-loading.test.mjs",
-    "test:frontend": "node scripts/quality/run-bounded.mjs --seconds 300 --memory-mib 1024 --heap-mib 384 -- node --test --test-timeout=15000 --test-concurrency=1 tests/frontend/*.test.mjs",
+    "test:frontend": "node scripts/quality/run-bounded.mjs --seconds 300 --memory-mib 1024 --heap-mib 384 -- node --test --test-timeout=15000 --test-concurrency=2 tests/frontend/*.test.mjs",
     "start": "turbo run start",
     "clean": "turbo run clean && rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
     "fix": "turbo run fix",
@@ -31,11 +31,13 @@
     "test:setup": "bash tests/setup/test-setup.sh",
     "prepare": "husky",
     "doctor": "react-doctor",
-    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo run dev --concurrency=18"
+    "dev:frontend": "node scripts/quality/run-bounded.mjs --seconds 86400 --memory-mib 6144 --heap-mib 1024 -- turbo watch dev --filter='./apps/*' --concurrency=5"
   },
   "devDependencies": {
+    "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "@typescript/native": "catalog:",
+    "esbuild": "0.28.1",
     "husky": "catalog:",
     "jscpd": "catalog:",
     "jsdom": "catalog:",
@@ -44,7 +46,7 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "react-doctor": "0.9.18",
-    "swr": "catalog:",
+    "react-router": "catalog:",
     "turbo": "catalog:"
   },
   "engines": {

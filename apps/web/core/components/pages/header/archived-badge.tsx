@@ -4,18 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
 // plane imports
 import { ArchiveIcon } from "@plane/propel/icons";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
 };
 
-export const PageArchivedBadge = observer(function PageArchivedBadge({ page }: Props) {
+export function PageArchivedBadge({ page }: Props) {
   if (!page.archived_at) return null;
 
   return (
@@ -24,4 +24,4 @@ export const PageArchivedBadge = observer(function PageArchivedBadge({ page }: P
       <span className="text-11 font-medium">Archived at {renderFormattedDate(page.archived_at)}</span>
     </div>
   );
-});
+}

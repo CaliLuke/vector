@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane types
 import type { ICycle } from "@plane/types";
 import { Spinner } from "@plane/ui";
@@ -12,26 +11,24 @@ import { Spinner } from "@plane/ui";
 import type { TPowerKContext } from "@/components/power-k/core/types";
 import { PowerKCyclesMenu } from "@/components/power-k/menus/cycles";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 type Props = {
   context: TPowerKContext;
   handleSelect: (cycle: ICycle) => void;
 };
 
-export const PowerKOpenProjectCyclesMenu = observer(function PowerKOpenProjectCyclesMenu(props: Props) {
+export const PowerKOpenProjectCyclesMenu = function PowerKOpenProjectCyclesMenu(props: Props) {
   const { context, handleSelect } = props;
-  // store hooks
-  const { fetchedMap, getProjectCycleIds, getCycleById } = useCycle();
-  // derived values
-  const projectId = context.params.projectId?.toString();
-  const isFetched = projectId ? fetchedMap[projectId] : false;
-  const projectCycleIds = projectId ? getProjectCycleIds(projectId) : undefined;
-  const cyclesList = projectCycleIds
-    ? projectCycleIds.map((cycleId) => getCycleById(cycleId)).filter((cycle) => !!cycle)
-    : [];
-
-  if (!isFetched) return <Spinner />;
+  const catalogue = useProjectCycles(
+    typeof context.params.workspaceSlug === "string" ? context.params.workspaceSlug : undefined,
+    typeof context.params.projectId === "string" ? context.params.projectId : undefined
+  );
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="cycles" retry={catalogue.retry} />;
+  if (!catalogue.cycles) return <Spinner />;
+  const cyclesList = catalogue.cycles;
 
   return <PowerKCyclesMenu cycles={cyclesList} onSelect={handleSelect} />;
-});
+};

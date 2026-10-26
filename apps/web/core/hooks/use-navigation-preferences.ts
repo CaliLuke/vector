@@ -5,266 +5,313 @@
  */
 
 import { useCallback, useMemo } from "react";
-
+import sortBy from "lodash-es/sortBy.js";
+import { useMutation, useMutationState, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { DefaultError, Mutation, QueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
+import { DEFAULT_APP_RAIL_PREFERENCES, DEFAULT_PERSONAL_PREFERENCES, DEFAULT_PROJECT_PREFERENCES } from "@plane/types";
 import type {
+  IWorkspaceUserPropertiesResponse,
+  TAppRailDisplayMode,
+  TAppRailPreferences,
   TPersonalNavigationItemKey,
   TPersonalNavigationPreferences,
-  TProjectNavigationPreferences,
   TProjectNavigationMode,
-  TWorkspaceNavigationPreferences,
+  TProjectNavigationPreferences,
   TWorkspaceNavigationItemState,
-  TAppRailPreferences,
-  TAppRailDisplayMode,
+  TWorkspaceNavigationPreferences,
 } from "@plane/types";
+import { useTranslation } from "@plane/i18n";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { captureIdentityScope, getIdentitySessionGeneration, isIdentityScopeCurrent } from "@/queries/identity";
 import {
-  DEFAULT_PERSONAL_PREFERENCES,
-  DEFAULT_PROJECT_PREFERENCES,
-  DEFAULT_WORKSPACE_PREFERENCES,
-  DEFAULT_APP_RAIL_PREFERENCES,
-} from "@plane/types";
-import { useWorkspace } from "./store/use-workspace";
+  applySidebarPreferencePatches,
+  navigationPreferenceKeys,
+  patchSidebarNavigationOptions,
+  patchWorkspaceNavigationOptions,
+  sidebarNavigationOptions,
+  workspacePropertiesOptions,
+} from "@/queries/navigation-preferences";
+import type { SidebarPreferencePatch } from "@/queries/navigation-preferences";
+import { useIdentityGeneration } from "./use-identity-generation";
+import { useCurrentUser } from "./use-current-user";
 import useLocalStorage from "./use-local-storage";
 import { useParams } from "@tanstack/react-router";
 
 const APP_RAIL_PREFERENCES_KEY = "app_rail_preferences";
 
-export const usePersonalNavigationPreferences = () => {
-  const { workspaceSlug } = useParams({ strict: false });
-  const { getNavigationPreferences, updateBulkSidebarPreferences } = useWorkspace();
+type PreferenceRouter = ReturnType<typeof useRouter>;
+type Translator = ReturnType<typeof useTranslation>["t"];
 
-  // Get preferences from the store
-  const storePreferences = getNavigationPreferences(workspaceSlug?.toString() || "");
+function reportPreferenceFailure(
+  client: QueryClient,
+  userId: string | undefined,
+  generation: number,
+  router: PreferenceRouter,
+  t: Translator
+) {
+  const identity = captureIdentityScope(client, userId);
+  const routeHref = router.state.location.href;
+  return () => {
+    if (
+      generation !== getIdentitySessionGeneration(client) ||
+      !isIdentityScopeCurrent(client, identity) ||
+      routeHref !== router.state.location.href
+    )
+      return;
+    setToast({ type: TOAST_TYPE.ERROR, title: t("toast.error"), message: t("common.error.message") });
+  };
+}
 
-  // Convert store format to hook format for personal items
-  const preferences: TPersonalNavigationPreferences = useMemo(() => {
-    if (!storePreferences) {
-      return DEFAULT_PERSONAL_PREFERENCES;
+type PendingSidebarPatch = {
+  variables: SidebarPreferencePatch[];
+  submittedAt: number;
+  mutationId: number;
+};
+
+type SidebarPatchMutation = Mutation<void, DefaultError, SidebarPreferencePatch[]>;
+
+function usePendingSidebarPatches(userId: string | undefined, slug: string | undefined, generation: number) {
+  const mutations = useMutationState<PendingSidebarPatch, SidebarPatchMutation>({
+    filters: {
+      mutationKey: navigationPreferenceKeys.sidebarMutation(userId, slug, generation),
+      exact: true,
+      status: "pending",
+    },
+    select: (mutation) => ({
+      variables: mutation.state.variables ?? [],
+      submittedAt: mutation.state.submittedAt,
+      mutationId: mutation.mutationId,
+    }),
+  });
+  return useMemo(
+    () =>
+      sortBy(mutations, [(mutation) => mutation.submittedAt, (mutation) => mutation.mutationId]).flatMap(
+        ({ variables }) => variables
+      ),
+    [mutations]
+  );
+}
+
+type PendingWorkspacePatch = {
+  variables: Partial<IWorkspaceUserPropertiesResponse>;
+  submittedAt: number;
+  mutationId: number;
+};
+
+type WorkspacePatchMutation = Mutation<
+  IWorkspaceUserPropertiesResponse,
+  DefaultError,
+  Partial<IWorkspaceUserPropertiesResponse>
+>;
+
+function usePendingWorkspacePatches(userId: string | undefined, slug: string | undefined, generation: number) {
+  const mutations = useMutationState<PendingWorkspacePatch, WorkspacePatchMutation>({
+    filters: {
+      mutationKey: navigationPreferenceKeys.workspacePropertiesMutation(userId, slug, generation),
+      exact: true,
+      status: "pending",
+    },
+    select: (mutation) => ({
+      variables: mutation.state.variables ?? {},
+      submittedAt: mutation.state.submittedAt,
+      mutationId: mutation.mutationId,
+    }),
+  });
+  return useMemo(
+    () =>
+      sortBy(mutations, [(mutation) => mutation.submittedAt, (mutation) => mutation.mutationId]).map(
+        ({ variables }) => variables
+      ),
+    [mutations]
+  );
+}
+
+type WorkspaceNavigationFields = Pick<
+  IWorkspaceUserPropertiesResponse,
+  "navigation_control_preference" | "navigation_project_limit"
+>;
+
+function mergeWorkspacePatches(
+  data: IWorkspaceUserPropertiesResponse | undefined,
+  patches: Partial<IWorkspaceUserPropertiesResponse>[]
+): WorkspaceNavigationFields {
+  return patches.reduce<WorkspaceNavigationFields>(
+    (result, patch) => ({
+      navigation_control_preference: patch.navigation_control_preference ?? result.navigation_control_preference,
+      navigation_project_limit: patch.navigation_project_limit ?? result.navigation_project_limit,
+    }),
+    {
+      navigation_control_preference: data?.navigation_control_preference,
+      navigation_project_limit: data?.navigation_project_limit,
     }
+  );
+}
 
-    // Extract personal items from the store (stickies, your_work, drafts)
-    const personalItems: Record<TPersonalNavigationItemKey, { enabled: boolean; sort_order: number }> = {
+function useSidebarNavigation() {
+  const { workspaceSlug } = useParams({ strict: false });
+  const client = useQueryClient();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { data: user } = useCurrentUser();
+  const userId = user?.id;
+  const slug = workspaceSlug;
+  const generation = useIdentityGeneration(client);
+  const { data: confirmed } = useQuery(sidebarNavigationOptions(userId, slug));
+  const pending = usePendingSidebarPatches(userId, slug, generation);
+  const preferences = useMemo(() => applySidebarPreferencePatches(confirmed, pending), [confirmed, pending]);
+  const mutation = useMutation(patchSidebarNavigationOptions(client, userId, slug));
+  const updateSidebar = useCallback(
+    (patches: SidebarPreferencePatch[]) => {
+      if (!slug) return;
+      void mutation.mutateAsync(patches).catch(reportPreferenceFailure(client, userId, generation, router, t));
+    },
+    [client, generation, mutation, router, slug, t, userId]
+  );
+  return { preferences, updateSidebar };
+}
+
+export const usePersonalNavigationPreferences = () => {
+  const { preferences: preferencesData, updateSidebar } = useSidebarNavigation();
+
+  const preferences: TPersonalNavigationPreferences = useMemo(() => {
+    const personalItems: TPersonalNavigationPreferences["items"] = {
       stickies: {
-        enabled: storePreferences.stickies?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.stickies.enabled,
-        sort_order: storePreferences.stickies?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.stickies.sort_order,
+        enabled: preferencesData.stickies?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.stickies.enabled,
+        sort_order: preferencesData.stickies?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.stickies.sort_order,
       },
       your_work: {
-        enabled: storePreferences.your_work?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.your_work.enabled,
-        sort_order: storePreferences.your_work?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.your_work.sort_order,
+        enabled: preferencesData.your_work?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.your_work.enabled,
+        sort_order: preferencesData.your_work?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.your_work.sort_order,
       },
       drafts: {
-        enabled: storePreferences.drafts?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.drafts.enabled,
-        sort_order: storePreferences.drafts?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.drafts.sort_order,
+        enabled: preferencesData.drafts?.is_pinned ?? DEFAULT_PERSONAL_PREFERENCES.items.drafts.enabled,
+        sort_order: preferencesData.drafts?.sort_order ?? DEFAULT_PERSONAL_PREFERENCES.items.drafts.sort_order,
       },
     };
-
-    return {
-      items: personalItems,
-    };
-  }, [storePreferences]);
+    return { items: personalItems };
+  }, [preferencesData]);
 
   const togglePersonalItem = useCallback(
-    async (key: TPersonalNavigationItemKey, enabled: boolean) => {
-      if (!workspaceSlug) return;
-
-      const currentItem = preferences.items[key] || { enabled: false, sort_order: 0 };
-
-      await updateBulkSidebarPreferences(workspaceSlug.toString(), [
-        {
-          key,
-          is_pinned: enabled,
-          sort_order: currentItem.sort_order,
-        },
-      ]);
+    (key: TPersonalNavigationItemKey, enabled: boolean) => {
+      updateSidebar([{ key, is_pinned: enabled }]);
     },
-    [workspaceSlug, preferences, updateBulkSidebarPreferences]
+    [updateSidebar]
   );
-
   const updatePersonalItemOrder = useCallback(
-    async (items: Array<{ key: TPersonalNavigationItemKey; sortOrder: number }>) => {
-      if (!workspaceSlug) return;
-
-      const bulkData = items.map((item) => {
-        const currentItem = preferences.items[item.key] || { enabled: true, sort_order: 0 };
-        return {
-          key: item.key,
-          is_pinned: currentItem.enabled,
-          sort_order: item.sortOrder,
-        };
-      });
-
-      await updateBulkSidebarPreferences(workspaceSlug.toString(), bulkData);
+    (items: Array<{ key: TPersonalNavigationItemKey; sortOrder: number }>) => {
+      updateSidebar(items.map(({ key, sortOrder }) => ({ key, sort_order: sortOrder })));
     },
-    [workspaceSlug, preferences, updateBulkSidebarPreferences]
+    [updateSidebar]
   );
-
   const isPersonalItemEnabled = useCallback(
     (key: TPersonalNavigationItemKey): boolean => preferences.items[key]?.enabled ?? true,
     [preferences]
   );
 
-  return {
-    preferences,
-    togglePersonalItem,
-    updatePersonalItemOrder,
-    isPersonalItemEnabled,
-  };
+  return { preferences, togglePersonalItem, updatePersonalItemOrder, isPersonalItemEnabled };
 };
 
 export const useProjectNavigationPreferences = () => {
   const { workspaceSlug } = useParams({ strict: false });
-  const { getProjectNavigationPreferences, updateProjectNavigationPreferences } = useWorkspace();
+  const client = useQueryClient();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const { data: user } = useCurrentUser();
+  const userId = user?.id;
+  const slug = workspaceSlug;
+  const generation = useIdentityGeneration(client);
+  const { data: confirmed } = useQuery(workspacePropertiesOptions(userId, slug));
+  const pending = usePendingWorkspacePatches(userId, slug, generation);
+  const workspaceProperties = useMemo(() => mergeWorkspacePatches(confirmed, pending), [confirmed, pending]);
+  const mutation = useMutation(patchWorkspaceNavigationOptions(client, userId, slug));
 
-  // Get preferences from the store
-  const storePreferences = getProjectNavigationPreferences(workspaceSlug?.toString() || "");
-
-  // Computed preferences with fallback logic: API → defaults
   const preferences: TProjectNavigationPreferences = useMemo(() => {
-    // 1. Try API data first
     if (
-      storePreferences &&
-      (storePreferences.navigation_control_preference || storePreferences.navigation_project_limit !== undefined)
+      workspaceProperties.navigation_control_preference ||
+      workspaceProperties.navigation_project_limit !== undefined
     ) {
-      const limit = storePreferences.navigation_project_limit ?? DEFAULT_PROJECT_PREFERENCES.limitedProjectsCount;
-
+      const limit = workspaceProperties.navigation_project_limit ?? DEFAULT_PROJECT_PREFERENCES.limitedProjectsCount;
       return {
-        navigationMode: storePreferences.navigation_control_preference || DEFAULT_PROJECT_PREFERENCES.navigationMode,
+        navigationMode: workspaceProperties.navigation_control_preference || DEFAULT_PROJECT_PREFERENCES.navigationMode,
         limitedProjectsCount: limit > 0 ? limit : DEFAULT_PROJECT_PREFERENCES.limitedProjectsCount,
-        showLimitedProjects: limit > 0, // Derived: 0 = false, >0 = true
+        showLimitedProjects: limit > 0,
       };
     }
-
-    // 2. Fall back to defaults
     return DEFAULT_PROJECT_PREFERENCES;
-  }, [storePreferences]);
+  }, [workspaceProperties]);
 
-  // Update navigation mode
   const updateNavigationMode = useCallback(
-    async (mode: TProjectNavigationMode) => {
-      if (!workspaceSlug) return;
-
-      await updateProjectNavigationPreferences(workspaceSlug.toString(), {
-        navigation_control_preference: mode,
-      });
+    (mode: TProjectNavigationMode) => {
+      if (!slug) return;
+      void mutation
+        .mutateAsync({ navigation_control_preference: mode })
+        .catch(reportPreferenceFailure(client, userId, generation, router, t));
     },
-    [workspaceSlug, updateProjectNavigationPreferences]
+    [client, generation, mutation, router, slug, t, userId]
   );
-
-  // Update show limited projects
   const updateShowLimitedProjects = useCallback(
-    async (show: boolean) => {
-      if (!workspaceSlug) return;
-
-      // When toggling off, set to 0; when toggling on, use current count or default
-      const newLimit = show ? preferences.limitedProjectsCount || DEFAULT_PROJECT_PREFERENCES.limitedProjectsCount : 0;
-
-      await updateProjectNavigationPreferences(workspaceSlug.toString(), {
-        navigation_project_limit: newLimit,
-      });
+    (show: boolean) => {
+      if (!slug) return;
+      const limit = show ? preferences.limitedProjectsCount || DEFAULT_PROJECT_PREFERENCES.limitedProjectsCount : 0;
+      void mutation
+        .mutateAsync({ navigation_project_limit: limit })
+        .catch(reportPreferenceFailure(client, userId, generation, router, t));
     },
-    [workspaceSlug, updateProjectNavigationPreferences, preferences.limitedProjectsCount]
+    [client, generation, mutation, preferences.limitedProjectsCount, router, slug, t, userId]
   );
-
-  // Update limited projects count
   const updateLimitedProjectsCount = useCallback(
-    async (count: number) => {
-      if (!workspaceSlug) return;
-
-      await updateProjectNavigationPreferences(workspaceSlug.toString(), {
-        navigation_project_limit: count,
-      });
+    (count: number) => {
+      if (!slug) return Promise.reject(new Error("A workspace is required."));
+      return mutation.mutateAsync({ navigation_project_limit: count });
     },
-    [workspaceSlug, updateProjectNavigationPreferences]
+    [mutation, slug]
   );
 
-  return {
-    preferences,
-    updateNavigationMode,
-    updateShowLimitedProjects,
-    updateLimitedProjectsCount,
-  };
+  return { preferences, updateNavigationMode, updateShowLimitedProjects, updateLimitedProjectsCount };
 };
 
 export const useWorkspaceNavigationPreferences = () => {
-  const { workspaceSlug } = useParams({ strict: false });
-  const { getNavigationPreferences, updateBulkSidebarPreferences } = useWorkspace();
+  const { preferences: sidebar, updateSidebar } = useSidebarNavigation();
 
-  // Get preferences from the store
-  const storePreferences = getNavigationPreferences(workspaceSlug?.toString() || "");
-
-  // Convert store format to hook format
   const preferences: TWorkspaceNavigationPreferences = useMemo(() => {
-    if (!storePreferences) {
-      return DEFAULT_WORKSPACE_PREFERENCES;
-    }
-
-    return {
-      items: storePreferences,
-    };
-  }, [storePreferences]);
+    const items = Object.fromEntries(
+      Object.entries(sidebar).map(([key, item]) => [
+        key,
+        {
+          is_pinned: item.is_pinned ?? false,
+          sort_order: item.sort_order ?? 0,
+        },
+      ])
+    );
+    return { items };
+  }, [sidebar]);
 
   const toggleWorkspaceItem = useCallback(
-    async (key: string, isPinned: boolean) => {
-      if (!workspaceSlug) return;
-
-      const currentItem = preferences.items[key] || { is_pinned: false, sort_order: 0 };
-
-      await updateBulkSidebarPreferences(workspaceSlug.toString(), [
-        {
-          key,
-          is_pinned: isPinned,
-          sort_order: currentItem.sort_order,
-        },
-      ]);
+    (key: string, isPinned: boolean) => {
+      updateSidebar([{ key, is_pinned: isPinned }]);
     },
-    [workspaceSlug, preferences, updateBulkSidebarPreferences]
+    [updateSidebar]
   );
-
   const updateWorkspaceItemOrder = useCallback(
-    async (items: Array<{ key: string; sortOrder: number }>) => {
-      if (!workspaceSlug) return;
-
-      const bulkData = items.map((item) => {
-        const currentItem = preferences.items[item.key] || { is_pinned: true, sort_order: 0 };
-        return {
-          key: item.key,
-          is_pinned: currentItem.is_pinned,
-          sort_order: item.sortOrder,
-        };
-      });
-
-      await updateBulkSidebarPreferences(workspaceSlug.toString(), bulkData);
+    (items: Array<{ key: string; sortOrder: number }>) => {
+      updateSidebar(items.map(({ key, sortOrder }) => ({ key, sort_order: sortOrder })));
     },
-    [workspaceSlug, preferences, updateBulkSidebarPreferences]
+    [updateSidebar]
   );
-
   const getWorkspaceItemState = useCallback(
     (key: string): TWorkspaceNavigationItemState => preferences.items[key] || { is_pinned: false, sort_order: 0 },
     [preferences]
   );
-
   const isWorkspaceItemPinned = useCallback(
-    (key: string): boolean => {
-      const state = getWorkspaceItemState(key);
-      return state.is_pinned;
-    },
+    (key: string): boolean => getWorkspaceItemState(key).is_pinned,
     [getWorkspaceItemState]
   );
-
   const updateWorkspaceItemSortOrder = useCallback(
-    async (key: string, sortOrder: number) => {
-      if (!workspaceSlug) return;
-
-      const currentItem = preferences.items[key] || { is_pinned: false, sort_order: 0 };
-
-      await updateBulkSidebarPreferences(workspaceSlug.toString(), [
-        {
-          key,
-          is_pinned: currentItem.is_pinned,
-          sort_order: sortOrder,
-        },
-      ]);
+    (key: string, sortOrder: number) => {
+      updateSidebar([{ key, sort_order: sortOrder }]);
     },
-    [workspaceSlug, preferences, updateBulkSidebarPreferences]
+    [updateSidebar]
   );
 
   return {
@@ -285,9 +332,7 @@ export const useAppRailPreferences = () => {
 
   const updateDisplayMode = useCallback(
     (mode: TAppRailDisplayMode) => {
-      setValue({
-        displayMode: mode,
-      });
+      setValue({ displayMode: mode });
     },
     [setValue]
   );

@@ -1,26 +1,26 @@
+import { settleQuery } from "./helpers/query-router.mjs";
+import { seedInstanceInfo } from "./helpers/instance-info.mjs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import path from "node:path";
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { React, createReactDomTestEnvironment, webRequire } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React, webRequire } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 
 const repositoryRoot = fileURLToPath(new URL("../..", import.meta.url));
 const reactModuleUrl = pathToFileURL(webRequire.resolve("react")).href;
-const { useForm } = webRequire("react-hook-form");
 const packageSources = {
   "@plane/propel/button": "packages/propel/src/button/index.ts",
   "@plane/propel/tabs": "packages/propel/src/tabs/index.ts",
 };
 const packageStubs = {
-  "@plane/constants":
-    "export const ACCEPTED_COVER_IMAGE_MIME_TYPES_FOR_REACT_DROPZONE = { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] }; export const MAX_FILE_SIZE = 5242880;",
   "@plane/propel/toast": "export const TOAST_TYPE = { ERROR: 'error' }; export const setToast = () => {};",
-  "@plane/types": "export const EFileAssetType = { USER_COVER: 'user-cover', PROJECT_COVER: 'project-cover' };",
   "@plane/ui": `import React from ${JSON.stringify(reactModuleUrl)};
     export const Input = React.forwardRef((props, ref) => React.createElement("input", { ...props, ref }));
     const Loader = ({ children, ...props }) => React.createElement("div", props, children);
@@ -28,21 +28,6 @@ const packageStubs = {
     export { Loader };`,
   "@/helpers/cover-image.helper": `export const STATIC_COVER_IMAGES = { IMAGE_1: "/cover-one.jpg", IMAGE_2: "/cover-two.jpg" };
     export const getCoverImageDisplayURL = (value, fallback) => value || fallback;`,
-  "@/hooks/store/use-instance": "export const useInstance = () => ({ config: { has_unsplash_configured: false } });",
-  "@/services/file.service": `export class FileService {
-    getUnsplashImages() { return Promise.resolve([]); }
-    uploadUserAsset() { return Promise.reject(new Error("upload not configured in this test")); }
-    uploadWorkspaceAsset() { return Promise.reject(new Error("upload not configured in this test")); }
-  }`,
-  "mobx-react": "export const observer = (component) => component;",
-
-  "react-dropzone": `export const useDropzone = () => ({
-    getRootProps: () => ({}),
-    getInputProps: () => ({ type: "file" }),
-    isDragActive: false,
-    fileRejections: [],
-  });`,
-  swr: "export default () => ({ data: [], error: null });",
 };
 
 registerHooks({
@@ -57,6 +42,11 @@ registerHooks({
   },
 });
 
+const { FileService } = await import("../../apps/web/core/services/file.service.ts");
+beforeEach((t) => {
+  t.mock.method(FileService.prototype, "getUnsplashImages", async () => []);
+});
+
 let imagePickerPopoverPromise;
 let ImagePickerComponent;
 async function loadImagePicker() {
@@ -67,19 +57,27 @@ async function loadImagePicker() {
 }
 
 function PickerHarness({ disabled = false, value = null, onChange = () => {} } = {}) {
-  const { control } = useForm({ defaultValues: { search: "" } });
-  return React.createElement(ImagePickerComponent, {
-    label: "Change cover",
-    value,
-    control,
-    onChange,
-    disabled,
-    isProfileCover: true,
+  const [queryClient] = React.useState(() => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+    seedInstanceInfo(client, { has_unsplash_configured: false });
+    return client;
   });
+  React.useEffect(() => () => queryClient.clear(), [queryClient]);
+  return React.createElement(
+    QueryClientProvider,
+    { client: queryClient },
+    React.createElement(ImagePickerComponent, {
+      label: "Change cover",
+      value,
+      onChange,
+      disabled,
+      isProfileCover: true,
+    })
+  );
 }
 
 async function renderPicker(environment, props) {
-  const routerFixture = createRouterFixture("/workspace/");
+  const routerFixture = createRouterFixture("/settings/profile/general/");
   ImagePickerComponent = await loadImagePicker();
   await routerFixture.render(environment, React.createElement(PickerHarness, props));
   return environment.container.querySelector("button");
@@ -89,10 +87,15 @@ function keyDown(element, key) {
   element.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
 }
 
-test("cover picker uses native Popover state for mouse and keyboard activation", async (t) => {
+test("profile cover picker opens on the global settings route with mouse and keyboard activation", async (t) => {
   const environment = await createReactDomTestEnvironment();
   t.after(() => environment.unmount());
   const trigger = await renderPicker(environment);
+  assert.equal(
+    FileService.prototype.getUnsplashImages.mock.callCount(),
+    0,
+    "unconfigured Unsplash does not send a request"
+  );
 
   await React.act(() => trigger.click());
   assert.equal(trigger.getAttribute("aria-expanded"), "true");
@@ -193,4 +196,60 @@ test("Cancel and static image selection close the popover, and selection updates
   await React.act(() => image.click());
   assert.equal(trigger.getAttribute("aria-expanded"), "false");
   assert.deepEqual(selected, ["/cover-one.jpg"]);
+});
+
+await test("static selection waits for its owner and leaves a failed selection open for retry", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  const pending = Promise.withResolvers();
+  const owner = t.mock.fn(async () => {});
+  owner.mock.mockImplementationOnce(() => pending.promise);
+  const trigger = await renderPicker(environment, { onChange: owner });
+  await React.act(async () => trigger.click());
+  await React.act(async () => document.querySelector('img[alt="Cover 1"]').click());
+  assert.equal(trigger.getAttribute("aria-expanded"), "true");
+  await React.act(async () => {
+    pending.reject(new Error("save failed"));
+    await Promise.resolve();
+  });
+  await settleQuery();
+  assert.match(document.querySelector('[role="alert"]').textContent, /try again/i);
+  assert.equal(trigger.getAttribute("aria-expanded"), "true");
+  await React.act(async () => document.querySelector('img[alt="Cover 1"]').click());
+  assert.equal(owner.mock.callCount(), 2);
+  assert.equal(trigger.getAttribute("aria-expanded"), "false");
+});
+
+await test("uploaded cover retries the owner callback without duplicating the asset", async (t) => {
+  const environment = await createReactDomTestEnvironment();
+  t.after(() => environment.unmount());
+  t.mock.method(URL, "createObjectURL", () => "blob:cover-preview");
+  const revoke = t.mock.method(URL, "revokeObjectURL", () => {});
+  const upload = t.mock.method(FileService.prototype, "uploadUserAsset", async () => ({ asset_url: "/asset/cover/" }));
+  const owner = t.mock.fn(async () => {});
+  owner.mock.mockImplementationOnce(async () => {
+    throw new Error("save failed");
+  });
+  const trigger = await renderPicker(environment, { onChange: owner });
+  await React.act(async () => trigger.click());
+  await React.act(async () =>
+    [...document.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === "Upload").click()
+  );
+  const file = new File(["cover"], "cover.png", { type: "image/png" });
+  await React.act(async () => {
+    const input = document.querySelector('input[type="file"]');
+    Object.defineProperty(input, "files", { configurable: true, value: [file] });
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    await Promise.resolve();
+  });
+  const save = () =>
+    [...environment.container.querySelectorAll("button")].find((button) => button.textContent === "Upload & Save");
+  await React.act(async () => save().click());
+  assert.equal(trigger.getAttribute("aria-expanded"), "true");
+  assert.equal(upload.mock.callCount(), 1);
+  await React.act(async () => save().click());
+  assert.equal(upload.mock.callCount(), 1);
+  assert.equal(owner.mock.callCount(), 2);
+  assert.equal(trigger.getAttribute("aria-expanded"), "false");
+  assert.equal(revoke.mock.calls[0].arguments[0], "blob:cover-preview");
 });

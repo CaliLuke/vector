@@ -6,56 +6,48 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
-import { EUserPermissionsLevel } from "@plane/constants";
 import type { IIssueLabel } from "@plane/types";
-import { EUserPermissions } from "@plane/types";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectLabelMutations } from "@/hooks/use-labels";
 // local imports
 import type { TWorkItemLabelSelectBaseProps } from "./base";
 import { WorkItemLabelSelectBase } from "./base";
 
-type TWorkItemLabelSelectProps = Omit<TWorkItemLabelSelectBaseProps, "labelIds" | "getLabelById" | "onDropdownOpen"> & {
+type TWorkItemLabelSelectProps = Omit<TWorkItemLabelSelectBaseProps, "labelIds" | "getLabelById"> & {
   projectId: string | undefined;
 };
 
-export const IssueLabelSelect = observer(function IssueLabelSelect(props: TWorkItemLabelSelectProps) {
+export function IssueLabelSelect(props: TWorkItemLabelSelectProps) {
   const { projectId } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { getProjectLabelIds, getLabelById, fetchProjectLabels, createLabel } = useLabel();
+  const {
+    labelIds: projectLabelIds,
+    getLabelById,
+    createLabel,
+    canCreate,
+    scope,
+  } = useProjectLabelMutations(workspaceSlug?.toString(), projectId);
   // derived values
-  const projectLabelIds = getProjectLabelIds(projectId);
-
-  const canCreateLabel =
-    projectId &&
-    allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug?.toString(), projectId);
-
-  const onDropdownOpen = () => {
-    if (projectLabelIds === undefined && workspaceSlug && projectId)
-      fetchProjectLabels(workspaceSlug.toString(), projectId);
-  };
+  const canCreateLabel = projectId && canCreate;
 
   const handleCreateLabel = (data: Partial<IIssueLabel>) => {
     if (!workspaceSlug || !projectId) {
       throw new Error("Workspace slug or project ID is missing");
     }
-    return createLabel(workspaceSlug.toString(), projectId, data);
+    return createLabel(data);
   };
 
   return (
     <WorkItemLabelSelectBase
       {...props}
+      creationScope={JSON.stringify([scope.accountId, scope.sessionGeneration, workspaceSlug, projectId])}
       getLabelById={getLabelById}
       labelIds={projectLabelIds ?? []}
-      onDropdownOpen={onDropdownOpen}
       createLabel={handleCreateLabel}
       createLabelEnabled={!!canCreateLabel}
     />
   );
-});
+}

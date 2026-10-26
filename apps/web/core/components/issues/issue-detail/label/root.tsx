@@ -5,16 +5,19 @@
  */
 
 import { useMemo } from "react";
-import { observer } from "mobx-react";
+
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IIssueLabel, TIssue, TIssueServiceType } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // components
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useLabel } from "@/hooks/store/use-label";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useWorkItemDetail } from "@/hooks/use-work-item-detail";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { currentIssueListMutationOwner, patchIssueMutation } from "@/queries/issue-list-mutations";
+import { captureIssueDetailReconciliation } from "@/queries/issue-details";
+import { useProjectLabelMutations } from "@/hooks/use-labels";
 // ui
 // types
 import { LabelList, IssueLabelSelectRoot } from "./";
@@ -26,16 +29,17 @@ export type TIssueLabel = {
   issueId: string;
   disabled: boolean;
   isInboxIssue?: boolean;
-  onLabelUpdate?: (labelIds: string[]) => void;
+  labelIds?: string[];
+  onLabelUpdate?: (labelIds: string[]) => void | Promise<void>;
   issueServiceType?: TIssueServiceType;
 };
 
 export type TLabelOperations = {
   updateIssue: (workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>) => Promise<void>;
-  createLabel: (workspaceSlug: string, projectId: string, data: Partial<IIssueLabel>) => Promise<any>;
+  createLabel: (data: Partial<IIssueLabel>) => Promise<IIssueLabel>;
 };
 
-export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
+export const IssueLabel = function IssueLabel(props: TIssueLabel) {
   const {
     workspaceSlug,
     projectId,
@@ -47,32 +51,41 @@ export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
   } = props;
   const { t } = useTranslation();
   // hooks
-  const { updateIssue } = useIssueDetail(issueServiceType);
-  const { createLabel } = useLabel();
-  const {
-    issue: { getIssueById },
-  } = useIssueDetail(issueServiceType);
-  const { getIssueInboxByIssueId } = useProjectInbox();
-
-  const issue = isInboxIssue ? getIssueInboxByIssueId(issueId)?.issue : getIssueById(issueId);
+  const client = useQueryClient();
+  const { createLabel } = useProjectLabelMutations(workspaceSlug, projectId);
+  const detail = useWorkItemDetail(workspaceSlug, projectId, issueId, issueServiceType);
+  const mutationScopeIsCurrent = useCommittedScope(JSON.stringify(detail.scope));
+  const labelIds = props.labelIds ?? detail.issue?.label_ids ?? [];
 
   const labelOperations: TLabelOperations = useMemo(
     () => ({
-      updateIssue: async (workspaceSlug: string, projectId: string, issueId: string, data: Partial<TIssue>) => {
+      updateIssue: async (targetWorkspaceSlug, targetProjectId, targetIssueId, data) => {
         try {
-          if (onLabelUpdate) onLabelUpdate(data.label_ids || []);
-          else await updateIssue(workspaceSlug, projectId, issueId, data);
-        } catch (_error) {
+          if (onLabelUpdate) await onLabelUpdate(data.label_ids || []);
+          else {
+            const detailOwner = captureIssueDetailReconciliation(client, detail.scope, [targetIssueId]);
+            const listOwner = currentIssueListMutationOwner(
+              client,
+              targetWorkspaceSlug,
+              targetProjectId,
+              issueServiceType,
+              mutationScopeIsCurrent
+            );
+            const receipt = await patchIssueMutation(client, listOwner, targetIssueId, data);
+            await detailOwner.reconcile(receipt);
+          }
+        } catch (error) {
           setToast({
             title: t("toast.error"),
             type: TOAST_TYPE.ERROR,
             message: t("entity.update.failed", { entity: t("issue.label", { count: 1 }) }),
           });
+          throw error;
         }
       },
-      createLabel: async (workspaceSlug: string, projectId: string, data: Partial<IIssueLabel>) => {
+      createLabel: async (data: Partial<IIssueLabel>) => {
         try {
-          const labelResponse = await createLabel(workspaceSlug, projectId, data);
+          const labelResponse = await createLabel(data);
           if (!isInboxIssue)
             setToast({
               title: t("toast.success"),
@@ -82,7 +95,12 @@ export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
           return labelResponse;
         } catch (error) {
           let errMessage = t("label.create.failed");
-          if (error && (error as any).error === "Label with the same name already exists in the project")
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "error" in error &&
+            error.error === "Label with the same name already exists in the project"
+          )
             errMessage = t("label.create.already_exists");
 
           setToast({
@@ -94,7 +112,7 @@ export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
         }
       },
     }),
-    [updateIssue, createLabel, onLabelUpdate]
+    [client, createLabel, detail.scope, isInboxIssue, issueServiceType, mutationScopeIsCurrent, onLabelUpdate, t]
   );
 
   return (
@@ -103,7 +121,7 @@ export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
         workspaceSlug={workspaceSlug}
         projectId={projectId}
         issueId={issueId}
-        values={issue?.label_ids || []}
+        values={labelIds}
         labelOperations={labelOperations}
         disabled={disabled}
       />
@@ -113,10 +131,10 @@ export const IssueLabel = observer(function IssueLabel(props: TIssueLabel) {
           workspaceSlug={workspaceSlug}
           projectId={projectId}
           issueId={issueId}
-          values={issue?.label_ids || []}
+          values={labelIds}
           labelOperations={labelOperations}
         />
       )}
     </div>
   );
-});
+};

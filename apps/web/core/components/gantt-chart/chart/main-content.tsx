@@ -4,10 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useRef } from "react";
+import type { RefObject } from "react";
+import { useEffect } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
 import type {
   ChartDataType,
   IBlockUpdateData,
@@ -15,13 +15,13 @@ import type {
   IGanttBlock,
   TGanttViews,
 } from "@plane/types";
-import { cn, getDate } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getDate } from "@plane/utils/datetime";
 // components
 import { MultipleSelectGroup } from "@/components/core/multiple-select";
 import { GanttChartSidebar, MonthChartView, QuarterChartView, WeekChartView } from "@/components/gantt-chart";
 // helpers
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
 import { GanttChartRowList } from "@/components/gantt-chart/blocks/block-row-list";
 import { GanttChartBlocksList } from "@/components/gantt-chart/blocks/blocks-list";
 import { IssueBulkOperationsRoot } from "@/components/issues/bulk-operations";
@@ -32,7 +32,10 @@ import { getItemPositionWidth } from "../views";
 import { TimelineDragHelper } from "./timeline-drag-helper";
 
 type Props = {
+  ganttContainerRef: RefObject<HTMLDivElement | null>;
   blockIds: string[];
+  currentView: TGanttViews;
+  currentViewData: ChartDataType | undefined;
   canLoadMoreBlocks?: boolean;
   loadMoreBlocks?: () => void;
   updateBlockDates?: (updates: IBlockUpdateDependencyData[]) => Promise<void>;
@@ -59,9 +62,12 @@ type Props = {
   isEpic?: boolean;
 };
 
-export const GanttChartMainContent = observer(function GanttChartMainContent(props: Props) {
+export function GanttChartMainContent(props: Props) {
   const {
+    ganttContainerRef,
     blockIds,
+    currentView,
+    currentViewData,
     loadMoreBlocks,
     blockToRender,
     blockUpdateHandler,
@@ -83,10 +89,7 @@ export const GanttChartMainContent = observer(function GanttChartMainContent(pro
     updateBlockDates,
     isEpic = false,
   } = props;
-  // refs
-  const ganttContainerRef = useRef<HTMLDivElement>(null);
   // chart hook
-  const { currentView, currentViewData } = useTimeLineChartStore();
   // plane web hooks
   const isBulkOperationsEnabled = useBulkOperationStatus();
 
@@ -103,8 +106,7 @@ export const GanttChartMainContent = observer(function GanttChartMainContent(pro
         canScroll: ({ source }) => source.data.dragInstanceId === "GANTT_REORDER",
       })
     );
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-  }, [ganttContainerRef?.current]);
+  }, [ganttContainerRef]);
 
   // handling scroll functionality
   const onScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
@@ -123,7 +125,7 @@ export const GanttChartMainContent = observer(function GanttChartMainContent(pro
   };
 
   const handleScrollToBlock = (block: IGanttBlock) => {
-    const scrollContainer = ganttContainerRef.current as HTMLDivElement;
+    const scrollContainer = ganttContainerRef.current;
     const scrollToEndDate = !block.start_date && block.target_date;
     const scrollToDate = block.start_date ? getDate(block.start_date) : getDate(block.target_date);
     let chartData;
@@ -235,4 +237,4 @@ export const GanttChartMainContent = observer(function GanttChartMainContent(pro
       </MultipleSelectGroup>
     </>
   );
-});
+}

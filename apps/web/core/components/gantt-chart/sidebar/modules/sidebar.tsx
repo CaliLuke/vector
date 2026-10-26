@@ -4,17 +4,15 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // ui
-import { GANTT_TIMELINE_TYPE } from "@plane/types";
 import type { IBlockUpdateData } from "@plane/types";
-import { Loader } from "@plane/ui";
 // components
 // hooks
-import { useTimeLineChart } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "../../contexts/chart-state";
 import { GanttDnDHOC } from "../gantt-dnd-HOC";
 import { handleOrderChange } from "../utils";
 import { ModulesSidebarBlock } from "./block";
+import { GanttSidebarLoading } from "../common";
 // types
 
 type Props = {
@@ -24,17 +22,17 @@ type Props = {
   enableReorder: boolean;
 };
 
-export const ModuleGanttSidebar = observer(function ModuleGanttSidebar(props: Props) {
+export function ModuleGanttSidebar(props: Props) {
   const { blockUpdateHandler, blockIds, enableReorder } = props;
 
-  const { getBlockById } = useTimeLineChart(GANTT_TIMELINE_TYPE.MODULE);
+  const { blocksById } = useGanttChartState();
 
   const handleOnDrop = (
     draggingBlockId: string | undefined,
     droppedBlockId: string | undefined,
     dropAtEndOfList: boolean
   ) => {
-    handleOrderChange(draggingBlockId, droppedBlockId, dropAtEndOfList, blockIds, getBlockById, blockUpdateHandler);
+    handleOrderChange(draggingBlockId, droppedBlockId, dropAtEndOfList, blockIds, blocksById, blockUpdateHandler);
   };
 
   return (
@@ -52,13 +50,8 @@ export const ModuleGanttSidebar = observer(function ModuleGanttSidebar(props: Pr
           </GanttDnDHOC>
         ))
       ) : (
-        <Loader className="space-y-3 pr-2">
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-        </Loader>
+        <GanttSidebarLoading />
       )}
     </div>
   );
-});
+}

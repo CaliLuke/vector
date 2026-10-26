@@ -4,12 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import type { AxiosInstance } from "axios";
 import { API_BASE_URL } from "@plane/constants";
-import { APIService } from "../api.service";
+import { CycleAnalyticsService } from "./cycle-analytics.service";
 
-export class CycleOperationsService extends APIService {
-  constructor(BASE_URL?: string) {
-    super(BASE_URL || API_BASE_URL);
+export class CycleOperationsService extends CycleAnalyticsService {
+  constructor(BASE_URL?: string, configureAxiosInstance?: (axiosInstance: AxiosInstance) => void) {
+    super(BASE_URL || API_BASE_URL, configureAxiosInstance);
   }
 
   /**

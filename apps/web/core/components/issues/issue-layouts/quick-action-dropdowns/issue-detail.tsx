@@ -4,30 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { omit } from "lodash-es";
-import { observer } from "mobx-react";
-
 import { Ellipsis } from "lucide-react";
 // plane imports
-import { ARCHIVABLE_STATE_GROUPS, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import type { TIssue } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
-import { QuickActionMenu } from "./quick-action-menu";
+import { QuickActionMenu } from "@/components/common/quick-action-menu";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useUserPermissions } from "@/hooks/store/user";
 // helper
-import { ArchiveIssueModal } from "../../archive-issue-modal";
-import { DeleteIssueModal } from "../../delete-issue-modal";
-import { CreateUpdateIssueModal } from "../../issue-modal/modal";
+import { IssueQuickActionModals } from "./issue-quick-action-modals";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
-import { useWorkItemDetailMenuItems } from "./helper";
+import { useIssueQuickActionContext, useWorkItemDetailMenuItems } from "./helper";
 import { IconButton } from "@plane/propel/icon-button";
+import { useIssueQuickActionModals } from "./use-issue-quick-action-modals";
 
 type TWorkItemDetailQuickActionProps = IQuickActionProps & {
   toggleEditIssueModal?: (value: boolean) => void;
@@ -37,9 +25,7 @@ type TWorkItemDetailQuickActionProps = IQuickActionProps & {
   isPeekMode?: boolean;
 };
 
-export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickActions(
-  props: TWorkItemDetailQuickActionProps
-) {
+export const WorkItemDetailQuickActions = function WorkItemDetailQuickActions(props: TWorkItemDetailQuickActionProps) {
   const {
     issue,
     handleDelete,
@@ -50,72 +36,38 @@ export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickA
     readOnly = false,
     placements = "bottom-end",
     parentRef,
-    toggleEditIssueModal,
     toggleDeleteIssueModal,
     toggleDuplicateIssueModal,
     toggleArchiveIssueModal,
     isPeekMode = false,
   } = props;
-  // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
-  const [createUpdateIssueModal, setCreateUpdateIssueModal] = useState(false);
-  const [issueToEdit, setIssueToEdit] = useState<TIssue | undefined>(undefined);
-  const [deleteIssueModal, setDeleteIssueModal] = useState(false);
-  const [archiveIssueModal, setArchiveIssueModal] = useState(false);
-  const [_, setDuplicateWorkItemModal] = useState(false);
-  // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { issuesFilter } = useIssues(EIssuesStoreType.PROJECT);
-  const { getStateById } = useProjectState();
-  const { getProjectIdentifierById } = useProject();
-  // derived values
-  const activeLayout = `${issuesFilter.issueFilters?.displayFilters?.layout} layout`;
-  const stateDetails = getStateById(issue.state_id);
-  const projectIdentifier = getProjectIdentifierById(issue?.project_id);
-  // auth
-  const isEditingAllowed =
-    allowPermissions(
-      [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-      EUserPermissionsLevel.PROJECT,
-      workspaceSlug?.toString(),
-      issue.project_id ?? undefined
-    ) && !readOnly;
+  const modals = useIssueQuickActionModals(issue);
+  const { workspaceSlug, projectIdentifier, isEditingAllowed, isInArchivableGroup } = useIssueQuickActionContext(
+    issue,
+    readOnly
+  );
 
   const isArchivingAllowed = !issue.archived_at && isEditingAllowed;
-  const isInArchivableGroup = !!stateDetails && ARCHIVABLE_STATE_GROUPS.includes(stateDetails?.group);
   const isRestoringAllowed = !!issue.archived_at && isEditingAllowed;
 
   const isDeletingAllowed = isEditingAllowed;
 
-  const duplicateIssuePayload = omit(
-    {
-      ...issue,
-      name: `${issue.name} (copy)`,
-      sourceIssueId: issue.id,
-    },
-    ["id"]
-  );
-
-  const customEditAction = () => {
-    setCreateUpdateIssueModal(true);
-    if (toggleEditIssueModal) toggleEditIssueModal(true);
-  };
-
   const customDeleteAction = async () => {
-    setDeleteIssueModal(true);
+    modals.setDeleteIssueModal(true);
     if (toggleDeleteIssueModal) toggleDeleteIssueModal(true);
   };
 
-  const customDuplicateAction = async () => {
-    setDuplicateWorkItemModal(true);
+  const customDuplicateAction = () => {
+    modals.setIssueToEdit(undefined);
+    modals.setCreateUpdateIssueModal(true);
     if (toggleDuplicateIssueModal) {
       toggleDuplicateIssueModal(true);
     }
   };
 
   const customArchiveAction = async () => {
-    setArchiveIssueModal(true);
+    modals.setArchiveIssueModal(true);
     if (toggleArchiveIssueModal) toggleArchiveIssueModal(true);
   };
 
@@ -128,17 +80,16 @@ export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickA
     issue,
     workspaceSlug: workspaceSlug?.toString(),
     projectIdentifier,
-    activeLayout,
     isEditingAllowed,
     isArchivingAllowed,
     isRestoringAllowed,
     isDeletingAllowed,
     isInArchivableGroup,
-    setIssueToEdit,
-    setCreateUpdateIssueModal: customEditAction,
+    setIssueToEdit: modals.setIssueToEdit,
+    setCreateUpdateIssueModal: modals.setCreateUpdateIssueModal,
     setDeleteIssueModal: customDeleteAction,
     setArchiveIssueModal: customArchiveAction,
-    setDuplicateWorkItemModal: customDuplicateAction,
+    onDuplicate: toggleDuplicateIssueModal ? customDuplicateAction : undefined,
     handleDelete: customDeleteAction,
     handleUpdate,
     handleArchive: customArchiveAction,
@@ -180,38 +131,19 @@ export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickA
 
   return (
     <>
-      {/* Modals */}
-      <ArchiveIssueModal
-        data={issue}
-        isOpen={archiveIssueModal}
-        handleClose={() => {
-          setArchiveIssueModal(false);
-          if (toggleArchiveIssueModal) toggleArchiveIssueModal(false);
-        }}
-        onSubmit={handleArchive}
-      />
-      <DeleteIssueModal
-        data={issue}
-        isOpen={deleteIssueModal}
-        handleClose={() => {
-          setDeleteIssueModal(false);
-          if (toggleDeleteIssueModal) toggleDeleteIssueModal(false);
-        }}
-        onSubmit={handleDelete}
-      />
-      <CreateUpdateIssueModal
-        isOpen={createUpdateIssueModal}
-        onClose={() => {
-          setCreateUpdateIssueModal(false);
-          setIssueToEdit(undefined);
-          if (toggleEditIssueModal) toggleEditIssueModal(false);
-        }}
-        data={issueToEdit ?? duplicateIssuePayload}
-        onSubmit={async (data) => {
-          if (issueToEdit && handleUpdate) await handleUpdate(data);
-        }}
+      <IssueQuickActionModals
+        issue={issue}
+        handleDelete={handleDelete}
+        handleUpdate={handleUpdate}
+        handleArchive={handleArchive}
+        modals={modals}
         storeType={EIssuesStoreType.PROJECT}
         fetchIssueDetails={false}
+        onArchiveClose={() => toggleArchiveIssueModal?.(false)}
+        onDeleteClose={() => toggleDeleteIssueModal?.(false)}
+        onCreateUpdateClose={(wasEditing) => {
+          if (!wasEditing) toggleDuplicateIssueModal?.(false);
+        }}
       />
 
       <QuickActionMenu
@@ -229,4 +161,4 @@ export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickA
       />
     </>
   );
-});
+};

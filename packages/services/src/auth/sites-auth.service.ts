@@ -39,17 +39,10 @@ export class SitesAuthService extends APIService {
       });
   }
 
-  /**
-   * Generates a unique code for magic link authentication
-   * @param {{ email: string }} data - Object containing the email address
-   * @returns {Promise<any>} Response containing the generated unique code
-   * @throws {Error} Throws response data if the request fails
-   */
-  async generateUniqueCode(data: { email: string }): Promise<any> {
-    return this.post("/auth/spaces/magic-generate/", data, { headers: {} })
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  /** Request an email code without exposing authentication response data to callers. */
+  async generateUniqueCode(data: { email: string }): Promise<void> {
+    await this.post("/auth/spaces/magic-generate/", data, { headers: {} }).catch((error) => {
+      throw error?.response?.data;
+    });
   }
 }

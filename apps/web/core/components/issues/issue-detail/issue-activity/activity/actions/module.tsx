@@ -4,30 +4,24 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // hooks
 import { ModuleIcon } from "@plane/propel/icons";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent } from "./";
 // icons
 
-type TIssueModuleActivity = { activityId: string; ends: "top" | "bottom" | undefined };
+type TIssueModuleActivity = { activity: TIssueActivity; ends: "top" | "bottom" | undefined };
 
-export const IssueModuleActivity = observer(function IssueModuleActivity(props: TIssueModuleActivity) {
-  const { activityId, ends } = props;
+export const IssueModuleActivity = function IssueModuleActivity(props: TIssueModuleActivity) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   if (!activity) return <></>;
   return (
     <IssueActivityBlockComponent
       icon={<ModuleIcon className="h-4 w-4 flex-shrink-0 text-secondary" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>
@@ -71,4 +65,4 @@ export const IssueModuleActivity = observer(function IssueModuleActivity(props: 
       </>
     </IssueActivityBlockComponent>
   );
-});
+};

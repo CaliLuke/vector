@@ -5,16 +5,16 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import React, { useMemo, useState } from "react";
-import { sortBy } from "lodash-es";
-import { observer } from "mobx-react";
+import React, { useMemo } from "react";
+import sortBy from "lodash-es/sortBy.js";
 
 import { CycleGroupIcon } from "@plane/propel/icons";
-import type { TCycleGroups } from "@plane/types";
+import { cycleGroup } from "@/queries/cycle-module-selectors";
 // components
-import { Loader } from "@plane/ui";
-import { FilterHeader, FilterOption } from "@/components/issues/issue-layouts/filters";
-import { useCycle } from "@/hooks/store/use-cycle";
+import { FilterOption } from "@/components/issues/issue-layouts/filters/header/helpers/filter-option";
+import { FilterOptionSection } from "@/components/issues/issue-layouts/filters/header/helpers/filter-option-section";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 // ui
 // types
 
@@ -24,19 +24,14 @@ type Props = {
   searchQuery: string;
 };
 
-export const FilterCycle = observer(function FilterCycle(props: Props) {
+export const FilterCycle = function FilterCycle(props: Props) {
   const { appliedFilters, handleUpdate, searchQuery } = props;
 
   // hooks
-  const { projectId } = useParams({ strict: false });
-  const { getCycleById, getProjectCycleIds } = useCycle();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
+  const cycles = catalogue.cycles;
 
-  // states
-  const [itemsToRender, setItemsToRender] = useState(5);
-  const [previewEnabled, setPreviewEnabled] = useState(true);
-
-  const cycleIds = projectId ? getProjectCycleIds(projectId.toString()) : undefined;
-  const cycles = cycleIds?.map((projectId) => getCycleById(projectId)!) ?? null;
   const appliedFiltersCount = appliedFilters?.length ?? 0;
 
   const sortedOptions = useMemo(() => {
@@ -48,65 +43,33 @@ export const FilterCycle = observer(function FilterCycle(props: Props) {
       (cycle) => !appliedFilters?.includes(cycle.id),
       (cycle) => cycle.name.toLowerCase(),
     ]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
-
-  const handleViewToggle = () => {
-    if (!sortedOptions) return;
-
-    if (itemsToRender === sortedOptions.length) setItemsToRender(5);
-    else setItemsToRender(sortedOptions.length);
-  };
-
-  const cycleStatus = (status: TCycleGroups | undefined) =>
-    (status ? status.toLocaleLowerCase() : "draft") as TCycleGroups;
+  }, [searchQuery, cycles, appliedFilters]);
 
   return (
-    <>
-      <FilterHeader
-        title={`Cycle ${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
-        isPreviewEnabled={previewEnabled}
-        handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
-      />
-      {previewEnabled && (
-        <div>
-          {sortedOptions ? (
-            sortedOptions.length > 0 ? (
-              <>
-                {sortedOptions.slice(0, itemsToRender).map((cycle) => (
-                  <FilterOption
-                    key={cycle.id}
-                    isChecked={appliedFilters?.includes(cycle.id) ? true : false}
-                    onClick={() => handleUpdate(cycle.id)}
-                    icon={
-                      <CycleGroupIcon cycleGroup={cycleStatus(cycle?.status)} className="h-3.5 w-3.5 flex-shrink-0" />
-                    }
-                    title={cycle.name}
-                    activePulse={cycleStatus(cycle?.status) === "current" ? true : false}
-                  />
-                ))}
-                {sortedOptions.length > 5 && (
-                  <button
-                    type="button"
-                    className="ml-8 text-11 font-medium text-accent-primary"
-                    onClick={handleViewToggle}
-                  >
-                    {itemsToRender === sortedOptions.length ? "View less" : "View all"}
-                  </button>
-                )}
-              </>
-            ) : (
-              <p className="text-11 text-placeholder italic">No matches found</p>
-            )
-          ) : (
-            <Loader className="space-y-2">
-              <Loader.Item height="20px" />
-              <Loader.Item height="20px" />
-              <Loader.Item height="20px" />
-            </Loader>
-          )}
-        </div>
-      )}
-    </>
+    <FilterOptionSection
+      title={`Cycle ${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
+      optionCount={sortedOptions.length}
+      state={
+        catalogue.isError || catalogue.isAccessDenied
+          ? { kind: "error", content: <CatalogueReadFailure label="cycles" retry={catalogue.retry} /> }
+          : catalogue.isPending
+            ? { kind: "loading", content: <output>Loading filters…</output> }
+            : undefined
+      }
+      renderOptions={(itemsToRender) =>
+        sortedOptions
+          .slice(0, itemsToRender)
+          .map((cycle) => (
+            <FilterOption
+              key={cycle.id}
+              isChecked={appliedFilters?.includes(cycle.id) ?? false}
+              onClick={() => handleUpdate(cycle.id)}
+              icon={<CycleGroupIcon cycleGroup={cycleGroup(cycle?.status)} className="h-3.5 w-3.5 flex-shrink-0" />}
+              title={cycle.name}
+              activePulse={cycleGroup(cycle?.status) === "current"}
+            />
+          ))
+      }
+    />
   );
-});
+};

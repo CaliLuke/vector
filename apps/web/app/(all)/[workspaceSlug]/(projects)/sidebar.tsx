@@ -4,10 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { isEmpty } from "lodash-es";
-import { observer } from "mobx-react";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 // plane helpers
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 // components
 import { SidebarWrapper } from "@/components/sidebar/sidebar-wrapper";
 import { SidebarFavoritesMenu } from "@/components/workspace/sidebar/favorites/favorites-menu";
@@ -15,29 +14,27 @@ import { SidebarProjectsList } from "@/components/workspace/sidebar/projects-lis
 import { SidebarQuickActions } from "@/components/workspace/sidebar/quick-actions";
 import { SidebarMenuItems } from "@/components/workspace/sidebar/sidebar-menu-items";
 // hooks
-import { useFavorite } from "@/hooks/store/use-favorite";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
-export const AppSidebar = observer(function AppSidebar() {
+export function AppSidebar() {
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { groupedFavorites } = useFavorite();
+  const { data: catalogueWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace } = useWorkspacePermissions(catalogueWorkspace?.slug);
+  const { favorites, isError } = useFavorites(catalogueWorkspace?.slug);
 
   // derived values
-  const canPerformWorkspaceMemberActions = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canPerformWorkspaceMemberActions = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  const isFavoriteEmpty = isEmpty(groupedFavorites);
+  const hasFavorites = favorites !== undefined && favorites.length > 0;
 
   return (
     <SidebarWrapper title="Projects" quickActions={<SidebarQuickActions />}>
       <SidebarMenuItems />
       {/* Favorites Menu */}
-      {canPerformWorkspaceMemberActions && !isFavoriteEmpty && <SidebarFavoritesMenu />}
+      {canPerformWorkspaceMemberActions && (hasFavorites || isError) && <SidebarFavoritesMenu />}
       {/* Projects List */}
       <SidebarProjectsList />
     </SidebarWrapper>
   );
-});
+}

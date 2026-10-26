@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 // helpers
-import { renderFormattedPayloadDate } from "@plane/utils";
+import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { UserService } from "@/services/user.service";
 
 const userService = new UserService();

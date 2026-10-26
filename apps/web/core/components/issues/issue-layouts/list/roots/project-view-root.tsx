@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // store
 // constants
@@ -15,8 +14,8 @@ import { ProjectIssueQuickActions } from "../../quick-action-dropdowns";
 // components
 import { BaseListRoot } from "../base-list-root";
 
-export const ProjectViewListLayout = observer(function ProjectViewListLayout() {
+export const ProjectViewListLayout = function ProjectViewListLayout() {
   const { viewId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views/$viewId" });
 
   return <BaseListRoot QuickActions={ProjectIssueQuickActions} viewId={viewId.toString()} />;
-});
+};

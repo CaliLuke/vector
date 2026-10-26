@@ -6,30 +6,27 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 // local imports
 import { ModuleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseKanBanRoot } from "../base-kanban-root";
 
-export const ModuleKanBanLayout = observer(function ModuleKanBanLayout() {
+export function ModuleKanBanLayout() {
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
-
-  // store
-  const { issues } = useIssues(EIssuesStoreType.MODULE);
+  const actions = useIssuesActions(EIssuesStoreType.MODULE);
 
   return (
     <BaseKanBanRoot
       QuickActions={ModuleIssueQuickActions}
-      addIssuesToView={(issueIds: string[]) => {
+      addIssuesToView={async (issueIds: string[]) => {
         if (!workspaceSlug || !projectId || !moduleId) throw new Error();
-        return issues.addIssuesToModule(workspaceSlug.toString(), projectId.toString(), moduleId.toString(), issueIds);
+        return actions.addIssuesToModule(projectId, moduleId, issueIds);
       }}
       viewId={moduleId?.toString()}
     />
   );
-});
+}

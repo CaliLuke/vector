@@ -5,11 +5,11 @@
  */
 
 import { Suspense } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ScrollArea } from "@plane/propel/scrollarea";
 import type { TProfileSettingsTabs } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // local imports
 import { PROFILE_SETTINGS_PAGES_MAP } from "./pages";
 
@@ -18,7 +18,7 @@ type Props = {
   className?: string;
 };
 
-export const ProfileSettingsContent = observer(function ProfileSettingsContent(props: Props) {
+export const ProfileSettingsContent = function ProfileSettingsContent(props: Props) {
   const { activeTab, className } = props;
   const PageComponent = PROFILE_SETTINGS_PAGES_MAP[activeTab];
 
@@ -35,4 +35,4 @@ export const ProfileSettingsContent = observer(function ProfileSettingsContent(p
       </Suspense>
     </ScrollArea>
   );
-});
+};

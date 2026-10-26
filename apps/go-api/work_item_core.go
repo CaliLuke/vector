@@ -134,6 +134,14 @@ func workItemError(err error) error {
 			status = 400
 			body = map[string]any{"error": "The payload is not valid"}
 		}
+		if postgres.Code == "23514" {
+			switch postgres.Message {
+			case "The parent must belong to the same workspace", "A work item cannot be its own parent", "Parent relationships cannot contain a cycle", "The parent must be from the immediately higher hierarchy level":
+				body = map[string]any{"parent_id": []string{postgres.Message + "."}}
+			case "The type does not match the existing child hierarchy":
+				body = map[string]any{"type_id": []string{"Select a type compatible with this work item's existing children."}}
+			}
+		}
 	}
 	encoded, marshalErr := loom.JSONValueFrom(body)
 	if marshalErr != nil {

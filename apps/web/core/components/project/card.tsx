@@ -6,11 +6,10 @@
 
 import { Link, useParams, useRouter } from "@tanstack/react-router";
 import React, { useRef, useState } from "react";
-import { observer } from "mobx-react";
 
 import { ArchiveRestoreIcon, Settings, UserPlus } from "lucide-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
+import { EUserPermissions, IS_FAVORITE_MENU_OPEN } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
 import { Button } from "@plane/propel/button";
 import { Logo } from "@plane/propel/emoji-icon-picker";
@@ -19,17 +18,21 @@ import { setPromiseToast, setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IProject } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
-import { Avatar, AvatarGroup, ContextMenu, FavoriteStar } from "@plane/ui";
-import { copyUrlToClipboard, cn, getFileURL, renderFormattedDate } from "@plane/utils";
+import { Avatar, AvatarGroup, ContextMenu } from "@plane/ui";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // components
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useProjectPermissions, useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useFavorites } from "@/hooks/use-favorites";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { CoverImage } from "@/components/common/cover-image";
+import { AuthorizedFavoriteStar } from "@/components/common/authorized-favorite-star";
 import { DeleteProjectModal } from "./delete-project-modal";
 import { JoinProjectModal } from "./join-project-modal";
 import { ArchiveRestoreProjectModal } from "./archive-restore-modal";
@@ -38,7 +41,252 @@ type Props = {
   project: IProject;
 };
 
-export const ProjectCard = observer(function ProjectCard(props: Props) {
+type TProjectCardMenuActions = {
+  isArchived: boolean;
+  isMemberOfProject: boolean;
+  hasAdminRole: boolean;
+  hasMemberRole: boolean;
+  openSettings: () => void;
+  joinProject: () => void;
+  openInNewTab: () => void;
+  copyLink: () => void;
+  restoreProject: () => void;
+  deleteProject: () => void;
+};
+
+function getProjectCardMenuItems(actions: TProjectCardMenuActions): TContextMenuItem[] {
+  const {
+    isArchived,
+    isMemberOfProject,
+    hasAdminRole,
+    hasMemberRole,
+    openSettings,
+    joinProject,
+    openInNewTab,
+    copyLink,
+    restoreProject,
+    deleteProject,
+  } = actions;
+
+  return [
+    {
+      key: "settings",
+      action: openSettings,
+      title: "Settings",
+      icon: Settings,
+      shouldRender: !isArchived && (hasAdminRole || hasMemberRole),
+    },
+    {
+      key: "join",
+      action: joinProject,
+      title: "Join",
+      icon: UserPlus,
+      shouldRender: !isMemberOfProject && !isArchived,
+    },
+    {
+      key: "open-new-tab",
+      action: openInNewTab,
+      title: "Open in new tab",
+      icon: NewTabIcon,
+      shouldRender: !isMemberOfProject && !isArchived,
+    },
+    {
+      key: "copy-link",
+      action: copyLink,
+      title: "Copy link",
+      icon: LinkIcon,
+      shouldRender: !isArchived,
+    },
+    {
+      key: "restore",
+      action: restoreProject,
+      title: "Restore",
+      icon: ArchiveRestoreIcon,
+      shouldRender: isArchived && hasAdminRole,
+    },
+    {
+      key: "delete",
+      action: deleteProject,
+      title: "Delete",
+      icon: TrashIcon,
+      shouldRender: isArchived && hasAdminRole,
+    },
+  ];
+}
+
+type ProjectCardFooterProps = {
+  project: IProject;
+  workspaceSlug: string;
+  memberById: ReturnType<typeof useWorkspaceMemberRoster>["memberById"];
+  isMobile: boolean;
+  isArchived: boolean;
+  isMemberOfProject: boolean;
+  hasAdminRole: boolean;
+  hasMemberRole: boolean;
+  onProjectNavigation: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onRestore: () => void;
+  onDelete: () => void;
+  onJoin: () => void;
+};
+
+function ProjectCardFooter(props: ProjectCardFooterProps) {
+  const {
+    project,
+    workspaceSlug,
+    memberById,
+    isMobile,
+    isArchived,
+    isMemberOfProject,
+    hasAdminRole,
+    hasMemberRole,
+    onProjectNavigation,
+    onRestore,
+    onDelete,
+    onJoin,
+  } = props;
+  const projectMembersIds = project.members;
+  return (
+    <div
+      className={cn(
+        "pointer-events-none relative z-10 flex h-[104px] w-full flex-col justify-between rounded-b-sm p-4",
+        {
+          "opacity-90": isArchived,
+        }
+      )}
+    >
+      <p className="line-clamp-2 text-13 break-words text-tertiary">
+        {project.description && project.description.trim() !== ""
+          ? project.description
+          : `Created on ${renderFormattedDate(project.created_at)}`}
+      </p>
+      <div className="item-center flex justify-between">
+        <div className="flex items-center justify-center gap-2">
+          <Link
+            to="/$workspaceSlug/projects/$projectId/issues"
+            params={{ workspaceSlug, projectId: project.id }}
+            aria-label={`Open project ${project.name}`}
+            onClick={onProjectNavigation}
+            data-prevent-progress={!isMemberOfProject || isArchived}
+            className="pointer-events-auto"
+          >
+            <Tooltip
+              isMobile={isMobile}
+              tooltipHeading="Members"
+              tooltipContent={projectMembersIds?.length ? `${projectMembersIds.length} Members` : "No Member"}
+              position="top"
+            >
+              {projectMembersIds?.length ? (
+                <div className="flex cursor-pointer items-center gap-2 text-secondary">
+                  <AvatarGroup showTooltip={false}>
+                    {projectMembersIds.map((memberId) => {
+                      const member = memberById(memberId)?.member;
+                      if (!member) return null;
+                      return <Avatar key={member.id} name={member.display_name} src={getFileURL(member.avatar_url)} />;
+                    })}
+                  </AvatarGroup>
+                </div>
+              ) : (
+                <span className="text-13 text-placeholder italic">No Member Yet</span>
+              )}
+            </Tooltip>
+          </Link>
+          {isArchived && <div className="text-11 font-medium text-placeholder">Archived</div>}
+        </div>
+        <ProjectCardMembershipActions
+          project={project}
+          workspaceSlug={workspaceSlug}
+          isArchived={isArchived}
+          isMemberOfProject={isMemberOfProject}
+          hasAdminRole={hasAdminRole}
+          hasMemberRole={hasMemberRole}
+          onRestore={onRestore}
+          onDelete={onDelete}
+          onJoin={onJoin}
+        />
+      </div>
+    </div>
+  );
+}
+
+type ProjectCardMembershipActionsProps = Pick<
+  ProjectCardFooterProps,
+  | "project"
+  | "workspaceSlug"
+  | "isArchived"
+  | "isMemberOfProject"
+  | "hasAdminRole"
+  | "hasMemberRole"
+  | "onRestore"
+  | "onDelete"
+  | "onJoin"
+>;
+
+function ProjectCardMembershipActions(props: ProjectCardMembershipActionsProps) {
+  const {
+    project,
+    workspaceSlug,
+    isArchived,
+    isMemberOfProject,
+    hasAdminRole,
+    hasMemberRole,
+    onRestore,
+    onDelete,
+    onJoin,
+  } = props;
+  if (isArchived) {
+    if (!hasAdminRole) return null;
+    return (
+      <div className="pointer-events-auto relative z-20 flex items-center justify-center gap-2">
+        <button
+          type="button"
+          className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
+          onClick={onRestore}
+        >
+          <span className="flex items-center gap-1.5">
+            <ArchiveRestoreIcon className="h-3.5 w-3.5" />
+            Restore
+          </span>
+        </button>
+        <button
+          type="button"
+          aria-label="Delete project"
+          className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
+          onClick={onDelete}
+        >
+          <TrashIcon className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    );
+  }
+  if (!isMemberOfProject)
+    return (
+      <div className="pointer-events-auto relative z-20 flex items-center">
+        <Button variant="link" className="!p-0 font-semibold" onClick={onJoin}>
+          Join
+        </Button>
+      </div>
+    );
+  if (hasAdminRole || hasMemberRole)
+    return (
+      <Link
+        aria-label={`Project settings for ${project.name}`}
+        className="pointer-events-auto relative z-20 flex items-center justify-center rounded-sm p-1 text-placeholder hover:bg-layer-1 hover:text-secondary"
+        onClick={(event) => event.stopPropagation()}
+        to="/$workspaceSlug/settings/projects/$projectId/"
+        params={{ workspaceSlug, projectId: project.id }}
+      >
+        <Settings className="h-3.5 w-3.5" />
+      </Link>
+    );
+  return (
+    <span className="flex items-center gap-1 text-13 text-placeholder">
+      <CheckIcon className="h-3.5 w-3.5" />
+      Joined
+    </span>
+  );
+}
+
+export const ProjectCard = function ProjectCard(props: Props) {
   const { project } = props;
   // states
   const [deleteProjectModalOpen, setDeleteProjectModal] = useState(false);
@@ -50,21 +298,19 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
   const router = useRouter();
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getUserDetails } = useMember();
-  const { addProjectToFavorites, removeProjectFromFavorites } = useProject();
-  const { allowPermissions } = useUserPermissions();
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { favorites, favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug);
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
+  const { projectRole } = useProjectPermissions(workspaceSlug, project.id);
   // hooks
   const { isMobile } = usePlatformOS();
   // derived values
-  const projectMembersIds = project.members;
-  const shouldRenderFavorite = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isProjectFavorite = favoritesByEntity?.has(`project:${project.id}`) ?? false;
+  const isMemberOfProject = projectRole !== undefined;
+  const canCurrentUserFavoriteProject = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
   // auth
-  const isMemberOfProject = !!project.member_role;
-  const hasAdminRole = project.member_role === EUserPermissions.ADMIN;
-  const hasMemberRole = project.member_role === EUserPermissions.MEMBER;
+  const hasAdminRole = projectRole === EUserPermissions.ADMIN;
+  const hasMemberRole = projectRole === EUserPermissions.MEMBER;
   // archive
   const isArchived = !!project.archived_at;
   // local storage
@@ -76,7 +322,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
   const handleAddToFavorites = () => {
     if (!workspaceSlug) return;
 
-    const addToFavoritePromise = addProjectToFavorites(workspaceSlug.toString(), project.id);
+    const addToFavoritePromise = toggleFavorite("project", project.id, project.id);
     setPromiseToast(addToFavoritePromise, {
       loading: "Adding project to favorites...",
       success: {
@@ -84,7 +330,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
         message: () => "Project added to favorites.",
         actionItems: () => {
           if (!isFavoriteMenuOpen) toggleFavoriteMenu(true);
-          return <></>;
+          return null;
         },
       },
       error: {
@@ -97,7 +343,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
   const handleRemoveFromFavorites = () => {
     if (!workspaceSlug) return;
 
-    const removeFromFavoritePromise = removeProjectFromFavorites(workspaceSlug.toString(), project.id);
+    const removeFromFavoritePromise = toggleFavorite("project", project.id, project.id);
     setPromiseToast(removeFromFavoritePromise, {
       loading: "Removing project from favorites...",
       success: {
@@ -119,60 +365,29 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
       if (!isArchived) setJoinProjectModal(true);
     }
   };
-  const handleCopyText = () =>
-    copyUrlToClipboard(projectLink).then(() =>
+  const handleCopyText = () => {
+    void copyUrlToClipboard(projectLink).then(() =>
       setToast({
         type: TOAST_TYPE.INFO,
         title: "Link Copied!",
         message: "Project link copied to clipboard.",
       })
     );
+  };
   const handleOpenInNewTab = () => window.open(`/${projectLink}`, "_blank");
 
-  const MENU_ITEMS: TContextMenuItem[] = [
-    {
-      key: "settings",
-      action: () => void router.navigate({ href: `/${workspaceSlug}/settings/projects/${project.id}` }),
-      title: "Settings",
-      icon: Settings,
-      shouldRender: !isArchived && (hasAdminRole || hasMemberRole),
-    },
-    {
-      key: "join",
-      action: () => setJoinProjectModal(true),
-      title: "Join",
-      icon: UserPlus,
-      shouldRender: !isMemberOfProject && !isArchived,
-    },
-    {
-      key: "open-new-tab",
-      action: handleOpenInNewTab,
-      title: "Open in new tab",
-      icon: NewTabIcon,
-      shouldRender: !isMemberOfProject && !isArchived,
-    },
-    {
-      key: "copy-link",
-      action: handleCopyText,
-      title: "Copy link",
-      icon: LinkIcon,
-      shouldRender: !isArchived,
-    },
-    {
-      key: "restore",
-      action: () => setRestoreProject(true),
-      title: "Restore",
-      icon: ArchiveRestoreIcon,
-      shouldRender: isArchived && hasAdminRole,
-    },
-    {
-      key: "delete",
-      action: () => setDeleteProjectModal(true),
-      title: "Delete",
-      icon: TrashIcon,
-      shouldRender: isArchived && hasAdminRole,
-    },
-  ];
+  const menuItems = getProjectCardMenuItems({
+    isArchived,
+    isMemberOfProject,
+    hasAdminRole,
+    hasMemberRole,
+    openSettings: () => void router.navigate({ href: `/${workspaceSlug}/settings/projects/${project.id}` }),
+    joinProject: () => setJoinProjectModal(true),
+    openInNewTab: handleOpenInNewTab,
+    copyLink: handleCopyText,
+    restoreProject: () => setRestoreProject(true),
+    deleteProject: () => setDeleteProjectModal(true),
+  });
 
   return (
     <>
@@ -215,7 +430,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
           onClick={handleProjectNavigation}
           data-prevent-progress={!isMemberOfProject || isArchived}
         />
-        <ContextMenu parentRef={projectCardRef} items={MENU_ITEMS} />
+        <ContextMenu parentRef={projectCardRef} items={menuItems} />
         <div className="pointer-events-none relative z-10 h-[118px] w-full rounded-t">
           <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/60 to-transparent" />
 
@@ -255,148 +470,39 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                 >
                   <LinkIcon className="h-3 w-3 text-on-color" />
                 </button>
-                {shouldRenderFavorite && (
-                  <FavoriteStar
-                    buttonClassName="h-6 w-6 bg-white/10 rounded-sm"
-                    iconClassName={cn("h-3 w-3", {
-                      "text-on-color": !project.is_favorite,
-                    })}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (project.is_favorite) handleRemoveFromFavorites();
-                      else handleAddToFavorites();
-                    }}
-                    selected={!!project.is_favorite}
-                  />
-                )}
+                <AuthorizedFavoriteStar
+                  canFavorite={canCurrentUserFavoriteProject && isMemberOfProject}
+                  isReady={favorites !== undefined}
+                  onAdd={handleAddToFavorites}
+                  onRemove={handleRemoveFromFavorites}
+                  buttonClassName="h-6 w-6 bg-white/10 rounded-sm"
+                  iconClassName={cn("h-3 w-3", {
+                    "text-on-color": !isProjectFavorite,
+                  })}
+                  selected={isProjectFavorite}
+                  preventDefault
+                  stopPropagation
+                />
               </div>
             )}
           </div>
         </div>
 
-        <div
-          className={cn(
-            "pointer-events-none relative z-10 flex h-[104px] w-full flex-col justify-between rounded-b-sm p-4",
-            {
-              "opacity-90": isArchived,
-            }
-          )}
-        >
-          <p className="line-clamp-2 text-13 break-words text-tertiary">
-            {project.description && project.description.trim() !== ""
-              ? project.description
-              : `Created on ${renderFormattedDate(project.created_at)}`}
-          </p>
-          <div className="item-center flex justify-between">
-            <div className="flex items-center justify-center gap-2">
-              <Link
-                to="/$workspaceSlug/projects/$projectId/issues"
-                params={{ workspaceSlug, projectId: project.id }}
-                aria-label={`Open project ${project.name}`}
-                onClick={handleProjectNavigation}
-                data-prevent-progress={!isMemberOfProject || isArchived}
-                className="pointer-events-auto"
-              >
-                <Tooltip
-                  isMobile={isMobile}
-                  tooltipHeading="Members"
-                  tooltipContent={
-                    project.members && project.members.length > 0 ? `${project.members.length} Members` : "No Member"
-                  }
-                  position="top"
-                >
-                  {projectMembersIds && projectMembersIds.length > 0 ? (
-                    <div className="flex cursor-pointer items-center gap-2 text-secondary">
-                      <AvatarGroup showTooltip={false}>
-                        {projectMembersIds.map((memberId) => {
-                          const member = getUserDetails(memberId);
-                          if (!member) return null;
-                          return (
-                            <Avatar key={member.id} name={member.display_name} src={getFileURL(member.avatar_url)} />
-                          );
-                        })}
-                      </AvatarGroup>
-                    </div>
-                  ) : (
-                    <span className="text-13 text-placeholder italic">No Member Yet</span>
-                  )}
-                </Tooltip>
-              </Link>
-              {isArchived && <div className="text-11 font-medium text-placeholder">Archived</div>}
-            </div>
-            {isArchived ? (
-              hasAdminRole && (
-                <div className="pointer-events-auto relative z-20 flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setRestoreProject(true);
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <ArchiveRestoreIcon className="h-3.5 w-3.5" />
-                      Restore
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Delete project"
-                    className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setDeleteProjectModal(true);
-                    }}
-                  >
-                    <TrashIcon className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )
-            ) : (
-              <>
-                {isMemberOfProject &&
-                  (hasAdminRole || hasMemberRole ? (
-                    <Link
-                      aria-label={`Project settings for ${project.name}`}
-                      className="pointer-events-auto relative z-20 flex items-center justify-center rounded-sm p-1 text-placeholder hover:bg-layer-1 hover:text-secondary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      to="/$workspaceSlug/settings/projects/$projectId/"
-                      params={{ workspaceSlug: workspaceSlug, projectId: project.id }}
-                    >
-                      <Settings className="h-3.5 w-3.5" />
-                    </Link>
-                  ) : (
-                    <span className="flex items-center gap-1 text-13 text-placeholder">
-                      <CheckIcon className="h-3.5 w-3.5" />
-                      Joined
-                    </span>
-                  ))}
-                {!isMemberOfProject && (
-                  <div className="pointer-events-auto relative z-20 flex items-center">
-                    <Button
-                      variant="link"
-                      className="!p-0 font-semibold"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setJoinProjectModal(true);
-                      }}
-                    >
-                      Join
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        <ProjectCardFooter
+          project={project}
+          workspaceSlug={workspaceSlug}
+          memberById={memberById}
+          isMobile={isMobile}
+          isArchived={isArchived}
+          isMemberOfProject={isMemberOfProject}
+          hasAdminRole={hasAdminRole}
+          hasMemberRole={hasMemberRole}
+          onProjectNavigation={handleProjectNavigation}
+          onRestore={() => setRestoreProject(true)}
+          onDelete={() => setDeleteProjectModal(true)}
+          onJoin={() => setJoinProjectModal(true)}
+        />
       </div>
     </>
   );
-});
+};

@@ -4,139 +4,93 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState, Fragment } from "react";
-import { Dialog, Transition } from "@headlessui/react";
-// plane imports
+import { Dialog } from "@headlessui/react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@plane/propel/button";
-import { InstanceService } from "@plane/services";
-// ui
-import { Input } from "@plane/ui";
+import { checkEmailValidity } from "@plane/utils/string";
+import { useSettingsForm } from "@/components/common/settings-form";
+import { sendTestEmailOptions } from "@/queries/instance";
 
-type Props = {
-  isOpen: boolean;
-  handleClose: () => void;
-};
-
-enum ESendEmailSteps {
-  SEND_EMAIL = "SEND_EMAIL",
-  SUCCESS = "SUCCESS",
-  FAILED = "FAILED",
-}
-
-const instanceService = new InstanceService();
-
-export function SendTestEmailModal(props: Props) {
-  const { isOpen, handleClose } = props;
-
-  // state
-  const [receiverEmail, setReceiverEmail] = useState("");
-  const [sendEmailStep, setSendEmailStep] = useState<ESendEmailSteps>(ESendEmailSteps.SEND_EMAIL);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // reset state
-  const resetState = () => {
-    setReceiverEmail("");
-    setSendEmailStep(ESendEmailSteps.SEND_EMAIL);
-    setIsLoading(false);
-    setError("");
-  };
-
-  useEffect(() => {
-    if (!isOpen) {
-      resetState();
-    }
-  }, [isOpen]);
-
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-    e.preventDefault();
-
-    setIsLoading(true);
-    await instanceService
-      .sendTestEmail(receiverEmail)
-      .then(() => {
-        setSendEmailStep(ESendEmailSteps.SUCCESS);
-      })
-      .catch((error) => {
-        setError(error?.error || "Failed to send email");
-        setSendEmailStep(ESendEmailSteps.FAILED);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  };
-
+export function SendTestEmailModal({ handleClose }: { handleClose: () => void }) {
+  const sendEmail = useMutation(sendTestEmailOptions);
+  const form = useSettingsForm({
+    defaultValues: { receiverEmail: "" },
+    onSubmit: async ({ value }) => {
+      await sendEmail.mutateAsync(value.receiverEmail);
+    },
+  });
   return (
-    <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-20" onClose={handleClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-backdrop transition-opacity" />
-        </Transition.Child>
-        <div className="fixed inset-0 z-20 overflow-y-auto">
-          <div className="my-10 flex justify-center p-4 text-center sm:p-0 md:my-20">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <Dialog.Panel className="relative w-full transform rounded-lg bg-surface-1 p-5 px-4 text-left shadow-raised-200 transition-all sm:max-w-xl">
-                <h3 className="text-16 leading-6 font-medium text-primary">
-                  {sendEmailStep === ESendEmailSteps.SEND_EMAIL
-                    ? "Send test email"
-                    : sendEmailStep === ESendEmailSteps.SUCCESS
-                      ? "Email send"
-                      : "Failed"}{" "}
-                </h3>
-                <div className="pt-6 pb-2">
-                  {sendEmailStep === ESendEmailSteps.SEND_EMAIL && (
-                    <Input
-                      id="receiver_email"
-                      type="email"
-                      value={receiverEmail}
-                      onChange={(e) => setReceiverEmail(e.target.value)}
-                      placeholder="Receiver email"
-                      className="w-full resize-none text-16"
-                      tabIndex={0}
-                    />
-                  )}
-                  {sendEmailStep === ESendEmailSteps.SUCCESS && (
-                    <div className="flex flex-col gap-y-4 text-13">
-                      <p>
-                        We have sent the test email to {receiverEmail}. Please check your spam folder if you cannot find
-                        it.
-                      </p>
-                      <p>If you still cannot find it, recheck your SMTP configuration and trigger a new test email.</p>
-                    </div>
-                  )}
-                  {sendEmailStep === ESendEmailSteps.FAILED && <div className="text-13">{error}</div>}
-                  <div className="mt-5 flex items-center justify-end gap-2">
-                    <Button variant="secondary" size="lg" onClick={handleClose} tabIndex={0}>
-                      {sendEmailStep === ESendEmailSteps.SEND_EMAIL ? "Cancel" : "Close"}
-                    </Button>
-                    {sendEmailStep === ESendEmailSteps.SEND_EMAIL && (
-                      <Button variant="primary" size="lg" loading={isLoading} onClick={handleSubmit} tabIndex={0}>
-                        {isLoading ? "Sending email" : "Send email"}
+    <Dialog
+      open
+      onClose={() => {
+        if (!sendEmail.isPending) handleClose();
+      }}
+      className="relative z-20"
+    >
+      <div className="fixed inset-0 bg-backdrop" />
+      <div className="fixed inset-0 z-20 overflow-y-auto">
+        <div className="my-10 flex justify-center p-4 md:my-20">
+          <Dialog.Panel className="relative w-full rounded-lg bg-surface-1 p-5 text-left shadow-raised-200 sm:max-w-xl">
+            <Dialog.Title className="text-16 font-medium text-primary">
+              {sendEmail.isSuccess ? "Email sent" : "Send test email"}
+            </Dialog.Title>
+            {sendEmail.isSuccess ? (
+              <>
+                <p className="py-6 text-13">
+                  The test email was sent to {sendEmail.variables}. Check your spam folder if you cannot find it.
+                </p>
+                <Button type="button" variant="secondary" size="lg" onClick={handleClose}>
+                  Close
+                </Button>
+              </>
+            ) : (
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void form.handleSubmit().catch(() => {});
+                }}
+                className="space-y-5 pt-6"
+              >
+                <fieldset disabled={sendEmail.isPending}>
+                  <form.AppField
+                    name="receiverEmail"
+                    validators={{
+                      onChange: ({ value }) => (checkEmailValidity(value) ? undefined : "Enter a valid email address."),
+                    }}
+                  >
+                    {(field) => (
+                      <field.TextField type="email" label="Receiver email" placeholder="you@example.com" required />
+                    )}
+                  </form.AppField>
+                </fieldset>
+                {sendEmail.isError && (
+                  <p role="alert" className="text-13 text-danger-primary">
+                    Failed to send the test email. Check your SMTP settings and try again.
+                  </p>
+                )}
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="lg"
+                    onClick={handleClose}
+                    disabled={sendEmail.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+                    {([canSubmit, isSubmitting]) => (
+                      <Button type="submit" variant="primary" size="lg" disabled={!canSubmit} loading={isSubmitting}>
+                        {isSubmitting ? "Sending email" : "Send email"}
                       </Button>
                     )}
-                  </div>
+                  </form.Subscribe>
                 </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
+              </form>
+            )}
+          </Dialog.Panel>
         </div>
-      </Dialog>
-    </Transition.Root>
+      </div>
+    </Dialog>
   );
 }

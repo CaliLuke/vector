@@ -6,7 +6,6 @@
 
 import { Link } from "@tanstack/react-router";
 import { useRef } from "react";
-import { observer } from "mobx-react";
 
 import { MoveDiagonal, MoveRight } from "lucide-react";
 // plane imports
@@ -15,14 +14,14 @@ import { CenterPanelIcon, CopyLinkIcon, FullScreenPanelIcon, SidePanelIcon } fro
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TNameDescriptionLoader } from "@plane/types";
-import { EIssuesStoreType } from "@plane/types";
 import { CustomSelect } from "@plane/ui";
-import { copyUrlToClipboard, generateWorkItemLink } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useIssues } from "@/hooks/store/use-issues";
-import { useProject } from "@/hooks/store/use-project";
-import { useUser } from "@/hooks/store/user";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { IssueSubscription } from "../issue-detail/subscription";
@@ -32,7 +31,7 @@ import { IconButton } from "@plane/propel/icon-button";
 
 export type TPeekModes = "side-peek" | "modal" | "full-screen";
 
-const PEEK_OPTIONS: { key: TPeekModes; icon: any; i18n_title: string }[] = [
+const PEEK_OPTIONS: { key: TPeekModes; icon: typeof SidePanelIcon; i18n_title: string }[] = [
   {
     key: "side-peek",
     icon: SidePanelIcon,
@@ -50,6 +49,14 @@ const PEEK_OPTIONS: { key: TPeekModes; icon: any; i18n_title: string }[] = [
   },
 ];
 
+function getVisiblePeekMode(
+  currentMode: (typeof PEEK_OPTIONS)[number] | undefined,
+  embedIssue: boolean
+): (typeof PEEK_OPTIONS)[number] | undefined {
+  if (embedIssue) return undefined;
+  return currentMode;
+}
+
 export type PeekOverviewHeaderProps = {
   peekMode: TPeekModes;
   setPeekMode: (value: TPeekModes) => void;
@@ -66,9 +73,11 @@ export type PeekOverviewHeaderProps = {
   toggleEditIssueModal: (value: boolean) => void;
   handleRestoreIssue: () => Promise<void>;
   isSubmitting: TNameDescriptionLoader;
+  removeIssue: () => Promise<void>;
+  archiveIssue: () => Promise<void>;
 };
 
-export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader(props: PeekOverviewHeaderProps) {
+export const IssuePeekOverviewHeader = function IssuePeekOverviewHeader(props: PeekOverviewHeaderProps) {
   const {
     peekMode,
     setPeekMode,
@@ -85,29 +94,24 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
     toggleEditIssueModal,
     handleRestoreIssue,
     isSubmitting,
+    removeIssue,
+    archiveIssue,
   } = props;
   // ref
   const parentRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   // store hooks
-  const { data: currentUser } = useUser();
-  const {
-    issue: { getIssueById },
-    setPeekIssue,
-    removeIssue,
-    archiveIssue,
-    getIsIssuePeeked,
-  } = useIssueDetail();
+  const { data: currentUser } = useCurrentUser();
+  const { getIsIssuePeeked } = useIssueDetailUiState();
+  const record = useWorkItemDetailRecord();
   const { isMobile } = usePlatformOS();
-  const { getProjectIdentifierById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // derived values
-  const issueDetails = getIssueById(issueId);
+  const issueDetails = issueId === record?.issueId ? record.issue : undefined;
   const currentMode = PEEK_OPTIONS.find((m) => m.key === peekMode);
-  const projectIdentifier = getProjectIdentifierById(issueDetails?.project_id);
-  const {
-    issues: { removeIssue: removeArchivedIssue },
-  } = useIssues(EIssuesStoreType.ARCHIVED);
-
+  const visiblePeekMode = getVisiblePeekMode(currentMode, embedIssue);
+  const projectIdentifier = projectRows?.find((project) => project.id === issueDetails?.project_id)?.identifier ?? "";
   const workItemLink = generateWorkItemLink({
     workspaceSlug,
     projectId: issueDetails?.project_id,
@@ -132,12 +136,7 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
 
   const handleDeleteIssue = async () => {
     try {
-      const deleteIssue = issueDetails?.archived_at ? removeArchivedIssue : removeIssue;
-
-      return deleteIssue(workspaceSlug, projectId, issueId).then(() => {
-        setPeekIssue(undefined);
-        return undefined;
-      });
+      await removeIssue();
     } catch (_error) {
       setToast({
         title: t("toast.error"),
@@ -148,7 +147,7 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
   };
 
   const handleArchiveIssue = async () => {
-    await archiveIssue(workspaceSlug, projectId, issueId);
+    await archiveIssue();
     // check and remove if issue is peeked
     if (getIsIssuePeeked(issueId)) {
       removeRoutePeekId();
@@ -173,15 +172,15 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
             <MoveDiagonal className="h-4 w-4 text-tertiary hover:text-secondary" />
           </Link>
         </Tooltip>
-        {currentMode && embedIssue === false && (
+        {visiblePeekMode && (
           <div className="flex flex-shrink-0 items-center gap-2">
             <CustomSelect
-              value={currentMode}
-              onChange={(val: any) => setPeekMode(val)}
+              value={visiblePeekMode}
+              onChange={(val: TPeekModes) => setPeekMode(val)}
               customButton={
                 <Tooltip tooltipContent={t("common.toggle_peek_view_layout")} isMobile={isMobile}>
                   <span className="">
-                    <currentMode.icon className="h-4 w-4 text-tertiary hover:text-secondary" />
+                    <visiblePeekMode.icon className="h-4 w-4 text-tertiary hover:text-secondary" />
                   </span>
                 </Tooltip>
               }
@@ -190,7 +189,7 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
                 <CustomSelect.Option key={mode.key} value={mode.key}>
                   <div
                     className={`flex items-center gap-1.5 ${
-                      currentMode.key === mode.key ? "text-secondary" : "text-placeholder hover:text-secondary"
+                      visiblePeekMode.key === mode.key ? "text-secondary" : "text-placeholder hover:text-secondary"
                     }`}
                   >
                     <mode.icon className="-my-1 h-4 w-4 flex-shrink-0" />
@@ -230,4 +229,4 @@ export const IssuePeekOverviewHeader = observer(function IssuePeekOverviewHeader
       </div>
     </div>
   );
-});
+};

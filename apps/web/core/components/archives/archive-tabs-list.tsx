@@ -5,12 +5,11 @@
  */
 
 import { Link, useParams, useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // types
 import type { IProject } from "@plane/types";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 const ARCHIVES_TAB_LIST: {
   key: "issues" | "cycles" | "modules";
@@ -34,17 +33,18 @@ const ARCHIVES_TAB_LIST: {
   },
 ];
 
-export const ArchiveTabsList = observer(function ArchiveTabsList() {
+export const ArchiveTabsList = function ArchiveTabsList() {
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const { projectId } = useParams({ strict: false });
   const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
 
   // derived values
   if (!projectId) return null;
-  const projectDetails = getProjectById(projectId?.toString());
+  const projectDetails = projectRows?.find((project) => project.id === projectId.toString());
   if (!projectDetails) return null;
 
   return (
@@ -77,4 +77,4 @@ export const ArchiveTabsList = observer(function ArchiveTabsList() {
       )}
     </>
   );
-});
+};

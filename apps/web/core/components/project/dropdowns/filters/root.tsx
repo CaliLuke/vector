@@ -5,17 +5,17 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 // plane imports
 import type { TProjectDisplayFilters, TProjectFilters } from "@plane/types";
 // components
 import { FilterOption } from "@/components/issues/issue-layouts/filters";
+import { FilterSelectionSearch } from "@/components/common/filters/filter-selection-search";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { FilterAccess } from "./access";
-import { FilterCreatedDate } from "./created-at";
+import { DatePresetFilter } from "@/components/core/filters/date-preset-filter";
+import { PROJECT_CREATED_AT_FILTER_OPTIONS } from "@plane/constants";
 import { FilterLead } from "./lead";
 import { FilterMembers } from "./members";
 
@@ -25,10 +25,11 @@ type Props = {
   handleFiltersUpdate: (key: keyof TProjectFilters, value: string | string[]) => void;
   handleDisplayFiltersUpdate: (updatedDisplayProperties: Partial<TProjectDisplayFilters>) => void;
   memberIds?: string[] | undefined;
+  workspaceSlug: string | undefined;
 };
 
-export const ProjectFiltersSelection = observer(function ProjectFiltersSelection(props: Props) {
-  const { displayFilters, filters, handleFiltersUpdate, handleDisplayFiltersUpdate, memberIds } = props;
+export const ProjectFiltersSelection = function ProjectFiltersSelection(props: Props) {
+  const { displayFilters, filters, handleFiltersUpdate, handleDisplayFiltersUpdate, memberIds, workspaceSlug } = props;
   // states
   const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
   // store
@@ -36,24 +37,7 @@ export const ProjectFiltersSelection = observer(function ProjectFiltersSelection
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="bg-surface-1 p-2.5 pb-0">
-        <div className="flex items-center gap-1.5 rounded-sm border-[0.5px] border-subtle bg-surface-2 px-1.5 py-1 text-11">
-          <SearchIcon className="text-placeholder" width={12} height={12} strokeWidth={2} />
-          <input
-            type="text"
-            className="w-full bg-surface-2 outline-none placeholder:text-placeholder"
-            placeholder="Search"
-            value={filtersSearchQuery}
-            onChange={(e) => setFiltersSearchQuery(e.target.value)}
-            autoFocus={!isMobile}
-          />
-          {filtersSearchQuery !== "" && (
-            <button type="button" className="grid place-items-center" onClick={() => setFiltersSearchQuery("")}>
-              <CloseIcon className="text-tertiary" height={12} width={12} strokeWidth={2} />
-            </button>
-          )}
-        </div>
-      </div>
+      <FilterSelectionSearch value={filtersSearchQuery} onChange={setFiltersSearchQuery} autoFocus={!isMobile} />
       <div className="vertical-scrollbar scrollbar-sm h-full w-full divide-y divide-subtle-1 overflow-y-auto px-2.5">
         <div className="py-2">
           <FilterOption
@@ -83,6 +67,7 @@ export const ProjectFiltersSelection = observer(function ProjectFiltersSelection
             handleUpdate={(val) => handleFiltersUpdate("lead", val)}
             searchQuery={filtersSearchQuery}
             memberIds={memberIds}
+            workspaceSlug={workspaceSlug}
           />
         </div>
 
@@ -93,12 +78,16 @@ export const ProjectFiltersSelection = observer(function ProjectFiltersSelection
             handleUpdate={(val) => handleFiltersUpdate("members", val)}
             searchQuery={filtersSearchQuery}
             memberIds={memberIds}
+            workspaceSlug={workspaceSlug}
           />
         </div>
 
         {/* created date */}
         <div className="py-2">
-          <FilterCreatedDate
+          <DatePresetFilter
+            title="Created date"
+            options={PROJECT_CREATED_AT_FILTER_OPTIONS}
+            multiple={false}
             appliedFilters={filters.created_at ?? null}
             handleUpdate={(val) => handleFiltersUpdate("created_at", val)}
             searchQuery={filtersSearchQuery}
@@ -107,4 +96,4 @@ export const ProjectFiltersSelection = observer(function ProjectFiltersSelection
       </div>
     </div>
   );
-});
+};

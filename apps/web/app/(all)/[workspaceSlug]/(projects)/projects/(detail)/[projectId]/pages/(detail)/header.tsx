@@ -5,13 +5,12 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { PageIcon } from "@plane/propel/icons";
 import type { ICustomSearchSelectOption } from "@plane/types";
 import { Breadcrumbs, Header, BreadcrumbNavigationSearchDropdown } from "@plane/ui";
-import { getPageName } from "@plane/utils";
+import { getPageName } from "@plane/utils/page";
 // components
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { PageAccessIcon } from "@/components/common/page-access-icon";
@@ -20,36 +19,27 @@ import { PageHeaderActions } from "@/components/pages/header/actions";
 import { PageSyncingBadge } from "@/components/pages/header/syncing-badge";
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useRouteProject } from "@/hooks/use-projects";
 
-import { EPageStoreType, usePage, usePageStore } from "@/hooks/store";
+import { usePageRecord } from "@/components/pages/page-record-context";
 
 export interface IPagesHeaderProps {
   showButton?: boolean;
 }
 
-const storeType = EPageStoreType.PROJECT;
-
-export const PageDetailsHeader = observer(function PageDetailsHeader() {
+export const PageDetailsHeader = function PageDetailsHeader() {
   // router
   const router = useRouter();
   const { workspaceSlug, pageId, projectId } = useParams({
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/pages/$pageId",
   });
   // store hooks
-  const { loader } = useProject();
-  const { getPageById, getCurrentProjectPageIds } = usePageStore(storeType);
-  const page = usePage({
-    pageId: pageId?.toString() ?? "",
-    storeType,
-  });
+  const projectQuery = useRouteProject();
+  const { page, pages, pageQuery, pageListQuery, syncStatus } = usePageRecord();
   // derived values
-  const projectPageIds = getCurrentProjectPageIds(projectId?.toString());
-
-  const switcherOptions = projectPageIds
-    .map((id) => {
-      const _page = id === pageId ? page : getPageById(id);
-      if (!_page) return;
+  const switcherOptions = pages
+    .filter((_page) => _page.project_ids?.includes(projectId))
+    .map((_page) => {
       return {
         value: _page.id,
         query: _page.name,
@@ -69,7 +59,7 @@ export const PageDetailsHeader = observer(function PageDetailsHeader() {
     <Header>
       <Header.LeftItem>
         <div>
-          <Breadcrumbs isLoading={loader === "init-loader"}>
+          <Breadcrumbs isLoading={projectQuery.isPending || pageListQuery.isPending || pageQuery.isPending}>
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={
@@ -103,9 +93,9 @@ export const PageDetailsHeader = observer(function PageDetailsHeader() {
         </div>
       </Header.LeftItem>
       <Header.RightItem>
-        <PageSyncingBadge syncStatus={page.isSyncingWithServer} />
-        <PageHeaderActions page={page} storeType={storeType} />
+        <PageSyncingBadge syncStatus={syncStatus} />
+        <PageHeaderActions page={page} workspaceSlug={workspaceSlug} />
       </Header.RightItem>
     </Header>
   );
-});
+};

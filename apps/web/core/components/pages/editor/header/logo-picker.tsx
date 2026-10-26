@@ -4,25 +4,35 @@
  * See the LICENSE file for details.
  */
 
+import { logoPropsFromSelection } from "@/helpers/emoji.helper";
+import type { TPage } from "@plane/types";
+
 import { useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import { EmojiPicker, EmojiIconPickerTypes, Logo } from "@plane/propel/emoji-icon-picker";
-import { cn } from "@plane/utils";
+import type { TChangeHandlerProps } from "@plane/propel/emoji-icon-picker";
+import { cn } from "@plane/utils/common";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
+import { useUpdateProjectPage } from "@/hooks/use-project-pages";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 
 type Props = {
   className?: string;
-  page: TPageInstance;
+  page: TPage;
+  projectId?: string;
+  workspaceSlug: string;
 };
 
-export const PageEditorHeaderLogoPicker = observer(function PageEditorHeaderLogoPicker(props: Props) {
-  const { className, page } = props;
+export function PageEditorHeaderLogoPicker(props: Props) {
+  const { className, page, projectId, workspaceSlug } = props;
   // states
   const [isLogoPickerOpen, setIsLogoPickerOpen] = useState(false);
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
   // derived values
-  const { logo_props, isContentEditable, updatePageLogo } = page;
+  const { logo_props } = page;
+  const update = useUpdateProjectPage(workspaceSlug, projectId ?? page.project_ids?.[0], page.id);
+  const updatePageLogo = (value: TChangeHandlerProps) =>
+    update.mutateAsync({ logo_props: logoPropsFromSelection(value) });
   const isLogoSelected = !!logo_props?.in_use;
 
   return (
@@ -54,4 +64,4 @@ export const PageEditorHeaderLogoPicker = observer(function PageEditorHeaderLogo
       />
     </div>
   );
-});
+}

@@ -4,20 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 // ui
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 export interface Props {
   parentRef: React.RefObject<HTMLElement | null>;
   MENU_ITEMS: TContextMenuItem[];
 }
 
-export const WorkspaceDraftIssueQuickActions = observer(function WorkspaceDraftIssueQuickActions(props: Props) {
+export function WorkspaceDraftIssueQuickActions(props: Props) {
   const { parentRef, MENU_ITEMS } = props;
 
   const { t } = useTranslation();
@@ -66,4 +65,4 @@ export const WorkspaceDraftIssueQuickActions = observer(function WorkspaceDraftI
       </CustomMenu>
     </>
   );
-});
+}

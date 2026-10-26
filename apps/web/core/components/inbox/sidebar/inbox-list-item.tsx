@@ -6,42 +6,80 @@
 
 import { Link, useLocation } from "@tanstack/react-router";
 import type { MouseEvent } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { PriorityIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import { Row, Avatar } from "@plane/ui";
-import { cn, renderFormattedDate, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { getFileURL } from "@plane/utils/file";
+import type { IIssueLabel, IUserLite, TInboxIssue } from "@plane/types";
+import { EInboxIssueStatus } from "@plane/types";
 // components
-import { ButtonAvatars } from "@/components/dropdowns/member/avatar";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useMember } from "@/hooks/store/use-member";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useIntakePreferences } from "@/providers/intake-preferences";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local imports
 import { InboxIssueStatus } from "../inbox-issue-status";
+
+function InboxIssueLabels({ labelIds, labels }: { labelIds: string[] | undefined; labels: IIssueLabel[] | undefined }) {
+  if (labelIds && labelIds.length > 3) {
+    return (
+      <div className="relative flex !h-[17.5px] items-center gap-1 rounded-sm border border-strong px-1 text-11">
+        <span className="bg-orange-400 h-2 w-2 rounded-full" />
+        <span className="max-w-28 truncate normal-case">{`${labelIds.length} labels`}</span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {(labelIds ?? []).map((labelId) => {
+        const labelDetails = labels?.find((label) => label.id === labelId);
+        if (!labelDetails) return null;
+        return (
+          <div
+            key={labelId}
+            className="relative flex !h-[17.5px] items-center gap-1 rounded-sm border border-strong px-1 text-11"
+          >
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: labelDetails.color }} />
+            <span className="max-w-28 truncate normal-case">{labelDetails.name}</span>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function InboxIssueCreator({ member }: { member: IUserLite | undefined }) {
+  if (!member) return null;
+  if (member.email?.includes("intake@plane.so")) {
+    return <Avatar src={getFileURL("")} name="Vector" size="md" showTooltip />;
+  }
+  return <Avatar src={getFileURL(member.avatar_url ?? "")} name={member.display_name} size="md" showTooltip />;
+}
 
 type InboxIssueListItemProps = {
   workspaceSlug: string;
   projectId: string;
   projectIdentifier?: string;
-  inboxIssueId: string;
+  inboxIssue: TInboxIssue;
   setIsMobileSidebar: (value: boolean) => void;
 };
 
-export const InboxIssueListItem = observer(function InboxIssueListItem(props: InboxIssueListItemProps) {
-  const { workspaceSlug, projectId, inboxIssueId, projectIdentifier, setIsMobileSidebar } = props;
+export const InboxIssueListItem = function InboxIssueListItem(props: InboxIssueListItemProps) {
+  const { workspaceSlug, projectId, inboxIssue, projectIdentifier, setIsMobileSidebar } = props;
   // router
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const selectedInboxIssueId = searchParams.get("inboxIssueId");
   // store
-  const { currentTab, getIssueInboxByIssueId } = useProjectInbox();
-  const { projectLabels } = useLabel();
+  const { tab: currentTab } = useIntakePreferences();
+  const { labels: projectLabels } = useProjectLabels(workspaceSlug, projectId);
   const { isMobile } = usePlatformOS();
-  const { getUserDetails } = useMember();
-  const inboxIssue = getIssueInboxByIssueId(inboxIssueId);
+  const { memberById } = useWorkspaceMemberRoster(workspaceSlug);
   const issue = inboxIssue?.issue;
 
   const handleIssueRedirection = (event: MouseEvent, currentIssueId: string | undefined) => {
@@ -51,7 +89,7 @@ export const InboxIssueListItem = observer(function InboxIssueListItem(props: In
 
   if (!issue) return <></>;
 
-  const createdByDetails = issue?.created_by ? getUserDetails(issue?.created_by) : undefined;
+  const createdByDetails = issue?.created_by ? memberById(issue?.created_by)?.member : undefined;
 
   return (
     <>
@@ -75,7 +113,9 @@ export const InboxIssueListItem = observer(function InboxIssueListItem(props: In
                 {projectIdentifier}-{issue.sequence_id}
               </div>
               <div className="flex items-center gap-2">
-                {inboxIssue.status !== -2 && <InboxIssueStatus inboxIssue={inboxIssue} iconSize={12} />}
+                {inboxIssue.status !== EInboxIssueStatus.PENDING && (
+                  <InboxIssueStatus inboxIssue={inboxIssue} iconSize={12} />
+                )}
               </div>
             </div>
             <h3 className="w-full truncate text-13">{issue.name}</h3>
@@ -94,48 +134,18 @@ export const InboxIssueListItem = observer(function InboxIssueListItem(props: In
               <div className="rounded-full border-2 border-strong-1" />
 
               {issue.priority && (
-                <Tooltip tooltipHeading="Priority" tooltipContent={`${issue.priority ?? "None"}`}>
+                <Tooltip tooltipHeading="Priority" tooltipContent={issue.priority}>
                   <PriorityIcon priority={issue.priority} withContainer className="h-3 w-3" />
                 </Tooltip>
               )}
 
-              {issue.label_ids && issue.label_ids.length > 3 ? (
-                <div className="relative flex !h-[17.5px] items-center gap-1 rounded-sm border border-strong px-1 text-11">
-                  <span className="bg-orange-400 h-2 w-2 rounded-full" />
-                  <span className="max-w-28 truncate normal-case">{`${issue.label_ids.length} labels`}</span>
-                </div>
-              ) : (
-                <>
-                  {(issue.label_ids ?? []).map((labelId) => {
-                    const labelDetails = projectLabels?.find((l) => l.id === labelId);
-                    if (!labelDetails) return null;
-                    return (
-                      <div
-                        key={labelId}
-                        className="relative flex !h-[17.5px] items-center gap-1 rounded-sm border border-strong px-1 text-11"
-                      >
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{
-                            backgroundColor: labelDetails.color,
-                          }}
-                        />
-                        <span className="max-w-28 truncate normal-case">{labelDetails.name}</span>
-                      </div>
-                    );
-                  })}
-                </>
-              )}
+              <InboxIssueLabels labelIds={issue.label_ids} labels={projectLabels} />
             </div>
             {/* created by */}
-            {createdByDetails && createdByDetails.email?.includes("intake@plane.so") ? (
-              <Avatar src={getFileURL("")} name={"Vector"} size="md" showTooltip />
-            ) : createdByDetails ? (
-              <ButtonAvatars showTooltip={false} userIds={createdByDetails?.id} />
-            ) : null}
+            <InboxIssueCreator member={createdByDetails} />
           </div>
         </Row>
       </Link>
     </>
   );
-});
+};

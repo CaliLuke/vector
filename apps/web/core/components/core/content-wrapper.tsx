@@ -6,7 +6,7 @@
 
 import type { ReactNode } from "react";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 export interface ContentWrapperProps {
   className?: string;

@@ -17,6 +17,9 @@ import (
 	"syscall"
 	"time"
 
+	workitemtypesstore "github.com/CaliLuke/go-plane/internal/workitemtypes"
+	workitemtypesapi "github.com/CaliLuke/go-plane/workitemtypes/gen/work_item_types"
+
 	systemapi "github.com/CaliLuke/go-plane"
 	accountauthenticationapi "github.com/CaliLuke/go-plane/accountauthentication/gen/account_authentication"
 	activityreadsapi "github.com/CaliLuke/go-plane/activityreads/gen/plane_internal_django_migration_api"
@@ -211,15 +214,32 @@ func main() {
 	}
 }
 
-func run(ctx context.Context, args []string, output io.Writer) error {
+func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	cfg, err := parseConfig(args)
 	if err != nil {
 		return err
 	}
 
-	logCtx := newLogContext(ctx, output, cfg.debug)
+	wrapHTTP, otelLogOutput, shutdownTelemetry, err := telemetry.ConfigureHTTPObservability(ctx, "plane-go-api")
+	if err != nil {
+		return fmt.Errorf("configure HTTP observability: %w", err)
+	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		runErr = errors.Join(runErr, shutdownTelemetry(shutdownCtx))
+	}()
+	logCtx := newLogContext(ctx, output, cfg.debug, otelLogOutput)
+	defer func() {
+		if runErr != nil {
+			log.Error(logCtx, runErr, log.KV{K: log.MessageKey, V: "Go API exited with an error"})
+		}
+	}()
 	if cfg.databaseURL == "" {
 		return fmt.Errorf("database-url is required")
+	}
+	if !cfg.goBackgroundTasks {
+		return fmt.Errorf("native background tasks are required for transactional work item effects; start with --go-background-tasks")
 	}
 	poolConfig, err := pgxpool.ParseConfig(cfg.databaseURL)
 	if err != nil {
@@ -1098,7 +1118,7 @@ func run(ctx context.Context, args []string, output io.Writer) error {
 	}
 	invitationsEndpoints := invitationsapi.NewEndpoints(invitationsService)
 	invitationsEndpoints.Use(log.Endpoint)
-	labelWriteRepository, err := projectlabelreadsstore.NewWriteRepository(pool, notificationTaskPublisher)
+	labelWriteRepository, err := projectlabelreadsstore.NewWriteRepository(pool)
 	if err != nil {
 		return err
 	}
@@ -1112,6 +1132,12 @@ func run(ctx context.Context, args []string, output io.Writer) error {
 	if err != nil {
 		return err
 	}
+	typeService, err := systemapi.NewWorkItemTypes(workitemtypesstore.NewRepository(pool), sessionValidator, workItemRepository)
+	if err != nil {
+		return err
+	}
+	typeEndpoints := workitemtypesapi.NewEndpoints(typeService)
+	typeEndpoints.Use(log.Endpoint)
 	publicFeedbackService, err := systemapi.NewPublicFeedback(publicProjectMetadataReadsRepository, workItemRepository)
 	if err != nil {
 		return err
@@ -1373,6 +1399,7 @@ func run(ctx context.Context, args []string, output io.Writer) error {
 	externalEndpoints.Use(log.Endpoint)
 
 	handler := newHTTPHandlerWithPendingReplacements(logCtx, systemEndpoints, cfg.debug, stickyEndpoints, stickyService.(sticky.Authorizer).APIKeyAuth, workspaceSlugEndpoints, instanceWorkspaceSlugEndpoints, userInstanceAdminEndpoints, userProfileFlagsEndpoints, userNotificationPreferencesEndpoints, userAccountsEndpoints, userAPITokensEndpoints, instanceAdminSessionEndpoints, workspaceQuickLinksEndpoints, workspaceThemesEndpoints, workspaceHomePreferencesEndpoints, workspaceMemberMeEndpoints, analyticViewsEndpoints, workspaceRecentVisitsEndpoints, lastVisitedWorkspaceEndpoints, entityFavoritesEndpoints, pendingReplacementEndpoints{
+		workItemTypes:                           typeEndpoints,
 		accountAuthentication:                   accountAuthenticationEndpoints,
 		accountAuthenticationMetadata:           accountAuthenticationService.(systemapi.SessionProtocolAuthorizer),
 		authRedirects:                           authRedirectEndpoints,
@@ -1496,15 +1523,9 @@ func run(ctx context.Context, args []string, output io.Writer) error {
 		intakeInboxReads:                        intakeInboxReadsEndpoints,
 		deployBoardReads:                        deployBoardReadsEndpoints,
 	}, workspaceFavoritesEndpoints)
-	wrapHTTP, shutdownTelemetry, err := telemetry.ConfigureHTTPTracing(logCtx, "plane-go-api")
-	if err != nil {
-		return fmt.Errorf("configure HTTP tracing: %w", err)
-	}
 	handler = wrapHTTP(handler)
 	serveErr := listenAndServeHTTP(logCtx, cfg.httpAddress, handler, cfg.shutdownTimeout)
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	return errors.Join(serveErr, shutdownTelemetry(shutdownCtx))
+	return serveErr
 }
 
 func issueActivityTaskPublisher(fallback backgroundtasks.TaskFallback, admission backgroundtasks.IssueActivityTaskAdmitter) (workitemstore.Publisher, error) {
@@ -1777,9 +1798,13 @@ func envDjangoDebug() (bool, error) {
 	return value.IsInt64() && value.Int64() == 1, nil
 }
 
-func newLogContext(ctx context.Context, output io.Writer, debug bool) context.Context {
+func newLogContext(ctx context.Context, output io.Writer, debug bool, additionalOutputs ...log.Output) context.Context {
+	outputs := []log.Output{{Writer: output, Format: log.FormatJSON}}
+	outputs = append(outputs, additionalOutputs...)
 	options := []log.LogOption{
-		log.WithOutputs(log.Output{Writer: output, Format: log.FormatJSON}),
+		log.WithOutputs(outputs...),
+		log.WithDisableBuffering(func(context.Context) bool { return true }),
+		log.WithFunc(log.Span),
 		log.WithFunc(func(ctx context.Context) []log.KV {
 			var fields []log.KV
 			requestID, ok := platform.RequestID(ctx)

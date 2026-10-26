@@ -4,23 +4,22 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { EStartOfTheWeek } from "@plane/types";
-import { getOrderedDays } from "@plane/utils";
+import { getOrderedDays } from "@plane/utils/calendar";
 import { DAYS_LIST } from "@plane/constants";
 // helpers
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
 
 type Props = {
   isLoading: boolean;
   showWeekends: boolean;
 };
 
-export const CalendarWeekHeader = observer(function CalendarWeekHeader(props: Props) {
+export const CalendarWeekHeader = function CalendarWeekHeader(props: Props) {
   const { isLoading, showWeekends } = props;
   // hooks
-  const { data } = useUserProfile();
+  const { data } = useCurrentUserProfile();
   const startOfWeek = data?.start_of_the_week;
 
   // derived
@@ -47,4 +46,4 @@ export const CalendarWeekHeader = observer(function CalendarWeekHeader(props: Pr
       })}
     </div>
   );
-});
+};

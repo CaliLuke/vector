@@ -3,7 +3,8 @@ import { createRequire, registerHooks } from "node:module";
 import path from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
-import { act, React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { act, React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const repositoryRoot = new URL("../../", import.meta.url);
@@ -15,11 +16,12 @@ const reactModules = Object.fromEntries(
   ])
 );
 const dataModules = {
-  "@/hooks/store/notifications": `export const useWorkspaceNotifications = () => globalThis.__notificationPopoverTest.notifications;`,
+  "@/components/workspace-notifications/provider": `export const useNotifications = () => globalThis.__notificationPopoverTest.notifications;`,
   "@plane/constants": `export const FILTER_TYPE_OPTIONS = [{ value: "assigned", i18n_label: "assigned" }, { value: "created", i18n_label: "created" }];`,
   "@plane/i18n": `export const useTranslation = () => ({ t: key => key });`,
   "@plane/propel/icons": `export const ArchiveIcon = () => null; export const CheckIcon = () => null;`,
-  "@plane/utils": `export const cn = (...values) => values.filter(value => typeof value === "string").join(" ");`,
+  "@plane/utils/common":
+    'export const cn = (...values) => values.filter(value => typeof value === "string").join(" ");',
 };
 const sourceModules = {
   "@plane/ui": "packages/ui/src/popovers/popover-menu.tsx",

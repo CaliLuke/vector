@@ -4,49 +4,24 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
-import type { TGroupedIssues, TIssue, TIssueMap, TPaginationData, ICalendarDate, ICalendarWeek } from "@plane/types";
-import { cn, getOrderedDays, renderFormattedPayloadDate } from "@plane/utils";
+import type { ICalendarDate, ICalendarWeek } from "@plane/types";
+import { cn } from "@plane/utils/common";
+import { getOrderedDays } from "@plane/utils/calendar";
+import { renderFormattedPayloadDate } from "@plane/utils/datetime";
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
 // types
-import type { ICycleIssuesFilter } from "@/store/issue/cycle";
-import type { IModuleIssuesFilter } from "@/store/issue/module";
-import type { IProjectIssuesFilter } from "@/store/issue/project";
-import type { IProjectViewIssuesFilter } from "@/store/issue/project-views";
-import type { TRenderQuickActions } from "../list/list-view-types";
 import { CalendarDayTile } from "./day-tile";
+import type { CalendarDayContentProps } from "./types";
 
-type Props = {
-  issuesFilterStore: IProjectIssuesFilter | IModuleIssuesFilter | ICycleIssuesFilter | IProjectViewIssuesFilter;
-  issues: TIssueMap | undefined;
-  groupedIssueIds: TGroupedIssues;
+type Props = CalendarDayContentProps & {
   week: ICalendarWeek | undefined;
-  quickActions: TRenderQuickActions;
-  loadMoreIssues: (dateString: string) => void;
-  getPaginationData: (groupId: string | undefined) => TPaginationData | undefined;
-  getGroupIssueCount: (groupId: string | undefined) => number | undefined;
-  enableQuickIssueCreate?: boolean;
-  disableIssueCreation?: boolean;
-  quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
-  handleDragAndDrop: (
-    issueId: string | undefined,
-    issueProjectId: string | undefined,
-    sourceDate: string | undefined,
-    destinationDate: string | undefined
-  ) => Promise<void>;
-  addIssuesToView?: (issueIds: string[]) => Promise<any>;
-  readOnly?: boolean;
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  canEditProperties: (projectId: string | undefined) => boolean;
-  isEpic?: boolean;
 };
 
-export const CalendarWeekDays = observer(function CalendarWeekDays(props: Props) {
+export const CalendarWeekDays = function CalendarWeekDays(props: Props) {
   const {
-    issuesFilterStore,
+    displayFilters,
     issues,
     groupedIssueIds,
     handleDragAndDrop,
@@ -66,11 +41,11 @@ export const CalendarWeekDays = observer(function CalendarWeekDays(props: Props)
     isEpic = false,
   } = props;
   // hooks
-  const { data } = useUserProfile();
+  const { data } = useCurrentUserProfile();
   const startOfWeek = data?.start_of_the_week;
 
-  const calendarLayout = issuesFilterStore?.issueFilters?.displayFilters?.calendar?.layout ?? "month";
-  const showWeekends = issuesFilterStore?.issueFilters?.displayFilters?.calendar?.show_weekends ?? false;
+  const calendarLayout = displayFilters.calendar?.layout ?? "month";
+  const showWeekends = displayFilters.calendar?.show_weekends ?? false;
 
   if (!week) return null;
 
@@ -97,7 +72,7 @@ export const CalendarWeekDays = observer(function CalendarWeekDays(props: Props)
           <CalendarDayTile
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
-            issuesFilterStore={issuesFilterStore}
+            displayFilters={displayFilters}
             key={renderFormattedPayloadDate(date.date)}
             date={date}
             issues={issues}
@@ -119,4 +94,4 @@ export const CalendarWeekDays = observer(function CalendarWeekDays(props: Props)
       })}
     </div>
   );
-});
+};

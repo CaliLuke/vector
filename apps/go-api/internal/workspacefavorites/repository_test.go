@@ -41,9 +41,32 @@ func (d *favoriteDB) Exec(_ context.Context, query string, args ...any) (pgconn.
 	return d.tag, d.err
 }
 
+func (d *favoriteDB) Begin(context.Context) (pgx.Tx, error) {
+	return favoriteTx{db: d}, nil
+}
+
+type favoriteTx struct {
+	pgx.Tx
+	db *favoriteDB
+}
+
+func (tx favoriteTx) QueryRow(ctx context.Context, query string, args ...any) pgx.Row {
+	return tx.db.QueryRow(ctx, query, args...)
+}
+
+func (tx favoriteTx) Commit(context.Context) error   { return tx.db.err }
+func (tx favoriteTx) Rollback(context.Context) error { return nil }
+
 func favoriteJSONRow(value string) pgx.Row {
 	return favoriteRow(func(dest ...any) error {
 		*dest[0].(*[]byte) = []byte(value)
+		return nil
+	})
+}
+
+func favoriteUUIDRow(value uuid.UUID) pgx.Row {
+	return favoriteRow(func(dest ...any) error {
+		*dest[0].(*uuid.UUID) = value
 		return nil
 	})
 }
@@ -63,6 +86,7 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 		favoriteRow(func(dest ...any) error { *dest[0].(*bool) = true; return nil }),
 		favoriteJSONRow(`[]`),
 		favoriteJSONRow(`[]`),
+		favoriteJSONRow(`[]`),
 		favoriteJSONRow(`{"id":"favorite"}`),
 	}, tag: pgconn.NewCommandTag("DELETE 1")}
 	repository, err := NewRepository(db)
@@ -76,7 +100,10 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 	if ok, err := repository.Authorized(context.Background(), user, "demo"); err != nil || !ok {
 		t.Fatalf("Authorized() = %v, %v", ok, err)
 	}
-	if _, err = repository.List(context.Background(), user, "demo"); err != nil {
+	if _, err = repository.List(context.Background(), user, "demo", false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repository.List(context.Background(), user, "demo", true); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = repository.Group(context.Background(), user, "demo", parent); err != nil {
@@ -92,10 +119,10 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 	joined := strings.Join(db.queries, "\n")
 	for _, want := range []string{
 		"role IN (15,20)",
-		"parent_id IS NULL",
-		"entity_type <> 'page'",
+		"$3 OR f.parent_id IS NULL",
 		"project_members",
-		"pm.is_active=true",
+		"scoped_member.is_active=true",
+		"scoped_parent.entity_type='folder'",
 		"entity_data",
 		"deleted_at IS NULL",
 		"DELETE FROM user_favorites",
@@ -103,6 +130,9 @@ func TestWorkspaceFavoritesRepositoryScopesAndResponse(t *testing.T) {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("query missing %q in %s", want, joined)
 		}
+	}
+	if len(db.args) < 3 || len(db.args[1]) != 3 || db.args[1][2] != false || db.args[2][2] != true {
+		t.Fatalf("List calls did not preserve root-only and all modes: %#v", db.args)
 	}
 }
 
@@ -125,13 +155,16 @@ func TestWorkspaceFavoritesCreateAllocatesSequenceAndReturnsDuplicate(t *testing
 	}
 	query := db.queries[0]
 	for _, want := range []string{
-		"WITH existing",
+		"WITH candidate",
+		"existing AS",
 		"NOT EXISTS (SELECT 1 FROM existing)",
 		"MAX(previous.sequence)",
 		"+10000",
 		"COALESCE($7,65535)",
 		"entity_identifier",
 		"created_at,updated_at",
+		"project_members",
+		"parent.entity_type='folder'",
 	} {
 		if !strings.Contains(query, want) {
 			t.Errorf("Create query missing %q", want)
@@ -141,7 +174,7 @@ func TestWorkspaceFavoritesCreateAllocatesSequenceAndReturnsDuplicate(t *testing
 
 func TestWorkspaceFavoritesUpdatePresenceAndNotFound(t *testing.T) {
 	name := "Renamed"
-	db := &favoriteDB{rows: []pgx.Row{favoriteJSONRow(`{"id":"favorite"}`), favoriteNoRows()}}
+	db := &favoriteDB{rows: []pgx.Row{favoriteUUIDRow(uuid.MustParse("00000000-0000-4000-8000-000000000013")), favoriteJSONRow(`{"id":"favorite"}`), favoriteNoRows()}}
 	repository, _ := NewRepository(db)
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000010")
 	id := uuid.MustParse("00000000-0000-4000-8000-000000000012")
@@ -152,7 +185,10 @@ func TestWorkspaceFavoritesUpdatePresenceAndNotFound(t *testing.T) {
 	if _, err = repository.Update(context.Background(), user, "demo", id, UpdateInput{}); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("Update missing = %v, want ErrNotFound", err)
 	}
-	query := db.queries[0]
+	query := db.queries[1]
+	if !strings.Contains(db.queries[0], "FOR UPDATE OF wm") {
+		t.Fatalf("parent update did not serialize by workspace membership: %s", db.queries[0])
+	}
 	for _, want := range []string{"CASE WHEN $8 THEN $9", "parent_id=CASE WHEN $14 THEN $15", "updated_by_id=$1"} {
 		if !strings.Contains(query, want) {
 			t.Errorf("Update query missing %q", want)

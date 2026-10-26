@@ -4,16 +4,37 @@
  * See the LICENSE file for details.
  */
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { useParams } from "@tanstack/react-router";
 import { XCircle, ArchiveRestoreIcon } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, CopyIcon, NewTabIcon, EditIcon, ArchiveIcon, TrashIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import { ARCHIVABLE_STATE_GROUPS, EUserPermissions } from "@plane/constants";
 import type { EIssuesStoreType, TIssue } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
-import { copyUrlToClipboard, generateWorkItemLink } from "@plane/utils";
-import { createCopyMenuWithDuplication } from "./copy-menu-helper";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { generateWorkItemLink } from "@plane/utils/work-item";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+
+export function useIssueQuickActionContext(issue: TIssue, readOnly: boolean) {
+  const { workspaceSlug } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, issue.project_id ?? undefined);
+  const { getStateById } = useProjectStates(workspaceSlug, issue.project_id);
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const stateDetails = getStateById(issue.state_id);
+
+  return {
+    workspaceSlug,
+    projectIdentifier: projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "",
+    isEditingAllowed: canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]) && !readOnly,
+    isInArchivableGroup: !!stateDetails && ARCHIVABLE_STATE_GROUPS.includes(stateDetails.group),
+  };
+}
 
 // Generic helper function to handle optional function calls gracefully
 // Overload for functions without parameters
@@ -54,7 +75,6 @@ export interface MenuItemFactoryProps {
   issue: TIssue;
   workspaceSlug?: string;
   projectIdentifier?: string;
-  activeLayout?: string;
   isEditingAllowed: boolean;
   isArchivingAllowed?: boolean;
   isDeletingAllowed: boolean;
@@ -66,7 +86,7 @@ export interface MenuItemFactoryProps {
   setCreateUpdateIssueModal: (open: boolean) => void;
   setDeleteIssueModal: (open: boolean) => void;
   setArchiveIssueModal?: (open: boolean) => void;
-  setDuplicateWorkItemModal?: (open: boolean) => void;
+  onDuplicate?: () => void;
   handleRemoveFromView?: () => void;
   handleRestore?: () => Promise<void>;
   // External handlers
@@ -143,7 +163,6 @@ export const useMenuItemFactory = (props: MenuItemFactoryProps) => {
 
   const {
     issue,
-    activeLayout = "",
     isEditingAllowed,
     isArchivingAllowed = false,
     isDeletingAllowed,
@@ -154,7 +173,7 @@ export const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     setCreateUpdateIssueModal,
     setDeleteIssueModal,
     setArchiveIssueModal,
-    setDuplicateWorkItemModal,
+    onDuplicate,
     handleRemoveFromView,
   } = props;
 
@@ -171,25 +190,20 @@ export const useMenuItemFactory = (props: MenuItemFactoryProps) => {
     shouldRender: isEditingAllowed,
   });
 
-  const createCopyMenuItem = (workspaceSlug?: string): TContextMenuItem => {
-    const baseItem = {
-      key: "make-a-copy",
-      title: t("common.actions.make_a_copy"),
-      icon: CopyIcon,
-      action: () => {
-        setCreateUpdateIssueModal(true);
-      },
-      shouldRender: isEditingAllowed && (issueTypeDetail?.is_active ?? true),
-    };
-
-    return createCopyMenuWithDuplication({
-      baseItem,
-      activeLayout,
-      setCreateUpdateIssueModal,
-      setDuplicateWorkItemModal,
-      workspaceSlug,
-    });
-  };
+  const createCopyMenuItem = (): TContextMenuItem => ({
+    key: "make-a-copy",
+    title: t("common.actions.make_a_copy"),
+    icon: CopyIcon,
+    action: () => {
+      if (onDuplicate) {
+        onDuplicate();
+        return;
+      }
+      setIssueToEdit(undefined);
+      setCreateUpdateIssueModal(true);
+    },
+    shouldRender: isEditingAllowed && (issueTypeDetail?.is_active ?? true),
+  });
 
   const createOpenInNewTabMenuItem = (): TContextMenuItem => ({
     key: "open-in-new-tab",
@@ -287,7 +301,7 @@ export const useWorkItemDetailMenuItems = (props: MenuItemFactoryProps): TContex
 
   return useMemo(
     () => [
-      factory.createCopyMenuItem(props.workspaceSlug),
+      factory.createCopyMenuItem(),
       factory.createOpenInNewTabMenuItem(),
       factory.createArchiveMenuItem(),
       factory.createRestoreMenuItem(),
@@ -316,14 +330,15 @@ export const useAllIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuI
 
 export const useCycleIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
+  const { cycleId, issue, setCreateUpdateIssueModal, setIssueToEdit } = props;
 
-  const customEditAction = () => {
-    props.setIssueToEdit({
-      ...props.issue,
-      cycle_id: props.cycleId ?? null,
+  const customEditAction = useCallback(() => {
+    setIssueToEdit({
+      ...issue,
+      cycle_id: cycleId ?? null,
     });
-    props.setCreateUpdateIssueModal(true);
-  };
+    setCreateUpdateIssueModal(true);
+  }, [cycleId, issue, setCreateUpdateIssueModal, setIssueToEdit]);
 
   return useMemo(
     () => [
@@ -335,21 +350,21 @@ export const useCycleIssueMenuItems = (props: MenuItemFactoryProps): TContextMen
       factory.createArchiveMenuItem(),
       factory.createDeleteMenuItem(),
     ],
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-    [factory, props.cycleId]
+    [customEditAction, factory]
   );
 };
 
 export const useModuleIssueMenuItems = (props: MenuItemFactoryProps): TContextMenuItem[] => {
   const factory = useMenuItemFactory(props);
+  const { issue, moduleId, setCreateUpdateIssueModal, setIssueToEdit } = props;
 
-  const customEditAction = () => {
-    props.setIssueToEdit({
-      ...props.issue,
-      module_ids: props.moduleId ? [props.moduleId] : [],
+  const customEditAction = useCallback(() => {
+    setIssueToEdit({
+      ...issue,
+      module_ids: moduleId ? [moduleId] : [],
     });
-    props.setCreateUpdateIssueModal(true);
-  };
+    setCreateUpdateIssueModal(true);
+  }, [issue, moduleId, setCreateUpdateIssueModal, setIssueToEdit]);
 
   return useMemo(
     () => [
@@ -361,8 +376,7 @@ export const useModuleIssueMenuItems = (props: MenuItemFactoryProps): TContextMe
       factory.createArchiveMenuItem(),
       factory.createDeleteMenuItem(),
     ],
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-    [factory, props.moduleId]
+    [customEditAction, factory]
   );
 };
 

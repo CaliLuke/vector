@@ -45,6 +45,9 @@ export const getPasswordStrength = (password: string): E_PASSWORD_STRENGTH => {
   return E_PASSWORD_STRENGTH.STRENGTH_NOT_VALID;
 };
 
+export const isPasswordConfirmationValid = (password: string, confirmation: string): boolean =>
+  getPasswordStrength(password) === E_PASSWORD_STRENGTH.STRENGTH_VALID && password === confirmation;
+
 export type PasswordCriteria = {
   key: string;
   label: string;

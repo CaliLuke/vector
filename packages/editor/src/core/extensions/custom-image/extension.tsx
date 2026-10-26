@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { ImageOptions } from "@tiptap/extension-image";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { v4 as uuidv4 } from "uuid";
 // constants
@@ -17,7 +18,7 @@ import type { TFileHandler } from "@/types";
 import type { CustomImageNodeViewProps } from "./components/node-view";
 import { CustomImageNodeView } from "./components/node-view";
 import { CustomImageExtensionConfig } from "./extension-config";
-import type { CustomImageExtensionOptions, CustomImageExtensionStorage } from "./types";
+import type { CustomImageExtensionStorage } from "./types";
 import { ECustomImageAttributeNames, ECustomImageStatus } from "./types";
 import { getImageComponentImageFileMap } from "./utils";
 
@@ -28,25 +29,10 @@ type Props = {
 
 export function CustomImageExtension(props: Props) {
   const { fileHandler, isEditable } = props;
-  // derived values
-  const { getAssetSrc, getAssetDownloadSrc, restore: restoreImageFn } = fileHandler;
 
-  return CustomImageExtensionConfig.extend<CustomImageExtensionOptions, CustomImageExtensionStorage>({
+  return CustomImageExtensionConfig.extend<ImageOptions, CustomImageExtensionStorage>({
     selectable: isEditable,
     draggable: isEditable,
-
-    addOptions() {
-      const upload = "upload" in fileHandler ? fileHandler.upload : undefined;
-      const duplicate = "duplicate" in fileHandler ? fileHandler.duplicate : undefined;
-      return {
-        ...this.parent?.(),
-        getImageDownloadSource: getAssetDownloadSrc,
-        getImageSource: getAssetSrc,
-        restoreImage: restoreImageFn,
-        uploadImage: upload,
-        duplicateImage: duplicate,
-      };
-    },
 
     addStorage() {
       const maxFileSize = "validation" in fileHandler ? fileHandler.validation?.maxFileSize : 0;

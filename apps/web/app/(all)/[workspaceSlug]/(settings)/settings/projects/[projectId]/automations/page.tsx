@@ -5,9 +5,8 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IProject } from "@plane/types";
@@ -17,8 +16,8 @@ import { PageHead } from "@/components/core/page-title";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SettingsHeading } from "@/components/settings/heading";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectMutations, useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { AutomationsProjectSettingsHeader } from "./header";
 
@@ -26,19 +25,21 @@ function AutomationSettingsPage(): React.JSX.Element | null {
   // router
   const { workspaceSlug, projectId } = Route.useParams();
   // store hooks
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const { currentProjectDetails: projectDetails, updateProject } = useProject();
+  const projectQuery = useRouteProject();
+  const projectDetails = projectQuery.project;
+  const updateProject = useProjectMutations(workspaceSlug, projectId);
+  const { can: canProject, isPending, isError } = useProjectPermissions(workspaceSlug, projectId);
 
   const { t } = useTranslation();
 
   // derived values
-  const canPerformProjectAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
+  const canPerformProjectAdminActions = canProject([EUserPermissions.ADMIN]);
 
   const handleChange = async (formData: Partial<IProject>) => {
     if (!projectDetails) return;
 
     try {
-      await updateProject(workspaceSlug, projectId, formData);
+      await updateProject.mutateAsync({ type: "update", projectId, data: formData });
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
@@ -51,7 +52,9 @@ function AutomationSettingsPage(): React.JSX.Element | null {
   // derived values
   const pageTitle = projectDetails?.name ? `${projectDetails?.name} - Automations` : undefined;
 
-  if (workspaceUserInfo && !canPerformProjectAdminActions) {
+  if (isPending || projectQuery.isPending) return null;
+
+  if (isError || projectQuery.isError || projectQuery.accessDenied || !canPerformProjectAdminActions) {
     return <NotAuthorizedView section="settings" isProjectView className="h-auto" />;
   }
 
@@ -73,5 +76,5 @@ function AutomationSettingsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/automations/")({
-  component: observer(AutomationSettingsPage),
+  component: AutomationSettingsPage,
 });

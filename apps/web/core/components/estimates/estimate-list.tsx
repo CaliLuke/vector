@@ -4,37 +4,35 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { IEstimate } from "@plane/types";
 // local imports
 import { EstimateListItem } from "./estimate-list-item";
 
 type TEstimateList = {
-  estimateIds: string[] | undefined;
+  estimates: readonly IEstimate[] | undefined;
   isAdmin: boolean;
-  isEstimateEnabled?: boolean;
   isEditable?: boolean;
-  onEditClick?: (estimateId: string) => void;
   onDeleteClick?: (estimateId: string) => void;
 };
 
-export const EstimateList = observer(function EstimateList(props: TEstimateList) {
-  const { estimateIds, isAdmin, isEstimateEnabled = false, isEditable = false, onEditClick, onDeleteClick } = props;
+export function EstimateList(props: TEstimateList) {
+  const { estimates, isAdmin, isEditable = false, onDeleteClick } = props;
 
-  if (!estimateIds || estimateIds?.length <= 0) return <></>;
+  if (!estimates || estimates?.length <= 0) return <></>;
   return (
     <div>
-      {estimateIds &&
-        estimateIds.map((estimateId) => (
-          <EstimateListItem
-            key={estimateId}
-            estimateId={estimateId}
-            isAdmin={isAdmin}
-            isEstimateEnabled={isEstimateEnabled}
-            isEditable={isEditable}
-            onEditClick={onEditClick}
-            onDeleteClick={onDeleteClick}
-          />
-        ))}
+      {estimates &&
+        estimates
+          .filter((estimate) => estimate.id)
+          .map((estimate) => (
+            <EstimateListItem
+              key={estimate.id}
+              estimate={estimate}
+              isAdmin={isAdmin}
+              isEditable={isEditable}
+              onDeleteClick={onDeleteClick}
+            />
+          ))}
     </div>
   );
-});
+}

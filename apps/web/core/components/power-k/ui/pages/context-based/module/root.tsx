@@ -5,14 +5,16 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // components
 import type { TPowerKPageType } from "@/components/power-k/core/types";
 import { PowerKMembersMenu } from "@/components/power-k/menus/members";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useModule } from "@/hooks/store/use-module";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useModuleDetails } from "@/hooks/use-modules";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 // local imports
 import { PowerKModuleStatusMenu } from "./status-menu";
 
@@ -21,19 +23,20 @@ type Props = {
   handleSelection: (data: unknown) => void;
 };
 
-export const PowerKModuleContextBasedPages = observer(function PowerKModuleContextBasedPages(props: Props) {
+export const PowerKModuleContextBasedPages = function PowerKModuleContextBasedPages(props: Props) {
   const { activePage, handleSelection } = props;
   // navigation
-  const { moduleId } = useParams({ strict: false });
+  const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // store hooks
-  const { getModuleById } = useModule();
-  const {
-    project: { getProjectMemberIds },
-  } = useMember();
+  const detail = useModuleDetails(workspaceSlug, projectId, moduleId);
+  const { data: currentUser } = useCurrentUser();
   // derived values
-  const moduleDetails = moduleId ? getModuleById(moduleId.toString()) : null;
-  const projectMemberIds = moduleDetails?.project_id ? getProjectMemberIds(moduleDetails.project_id, false) : [];
+  const moduleDetails = detail.module;
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { memberships } = useProjectMemberRoster(workspaceSlug, moduleDetails?.project_id);
+  const projectMemberIds = projectRosterMemberIds(memberships, membersById, currentUser?.id, false);
 
+  if (detail.isError || detail.isAccessDenied) return <CatalogueReadFailure label="modules" retry={detail.retry} />;
   if (!moduleDetails) return null;
 
   return (
@@ -41,6 +44,7 @@ export const PowerKModuleContextBasedPages = observer(function PowerKModuleConte
       {/* members menu */}
       {activePage === "update-module-member" && moduleDetails && (
         <PowerKMembersMenu
+          workspaceSlug={workspaceSlug}
           handleSelect={handleSelection}
           userIds={projectMemberIds ?? undefined}
           value={moduleDetails.member_ids}
@@ -52,4 +56,4 @@ export const PowerKModuleContextBasedPages = observer(function PowerKModuleConte
       )}
     </>
   );
-});
+};

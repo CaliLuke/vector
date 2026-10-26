@@ -6,7 +6,8 @@
 
 import type { Editor, NodeViewProps } from "@tiptap/core";
 import type { DragEvent } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { FormApi } from "@tanstack/react-form";
 // helpers
 import type { EFileError } from "@/helpers/file";
 import { isFileValid } from "@/helpers/file";
@@ -21,78 +22,201 @@ type TUploaderArgs = {
   handleProgressStatus?: (isUploading: boolean) => void;
   loadFileFromFileSystem?: (file: string) => void;
   maxFileSize: number;
-  onInvalidFile: (error: EFileError, file: File, message: string) => void;
   onUpload: (url: string, file: File) => void;
 };
 
-export const useUploader = (args: TUploaderArgs) => {
+export type TUploadError = { kind: "validation" | "transport" | "accepted"; message: string };
+
+export function getUploadError(error: unknown): TUploadError | undefined {
+  if (
+    error &&
+    typeof error === "object" &&
+    "kind" in error &&
+    (error.kind === "validation" || error.kind === "transport" || error.kind === "accepted") &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return { kind: error.kind, message: error.message };
+  }
+  return undefined;
+}
+
+export const canRetryUploadError = (error: unknown) => getUploadError(error)?.kind === "transport";
+
+const uploadErrorMessage = (error: unknown) =>
+  error instanceof Error && error.message ? error.message : "Something went wrong while uploading the file.";
+
+function getFileValidationError(
+  file: File,
+  acceptedMimeTypes: string[],
+  maxFileSize: number
+): TUploadError | undefined {
+  let validationError: { code: EFileError; message: string } | undefined;
+  const isValid = isFileValid({
+    acceptedMimeTypes,
+    file,
+    maxFileSize,
+    onError: (code, message) => {
+      validationError = { code, message };
+    },
+  });
+  return isValid
+    ? undefined
+    : { kind: "validation" as const, message: validationError?.message ?? "This file cannot be uploaded." };
+}
+
+function createUploadForm(args: TUploaderArgs & { file: File }) {
   const {
     acceptedMimeTypes,
     editorCommand,
+    file,
     handleProgressStatus,
     loadFileFromFileSystem,
     maxFileSize,
-    onInvalidFile,
     onUpload,
   } = args;
-  // states
-  const [isUploading, setIsUploading] = useState(false);
+  return new FormApi({
+    defaultValues: { file },
+    validators: {
+      onSubmit: ({ value }) => getFileValidationError(value.file, acceptedMimeTypes, maxFileSize),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      handleProgressStatus?.(true);
+      let uploadAccepted = false;
+      let previewReadFailed = false;
+      const reportPreviewFailure = () => {
+        if (!uploadAccepted) {
+          previewReadFailed = true;
+          return;
+        }
+        formApi.setErrorMap({
+          onSubmit: { kind: "accepted", message: "The image preview could not be read." },
+        });
+      };
+      if (loadFileFromFileSystem) {
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+          if (typeof reader.result === "string") loadFileFromFileSystem(reader.result);
+          else reportPreviewFailure();
+        });
+        reader.addEventListener("error", reportPreviewFailure);
+        reader.readAsDataURL(value.file);
+      }
+
+      let url: string;
+      try {
+        url = (await editorCommand(value.file)) ?? "";
+        if (!url) throw new Error("Something went wrong while uploading the file.");
+      } catch (error: unknown) {
+        formApi.setErrorMap({
+          onSubmit: { kind: "transport", message: uploadErrorMessage(error) },
+        });
+        throw error;
+      }
+      uploadAccepted = true;
+      if (previewReadFailed) reportPreviewFailure();
+
+      try {
+        onUpload(url, value.file);
+      } catch {
+        formApi.setErrorMap({
+          onSubmit: {
+            kind: "accepted",
+            message: "The upload completed, but the image could not be inserted into the editor.",
+          },
+        });
+      }
+    },
+  });
+}
+
+type TUploadForm = ReturnType<typeof createUploadForm>;
+type TUploadAttempt = { id: number; form: TUploadForm; cleanup: () => void };
+
+export const useUploader = (args: TUploaderArgs) => {
+  const { acceptedMimeTypes, editorCommand, handleProgressStatus, loadFileFromFileSystem, maxFileSize, onUpload } =
+    args;
+  const attemptSequence = useRef(0);
+  const attemptsRef = useRef<TUploadAttempt[]>([]);
+  const [attempts, setAttempts] = useState<TUploadAttempt[]>([]);
+
+  useEffect(
+    () => () => {
+      attemptsRef.current.forEach((attempt) => attempt.cleanup());
+      attemptsRef.current = [];
+    },
+    []
+  );
+
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      const unsubscribers = attempts.map((attempt) => attempt.form.store.subscribe(onStoreChange));
+      return () => unsubscribers.forEach((subscription) => subscription.unsubscribe());
+    },
+    [attempts]
+  );
+  const getIsUploading = useCallback(() => attempts.some((attempt) => attempt.form.state.isSubmitting), [attempts]);
+  const isUploading = useSyncExternalStore(subscribe, getIsUploading, () => false);
+
+  const submitAttempt = useCallback(
+    async (attempt: TUploadAttempt) => {
+      await attempt.form.handleSubmit().catch(() => undefined);
+      if (!attemptsRef.current.some((current) => current.form.state.isSubmitting)) {
+        handleProgressStatus?.(false);
+      }
+    },
+    [handleProgressStatus]
+  );
+
+  const createAttempt = useCallback(
+    (file: File): TUploadAttempt => {
+      const form = createUploadForm({
+        acceptedMimeTypes,
+        editorCommand,
+        handleProgressStatus,
+        loadFileFromFileSystem,
+        maxFileSize,
+        onUpload,
+        file,
+      });
+      return { id: attemptSequence.current++, form, cleanup: form.mount() };
+    },
+    [acceptedMimeTypes, editorCommand, handleProgressStatus, loadFileFromFileSystem, maxFileSize, onUpload]
+  );
 
   const uploadFile = useCallback(
     async (file: File) => {
-      handleProgressStatus?.(true);
-      setIsUploading(true);
-      const isValid = isFileValid({
-        acceptedMimeTypes,
-        file,
-        maxFileSize,
-        onError: (error, message) => onInvalidFile(error, file, message),
-      });
-      if (!isValid) {
-        handleProgressStatus?.(false);
-        setIsUploading(false);
-        return;
-      }
-      try {
-        if (loadFileFromFileSystem) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            if (reader.result) {
-              loadFileFromFileSystem(reader.result as string);
-            } else {
-              console.error("Failed to read the file: reader.result is null");
-            }
-          };
-          reader.onerror = () => {
-            console.error("Error reading file");
-          };
-          reader.readAsDataURL(file);
-        }
-        const url = await editorCommand(file);
-
-        if (!url) {
-          throw new Error("Something went wrong while uploading the file.");
-        }
-        onUpload(url, file);
-      } catch {
-        console.error("useFileUpload: Error in uploading file");
-      } finally {
-        handleProgressStatus?.(false);
-        setIsUploading(false);
-      }
+      const attempt = createAttempt(file);
+      const nextAttempts = [...attemptsRef.current, attempt];
+      attemptsRef.current = nextAttempts;
+      setAttempts(nextAttempts);
+      await submitAttempt(attempt);
     },
-    [
-      acceptedMimeTypes,
-      editorCommand,
-      handleProgressStatus,
-      loadFileFromFileSystem,
-      maxFileSize,
-      onInvalidFile,
-      onUpload,
-    ]
+    [createAttempt, submitAttempt]
   );
 
-  return { isUploading, uploadFile };
+  const retryUpload = useCallback(
+    async (attemptId: number) => {
+      const failed = attemptsRef.current.find(({ id }) => id === attemptId);
+      if (
+        !failed ||
+        failed.form.state.isSubmitting ||
+        failed.form.state.isSubmitSuccessful ||
+        !canRetryUploadError(failed.form.state.errorMap.onSubmit)
+      ) {
+        return;
+      }
+      failed.cleanup();
+      const retry = createAttempt(failed.form.state.values.file);
+      const nextAttempts = attemptsRef.current.map((attempt) => (attempt.id === attemptId ? retry : attempt));
+      attemptsRef.current = nextAttempts;
+      setAttempts(nextAttempts);
+      await submitAttempt(retry);
+    },
+    [createAttempt, submitAttempt]
+  );
+
+  return { attempts, isUploading, uploadFile, retryUpload };
 };
 
 type TDropzoneArgs = {

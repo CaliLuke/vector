@@ -3,408 +3,219 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
 import { useState } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { CircleUserRound } from "lucide-react";
-// plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { EFileAssetType } from "@plane/types";
-import type { IUser, TUserProfile } from "@plane/types";
+import type { IUser } from "@plane/types";
 import { Input } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
-// components
+import { getFileURL } from "@plane/utils/file";
+import { validatePersonName, validateDisplayName } from "@plane/utils/validation";
 import { DeactivateAccountModal } from "@/components/account/deactivate-account-modal";
 import { ImagePickerPopover } from "@/components/core/image-picker-popover";
 import { ChangeEmailModal } from "@/components/core/modals/change-email-modal";
 import { UserImageUploadModal } from "@/components/core/modals/user-image-upload-modal";
 import { CoverImage } from "@/components/common/cover-image";
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
-// helpers
 import { handleCoverImageChange } from "@/helpers/cover-image.helper";
-// hooks
-import { useInstance } from "@/hooks/store/use-instance";
-import { useUser, useUserProfile } from "@/hooks/store/user";
-// utils
-import { validatePersonName, validateDisplayName } from "@plane/utils";
+import { instanceConfigOptions } from "@/queries/instance";
+import { useUpdateCurrentUser } from "@/hooks/use-current-user";
 
-type TUserProfileForm = {
-  avatar_url: string;
-  cover_image: string;
-  cover_image_asset: any;
-  cover_image_url: string;
-  first_name: string;
-  last_name: string;
-  display_name: string;
-  email: string;
-  role: string;
-  language: string;
-  user_timezone: string;
-};
-
-type Props = {
-  user: IUser;
-  profile: TUserProfile;
-};
-
-export const GeneralProfileSettingsForm = observer(function GeneralProfileSettingsForm(props: Props) {
-  const { user, profile } = props;
-  // states
-  const [isLoading, setIsLoading] = useState(false);
-  const [isImageUploadModalOpen, setIsImageUploadModalOpen] = useState(false);
-  const [deactivateAccountModal, setDeactivateAccountModal] = useState(false);
-  const [isChangeEmailModalOpen, setIsChangeEmailModalOpen] = useState(false);
-  // language support
-  const { t } = useTranslation();
-  // form info
-  const {
-    handleSubmit,
-    watch,
-    control,
-    setValue,
-    formState: { errors },
-  } = useForm<TUserProfileForm>({
-    defaultValues: {
-      avatar_url: user.avatar_url || "",
-      cover_image_asset: null,
-      cover_image_url: user.cover_image_url || "",
-      first_name: user.first_name || "",
-      last_name: user.last_name || "",
-      display_name: user.display_name || "",
-      email: user.email || "",
-      role: profile.role || "Product / Project Manager",
-      language: profile.language || "en",
-      user_timezone: user.user_timezone || "Asia/Kolkata",
-    },
-  });
-  // derived values
-  const userAvatar = watch("avatar_url");
-  const userCover = watch("cover_image_url");
-  // store hooks
-  const { data: currentUser, updateCurrentUser } = useUser();
-  const { updateUserProfile } = useUserProfile();
-  const { config } = useInstance();
-
-  const isSMTPConfigured = config?.is_smtp_configured || false;
-
-  const handleProfilePictureDelete = async (url: string | null | undefined) => {
-    if (!url) return;
-    await updateCurrentUser({
-      avatar_url: "",
-    })
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "Profile picture deleted successfully.",
-        });
-        setValue("avatar_url", "");
-        return;
-      })
-      .catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "There was some error in deleting your profile picture. Please try again.",
-        });
-      })
-      .finally(() => {
-        setIsImageUploadModalOpen(false);
-      });
+const nameFields = [
+  { name: "first_name", required: true, placeholder: "Enter your first name" },
+  { name: "last_name", required: false, placeholder: "Enter your last name" },
+  { name: "display_name", required: true, placeholder: "Enter your display name" },
+] as const;
+function userDefaults(user: IUser) {
+  return {
+    avatar_url: user.avatar_url ?? "",
+    cover_image_url: user.cover_image_url ?? "",
+    first_name: user.first_name ?? "",
+    last_name: user.last_name ?? "",
+    display_name: user.display_name ?? "",
   };
-
-  const onSubmit = async (formData: TUserProfileForm) => {
-    setIsLoading(true);
-    const userPayload: Partial<IUser> = {
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      avatar_url: formData.avatar_url,
-      display_name: formData?.display_name,
-    };
-
-    try {
-      const coverImagePayload = await handleCoverImageChange(user.cover_image_url, formData.cover_image_url, {
+}
+export function GeneralProfileSettingsForm({ user }: { user: IUser }) {
+  const [imageOpen, setImageOpen] = useState(false);
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const { t } = useTranslation();
+  const { mutateAsync: updateCurrentUser } = useUpdateCurrentUser();
+  const { data: config } = useQuery(instanceConfigOptions);
+  const cover = useMutation({
+    mutationFn: async (url: string) => ({
+      url,
+      payload: await handleCoverImageChange(user.cover_image_url, url, {
         entityIdentifier: "",
         entityType: EFileAssetType.USER_COVER,
         isUserAsset: true,
+      }),
+    }),
+  });
+  const form = useForm({
+    defaultValues: userDefaults(user),
+    validators: { onSubmit: (): string | undefined => undefined },
+    onSubmit: async ({ value, formApi }) => {
+      const processed =
+        cover.data?.url === value.cover_image_url ? cover.data : await cover.mutateAsync(value.cover_image_url);
+      const saved = await updateCurrentUser({
+        first_name: value.first_name,
+        last_name: value.last_name,
+        display_name: value.display_name,
+        avatar_url: value.avatar_url,
+        ...processed.payload,
       });
-
-      if (coverImagePayload) {
-        Object.assign(userPayload, coverImagePayload);
-      }
-    } catch (error) {
-      console.error("Error handling cover image:", error);
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("toast.error"),
-        message: error instanceof Error ? error.message : "Failed to process cover image",
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    const profilePayload: Partial<TUserProfile> = {
-      role: formData.role,
-    };
-
-    const updateCurrentUserDetail = updateCurrentUser(userPayload);
-    const promises: Promise<IUser | TUserProfile | undefined>[] = [updateCurrentUserDetail];
-    if (profilePayload.role !== profile.role) {
-      const updateCurrentUserProfile = updateUserProfile(profilePayload);
-      promises.push(updateCurrentUserProfile);
-    }
-
-    const updatePromise = Promise.allSettled(promises)
-      .then((results) => {
-        const rejectedResult = results.find((result) => result.status === "rejected") as
-          | PromiseRejectedResult
-          | undefined;
-        if (rejectedResult) {
-          throw rejectedResult.reason ?? new Error("Failed to update profile");
-        }
-        const values = results.map(
-          (result) => (result as PromiseFulfilledResult<IUser | TUserProfile | undefined>).value
-        );
-        if (values.some((v) => v === undefined)) {
-          throw new Error("Failed to update profile");
-        }
-        return values;
-      })
-      .finally(() => setIsLoading(false));
-
-    setPromiseToast(updatePromise, {
-      loading: "Updating...",
-      success: {
-        title: "Success!",
-        message: () => `Profile updated successfully.`,
-      },
-      error: {
-        title: "Error!",
-        message: () => `There was some error in updating your profile. Please try again.`,
-      },
-    });
+      if (!saved) throw new Error("Profile update did not complete");
+      formApi.reset(userDefaults(saved));
+      cover.reset();
+      setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "Profile updated successfully." });
+    },
+  });
+  const values = useStore(form.store, (state) => state.values);
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const error = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const removeAvatar = async () => {
+    await updateCurrentUser({ avatar_url: "" });
+    form.setFieldValue("avatar_url", "");
   };
-
   return (
     <>
-      <DeactivateAccountModal isOpen={deactivateAccountModal} onClose={() => setDeactivateAccountModal(false)} />
-      <ChangeEmailModal isOpen={isChangeEmailModalOpen} onClose={() => setIsChangeEmailModalOpen(false)} />
-      <Controller
-        control={control}
-        name="avatar_url"
-        render={({ field: { onChange, value } }) => (
-          <UserImageUploadModal
-            isOpen={isImageUploadModalOpen}
-            onClose={() => setIsImageUploadModalOpen(false)}
-            handleRemove={async () => await handleProfilePictureDelete(currentUser?.avatar_url)}
-            onSuccess={(url) => {
-              onChange(url);
-              handleSubmit(onSubmit)();
-              setIsImageUploadModalOpen(false);
-            }}
-            value={value && value.trim() !== "" ? value : null}
-          />
-        )}
-      />
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-        <div className="flex w-full flex-col gap-7">
+      <DeactivateAccountModal isOpen={deactivateOpen} onClose={() => setDeactivateOpen(false)} />
+      <ChangeEmailModal isOpen={emailOpen} onClose={() => setEmailOpen(false)} />
+      {imageOpen && (
+        <UserImageUploadModal
+          isOpen
+          onClose={() => setImageOpen(false)}
+          handleRemove={removeAvatar}
+          value={values.avatar_url || null}
+          onSuccess={async (url) => {
+            const saved = await updateCurrentUser({ avatar_url: url });
+            if (!saved) throw new Error("Profile update did not complete");
+            form.setFieldValue("avatar_url", saved.avatar_url ?? "");
+          }}
+        />
+      )}
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.setErrorMap({ onSubmit: undefined });
+          void form.handleSubmit().catch(() =>
+            form.setErrorMap({
+              onSubmit: { form: "Could not update your profile. Please try again.", fields: {} },
+            })
+          );
+        }}
+        noValidate
+        className="w-full"
+      >
+        <fieldset disabled={busy} inert={busy} className="flex w-full flex-col gap-7">
           <div className="relative h-44 w-full">
-            <CoverImage
-              src={userCover}
-              className="h-44 w-full rounded-lg"
-              alt={currentUser?.first_name ?? "Cover image"}
-            />
-            <div className="absolute -bottom-6 left-6 flex items-end justify-between">
-              <div className="flex gap-3">
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-surface-2">
-                  <button type="button" onClick={() => setIsImageUploadModalOpen(true)}>
-                    {!userAvatar || userAvatar === "" ? (
-                      <div className="h-16 w-16 rounded-md bg-layer-1 p-2">
-                        <CircleUserRound className="h-full w-full text-secondary" />
-                      </div>
-                    ) : (
-                      <div className="relative h-16 w-16 overflow-hidden">
-                        <img
-                          src={getFileURL(userAvatar)}
-                          className="absolute top-0 left-0 h-full w-full rounded-lg object-cover"
-                          onClick={() => setIsImageUploadModalOpen(true)}
-                          alt={currentUser?.display_name}
-                          role="button"
-                        />
-                      </div>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="absolute right-3 bottom-3 flex">
-              <Controller
-                control={control}
-                name="cover_image_url"
-                render={({ field: { value, onChange } }) => (
-                  <ImagePickerPopover
-                    label={t("change_cover")}
-                    onChange={(imageUrl) => onChange(imageUrl)}
-                    value={value}
-                    isProfileCover
-                  />
-                )}
+            <CoverImage src={values.cover_image_url} className="h-44 w-full rounded-lg" alt="Cover image" />
+            <button
+              type="button"
+              aria-label="Change profile picture"
+              onClick={() => setImageOpen(true)}
+              className="absolute -bottom-6 left-6 grid size-16 place-items-center rounded-lg bg-surface-2"
+            >
+              {values.avatar_url ? (
+                <img
+                  src={getFileURL(values.avatar_url)}
+                  className="size-16 rounded-lg object-cover"
+                  alt={user.display_name}
+                />
+              ) : (
+                <CircleUserRound className="size-12 text-secondary" />
+              )}
+            </button>
+            <div className="absolute right-3 bottom-3">
+              <ImagePickerPopover
+                label={t("change_cover")}
+                value={values.cover_image_url}
+                onChange={(url) => form.setFieldValue("cover_image_url", url)}
+                isProfileCover
               />
             </div>
           </div>
-          <div className="item-center mt-6 flex justify-between">
-            <div className="flex flex-col">
-              <div className="item-center flex text-16 font-medium text-secondary">
-                <span>{`${watch("first_name")} ${watch("last_name")}`}</span>
-              </div>
-              <span className="text-13 tracking-tight text-tertiary">{watch("email")}</span>
+          <div className="mt-6">
+            <div className="text-16 font-medium text-secondary">
+              {values.first_name} {values.last_name}
             </div>
+            <span className="text-13 text-tertiary">{user.email}</span>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
-              <div className="flex flex-col gap-1">
-                <h4 className="text-13 font-medium text-secondary">
-                  {t("first_name")}&nbsp;
-                  <span className="text-danger-primary">*</span>
-                </h4>
-                <Controller
-                  control={control}
-                  name="first_name"
-                  rules={{
-                    required: "Please enter first name",
-                    validate: validatePersonName,
-                  }}
-                  render={({ field: { value, onChange, ref } }) => (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
+            {nameFields.map(({ name, required, placeholder }) => (
+              <form.Field
+                key={name}
+                name={name}
+                validators={{
+                  onChange: ({ value }) => {
+                    if (required && !value.trim()) return "This field is required.";
+                    const result = name === "display_name" ? validateDisplayName(value) : validatePersonName(value);
+                    return result === true ? undefined : result;
+                  },
+                }}
+              >
+                {(field) => (
+                  <label className="flex flex-col gap-1 text-13 font-medium text-secondary">
+                    {t(name)}
+                    {required && <span className="text-danger-primary">*</span>}
                     <Input
-                      id="first_name"
-                      name="first_name"
-                      type="text"
-                      value={value}
-                      onChange={onChange}
-                      ref={ref}
-                      hasError={Boolean(errors.first_name)}
-                      placeholder="Enter your first name"
-                      className={`w-full rounded-md ${errors.first_name ? "border-danger-strong" : ""}`}
-                      maxLength={50}
-                      autoComplete="on"
-                    />
-                  )}
-                />
-                {errors.first_name && <span className="text-11 text-danger-primary">{errors.first_name.message}</span>}
-              </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-13 font-medium text-secondary">{t("last_name")}</h4>
-                <Controller
-                  control={control}
-                  name="last_name"
-                  rules={{
-                    validate: validatePersonName,
-                  }}
-                  render={({ field: { value, onChange, ref } }) => (
-                    <Input
-                      id="last_name"
-                      name="last_name"
-                      type="text"
-                      value={value}
-                      onChange={onChange}
-                      ref={ref}
-                      hasError={Boolean(errors.last_name)}
-                      placeholder="Enter your last name"
+                      name={field.name}
+                      value={field.state.value}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                      onBlur={field.handleBlur}
+                      hasError={!field.state.meta.isValid}
+                      placeholder={placeholder}
                       className="w-full rounded-md"
                       maxLength={50}
-                      autoComplete="on"
                     />
-                  )}
-                />
-                {errors.last_name && <span className="text-11 text-danger-primary">{errors.last_name.message}</span>}
-              </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-13 font-medium text-secondary">
-                  {t("display_name")}&nbsp;
-                  <span className="text-danger-primary">*</span>
-                </h4>
-                <Controller
-                  control={control}
-                  name="display_name"
-                  rules={{
-                    required: "Display name is required.",
-                    validate: validateDisplayName,
-                  }}
-                  render={({ field: { value, onChange, ref } }) => (
-                    <Input
-                      id="display_name"
-                      name="display_name"
-                      type="text"
-                      value={value}
-                      onChange={onChange}
-                      ref={ref}
-                      hasError={Boolean(errors?.display_name)}
-                      placeholder="Enter your display name"
-                      className={`w-full ${errors?.display_name ? "border-danger-strong" : ""}`}
-                      maxLength={50}
-                    />
-                  )}
-                />
-                {errors?.display_name && (
-                  <span className="text-11 text-danger-primary">{errors?.display_name?.message}</span>
+                    {field.state.meta.errors.map((message) => (
+                      <span role="alert" key={String(message)} className="text-11 text-danger-primary">
+                        {message}
+                      </span>
+                    ))}
+                  </label>
                 )}
-              </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-13 font-medium text-secondary">
-                  {t("auth.common.email.label")}&nbsp;
-                  <span className="text-danger-primary">*</span>
-                </h4>
-                <Controller
-                  control={control}
-                  name="email"
-                  rules={{
-                    required: "Email is required.",
-                  }}
-                  render={({ field: { value, ref } }) => (
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={value}
-                      ref={ref}
-                      hasError={Boolean(errors.email)}
-                      placeholder="Enter your email"
-                      className={`w-full cursor-not-allowed rounded-md !bg-surface-2 ${
-                        errors.email ? "border-danger-strong" : ""
-                      }`}
-                      autoComplete="on"
-                      disabled
-                    />
-                  )}
-                />
-                {isSMTPConfigured && (
-                  <button
-                    type="button"
-                    className="btn w-fit text-11 text-secondary underline"
-                    onClick={() => setIsChangeEmailModalOpen(true)}
-                  >
-                    {t("account_settings.profile.change_email_modal.title")}
-                  </button>
-                )}
-              </div>
+              </form.Field>
+            ))}
+            <div className="flex flex-col gap-1">
+              <label className="text-13 font-medium text-secondary">
+                {t("auth.common.email.label")}
+                <Input type="email" value={user.email} disabled className="w-full rounded-md !bg-surface-2" />
+              </label>
+              {config?.is_smtp_configured && (
+                <button
+                  type="button"
+                  onClick={() => setEmailOpen(true)}
+                  className="w-fit text-11 text-secondary underline"
+                >
+                  {t("account_settings.profile.change_email_modal.title")}
+                </button>
+              )}
             </div>
           </div>
+          {error && (
+            <p role="alert" className="text-13 text-danger-primary">
+              {error}
+            </p>
+          )}
           <div>
-            <Button variant="primary" type="submit" loading={isLoading}>
-              {isLoading ? t("saving") : t("save_changes")}
+            <Button type="submit" variant="primary" loading={busy}>
+              {t("save_changes")}
             </Button>
           </div>
-        </div>
+        </fieldset>
       </form>
       <div className="mt-10">
         <SettingsBoxedControlItem
           title={t("deactivate_account")}
           description={t("deactivate_account_description")}
           control={
-            <Button variant="error-outline" onClick={() => setDeactivateAccountModal(true)}>
+            <Button type="button" variant="error-outline" disabled={busy} onClick={() => setDeactivateOpen(true)}>
               {t("deactivate_account")}
             </Button>
           }
@@ -412,4 +223,4 @@ export const GeneralProfileSettingsForm = observer(function GeneralProfileSettin
       </div>
     </>
   );
-});
+}

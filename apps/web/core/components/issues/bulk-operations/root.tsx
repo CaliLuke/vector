@@ -4,11 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Button } from "@plane/propel/button";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useMultipleSelectStore } from "@/hooks/store/use-multiple-select-store";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 
 type Props = {
@@ -16,9 +14,9 @@ type Props = {
   selectionHelpers: TSelectionHelper;
 };
 
-export const IssueBulkOperationsRoot = observer(function IssueBulkOperationsRoot(props: Props) {
+export function IssueBulkOperationsRoot(props: Props) {
   const { className, selectionHelpers } = props;
-  const { isSelectionActive } = useMultipleSelectStore();
+  const { isSelectionActive } = selectionHelpers;
 
   if (!isSelectionActive || selectionHelpers.isSelectionDisabled) return null;
 
@@ -37,4 +35,4 @@ export const IssueBulkOperationsRoot = observer(function IssueBulkOperationsRoot
       </Button>
     </div>
   );
-});
+}

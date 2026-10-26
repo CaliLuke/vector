@@ -4,13 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { endOfMonth, endOfWeek, endOfYear, startOfMonth, startOfWeek, startOfYear } from "date-fns";
+import { endOfMonth } from "date-fns/endOfMonth";
+import { endOfWeek } from "date-fns/endOfWeek";
+import { endOfYear } from "date-fns/endOfYear";
+import { startOfMonth } from "date-fns/startOfMonth";
+import { startOfWeek } from "date-fns/startOfWeek";
+import { startOfYear } from "date-fns/startOfYear";
 // helpers
 // types
 import { DURATION_FILTER_OPTIONS, EDurationFilters } from "@plane/constants";
 import type { TIssuesListTypes } from "@plane/types";
 // constants
-import { renderFormattedDate, renderFormattedPayloadDate } from "@plane/utils";
+import { renderFormattedDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 
 // -------------------- DEPRECATED --------------------
 

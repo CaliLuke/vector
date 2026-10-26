@@ -5,10 +5,9 @@
  */
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // assets
 import emptyModule from "@/app/assets/empty-state/module.svg?url";
 // components
@@ -17,40 +16,42 @@ import { PageHead } from "@/components/core/page-title";
 import { ModuleLayoutRoot } from "@/components/issues/issue-layouts/roots/module-layout-root";
 import { ModuleAnalyticsSidebar } from "@/components/modules";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
-import { useProject } from "@/hooks/store/use-project";
+import { useParentRemovalNavigation } from "@/hooks/use-parent-removal-navigation";
+import { useModuleDetails } from "@/hooks/use-modules";
+import { useProjectDetail } from "@/hooks/use-projects";
 
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 function ModuleIssuesPage(): React.JSX.Element | null {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId, moduleId } = Route.useParams();
   // store hooks
-  const { fetchModuleDetails, getModuleById } = useModule();
-  const { getProjectById } = useProject();
-  // const { issuesFilter } = useIssues(EIssuesStoreType.MODULE);
-  // local storage
-  const { setValue, storedValue } = useLocalStorage("module_sidebar_collapsed", "false");
-  const isSidebarCollapsed = storedValue ? (storedValue === "true" ? true : false) : false;
-  // fetching module details
-  const { error } = useSWR(`CURRENT_MODULE_DETAILS_${moduleId}`, () =>
-    fetchModuleDetails(workspaceSlug, projectId, moduleId)
+  const detail = useModuleDetails(workspaceSlug, projectId, moduleId);
+  useParentRemovalNavigation(
+    JSON.stringify([detail.scope, moduleId]),
+    detail.module === null,
+    `/${workspaceSlug}/projects/${projectId}/modules`
   );
-  // derived values
-  const projectModule = getModuleById(moduleId);
-  const project = getProjectById(projectId);
+  const { project } = useProjectDetail(workspaceSlug, projectId);
+  // local storage
+  const chart = useParentChartPreferences("module", workspaceSlug, projectId, moduleId);
+  const isSidebarCollapsed = chart.sidebarCollapsed;
+  const projectModule = detail.module;
   const pageTitle = project?.name && projectModule?.name ? `${project?.name} - ${projectModule?.name}` : undefined;
 
   const toggleSidebar = () => {
-    setValue(`${!isSidebarCollapsed}`);
+    chart.update({ sidebarCollapsed: !isSidebarCollapsed });
   };
 
   // const activeLayout = issuesFilter?.issueFilters?.displayFilters?.layout;
   return (
     <>
       <PageHead title={pageTitle} />
-      {error ? (
+      {detail.isError || detail.isAccessDenied ? (
+        <CatalogueReadFailure label="modules" retry={detail.retry} />
+      ) : detail.query.isSuccess && !projectModule ? (
         <EmptyState
           image={emptyModule}
           title="Module does not exist"
@@ -71,7 +72,12 @@ function ModuleIssuesPage(): React.JSX.Element | null {
                 "vertical-scrollbar absolute right-0 z-13 flex scrollbar-sm h-full w-[24rem] flex-shrink-0 flex-col gap-3.5 overflow-y-auto border-l border-subtle bg-surface-1 px-6 shadow-raised-200 duration-300"
               )}
             >
-              <ModuleAnalyticsSidebar moduleId={moduleId} handleClose={toggleSidebar} />
+              <ModuleAnalyticsSidebar
+                workspaceSlug={workspaceSlug}
+                projectId={projectId}
+                moduleId={moduleId}
+                handleClose={toggleSidebar}
+              />
             </div>
           )}
         </div>
@@ -82,6 +88,6 @@ function ModuleIssuesPage(): React.JSX.Element | null {
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/modules/$moduleId/")(
   {
-    component: observer(ModuleIssuesPage),
+    component: ModuleIssuesPage,
   }
 );

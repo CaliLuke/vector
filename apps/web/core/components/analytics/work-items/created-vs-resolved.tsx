@@ -4,55 +4,28 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { observer } from "mobx-react";
-
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane package imports
 import { useTranslation } from "@plane/i18n";
 import { AreaChart } from "@plane/propel/charts/area-chart";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import type { IChartResponse, TChartData } from "@plane/types";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 // hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-// services
-import { AnalyticsService } from "@/services/analytics.service";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { analyticsChartOptions } from "@/queries/analytics";
 // plane web components
 import AnalyticsSectionWrapper from "../analytics-section-wrapper";
 import { ChartLoader } from "../loaders";
+import { AnalyticsAccessDenied, AnalyticsQueryError } from "../query-error";
 
-const analyticsService = new AnalyticsService();
-const CreatedVsResolved = observer(function CreatedVsResolved() {
-  const {
-    selectedDuration,
-    selectedDurationLabel,
-    selectedProjects,
-    selectedCycle,
-    selectedModule,
-    isPeekView,
-    isEpic,
-  } = useAnalytics();
-  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
+const CreatedVsResolved = function CreatedVsResolved() {
+  const { selectedDurationLabel, scope, requestFilters, isPeekView, isEpic } = useAnalyticsState();
   const { t } = useTranslation();
-  const workspaceSlug = params.workspaceSlug.toString();
-  const { data: createdVsResolvedData, isLoading: isCreatedVsResolvedLoading } = useSWR(
-    `created-vs-resolved-${workspaceSlug}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isPeekView}-${isEpic}`,
-    () =>
-      analyticsService.getAdvanceAnalyticsCharts<IChartResponse>(
-        workspaceSlug,
-        "work-items",
-        {
-          // date_filter: selectedDuration,
-          ...(selectedProjects?.length > 0 && { project_ids: selectedProjects?.join(",") }),
-          ...(selectedCycle ? { cycle_id: selectedCycle } : {}),
-          ...(selectedModule ? { module_id: selectedModule } : {}),
-          ...(isEpic ? { epic: true } : {}),
-        },
-        isPeekView
-      )
-  );
+  const query = useQuery(analyticsChartOptions<IChartResponse>(scope, "work-items", requestFilters, isPeekView));
+  const { data: createdVsResolvedData, isLoading: isCreatedVsResolvedLoading } = query;
+  const canRead = isPeekView ? scope.hasProjectChartAccess : scope.hasWorkspaceAnalyticsAccess;
   const parsedData: TChartData<string, string>[] = useMemo(() => {
     if (!createdVsResolvedData?.data) return [];
     return createdVsResolvedData.data.map((datum) => ({
@@ -96,7 +69,11 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
       subtitle={selectedDurationLabel}
       className="col-span-1"
     >
-      {isCreatedVsResolvedLoading ? (
+      {!canRead ? (
+        <AnalyticsAccessDenied />
+      ) : query.isError ? (
+        <AnalyticsQueryError onRetry={() => void query.refetch()} />
+      ) : isCreatedVsResolvedLoading ? (
         <ChartLoader />
       ) : parsedData && parsedData.length > 0 ? (
         <AreaChart
@@ -135,6 +112,6 @@ const CreatedVsResolved = observer(function CreatedVsResolved() {
       )}
     </AnalyticsSectionWrapper>
   );
-});
+};
 
 export default CreatedVsResolved;

@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Avatar } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // assets
 import emptyMembers from "@/app/assets/empty-state/empty_members.svg?url";
 import userImage from "@/app/assets/user.png?url";
@@ -30,7 +29,7 @@ type TAssigneeStatComponent = {
   isEditable?: boolean;
 };
 
-export const AssigneeStatComponent = observer(function AssigneeStatComponent(props: TAssigneeStatComponent) {
+export const AssigneeStatComponent = function AssigneeStatComponent(props: TAssigneeStatComponent) {
   const { distribution, isEditable, selectedAssigneeIds, handleAssigneeFiltersUpdate } = props;
   const { t } = useTranslation();
   return (
@@ -82,4 +81,4 @@ export const AssigneeStatComponent = observer(function AssigneeStatComponent(pro
       )}
     </div>
   );
-});
+};

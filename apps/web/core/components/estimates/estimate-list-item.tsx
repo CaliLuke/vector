@@ -4,39 +4,27 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import type { IEstimate } from "@plane/types";
+import { orderedEstimatePoints } from "@/queries/estimates";
 // plane imports
 import { EEstimateSystem } from "@plane/constants";
-import { convertMinutesToHoursMinutesString } from "@plane/utils";
+import { convertMinutesToHoursMinutesString } from "@plane/utils/datetime";
 // components
 import { EstimateListItemButtons } from "./estimate-list-item-buttons";
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useEstimate } from "@/hooks/store/estimates/use-estimate";
 
 type TEstimateListItem = {
-  estimateId: string;
+  estimate: IEstimate;
   isAdmin: boolean;
-  isEstimateEnabled: boolean;
   isEditable: boolean;
-  onEditClick?: (estimateId: string) => void;
   onDeleteClick?: (estimateId: string) => void;
 };
 
-export const EstimateListItem = observer(function EstimateListItem(props: TEstimateListItem) {
-  const { estimateId } = props;
-  // store hooks
-  const { estimateById } = useProjectEstimates();
-  const { estimatePointIds, estimatePointById } = useEstimate(estimateId);
-  const currentEstimate = estimateById(estimateId);
-  // derived values
-  const estimatePointValues = estimatePointIds?.map((estimatePointId) => {
-    const estimatePoint = estimatePointById(estimatePointId);
-    if (estimatePoint) return estimatePoint.value;
-  });
-
-  if (!currentEstimate) return null;
+export function EstimateListItem(props: TEstimateListItem) {
+  const { estimate: currentEstimate } = props;
+  const estimatePointValues = orderedEstimatePoints(currentEstimate)?.map((point) => point.value);
+  if (!currentEstimate.id) return null;
 
   return (
     <SettingsBoxedControlItem
@@ -49,7 +37,14 @@ export const EstimateListItem = observer(function EstimateListItem(props: TEstim
           return estimatePointValue;
         })
         .join(", ")}
-      control={<EstimateListItemButtons {...props} />}
+      control={
+        <EstimateListItemButtons
+          estimateId={currentEstimate.id}
+          isAdmin={props.isAdmin}
+          isEditable={props.isEditable}
+          onDeleteClick={props.onDeleteClick}
+        />
+      }
     />
   );
-});
+}

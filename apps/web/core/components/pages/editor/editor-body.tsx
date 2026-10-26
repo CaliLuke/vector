@@ -4,8 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { observer } from "mobx-react";
+import type { TPage } from "@plane/types";
+
+import { useCallback, useMemo, useRef } from "react";
 // plane imports
 import { LIVE_BASE_PATH, LIVE_BASE_URL } from "@plane/constants";
 import { CollaborativeDocumentEditorWithRef } from "@plane/editor";
@@ -22,24 +23,25 @@ import type {
 import { useTranslation } from "@plane/i18n";
 import type { TSearchEntityRequestPayload, TSearchResponse, TWebhookConnectionQueryParams } from "@plane/types";
 import { ERowVariant, Row } from "@plane/ui";
-import { cn, generateRandomColor, hslToHex } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { generateRandomColor, hslToHex } from "@plane/utils/color";
 // components
 import { EditorMentionsRoot } from "@/components/editor/embeds/mentions";
 // hooks
 import { useEditorMention } from "@/hooks/editor";
-import { useMember } from "@/hooks/store/use-member";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser } from "@/hooks/store/user";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { usePageRecord } from "@/components/pages/page-record-context";
 import { usePageFilters } from "@/hooks/use-page-filters";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
 // plane web imports
 import type { TCustomEventHandlers } from "@/hooks/use-realtime-page-events";
 import { useRealtimePageEvents } from "@/hooks/use-realtime-page-events";
 import type { TExtendedEditorExtensionsConfig } from "@/hooks/pages";
-import type { EPageStoreType } from "@/hooks/store";
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
+import { DISABLED_EDITOR_EXTENSIONS } from "@/components/editor/extensions";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageContentLoader } from "../loaders/page-content-loader";
 import { PageEditorHeaderRoot } from "./header";
@@ -57,24 +59,22 @@ export type TEditorBodyHandlers = {
 
 type Props = {
   config: TEditorBodyConfig;
-  editorReady: boolean;
   editorForwardRef: React.RefObject<EditorRefApi | null>;
   handleEditorReady: (status: boolean) => void;
   handleOpenNavigationPane: () => void;
   handlers: TEditorBodyHandlers;
   isNavigationPaneOpen: boolean;
-  page: TPageInstance;
+  page: TPage;
   webhookConnectionParams: TWebhookConnectionQueryParams;
   projectId?: string;
   workspaceSlug: string;
-  storeType: EPageStoreType;
   customRealtimeEventHandlers?: TCustomEventHandlers;
   extendedEditorProps: TExtendedEditorExtensionsConfig;
   isFetchingFallbackBinary?: boolean;
   onCollaborationStateChange?: (state: CollaborationState) => void;
 };
 
-export const PageEditorBody = observer(function PageEditorBody(props: Props) {
+export function PageEditorBody(props: Props) {
   const {
     config,
     editorForwardRef,
@@ -83,7 +83,6 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
     handlers,
     isNavigationPaneOpen,
     page,
-    storeType,
     webhookConnectionParams,
     projectId,
     workspaceSlug,
@@ -94,27 +93,22 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
   // refs
   const titleEditorRef = useRef<EditorTitleRefApi>(null);
   // store hooks
-  const { data: currentUser } = useUser();
-  const { getWorkspaceBySlug } = useWorkspace();
-  const { getUserDetails } = useMember();
+  const { data: currentUser } = useCurrentUser();
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const getMemberDisplayName = useCallback(
+    (userId: string) => membersById?.get(userId)?.member.display_name,
+    [membersById]
+  );
   // derived values
-  const {
-    id: pageId,
-    isContentEditable,
-    editor: { editorRef, updateAssetsList },
-    setSyncingStatus,
-  } = page;
-  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id ?? "";
+  const { id: pageId } = page;
+  const { editorRef, setAssets: updateAssetsList, setSyncStatus: setSyncingStatus } = usePageRecord();
+  const workspaceId = workspaceDetails?.id ?? "";
   // use editor mention
   const { fetchMentions } = useEditorMention({
     enableAdvancedMentions: true,
     searchEntity: handlers.fetchEntity,
-  });
-  // editor flaggings
-  const { document: documentEditorExtensions } = useEditorFlagging({
-    workspaceSlug,
-    projectId,
-    storeType,
   });
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
@@ -137,21 +131,10 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
 
   // Use the new hook to handle page events
   const { updatePageProperties } = useRealtimePageEvents({
-    storeType,
     page,
-    getUserDetails,
+    getMemberDisplayName,
     handlers,
   });
-
-  // Set syncing status when page changes and reset collaboration state
-  useEffect(() => {
-    setSyncingStatus("syncing");
-    onCollaborationStateChange?.({
-      stage: { kind: "connecting" },
-      isServerSynced: false,
-      isServerDisconnected: false,
-    });
-  }, [pageId, setSyncingStatus, onCollaborationStateChange]);
 
   const getAIMenu = useCallback(
     ({ isOpen, onClose }: TAIMenuProps) => (
@@ -205,7 +188,7 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
       Object.entries(webhookConnectionParams)
         .filter(([_, value]) => value !== undefined && value !== null)
         .forEach(([key, value]) => {
-          WS_LIVE_URL.searchParams.set(key, String(value));
+          WS_LIVE_URL.searchParams.set(key, value);
         });
 
       // Construct realtime config
@@ -249,16 +232,14 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
           <div className="page-summary-container absolute top-[64px] right-0 z-[5] h-full">
             <div className="sticky top-[72px]">
               <div className="group/page-toc relative px-page-x">
-                {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events */}
-                <div
+                <button
+                  type="button"
                   className="max-h-[50vh] !cursor-pointer overflow-hidden"
-                  // oxlint-disable-next-line jsx_a11y/prefer-tag-over-role
-                  role="button"
                   aria-label={t("page_navigation_pane.outline_floating_button")}
                   onClick={handleOpenNavigationPane}
                 >
                   <PageContentBrowser className="overflow-y-auto" editorRef={editorRef} showOutline />
-                </div>
+                </button>
                 <div className="vertical-scrollbar pointer-events-none absolute top-0 right-0 scrollbar-sm max-h-[70vh] w-52 translate-x-1/2 overflow-y-scroll rounded-sm bg-surface-2 p-4 whitespace-nowrap opacity-0 transition-all duration-300 group-hover/page-toc:pointer-events-auto group-hover/page-toc:-translate-x-1/4 group-hover/page-toc:opacity-100">
                   <PageContentBrowser className="overflow-y-auto" editorRef={editorRef} />
                 </div>
@@ -269,7 +250,7 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
         <div>
           <div className="page-header-container group/page-header">
             <div className={blockWidthClassName}>
-              <PageEditorHeaderRoot page={page} projectId={projectId} />
+              <PageEditorHeaderRoot page={page} projectId={projectId} workspaceSlug={workspaceSlug} />
             </div>
           </div>
           <CollaborativeDocumentEditorWithRef
@@ -290,14 +271,17 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
               },
               // oxlint-disable-next-line no-shadow
               renderComponent: (props) => <EditorMentionsRoot {...props} />,
-              getMentionedEntityDetails: (id: string) => ({ display_name: getUserDetails(id)?.display_name ?? "" }),
+              getMentionedEntityDetails: (id: string) => {
+                const member = membersById?.get(id)?.member;
+                return member ? { display_name: member.display_name } : undefined;
+              },
             }}
             updatePageProperties={updatePageProperties}
             realtimeConfig={realtimeConfig}
             serverHandler={serverHandler}
             user={userConfig}
-            disabledExtensions={documentEditorExtensions.disabled}
-            flaggedExtensions={documentEditorExtensions.flagged}
+            disabledExtensions={DISABLED_EDITOR_EXTENSIONS}
+            flaggedExtensions={[]}
             aiHandler={{
               menu: getAIMenu,
             }}
@@ -309,4 +293,4 @@ export const PageEditorBody = observer(function PageEditorBody(props: Props) {
       </div>
     </Row>
   );
-});
+}

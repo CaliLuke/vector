@@ -5,55 +5,54 @@
  */
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // assets
 import emptyCycle from "@/app/assets/empty-state/cycle.svg?url";
 // components
 import { EmptyState } from "@/components/common/empty-state";
 import { PageHead } from "@/components/core/page-title";
-import useCyclesDetails from "@/components/cycles/active-cycle/use-cycles-details";
 import { CycleDetailsSidebar } from "@/components/cycles/analytics-sidebar";
 import { CycleLayoutRoot } from "@/components/issues/issue-layouts/roots/cycle-layout-root";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useProject } from "@/hooks/store/use-project";
+import { useParentRemovalNavigation } from "@/hooks/use-parent-removal-navigation";
+import { useCycleDetails } from "@/hooks/use-cycles";
+import { useProjectDetail } from "@/hooks/use-projects";
 
-import useLocalStorage from "@/hooks/use-local-storage";
+import { useParentChartPreferences } from "@/providers/cycle-module-preferences";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 
 function CycleDetailPage(): React.JSX.Element | null {
   // router
   const router = useRouter();
   const { workspaceSlug, projectId, cycleId } = Route.useParams();
   // store hooks
-  const { getCycleById, loader } = useCycle();
-  const { getProjectById } = useProject();
-  // const { issuesFilter } = useIssues(EIssuesStoreType.CYCLE);
+  const detail = useCycleDetails(workspaceSlug, projectId, cycleId);
+  useParentRemovalNavigation(
+    JSON.stringify([detail.scope, cycleId]),
+    detail.cycle === null,
+    `/${workspaceSlug}/projects/${projectId}/cycles`
+  );
+  const { project } = useProjectDetail(workspaceSlug, projectId);
   // hooks
-  const { setValue, storedValue } = useLocalStorage("cycle_sidebar_collapsed", false);
-
-  useCyclesDetails({
-    workspaceSlug,
-    projectId,
-    cycleId,
-  });
-  // derived values
-  const isSidebarCollapsed = storedValue ? (storedValue === true ? true : false) : false;
-  const cycle = getCycleById(cycleId);
-  const project = getProjectById(projectId);
+  const chart = useParentChartPreferences("cycle", workspaceSlug, projectId, cycleId);
+  const isSidebarCollapsed = chart.sidebarCollapsed;
+  const cycle = detail.cycle;
   const pageTitle = project?.name && cycle?.name ? `${project?.name} - ${cycle?.name}` : undefined;
 
   /**
    * Toggles the sidebar
    */
-  const toggleSidebar = () => setValue(!isSidebarCollapsed);
+  const toggleSidebar = () => chart.update({ sidebarCollapsed: !isSidebarCollapsed });
 
   // const activeLayout = issuesFilter?.issueFilters?.displayFilters?.layout;
   return (
     <>
       <PageHead title={pageTitle} />
-      {!cycle && !loader ? (
+      {detail.isError || detail.isAccessDenied ? (
+        <CatalogueReadFailure label="cycles" retry={detail.retry} />
+      ) : detail.query.isSuccess && !cycle ? (
         <EmptyState
           image={emptyCycle}
           title="Cycle does not exist"
@@ -91,5 +90,5 @@ function CycleDetailPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/$cycleId/")({
-  component: observer(CycleDetailPage),
+  component: CycleDetailPage,
 });

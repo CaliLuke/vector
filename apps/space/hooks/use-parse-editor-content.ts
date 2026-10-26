@@ -6,11 +6,12 @@
 
 import { useCallback } from "react";
 // helpers
-import type { TCustomComponentsMetaData } from "@plane/utils";
+import type { TCustomComponentsMetaData } from "@plane/utils/editor/markdown-parser";
 // helpers
 import { getEditorAssetSrc } from "@/helpers/editor.helper";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { useQuery } from "@tanstack/react-query";
+import { membersOptions } from "@/queries/lookups";
 
 type TArgs = {
   anchor: string;
@@ -19,54 +20,26 @@ type TArgs = {
 export const useParseEditorContent = (args: TArgs) => {
   const { anchor } = args;
   // store hooks
-  const { getMemberById } = useMember();
+  const { data: members = [] } = useQuery(membersOptions(anchor));
 
   const getEditorMetaData = useCallback(
     (htmlContent: string): TCustomComponentsMetaData => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(htmlContent, "text/html");
-      const imageMetaData: TCustomComponentsMetaData["file_assets"] = [];
-      // process image components
-      const imageComponents = doc.querySelectorAll("image-component");
-      imageComponents.forEach((element) => {
+      const document = new DOMParser().parseFromString(htmlContent, "text/html");
+      const file_assets = Array.from(document.querySelectorAll("image-component")).flatMap((element) => {
         const src = element.getAttribute("src");
-        if (src) {
-          const assetSrc = src.startsWith("http") ? src : getEditorAssetSrc(anchor, src);
-          if (assetSrc) {
-            imageMetaData.push({
-              id: src,
-              name: src,
-              url: assetSrc,
-            });
-          }
-        }
+        if (!src) return [];
+        const url = src.startsWith("http") ? src : getEditorAssetSrc(anchor, src);
+        return url ? [{ id: src, name: src, url }] : [];
       });
-      // process user mentions
-      const userMentions: TCustomComponentsMetaData["user_mentions"] = [];
-      const mentionComponents = doc.querySelectorAll("mention-component");
-      mentionComponents.forEach((element) => {
+      const user_mentions = Array.from(document.querySelectorAll("mention-component")).flatMap((element) => {
         const id = element.getAttribute("entity_identifier");
-        if (id) {
-          const userDetails = getMemberById(id);
-          const originUrl = typeof window !== "undefined" && (window.location.origin ?? "");
-          const path = `profile/${id}`;
-          const url = `${originUrl}/${path}`;
-          if (userDetails) {
-            userMentions.push({
-              id,
-              display_name: userDetails.member__display_name,
-              url,
-            });
-          }
-        }
+        const member = members.find((item) => item.member === id);
+        if (!id || !member) return [];
+        return [{ id, display_name: member.member__display_name, url: `${window.location.origin}/profile/${id}` }];
       });
-
-      return {
-        file_assets: imageMetaData,
-        user_mentions: userMentions,
-      };
+      return { file_assets, user_mentions };
     },
-    [anchor, getMemberById]
+    [anchor, members]
   );
 
   return {

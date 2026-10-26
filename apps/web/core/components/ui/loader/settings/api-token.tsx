@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { range } from "lodash-es";
+import range from "lodash-es/range.js";
 import { useTranslation } from "@plane/i18n";
 export function APITokenSettingsLoader() {
   const { t } = useTranslation();

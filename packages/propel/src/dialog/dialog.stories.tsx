@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useArgs } from "storybook/preview-api";
 import { CloseIcon } from "../icons/actions/close-icon";
@@ -274,11 +275,14 @@ export const ConfirmationDialog: Story = {
 export const FormDialog: Story = {
   render(args) {
     const [open, setOpen] = useState(args.open);
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      alert("Form submitted!");
-      setOpen(false);
-    };
+    const form = useForm({
+      defaultValues: { name: "", description: "" },
+      onSubmit: () => {
+        alert("Form submitted!");
+        setOpen(false);
+        form.reset();
+      },
+    });
     return (
       <>
         <button
@@ -290,30 +294,52 @@ export const FormDialog: Story = {
         {open && (
           <Dialog {...args} open={open} onOpenChange={setOpen}>
             <Dialog.Panel width={EDialogWidth.MD}>
-              <form onSubmit={handleSubmit} className="p-6">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void form.handleSubmit();
+                }}
+                className="p-6"
+              >
                 <Dialog.Title>Create New Item</Dialog.Title>
                 <div className="mt-4 space-y-4">
                   <div>
                     <label htmlFor="name" className="text-gray-700 block text-13 font-medium">
                       Name
                     </label>
-                    <input
-                      type="text"
-                      id="name"
-                      className="border-gray-300 mt-1 w-full rounded-sm border px-3 py-2 text-13"
-                      placeholder="Enter name"
-                    />
+                    <form.Field name="name">
+                      {(field) => (
+                        <input
+                          type="text"
+                          id="name"
+                          name={field.name}
+                          value={field.state.value}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          onBlur={field.handleBlur}
+                          className="border-gray-300 mt-1 w-full rounded-sm border px-3 py-2 text-13"
+                          placeholder="Enter name"
+                        />
+                      )}
+                    </form.Field>
                   </div>
                   <div>
                     <label htmlFor="description" className="text-gray-700 block text-13 font-medium">
                       Description
                     </label>
-                    <textarea
-                      id="description"
-                      rows={3}
-                      className="border-gray-300 mt-1 w-full rounded-sm border px-3 py-2 text-13"
-                      placeholder="Enter description"
-                    />
+                    <form.Field name="description">
+                      {(field) => (
+                        <textarea
+                          id="description"
+                          name={field.name}
+                          value={field.state.value}
+                          onChange={(event) => field.handleChange(event.target.value)}
+                          onBlur={field.handleBlur}
+                          rows={3}
+                          className="border-gray-300 mt-1 w-full rounded-sm border px-3 py-2 text-13"
+                          placeholder="Enter description"
+                        />
+                      )}
+                    </form.Field>
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-2">

@@ -4,15 +4,12 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { History } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import type { TDescriptionVersion } from "@plane/types";
+import type { IWorkspaceMember, TDescriptionVersion } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { calculateTimeAgo } from "@plane/utils";
-// hooks
-import { useMember } from "@/hooks/store/use-member";
+import { calculateTimeAgo } from "@plane/utils/datetime";
 // local imports
 import { DescriptionVersionsDropdownItem } from "./dropdown-item";
 import type { TDescriptionVersionEntityInformation } from "./root";
@@ -20,19 +17,18 @@ import type { TDescriptionVersionEntityInformation } from "./root";
 type Props = {
   disabled: boolean;
   entityInformation: TDescriptionVersionEntityInformation;
+  membersById: ReadonlyMap<string, IWorkspaceMember> | undefined;
   onVersionClick: (versionId: string) => void;
   versions: TDescriptionVersion[] | undefined;
 };
 
-export const DescriptionVersionsDropdown = observer(function DescriptionVersionsDropdown(props: Props) {
-  const { disabled, entityInformation, onVersionClick, versions } = props;
-  // store hooks
-  const { getUserDetails } = useMember();
+export function DescriptionVersionsDropdown(props: Props) {
+  const { disabled, entityInformation, membersById, onVersionClick, versions } = props;
   // derived values
   const latestVersion = versions?.[0];
   const lastUpdatedAt = latestVersion?.created_at ?? entityInformation.createdAt;
   const lastUpdatedByUserDisplayName = latestVersion?.owned_by
-    ? getUserDetails(latestVersion?.owned_by)?.display_name
+    ? membersById?.get(latestVersion.owned_by)?.member.display_name
     : entityInformation.createdByDisplayName;
   // translation
   const { t } = useTranslation();
@@ -60,8 +56,13 @@ export const DescriptionVersionsDropdown = observer(function DescriptionVersions
     >
       <p className="mb-1 text-11 font-medium text-tertiary">{t("description_versions.previously_edited_by")}</p>
       {versions?.map((version) => (
-        <DescriptionVersionsDropdownItem key={version.id} onClick={onVersionClick} version={version} />
+        <DescriptionVersionsDropdownItem
+          key={version.id}
+          memberDetails={membersById?.get(version.owned_by)?.member}
+          onClick={onVersionClick}
+          version={version}
+        />
       ))}
     </CustomMenu>
   );
-});
+}

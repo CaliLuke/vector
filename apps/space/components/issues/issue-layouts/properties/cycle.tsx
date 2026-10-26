@@ -4,24 +4,26 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 // plane ui
 import { CycleIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 //hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { cyclesOptions } from "@/queries/lookups";
 
 type Props = {
   cycleId: string | undefined;
   shouldShowBorder?: boolean;
 };
 
-export const IssueBlockCycle = observer(function IssueBlockCycle({ cycleId, shouldShowBorder = true }: Props) {
-  const { getCycleById } = useCycle();
+export const IssueBlockCycle = function IssueBlockCycle({ cycleId, shouldShowBorder = true }: Props) {
+  const { data: cycles = [] } = useQuery(cyclesOptions(useParams().anchor));
 
-  const cycle = getCycleById(cycleId);
+  const cycle = cycles.find((item) => item.id === cycleId);
 
   return (
     <Tooltip tooltipHeading="Cycle" tooltipContent={cycle?.name ?? "No Cycle"}>
@@ -38,4 +40,4 @@ export const IssueBlockCycle = observer(function IssueBlockCycle({ cycleId, shou
       </div>
     </Tooltip>
   );
-});
+};

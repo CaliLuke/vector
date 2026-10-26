@@ -5,23 +5,18 @@
  */
 
 // plane package imports
-import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 import type { IInsightField } from "@plane/constants";
 import { ANALYTICS_INSIGHTS_FIELDS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import type { IAnalyticsResponse, TAnalyticsTabsBase } from "@plane/types";
-import { cn } from "@plane/utils";
+import type { TAnalyticsTabsBase } from "@plane/types";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useAnalytics } from "@/hooks/store/use-analytics";
-// services
-import { AnalyticsService } from "@/services/analytics.service";
+import { useAnalyticsState } from "@/providers/analytics-state-provider";
+import { analyticsInsightsOptions } from "@/queries/analytics";
+import { AnalyticsAccessDenied, AnalyticsQueryError } from "./query-error";
 // local imports
 import InsightCard from "./insight-card";
-
-const analyticsService = new AnalyticsService();
 
 const getInsightLabel = (
   analyticsType: TAnalyticsTabsBase,
@@ -51,33 +46,18 @@ const getInsightLabel = (
   return `${prefix}${baseTranslation}${suffix}`;
 };
 
-const TotalInsights = observer(function TotalInsights({
+const TotalInsights = function TotalInsights({
   analyticsType,
   peekView,
 }: {
   analyticsType: TAnalyticsTabsBase;
   peekView?: boolean;
 }) {
-  const params = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const workspaceSlug = params.workspaceSlug.toString();
   const { t } = useTranslation();
-  const { selectedDuration, selectedProjects, selectedCycle, selectedModule, isPeekView, isEpic } = useAnalytics();
-  const { data: totalInsightsData, isLoading } = useSWR(
-    `total-insights-${analyticsType}-${selectedDuration}-${selectedProjects}-${selectedCycle}-${selectedModule}-${isEpic}`,
-    () =>
-      analyticsService.getAdvanceAnalytics<IAnalyticsResponse>(
-        workspaceSlug,
-        analyticsType,
-        {
-          // date_filter: selectedDuration,
-          ...(selectedProjects?.length > 0 ? { project_ids: selectedProjects.join(",") } : {}),
-          ...(selectedCycle ? { cycle_id: selectedCycle } : {}),
-          ...(selectedModule ? { module_id: selectedModule } : {}),
-          ...(isEpic ? { epic: true } : {}),
-        },
-        isPeekView
-      )
-  );
+  const { scope, requestFilters, isPeekView, isEpic } = useAnalyticsState();
+  const query = useQuery(analyticsInsightsOptions(scope, analyticsType, requestFilters, isPeekView));
+  const { data: totalInsightsData, isLoading } = query;
+  const canRead = isPeekView ? scope.hasProjectAnalyticsAccess : scope.hasWorkspaceAnalyticsAccess;
   return (
     <div
       className={cn(
@@ -89,16 +69,23 @@ const TotalInsights = observer(function TotalInsights({
           : "grid-cols-2"
       )}
     >
-      {ANALYTICS_INSIGHTS_FIELDS[analyticsType]?.map((item) => (
-        <InsightCard
-          key={`${analyticsType}-${item.key}`}
-          isLoading={isLoading}
-          data={totalInsightsData?.[item.key]}
-          label={getInsightLabel(analyticsType, item, isEpic, t)}
-        />
-      ))}
+      {!canRead ? (
+        <AnalyticsAccessDenied />
+      ) : query.isError ? (
+        <AnalyticsQueryError onRetry={() => void query.refetch()} />
+      ) : null}
+      {canRead &&
+        !query.isError &&
+        ANALYTICS_INSIGHTS_FIELDS[analyticsType]?.map((item) => (
+          <InsightCard
+            key={`${analyticsType}-${item.key}`}
+            isLoading={isLoading}
+            data={totalInsightsData?.[item.key]}
+            label={getInsightLabel(analyticsType, item, isEpic, t)}
+          />
+        ))}
     </div>
   );
-});
+};
 
 export default TotalInsights;

@@ -4,34 +4,34 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { currentUserOptions } from "@/queries/session";
 import { useEffect } from "react";
-import { observer } from "mobx-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useNavigate } from "react-router";
 // plane imports
-import { isValidNextPath } from "@plane/utils";
+import { isValidNextPath } from "@plane/utils/url";
 // components
 import { UserLoggedIn } from "@/components/account/user-logged-in";
 import { LogoSpinner } from "@/components/common/logo-spinner";
 import { AuthView } from "@/components/views";
 // hooks
-import { useUser } from "@/hooks/store/use-user";
 import type { Route } from "./+types/page";
 
 export const headers: Route.HeadersFunction = () => ({
   "X-Frame-Options": "SAMEORIGIN",
 });
 
-const HomePage = observer(function HomePage() {
-  const { data: currentUser, isAuthenticated, isInitializing } = useUser();
-  const searchParams = useSearchParams();
-  const router = useRouter();
+const HomePage = function HomePage() {
+  const { data: currentUser, isSuccess: isAuthenticated, isPending: isInitializing } = useQuery(currentUserOptions);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const nextPath = searchParams.get("next_path");
 
   useEffect(() => {
     if (currentUser && isAuthenticated && nextPath && isValidNextPath(nextPath)) {
-      router.replace(nextPath);
+      void navigate(nextPath, { replace: true });
     }
-  }, [currentUser, isAuthenticated, nextPath, router]);
+  }, [currentUser, isAuthenticated, nextPath, navigate]);
 
   if (isInitializing)
     return (
@@ -52,6 +52,6 @@ const HomePage = observer(function HomePage() {
   }
 
   return <AuthView />;
-});
+};
 
 export default HomePage;

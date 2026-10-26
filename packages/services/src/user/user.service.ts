@@ -28,12 +28,8 @@ export class UserService extends APIService {
    * Retrieves the current user details
    * @returns {Promise<IUser>} Promise resolving to the current user details
    */
-  async me(): Promise<IUser> {
-    return this.get("/api/users/me/")
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error;
-      });
+  async me(signal?: AbortSignal): Promise<IUser> {
+    return this.get("/api/users/me/", { signal }).then((response) => response.data);
   }
 
   /**
@@ -82,11 +78,11 @@ export class UserService extends APIService {
    * @returns {Promise<IUser>} Promise resolving to the current instance admin details
    * @throws {Error} If the API request fails
    */
-  async adminDetails(): Promise<IUser> {
-    return this.get("/api/instances/admins/me/")
+  async adminDetails(signal?: AbortSignal): Promise<IUser> {
+    return this.get("/api/instances/admins/me/", { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

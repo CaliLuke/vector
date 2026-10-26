@@ -6,7 +6,7 @@
 
 // helpers
 import { STICKIES_PER_PAGE, API_BASE_URL } from "@plane/constants";
-import type { TSticky } from "@plane/types";
+import type { TSticky, TPaginationInfo } from "@plane/types";
 // services
 import { APIService } from "@/services/api.service";
 
@@ -15,11 +15,11 @@ export class StickyService extends APIService {
     super(API_BASE_URL);
   }
 
-  async createSticky(workspaceSlug: string, payload: Partial<TSticky>) {
+  async createSticky(workspaceSlug: string, payload: Partial<TSticky>): Promise<TSticky> {
     return this.post(`/api/workspaces/${workspaceSlug}/stickies/`, payload)
       .then((res) => res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 
@@ -27,9 +27,11 @@ export class StickyService extends APIService {
     workspaceSlug: string,
     cursor: string,
     query?: string,
-    per_page?: number
-  ): Promise<{ results: TSticky[]; total_pages: number }> {
+    per_page?: number,
+    signal?: AbortSignal
+  ): Promise<TPaginationInfo & { results: TSticky[] }> {
     return this.get(`/api/workspaces/${workspaceSlug}/stickies/`, {
+      signal,
       params: {
         cursor,
         per_page: per_page || STICKIES_PER_PAGE,
@@ -38,7 +40,7 @@ export class StickyService extends APIService {
     })
       .then((res) => res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 
@@ -46,15 +48,15 @@ export class StickyService extends APIService {
     return this.get(`/api/workspaces/${workspaceSlug}/stickies/${id}`)
       .then((res) => res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 
-  async updateSticky(workspaceSlug: string, id: string, data: Partial<TSticky>) {
+  async updateSticky(workspaceSlug: string, id: string, data: Partial<TSticky>): Promise<TSticky> {
     return await this.patch(`/api/workspaces/${workspaceSlug}/stickies/${id}/`, data)
       .then((res) => res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 
@@ -62,7 +64,7 @@ export class StickyService extends APIService {
     return await this.delete(`/api/workspaces/${workspaceSlug}/stickies/${id}`)
       .then((res) => res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 }

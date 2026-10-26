@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
+
 import { ISSUE_ORDER_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { TIssueOrderByOptions } from "@plane/types";
@@ -19,7 +19,7 @@ type Props = {
   orderByOptions: TIssueOrderByOptions[];
 };
 
-export const FilterOrderBy = observer(function FilterOrderBy(props: Props) {
+export const FilterOrderBy = function FilterOrderBy(props: Props) {
   const { selectedOrderBy, handleUpdate, orderByOptions } = props;
   // hooks
   const { t } = useTranslation();
@@ -50,4 +50,4 @@ export const FilterOrderBy = observer(function FilterOrderBy(props: Props) {
       )}
     </>
   );
-});
+};

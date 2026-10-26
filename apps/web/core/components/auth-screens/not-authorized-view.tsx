@@ -5,9 +5,9 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // assets
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import ProjectNotAuthorizedImg from "@/app/assets/auth/project-not-authorized.svg?url";
 import Unauthorized from "@/app/assets/auth/unauthorized.svg?url";
 import WorkspaceNotAuthorizedImg from "@/app/assets/auth/workspace-not-authorized.svg?url";
@@ -21,7 +21,7 @@ type Props = {
   className?: string;
 };
 
-export const NotAuthorizedView = observer(function NotAuthorizedView(props: Props) {
+export const NotAuthorizedView = function NotAuthorizedView(props: Props) {
   const { actionButton, section = "general", isProjectView = false, className } = props;
 
   // assets
@@ -39,4 +39,4 @@ export const NotAuthorizedView = observer(function NotAuthorizedView(props: Prop
       </div>
     </DefaultLayout>
   );
-});
+};

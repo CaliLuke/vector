@@ -1,13 +1,10 @@
-import { createRequire } from "node:module";
 import { JSDOM } from "jsdom";
 
-const requireFromWeb = createRequire(new URL("../../../apps/web/package.json", import.meta.url));
-export const React = requireFromWeb("react");
-export const act = React.act;
-export const webRequire = requireFromWeb;
+import { React, act, webRequire } from "./react.mjs";
 
 const GLOBAL_NAMES = [
   "window",
+  "localStorage",
   "self",
   "document",
   "Document",
@@ -28,6 +25,7 @@ const GLOBAL_NAMES = [
   "HTMLLegendElement",
   "HTMLSelectElement",
   "HTMLTextAreaElement",
+  "HTMLTableCellElement",
   "FileList",
   "SVGElement",
   "NodeFilter",
@@ -78,7 +76,7 @@ export async function createReactDomTestEnvironment() {
     }
   }
 
-  const { createRoot } = requireFromWeb("react-dom/client");
+  const { createRoot } = webRequire("react-dom/client");
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);

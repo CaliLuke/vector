@@ -6,3 +6,28 @@
 
 export type TIssuePropertyValues = Record<string, unknown>;
 export type TIssuePropertyValueErrors = Record<string, unknown>;
+
+/** Authorized effective values returned only when a list requests projections. */
+export type TWorkItemPropertyKind =
+  | "Text"
+  | "Number"
+  | "Dropdown"
+  | "Boolean"
+  | "Date"
+  | "Member picker"
+  | "Release picker"
+  | "Rich text"
+  | "URL"
+  | "Formula"
+  | "Cascading";
+export type TWorkItemProjectedValue = {
+  kind: TWorkItemPropertyKind;
+  result_kind?: "Text" | "Number" | "Boolean" | "Date";
+  context_id: string;
+  catalog_id: string;
+  status: "not_applicable" | "empty" | "value" | "error";
+  value: string | number | boolean | string[] | null;
+  error: string;
+  levels?: Record<string, string | null>;
+  format?: string;
+};

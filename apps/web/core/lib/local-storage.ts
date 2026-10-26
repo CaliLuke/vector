@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { isEmpty } from "lodash-es";
+import isEmpty from "lodash-es/isEmpty.js";
 
 export const storage = {
   set: (key: string, value: object | string | boolean): void => {

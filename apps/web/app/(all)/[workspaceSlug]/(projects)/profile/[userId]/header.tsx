@@ -6,10 +6,9 @@
 
 // ui
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { PanelRight } from "lucide-react";
-import { PROFILE_VIEWER_TAB, PROFILE_ADMINS_TAB, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { PROFILE_VIEWER_TAB, PROFILE_ADMINS_TAB, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { YourWorkIcon, ChevronDownIcon } from "@plane/propel/icons";
 import type { IUserProfileProjectSegregation } from "@plane/types";
@@ -18,8 +17,9 @@ import { Breadcrumbs, Header, CustomMenu } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { ProfileIssuesFilter } from "@/components/profile/profile-issues-filter";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions, useProfileSidebarCollapsed } from "@/providers/sidebar-state";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "@plane/propel/button";
 
 type TUserProfileHeader = {
@@ -28,23 +28,21 @@ type TUserProfileHeader = {
   showProfileIssuesFilter?: boolean;
 };
 
-export const UserProfileHeader = observer(function UserProfileHeader(props: TUserProfileHeader) {
+export function UserProfileHeader(props: TUserProfileHeader) {
   const { userProjectsData, type = undefined, showProfileIssuesFilter } = props;
   // router
   const { workspaceSlug, userId } = useParams({ from: "/_authenticated/$workspaceSlug/_projects/profile/$userId" });
   const router = useRouter();
   // store hooks
-  const { toggleProfileSidebar, profileSidebarCollapsed } = useAppTheme();
-  const { data: currentUser } = useUser();
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
+  const profileSidebarCollapsed = useProfileSidebarCollapsed();
+  const { toggleProfileSidebar } = useSidebarActions();
+  const { data: currentUser } = useCurrentUser();
+  const { membershipQuery, can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { t } = useTranslation();
   // derived values
-  const isAuthorized = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorized = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  if (!workspaceUserInfo) return null;
+  if (membershipQuery.isPending || membershipQuery.isError) return null;
 
   const tabsList = isAuthorized ? [...PROFILE_VIEWER_TAB, ...PROFILE_ADMINS_TAB] : PROFILE_VIEWER_TAB;
 
@@ -112,4 +110,4 @@ export const UserProfileHeader = observer(function UserProfileHeader(props: TUse
       </Header.RightItem>
     </Header>
   );
-});
+}

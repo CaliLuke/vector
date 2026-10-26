@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { CycleIcon } from "@plane/propel/icons";
@@ -12,7 +11,7 @@ import { Breadcrumbs, Header } from "@plane/ui";
 // components
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 
-export const WorkspaceActiveCycleHeader = observer(function WorkspaceActiveCycleHeader() {
+export const WorkspaceActiveCycleHeader = function WorkspaceActiveCycleHeader() {
   const { t } = useTranslation();
   return (
     <Header>
@@ -30,4 +29,4 @@ export const WorkspaceActiveCycleHeader = observer(function WorkspaceActiveCycle
       </Header.LeftItem>
     </Header>
   );
-});
+};

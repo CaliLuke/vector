@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
 // lucide icons
 import { Minimize2, Maximize2, Circle } from "lucide-react";
@@ -19,7 +18,7 @@ import { CustomMenu } from "@plane/ui";
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 // constants
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 import { CreateUpdateEpicModal } from "@/components/epic-modal";
 
 interface IHeaderGroupByCard {
@@ -33,11 +32,11 @@ interface IHeaderGroupByCard {
   handleCollapsedGroups: (toggle: "group_by" | "sub_group_by", value: string) => void;
   issuePayload: Partial<TIssue>;
   disableIssueCreation?: boolean;
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   isEpic?: boolean;
 }
 
-export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHeaderGroupByCard) {
+export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupByCard) {
   const {
     sub_group_by,
     column_id,
@@ -56,7 +55,7 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
   const [isOpen, setIsOpen] = React.useState(false);
   const [openExistingIssueListModal, setOpenExistingIssueListModal] = React.useState(false);
   // hooks
-  const storeType = useIssueStoreType();
+  const storeType = useIssueListType();
   // router
   const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
 
@@ -187,4 +186,4 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
       </div>
     </>
   );
-});
+};

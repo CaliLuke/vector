@@ -5,7 +5,7 @@
  */
 
 import { mergeAttributes } from "@tiptap/core";
-import type { MentionOptions } from "@tiptap/extension-mention";
+import type { Editor } from "@tiptap/core";
 import Mention from "@tiptap/extension-mention";
 import type { MarkdownSerializerState } from "prosemirror-markdown";
 import type { Node as NodeType } from "@tiptap/pm/model";
@@ -15,12 +15,7 @@ import type { TMentionHandler } from "@/types";
 import type { TMentionComponentAttributes } from "./types";
 import { EMentionComponentAttributeNames } from "./types";
 
-export type TMentionExtensionOptions = MentionOptions & {
-  renderComponent: TMentionHandler["renderComponent"];
-  getMentionedEntityDetails: TMentionHandler["getMentionedEntityDetails"];
-};
-
-export const CustomMentionExtensionConfig = Mention.extend<TMentionExtensionOptions>({
+export const CustomMentionExtensionConfig = Mention.extend({
   addAttributes() {
     return {
       [EMentionComponentAttributeNames.ID]: {
@@ -48,24 +43,30 @@ export const CustomMentionExtensionConfig = Mention.extend<TMentionExtensionOpti
   },
 
   renderText({ node }) {
-    return getMentionDisplayText(this.options, node);
+    const getMentionedEntityDetails =
+      this.editor?.storage.utility.identityHandlers.mentionHandler.getMentionedEntityDetails;
+    return getMentionDisplayText(getMentionedEntityDetails, node);
   },
 
   addStorage() {
-    const options = this.options;
     return {
       markdown: {
-        serialize(state: MarkdownSerializerState, node: NodeType) {
-          state.write(getMentionDisplayText(options, node));
+        serialize(this: { editor: Editor }, state: MarkdownSerializerState, node: NodeType) {
+          const getMentionedEntityDetails =
+            this.editor.storage.utility.identityHandlers.mentionHandler.getMentionedEntityDetails;
+          state.write(getMentionDisplayText(getMentionedEntityDetails, node));
         },
       },
     };
   },
 });
 
-function getMentionDisplayText(options: TMentionExtensionOptions, node: NodeType): string {
+function getMentionDisplayText(
+  getMentionedEntityDetails: TMentionHandler["getMentionedEntityDetails"],
+  node: NodeType
+): string {
   const attrs = node.attrs as TMentionComponentAttributes;
   const mentionEntityId = attrs[EMentionComponentAttributeNames.ENTITY_IDENTIFIER];
-  const mentionEntityDetails = options.getMentionedEntityDetails?.(mentionEntityId ?? "");
+  const mentionEntityDetails = getMentionedEntityDetails?.(mentionEntityId ?? "");
   return `@${mentionEntityDetails?.display_name ?? attrs[EMentionComponentAttributeNames.ID] ?? mentionEntityId}`;
 }

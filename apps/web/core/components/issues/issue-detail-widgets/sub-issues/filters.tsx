@@ -5,33 +5,33 @@
  */
 
 import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
+import { DatePresetFilter } from "@/components/core/filters/date-preset-filter";
+
 import { ListFilter } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 import type { IIssueFilterOptions, IState } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import {
-  FilterAssignees,
-  FilterDueDate,
   FilterPriority,
   FilterProjects,
   FiltersDropdown,
-  FilterStartDate,
   FilterState,
   FilterStateGroup,
 } from "@/components/issues/issue-layouts/filters";
+import { WorkspaceMemberFilter } from "@/components/core/filters/workspace-member-filter";
 import { isFiltersApplied } from "@/components/issues/issue-layouts/utils";
 type TSubIssueFiltersProps = {
   handleFiltersUpdate: (key: keyof IIssueFilterOptions, value: string | string[]) => void;
   filters: IIssueFilterOptions;
   memberIds: string[] | undefined;
+  workspaceSlug: string | undefined;
   states?: IState[];
   availableFilters: (keyof IIssueFilterOptions)[];
 };
 
-export const SubIssueFilters = observer(function SubIssueFilters(props: TSubIssueFiltersProps) {
-  const { handleFiltersUpdate, filters, memberIds, states, availableFilters } = props;
+export const SubIssueFilters = function SubIssueFilters(props: TSubIssueFiltersProps) {
+  const { handleFiltersUpdate, filters, memberIds, workspaceSlug, states, availableFilters } = props;
   // plane hooks
   const { t } = useTranslation();
   // states
@@ -124,10 +124,12 @@ export const SubIssueFilters = observer(function SubIssueFilters(props: TSubIssu
             {/* Assignees */}
             {isFilterEnabled("assignees") && (
               <div className="py-2">
-                <FilterAssignees
+                <WorkspaceMemberFilter
+                  title="Assignee"
                   appliedFilters={filters.assignees ?? null}
                   handleUpdate={(val) => handleFiltersUpdate("assignees", val)}
                   memberIds={memberIds}
+                  workspaceSlug={workspaceSlug}
                   searchQuery={filtersSearchQuery}
                 />
               </div>
@@ -136,7 +138,8 @@ export const SubIssueFilters = observer(function SubIssueFilters(props: TSubIssu
             {/* Start Date */}
             {isFilterEnabled("start_date") && (
               <div className="py-2">
-                <FilterStartDate
+                <DatePresetFilter
+                  title="Start date"
                   appliedFilters={filters.start_date ?? null}
                   handleUpdate={(val) => handleFiltersUpdate("start_date", val)}
                   searchQuery={filtersSearchQuery}
@@ -147,7 +150,8 @@ export const SubIssueFilters = observer(function SubIssueFilters(props: TSubIssu
             {/* Target Date */}
             {isFilterEnabled("target_date") && (
               <div className="py-2">
-                <FilterDueDate
+                <DatePresetFilter
+                  title="Due date"
                   appliedFilters={filters.target_date ?? null}
                   handleUpdate={(val) => handleFiltersUpdate("target_date", val)}
                   searchQuery={filtersSearchQuery}
@@ -159,4 +163,4 @@ export const SubIssueFilters = observer(function SubIssueFilters(props: TSubIssu
       </FiltersDropdown>
     </>
   );
-});
+};

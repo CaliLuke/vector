@@ -7,7 +7,7 @@
 import type { TNetworkChoiceIconKey } from "@plane/constants";
 // plane imports
 import { GlobeIcon, LockIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   iconKey: TNetworkChoiceIconKey;
@@ -16,21 +16,13 @@ type Props = {
 
 export function ProjectNetworkIcon(props: Props) {
   const { iconKey, className } = props;
-  // Get the icon key
-  const getProjectNetworkIcon = () => {
-    switch (iconKey) {
-      case "Lock":
-        return LockIcon;
-      case "Globe2":
-        return GlobeIcon;
-      default:
-        return null;
-    }
-  };
-
-  // Get the icon
-  const Icon = getProjectNetworkIcon();
-  if (!Icon) return null;
-
-  return <Icon className={cn("h-3 w-3", className)} />;
+  const iconClassName = cn("h-3 w-3", className);
+  switch (iconKey) {
+    case "Lock":
+      return <LockIcon className={iconClassName} />;
+    case "Globe2":
+      return <GlobeIcon className={iconClassName} />;
+    default:
+      return null;
+  }
 }

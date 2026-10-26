@@ -12,7 +12,7 @@ import type { TSearchEntities, TSearchEntityRequestPayload, TSearchResponse, TUs
 // plane ui
 import { Avatar } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // plane web hooks
 import { useAdditionalEditorMention } from "@/hooks/use-additional-editor-mention";
 

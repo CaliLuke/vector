@@ -13,8 +13,6 @@ import type { TIssueEntityData, TIssueSearchResponse, TActivityEntityData } from
 // import { CommandPaletteEntityList } from "@/components/command-palette";
 // import { SimpleEmptyState } from "@/components/empty-state/simple-empty-state-root";
 // hooks
-// import { useCommandPalette } from "@/hooks/store/use-command-palette";
-// import { usePowerK } from "@/hooks/store/use-power-k";
 // import { useAppRouter } from "@/hooks/use-app-router";
 // plane web imports
 // import { IssueIdentifier } from "@/plane-web/components/issues/issue-details/issue-identifier";
@@ -40,7 +38,6 @@ export function WorkItemSelectionPage(props: Props) {
   // plane hooks
   // const { t } = useTranslation();
   // store hooks
-  // const { togglePowerKModal } = usePowerK();
   // states
   const [_recentIssues, setRecentIssues] = useState<TIssueEntityData[]>([]);
   const [_issueResults, setIssueResults] = useState<TIssueSearchResponse[]>([]);

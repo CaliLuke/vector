@@ -5,21 +5,23 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 import { MoreHorizontal } from "lucide-react";
 // types
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IProjectView } from "@plane/types";
 // ui
 import type { TContextMenuItem } from "@plane/ui";
 import { ContextMenu, CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 // helpers
 import { useViewMenuItems } from "@/components/common/quick-actions-helper";
 // hooks
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { useViewPublish } from "@/components/views/publish";
 // local imports
 import { DeleteProjectViewModal } from "./delete-view-modal";
@@ -33,17 +35,17 @@ type Props = {
   customClassName?: string;
 };
 
-export const ViewQuickActions = observer(function ViewQuickActions(props: Props) {
+export const ViewQuickActions = function ViewQuickActions(props: Props) {
   const { parentRef, projectId, view, workspaceSlug, customClassName } = props;
   // states
   const [createUpdateViewModal, setCreateUpdateViewModal] = useState(false);
   const [deleteViewModal, setDeleteViewModal] = useState(false);
   // store hooks
-  const { data } = useUser();
-  const { allowPermissions } = useUserPermissions();
+  const { data } = useCurrentUser();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // auth
   const isOwner = view?.owned_by === data?.id;
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId);
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
   const { publishContextMenu } = useViewPublish(!!view.anchor, isAdmin || isOwner);
 
@@ -141,4 +143,4 @@ export const ViewQuickActions = observer(function ViewQuickActions(props: Props)
       </CustomMenu>
     </>
   );
-});
+};

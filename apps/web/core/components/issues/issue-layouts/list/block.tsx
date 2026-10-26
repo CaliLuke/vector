@@ -9,7 +9,6 @@ import type { Dispatch, MouseEvent, SetStateAction } from "react";
 import { useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
 
 import { ChevronRightIcon } from "@plane/propel/icons";
 // types
@@ -19,15 +18,16 @@ import type { TIssue, IIssueDisplayProperties, TIssueMap } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // ui
 import { Spinner, ControlLink, Row } from "@plane/ui";
-import { cn, generateWorkItemLink } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import { MultipleSelectEntityAction } from "@/components/core/multiple-select";
 import { IssueProperties } from "@/components/issues/issue-layouts/properties";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useProject } from "@/hooks/store/use-project";
+import { useSidebarCollapsed } from "@/providers/sidebar-state";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useRouteProject, useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { calculateIdentifierWidth } from "../utils";
@@ -37,7 +37,7 @@ interface IssueBlockProps {
   issueId: string;
   issuesMap: TIssueMap;
   groupId: string;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   displayProperties: IIssueDisplayProperties | undefined;
   canEditProperties: (projectId: string | undefined) => boolean;
@@ -52,7 +52,7 @@ interface IssueBlockProps {
   isEpic?: boolean;
 }
 
-export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
+export const IssueBlock = function IssueBlock(props: IssueBlockProps) {
   const {
     issuesMap,
     issueId,
@@ -76,14 +76,14 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // hooks
-  const { sidebarCollapsed: isSidebarCollapsed } = useAppTheme();
-  const { getProjectIdentifierById, currentProjectNextSequenceId } = useProject();
-  const {
-    getIsIssuePeeked,
-    peekIssue,
-    setPeekIssue,
-    subIssues: subIssuesStore,
-  } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
+  const isSidebarCollapsed = useSidebarCollapsed();
+  const routeProjectQuery = useRouteProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const currentProjectNextSequenceId = routeProjectQuery.project?.next_work_item_sequence;
+  const { getIsIssuePeeked, peekIssue, setPeekIssue } = useIssueDetailUiState(
+    isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES
+  );
 
   const handleIssuePeekOverview = (issue: TIssue) =>
     workspaceSlug &&
@@ -110,7 +110,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
   useEffect(() => {
     const element = issueRef.current;
 
-    if (!element) return;
+    if (!element) return undefined;
 
     return combine(
       draggable({
@@ -129,7 +129,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
 
   if (!issue) return null;
 
-  const projectIdentifier = getProjectIdentifierById(issue.project_id);
+  const projectIdentifier = projectRows?.find((project) => project.id === issue.project_id)?.identifier ?? "";
   const isIssueSelected = selectionHelpers.getIsEntitySelected(issue.id);
   const isIssueActive = selectionHelpers.getIsEntityActive(issue.id);
   const isSubIssue = nestingLevel !== 0;
@@ -143,11 +143,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
     if (nestingLevel >= 3) {
       handleIssuePeekOverview(issue);
     } else {
-      setExpanded((prevState) => {
-        if (!prevState && workspaceSlug && issue && issue.project_id)
-          subIssuesStore.fetchSubIssues(workspaceSlug.toString(), issue.project_id, issue.id);
-        return !prevState;
-      });
+      setExpanded((prevState) => !prevState);
     }
   };
 
@@ -201,134 +197,219 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
           }
         }}
       >
-        <div className="flex w-full gap-2 truncate">
-          <div className="flex flex-grow items-center gap-0.5 truncate">
-            <div className="flex items-center gap-1" style={isSubIssue ? { marginLeft } : {}}>
-              {/* select checkbox */}
-              {projectId && canSelectIssues && !isEpic && (
-                <Tooltip
-                  tooltipContent={
-                    <>
-                      Only work items within the current
-                      <br />
-                      project can be selected.
-                    </>
-                  }
-                  disabled={issue.project_id === projectId}
-                >
-                  <div className="absolute left-1 grid w-3.5 flex-shrink-0 place-items-center">
-                    <MultipleSelectEntityAction
-                      className={cn(
-                        "pointer-events-none opacity-0 transition-opacity group-hover/list-block:pointer-events-auto group-hover/list-block:opacity-100",
-                        {
-                          "pointer-events-auto opacity-100": isIssueSelected,
-                        }
-                      )}
-                      groupId={groupId}
-                      id={issue.id}
-                      selectionHelpers={selectionHelpers}
-                      disabled={issue.project_id !== projectId}
-                    />
-                  </div>
-                </Tooltip>
-              )}
-              {displayProperties && (displayProperties.key || displayProperties.issue_type) && (
-                <div className="flex-shrink-0" style={{ minWidth: `${keyMinWidth}px` }}>
-                  {issue.project_id && (
-                    <IssueIdentifier
-                      issueId={issueId}
-                      projectId={issue.project_id}
-                      size="xs"
-                      variant="tertiary"
-                      displayProperties={displayProperties}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* sub-issues chevron */}
-              <div className="grid size-4 flex-shrink-0 place-items-center">
-                {subIssuesCount > 0 && !isEpic && (
-                  <button
-                    type="button"
-                    className="grid size-4 place-items-center rounded-xs text-placeholder hover:text-tertiary"
-                    onClick={handleToggleExpand}
-                  >
-                    <ChevronRightIcon
-                      className={cn("size-4", {
-                        "rotate-90": isExpanded,
-                      })}
-                      strokeWidth={2.5}
-                    />
-                  </button>
-                )}
-              </div>
-
-              {issue?.tempId !== undefined && (
-                <div className="absolute top-0 left-0 z-[99999] h-full w-full animate-pulse bg-surface-1/20" />
-              )}
-            </div>
-
-            <Tooltip
-              tooltipContent={issue.name}
-              isMobile={isMobile}
-              position="top-start"
-              disabled={isCurrentBlockDragging}
-              renderByDefault={false}
-            >
-              <p className="cursor-pointer truncate text-body-xs-medium text-primary">{issue.name}</p>
-            </Tooltip>
-          </div>
-          {!issue?.tempId && (
-            <div
-              className={cn("block rounded-sm border border-strong", {
-                "md:hidden": isSidebarCollapsed,
-                "lg:hidden": !isSidebarCollapsed,
-              })}
-            >
-              {quickActions({
-                issue,
-                parentRef: issueRef,
-              })}
-            </div>
-          )}
-        </div>
+        <IssueBlockHeading
+          issue={issue}
+          issueId={issueId}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          displayProperties={displayProperties}
+          isEpic={isEpic}
+          isSubIssue={isSubIssue}
+          marginLeft={marginLeft}
+          keyMinWidth={keyMinWidth}
+          subIssuesCount={subIssuesCount}
+          isExpanded={isExpanded}
+          onToggleExpand={handleToggleExpand}
+          selectionHelpers={selectionHelpers}
+          groupId={groupId}
+          isIssueSelected={isIssueSelected}
+          canSelectIssues={canSelectIssues}
+          isMobile={isMobile}
+          isCurrentBlockDragging={isCurrentBlockDragging}
+          isSidebarCollapsed={Boolean(isSidebarCollapsed)}
+          quickActions={quickActions}
+          issueRef={issueRef}
+        />
         <div className="flex flex-shrink-0 items-center gap-2">
-          {!issue?.tempId ? (
-            <>
-              <IssueProperties
-                className={`relative flex flex-wrap ${isSidebarCollapsed ? "md:flex-shrink-0 md:flex-grow" : "lg:flex-shrink-0 lg:flex-grow"} items-center gap-2 whitespace-nowrap`}
-                issue={issue}
-                isReadOnly={!canEditIssueProperties}
-                updateIssue={updateIssue}
-                displayProperties={displayProperties}
-                activeLayout="List"
-                isEpic={isEpic}
-              />
-              {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
-              <div
-                className={cn("hidden", {
-                  "md:flex": isSidebarCollapsed,
-                  "lg:flex": !isSidebarCollapsed,
-                })}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                {quickActions({
-                  issue,
-                  parentRef: issueRef,
-                })}
-              </div>
-            </>
-          ) : (
-            <div className="h-4 w-4">
-              <Spinner className="h-4 w-4" />
-            </div>
-          )}
+          <IssueBlockProperties
+            issue={issue}
+            isEpic={isEpic}
+            isSidebarCollapsed={Boolean(isSidebarCollapsed)}
+            canEditIssueProperties={canEditIssueProperties}
+            displayProperties={displayProperties}
+            updateIssue={updateIssue}
+            quickActions={quickActions}
+            issueRef={issueRef}
+          />
         </div>
       </Row>
     </ControlLink>
   );
-});
+};
+
+type IssueBlockHeadingProps = {
+  issue: TIssue;
+  issueId: string;
+  workspaceSlug: string | undefined;
+  projectId: string | undefined;
+  displayProperties: IIssueDisplayProperties | undefined;
+  isEpic: boolean;
+  isSubIssue: boolean;
+  marginLeft: string;
+  keyMinWidth: number;
+  subIssuesCount: number;
+  isExpanded: boolean;
+  onToggleExpand: React.MouseEventHandler<HTMLButtonElement>;
+  selectionHelpers: TSelectionHelper;
+  groupId: string;
+  isIssueSelected: boolean;
+  canSelectIssues: boolean;
+  isMobile: boolean;
+  isCurrentBlockDragging: boolean;
+  isSidebarCollapsed: boolean;
+  quickActions: TRenderQuickActions;
+  issueRef: React.RefObject<HTMLDivElement | null>;
+};
+
+function IssueBlockHeading(props: IssueBlockHeadingProps) {
+  const {
+    issue,
+    issueId,
+    workspaceSlug,
+    projectId,
+    displayProperties,
+    isEpic,
+    isSubIssue,
+    marginLeft,
+    keyMinWidth,
+    subIssuesCount,
+    isExpanded,
+    onToggleExpand,
+    selectionHelpers,
+    groupId,
+    isIssueSelected,
+    canSelectIssues,
+    isMobile,
+    isCurrentBlockDragging,
+    isSidebarCollapsed,
+    quickActions,
+    issueRef,
+  } = props;
+
+  return (
+    <div className="flex w-full gap-2 truncate">
+      <div className="flex flex-grow items-center gap-0.5 truncate">
+        <div className="flex items-center gap-1" style={isSubIssue ? { marginLeft } : {}}>
+          {projectId && canSelectIssues && !isEpic && (
+            <Tooltip
+              tooltipContent={
+                <>
+                  Only work items within the current
+                  <br />
+                  project can be selected.
+                </>
+              }
+              disabled={issue.project_id === projectId}
+            >
+              <div className="absolute left-1 grid w-3.5 flex-shrink-0 place-items-center">
+                <MultipleSelectEntityAction
+                  className={cn(
+                    "pointer-events-none opacity-0 transition-opacity group-hover/list-block:pointer-events-auto group-hover/list-block:opacity-100",
+                    { "pointer-events-auto opacity-100": isIssueSelected }
+                  )}
+                  groupId={groupId}
+                  id={issue.id}
+                  selectionHelpers={selectionHelpers}
+                  disabled={issue.project_id !== projectId}
+                />
+              </div>
+            </Tooltip>
+          )}
+          {displayProperties && (displayProperties.key || displayProperties.issue_type) && (
+            <div className="flex-shrink-0" style={{ minWidth: `${keyMinWidth}px` }}>
+              {issue.project_id && (
+                <IssueIdentifier
+                  workspaceSlug={workspaceSlug}
+                  issueId={issueId}
+                  projectId={issue.project_id}
+                  size="xs"
+                  variant="tertiary"
+                  displayProperties={displayProperties}
+                />
+              )}
+            </div>
+          )}
+          <div className="grid size-4 flex-shrink-0 place-items-center">
+            {subIssuesCount > 0 && !isEpic && (
+              <button
+                type="button"
+                className="grid size-4 place-items-center rounded-xs text-placeholder hover:text-tertiary"
+                onClick={onToggleExpand}
+              >
+                <ChevronRightIcon className={cn("size-4", { "rotate-90": isExpanded })} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
+          {issue.tempId !== undefined && (
+            <div className="absolute top-0 left-0 z-[99999] h-full w-full animate-pulse bg-surface-1/20" />
+          )}
+        </div>
+        <Tooltip
+          tooltipContent={issue.name}
+          isMobile={isMobile}
+          position="top-start"
+          disabled={isCurrentBlockDragging}
+          renderByDefault={false}
+        >
+          <p className="cursor-pointer truncate text-body-xs-medium text-primary">{issue.name}</p>
+        </Tooltip>
+      </div>
+      {!issue.tempId && (
+        <div
+          className={cn("block rounded-sm border border-strong", {
+            "md:hidden": isSidebarCollapsed,
+            "lg:hidden": !isSidebarCollapsed,
+          })}
+        >
+          {quickActions({ issue, parentRef: issueRef })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function IssueBlockProperties({
+  issue,
+  isEpic,
+  isSidebarCollapsed,
+  canEditIssueProperties,
+  displayProperties,
+  updateIssue,
+  quickActions,
+  issueRef,
+}: {
+  issue: TIssue;
+  isEpic: boolean;
+  isSidebarCollapsed: boolean;
+  canEditIssueProperties: boolean;
+  displayProperties: IIssueDisplayProperties | undefined;
+  updateIssue: IssueBlockProps["updateIssue"];
+  quickActions: TRenderQuickActions;
+  issueRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  if (issue.tempId) return <Spinner className="h-4 w-4" />;
+
+  return (
+    <>
+      <IssueProperties
+        className={`relative flex flex-wrap ${isSidebarCollapsed ? "md:flex-shrink-0 md:flex-grow" : "lg:flex-shrink-0 lg:flex-grow"} items-center gap-2 whitespace-nowrap`}
+        issue={issue}
+        isReadOnly={!canEditIssueProperties}
+        updateIssue={updateIssue}
+        displayProperties={displayProperties}
+        activeLayout="List"
+        isEpic={isEpic}
+      />
+      {/* oxlint-disable-next-line jsx_a11y/click-events-have-key-events oxlint-disable-next-line jsx_a11y/no-static-element-interactions */}
+      <div
+        className={cn("hidden", { "md:flex": isSidebarCollapsed, "lg:flex": !isSidebarCollapsed })}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        }}
+      >
+        {quickActions({ issue, parentRef: issueRef })}
+      </div>
+    </>
+  );
+}

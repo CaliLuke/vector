@@ -4,72 +4,72 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
-
 import { Ban } from "lucide-react";
-import { EUserProjectRoles } from "@plane/types";
 // plane ui
 import { Avatar, CustomSearchSelect } from "@plane/ui";
 // helpers
-import { getFileURL } from "@plane/utils";
-// hooks
-import { useMember } from "@/hooks/store/use-member";
+import { getFileURL } from "@plane/utils/file";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 
 type Props = {
-  value: any;
+  value: string | undefined;
   onChange: (val: string) => void;
+  workspaceSlug: string;
+  projectId: string;
   isDisabled?: boolean;
 };
 
-export const MemberSelect = observer(function MemberSelect(props: Props) {
-  const { value, onChange, isDisabled = false } = props;
-  // router
-  const { projectId } = useParams({ strict: false });
-  // store hooks
-  const {
-    project: { projectMemberIds, getProjectMemberDetails },
-  } = useMember();
-
-  const options = projectMemberIds
-    ?.map((userId) => {
-      const memberDetails = projectId ? getProjectMemberDetails(userId, projectId.toString()) : null;
-
-      if (!memberDetails?.member) return;
-      const isGuest = memberDetails.role === EUserProjectRoles.GUEST;
-      if (isGuest) return;
-
-      return {
-        value: `${memberDetails?.member.id}`,
-        query: `${memberDetails?.member.display_name}`,
+export function MemberSelect(props: Props) {
+  const { value, onChange, workspaceSlug, projectId, isDisabled = false } = props;
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  if (projectRoster.isError || workspaceRoster.isError) {
+    return (
+      <div role="alert" className="text-13 text-danger-primary">
+        Unable to load project members. Please retry.
+        <button
+          type="button"
+          className="ml-2 underline"
+          onClick={() => {
+            void projectRoster.retry();
+            void workspaceRoster.retry();
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+  const memberIds = projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, undefined, false);
+  const options = memberIds?.flatMap((userId) => {
+    const member = workspaceRoster.membersById?.get(userId)?.member;
+    if (!member) return [];
+    return [
+      {
+        value: member.id,
+        query: member.display_name,
         content: (
           <div className="flex items-center gap-2">
-            <Avatar name={memberDetails?.member.display_name} src={getFileURL(memberDetails?.member.avatar_url)} />
-            {memberDetails?.member.display_name}
+            <Avatar name={member.display_name} src={getFileURL(member.avatar_url)} />
+            {member.display_name}
           </div>
         ),
-      };
-    })
-    .filter((option) => !!option) as
-    | {
-        value: string;
-        query: string;
-        content: React.ReactNode;
-      }[]
-    | undefined;
-  const selectedOption = projectId ? getProjectMemberDetails(value, projectId.toString()) : null;
+      },
+    ];
+  });
+  const selectedId = value !== undefined && projectRoster.membershipsByMemberId?.has(value) ? value : undefined;
+  const selectedOption = selectedId ? workspaceRoster.membersById?.get(selectedId)?.member : undefined;
 
   return (
     <CustomSearchSelect
       value={value}
       label={
         <div className="flex h-3.5 items-center gap-2">
-          {selectedOption && (
-            <Avatar name={selectedOption.member?.display_name} src={getFileURL(selectedOption.member?.avatar_url)} />
-          )}
+          {selectedOption && <Avatar name={selectedOption.display_name} src={getFileURL(selectedOption.avatar_url)} />}
           {selectedOption ? (
-            selectedOption.member?.display_name
+            selectedOption.display_name
           ) : (
             <div className="flex items-center gap-2">
               <Ban className="h-3.5 w-3.5 rotate-90 text-placeholder" />
@@ -80,7 +80,6 @@ export const MemberSelect = observer(function MemberSelect(props: Props) {
       }
       buttonClassName="!px-3 !py-2 bg-surface-1"
       options={
-        options &&
         options && [
           ...options,
           {
@@ -100,4 +99,4 @@ export const MemberSelect = observer(function MemberSelect(props: Props) {
       disabled={isDisabled}
     />
   );
-});
+}

@@ -4,11 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+import { useLocation, useParams } from "@tanstack/react-router";
 
 // i18n
-import { EUserPermissions, EUserPermissionsLevel, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { Button } from "@plane/propel/button";
@@ -17,26 +16,24 @@ import { Breadcrumbs, Header } from "@plane/ui";
 // components
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 // plane web constants
 // components
 import HeaderFilters from "./filters";
 import { ProjectSearch } from "./search-projects";
 
-export const ProjectsBaseHeader = observer(function ProjectsBaseHeader() {
+export function ProjectsBaseHeader() {
   // i18n
   const { t } = useTranslation();
   // store hooks
   const { toggleCreateProjectModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug } = useParams({ strict: false });
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
 
   const pathname = useLocation({ select: (location) => location.pathname });
   // auth
-  const isAuthorizedUser = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorizedUser = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
   const isArchived = pathname.includes("/archives");
 
   return (
@@ -78,4 +75,4 @@ export const ProjectsBaseHeader = observer(function ProjectsBaseHeader() {
       </Header.RightItem>
     </Header>
   );
-});
+}

@@ -4,11 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-// plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
-// store
-import type { TPageInstance } from "@/store/pages/base-page";
+import type { TPage } from "@plane/types";
+
 // local imports
 import { PageOptionsDropdown } from "../editor/toolbar";
 import { PageArchivedBadge } from "./archived-badge";
@@ -18,21 +15,21 @@ import { PageOfflineBadge } from "./offline-badge";
 import { PageLockControl } from "./lock-control";
 
 type Props = {
-  page: TPageInstance;
-  storeType: EPageStoreType;
+  page: TPage;
+  workspaceSlug: string;
 };
 
-export const PageHeaderActions = observer(function PageHeaderActions(props: Props) {
-  const { page, storeType } = props;
+export function PageHeaderActions(props: Props) {
+  const { page, workspaceSlug } = props;
 
   return (
     <div className="flex items-center gap-1">
       <PageArchivedBadge page={page} />
-      <PageOfflineBadge page={page} />
-      <PageLockControl page={page} />
-      <PageCopyLinkControl page={page} />
-      <PageFavoriteControl page={page} />
-      <PageOptionsDropdown page={page} storeType={storeType} />
+      <PageOfflineBadge page={page} workspaceSlug={workspaceSlug} />
+      <PageLockControl page={page} workspaceSlug={workspaceSlug} />
+      <PageCopyLinkControl page={page} workspaceSlug={workspaceSlug} />
+      <PageFavoriteControl page={page} workspaceSlug={workspaceSlug} />
+      <PageOptionsDropdown page={page} workspaceSlug={workspaceSlug} />
     </div>
   );
-});
+}

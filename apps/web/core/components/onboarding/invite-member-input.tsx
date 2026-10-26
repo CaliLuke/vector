@@ -5,48 +5,21 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
-import type {
-  Control,
-  FieldArrayWithId,
-  FieldErrors,
-  UseFieldArrayRemove,
-  UseFormGetValues,
-  UseFormSetValue,
-  UseFormWatch,
-} from "react-hook-form";
-import { Controller } from "react-hook-form";
+import { useStore } from "@tanstack/react-form";
+import type { InvitationFormApi } from "@/hooks/use-workspace-invitation";
 import { usePopper } from "react-popper";
 import { XCircle } from "lucide-react";
 import { Listbox } from "@headlessui/react";
-import type { EUserPermissions } from "@plane/constants";
 import { ROLE, ROLE_DETAILS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CheckIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { Input } from "@plane/ui";
 
-type EmailRole = {
-  email: string;
-  role: EUserPermissions;
-  role_active: boolean;
-};
-
-export type FormValues = {
-  emails: EmailRole[];
-};
-
 type InviteMemberFormProps = {
   emailColumnClassName: string;
   index: number;
-  remove: UseFieldArrayRemove;
-  control: Control<FormValues>;
-  setValue: UseFormSetValue<FormValues>;
-  getValues: UseFormGetValues<FormValues>;
-  watch: UseFormWatch<FormValues>;
-  fields: FieldArrayWithId<FormValues, "emails">[];
-  errors: FieldErrors<FormValues>;
-  isInvitationDisabled: boolean;
-  setIsInvitationDisabled: (value: boolean) => void;
+  count: number;
+  form: InvitationFormApi;
 };
 
 const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
@@ -63,51 +36,15 @@ const placeholderEmails = [
   "thomas.selfridge@frstflt.com",
   "albert.zahm@frstflt.com",
 ];
-export const InviteMemberInput = observer(function InviteMemberInput(props: InviteMemberFormProps) {
-  const {
-    control,
-    emailColumnClassName,
-    index,
-    fields,
-    remove,
-    errors,
-    isInvitationDisabled,
-    setIsInvitationDisabled,
-    setValue,
-    getValues,
-    watch,
-  } = props;
+const InviteMemberInput = function InviteMemberInput(props: InviteMemberFormProps) {
+  const { form, emailColumnClassName, index, count } = props;
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
+  const email = useStore(form.store, (state) => state.values.emails[index]?.email ?? "");
 
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
 
   const { t } = useTranslation();
-
-  const email = watch(`emails.${index}.email`);
-
-  const emailOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.value === "") {
-      const validEmail = fields.map((_, i) => emailRegex.test(getValues(`emails.${i}.email`))).includes(true);
-      if (validEmail) {
-        setIsInvitationDisabled(false);
-      } else {
-        setIsInvitationDisabled(true);
-      }
-
-      if (getValues(`emails.${index}.role_active`)) {
-        setValue(`emails.${index}.role_active`, false);
-      }
-    } else {
-      if (!getValues(`emails.${index}.role_active`)) {
-        setValue(`emails.${index}.role_active`, true);
-      }
-      if (isInvitationDisabled && emailRegex.test(event.target.value)) {
-        setIsInvitationDisabled(false);
-      } else if (!isInvitationDisabled && !emailRegex.test(event.target.value)) {
-        setIsInvitationDisabled(true);
-      }
-    }
-  };
 
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "bottom-end",
@@ -125,47 +62,37 @@ export const InviteMemberInput = observer(function InviteMemberInput(props: Invi
     <div>
       <div className="group relative grid grid-cols-10 gap-4">
         <div className={emailColumnClassName}>
-          <Controller
-            control={control}
-            name={`emails.${index}.email`}
-            rules={{
-              pattern: {
-                value: emailRegex,
-                message: "Invalid Email ID",
-              },
+          <form.Field
+            name={`emails[${index}].email`}
+            validators={{
+              onChange: ({ value }) => (!value || emailRegex.test(value) ? undefined : "Invalid Email ID"),
             }}
-            render={({ field: { value, onChange, ref } }) => (
+          >
+            {(field) => (
               <Input
-                id={`emails.${index}.email`}
-                name={`emails.${index}.email`}
-                type="text"
-                value={value}
-                onChange={(event) => {
-                  emailOnChange(event);
-                  onChange(event);
-                }}
-                ref={ref}
-                hasError={Boolean(errors.emails?.[index]?.email)}
+                id={field.name}
+                name={field.name}
+                type="email"
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                hasError={!field.state.meta.isValid}
                 placeholder={placeholderEmails[index % placeholderEmails.length]}
                 className="w-full border-strong text-11 placeholder:text-placeholder sm:text-13"
                 autoComplete="off"
+                disabled={isSubmitting}
               />
             )}
-          />
+          </form.Field>
         </div>
         <div className="col-span-4 mr-8">
-          <Controller
-            control={control}
-            name={`emails.${index}.role`}
-            rules={{ required: true }}
-            render={({ field: { value, onChange } }) => (
+          <form.Field name={`emails[${index}].role`}>
+            {(field) => (
               <Listbox
                 as="div"
-                value={value}
-                onChange={(val) => {
-                  onChange(val);
-                  setValue(`emails.${index}.role_active`, true);
-                }}
+                value={field.state.value}
+                onChange={field.handleChange}
+                disabled={isSubmitting}
                 className="w-full flex-shrink-0 text-left"
               >
                 <Listbox.Button
@@ -175,15 +102,15 @@ export const InviteMemberInput = observer(function InviteMemberInput(props: Invi
                 >
                   <span
                     className={`text-13 ${
-                      !getValues(`emails.${index}.role_active`) ? "text-placeholder" : "text-primary"
+                      !email && !field.state.meta.isDirty ? "text-placeholder" : "text-primary"
                     } sm:text-13`}
                   >
-                    {ROLE[value]}
+                    {ROLE[field.state.value]}
                   </span>
 
                   <ChevronDownIcon
                     className={`size-3 ${
-                      !getValues(`emails.${index}.role_active`) ? "stroke-placeholder" : "stroke-primary"
+                      !email && !field.state.meta.isDirty ? "stroke-placeholder" : "stroke-primary"
                     }`}
                   />
                 </Listbox.Button>
@@ -221,13 +148,17 @@ export const InviteMemberInput = observer(function InviteMemberInput(props: Invi
                 </Listbox.Options>
               </Listbox>
             )}
-          />
+          </form.Field>
         </div>
-        {fields.length > 1 && (
+        {count > 1 && (
           <button
             type="button"
             className="absolute right-0 hidden place-items-center self-center rounded-sm group-hover:grid"
-            onClick={() => remove(index)}
+            aria-label="Remove invitation"
+            disabled={isSubmitting}
+            onClick={() => {
+              void form.removeFieldValue("emails", index);
+            }}
           >
             <XCircle className="h-5 w-5 pl-0.5 text-placeholder" />
           </button>
@@ -241,4 +172,28 @@ export const InviteMemberInput = observer(function InviteMemberInput(props: Invi
       )}
     </div>
   );
-});
+};
+
+export function InviteMemberFields({
+  form,
+  emailColumnClassName,
+}: {
+  form: InvitationFormApi;
+  emailColumnClassName: string;
+}) {
+  return (
+    <form.Field name="emails" mode="array">
+      {(field) =>
+        field.state.value.map((entry, index) => (
+          <InviteMemberInput
+            key={entry.id}
+            form={form}
+            index={index}
+            count={field.state.value.length}
+            emailColumnClassName={emailColumnClassName}
+          />
+        ))
+      }
+    </form.Field>
+  );
+}

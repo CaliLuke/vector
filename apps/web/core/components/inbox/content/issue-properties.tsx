@@ -5,7 +5,6 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 import {
   StatePropertyIcon,
   MembersPropertyIcon,
@@ -17,7 +16,8 @@ import {
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TInboxDuplicateIssueDetails, TIssue } from "@plane/types";
 import { ControlLink } from "@plane/ui";
-import { getDate, renderFormattedPayloadDate, generateWorkItemLink } from "@plane/utils";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import { DateDropdown } from "@/components/dropdowns/date";
 import { IntakeStateDropdown } from "@/components/dropdowns/intake-state/dropdown";
@@ -27,7 +27,7 @@ import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 import type { TIssueOperations } from "@/components/issues/issue-detail";
 import { IssueLabel } from "@/components/issues/issue-detail/label";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail } from "@/hooks/use-projects";
 
 type Props = {
   workspaceSlug: string;
@@ -39,26 +39,20 @@ type Props = {
   isIntakeAccepted: boolean;
 };
 
-export const InboxIssueContentProperties = observer(function InboxIssueContentProperties(props: Props) {
+export const InboxIssueContentProperties = function InboxIssueContentProperties(props: Props) {
   const { workspaceSlug, projectId, issue, issueOperations, isEditable, duplicateIssueDetails, isIntakeAccepted } =
     props;
 
-  const router = useRouter();
-  // store hooks
-  const { currentProjectDetails } = useProject();
-
   const minDate = issue.start_date ? getDate(issue.start_date) : null;
-  minDate?.setDate(minDate.getDate());
-  if (!issue || !issue?.id) return <></>;
+  if (!issue.id) return null;
+  const issueId = issue.id;
+  const assigneeIds = issue.assignee_ids ?? [];
 
-  const duplicateWorkItemLink = generateWorkItemLink({
-    workspaceSlug: workspaceSlug?.toString(),
-    projectId,
-    issueId: duplicateIssueDetails?.id,
-    projectIdentifier: currentProjectDetails?.identifier,
-    sequenceId: duplicateIssueDetails?.sequence_id,
-  });
   const DropdownComponent = isIntakeAccepted ? StateDropdown : IntakeStateDropdown;
+  const updateProperty = (patch: Partial<TIssue>) => {
+    // The operation reports failures; picker callbacks are synchronous event boundaries.
+    void issueOperations.update(workspaceSlug, projectId, issueId, patch).catch(() => {});
+  };
 
   return (
     <div className="flex w-full flex-col divide-y-2 divide-subtle-1">
@@ -72,11 +66,11 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 <StatePropertyIcon className="h-4 w-4 flex-shrink-0" />
                 <span>State</span>
               </div>
-              {issue?.state_id && (
+              {issue.state_id && (
                 <DropdownComponent
-                  value={issue?.state_id}
+                  value={issue.state_id}
                   onChange={() => {}}
-                  projectId={projectId?.toString() ?? ""}
+                  projectId={projectId}
                   disabled
                   buttonVariant="transparent-with-text"
                   className="group w-3/5 flex-grow"
@@ -94,23 +88,18 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 <span>Assignees</span>
               </div>
               <MemberDropdown
-                value={issue?.assignee_ids ?? []}
-                onChange={(val) =>
-                  issue?.id && issueOperations.update(workspaceSlug, projectId, issue?.id, { assignee_ids: val })
-                }
+                workspaceSlug={workspaceSlug}
+                value={assigneeIds}
+                onChange={(val) => updateProperty({ assignee_ids: val })}
                 disabled={!isEditable}
-                projectId={projectId?.toString() ?? ""}
+                projectId={projectId}
                 placeholder="Add assignees"
                 multiple
-                buttonVariant={
-                  (issue?.assignee_ids || [])?.length > 0 ? "transparent-without-text" : "transparent-with-text"
-                }
+                buttonVariant={assigneeIds.length > 0 ? "transparent-without-text" : "transparent-with-text"}
                 className="group w-3/5 flex-grow"
                 buttonContainerClassName="w-full text-left"
-                buttonClassName={`text-13 justify-between ${
-                  (issue?.assignee_ids || [])?.length > 0 ? "" : "text-placeholder"
-                }`}
-                hideIcon={issue.assignee_ids?.length === 0}
+                buttonClassName={`text-13 justify-between ${assigneeIds.length > 0 ? "" : "text-placeholder"}`}
+                hideIcon={assigneeIds.length === 0}
                 dropdownArrow
                 dropdownArrowClassName="h-3.5 w-3.5 hidden group-hover:inline"
               />
@@ -122,10 +111,8 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 <span>Priority</span>
               </div>
               <PriorityDropdown
-                value={issue?.priority}
-                onChange={(val) =>
-                  issue?.id && issueOperations.update(workspaceSlug, projectId, issue?.id, { priority: val })
-                }
+                value={issue.priority}
+                onChange={(val) => updateProperty({ priority: val })}
                 disabled={!isEditable}
                 buttonVariant="border-with-text"
                 className="w-3/5 flex-grow rounded-sm px-2 hover:bg-layer-1"
@@ -147,8 +134,7 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 placeholder="Add due date"
                 value={issue.target_date || null}
                 onChange={(val) =>
-                  issue?.id &&
-                  issueOperations.update(workspaceSlug, projectId, issue?.id, {
+                  updateProperty({
                     target_date: val ? renderFormattedPayloadDate(val) : null,
                   })
                 }
@@ -157,7 +143,7 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 buttonVariant="transparent-with-text"
                 className="group w-3/5 flex-grow"
                 buttonContainerClassName="w-full text-left"
-                buttonClassName={`text-13 ${issue?.target_date ? "" : "text-placeholder"}`}
+                buttonClassName={`text-13 ${issue.target_date ? "" : "text-placeholder"}`}
                 hideIcon
                 clearIconClassName="h-3 w-3 hidden group-hover:inline"
               />
@@ -169,47 +155,72 @@ export const InboxIssueContentProperties = observer(function InboxIssueContentPr
                 <span>Labels</span>
               </div>
               <div className="h-full min-h-8 w-3/5 flex-grow pt-1">
-                {issue?.id && (
-                  <IssueLabel
-                    workspaceSlug={workspaceSlug}
-                    projectId={projectId}
-                    issueId={issue?.id}
-                    disabled={!isEditable}
-                    isInboxIssue
-                    onLabelUpdate={(val: string[]) =>
-                      issue?.id && issueOperations.update(workspaceSlug, projectId, issue?.id, { label_ids: val })
-                    }
-                  />
-                )}
+                <IssueLabel
+                  workspaceSlug={workspaceSlug}
+                  projectId={projectId}
+                  issueId={issueId}
+                  disabled={!isEditable}
+                  isInboxIssue
+                  labelIds={issue.label_ids ?? []}
+                  onLabelUpdate={async (val: string[]) => {
+                    await issueOperations.update(workspaceSlug, projectId, issueId, { label_ids: val });
+                  }}
+                />
               </div>
             </div>
 
-            {/* duplicate to*/}
             {duplicateIssueDetails && (
-              <div className="flex min-h-8 gap-2">
-                <div className="flex w-2/5 flex-shrink-0 gap-1 pt-2 text-13 text-tertiary">
-                  <DuplicatePropertyIcon className="h-4 w-4 flex-shrink-0" />
-                  <span>Duplicate of</span>
-                </div>
-
-                <ControlLink
-                  href={duplicateWorkItemLink}
-                  onClick={() => {
-                    void router.navigate({ href: duplicateWorkItemLink });
-                  }}
-                  target="_self"
-                >
-                  <Tooltip tooltipContent={`${duplicateIssueDetails?.name}`}>
-                    <span className="flex cursor-pointer items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 pb-0.5 text-11 text-secondary">
-                      {`${currentProjectDetails?.identifier}-${duplicateIssueDetails?.sequence_id}`}
-                    </span>
-                  </Tooltip>
-                </ControlLink>
-              </div>
+              <DuplicateWorkItemLink
+                workspaceSlug={workspaceSlug}
+                projectId={projectId}
+                duplicateIssueDetails={duplicateIssueDetails}
+              />
             )}
           </div>
         </div>
       </div>
     </div>
   );
-});
+};
+
+function DuplicateWorkItemLink({
+  workspaceSlug,
+  projectId,
+  duplicateIssueDetails,
+}: {
+  workspaceSlug: string;
+  projectId: string;
+  duplicateIssueDetails: TInboxDuplicateIssueDetails;
+}) {
+  const router = useRouter();
+  const { data: currentProjectDetails } = useProjectDetail(workspaceSlug, projectId);
+  const duplicateWorkItemLink = generateWorkItemLink({
+    workspaceSlug: workspaceSlug,
+    projectId,
+    issueId: duplicateIssueDetails.id,
+    projectIdentifier: currentProjectDetails?.identifier,
+    sequenceId: duplicateIssueDetails.sequence_id,
+  });
+  return (
+    <div className="flex min-h-8 gap-2">
+      <div className="flex w-2/5 flex-shrink-0 gap-1 pt-2 text-13 text-tertiary">
+        <DuplicatePropertyIcon className="h-4 w-4 flex-shrink-0" />
+        <span>Duplicate of</span>
+      </div>
+
+      <ControlLink
+        href={duplicateWorkItemLink}
+        onClick={() => {
+          void router.navigate({ href: duplicateWorkItemLink });
+        }}
+        target="_self"
+      >
+        <Tooltip tooltipContent={`${duplicateIssueDetails.name}`}>
+          <span className="flex cursor-pointer items-center gap-1 rounded-sm bg-layer-1 px-1.5 py-1 pb-0.5 text-11 text-secondary">
+            {`${currentProjectDetails?.identifier}-${duplicateIssueDetails.sequence_id}`}
+          </span>
+        </Tooltip>
+      </ControlLink>
+    </div>
+  );
+}

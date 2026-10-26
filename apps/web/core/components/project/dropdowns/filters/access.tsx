@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { NETWORK_CHOICES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -20,7 +20,7 @@ type Props = {
   searchQuery: string;
 };
 
-export const FilterAccess = observer(function FilterAccess(props: Props) {
+export const FilterAccess = function FilterAccess(props: Props) {
   const { appliedFilters, handleUpdate, searchQuery } = props;
   // states
   const [previewEnabled, setPreviewEnabled] = useState(true);
@@ -42,7 +42,7 @@ export const FilterAccess = observer(function FilterAccess(props: Props) {
             filteredOptions.map((access) => (
               <FilterOption
                 key={access.key}
-                isChecked={appliedFilters?.includes(`${access.key}`) ? true : false}
+                isChecked={Boolean(appliedFilters?.includes(`${access.key}`))}
                 onClick={() => handleUpdate(`${access.key}`)}
                 icon={<ProjectNetworkIcon iconKey={access.iconKey} />}
                 title={t(access.i18n_label)}
@@ -55,4 +55,4 @@ export const FilterAccess = observer(function FilterAccess(props: Props) {
       )}
     </>
   );
-});
+};

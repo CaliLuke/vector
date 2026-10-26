@@ -3,7 +3,8 @@
 // Plane Internal Django Migration API HTTP client CLI support package
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package cli
 
@@ -457,9 +458,11 @@ type commandLine struct {
 			Stream    string `help:"path to file containing the streamed request body" name:"stream" required:""`
 		} `cmd:"" help:"This enables timezone conversion according\nto the user set timezone" name:"put-api-workspaces-by-slug-projects-by-project-id-modules-by-module-id-issues-by-issue-id"`
 		GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues struct {
-			Slug      string `help:"" name:"slug" required:""`
-			ProjectID string `help:"" name:"project-id" required:""`
-			Search    string `help:"" name:"search"`
+			Slug        string `help:"" name:"slug" required:""`
+			ProjectID   string `help:"" name:"project-id" required:""`
+			TypeID      string `help:"" name:"type-id"`
+			ChildTypeID string `help:"" name:"child-type-id"`
+			Search      string `help:"" name:"search"`
 		} `cmd:"" help:"This enables timezone conversion according\nto the user set timezone" name:"get-api-workspaces-by-slug-projects-by-project-id-search-issues"`
 		GetAPIWorkspacesBySlugProjectsByProjectIdv2Issues struct {
 			Slug      string `help:"" name:"slug" required:""`
@@ -774,6 +777,8 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		workItemCorePutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssueIDStreamFlag                          *string
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlugFlag                                                *string
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectIDFlag                                           *string
+		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeIDFlag                                              *string
+		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeIDFlag                                         *string
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearchFlag                                              *string
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesSlugFlag                                                    *string
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesProjectIDFlag                                               *string
@@ -1081,6 +1086,8 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 		workItemCorePutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssueIDStreamFlag = &command.WorkItemCore.PutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssueID.Stream
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlugFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues.Slug
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectIDFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues.ProjectID
+		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeIDFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues.TypeID
+		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeIDFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues.ChildTypeID
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearchFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues.Search
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesSlugFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIdv2Issues.Slug
 		workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesProjectIDFlag = &command.WorkItemCore.GetAPIWorkspacesBySlugProjectsByProjectIdv2Issues.ProjectID
@@ -1630,7 +1637,7 @@ func ParseEndpoint(scheme string, host string, doer loomhttp.Doer, enc func(*htt
 				}
 			case "get-api-workspaces-by-slug-projects-by-project-id-search-issues":
 				endpoint = c.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues()
-				data, err = workitemcorec.BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(*workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlugFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectIDFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearchFlag)
+				data, err = workitemcorec.BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(*workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlugFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectIDFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeIDFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeIDFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearchFlag)
 			case "get-api-workspaces-by-slug-projects-by-project-idv2-issues":
 				endpoint = c.GetAPIWorkspacesBySlugProjectsByProjectIDV2Issues()
 				data, err = workitemcorec.BuildGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesPayload(*workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesSlugFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesProjectIDFlag, *workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesSearchFlag)
@@ -3330,6 +3337,8 @@ func workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesUsage() {
 	fmt.Fprintf(os.Stderr, "%s [flags] work-item-core get-api-workspaces-by-slug-projects-by-project-id-search-issues", os.Args[0])
 	fmt.Fprint(os.Stderr, " -slug STRING")
 	fmt.Fprint(os.Stderr, " -project-id STRING")
+	fmt.Fprint(os.Stderr, " -type-id STRING")
+	fmt.Fprint(os.Stderr, " -child-type-id STRING")
 	fmt.Fprint(os.Stderr, " -search STRING")
 	fmt.Fprintln(os.Stderr)
 
@@ -3340,11 +3349,13 @@ func workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesUsage() {
 	// Flags list
 	fmt.Fprintln(os.Stderr, "    -slug STRING: ")
 	fmt.Fprintln(os.Stderr, "    -project-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -type-id STRING: ")
+	fmt.Fprintln(os.Stderr, "    -child-type-id STRING: ")
 	fmt.Fprintln(os.Stderr, "    -search STRING: ")
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-projects-by-project-id-search-issues --slug \"Hic dolorem aut velit non.\" --project-id \"73f0df17-81a5-4e6f-b5ae-5bc1df7c062b\" --search \"Deleniti quisquam dolorem cupiditate.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-projects-by-project-id-search-issues --slug \"Hic dolorem aut velit non.\" --project-id \"73f0df17-81a5-4e6f-b5ae-5bc1df7c062b\" --type-id \"f98c3cc2-7350-41c6-8a1d-f3e242800afd\" --child-type-id \"9a07897a-134e-47e4-bcd8-e12ebb11e866\" --search \"Aut cupiditate ut dolorem.\"")
 }
 func workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesUsage() {
 	// Header with flags
@@ -3365,7 +3376,7 @@ func workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDV2IssuesUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-projects-by-project-idv2-issues --slug \"Ut saepe accusamus pariatur.\" --project-id \"69f3de8d-fbd0-41ed-9cf7-9ba21be6d3b1\" --search \"Cupiditate minima dolores facilis vel.\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-projects-by-project-idv2-issues --slug \"Odio et ipsa amet in.\" --project-id \"eb695e2c-5563-40f4-af64-0633a0189b4e\" --search \"Doloribus possimus doloribus nesciunt velit cumque porro.\"")
 }
 func workItemCoreGetAPIWorkspacesBySlugUserIssuesByUserIDUsage() {
 	// Header with flags
@@ -3384,7 +3395,7 @@ func workItemCoreGetAPIWorkspacesBySlugUserIssuesByUserIDUsage() {
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-user-issues-by-user-id --slug \"Id architecto aut eveniet.\" --user-id \"59b4351e-770e-4125-bc42-65eee54e07eb\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-user-issues-by-user-id --slug \"Qui modi dolore consequuntur.\" --user-id \"f44bfce4-4d5b-476e-ad40-bcb537f7df06\"")
 }
 func workItemCoreGetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifierUsage() {
 	// Header with flags
@@ -3403,5 +3414,5 @@ func workItemCoreGetAPIWorkspacesBySlugWorkItemsProjectIdentifierIssueIdentifier
 
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, "Example:")
-	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-work-items-project-identifier-issue-identifier --slug \"Fuga quia et assumenda.\" --identifier \"IC-1\"")
+	fmt.Fprintf(os.Stderr, "    %s %s\n", os.Args[0], "work-item-core get-api-workspaces-by-slug-work-items-project-identifier-issue-identifier --slug \"Sed fugit quaerat explicabo.\" --identifier \"IC-1\"")
 }

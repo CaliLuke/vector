@@ -5,11 +5,11 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // ui
 import { Button } from "@plane/propel/button";
 // utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type EmptyStateSize = "sm" | "base" | "lg";
 
@@ -62,7 +62,7 @@ function CustomButton({
   );
 }
 
-export const DetailedEmptyState = observer(function DetailedEmptyState(props: Props) {
+export const DetailedEmptyState = function DetailedEmptyState(props: Props) {
   const {
     title,
     description,
@@ -105,4 +105,4 @@ export const DetailedEmptyState = observer(function DetailedEmptyState(props: Pr
       </div>
     </div>
   );
-});
+};

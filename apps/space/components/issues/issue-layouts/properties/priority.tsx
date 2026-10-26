@@ -11,7 +11,8 @@ import { PriorityIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TIssuePriorities } from "@plane/types";
 // constants
-import { cn, getIssuePriorityFilters } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getIssuePriorityFilters } from "@plane/utils/work-item";
 
 export function IssueBlockPriority({
   priority,

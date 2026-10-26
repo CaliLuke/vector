@@ -4,21 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 // components
 import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile";
 // local imports
 import { ProfileSettingsDefaultPreferencesList } from "./default-list";
 import { ProfileSettingsLanguageAndTimezonePreferencesList } from "./language-and-timezone-list";
 
-export const PreferencesProfileSettings = observer(function PreferencesProfileSettings() {
+export const PreferencesProfileSettings = function PreferencesProfileSettings() {
   const { t } = useTranslation();
   // hooks
-  const { data: userProfile } = useUserProfile();
+  const { data: userProfile } = useCurrentUserProfile();
 
   if (!userProfile) return null;
 
@@ -39,4 +38,4 @@ export const PreferencesProfileSettings = observer(function PreferencesProfileSe
       </div>
     </div>
   );
-});
+};

@@ -4,11 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import type { ComponentPropsWithRef } from "react";
 import { Switch } from "@headlessui/react";
 // helpers
 import { cn } from "../utils";
 
-interface IToggleSwitchProps {
+interface IToggleSwitchProps extends Omit<ComponentPropsWithRef<"button">, "value" | "onChange"> {
   value: boolean;
   onChange: (value: boolean) => void;
   label?: string;
@@ -18,10 +19,11 @@ interface IToggleSwitchProps {
 }
 
 function ToggleSwitch(props: IToggleSwitchProps) {
-  const { value, onChange, label, size = "sm", disabled, className } = props;
+  const { value, onChange, label, size = "sm", disabled, className, ...buttonProps } = props;
 
   return (
     <Switch
+      {...buttonProps}
       checked={value}
       disabled={disabled}
       onChange={onChange}

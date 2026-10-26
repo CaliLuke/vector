@@ -22,7 +22,9 @@ export const FilePlugins = (args: TArgs): Plugin[] => {
   const { editor, fileHandler, isEditable } = args;
 
   return [
-    ...(isEditable && "delete" in fileHandler ? [TrackFileDeletionPlugin(editor, fileHandler.delete)] : []),
-    TrackFileRestorationPlugin(editor, fileHandler.restore),
+    ...(isEditable && "delete" in fileHandler
+      ? [TrackFileDeletionPlugin(editor, (src) => editor.storage.utility.fileHandler.delete(src))]
+      : []),
+    TrackFileRestorationPlugin(editor, (src) => editor.storage.utility.fileHandler.restore(src)),
   ];
 };

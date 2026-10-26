@@ -5,17 +5,16 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
 import type { CollaborationState, EditorRefApi } from "@plane/editor";
-import type { TDocumentPayload, TPage, TPageVersion, TWebhookConnectionQueryParams } from "@plane/types";
+import type { TDocumentPayload, TPage, TWebhookConnectionQueryParams } from "@plane/types";
 // hooks
 import { usePageFallback } from "@/hooks/use-page-fallback";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
 import type { PageUpdateHandler, TCustomEventHandlers } from "@/hooks/use-realtime-page-events";
 import { usePagesPaneExtensions, useExtendedEditorProps } from "@/hooks/pages";
-import type { EPageStoreType } from "@/hooks/store";
+import { usePageRecord } from "@/components/pages/page-record-context";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local imports
 import { PageNavigationPaneRoot } from "../navigation-pane";
 import { PageVersionsOverlay } from "../version";
@@ -27,10 +26,7 @@ import { PageEditorToolbarRoot } from "./toolbar";
 
 export type TPageRootHandlers = {
   create: (payload: Partial<TPage>) => Promise<Partial<TPage> | undefined>;
-  fetchAllVersions: (pageId: string) => Promise<TPageVersion[] | undefined>;
   fetchDescriptionBinary: () => Promise<ArrayBuffer>;
-  fetchVersionDetails: (pageId: string, versionId: string) => Promise<TPageVersion | undefined>;
-  restoreVersion: (pageId: string, versionId: string) => Promise<void>;
   updateDescription: (document: TDocumentPayload) => Promise<void>;
 } & TEditorBodyHandlers;
 
@@ -39,59 +35,42 @@ export type TPageRootConfig = TEditorBodyConfig;
 type TPageRootProps = {
   config: TPageRootConfig;
   handlers: TPageRootHandlers;
-  page: TPageInstance;
-  storeType: EPageStoreType;
+  page: TPage;
   webhookConnectionParams: TWebhookConnectionQueryParams;
   projectId?: string;
   workspaceSlug: string;
   customRealtimeEventHandlers?: TCustomEventHandlers;
 };
 
-export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
-  const {
-    config,
-    handlers,
-    page,
-    projectId,
-    storeType,
-    webhookConnectionParams,
-    workspaceSlug,
-    customRealtimeEventHandlers,
-  } = props;
+export function PageRoot(props: TPageRootProps) {
+  const { config, handlers, page, projectId, webhookConnectionParams, workspaceSlug, customRealtimeEventHandlers } =
+    props;
   // states
-  const [editorReady, setEditorReady] = useState(false);
-  const [collaborationState, setCollaborationState] = useState<CollaborationState | null>(null);
+  const [collaborationState, setCollaborationState] = useState<CollaborationState>({
+    stage: { kind: "connecting" },
+    isServerSynced: false,
+    isServerDisconnected: false,
+  });
   const [showContentTooLargeBanner, setShowContentTooLargeBanner] = useState(false);
+  const { setEditorRef } = usePageRecord();
   // refs
   const editorRef = useRef<EditorRefApi>(null);
+  const { isContentEditable } = usePagePermissions(page, workspaceSlug);
   // derived values
-  const {
-    isContentEditable,
-    editor: { setEditorRef },
-  } = page;
   // page fallback
   const { isFetchingFallbackBinary } = usePageFallback({
     editorRef,
     fetchPageDescription: handlers.fetchDescriptionBinary,
     page,
+    workspaceSlug,
     collaborationState,
     updatePageDescription: handlers.updateDescription,
   });
 
   const handleEditorReady = useCallback(
-    (status: boolean) => {
-      setEditorReady(status);
-      if (editorRef.current && !page.editor.editorRef) {
-        setEditorRef(editorRef.current);
-      }
-    },
-    [page.editor.editorRef, setEditorRef]
+    (ready: boolean) => setEditorRef(ready ? editorRef.current : null),
+    [setEditorRef]
   );
-
-  useEffect(() => {
-    const timer = setTimeout(() => setEditorRef(editorRef.current), 0);
-    return () => clearTimeout(timer);
-  }, [isContentEditable, setEditorRef]);
 
   // Get extensions and navigation logic from hook
   const {
@@ -127,7 +106,6 @@ export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
   const extendedEditorProps = useExtendedEditorProps({
     workspaceSlug,
     page,
-    storeType,
     fetchEntity: handlers.fetchEntity,
     getRedirectionLink: handlers.getRedirectionLink,
     extensionHandlers: editorExtensionHandlers,
@@ -155,22 +133,21 @@ export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
       <div className="flex size-full flex-col overflow-hidden">
         <PageVersionsOverlay
           editorComponent={PagesVersionEditor}
-          fetchVersionDetails={handlers.fetchVersionDetails}
+
           handleRestore={handleRestoreVersion}
           pageId={page.id ?? ""}
           restoreEnabled={isContentEditable}
-          storeType={storeType}
         />
         <PageEditorToolbarRoot
           handleOpenNavigationPane={handleOpenNavigationPane}
           isNavigationPaneOpen={isNavigationPaneOpen}
           page={page}
+          workspaceSlug={workspaceSlug}
         />
         {showContentTooLargeBanner && <ContentLimitBanner className="px-page-x" />}
         <PageEditorBody
           config={config}
           customRealtimeEventHandlers={mergedCustomEventHandlers}
-          editorReady={editorReady}
           editorForwardRef={editorRef}
           handleEditorReady={handleEditorReady}
           handleOpenNavigationPane={handleOpenNavigationPane}
@@ -178,7 +155,6 @@ export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
           isNavigationPaneOpen={isNavigationPaneOpen}
           page={page}
           projectId={projectId}
-          storeType={storeType}
           webhookConnectionParams={webhookConnectionParams}
           workspaceSlug={workspaceSlug}
           extendedEditorProps={extendedEditorProps}
@@ -187,16 +163,12 @@ export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
         />
       </div>
       <PageNavigationPaneRoot
-        storeType={storeType}
         handleClose={handleCloseNavigationPane}
         isNavigationPaneOpen={isNavigationPaneOpen}
         page={page}
-        versionHistory={{
-          fetchAllVersions: handlers.fetchAllVersions,
-          fetchVersionDetails: handlers.fetchVersionDetails,
-        }}
+
         extensions={navigationPaneExtensions}
       />
     </div>
   );
-});
+}

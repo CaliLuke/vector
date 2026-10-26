@@ -1,20 +1,21 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 
 const observed = [];
 const packageStubs = {
-  "mobx-react": "export const observer = component => component;",
+  "@plane/i18n": "export const useTranslation = () => ({ t: key => key });",
   "@plane/hooks": "export const useOutsideClickDetector = () => {};",
   "@plane/propel/icons":
     "export const ChevronDownIcon = () => null; export const ChevronRightIcon = () => null; export const MoreHorizontal = () => null; export const PlusIcon = () => null;",
   "@plane/propel/toast": "export const TOAST_TYPE = { ERROR: 'error' }; export const setToast = () => {};",
   "@plane/types": "export const EIssueServiceType = { ISSUES: 'issues' };",
-  "@/hooks/store/use-issue-detail": `export const useIssueDetail = () => ({ toggleIssueLinkModal: value => globalThis.__widgetCalls.push(['link', value]), setLastWidgetAction: value => globalThis.__widgetCalls.push(['last', value]), fetchActivities: () => {} });`,
+  "@/providers/issue-detail-ui-state": `export const useIssueDetailUiState = () => ({ toggleIssueLinkModal: value => globalThis.__widgetCalls.push(['link', value]), setLastWidgetAction: value => globalThis.__widgetCalls.push(['last', value]) });`,
   "@/hooks/use-file-size": "export const useFileSize = () => ({ maxFileSize: 1024 });",
   "react-dropzone": `export const useDropzone = ({ disabled }) => ({ getRootProps: (props = {}) => ({ ...props, onClick: () => { if (!disabled) globalThis.__widgetCalls.push(['dropzone-click']); }, onKeyDown: () => {}, role: props.role ?? 'presentation', tabIndex: disabled ? undefined : props.tabIndex ?? 0 }), getInputProps: () => ({ type: 'file', disabled }) });`,
   "@plane/propel/tooltip": "export const Tooltip = ({ children }) => children;",
@@ -116,6 +117,7 @@ test("link and attachment actions use their supplied buttons as the only interac
         issueServiceType: "issues",
       }),
       React.createElement(IssueAttachmentActionButton, {
+        attachmentHelpers: { operations: { create: async () => {} } },
         workspaceSlug: "default",
         projectId: "project-id",
         issueId: "issue-id",
@@ -128,6 +130,7 @@ test("link and attachment actions use their supplied buttons as the only interac
         issueServiceType: "issues",
       }),
       React.createElement(IssueAttachmentActionButton, {
+        attachmentHelpers: { operations: { create: async () => {} } },
         workspaceSlug: "default",
         projectId: "project-id",
         issueId: "issue-id",
@@ -140,6 +143,7 @@ test("link and attachment actions use their supplied buttons as the only interac
         issueServiceType: "issues",
       }),
       React.createElement(IssueAttachmentActionButton, {
+        attachmentHelpers: { operations: { create: async () => {} } },
         workspaceSlug: "default",
         projectId: "project-id",
         issueId: "issue-id",
@@ -147,6 +151,7 @@ test("link and attachment actions use their supplied buttons as the only interac
         issueServiceType: "issues",
       }),
       React.createElement(IssueAttachmentActionButton, {
+        attachmentHelpers: { operations: { create: async () => {} } },
         workspaceSlug: "default",
         projectId: "project-id",
         issueId: "issue-id",

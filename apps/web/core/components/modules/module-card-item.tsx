@@ -5,42 +5,55 @@
  */
 
 import { Link, useParams, useLocation, useRouter } from "@tanstack/react-router";
-import type { SyntheticEvent } from "react";
 import React, { useRef } from "react";
-import { observer } from "mobx-react";
 
 import { Info, SquareUser } from "lucide-react";
 // plane package imports
-import {
-  MODULE_STATUS,
-  PROGRESS_STATE_GROUPS_DETAILS,
-  EUserPermissions,
-  EUserPermissionsLevel,
-} from "@plane/constants";
+import { MODULE_STATUS, PROGRESS_STATE_GROUPS_DETAILS } from "@plane/constants";
 import { WorkItemsIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IModule } from "@plane/types";
-import { Card, FavoriteStar, LinearProgressIndicator } from "@plane/ui";
-import { getDate, renderFormattedPayloadDate, generateQueryParams } from "@plane/utils";
+import { Card, LinearProgressIndicator } from "@plane/ui";
 // components
-import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 import { ButtonAvatars } from "@/components/dropdowns/member/avatar";
 import { ModuleQuickActions } from "@/components/modules";
+import { ModuleDateRangeField } from "@/components/modules/module-date-range-field";
 import { ModuleStatusDropdown } from "@/components/modules/module-status-dropdown";
 import { useModuleActions } from "@/components/modules/use-module-actions";
+import { AuthorizedFavoriteStar } from "@/components/common/authorized-favorite-star";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useModule } from "@/hooks/store/use-module";
-import { useUserPermissions } from "@/hooks/store/user";
 
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import { getModulePeekHref } from "./module-peek-navigation";
 
 type Props = {
-  moduleId: string;
+  module: IModule;
 };
 
-export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
-  const { moduleId } = props;
+function getModuleIssueCount(total: number, completed: number) {
+  if (total === 0) return "0 work items";
+  if (total === completed) return `${total} Work item${total > 1 ? "s" : ""}`;
+  return `${completed}/${total} Work items`;
+}
+
+function getModuleProgressIndicatorData(module: IModule, total: number) {
+  return PROGRESS_STATE_GROUPS_DETAILS.map((group, index) => ({
+    id: index,
+    name: group.title,
+    value: total > 0 ? (module[group.key as keyof IModule] as number) : 0,
+    color: group.color,
+  }));
+}
+
+function preventCardNavigationFromControl(event: React.MouseEvent<HTMLAnchorElement>) {
+  if (event.target instanceof Element && event.target.closest("[data-prevent-link-navigation]")) {
+    event.preventDefault();
+  }
+}
+
+export const ModuleCardItem = function ModuleCardItem(props: Props) {
+  const { module: moduleDetails } = props;
+  const moduleId = moduleDetails.id;
   // refs
   const parentRef = useRef(null);
   // router
@@ -51,42 +64,29 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
   const searchParams = new URLSearchParams(useLocation({ select: (location) => location.searchStr }));
   const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-  const { getModuleById } = useModule();
-  const { getUserDetails } = useMember();
-  const { handleAddToFavorites, handleRemoveFromFavorites, handleModuleDetailsChange } = useModuleActions({
+  const {
+    handleAddToFavorites,
+    handleRemoveFromFavorites,
+    handleModuleDetailsChange,
+    isFavorite,
+    isFavoritesReady,
+    isEditingAllowed,
+    getUserDetails,
+  } = useModuleActions({
     moduleId,
     workspaceSlug,
     projectId,
   });
   // derived values
-  const moduleDetails = getModuleById(moduleId);
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
   const isDisabled = !isEditingAllowed || !!moduleDetails?.archived_at;
-  const renderIcon = Boolean(moduleDetails?.start_date) || Boolean(moduleDetails?.target_date);
 
   const { isMobile } = usePlatformOS();
-  const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
   const openModuleOverview = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     e.preventDefault();
 
-    const query = generateQueryParams(searchParams, ["peekModule"]);
-    if (searchParams.has("peekModule") && searchParams.get("peekModule") === moduleId) {
-      void router.navigate({ href: `${pathname}?${query}` });
-    } else {
-      void router.navigate({ href: `${pathname}?${query && `${query}&`}peekModule=${moduleId}` });
-    }
+    void router.navigate({ href: getModulePeekHref(pathname, searchParams.toString(), moduleId) });
   };
-
-  if (!moduleDetails) return null;
 
   const moduleTotalIssues =
     moduleDetails.backlog_issues +
@@ -101,27 +101,17 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
 
   const moduleStatus = MODULE_STATUS.find((status) => status.value === moduleDetails.status);
 
-  const issueCount = moduleDetails
-    ? !moduleTotalIssues || moduleTotalIssues === 0
-      ? `0 work items`
-      : moduleTotalIssues === moduleCompletedIssues
-        ? `${moduleTotalIssues} Work item${moduleTotalIssues > 1 ? `s` : ``}`
-        : `${moduleCompletedIssues}/${moduleTotalIssues} Work items`
-    : `0 work items`;
+  const issueCount = getModuleIssueCount(moduleTotalIssues, moduleCompletedIssues);
 
   const moduleLeadDetails = moduleDetails.lead_id ? getUserDetails(moduleDetails.lead_id) : undefined;
 
-  const progressIndicatorData = PROGRESS_STATE_GROUPS_DETAILS.map((group, index) => ({
-    id: index,
-    name: group.title,
-    value: moduleTotalIssues > 0 ? (moduleDetails[group.key as keyof IModule] as number) : 0,
-    color: group.color,
-  }));
+  const progressIndicatorData = getModuleProgressIndicatorData(moduleDetails, moduleTotalIssues);
 
   return (
     <div className="relative" data-prevent-progress>
       <Link
         ref={parentRef}
+        onClickCapture={preventCardNavigationFromControl}
         to="/$workspaceSlug/projects/$projectId/modules/$moduleId/"
         params={{ workspaceSlug: workspaceSlug, projectId: moduleDetails.project_id, moduleId: moduleDetails.id }}
       >
@@ -131,7 +121,7 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
               <Tooltip tooltipContent={moduleDetails.name} position="top" isMobile={isMobile}>
                 <span className="truncate text-14 font-medium">{moduleDetails.name}</span>
               </Tooltip>
-              <div className="flex items-center gap-2" onClick={handleEventPropagation}>
+              <div className="flex items-center gap-2" data-prevent-link-navigation>
                 {moduleStatus && (
                   <ModuleStatusDropdown
                     isDisabled={isDisabled}
@@ -153,7 +143,7 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
               </div>
               {moduleLeadDetails ? (
                 <span className="cursor-default">
-                  <ButtonAvatars showTooltip={false} userIds={moduleLeadDetails?.id} />
+                  <ButtonAvatars showTooltip={false} userIds={moduleLeadDetails?.id} workspaceSlug={workspaceSlug} />
                 </span>
               ) : (
                 <Tooltip tooltipContent="No lead">
@@ -162,44 +152,28 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
               )}
             </div>
             <LinearProgressIndicator size="lg" data={progressIndicatorData} />
-            <div className="flex items-center justify-between py-0.5" onClick={handleEventPropagation}>
-              <DateRangeDropdown
-                buttonContainerClassName={`h-6 w-full flex ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"} items-center gap-1.5 text-tertiary border-[0.5px] border-strong rounded-sm text-11`}
-                buttonVariant="transparent-with-text"
-                className="h-7"
-                value={{
-                  from: getDate(moduleDetails.start_date),
-                  to: getDate(moduleDetails.target_date),
-                }}
-                onSelect={(val) => {
-                  handleModuleDetailsChange({
-                    start_date: val?.from ? renderFormattedPayloadDate(val.from) : null,
-                    target_date: val?.to ? renderFormattedPayloadDate(val.to) : null,
-                  });
-                }}
-                placeholder={{
-                  from: "Start date",
-                  to: "End date",
-                }}
-                disabled={isDisabled}
-                hideIcon={{ from: renderIcon ?? true, to: renderIcon }}
+            <div className="flex items-center justify-between py-0.5" data-prevent-link-navigation>
+              <ModuleDateRangeField
+                moduleDetails={moduleDetails}
+                isDisabled={isDisabled}
+                handleModuleDetailsChange={handleModuleDetailsChange}
+                placeholder={{ from: "Start date", to: "End date" }}
               />
             </div>
           </div>
         </Card>
       </Link>
       <div className="absolute right-4 bottom-[18px] flex items-center gap-1.5">
-        {isEditingAllowed && (
-          <FavoriteStar
-            onClick={(e) => {
-              if (moduleDetails.is_favorite) handleRemoveFromFavorites(e);
-              else handleAddToFavorites(e);
-            }}
-            selected={!!moduleDetails.is_favorite}
-          />
-        )}
+        <AuthorizedFavoriteStar
+          canFavorite={isEditingAllowed}
+          isReady={isFavoritesReady}
+          onAdd={handleAddToFavorites}
+          onRemove={handleRemoveFromFavorites}
+          selected={isFavorite}
+        />
         {workspaceSlug && projectId && (
           <ModuleQuickActions
+            module={moduleDetails}
             parentRef={parentRef}
             moduleId={moduleId}
             projectId={projectId.toString()}
@@ -209,4 +183,4 @@ export const ModuleCardItem = observer(function ModuleCardItem(props: Props) {
       </div>
     </div>
   );
-});
+};

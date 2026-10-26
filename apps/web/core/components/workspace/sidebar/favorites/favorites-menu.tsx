@@ -11,8 +11,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DragLocationHistory, DropTargetRecord } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { orderBy } from "lodash-es";
-import { observer } from "mobx-react";
+import orderBy from "lodash-es/orderBy.js";
 
 import { FolderPlus } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -24,9 +23,9 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IFavorite } from "@plane/types";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useFavorite } from "@/hooks/store/use-favorite";
+import { useFavorites } from "@/hooks/use-favorites";
 import useLocalStorage from "@/hooks/use-local-storage";
 // plane web components
 import { FavoriteFolder } from "./favorite-folder";
@@ -34,15 +33,26 @@ import { FavoriteRoot } from "./favorite-items";
 import { NewFavoriteFolder } from "./new-fav-folder";
 import { IconButton } from "@plane/propel/icon-button";
 
-export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
+export function SidebarFavoritesMenu() {
   // states
   const [createNewFolder, setCreateNewFolder] = useState<boolean | string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   // navigation
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { groupedFavorites, deleteFavorite, removeFromFavoriteFolder, reOrderFavorite, moveFavoriteToFolder } =
-    useFavorite();
+  const {
+    groupedFavorites: groupedFavoritesById,
+    favorites,
+    canAccess,
+    isLoading,
+    isError,
+    retry,
+    deleteFavorite,
+    removeFromFavoriteFolder,
+    reOrderFavorite,
+    moveFavoriteToFolder,
+  } = useFavorites(workspaceSlug);
+  const groupedFavorites = groupedFavoritesById ?? {};
   // translation
   const { t } = useTranslation();
   // local storage
@@ -54,9 +64,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
   const elementRef = useRef<HTMLDivElement>(null);
 
   const handleMoveToFolder = (sourceId: string, destinationId: string) => {
-    moveFavoriteToFolder(workspaceSlug.toString(), sourceId, {
-      parent: destinationId,
-    }).catch(() => {
+    moveFavoriteToFolder(sourceId, destinationId).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t("error"),
@@ -106,7 +114,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
   };
 
   const handleRemoveFromFavorites = (favorite: IFavorite) => {
-    deleteFavorite(workspaceSlug.toString(), favorite.id)
+    deleteFavorite(favorite.id)
       .then(() => {
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -125,7 +133,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
   };
 
   const handleRemoveFromFavoritesFolder = (favoriteId: string) => {
-    removeFromFavoriteFolder(workspaceSlug.toString(), favoriteId).catch(() => {
+    removeFromFavoriteFolder(favoriteId).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: t("error"),
@@ -136,7 +144,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
 
   const handleReorder = useCallback(
     (favoriteId: string, droppedFavId: string, edge: string | undefined) => {
-      reOrderFavorite(workspaceSlug.toString(), favoriteId, droppedFavId, edge).catch(() => {
+      reOrderFavorite(favoriteId, droppedFavId, edge).catch(() => {
         setToast({
           type: TOAST_TYPE.ERROR,
           title: t("error"),
@@ -144,7 +152,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
         });
       });
     },
-    [workspaceSlug, reOrderFavorite, t]
+    [reOrderFavorite, t]
   );
 
   useEffect(() => {
@@ -166,9 +174,9 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
         },
         onDrop: ({ source }) => {
           setIsDragging(false);
-          const sourceId = source?.data?.id as string | undefined;
-          console.log({ sourceId });
-          if (!sourceId || !groupedFavorites[sourceId].parent) return;
+          if (!isTreeDropTargetData(source.data)) return;
+          const sourceId = source.data.id;
+          if (!groupedFavorites[sourceId]?.parent) return;
         },
       })
     );
@@ -207,6 +215,7 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
               <IconButton
                 variant="ghost"
                 size="sm"
+                disabled={!canAccess}
                 onClick={() => {
                   setCreateNewFolder(true);
                   if (!isFavoriteMenuOpen) toggleFavoriteMenu(!isFavoriteMenuOpen);
@@ -244,8 +253,19 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
           leaveTo="transform scale-95 opacity-0"
         >
           <Disclosure.Panel as="div" className="mt-0.5 flex flex-col gap-0.5" static>
-            {createNewFolder && <NewFavoriteFolder setCreateNewFolder={setCreateNewFolder} actionType="create" />}
-            {Object.keys(groupedFavorites).length === 0 ? (
+            {createNewFolder && canAccess && (
+              <NewFavoriteFolder setCreateNewFolder={setCreateNewFolder} actionType="create" />
+            )}
+            {isError ? (
+              <div className="px-8 py-1.5 text-11 text-danger-primary" role="alert">
+                <span>{t("something_went_wrong")}</span>
+                <button type="button" className="ml-2 underline" onClick={() => void retry()}>
+                  {t("retry")}
+                </button>
+              </div>
+            ) : isLoading ? (
+              <span className="px-8 py-1.5 text-11 font-medium text-placeholder">{t("loading")}</span>
+            ) : !canAccess || favorites === undefined || Object.keys(groupedFavorites).length === 0 ? (
               <>
                 <span className="px-8 py-1.5 text-11 font-medium text-placeholder">{t("no_favorites_yet")}</span>
               </>
@@ -280,4 +300,4 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
       </Disclosure>
     </>
   );
-});
+}

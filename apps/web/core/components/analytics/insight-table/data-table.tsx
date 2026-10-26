@@ -19,7 +19,7 @@ import { EmptyStateCompact } from "@plane/propel/empty-state";
 import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 // plane package imports
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@plane/propel/table";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { analyticsTableFeatures } from "./table-features";
 import type { AnalyticsColumnDef, AnalyticsTable } from "./table-features";
 // plane web components

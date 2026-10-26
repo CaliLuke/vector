@@ -5,23 +5,27 @@
  */
 
 import { Fragment, useState } from "react";
-import { observer } from "mobx-react";
+import { useStore } from "@tanstack/react-form";
 import { usePopper } from "react-popper";
 import { Loader } from "lucide-react";
 import { Combobox } from "@headlessui/react";
 // plane imports
-import { EUserPermissionsLevel, getRandomLabelColor } from "@plane/constants";
+import { getRandomLabelColor } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { CheckIcon, SearchIcon, PlusIcon } from "@plane/propel/icons";
 import type { IIssueLabel } from "@plane/types";
-import { EUserProjectRoles } from "@plane/types";
 // helpers
-import { getTabIndex } from "@plane/utils";
+import { getTabIndex } from "@plane/utils/tab-indices";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectLabels } from "@/hooks/use-labels";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import {
+  selectLabelCreationState,
+  submitLabelCreationForm,
+  useLabelCreationForm,
+} from "@/components/labels/use-label-creation-form";
+import { LabelOptionContent } from "@/components/labels/label-option-content";
 //constants
 export interface IIssueLabelSelect {
   workspaceSlug: string;
@@ -29,50 +33,52 @@ export interface IIssueLabelSelect {
   issueId: string;
   values: string[];
   onSelect: (_labelIds: string[]) => void;
-  onAddLabel: (workspaceSlug: string, projectId: string, data: Partial<IIssueLabel>) => Promise<any>;
+  onAddLabel: (data: Partial<IIssueLabel>) => Promise<IIssueLabel>;
 }
 
-export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssueLabelSelect) {
-  const { workspaceSlug, projectId, issueId, values, onSelect, onAddLabel } = props;
+export function IssueLabelSelect(props: IIssueLabelSelect) {
+  const catalogue = useProjectLabels(props.workspaceSlug, props.projectId);
+  return (
+    <DetailLabelPicker
+      key={JSON.stringify([
+        catalogue.scope.accountId,
+        catalogue.scope.sessionGeneration,
+        props.workspaceSlug,
+        props.projectId,
+        props.issueId,
+      ])}
+      {...props}
+      catalogue={catalogue}
+    />
+  );
+}
+
+function DetailLabelPicker(props: IIssueLabelSelect & { catalogue: ReturnType<typeof useProjectLabels> }) {
+  const { catalogue, issueId, values, onSelect, onAddLabel } = props;
   const { t } = useTranslation();
   // store hooks
   const { isMobile } = usePlatformOS();
-  const { fetchProjectLabels, getProjectLabels } = useLabel();
-  const { allowPermissions } = useUserPermissions();
+  const { labels: projectLabels, isLoading, canCreate: canCreateLabel } = catalogue;
   // states
   const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [query, setQuery] = useState("");
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
-  const canCreateLabel =
-    projectId && allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId);
-
-  const projectLabels = getProjectLabels(projectId);
+  const form = useLabelCreationForm({
+    errorMessage: t("something_went_wrong_please_try_again"),
+    onCreate: async (name, isCurrent) => {
+      if (!canCreateLabel) throw new Error("Label creation is unavailable.");
+      const created = await onAddLabel({ name, color: getRandomLabelColor() });
+      if (isCurrent()) onSelect(Array.from(new Set([...values, created.id])));
+    },
+  });
+  const { query, submitting, error } = useStore(form.store, selectLabelCreationState);
+  const setQuery = (name: string) => form.setFieldValue("name", name);
 
   const { baseTabIndex } = getTabIndex(undefined, isMobile);
-
-  const fetchLabels = () => {
-    setIsLoading(true);
-    if (!projectLabels && workspaceSlug && projectId)
-      fetchProjectLabels(workspaceSlug, projectId).then(() => setIsLoading(false));
-  };
 
   const options = (projectLabels ?? []).map((label) => ({
     value: label.id,
     query: label.name,
-    content: (
-      <div className="flex items-center justify-start gap-2 overflow-hidden">
-        <span
-          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-          style={{
-            backgroundColor: label.color,
-          }}
-        />
-        <div className="line-clamp-1 inline-block truncate">{label.name}</div>
-      </div>
-    ),
+    content: <LabelOptionContent label={label} />,
   }));
 
   const filteredOptions =
@@ -94,7 +100,7 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
 
   const label = <span className="text-body-xs-medium text-placeholder">{t("label.select")}</span>;
 
-  const searchInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const searchInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (query === "" && e.key === "Escape") {
       // The search input lives inside the popup and unmounts when Headless UI
       // closes it. Move focus to the persistent trigger before that happens.
@@ -105,19 +111,11 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
       setQuery("");
     }
 
-    if (query !== "" && e.key === "Enter" && !e.nativeEvent.isComposing && canCreateLabel) {
+    if (query.trim() && e.key === "Enter" && !e.nativeEvent.isComposing && canCreateLabel && !filteredOptions.length) {
       e.stopPropagation();
       e.preventDefault();
-      await handleAddLabel(query);
+      void submitLabelCreationForm(form);
     }
-  };
-
-  const handleAddLabel = async (labelName: string) => {
-    setSubmitting(true);
-    const createdLabel = await onAddLabel(workspaceSlug, projectId, { name: labelName, color: getRandomLabelColor() });
-    onSelect([...values, createdLabel.id]);
-    setQuery("");
-    setSubmitting(false);
   };
 
   if (!issueId || !values) return <></>;
@@ -132,14 +130,7 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
         multiple
       >
         <Combobox.Button as={Fragment}>
-          <Button
-            ref={setReferenceElement}
-            type="button"
-            variant="tertiary"
-            size="sm"
-            prependIcon={<PlusIcon />}
-            onClick={() => !projectLabels && fetchLabels()}
-          >
+          <Button ref={setReferenceElement} type="button" variant="tertiary" size="sm" prependIcon={<PlusIcon />}>
             {label}
           </Button>
         </Combobox.Button>
@@ -157,6 +148,7 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
                 <Combobox.Input
                   className="w-full bg-transparent px-2 py-1 text-11 text-secondary placeholder:text-placeholder focus:outline-none"
                   value={query}
+                  readOnly={submitting}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t("common.search.label")}
                   displayValue={(assigned: any) => assigned?.name}
@@ -166,6 +158,11 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
               </div>
             </div>
             <div className={`vertical-scrollbar mt-2 scrollbar-sm max-h-48 space-y-1 overflow-y-scroll px-2 pr-0`}>
+              {error && (
+                <p role="alert" className="text-danger-primary">
+                  {error}
+                </p>
+              )}
               {isLoading ? (
                 <p className="text-center text-secondary">{t("common.loading")}</p>
               ) : filteredOptions.length > 0 ? (
@@ -194,13 +191,14 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
               ) : submitting ? (
                 <Loader className="spin h-3.5 w-3.5" />
               ) : canCreateLabel ? (
-                <Combobox.Option
-                  value={query}
+                <button
+                  type="button"
+                  disabled={!query.trim() || submitting}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     if (!query.length) return;
-                    handleAddLabel(query);
+                    void submitLabelCreationForm(form);
                   }}
                   className={`text-left text-secondary ${query.length ? "cursor-pointer" : "cursor-default"}`}
                 >
@@ -212,7 +210,7 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
                   ) : (
                     t("label.create.type")
                   )}
-                </Combobox.Option>
+                </button>
               ) : (
                 <p className="text-left text-secondary">{t("common.search.no_matching_results")}</p>
               )}
@@ -222,4 +220,4 @@ export const IssueLabelSelect = observer(function IssueLabelSelect(props: IIssue
       </Combobox>
     </>
   );
-});
+}

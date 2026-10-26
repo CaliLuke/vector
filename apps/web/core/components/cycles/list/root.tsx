@@ -5,7 +5,8 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+import type { ICycle } from "@plane/types";
+
 import { Disclosure } from "@headlessui/react";
 // components
 import { useTranslation } from "@plane/i18n";
@@ -18,16 +19,16 @@ import { CyclesListMap } from "./cycles-list-map";
 import { ActiveCycleRoot } from "../active-cycle/root";
 
 export interface ICyclesList {
-  completedCycleIds: string[];
-  upcomingCycleIds?: string[] | undefined;
-  cycleIds: string[];
+  completedCycles: ICycle[];
+  upcomingCycles?: ICycle[] | undefined;
+  cycles: ICycle[];
   workspaceSlug: string;
   projectId: string;
   isArchived?: boolean;
 }
 
-export const CyclesList = observer(function CyclesList(props: ICyclesList) {
-  const { completedCycleIds, upcomingCycleIds, cycleIds, workspaceSlug, projectId, isArchived = false } = props;
+export const CyclesList = function CyclesList(props: ICyclesList) {
+  const { completedCycles, upcomingCycles, cycles, workspaceSlug, projectId, isArchived = false } = props;
   const { t } = useTranslation();
 
   return (
@@ -35,13 +36,13 @@ export const CyclesList = observer(function CyclesList(props: ICyclesList) {
       <ListLayout>
         {isArchived ? (
           <>
-            <CyclesListMap cycleIds={cycleIds} projectId={projectId} workspaceSlug={workspaceSlug} />
+            <CyclesListMap cycles={cycles} projectId={projectId} workspaceSlug={workspaceSlug} />
           </>
         ) : (
           <>
             <ActiveCycleRoot workspaceSlug={workspaceSlug} projectId={projectId} />
 
-            {upcomingCycleIds && (
+            {upcomingCycles && (
               <Disclosure as="div" className="flex flex-shrink-0 flex-col" defaultOpen>
                 {({ open }) => (
                   <>
@@ -49,13 +50,13 @@ export const CyclesList = observer(function CyclesList(props: ICyclesList) {
                       <CycleListGroupHeader
                         title={t("project_cycles.upcoming_cycle.label")}
                         type="upcoming"
-                        count={upcomingCycleIds.length}
+                        count={upcomingCycles.length}
                         showCount
                         isExpanded={open}
                       />
                     </Disclosure.Button>
                     <Disclosure.Panel>
-                      <CyclesListMap cycleIds={upcomingCycleIds} projectId={projectId} workspaceSlug={workspaceSlug} />
+                      <CyclesListMap cycles={upcomingCycles} projectId={projectId} workspaceSlug={workspaceSlug} />
                     </Disclosure.Panel>
                   </>
                 )}
@@ -68,13 +69,13 @@ export const CyclesList = observer(function CyclesList(props: ICyclesList) {
                     <CycleListGroupHeader
                       title={t("project_cycles.completed_cycle.label")}
                       type="completed"
-                      count={completedCycleIds.length}
+                      count={completedCycles.length}
                       showCount
                       isExpanded={open}
                     />
                   </Disclosure.Button>
                   <Disclosure.Panel>
-                    <CyclesListMap cycleIds={completedCycleIds} projectId={projectId} workspaceSlug={workspaceSlug} />
+                    <CyclesListMap cycles={completedCycles} projectId={projectId} workspaceSlug={workspaceSlug} />
                   </Disclosure.Panel>
                 </>
               )}
@@ -85,4 +86,4 @@ export const CyclesList = observer(function CyclesList(props: ICyclesList) {
       <CyclePeekOverview projectId={projectId} workspaceSlug={workspaceSlug} isArchived={isArchived} />
     </ContentWrapper>
   );
-});
+};

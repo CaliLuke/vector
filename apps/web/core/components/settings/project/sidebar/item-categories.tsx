@@ -5,11 +5,9 @@
  */
 
 import { useLocation, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import {
-  EUserPermissionsLevel,
   GROUPED_PROJECT_SETTINGS,
   PROJECT_SETTINGS_CATEGORIES,
   PROJECT_SETTINGS_CATEGORY_LABELS,
@@ -18,7 +16,7 @@ import { useTranslation } from "@plane/i18n";
 // components
 import { SettingsSidebarItem } from "@/components/settings/sidebar/item";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { PROJECT_SETTINGS_ICONS } from "./item-icon";
 
@@ -26,15 +24,13 @@ type Props = {
   projectId: string;
 };
 
-export const ProjectSettingsSidebarItemCategories = observer(function ProjectSettingsSidebarItemCategories(
-  props: Props
-) {
+export const ProjectSettingsSidebarItemCategories = function ProjectSettingsSidebarItemCategories(props: Props) {
   const { projectId } = props;
   // params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // translation
   const { t } = useTranslation();
 
@@ -42,9 +38,7 @@ export const ProjectSettingsSidebarItemCategories = observer(function ProjectSet
     <div className="mt-3 flex flex-col divide-y divide-subtle px-3">
       {PROJECT_SETTINGS_CATEGORIES.map((category) => {
         const categoryItems = GROUPED_PROJECT_SETTINGS[category];
-        const accessibleItems = categoryItems.filter((item) =>
-          allowPermissions(item.access, EUserPermissionsLevel.PROJECT, workspaceSlug, projectId)
-        );
+        const accessibleItems = categoryItems.filter((item) => canProject(item.access));
 
         if (accessibleItems.length === 0) return null;
 
@@ -77,4 +71,4 @@ export const ProjectSettingsSidebarItemCategories = observer(function ProjectSet
       })}
     </div>
   );
-});
+};

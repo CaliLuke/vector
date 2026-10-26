@@ -3,7 +3,8 @@ import { registerHooks } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
@@ -43,10 +44,16 @@ registerHooks({
       };
     }
 
-    if (specifier === "@plane/utils") {
+    if (specifier === "@plane/utils/common") {
       return {
         shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const cn = (...values) => values.filter(value => typeof value === 'string').join(' '); export const getCurrentStateSequence = () => 0;")}`,
+        url: `data:text/javascript,${encodeURIComponent("export const cn = (...values) => values.filter(value => typeof value === 'string').join(' ');")}`,
+      };
+    }
+    if (specifier === "@plane/utils/work-item") {
+      return {
+        shortCircuit: true,
+        url: `data:text/javascript,${encodeURIComponent("export const getCurrentStateSequence = () => 0;")}`,
       };
     }
 

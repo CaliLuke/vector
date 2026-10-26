@@ -5,28 +5,33 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useStore } from "@tanstack/react-form";
 import type { Placement } from "@popperjs/core";
 
 import { usePopper } from "react-popper";
 import { Loader } from "lucide-react";
 import { Combobox } from "@headlessui/react";
 // plane imports
-import { EUserPermissionsLevel, getRandomLabelColor } from "@plane/constants";
-import { useOutsideClickDetector } from "@plane/hooks";
+import { getRandomLabelColor } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CheckIcon, SearchIcon, ChevronDownIcon } from "@plane/propel/icons";
 // types
 import type { IIssueLabel } from "@plane/types";
-import { EUserProjectRoles } from "@plane/types";
 // components
-import { ComboDropDown } from "@plane/ui";
-import { sortBySelectedFirst } from "@plane/utils";
+import { ComboDropDown, ComboSearchInput } from "@plane/ui";
+import { sortBySelectedFirst } from "@plane/utils/array";
 // hooks
-import { useLabel } from "@/hooks/store/use-label";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useDropdownKeyDown } from "@/hooks/use-dropdown-key-down";
+import { useProjectLabelMutations } from "@/hooks/use-labels";
 import { usePlatformOS } from "@/hooks/use-platform-os";
+import {
+  selectLabelCreationState,
+  submitLabelCreationForm,
+  useLabelCreationForm,
+} from "@/components/labels/use-label-creation-form";
+import { LabelOptionContent } from "@/components/labels/label-option-content";
+import { CreateLabelOption } from "@/components/labels/create-label-option";
+import { useLabelPickerElements } from "@/components/labels/use-label-picker-elements";
 
 export interface ILabelDropdownProps {
   projectId: string | null;
@@ -34,7 +39,7 @@ export interface ILabelDropdownProps {
   onChange: (data: string[]) => void;
   onClose?: () => void;
   disabled?: boolean;
-  defaultOptions?: any;
+  defaultOptions?: IIssueLabel[];
   hideDropdownArrow?: boolean;
   className?: string;
   buttonClassName?: string;
@@ -48,7 +53,30 @@ export interface ILabelDropdownProps {
 }
 
 export function LabelDropdown(props: ILabelDropdownProps) {
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const catalogue = useProjectLabelMutations(workspaceSlug, props.projectId ?? undefined);
+  return (
+    <ProjectLabelDropdown
+      key={JSON.stringify([
+        catalogue.scope.accountId,
+        catalogue.scope.sessionGeneration,
+        workspaceSlug,
+        props.projectId,
+      ])}
+      {...props}
+      catalogue={catalogue}
+    />
+  );
+}
+
+function preventLabelDropdownPropagation(event: React.MouseEvent<HTMLDivElement>) {
+  event.stopPropagation();
+  event.preventDefault();
+}
+
+function ProjectLabelDropdown(props: ILabelDropdownProps & { catalogue: ReturnType<typeof useProjectLabelMutations> }) {
   const {
+    catalogue,
     projectId,
     value,
     onChange,
@@ -68,51 +96,32 @@ export function LabelDropdown(props: ILabelDropdownProps) {
   } = props;
   const { t } = useTranslation();
 
-  //router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-
-  //states
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [query, setQuery] = useState<string>("");
-  const [submitting, setSubmitting] = useState<boolean>(false);
-
-  //refs
-  const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  // popper-js refs
-  const [referenceElement, setReferenceElement] = useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
+  const { dropdownRef, inputRef, referenceElement, setReferenceElement, popperElement, setPopperElement } =
+    useLabelPickerElements();
 
   //hooks
-  const { fetchProjectLabels, getProjectLabels, createLabel } = useLabel();
+  const { labels: storeLabels, createLabel, canCreate: canCreateLabel, isLoading } = catalogue;
+  const form = useLabelCreationForm({
+    errorMessage: t("something_went_wrong_please_try_again"),
+    onCreate: async (name, isCurrent) => {
+      if (!projectId || !canCreateLabel) throw new Error("Label creation is unavailable.");
+      const created = await createLabel({ name, color: getRandomLabelColor() });
+      if (isCurrent()) onChange(Array.from(new Set([...value, created.id])));
+    },
+  });
+  const { query, submitting, error } = useStore(form.store, selectLabelCreationState);
+  const setQuery = (name: string) => form.setFieldValue("name", name);
   const { isMobile } = usePlatformOS();
-  const storeLabels = getProjectLabels(projectId);
-  const { allowPermissions } = useUserPermissions();
-
-  const canCreateLabel =
-    projectId && allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId);
 
   let projectLabels: IIssueLabel[] = defaultOptions;
   if (storeLabels && storeLabels.length > 0) projectLabels = storeLabels;
 
   const options = useMemo(
     () =>
-      projectLabels.map((label) => ({
-        value: label?.id,
-        query: label?.name,
-        content: (
-          <div className="flex items-center justify-start gap-2 overflow-hidden">
-            <span
-              className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-              style={{
-                backgroundColor: label?.color,
-              }}
-            />
-            <div className="line-clamp-1 inline-block truncate">{label?.name}</div>
-          </div>
-        ),
+      projectLabels.map((projectLabel) => ({
+        value: projectLabel?.id,
+        query: projectLabel?.name,
+        content: <LabelOptionContent label={projectLabel} />,
       })),
     [projectLabels]
   );
@@ -138,67 +147,26 @@ export function LabelDropdown(props: ILabelDropdownProps) {
     ],
   });
 
-  const onOpen = useCallback(() => {
-    if (!storeLabels && workspaceSlug && projectId)
-      fetchProjectLabels(workspaceSlug, projectId)
-        .then(() => setIsLoading(false))
-        .catch(() => {
-          setIsLoading(false);
-        });
-  }, [storeLabels, workspaceSlug, projectId, fetchProjectLabels, setIsLoading]);
-
-  const toggleDropdown = useCallback(() => {
-    if (!isOpen) onOpen();
-    setIsOpen((prevIsOpen) => !prevIsOpen);
-    if (isOpen && onClose) onClose();
-  }, [onOpen, onClose, isOpen, setIsOpen]);
+  const onOpen = useCallback(() => form.setErrorMap({ onSubmit: undefined }), [form]);
 
   const handleClose = () => {
-    if (!isOpen) return;
-    setIsOpen(false);
-    setQuery("");
-    if (onClose) onClose();
+    if (!submitting) form.reset();
+    onClose?.();
   };
 
-  const handleAddLabel = async (labelName: string) => {
-    if (!projectId) return;
-    setSubmitting(true);
-    const label = await createLabel(workspaceSlug, projectId, { name: labelName, color: getRandomLabelColor() });
-    onChange([...value, label.id]);
-    setQuery("");
-    setSubmitting(false);
-  };
-
-  const searchInputKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.stopPropagation();
-    if (query !== "" && e.key === "Escape") {
-      setQuery("");
-      e.preventDefault();
-    }
-
-    if (query !== "" && e.key === "Enter" && !e.nativeEvent.isComposing && canCreateLabel) {
-      e.preventDefault();
-      await handleAddLabel(query);
+  const searchInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (
+      query.trim() &&
+      event.key === "Enter" &&
+      !event.nativeEvent.isComposing &&
+      canCreateLabel &&
+      !filteredOptions?.length
+    ) {
+      event.stopPropagation();
+      event.preventDefault();
+      void submitLabelCreationForm(form);
     }
   };
-  const handleKeyDown = useDropdownKeyDown(toggleDropdown, handleClose);
-
-  const handleOnClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      e.stopPropagation();
-      e.preventDefault();
-      toggleDropdown();
-    },
-    [toggleDropdown]
-  );
-
-  useEffect(() => {
-    if (isOpen && inputRef.current && !isMobile) {
-      inputRef.current.focus();
-    }
-  }, [isOpen, isMobile]);
-
-  useOutsideClickDetector(dropdownRef, handleClose);
 
   const comboButton = useMemo(
     () => (
@@ -212,33 +180,17 @@ export function LabelDropdown(props: ILabelDropdownProps) {
               ? "cursor-pointer"
               : "cursor-pointer hover:bg-layer-1"
         } ${buttonClassName}`}
-        onClick={handleOnClick}
         disabled={disabled}
       >
         {label}
         {!hideDropdownArrow && !disabled && <ChevronDownIcon className="h-3 w-3" aria-hidden="true" />}
       </button>
     ),
-    [
-      buttonClassName,
-      disabled,
-      fullWidth,
-      handleOnClick,
-      hideDropdownArrow,
-      label,
-      maxRender,
-      value.length,
-      setReferenceElement,
-    ]
+    [buttonClassName, disabled, fullWidth, hideDropdownArrow, label, maxRender, value.length, setReferenceElement]
   );
 
-  const preventPropagation = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
   return (
-    <div className={`${fullHeight ? "h-full" : "h-5"}`} onClick={preventPropagation}>
+    <div className={`${fullHeight ? "h-full" : "h-5"}`} onClick={preventLabelDropdownPropagation}>
       <ComboDropDown
         as="div"
         ref={dropdownRef}
@@ -246,89 +198,91 @@ export function LabelDropdown(props: ILabelDropdownProps) {
         value={value}
         onChange={onChange}
         disabled={disabled}
-        onKeyDown={handleKeyDown}
+        onClose={handleClose}
+        onOpen={() => {
+          onOpen();
+          if (!isMobile) inputRef.current?.focus();
+        }}
         button={comboButton}
         renderByDefault={renderByDefault}
         multiple
       >
-        {isOpen && (
-          <Combobox.Options modal={false} className="fixed z-10" static>
-            <div
-              className={`z-10 my-1 h-auto w-48 rounded-sm border border-strong bg-surface-1 px-2 py-2.5 text-caption-sm-regular whitespace-nowrap shadow-raised-200 focus:outline-none ${optionsClassName}`}
-              ref={setPopperElement}
-              style={styles.popper}
-              {...attributes.popper}
-            >
-              <div className="flex w-full items-center justify-start rounded-sm border border-subtle bg-surface-2 px-2">
-                <SearchIcon className="h-3.5 w-3.5 text-tertiary" />
-                <Combobox.Input
-                  ref={inputRef}
-                  className="w-full bg-transparent px-2 py-1 text-caption-sm-regular text-secondary placeholder:text-placeholder focus:outline-none"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t("common.search.label")}
-                  displayValue={(assigned: any) => assigned?.name || ""}
-                  onKeyDown={searchInputKeyDown}
-                />
-              </div>
-              <div className={`mt-2 max-h-48 space-y-1 overflow-y-scroll`}>
-                {isLoading ? (
-                  <p className="text-center text-secondary">{t("common.loading")}</p>
-                ) : filteredOptions && filteredOptions.length > 0 ? (
-                  filteredOptions.map((option) => (
-                    <Combobox.Option
-                      key={option.value}
-                      value={option.value}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          e.stopPropagation();
+        {({ open, restoreButtonFocusOnClose }) =>
+          open && (
+            <Combobox.Options modal={false} className="fixed z-10">
+              <div
+                className={`z-10 my-1 h-auto w-48 rounded-sm border border-strong bg-surface-1 px-2 py-2.5 text-caption-sm-regular whitespace-nowrap shadow-raised-200 focus:outline-none ${optionsClassName}`}
+                ref={setPopperElement}
+                style={styles.popper}
+                {...attributes.popper}
+              >
+                <div className="flex w-full items-center justify-start rounded-sm border border-subtle bg-surface-2 px-2">
+                  <SearchIcon className="h-3.5 w-3.5 text-tertiary" />
+                  <ComboSearchInput
+                    ref={inputRef}
+                    className="w-full bg-transparent px-2 py-1 text-caption-sm-regular text-secondary placeholder:text-placeholder focus:outline-none"
+                    query={query}
+                    onQueryChange={setQuery}
+                    readOnly={submitting}
+                    placeholder={t("common.search.label")}
+                    onEscapeClose={restoreButtonFocusOnClose}
+                    onKeyDown={searchInputKeyDown}
+                  />
+                </div>
+                <div className={`mt-2 max-h-48 space-y-1 overflow-y-scroll`}>
+                  {error && (
+                    <p role="alert" className="text-danger-primary">
+                      {error}
+                    </p>
+                  )}
+                  {isLoading ? (
+                    <p className="text-center text-secondary">{t("common.loading")}</p>
+                  ) : filteredOptions && filteredOptions.length > 0 ? (
+                    filteredOptions.map((option) => (
+                      <Combobox.Option
+                        key={option.value}
+                        value={option.value}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }
+                        }}
+                        className={({ active, selected }) =>
+                          `flex cursor-pointer items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none hover:bg-layer-1 ${
+                            active ? "bg-layer-1" : ""
+                          } ${selected ? "text-primary" : "text-secondary"}`
                         }
-                      }}
-                      className={({ active, selected }) =>
-                        `flex cursor-pointer items-center justify-between gap-2 truncate rounded-sm px-1 py-1.5 select-none hover:bg-layer-1 ${
-                          active ? "bg-layer-1" : ""
-                        } ${selected ? "text-primary" : "text-secondary"}`
-                      }
-                    >
-                      {({ selected }) => (
-                        <>
-                          {option.content}
-                          {selected && (
-                            <div className="flex-shrink-0">
-                              <CheckIcon className={`h-3.5 w-3.5`} />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </Combobox.Option>
-                  ))
-                ) : submitting ? (
-                  <Loader className="h-3.5 w-3.5 animate-spin" />
-                ) : canCreateLabel ? (
-                  <p
-                    onClick={() => {
-                      if (!query.length) return;
-                      handleAddLabel(query);
-                    }}
-                    className={`text-left text-secondary ${query.length ? "cursor-pointer" : "cursor-default"}`}
-                  >
-                    {/* TODO: translate here */}
-                    {query.length ? (
-                      <>
-                        + Add <span className="text-primary">&quot;{query}&quot;</span> to labels
-                      </>
-                    ) : (
-                      t("label.create.type")
-                    )}
-                  </p>
-                ) : (
-                  <p className="text-left text-secondary">{t("common.search.no_matching_results")}</p>
-                )}
+                      >
+                        {({ selected }) => (
+                          <>
+                            {option.content}
+                            {selected && (
+                              <div className="flex-shrink-0">
+                                <CheckIcon className={`h-3.5 w-3.5`} />
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </Combobox.Option>
+                    ))
+                  ) : submitting ? (
+                    <Loader className="h-3.5 w-3.5 animate-spin" />
+                  ) : canCreateLabel ? (
+                    <CreateLabelOption
+                      query={query}
+                      isSubmitting={submitting}
+                      emptyLabel={t("label.create.type")}
+                      onCreate={() => void submitLabelCreationForm(form)}
+                    />
+                  ) : (
+                    <p className="text-left text-secondary">{t("common.search.no_matching_results")}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          </Combobox.Options>
-        )}
+            </Combobox.Options>
+          )
+        }
       </ComboDropDown>
     </div>
   );

@@ -9,7 +9,6 @@ import type { MutableRefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
 
 // plane helpers
 import { MoreHorizontal } from "lucide-react";
@@ -21,15 +20,16 @@ import type { TIssue, IIssueDisplayProperties, IIssueMap } from "@plane/types";
 import { EIssueServiceType } from "@plane/types";
 // ui
 import { ControlLink, DropIndicator } from "@plane/ui";
-import { cn, generateWorkItemLink } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { generateWorkItemLink } from "@plane/utils/work-item";
 // components
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { HIGHLIGHT_CLASS, getIssueBlockId } from "@/components/issues/issue-layouts/utils";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { useKanbanView } from "@/hooks/store/use-kanban-view";
-import { useProject } from "@/hooks/store/use-project";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useKanbanDragOwner } from "@/providers/issue-layout-ui-state";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-redirection";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
@@ -45,7 +45,7 @@ interface IssueBlockProps {
   draggableId: string;
   canDropOverIssue: boolean;
   canDragIssuesInCurrentGrouping: boolean;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   canEditProperties: (projectId: string | undefined) => boolean;
   scrollableContainerRef?: MutableRefObject<HTMLDivElement | null>;
@@ -57,14 +57,15 @@ interface IssueDetailsBlockProps {
   cardRef: React.RefObject<HTMLElement | null>;
   issue: TIssue;
   displayProperties: IIssueDisplayProperties | undefined;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   isReadOnly: boolean;
   isEpic?: boolean;
 }
 
-const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props: IssueDetailsBlockProps) {
+const KanbanIssueDetailsBlock = function KanbanIssueDetailsBlock(props: IssueDetailsBlockProps) {
   const { cardRef, issue, updateIssue, quickActions, isReadOnly, displayProperties, isEpic = false } = props;
+  const { workspaceSlug } = useParams({ strict: false });
   // refs
   const menuActionRef = useRef<HTMLDivElement | null>(null);
   // states
@@ -98,6 +99,7 @@ const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props:
       <div className="relative">
         {issue.project_id && (
           <IssueIdentifier
+            workspaceSlug={workspaceSlug}
             issueId={issue.id}
             projectId={issue.project_id}
             size="xs"
@@ -138,22 +140,15 @@ const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props:
       />
     </>
   );
-});
+};
 
-export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueBlockProps) {
+export const KanbanIssueBlock = function KanbanIssueBlock(props: IssueBlockProps) {
   const {
     issueId,
-    groupId,
-    subGroupId,
     issuesMap,
-    displayProperties,
     canDropOverIssue,
     canDragIssuesInCurrentGrouping,
-    updateIssue,
-    quickActions,
     canEditProperties,
-    scrollableContainerRef,
-    shouldRenderByDefault,
     isEpic = false,
   } = props;
 
@@ -161,8 +156,9 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
   // router
   const { workspaceSlug } = useParams({ strict: false });
   // hooks
-  const { getProjectIdentifierById } = useProject();
-  const { getIsIssuePeeked } = useIssueDetail(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const { getIsIssuePeeked } = useIssueDetailUiState(isEpic ? EIssueServiceType.EPICS : EIssueServiceType.ISSUES);
   const { handleRedirection } = useIssuePeekOverviewRedirection(isEpic);
   const { isMobile } = usePlatformOS();
 
@@ -171,7 +167,7 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
 
   const issue = issuesMap[issueId];
 
-  const { setIsDragging: setIsKanbanDragging } = useKanbanView();
+  const { beginDrag, endDrag } = useKanbanDragOwner();
 
   const [isDraggingOverBlock, setIsDraggingOverBlock] = useState(false);
   const [isCurrentBlockDragging, setIsCurrentBlockDragging] = useState(false);
@@ -179,63 +175,77 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
   const canEditIssueProperties = canEditProperties(issue?.project_id ?? undefined);
 
   const isDragAllowed = canDragIssuesInCurrentGrouping && !issue?.tempId && canEditIssueProperties;
-  const projectIdentifier = getProjectIdentifierById(issue?.project_id);
-
-  const workItemLink = generateWorkItemLink({
-    workspaceSlug,
-    projectId: issue?.project_id,
-    issueId,
-    projectIdentifier,
-    sequenceId: issue?.sequence_id,
-    isEpic,
-    isArchived: !!issue?.archived_at,
-  });
+  const workItemLink = getKanbanWorkItemLink({ workspaceSlug, issueId, issue, projects: projectRows, isEpic });
 
   useOutsideClickDetector(cardRef, () => {
     cardRef?.current?.classList?.remove(HIGHLIGHT_CLASS);
   });
 
-  // Make Issue block both as as Draggable and,
-  // as a DropTarget for other issues being dragged to get the location of drop
-  useEffect(() => {
-    const element = cardRef.current;
-
-    if (!element) return;
-
-    return combine(
-      draggable({
-        element,
-        dragHandle: element,
-        canDrag: () => isDragAllowed,
-        getInitialData: () => ({ id: issue?.id, type: "ISSUE" }),
-        onDragStart: () => {
-          setIsCurrentBlockDragging(true);
-          setIsKanbanDragging(true);
-        },
-        onDrop: () => {
-          setIsKanbanDragging(false);
-          setIsCurrentBlockDragging(false);
-        },
-      }),
-      dropTargetForElements({
-        element,
-        canDrop: ({ source }) => source?.data?.id !== issue?.id && canDropOverIssue,
-        getData: () => ({ id: issue?.id, type: "ISSUE" }),
-        onDragEnter: () => {
-          setIsDraggingOverBlock(true);
-        },
-        onDragLeave: () => {
-          setIsDraggingOverBlock(false);
-        },
-        onDrop: () => {
-          setIsDraggingOverBlock(false);
-        },
-      })
-    );
-    // oxlint-disable-next-line eslint-plugin-react-hooks/exhaustive-deps
-  }, [cardRef?.current, issue?.id, isDragAllowed, canDropOverIssue, setIsCurrentBlockDragging, setIsDraggingOverBlock]);
+  useKanbanBlockDrag({
+    cardRef,
+    issueId: issue?.id,
+    isDragAllowed,
+    canDropOverIssue,
+    beginDrag,
+    endDrag,
+    setIsCurrentBlockDragging,
+    setIsDraggingOverBlock,
+  });
 
   if (!issue) return null;
+
+  return (
+    <KanbanIssueCard
+      {...props}
+      issue={issue}
+      cardRef={cardRef}
+      workItemLink={workItemLink}
+      isDragAllowed={isDragAllowed}
+      canEditIssueProperties={canEditIssueProperties}
+      isDraggingOverBlock={isDraggingOverBlock}
+      isCurrentBlockDragging={isCurrentBlockDragging}
+      isIssuePeeked={getIsIssuePeeked(issue.id)}
+      onPeek={handleIssuePeekOverview}
+      setIsCurrentBlockDragging={setIsCurrentBlockDragging}
+    />
+  );
+};
+
+type KanbanIssueCardProps = IssueBlockProps & {
+  issue: TIssue;
+  cardRef: React.RefObject<HTMLAnchorElement | null>;
+  workItemLink: string;
+  isDragAllowed: boolean;
+  canEditIssueProperties: boolean;
+  isDraggingOverBlock: boolean;
+  isCurrentBlockDragging: boolean;
+  isIssuePeeked: boolean;
+  onPeek: (issue: TIssue) => void;
+  setIsCurrentBlockDragging: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+function KanbanIssueCard(props: KanbanIssueCardProps) {
+  const {
+    issue,
+    issueId,
+    groupId,
+    subGroupId,
+    cardRef,
+    workItemLink,
+    isDragAllowed,
+    canEditIssueProperties,
+    isDraggingOverBlock,
+    isCurrentBlockDragging,
+    isIssuePeeked,
+    onPeek,
+    setIsCurrentBlockDragging,
+    scrollableContainerRef,
+    shouldRenderByDefault,
+    displayProperties,
+    updateIssue,
+    quickActions,
+    isEpic = false,
+  } = props;
 
   return (
     <>
@@ -244,18 +254,7 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
         id={`issue-${issueId}`}
         // make Z-index higher at the beginning of drag, to have a issue drag image of issue block without any overlaps
         className={cn("group/kanban-block relative mb-2", { "z-[1]": isCurrentBlockDragging })}
-        onDragStart={() => {
-          if (isDragAllowed) setIsCurrentBlockDragging(true);
-          else {
-            setToast({
-              type: TOAST_TYPE.WARNING,
-              title: "Cannot move work item",
-              message: !canEditIssueProperties
-                ? "You are not allowed to move this work item"
-                : "Drag and drop is disabled for the current grouping",
-            });
-          }
-        }}
+        onDragStart={() => handleKanbanDragStart(isDragAllowed, canEditIssueProperties, setIsCurrentBlockDragging)}
       >
         <ControlLink
           id={getIssueBlockId(issueId, groupId, subGroupId)}
@@ -264,10 +263,10 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
           className={cn(
             "block w-full rounded-lg border border-subtle bg-layer-2 p-3 text-13 shadow-raised-100 outline-[0.5px] outline-transparent transition-all hover:border-strong hover:shadow-raised-200",
             { "hover:cursor-pointer": isDragAllowed },
-            { "border border-accent-strong hover:border-accent-strong": getIsIssuePeeked(issue.id) },
+            { "border border-accent-strong hover:border-accent-strong": isIssuePeeked },
             { "z-[100] bg-layer-1": isCurrentBlockDragging }
           )}
-          onClick={() => handleIssuePeekOverview(issue)}
+          onClick={() => onPeek(issue)}
           disabled={!!issue?.tempId}
         >
           <RenderIfVisible
@@ -292,4 +291,111 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
       </div>
     </>
   );
-});
+}
+
+function getKanbanWorkItemLink({
+  workspaceSlug,
+  issueId,
+  issue,
+  projects,
+  isEpic,
+}: {
+  workspaceSlug: string | undefined;
+  issueId: string;
+  issue: TIssue | undefined;
+  projects: ReturnType<typeof useWorkspaceProjectDetails>["projects"];
+  isEpic: boolean;
+}) {
+  const projectIdentifier = projects?.find((project) => project.id === issue?.project_id)?.identifier ?? "";
+  return generateWorkItemLink({
+    workspaceSlug,
+    projectId: issue?.project_id,
+    issueId,
+    projectIdentifier,
+    sequenceId: issue?.sequence_id,
+    isEpic,
+    isArchived: !!issue?.archived_at,
+  });
+}
+
+function handleKanbanDragStart(
+  isDragAllowed: boolean,
+  canEditIssueProperties: boolean,
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  if (isDragAllowed) {
+    setIsDragging(true);
+    return;
+  }
+
+  setToast({
+    type: TOAST_TYPE.WARNING,
+    title: "Cannot move work item",
+    message: canEditIssueProperties
+      ? "Drag and drop is disabled for the current grouping"
+      : "You are not allowed to move this work item",
+  });
+}
+
+function useKanbanBlockDrag({
+  cardRef,
+  issueId,
+  isDragAllowed,
+  canDropOverIssue,
+  beginDrag,
+  endDrag,
+  setIsCurrentBlockDragging,
+  setIsDraggingOverBlock,
+}: {
+  cardRef: React.RefObject<HTMLAnchorElement | null>;
+  issueId: string | undefined;
+  isDragAllowed: boolean;
+  canDropOverIssue: boolean;
+  beginDrag: () => void;
+  endDrag: () => void;
+  setIsCurrentBlockDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsDraggingOverBlock: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element) return endDrag;
+
+    const cleanup = combine(
+      draggable({
+        element,
+        dragHandle: element,
+        canDrag: () => isDragAllowed,
+        getInitialData: () => ({ id: issueId, type: "ISSUE" }),
+        onDragStart: () => {
+          setIsCurrentBlockDragging(true);
+          beginDrag();
+        },
+        onDrop: () => {
+          endDrag();
+          setIsCurrentBlockDragging(false);
+        },
+      }),
+      dropTargetForElements({
+        element,
+        canDrop: ({ source }) => source?.data?.id !== issueId && canDropOverIssue,
+        getData: () => ({ id: issueId, type: "ISSUE" }),
+        onDragEnter: () => setIsDraggingOverBlock(true),
+        onDragLeave: () => setIsDraggingOverBlock(false),
+        onDrop: () => setIsDraggingOverBlock(false),
+      })
+    );
+    return () => {
+      cleanup();
+      endDrag();
+    };
+  }, [
+    beginDrag,
+    canDropOverIssue,
+    cardRef,
+    endDrag,
+    isDragAllowed,
+    issueId,
+    setIsCurrentBlockDragging,
+    setIsDraggingOverBlock,
+  ]);
+}

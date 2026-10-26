@@ -5,8 +5,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { useParams } from "@tanstack/react-router";
 import type { Placement } from "@popperjs/core";
-import { observer } from "mobx-react";
 // plane helpers
 import { useOutsideClickDetector } from "@plane/hooks";
 // i18n
@@ -17,8 +17,8 @@ import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueLabel } from "@plane/types";
 // ui
 // hooks
-import { cn } from "@plane/utils";
-import { useLabel } from "@/hooks/store/use-label";
+import { cn } from "@plane/utils/common";
+import { useProjectLabels } from "@/hooks/use-labels";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { LabelDropdown } from "./label-dropdown";
 
@@ -49,7 +49,7 @@ type NoLabelProps = {
   placeholderText?: string;
 };
 
-const NoLabel = observer(function NoLabel({ isMobile, noLabelBorder, fullWidth, placeholderText }: NoLabelProps) {
+function NoLabel({ isMobile, noLabelBorder, fullWidth, placeholderText }: NoLabelProps) {
   const { t } = useTranslation();
 
   return (
@@ -72,7 +72,7 @@ const NoLabel = observer(function NoLabel({ isMobile, noLabelBorder, fullWidth, 
       </div>
     </Tooltip>
   );
-});
+}
 
 type LabelSummaryProps = {
   isMobile: boolean;
@@ -122,14 +122,7 @@ type LabelItemProps = {
   noLabelBorder: boolean;
 };
 
-const LabelItem = observer(function LabelItem({
-  label,
-  isMobile,
-  renderByDefault,
-  disabled,
-  fullWidth,
-  noLabelBorder,
-}: LabelItemProps) {
+function LabelItem({ label, isMobile, renderByDefault, disabled, fullWidth, noLabelBorder }: LabelItemProps) {
   const { t } = useTranslation();
 
   return (
@@ -160,9 +153,9 @@ const LabelItem = observer(function LabelItem({
       </div>
     </Tooltip>
   );
-});
+}
 
-export const IssuePropertyLabels = observer(function IssuePropertyLabels(props: IIssuePropertyLabels) {
+export function IssuePropertyLabels(props: IIssuePropertyLabels) {
   const {
     projectId,
     value,
@@ -182,13 +175,13 @@ export const IssuePropertyLabels = observer(function IssuePropertyLabels(props: 
   } = props;
   // states
   const [isOpen, setIsOpen] = useState(false);
+  const { workspaceSlug } = useParams({ strict: false });
   // refs
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   // store hooks
-  const { getProjectLabels } = useLabel();
+  const { labels: storeLabels } = useProjectLabels(workspaceSlug, projectId);
   const { isMobile } = usePlatformOS();
-  const storeLabels = getProjectLabels(projectId);
 
   const handleClose = () => {
     if (!isOpen) return;
@@ -280,4 +273,4 @@ export const IssuePropertyLabels = observer(function IssuePropertyLabels(props: 
       )}
     </>
   );
-});
+}

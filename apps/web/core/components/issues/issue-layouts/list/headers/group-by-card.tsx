@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
 import { CircleDashed } from "lucide-react";
 import { PlusIcon } from "@plane/propel/icons";
@@ -16,13 +15,13 @@ import type { TIssue, ISearchIssueResponse, TIssueGroupByOptions } from "@plane/
 // ui
 import { CustomMenu } from "@plane/ui";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
 import { CreateUpdateIssueModal } from "@/components/issues/issue-modal/modal";
 import { CreateUpdateEpicModal } from "@/components/epic-modal";
 // constants
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 
 interface IHeaderGroupByCard {
@@ -34,13 +33,13 @@ interface IHeaderGroupByCard {
   issuePayload: Partial<TIssue>;
   canEditProperties: (projectId: string | undefined) => boolean;
   disableIssueCreation?: boolean;
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   selectionHelpers: TSelectionHelper;
   handleCollapsedGroups: (value: string) => void;
   isEpic?: boolean;
 }
 
-export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHeaderGroupByCard) {
+export const HeaderGroupByCard = function HeaderGroupByCard(props: IHeaderGroupByCard) {
   const {
     groupID,
     icon,
@@ -59,7 +58,7 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
   const [openExistingIssueListModal, setOpenExistingIssueListModal] = useState(false);
   // router
   const { workspaceSlug, projectId, moduleId, cycleId } = useParams({ strict: false });
-  const storeType = useIssueStoreType();
+  const storeType = useIssueListType();
   // derived values
   const renderExistingIssueModal = moduleId || cycleId;
   const existingIssuesListModalPayload = moduleId ? { module: moduleId.toString() } : { cycle: true };
@@ -181,4 +180,4 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
       </div>
     </>
   );
-});
+};

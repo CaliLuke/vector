@@ -4,17 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
-import { setPromiseToast } from "@plane/propel/toast";
+import { notifyProjectFeatureUpdate } from "@/components/project/settings/feature-update-toast";
 import type { IProject } from "@plane/types";
 import { CycleIcon, IntakeIcon, ModuleIcon, PageIcon, ViewsIcon } from "@plane/propel/icons";
+import { Loader } from "@plane/ui";
 // components
 import { SettingsBoxedControlItem } from "@/components/settings/boxed-control-item";
 import { SettingsHeading } from "@/components/settings/heading";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useProjectDetail, useProjectMutations } from "@/hooks/use-projects";
 // plane web imports
 // local imports
 import { ProjectFeatureToggle } from "./helper";
@@ -68,13 +68,33 @@ const PROJECT_FEATURES_LIST = {
   },
 };
 
-export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: Props) {
+export function ProjectFeaturesList(props: Props) {
   const { workspaceSlug, projectId, isAdmin } = props;
   // store hooks
   const { t } = useTranslation();
-  const { getProjectById, updateProject } = useProject();
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const projectMutation = useProjectMutations(workspaceSlug, projectId);
   // derived values
-  const currentProjectDetails = getProjectById(projectId);
+  const currentProjectDetails = projectQuery.project;
+
+  if (projectQuery.isPending)
+    return (
+      <Loader className="w-full space-y-3">
+        <Loader.Item height="28px" />
+        <Loader.Item height="28px" />
+      </Loader>
+    );
+  if (projectQuery.isError || projectQuery.accessError)
+    return (
+      <div role="alert">
+        Unable to load project features.{" "}
+        <button type="button" onClick={() => void projectQuery.retryAccess()}>
+          Retry
+        </button>
+      </div>
+    );
+  if (projectQuery.accessDenied) return <div role="alert">You do not have access to this project.</div>;
+  if (!currentProjectDetails) return null;
 
   const handleSubmit = (_featureKey: string, featureProperty: string) => {
     if (!workspaceSlug || !projectId || !currentProjectDetails) return;
@@ -83,22 +103,9 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
     const settingsPayload = {
       [featureProperty]: !currentProjectDetails?.[featureProperty as keyof IProject],
     };
-    const updateProjectPromise = updateProject(workspaceSlug, projectId, settingsPayload);
+    const updateProjectPromise = projectMutation.mutateAsync({ type: "update", projectId, data: settingsPayload });
 
-    setPromiseToast(updateProjectPromise, {
-      loading: "Updating project feature...",
-      success: {
-        title: "Success!",
-        message: () => "Project feature updated successfully.",
-      },
-      error: {
-        title: "Error!",
-        message: () => "Something went wrong while updating project feature. Please try again.",
-      },
-    });
-    void updateProjectPromise.then(() => {
-      return undefined;
-    });
+    notifyProjectFeatureUpdate(updateProjectPromise);
   };
 
   return (
@@ -118,7 +125,7 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
                     featureItem={featureItem}
                     value={Boolean(currentProjectDetails?.[featureItem.property as keyof IProject])}
                     handleSubmit={handleSubmit}
-                    disabled={!isAdmin}
+                    disabled={!isAdmin || !currentProjectDetails || projectMutation.isPending}
                   />
                 }
               />
@@ -131,4 +138,4 @@ export const ProjectFeaturesList = observer(function ProjectFeaturesList(props: 
       </div>
     </>
   );
-});
+}

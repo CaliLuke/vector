@@ -6,10 +6,9 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
 import { Dialog, Transition } from "@headlessui/react";
 // hooks
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { usePowerK } from "@/hooks/use-power-k";
 // local imports
 import type { TPowerKCommandConfig, TPowerKContext } from "../../core/types";
 import type { TPowerKCommandsListProps } from "./commands-list";
@@ -24,7 +23,7 @@ type Props = {
   onClose: () => void;
 };
 
-export const ProjectsAppPowerKModalWrapper = observer(function ProjectsAppPowerKModalWrapper(props: Props) {
+export function ProjectsAppPowerKModalWrapper(props: Props) {
   const { commandsListComponent: CommandsListComponent, context, hideFooter = false, isOpen, onClose } = props;
   // states
   const [searchTerm, setSearchTerm] = useState("");
@@ -187,4 +186,4 @@ export const ProjectsAppPowerKModalWrapper = observer(function ProjectsAppPowerK
       </Dialog>
     </Transition.Root>
   );
-});
+}

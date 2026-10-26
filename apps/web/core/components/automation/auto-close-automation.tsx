@@ -6,11 +6,10 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
 
 import { ArchiveX } from "lucide-react";
 // plane imports
-import { PROJECT_AUTOMATION_MONTHS, EUserPermissions, EUserPermissionsLevel, EIconSize } from "@plane/constants";
+import { PROJECT_AUTOMATION_MONTHS, EUserPermissions, EIconSize } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { StateGroupIcon, StatePropertyIcon } from "@plane/propel/icons";
 import type { IProject } from "@plane/types";
@@ -18,27 +17,27 @@ import { CustomSelect, CustomSearchSelect, ToggleSwitch, Loader } from "@plane/u
 import { SelectMonthModal } from "@/components/automation";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 type Props = {
   handleChange: (formData: Partial<IProject>) => Promise<void>;
 };
 
-export const AutoCloseAutomation = observer(function AutoCloseAutomation(props: Props) {
+export const AutoCloseAutomation = function AutoCloseAutomation(props: Props) {
   const { handleChange } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [monthModal, setmonthModal] = useState(false);
   // store hooks
-  const { currentProjectDetails } = useProject();
-  const { projectStates } = useProjectState();
-  const { allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const projectId = currentProjectDetails?.id;
+  const { projectStates } = useProjectStates(workspaceSlug, projectId);
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { t } = useTranslation();
-
-  // const stateGroups = projectStateStore.groupedProjectStates ?? undefined;
 
   const options = projectStates
     ?.filter((state) => state.group === "cancelled")
@@ -65,12 +64,7 @@ export const AutoCloseAutomation = observer(function AutoCloseAutomation(props: 
     default_state: defaultState,
   };
 
-  const isAdmin = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug?.toString(),
-    currentProjectDetails?.id
-  );
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
   const autoCloseStatus = useMemo(() => {
     if (currentProjectDetails?.close_in === undefined) return false;
@@ -194,4 +188,4 @@ export const AutoCloseAutomation = observer(function AutoCloseAutomation(props: 
       </div>
     </>
   );
-});
+};

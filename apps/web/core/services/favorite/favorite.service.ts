@@ -40,12 +40,8 @@ export class FavoriteService extends APIService {
       });
   }
 
-  async getFavorites(workspaceSlug: string): Promise<IFavorite[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/user-favorites/`, {
-      params: {
-        all: true,
-      },
-    })
+  async getFavorites(workspaceSlug: string, signal?: AbortSignal): Promise<IFavorite[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/user-favorites/`, { params: { all: true } }, { signal })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

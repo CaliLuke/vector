@@ -27,6 +27,20 @@ export const WORKSPACE_SETTINGS_CATEGORY_LABELS: Record<WORKSPACE_SETTINGS_CATEG
 };
 
 export const WORKSPACE_SETTINGS: Record<TWorkspaceSettingsTabs, TWorkspaceSettingsItem> = {
+  "work-item-types": {
+    key: "work-item-types",
+    i18n_label: "workspace_settings.settings.work_item_types.title",
+    href: "/settings/work-item-types",
+    access: [EUserWorkspaceRoles.ADMIN],
+    highlight: (pathname, baseUrl) => pathname === `${baseUrl}/settings/work-item-types/`,
+  },
+  hierarchy: {
+    key: "hierarchy",
+    i18n_label: "workspace_settings.settings.work_item_types.hierarchy",
+    href: "/settings/hierarchy",
+    access: [EUserWorkspaceRoles.ADMIN],
+    highlight: (pathname, baseUrl) => pathname === `${baseUrl}/settings/hierarchy/`,
+  },
   general: {
     key: "general",
     i18n_label: "workspace_settings.settings.general.title",
@@ -74,6 +88,6 @@ export const GROUPED_WORKSPACE_SETTINGS: Record<WORKSPACE_SETTINGS_CATEGORY, TWo
     WORKSPACE_SETTINGS["members"],
     WORKSPACE_SETTINGS["export"],
   ],
-  [WORKSPACE_SETTINGS_CATEGORY.FEATURES]: [],
+  [WORKSPACE_SETTINGS_CATEGORY.FEATURES]: [WORKSPACE_SETTINGS["work-item-types"], WORKSPACE_SETTINGS.hierarchy],
   [WORKSPACE_SETTINGS_CATEGORY.DEVELOPER]: [WORKSPACE_SETTINGS["webhooks"]],
 };

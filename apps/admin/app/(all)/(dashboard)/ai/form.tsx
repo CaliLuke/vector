@@ -4,40 +4,33 @@
  * See the LICENSE file for details.
  */
 
-import { useForm } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateConfigurationsOptions } from "@/queries/instance";
 import { Lightbulb } from "lucide-react";
-import { Button } from "@plane/propel/button";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IFormattedInstanceConfiguration, TInstanceAIConfigurationKeys } from "@plane/types";
 // components
-import type { TControllerInputFormField } from "@/components/common/controller-input";
-import { ControllerInput } from "@/components/common/controller-input";
+import type { SettingsInput } from "@/components/common/settings-form";
+import { requiredField, SettingsForm } from "@/components/common/settings-form";
+import { useConfigurationForm } from "@/components/common/use-configuration-form";
 // hooks
-import { useInstance } from "@/hooks/store";
 
 type IInstanceAIForm = {
-  config: IFormattedInstanceConfiguration;
+  config: Partial<IFormattedInstanceConfiguration>;
 };
 
 type AIFormValues = Record<TInstanceAIConfigurationKeys, string>;
 
 export function InstanceAIForm(props: IInstanceAIForm) {
   const { config } = props;
-  // store
-  const { updateInstanceConfigurations } = useInstance();
-  // form data
-  const {
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm<AIFormValues>({
-    defaultValues: {
-      LLM_API_KEY: config["LLM_API_KEY"],
-      LLM_MODEL: config["LLM_MODEL"],
-    },
+  const queryClient = useQueryClient();
+  const { mutateAsync: updateInstanceConfigurations } = useMutation(updateConfigurationsOptions(queryClient));
+  const form = useConfigurationForm({
+    defaultValues: { LLM_API_KEY: config.LLM_API_KEY ?? "", LLM_MODEL: config.LLM_MODEL ?? "" },
+    save: updateInstanceConfigurations,
+    successMessage: "Settings updated successfully.",
   });
 
-  const aiFormFields: TControllerInputFormField<AIFormValues>[] = [
+  const aiFormFields: (SettingsInput & { key: keyof AIFormValues })[] = [
     {
       key: "LLM_MODEL",
       type: "text",
@@ -57,7 +50,6 @@ export function InstanceAIForm(props: IInstanceAIForm) {
         </>
       ),
       placeholder: "gpt-4o-mini",
-      error: Boolean(errors.LLM_MODEL),
       required: false,
     },
     {
@@ -79,53 +71,34 @@ export function InstanceAIForm(props: IInstanceAIForm) {
         </>
       ),
       placeholder: "sk-asddassdfasdefqsdfasd23das3dasdcasd",
-      error: Boolean(errors.LLM_API_KEY),
       required: false,
     },
   ];
 
-  const onSubmit = async (formData: AIFormValues) => {
-    const payload: Partial<AIFormValues> = { ...formData };
-
-    await updateInstanceConfigurations(payload)
-      .then(() =>
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "AI Settings updated successfully",
-        })
-      )
-      .catch((err) => console.error(err));
-  };
-
   return (
-    <div className="space-y-8">
+    <SettingsForm onSubmit={() => form.handleSubmit()} className="space-y-8">
       <div className="space-y-3">
         <div>
           <div className="pb-1 text-18 font-medium text-primary">OpenAI</div>
           <div className="text-13 font-regular text-tertiary">If you use ChatGPT, this is for you.</div>
         </div>
         <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-x-12 gap-y-8 lg:grid-cols-3">
-          {aiFormFields.map((field) => (
-            <ControllerInput
-              key={field.key}
-              control={control}
-              type={field.type}
-              name={field.key}
-              label={field.label}
-              description={field.description}
-              placeholder={field.placeholder}
-              error={field.error}
-              required={field.required}
-            />
+          {aiFormFields.map(({ key, ...input }) => (
+            <form.AppField
+              key={key}
+              name={key}
+              validators={{ onChange: input.required ? requiredField(input.label) : undefined }}
+            >
+              {(field) => <field.TextField {...input} />}
+            </form.AppField>
           ))}
         </div>
       </div>
 
       <div className="flex flex-col items-start gap-4">
-        <Button variant="primary" size="lg" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
-          {isSubmitting ? "Saving" : "Save changes"}
-        </Button>
+        <form.AppForm>
+          <form.SaveButton />
+        </form.AppForm>
 
         <div className="relative inline-flex items-center gap-1.5 rounded-sm border border-accent-subtle bg-accent-subtle px-4 py-2 text-caption-sm-regular text-accent-secondary">
           <Lightbulb className="size-4" />
@@ -137,6 +110,6 @@ export function InstanceAIForm(props: IInstanceAIForm) {
           </div>
         </div>
       </div>
-    </div>
+    </SettingsForm>
   );
 }

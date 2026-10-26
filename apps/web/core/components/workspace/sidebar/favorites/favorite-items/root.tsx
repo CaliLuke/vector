@@ -4,7 +4,8 @@
  * See the LICENSE file for details.
  */
 
-import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
+import { treeDropHandlers } from "@/lib/tree-drop-instruction";
+import { renderNativeDragPreview } from "@/lib/native-drag-preview";
 import { useEffect, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
@@ -13,8 +14,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { pointerOutsideOfPreview } from "@atlaskit/pragmatic-drag-and-drop/element/pointer-outside-of-preview";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { observer } from "mobx-react";
-import { createRoot } from "react-dom/client";
+
 // plane imports
 import { useOutsideClickDetector } from "@plane/hooks";
 import type { IFavorite, InstructionType } from "@plane/types";
@@ -34,7 +34,7 @@ type Props = {
   handleDrop: (self: DropTargetRecord, source: ElementDragPayload, location: DragLocationHistory) => void;
 };
 
-export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
+export const FavoriteRoot = function FavoriteRoot(props: Props) {
   // props
   const { isLastChild, parentId, workspaceSlug, favorite, handleRemoveFromFavorites, handleDrop } = props;
   // store hooks
@@ -52,14 +52,14 @@ export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
 
   // drag and drop
   useEffect(() => {
-    const element = elementRef.current;
+    const rootElement = elementRef.current;
 
-    if (!element) return;
+    if (!rootElement) return;
     const initialData = { id: favorite.id, isGroup: false, isChild: !!parentId, parentId: parentId ?? null };
     return combine(
       draggable({
-        element,
-        dragHandle: element,
+        element: rootElement,
+        dragHandle: rootElement,
         getInitialData: () => initialData,
         onDragStart: () => {
           setIsDragging(true);
@@ -70,21 +70,19 @@ export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
           setCustomNativeDragPreview({
             getOffset: pointerOutsideOfPreview({ x: "0px", y: "0px" }),
-            render: ({ container }) => {
-              const root = createRoot(container);
-              root.render(
+            nativeSetDragImage,
+            render: ({ container }) =>
+              renderNativeDragPreview(
+                container,
                 <div className="rounded-sm bg-surface-1 p-1 pr-2 text-13">
                   <FavoriteItemTitle href={itemLink} icon={itemIcon} title={itemTitle} />
                 </div>
-              );
-              return () => root.unmount();
-            },
-            nativeSetDragImage,
+              ),
           });
         },
       }),
       dropTargetForElements({
-        element,
+        element: rootElement,
         canDrop: ({ source }) => getCanDrop(source, favorite, !!parentId),
         onDragStart: () => {
           setIsDragging(true);
@@ -104,17 +102,7 @@ export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
             block: blockedStates,
           });
         },
-        onDrag: ({ self, source, location }) => {
-          const instruction = getInstructionFromPayload(self, source, location);
-          setInstruction(instruction);
-        },
-        onDragLeave: () => {
-          setInstruction(undefined);
-        },
-        onDrop: ({ self, source, location }) => {
-          setInstruction(undefined);
-          handleDrop(self, source, location);
-        },
+        ...treeDropHandlers(setInstruction, handleDrop),
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,4 +127,4 @@ export const FavoriteRoot = observer(function FavoriteRoot(props: Props) {
       {isLastChild && <DropIndicator isVisible={instruction === "reorder-below"} />}
     </>
   );
-});
+};

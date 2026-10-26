@@ -11,7 +11,7 @@ import { Tooltip } from "@plane/propel/tooltip";
 import type { TWorkspaceBaseActivity } from "@plane/types";
 // ui
 // helpers
-import { renderFormattedTime, renderFormattedDate, calculateTimeAgo } from "@plane/utils";
+import { renderFormattedTime, renderFormattedDate, calculateTimeAgo } from "@plane/utils/datetime";
 // hooks
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components

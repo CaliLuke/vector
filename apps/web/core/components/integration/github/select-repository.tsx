@@ -7,21 +7,22 @@
 import { useParams } from "@tanstack/react-router";
 import React from "react";
 
-import useSWRInfinite from "swr/infinite";
-import type { IWorkspaceIntegration } from "@plane/types";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import type { IGithubRepository, IWorkspaceIntegration } from "@plane/types";
 // services
 // ui
 import { CustomSearchSelect } from "@plane/ui";
 // helpers
-import { truncateText } from "@plane/utils";
+import { truncateText } from "@plane/utils/string";
+import { API_BASE_URL } from "@plane/constants";
 import { ProjectService } from "@/services/project";
 // types
 
 type Props = {
   integration: IWorkspaceIntegration;
-  value: any;
+  value: string | null;
   label: string | React.ReactNode;
-  onChange: (repo: any) => void;
+  onChange: (repo: IGithubRepository | undefined) => void;
   characterLimit?: number;
 };
 
@@ -32,26 +33,19 @@ export function SelectRepository(props: Props) {
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
 
-  const getKey = (pageIndex: number) => {
-    if (!workspaceSlug || !integration) return;
-
-    return `${process.env.VITE_API_BASE_URL}/api/workspaces/${workspaceSlug}/workspace-integrations/${
-      integration.id
-    }/github-repositories/?page=${++pageIndex}`;
-  };
-
-  const fetchGithubRepos = async (url: string) => {
-    const data = await projectService.getGithubRepositories(url);
-
-    return data;
-  };
-
-  const { data: paginatedData, size, setSize, isValidating } = useSWRInfinite(getKey, fetchGithubRepos);
-
-  let userRepositories = (paginatedData ?? []).map((data) => data.repositories).flat();
-  userRepositories = userRepositories.filter((data) => data?.id);
-
-  const totalCount = paginatedData && paginatedData.length > 0 ? paginatedData[0].total_count : 0;
+  const { data, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery({
+    queryKey: ["GITHUB_REPOSITORIES", workspaceSlug, integration.id],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      projectService.getGithubRepositories(
+        `${API_BASE_URL}/api/workspaces/${workspaceSlug}/workspace-integrations/${integration.id}/github-repositories/?page=${pageParam}`
+      ),
+    getNextPageParam: (lastPage, pages, lastPageParam) => {
+      const loadedCount = pages.reduce((count, page) => count + page.repositories.length, 0);
+      return lastPage.repositories.length > 0 && loadedCount < lastPage.total_count ? lastPageParam + 1 : undefined;
+    },
+  });
+  const userRepositories = data?.pages.flatMap((page) => page.repositories).filter((repo) => repo?.id) ?? [];
 
   const options =
     userRepositories.map((repo) => ({
@@ -74,14 +68,14 @@ export function SelectRepository(props: Props) {
       label={label}
       footerOption={
         <>
-          {userRepositories && options.length < totalCount && (
+          {hasNextPage && (
             <button
               type="button"
               className="w-full p-1 text-center text-10 text-secondary hover:bg-layer-1"
-              onClick={() => setSize(size + 1)}
-              disabled={isValidating}
+              onClick={() => void fetchNextPage()}
+              disabled={isFetching}
             >
-              {isValidating ? "Loading..." : "Click to load more..."}
+              {isFetching ? "Loading..." : "Click to load more..."}
             </button>
           )}
         </>

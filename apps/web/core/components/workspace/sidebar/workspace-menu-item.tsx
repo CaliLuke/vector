@@ -5,18 +5,16 @@
  */
 
 import { Link, useParams, useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { EUserWorkspaceRoles } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions } from "@/providers/sidebar-state";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
 export type SidebarWorkspaceMenuItemProps = {
   item: {
@@ -28,18 +26,16 @@ export type SidebarWorkspaceMenuItemProps = {
   };
 };
 
-export const SidebarWorkspaceMenuItem = observer(function SidebarWorkspaceMenuItem(
-  props: SidebarWorkspaceMenuItemProps
-) {
+export function SidebarWorkspaceMenuItem(props: SidebarWorkspaceMenuItemProps) {
   const { item } = props;
 
   const { t } = useTranslation();
   // nextjs hooks
   const pathname = useLocation({ select: (location) => location.pathname });
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug.toString());
   // store hooks
-  const { toggleSidebar } = useAppTheme();
+  const { toggleSidebar } = useSidebarActions();
 
   const handleLinkClick = () => {
     if (window.innerWidth < 768) {
@@ -47,7 +43,7 @@ export const SidebarWorkspaceMenuItem = observer(function SidebarWorkspaceMenuIt
     }
   };
 
-  if (!allowPermissions(item.access as any, EUserPermissionsLevel.WORKSPACE, workspaceSlug.toString())) {
+  if (!canWorkspace(item.access as any)) {
     return null;
   }
 
@@ -67,4 +63,4 @@ export const SidebarWorkspaceMenuItem = observer(function SidebarWorkspaceMenuIt
       </SidebarNavItem>
     </Link>
   );
-});
+}

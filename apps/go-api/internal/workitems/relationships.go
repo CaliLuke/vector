@@ -244,7 +244,7 @@ func relationProjection(relation, target map[string]any) map[string]any {
 	return out
 }
 func (r *Repository) listRelations(ctx context.Context, q Request) (Result, error) {
-	rows, err := r.rows(ctx, `SELECT to_jsonb(rel)||jsonb_build_object('left_project',i.project_id,'right_project',j.project_id) FROM issue_relations rel JOIN issues i ON i.id=rel.issue_id JOIN issues j ON j.id=rel.related_issue_id JOIN workspaces w ON w.id=rel.workspace_id WHERE (rel.issue_id=$1 OR rel.related_issue_id=$1) AND w.slug=$2 AND rel.deleted_at IS NULL ORDER BY rel.created_at DESC`, q.IssueID, q.Slug)
+	rows, err := r.visibleCollaborationRows(ctx, q, "relation", `SELECT to_jsonb(rel)||jsonb_build_object('left_project',i.project_id,'right_project',j.project_id) FROM issue_relations rel JOIN issues i ON i.id=rel.issue_id JOIN issues j ON j.id=rel.related_issue_id JOIN workspaces w ON w.id=rel.workspace_id WHERE (rel.issue_id=$1 OR rel.related_issue_id=$1) AND w.slug=$2 AND rel.deleted_at IS NULL AND `+djangoapi.IssueVisibleSQL("i", "$3::uuid", "w.id")+` AND `+djangoapi.IssueVisibleSQL("j", "$3::uuid", "w.id")+` ORDER BY rel.created_at DESC`, q.IssueID, q.Slug, q.ActorID)
 	if err != nil {
 		return Result{}, err
 	}
@@ -338,12 +338,42 @@ func (r *Repository) softDeleteRow(ctx context.Context, table, model, id, actor 
 	if err != nil {
 		return err
 	}
-	return r.publisher.SoftDelete(ctx, "db", model, id)
+	return r.softDelete(ctx, model, id)
 }
 
 func (r *Repository) subissues(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	if q.Method == "GET" {
+		return r.subissuesTransaction(ctx, q, body, contentType)
+	}
+	return r.writeProjectTransaction(ctx, q.ProjectID, func(writer *Repository) error {
+		if err := writer.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
+			return err
+		}
+		return writer.allowProject(ctx, q, []int{5, 15, 20}, false)
+	}, func(writer *Repository) (Result, error) {
+		return writer.subissuesTransaction(ctx, q, body, contentType)
+	})
+}
+
+func (r *Repository) subissuesTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	if err := r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
+		return Result{}, err
+	}
+	if err := r.allowProject(ctx, q, []int{5, 15, 20}, false); err != nil {
+		return Result{}, err
+	}
+	parent, err := r.issue(ctx, q, q.Method == "POST")
+	if err != nil {
+		return Result{}, err
+	}
+	var parentVisible bool
+	if err = r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+`)`, q.IssueID, q.ActorID, parent["workspace_id"]).Scan(&parentVisible); err != nil {
+		return Result{}, err
+	}
+	if !parentVisible {
+		return Result{}, requiredObject()
+	}
 	var rows []map[string]any
-	var err error
 	if q.Method == "POST" {
 		if _, err = r.workspaceAnchor(ctx, q, true); err != nil {
 			return Result{}, err
@@ -360,33 +390,49 @@ func (r *Repository) subissues(ctx context.Context, q Request, body io.Reader, c
 		if e != nil {
 			return Result{}, e
 		}
-		rows, e = r.eligibleIssues(ctx, q, ids, false)
+		rows, e = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i WHERE i.id=ANY($1::uuid[]) AND `+liveIssue+` AND `+djangoapi.IssueVisibleSQL("i", "$2::uuid", "$3::uuid")+` ORDER BY i.created_at DESC`, ids, q.ActorID, parent["workspace_id"])
 		if e != nil {
 			return Result{}, e
 		}
+		requested := map[string]bool{}
+		for _, id := range ids {
+			requested[id] = true
+		}
+		if len(rows) != len(requested) {
+			return Result{}, failure(400, "sub_issue_ids", "One or more work items are no longer available.")
+		}
 		eligible := []string{}
+		previousParents := make(map[string]any, len(rows))
 		for _, row := range rows {
+			childRequest := q
+			childRequest.ProjectID, childRequest.IssueID = stringValue(row["project_id"]), stringValue(row["id"])
+			if err = r.allowProject(ctx, childRequest, []int{15, 20}, false); err != nil {
+				return Result{}, err
+			}
 			eligible = append(eligible, row["id"].(string))
+			previousParents[row["id"].(string)] = row["parent_id"]
 			row["parent_id"] = q.IssueID
 		}
 		if _, err = r.db.Exec(ctx, `UPDATE issues SET parent_id=$1 WHERE id=ANY($2::uuid[])`, q.IssueID, eligible); err != nil {
 			return Result{}, err
 		}
 		// Use the same eligible tenant set for tasks and response as for mutation.
-		for _, id := range ids {
-			if !slices.Contains(eligible, id) {
-				continue
-			}
+		for _, child := range rows {
+			id := child["id"].(string)
 			local := q
-			local.IssueID = id
+			local.IssueID, local.ProjectID = id, child["project_id"].(string)
 			requested, _ := pythoncompat.Dumps(map[string]any{"parent": q.IssueID}, nil)
-			previous, _ := pythoncompat.Dumps(map[string]any{"parent": id}, nil)
+			previous, _ := pythoncompat.Dumps(map[string]any{"parent": previousParents[id]}, nil)
 			if err = r.activity(ctx, local, "issue.activity.updated", requested, previous, false); err != nil {
 				return Result{}, err
 			}
 		}
 	} else {
-		rows, err = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id WHERE i.parent_id=$1 AND w.slug=$2 AND `+liveIssue+` ORDER BY `+subissueOrder(q.Params["order_by"]), q.IssueID, q.Slug)
+		rows, err = r.rows(ctx, `SELECT `+djangoapi.IssueRowSQL("i")+` FROM issues i JOIN workspaces w ON w.id=i.workspace_id JOIN projects p ON p.id=i.project_id
+ WHERE i.parent_id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND EXISTS(
+ SELECT 1 FROM project_members m JOIN workspace_members wm ON wm.workspace_id=m.workspace_id AND wm.member_id=m.member_id
+ WHERE m.project_id=i.project_id AND m.workspace_id=i.workspace_id AND m.member_id=$3 AND m.is_active AND m.deleted_at IS NULL
+ AND wm.is_active AND wm.deleted_at IS NULL AND (m.role>=15 OR m.role=5 AND (p.guest_view_all_features OR i.created_by_id=$3))) AND `+liveIssue+` ORDER BY `+subissueOrder(q.Params["order_by"]), q.IssueID, q.Slug, q.ActorID)
 		if err != nil {
 			return Result{}, err
 		}

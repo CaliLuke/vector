@@ -3246,6 +3246,44 @@ func mapAssetsLifecycleError(operation string, err error) error {
 				return result
 			}
 		}
+	case "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk":
+		switch status {
+		case 400:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus400{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		case 401:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus401{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		case 403:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus403{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		case 404:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus404{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		case 409:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus409{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		case 500:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		default:
+			result := api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkStatus500{}
+			if json.Unmarshal(encoded, &result) == nil {
+				return result
+			}
+		}
 	case "PostAPIAssetsV2WorkspacesBySlugDuplicateAssetsByAssetID":
 		switch status {
 		case 400:
@@ -4543,6 +4581,14 @@ func (service *LifecycleService) PatchAPIAssetsV2WorkspacesBySlugProjectsByProje
 	_, err := service.invoke(ctx, "PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", payload, body)
 	if err != nil {
 		return mapAssetsLifecycleError("PatchAPIAssetsV2WorkspacesBySlugProjectsByProjectIDIssuesByIssueIDAttachmentsByPk", err)
+	}
+	return nil
+}
+
+func (service *LifecycleService) PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk(ctx context.Context, payload *api.PostAPIAssetsV2WorkspacesBySlugByEntityIDBulkPayload, body io.ReadCloser) error {
+	_, err := service.invoke(ctx, "PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", payload, body)
+	if err != nil {
+		return mapAssetsLifecycleError("PostAPIAssetsV2WorkspacesBySlugByEntityIDBulk", err)
 	}
 	return nil
 }

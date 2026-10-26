@@ -1,18 +1,15 @@
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
- * See the LICENSE file for details.
+ * See the LICENSE file in the project root for details.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
-// plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
-// components
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { PageHead } from "@/components/core/page-title";
@@ -20,59 +17,41 @@ import { SettingsHeading } from "@/components/settings/heading";
 import { WebhookSettingsLoader } from "@/components/ui/loader/settings/web-hook";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { WebhooksList, CreateWebhookModal } from "@/components/web-hooks";
-// hooks
-import { useWebhook } from "@/hooks/store/use-webhook";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
-// local imports
+import { webhooksListOptions } from "@/queries/webhooks";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { WebhooksWorkspaceSettingsHeader } from "./header";
 
 function WebhooksListPage(): React.JSX.Element | null {
-  // states
   const [showCreateWebhookModal, setShowCreateWebhookModal] = useState(false);
-  // router
   const { workspaceSlug } = Route.useParams();
-  // plane hooks
   const { t } = useTranslation();
-  // mobx store
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const { fetchWebhooks, webhooks, clearSecretKey, webhookSecretKey, createWebhook } = useWebhook();
-  const { currentWorkspace } = useWorkspace();
-  // derived values
-  const canPerformWorkspaceAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
-
-  useSWR(
-    canPerformWorkspaceAdminActions ? `WEBHOOKS_LIST_${workspaceSlug}` : null,
-    canPerformWorkspaceAdminActions ? () => fetchWebhooks(workspaceSlug) : null
-  );
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace, isPending, isError } = useWorkspacePermissions(workspaceSlug);
+  const canPerformWorkspaceAdminActions = canWorkspace([EUserPermissions.ADMIN]);
+  const webhooksQuery = useQuery(webhooksListOptions(workspaceSlug, canPerformWorkspaceAdminActions));
 
   const pageTitle = currentWorkspace?.name
     ? `${currentWorkspace.name} - ${t("workspace_settings.settings.webhooks.title")}`
     : undefined;
 
-  // clear secret key when modal is closed.
-  useEffect(() => {
-    if (!showCreateWebhookModal && webhookSecretKey) clearSecretKey();
-  }, [showCreateWebhookModal, webhookSecretKey, clearSecretKey]);
+  if (isPending) return <WebhookSettingsLoader />;
 
-  if (workspaceUserInfo && !canPerformWorkspaceAdminActions) {
+  if (isError || !canPerformWorkspaceAdminActions) {
     return <NotAuthorizedView section="settings" className="h-auto" />;
   }
 
-  if (!webhooks) return <WebhookSettingsLoader />;
+  if (webhooksQuery.isPending) return <WebhookSettingsLoader />;
 
   return (
     <SettingsContentWrapper header={<WebhooksWorkspaceSettingsHeader />}>
       <PageHead title={pageTitle} />
       <div className="w-full">
         <CreateWebhookModal
-          createWebhook={createWebhook}
-          clearSecretKey={clearSecretKey}
-          currentWorkspace={currentWorkspace}
+          key={`${workspaceSlug}/${showCreateWebhookModal}`}
+          currentWorkspace={currentWorkspace ?? null}
           isOpen={showCreateWebhookModal}
-          onClose={() => {
-            setShowCreateWebhookModal(false);
-          }}
+          onClose={() => setShowCreateWebhookModal(false)}
         />
         <SettingsHeading
           title={t("workspace_settings.settings.webhooks.title")}
@@ -83,9 +62,16 @@ function WebhooksListPage(): React.JSX.Element | null {
             </Button>
           }
         />
-        {Object.keys(webhooks).length > 0 ? (
+        {webhooksQuery.isError ? (
+          <div className="mt-6 space-y-3" role="alert">
+            <p className="text-13 text-danger-primary">Webhooks could not be loaded. Please try again.</p>
+            <Button variant="secondary" onClick={() => void webhooksQuery.refetch()}>
+              Retry
+            </Button>
+          </div>
+        ) : webhooksQuery.data?.length ? (
           <div className="mt-4">
-            <WebhooksList />
+            <WebhooksList workspaceSlug={workspaceSlug} webhooks={webhooksQuery.data} />
           </div>
         ) : (
           <div className="flex h-full w-full flex-col">
@@ -97,9 +83,7 @@ function WebhooksListPage(): React.JSX.Element | null {
                 actions={[
                   {
                     label: t("settings_empty_state.webhooks.cta_primary"),
-                    onClick: () => {
-                      setShowCreateWebhookModal(true);
-                    },
+                    onClick: () => setShowCreateWebhookModal(true),
                   },
                 ]}
                 align="start"
@@ -114,5 +98,5 @@ function WebhooksListPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/_workspace/webhooks")({
-  component: observer(WebhooksListPage),
+  component: WebhooksListPage,
 });

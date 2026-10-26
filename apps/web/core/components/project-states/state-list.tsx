@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
 // components
 import { StateItem } from "@/components/project-states";
@@ -19,7 +18,7 @@ type TStateList = {
   stateItemClassName?: string;
 };
 
-export const StateList = observer(function StateList(props: TStateList) {
+export const StateList = function StateList(props: TStateList) {
   const {
     groupKey,
     groupedStates,
@@ -47,4 +46,4 @@ export const StateList = observer(function StateList(props: TStateList) {
       ))}
     </>
   );
-});
+};

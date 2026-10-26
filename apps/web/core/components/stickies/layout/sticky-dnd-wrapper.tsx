@@ -5,17 +5,14 @@
  */
 
 import { useLocation } from "@tanstack/react-router";
-import { getTreeDropInstruction as getInstructionFromPayload } from "@/lib/tree-drop-instruction";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import type { DropTargetRecord, DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import type { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { attachInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/tree-item";
-import { observer } from "mobx-react";
+import { attachReorderInstruction } from "@/lib/tree-drop-instruction";
 
 // plane types
-import type { InstructionType } from "@plane/types";
 // components
 import { StickyNote } from "../sticky";
 // helpers
@@ -32,10 +29,8 @@ type Props = {
   handleLayout: () => void;
 };
 
-export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props) {
+export const StickyDNDWrapper = function StickyDNDWrapper(props: Props) {
   const { stickyId, workspaceSlug, itemWidth, className = "", isLastChild, handleDrop, handleLayout } = props;
-  // states
-  const [_instruction, setInstruction] = useState<InstructionType | undefined>(undefined);
   // refs
   const elementRef = useRef<HTMLDivElement>(null);
   // navigation
@@ -57,35 +52,13 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
         dropTargetForElements({
           element: stickyElement,
           canDrop: ({ source }) => source.data?.type === "sticky",
-          getData: ({ input, element }) => {
-            const blockedStates: InstructionType[] = ["make-child"];
-            if (!isLastChild) {
-              blockedStates.push("reorder-below");
-            }
-
-            return attachInstruction(initialData, {
-              input,
-              element,
-              currentLevel: 1,
-              indentPerLevel: 0,
-              mode: isLastChild ? "last-in-group" : "standard",
-              block: blockedStates,
-            });
-          },
-          onDrag: ({ self, source, location }) => {
-            const instruction = getInstructionFromPayload(self, source, location);
-            setInstruction(instruction);
-          },
-          onDragLeave: () => {
-            setInstruction(undefined);
-          },
+          getData: (target) => attachReorderInstruction(initialData, target, isLastChild),
           onDrop: ({ self, source, location }) => {
-            setInstruction(undefined);
             handleDrop(self, source, location);
           },
         })
       );
-  }, [handleDrop, isLastChild, pathname, stickyId, workspaceSlug]);
+  }, [handleDrop, isLastChild, pathname, stickyId]);
 
   return (
     <div
@@ -95,14 +68,7 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
         width: itemWidth,
       }}
     >
-      {/* {!isInFirstRow && <DropIndicator isVisible={instruction === "reorder-above"} />} */}
-      <StickyNote
-        key={stickyId || "new"}
-        workspaceSlug={workspaceSlug}
-        stickyId={stickyId}
-        handleLayout={handleLayout}
-      />
-      {/* {!isInLastRow && <DropIndicator isVisible={instruction === "reorder-below"} />} */}
+      <StickyNote key={stickyId} workspaceSlug={workspaceSlug} stickyId={stickyId} handleLayout={handleLayout} />
     </div>
   );
-});
+};

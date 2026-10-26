@@ -4,29 +4,34 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useParams } from "@tanstack/react-router";
+
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { EIssuesStoreType, EUserWorkspaceRoles } from "@plane/types";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 
-export const GlobalViewEmptyState = observer(function GlobalViewEmptyState() {
+export const GlobalViewEmptyState = function GlobalViewEmptyState() {
   // plane imports
   const { t } = useTranslation();
   // store hooks
-  const { workspaceProjectIds } = useProject();
+  const { data: catalogueWorkspace } = useCurrentWorkspace();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const workspaceProjectIds = projectRows
+    ?.filter((project) => project.workspace === catalogueWorkspace?.id && !project.archived_at)
+    .map((project) => project.id);
   const { toggleCreateIssueModal, toggleCreateProjectModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug } = useParams({ strict: false });
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   // derived values
-  const hasMemberLevelPermission = allowPermissions(
-    [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const hasMemberLevelPermission = canWorkspace([EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER]);
 
   if (workspaceProjectIds?.length === 0) {
     return (
@@ -67,4 +72,4 @@ export const GlobalViewEmptyState = observer(function GlobalViewEmptyState() {
       ]}
     />
   );
-});
+};

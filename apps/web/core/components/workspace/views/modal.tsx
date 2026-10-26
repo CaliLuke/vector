@@ -5,19 +5,20 @@
  */
 
 import { useParams, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IWorkspaceView } from "@plane/types";
-import { EIssuesStoreType } from "@plane/types";
-import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
+import type { IWorkspaceView, TWorkItemFilterExpression } from "@plane/types";
+
 // hooks
-import { useGlobalView } from "@/hooks/store/use-global-view";
-import { useWorkItemFilters } from "@/hooks/store/work-item-filters/use-work-item-filters";
+import {
+  areWorkspaceRichFiltersEquivalent,
+  useWorkspaceIssuePreferences,
+} from "@/providers/workspace-issue-preferences";
+import { useWorkspaceViewActionScope, useWorkspaceViewMutations } from "@/hooks/use-workspace-views";
 
 // local imports
-import { WorkspaceViewForm } from "./form";
+import { ViewForm } from "@/components/views/form";
 
 type Props = {
   data?: IWorkspaceView;
@@ -26,14 +27,28 @@ type Props = {
   preLoadedData?: Partial<IWorkspaceView>;
 };
 
-export const CreateUpdateWorkspaceViewModal = observer(function CreateUpdateWorkspaceViewModal(props: Props) {
+function acceptedWorkingExpression(
+  working: TWorkItemFilterExpression | undefined,
+  payload: Partial<IWorkspaceView>,
+  saved: IWorkspaceView
+) {
+  return (
+    working !== undefined &&
+    payload.rich_filters !== undefined &&
+    areWorkspaceRichFiltersEquivalent(working, payload.rich_filters) &&
+    areWorkspaceRichFiltersEquivalent(saved.rich_filters, payload.rich_filters)
+  );
+}
+
+export function CreateUpdateWorkspaceViewModal(props: Props) {
   const { isOpen, onClose, data, preLoadedData } = props;
   // router
   const router = useRouter();
   const { workspaceSlug } = useParams({ strict: false });
   // store hooks
-  const { createGlobalView, updateGlobalView } = useGlobalView();
-  const { resetExpression } = useWorkItemFilters();
+  const { create, update } = useWorkspaceViewMutations(workspaceSlug);
+  const captureActionScope = useWorkspaceViewActionScope(workspaceSlug, isOpen, data?.id);
+  const preferences = useWorkspaceIssuePreferences();
 
   const handleClose = () => {
     onClose();
@@ -41,58 +56,39 @@ export const CreateUpdateWorkspaceViewModal = observer(function CreateUpdateWork
 
   const handleCreateView = async (payload: Partial<IWorkspaceView>) => {
     if (!workspaceSlug) return;
-
+    const isCurrent = captureActionScope();
+    let saved: IWorkspaceView;
     try {
-      const payloadData: Partial<IWorkspaceView> = {
-        ...payload,
-        rich_filters: {
-          ...payload?.rich_filters,
-        },
-      };
-      const res = await createGlobalView(workspaceSlug, payloadData);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "View created successfully.",
-      });
-      void router.navigate({ href: `/${workspaceSlug}/workspace-views/${res.id}` });
-      handleClose();
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "View could not be created. Please try again.",
-      });
+      saved = await create.mutateAsync({ ...payload, rich_filters: { ...payload.rich_filters } });
+    } catch (error) {
+      if (isCurrent())
+        setToast({ type: TOAST_TYPE.ERROR, title: "Error!", message: "View could not be created. Please try again." });
+      throw error;
     }
+    if (!isCurrent()) return;
+    setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "View created successfully." });
+    void router.navigate({ href: `/${workspaceSlug}/workspace-views/${saved.id}` });
+    handleClose();
   };
 
   const handleUpdateView = async (payload: Partial<IWorkspaceView>) => {
     if (!workspaceSlug || !data) return;
-
+    const submittedRevision = preferences?.revision;
+    const workingExpression = preferences?.issueFilters?.richFilters;
+    let saved: IWorkspaceView;
+    const isCurrent = captureActionScope();
     try {
-      const payloadData: Partial<IWorkspaceView> = {
-        ...payload,
-        query: {
-          ...payload?.rich_filters,
-        },
-      };
-      const res = await updateGlobalView(workspaceSlug, data.id, payloadData);
-      if (res) {
-        resetExpression(EIssuesStoreType.GLOBAL, data.id, res.rich_filters);
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "View updated successfully.",
-        });
-        handleClose();
-      }
-    } catch (_error) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "View could not be updated. Please try again.",
-      });
+      saved = await update.mutateAsync({ viewId: data.id, data: { ...payload, query: { ...payload.rich_filters } } });
+    } catch (error) {
+      if (isCurrent())
+        setToast({ type: TOAST_TYPE.ERROR, title: "Error!", message: "View could not be updated. Please try again." });
+      throw error;
     }
+    if (!isCurrent()) return;
+    if (submittedRevision !== undefined && acceptedWorkingExpression(workingExpression, payload, saved))
+      preferences?.acknowledgeSave(data.id, submittedRevision, true);
+    setToast({ type: TOAST_TYPE.SUCCESS, title: "Success!", message: "View updated successfully." });
+    handleClose();
   };
 
   const handleFormSubmit = async (formData: Partial<IWorkspaceView>) => {
@@ -103,15 +99,15 @@ export const CreateUpdateWorkspaceViewModal = observer(function CreateUpdateWork
   };
 
   if (!workspaceSlug) return null;
+  if (!isOpen) return null;
   return (
-    <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.TOP} width={EModalWidth.XXL}>
-      <WorkspaceViewForm
-        handleFormSubmit={handleFormSubmit}
-        handleClose={handleClose}
-        data={data}
-        preLoadedData={preLoadedData}
-        workspaceSlug={workspaceSlug}
-      />
-    </ModalCore>
+    <ViewForm
+      key={data?.id ?? "new"}
+      handleFormSubmit={handleFormSubmit}
+      handleClose={handleClose}
+      data={data}
+      preLoadedData={preLoadedData}
+      workspaceSlug={workspaceSlug}
+    />
   );
-});
+}

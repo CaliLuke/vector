@@ -6,6 +6,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
@@ -24,6 +25,23 @@ func apiForeignKey(field string) bool {
 // Serialize projects the source BaseSerializer fields and resolves its API relations.
 // Callers retain ownership of their model's declared fields and final overrides.
 func Serialize(ctx context.Context, db Database, row map[string]any, declared []string, fields, expand string, issue bool) (map[string]any, error) {
+	return serialize(ctx, db, row, declared, fields, expand, issue, nil)
+}
+
+// SerializeVisible applies related-item visibility while preserving field selection.
+func SerializeVisible(ctx context.Context, db Database, row map[string]any, declared []string, fields, expand string, issue bool, actor string) (map[string]any, error) {
+	return serialize(ctx, db, row, declared, fields, expand, issue, &actor)
+}
+
+func serialize(ctx context.Context, db Database, row map[string]any, declared []string, fields, expand string, issue bool, actor *string) (map[string]any, error) {
+	if issue && actor != nil {
+		var err error
+		row, err = MaskIssueParent(ctx, db, row, *actor)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	selected := map[string]bool{}
 	for _, field := range strings.Split(fields, ",") {
 		if field != "" {
@@ -70,7 +88,7 @@ func Serialize(ctx context.Context, db Database, row map[string]any, declared []
 				result[field] = expanded
 				continue
 			}
-			expanded, known, err := apiExpand(ctx, db, field, value)
+			expanded, known, err := apiExpand(ctx, db, field, value, actor)
 			if err != nil {
 				return nil, err
 			}
@@ -84,7 +102,7 @@ func Serialize(ctx context.Context, db Database, row map[string]any, declared []
 	return result, nil
 }
 
-func apiExpand(ctx context.Context, db Database, field string, id any) (any, bool, error) {
+func apiExpand(ctx context.Context, db Database, field string, id any, actor *string) (any, bool, error) {
 	var query, kind string
 	switch field {
 	case "default_assignee", "project_lead", "owned_by", "created_by", "updated_by", "actor":
@@ -114,7 +132,12 @@ func apiExpand(ctx context.Context, db Database, field string, id any) (any, boo
 		}
 		return map[string]any{}, true, nil
 	}
-	value, err := JSON(ctx, db, query, id)
+	args := []any{id}
+	if kind == "issue" && actor != nil {
+		query += " AND " + IssueVisibleSQL("i", "NULLIF($2,'')::uuid", "i.workspace_id")
+		args = append(args, *actor)
+	}
+	value, err := JSON(ctx, db, query, args...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return map[string]any{}, true, nil
 	}
@@ -122,7 +145,7 @@ func apiExpand(ctx context.Context, db Database, field string, id any) (any, boo
 		return nil, true, err
 	}
 	if kind != "" {
-		value, err = serializeRelation(ctx, db, value.(map[string]any), kind, "", "")
+		value, err = serializeRelation(ctx, db, value.(map[string]any), kind, "", "", actor)
 	}
 	return value, true, err
 }
@@ -130,7 +153,7 @@ func apiExpand(ctx context.Context, db Database, field string, id any) (any, boo
 func apiIssueRelations(ctx context.Context, db Database, issue any, relation string) (any, error) {
 	query := `SELECT COALESCE(jsonb_agg((jsonb_build_object('id',u.id,'first_name',u.first_name,'last_name',u.last_name,'email',u.email,'avatar',u.avatar,'display_name',u.display_name)||` + FileAssetURLFieldSQL("u.avatar_asset_id", "u.avatar", "avatar_url") + `) ORDER BY u.created_at DESC),'[]'::jsonb) FROM users u WHERE u.id IN (SELECT assignee_id FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL)`
 	if relation == "labels" {
-		query = `SELECT COALESCE(jsonb_agg(to_jsonb(l) ORDER BY l.created_at DESC),'[]'::jsonb) FROM labels l WHERE l.deleted_at IS NULL AND l.id IN (SELECT label_id FROM issue_labels WHERE issue_id=$1 AND deleted_at IS NULL)`
+		query = `SELECT COALESCE(jsonb_agg(to_jsonb(l) ORDER BY l.created_at DESC),'[]'::jsonb) FROM labels l WHERE l.deleted_at IS NULL AND l.id IN (SELECT relation.label_id FROM issue_labels relation JOIN issues issue ON issue.id=relation.issue_id WHERE issue.id=$1 AND ` + issuequery.LiveIssueLabelPredicate("issue", "relation") + `)`
 	}
 	value, err := JSON(ctx, db, query, issue)
 	if err != nil {
@@ -138,7 +161,7 @@ func apiIssueRelations(ctx context.Context, db Database, issue any, relation str
 	}
 	if relation == "labels" {
 		for i, row := range value.([]any) {
-			value.([]any)[i], err = serializeRelation(ctx, db, row.(map[string]any), "label", "", "")
+			value.([]any)[i], err = serializeRelation(ctx, db, row.(map[string]any), "label", "", "", nil)
 			if err != nil {
 				return nil, err
 			}
@@ -148,9 +171,13 @@ func apiIssueRelations(ctx context.Context, db Database, issue any, relation str
 }
 
 func SerializeIssue(ctx context.Context, db Database, row map[string]any, fields, expand string) (map[string]any, error) {
-	return serializeRelation(ctx, db, row, "issue", fields, expand)
+	return serializeRelation(ctx, db, row, "issue", fields, expand, nil)
 }
-func serializeRelation(ctx context.Context, db Database, row map[string]any, kind, fields, expand string) (map[string]any, error) {
+func SerializeVisibleIssue(ctx context.Context, db Database, row map[string]any, fields, expand, actor string) (map[string]any, error) {
+	return serializeRelation(ctx, db, row, "issue", fields, expand, &actor)
+}
+
+func serializeRelation(ctx context.Context, db Database, row map[string]any, kind, fields, expand string, actor *string) (map[string]any, error) {
 	declared := append([]string{}, apiAuditFields...)
 	switch kind {
 	case "issue":
@@ -160,5 +187,5 @@ func serializeRelation(ctx context.Context, db Database, row map[string]any, kin
 	case "estimate":
 		declared = append(declared, "estimate", "key", "description", "value")
 	}
-	return Serialize(ctx, db, row, declared, fields, expand, kind == "issue")
+	return serialize(ctx, db, row, declared, fields, expand, kind == "issue", actor)
 }

@@ -40359,6 +40359,15 @@
               "type": "string"
             },
             "example": "Officia est cum."
+          },
+          {
+            "name": "all",
+            "in": "query",
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "boolean"
+            },
+            "example": false
           }
         ],
         "responses": {

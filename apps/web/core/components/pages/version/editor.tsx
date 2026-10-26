@@ -5,35 +5,32 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import type { TDisplayConfig } from "@plane/editor";
 import type { JSONContent, TPageVersion } from "@plane/types";
 import { Loader } from "@plane/ui";
-import { isJSONContentEmpty } from "@plane/utils";
+import { isJSONContentEmpty } from "@plane/utils/string";
 // components
 import { DocumentEditor } from "@/components/editor/document/editor";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
 import { usePageFilters } from "@/hooks/use-page-filters";
 // plane web hooks
-import type { EPageStoreType } from "@/hooks/store";
 
 export type TVersionEditorProps = {
   activeVersion: string | null;
   versionDetails: TPageVersion | undefined;
-  storeType: EPageStoreType;
 };
 
-export const PagesVersionEditor = observer(function PagesVersionEditor(props: TVersionEditorProps) {
+export function PagesVersionEditor(props: TVersionEditorProps) {
   const { activeVersion, versionDetails } = props;
   // params
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // store hooks
-  const { getWorkspaceBySlug } = useWorkspace();
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug?.toString());
   // derived values
-  const workspaceDetails = getWorkspaceBySlug(workspaceSlug?.toString() ?? "");
+
   // page filters
   const { fontSize, fontStyle } = usePageFilters();
 
@@ -105,4 +102,4 @@ export const PagesVersionEditor = observer(function PagesVersionEditor(props: TV
       workspaceSlug={workspaceSlug?.toString() ?? ""}
     />
   );
-});
+}

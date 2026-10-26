@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useArgs } from "storybook/preview-api";
 import { CloseIcon } from "../icons/actions/close-icon";
@@ -209,11 +210,14 @@ export const CustomOffset: Story = {
 export const WithForm: Story = {
   render(args) {
     const [open, setOpen] = useState(args.open ?? false);
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      alert("Form submitted!");
-      setOpen(false);
-    };
+    const form = useForm({
+      defaultValues: { name: "", email: "" },
+      onSubmit: () => {
+        alert("Form submitted!");
+        setOpen(false);
+        form.reset();
+      },
+    });
     return (
       <Popover {...args} open={open} onOpenChange={setOpen}>
         <Popover.Button className="bg-blue-500 hover:bg-blue-600 rounded-sm px-4 py-2 text-on-color">
@@ -221,28 +225,50 @@ export const WithForm: Story = {
         </Popover.Button>
         <Popover.Panel className="border-gray-200 shadow-lg w-72 rounded-lg border bg-white p-4">
           <h3 className="text-13 font-semibold">Quick Form</h3>
-          <form onSubmit={handleSubmit} className="mt-3 space-y-3">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+            className="mt-3 space-y-3"
+          >
             <div>
               <label htmlFor="name" className="text-gray-700 block text-11 font-medium">
                 Name
               </label>
-              <input
-                type="text"
-                id="name"
-                className="border-gray-300 mt-1 w-full rounded-sm border px-2 py-1.5 text-13"
-                placeholder="Enter name"
-              />
+              <form.Field name="name">
+                {(field) => (
+                  <input
+                    type="text"
+                    id="name"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="border-gray-300 mt-1 w-full rounded-sm border px-2 py-1.5 text-13"
+                    placeholder="Enter name"
+                  />
+                )}
+              </form.Field>
             </div>
             <div>
               <label htmlFor="email" className="text-gray-700 block text-11 font-medium">
                 Email
               </label>
-              <input
-                type="email"
-                id="email"
-                className="border-gray-300 mt-1 w-full rounded-sm border px-2 py-1.5 text-13"
-                placeholder="Enter email"
-              />
+              <form.Field name="email">
+                {(field) => (
+                  <input
+                    type="email"
+                    id="email"
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="border-gray-300 mt-1 w-full rounded-sm border px-2 py-1.5 text-13"
+                    placeholder="Enter email"
+                  />
+                )}
+              </form.Field>
             </div>
             <div className="flex justify-end gap-2">
               <button
@@ -304,6 +330,7 @@ export const ColorPicker: Story = {
             {colors.map((color) => (
               <button
                 key={color}
+                aria-label={`Select color ${color}`}
                 onClick={() => setSelectedColor(color)}
                 className="h-8 w-8 rounded-sm border-2 transition-transform hover:scale-110"
                 style={{

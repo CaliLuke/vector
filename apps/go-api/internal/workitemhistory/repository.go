@@ -43,6 +43,8 @@ type Request struct {
 	ProjectID    uuid.UUID
 	ResourceID   uuid.UUID
 	VersionID    uuid.UUID
+	PropertyID   uuid.UUID
+	BeforeID     *uuid.UUID
 	UserID       uuid.UUID
 	Timezone     string
 	Cursor       *string
@@ -76,6 +78,12 @@ func (repository *Repository) Read(ctx context.Context, request Request) (json.R
 		return repository.descriptionVersions(ctx, request)
 	case "description_version_detail":
 		return repository.descriptionVersionDetail(ctx, request)
+	case "property_history":
+		return repository.propertyHistory(ctx, request)
+	case "property_versions":
+		return repository.propertyVersions(ctx, request)
+	case "property_version_detail":
+		return repository.propertyVersionDetail(ctx, request)
 	default:
 		return nil, fmt.Errorf("unknown work item history operation %q", request.Operation)
 	}
@@ -115,12 +123,12 @@ func (repository *Repository) authorizeProject(ctx context.Context, request Requ
 
 func (repository *Repository) meta(ctx context.Context, request Request) (json.RawMessage, error) {
 	var data []byte
-	err := repository.database.QueryRow(ctx, `SELECT jsonb_build_object('sequence_id',i.sequence_id,'project_identifier',p.identifier)
+	err := repository.database.QueryRow(ctx, visibleItemHistorySQL(`SELECT jsonb_build_object('sequence_id',i.sequence_id,'project_identifier',p.identifier)
  FROM issues i JOIN projects p ON p.id=i.project_id JOIN workspaces w ON w.id=i.workspace_id
  LEFT JOIN states s ON s.id=i.state_id
  WHERE i.id=$1 AND i.project_id=$2 AND w.slug=$3 AND i.deleted_at IS NULL
    AND i.archived_at IS NULL AND p.archived_at IS NULL AND NOT i.is_draft
-   AND COALESCE(s."group",'') <> 'triage' LIMIT 1`, request.ResourceID, request.ProjectID, request.Slug).Scan(&data)
+   AND COALESCE(s."group",'') <> 'triage' LIMIT 1`, "$1", "$3", "$4::uuid"), request.ResourceID, request.ProjectID, request.Slug, request.UserID).Scan(&data)
 	return scannedJSON(data, err, "get issue metadata")
 }
 
@@ -137,13 +145,13 @@ func (repository *Repository) versions(ctx context.Context, request Request) (js
 		return nil, err
 	}
 	var data []byte
-	err = repository.database.QueryRow(ctx, issueVersionListSQL, request.Slug, request.ProjectID, request.ResourceID, page.limit, offset, page.page).Scan(&data)
+	err = repository.database.QueryRow(ctx, visibleItemHistorySQL(issueVersionListSQL, "$3", "$1", "$7::uuid"), request.Slug, request.ProjectID, request.ResourceID, page.limit, offset, page.page, request.UserID).Scan(&data)
 	return transformedJSON(data, err, "list issue versions", request.Timezone, false)
 }
 
 func (repository *Repository) versionDetail(ctx context.Context, request Request) (json.RawMessage, error) {
 	var data []byte
-	err := repository.database.QueryRow(ctx, issueVersionDetailSQL, request.Slug, request.ProjectID, request.ResourceID, request.VersionID).Scan(&data)
+	err := repository.database.QueryRow(ctx, visibleItemHistorySQL(issueVersionDetailSQL, "$3", "$1", "$5::uuid"), request.Slug, request.ProjectID, request.ResourceID, request.VersionID, request.UserID).Scan(&data)
 	return transformedJSON(data, err, "get issue version", request.Timezone, true)
 }
 
@@ -167,7 +175,7 @@ func (repository *Repository) descriptionVersions(ctx context.Context, request R
 		return nil, err
 	}
 	var data []byte
-	err = repository.database.QueryRow(ctx, descriptionVersionListSQL, request.Slug, request.ProjectID, request.ResourceID, page.limit, offset, page.page).Scan(&data)
+	err = repository.database.QueryRow(ctx, visibleItemHistorySQL(descriptionVersionListSQL, "$3", "$1", "$7::uuid"), request.Slug, request.ProjectID, request.ResourceID, page.limit, offset, page.page, request.UserID).Scan(&data)
 	return transformedJSON(data, err, "list work item description versions", request.Timezone, false)
 }
 
@@ -179,7 +187,7 @@ func (repository *Repository) descriptionVersionDetail(ctx context.Context, requ
 		return nil, err
 	}
 	var data []byte
-	err := repository.database.QueryRow(ctx, descriptionVersionDetailSQL, request.Slug, request.ProjectID, request.ResourceID, request.VersionID).Scan(&data)
+	err := repository.database.QueryRow(ctx, visibleItemHistorySQL(descriptionVersionDetailSQL, "$3", "$1", "$5::uuid"), request.Slug, request.ProjectID, request.ResourceID, request.VersionID, request.UserID).Scan(&data)
 	return transformedJSON(data, err, "get work item description version", request.Timezone, true)
 }
 
@@ -234,7 +242,7 @@ func (repository *Repository) history(ctx context.Context, request Request) (jso
 		query = historyCommentsSQL
 	}
 	var data []byte
-	err := repository.database.QueryRow(ctx, query, request.ResourceID, request.ProjectID, request.Slug, createdAfter).Scan(&data)
+	err := repository.database.QueryRow(ctx, visibleItemHistorySQL(query, "$1", "$3", "$5::uuid"), request.ResourceID, request.ProjectID, request.Slug, createdAfter, request.UserID).Scan(&data)
 	return transformedJSON(data, err, "get issue history", request.Timezone, true)
 }
 
@@ -357,8 +365,8 @@ SELECT jsonb_build_object(
  'results',COALESCE(jsonb_agg(jsonb_build_object('id',page.id,'workspace',page.workspace_id,'project',page.project_id,'issue',page.issue_id,'last_saved_at',page.last_saved_at,'owned_by',page.owned_by_id,'created_at',page.created_at,'updated_at',page.updated_at,'created_by',page.created_by_id,'updated_by',page.updated_by_id) ORDER BY page.created_at DESC) FILTER(WHERE page.id IS NOT NULL),'[]'::jsonb)
 ) FROM totals LEFT JOIN page ON true GROUP BY totals.total`
 
-const issueVersionDetailSQL = `SELECT jsonb_build_object(
- 'id',v.id,'workspace',v.workspace_id,'project',v.project_id,'issue',v.issue_id,'parent',v.parent,'state',v.state,
+var issueVersionDetailSQL = `SELECT jsonb_build_object(
+ 'id',v.id,'workspace',v.workspace_id,'project',v.project_id,'issue',v.issue_id,'parent',(SELECT related.id FROM issues related WHERE related.id=v.parent AND ` + djangoapi.IssueVisibleSQL("related", "$5::uuid", "v.workspace_id") + `),'state',v.state,
  'estimate_point',v.estimate_point,'name',v.name,'priority',v.priority,'start_date',v.start_date,'target_date',v.target_date,
  'assignees',v.assignees,'sequence_id',v.sequence_id,'labels',v.labels,'sort_order',v.sort_order,'completed_at',v.completed_at,
  'archived_at',v.archived_at,'is_draft',v.is_draft,'external_source',v.external_source,'external_id',v.external_id,'type',v.type,
@@ -396,7 +404,7 @@ var activityBase = `((to_jsonb(a)-'workspace_id'-'project_id'-'issue_id'-'issue_
  'project_detail',(SELECT jsonb_build_object('id',p.id,'identifier',p.identifier,'name',p.name,'cover_image',p.cover_image,'logo_props',p.logo_props,'description',p.description)||` + djangoapi.FileAssetURLFieldSQL("p.cover_image_asset_id", "p.cover_image", "cover_image_url") + ` FROM projects p WHERE p.id=a.project_id),
  'workspace_detail',(SELECT jsonb_build_object('name',w.name,'slug',w.slug,'id',w.id)||` + djangoapi.FileAssetURLFieldSQL("w.logo_asset_id", "w.logo", "logo_url") + ` FROM workspaces w WHERE w.id=a.workspace_id),
  'source_data',(SELECT jsonb_build_object('source',ii.source,'source_email',ii.source_email,'extra',ii.extra) FROM intake_issues ii WHERE ii.issue_id=a.issue_id AND ii.deleted_at IS NULL ORDER BY ii.created_at DESC LIMIT 1)
- ))`
+ ))` + parentActivityVisibilitySQL()
 
 var activityBaseWithoutSourceData = strings.Replace(
 	activityBase,
@@ -417,7 +425,7 @@ var commentBase = `((to_jsonb(c)-'workspace_id'-'project_id'-'issue_id'-'descrip
 
 const activityFilter = `a.issue_id=$1 AND a.project_id=$2 AND w.slug=$3 AND a.deleted_at IS NULL AND p.archived_at IS NULL
  AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND ($4::timestamptz IS NULL OR a.created_at>$4)`
-const commentFilter = `c.issue_id=$1 AND c.project_id=$2 AND w.slug=$3 AND c.deleted_at IS NULL AND p.archived_at IS NULL AND ($4::timestamptz IS NULL OR c.created_at>$4)`
+const commentFilter = `$5::uuid IS NOT NULL AND c.issue_id=$1 AND c.project_id=$2 AND w.slug=$3 AND c.deleted_at IS NULL AND p.archived_at IS NULL AND ($4::timestamptz IS NULL OR c.created_at>$4)`
 
 var historyActivitiesSQL = `SELECT COALESCE(jsonb_agg(row_json ORDER BY created_at ASC,id), '[]'::jsonb) FROM (
  SELECT a.id,a.created_at,` + activityBase + ` AS row_json FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id WHERE ` + activityFilter + `

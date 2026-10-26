@@ -213,6 +213,110 @@ paths:
                 - PlaneSessionCookie: []
         x-loom-cors:
             runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/:
+        get:
+            tags:
+                - work_item_history
+            summary: property_versions work_item_history
+            operationId: work_item_history.property_versions
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathWorkItemID'
+                - $ref: '#/components/parameters/PathPropertyID'
+                - name: before
+                  in: query
+                  allowEmptyValue: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDHistoryStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/properties/{property_id}/versions/{pk}/:
+        get:
+            tags:
+                - work_item_history
+            summary: property_version_detail work_item_history
+            operationId: work_item_history.property_version_detail
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathWorkItemID'
+                - $ref: '#/components/parameters/PathPropertyID'
+                - $ref: '#/components/parameters/PathPk'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDHistoryStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
+    /api/workspaces/{slug}/projects/{project_id}/work-items/{work_item_id}/property-history/:
+        get:
+            tags:
+                - work_item_history
+            summary: property_history work_item_history
+            operationId: work_item_history.property_history
+            parameters:
+                - $ref: '#/components/parameters/PathSlug'
+                - $ref: '#/components/parameters/PathProjectID'
+                - $ref: '#/components/parameters/PathWorkItemID'
+            responses:
+                "200":
+                    $ref: '#/components/responses/GetAPIWorkspacesBySlugProjectsByProjectIDIssuesByIssueIDHistoryStatus200Response'
+                "400":
+                    $ref: '#/components/responses/BadRequestError'
+                    description: 'status_400: Bad Request response.'
+                "401":
+                    $ref: '#/components/responses/UnauthorizedError'
+                    description: 'status_401: Unauthorized response.'
+                "403":
+                    $ref: '#/components/responses/ForbiddenError'
+                    description: 'status_403: Forbidden response.'
+                "404":
+                    $ref: '#/components/responses/NotFoundError'
+                    description: 'status_404: Not Found response.'
+                "500":
+                    $ref: '#/components/responses/InternalServerErrorError'
+                    description: 'status_500: Internal Server Error response.'
+            security:
+                - PlaneSessionCookie: []
+        x-loom-cors:
+            runtime: true
 components:
     parameters:
         PathIssueID:
@@ -231,6 +335,13 @@ components:
                 format: uuid
         PathProjectID:
             name: project_id
+            in: path
+            required: true
+            schema:
+                type: string
+                format: uuid
+        PathPropertyID:
+            name: property_id
             in: path
             required: true
             schema:

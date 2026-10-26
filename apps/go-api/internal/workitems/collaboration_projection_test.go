@@ -15,7 +15,7 @@ type collaborationParentDB struct {
 }
 
 func (db collaborationParentDB) QueryRow(_ context.Context, query string, args ...any) pgx.Row {
-	if !strings.Contains(query, "FROM issue_comments") || len(args) != 1 || args[0] != "parent-comment" {
+	if !strings.Contains(query, "FROM issue_comments") || len(args) != 5 || args[0] != "parent-comment" {
 		db.t.Fatalf("comment parent used the wrong relation: %s %#v", query, args)
 	}
 	return collaborationParentRow{}
@@ -30,7 +30,7 @@ func (collaborationParentRow) Scan(values ...any) error {
 
 func TestCollaborationAPIParentExpansionUsesCommentRelation(t *testing.T) {
 	r := &Repository{db: collaborationParentDB{t: t}}
-	q := Request{API: true, Method: "GET", Params: map[string]string{"fields": "id,parent", "expand": "parent"}}
+	q := Request{API: true, Method: "GET", IssueID: "issue", ProjectID: "project", Slug: "workspace", ActorID: "actor", Params: map[string]string{"fields": "id,parent", "expand": "parent"}}
 	value, err := r.collaborationProjection(context.Background(), q, map[string]any{"id": "child-comment", "parent_id": "parent-comment"}, "comment", false)
 	if err != nil {
 		t.Fatal(err)
@@ -52,7 +52,7 @@ func TestCollaborationAPIDumpPreservesSerializerFieldOrder(t *testing.T) {
 		"comment_html": "<p>hello</p>", "attachments": []any{}, "access": "EXTERNAL", "external_source": "fixture", "external_id": "external-1", "edited_at": nil,
 		"created_by_id": nil, "updated_by_id": nil, "project_id": "project-id", "workspace_id": "workspace-id", "description_id": "description-id", "issue_id": "issue-id", "actor_id": "actor-id", "parent_id": nil,
 	}
-	r := &Repository{}
+	r := &Repository{db: &collaborationAuthorizationDB{}}
 	got, err := r.collaborationDump(context.Background(), Request{API: true, Method: "GET", Timezone: "UTC"}, row, "comment", false)
 	if err != nil {
 		t.Fatal(err)

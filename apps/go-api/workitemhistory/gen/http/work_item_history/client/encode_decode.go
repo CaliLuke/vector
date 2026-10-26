@@ -910,3 +910,452 @@ func DecodeDescriptionVersionDetailResponse(decoder func(*http.Response) loomhtt
 		})
 	}
 }
+
+// BuildPropertyHistoryRequest instantiates a HTTP request object with method
+// and path set to call the "work_item_history" service "property_history"
+// endpoint
+func (c *Client) BuildPropertyHistoryRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug       string
+		projectID  string
+		workItemID string
+	)
+	{
+		p, ok := v.(*workitemhistory.PropertyHistoryPayload)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("work_item_history", "property_history", "*workitemhistory.PropertyHistoryPayload", v)
+		}
+		slug = p.Slug
+		projectID = p.ProjectID
+		workItemID = p.WorkItemID
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, PropertyHistoryWorkItemHistoryPath(slug, projectID, workItemID))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_history", u.String(), err)
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_history", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodePropertyHistoryRequest returns an encoder for requests sent to the
+// work_item_history property_history server.
+func EncodePropertyHistoryRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*workitemhistory.PropertyHistoryPayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_history", "*workitemhistory.PropertyHistoryPayload", v)
+		}
+		if p.PlaneSessionCookieCredential != nil {
+			v := *p.PlaneSessionCookieCredential
+			if err := loomhttp.AddRequestCookie(req, "session-id", v); err != nil {
+				return loomhttp.ErrEncodingError("work_item_history", "property_history", err)
+			}
+		}
+		return nil
+	}
+}
+
+// DecodePropertyHistoryResponse returns a decoder for responses returned by
+// the work_item_history property_history endpoint. restoreBody controls
+// whether the response body should be restored after having been read.
+// DecodePropertyHistoryResponse may return the following errors:
+//   - "status_400" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusBadRequest
+//   - "status_401" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusUnauthorized
+//   - "status_403" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusForbidden
+//   - "status_404" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusNotFound
+//   - "status_500" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusInternalServerError
+//   - error: internal error
+func DecodePropertyHistoryResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false || resp.StatusCode == http.StatusOK, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					contentType string
+					err         error
+				)
+				{
+					contentTypeRaw := resp.Header.Get("Content-Type")
+					contentTypePresent := len(resp.Header.Values("Content-Type")) > 0
+
+					if contentTypePresent {
+						contentType = contentTypeRaw
+					} else {
+						err = loom.MergeErrors(err, loom.MissingFieldError("content_type", "header"))
+					}
+				}
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("work_item_history", "property_history", err)
+				}
+				res := NewHistoryWorkItemHistoryResponseMetadataOK(contentType)
+				return res, nil
+			case http.StatusBadRequest:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_history", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_400")
+			case http.StatusUnauthorized:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_history", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_401")
+			case http.StatusForbidden:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_history", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_403")
+			case http.StatusNotFound:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_history", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_404")
+			case http.StatusInternalServerError:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_history", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_500")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("work_item_history", "property_history", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
+// BuildPropertyVersionsRequest instantiates a HTTP request object with method
+// and path set to call the "work_item_history" service "property_versions"
+// endpoint
+func (c *Client) BuildPropertyVersionsRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug       string
+		projectID  string
+		workItemID string
+		propertyID string
+	)
+	{
+		p, ok := v.(*workitemhistory.PropertyVersionsPayload)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("work_item_history", "property_versions", "*workitemhistory.PropertyVersionsPayload", v)
+		}
+		slug = p.Slug
+		projectID = p.ProjectID
+		workItemID = p.WorkItemID
+		propertyID = p.PropertyID
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, PropertyVersionsWorkItemHistoryPath(slug, projectID, workItemID, propertyID))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_versions", u.String(), err)
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_versions", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodePropertyVersionsRequest returns an encoder for requests sent to the
+// work_item_history property_versions server.
+func EncodePropertyVersionsRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*workitemhistory.PropertyVersionsPayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_versions", "*workitemhistory.PropertyVersionsPayload", v)
+		}
+		if p.PlaneSessionCookieCredential != nil {
+			v := *p.PlaneSessionCookieCredential
+			if err := loomhttp.AddRequestCookie(req, "session-id", v); err != nil {
+				return loomhttp.ErrEncodingError("work_item_history", "property_versions", err)
+			}
+		}
+		values := req.URL.Query()
+		if p.Before != nil {
+			values.Add("before", *p.Before)
+		}
+		req.URL.RawQuery = values.Encode()
+		return nil
+	}
+}
+
+// DecodePropertyVersionsResponse returns a decoder for responses returned by
+// the work_item_history property_versions endpoint. restoreBody controls
+// whether the response body should be restored after having been read.
+// DecodePropertyVersionsResponse may return the following errors:
+//   - "status_400" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusBadRequest
+//   - "status_401" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusUnauthorized
+//   - "status_403" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusForbidden
+//   - "status_404" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusNotFound
+//   - "status_500" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusInternalServerError
+//   - error: internal error
+func DecodePropertyVersionsResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false || resp.StatusCode == http.StatusOK, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					contentType string
+					err         error
+				)
+				{
+					contentTypeRaw := resp.Header.Get("Content-Type")
+					contentTypePresent := len(resp.Header.Values("Content-Type")) > 0
+
+					if contentTypePresent {
+						contentType = contentTypeRaw
+					} else {
+						err = loom.MergeErrors(err, loom.MissingFieldError("content_type", "header"))
+					}
+				}
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("work_item_history", "property_versions", err)
+				}
+				res := NewHistoryWorkItemHistoryResponseMetadataOK(contentType)
+				return res, nil
+			case http.StatusBadRequest:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_versions", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_400")
+			case http.StatusUnauthorized:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_versions", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_401")
+			case http.StatusForbidden:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_versions", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_403")
+			case http.StatusNotFound:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_versions", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_404")
+			case http.StatusInternalServerError:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_versions", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_500")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("work_item_history", "property_versions", resp.StatusCode, string(body))
+			}
+		})
+	}
+}
+
+// BuildPropertyVersionDetailRequest instantiates a HTTP request object with
+// method and path set to call the "work_item_history" service
+// "property_version_detail" endpoint
+func (c *Client) BuildPropertyVersionDetailRequest(ctx context.Context, v any) (*http.Request, error) {
+	var (
+		slug       string
+		projectID  string
+		workItemID string
+		propertyID string
+		pk         string
+	)
+	{
+		p, ok := v.(*workitemhistory.PropertyVersionDetailPayload)
+		if !ok {
+			return nil, loomhttp.ErrInvalidType("work_item_history", "property_version_detail", "*workitemhistory.PropertyVersionDetailPayload", v)
+		}
+		slug = p.Slug
+		projectID = p.ProjectID
+		workItemID = p.WorkItemID
+		propertyID = p.PropertyID
+		pk = p.Pk
+	}
+	u, err := loomhttp.RequestURL(c.scheme, c.host, PropertyVersionDetailWorkItemHistoryPath(slug, projectID, workItemID, propertyID, pk))
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_version_detail", u.String(), err)
+	}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return nil, loomhttp.ErrInvalidURL("work_item_history", "property_version_detail", u.String(), err)
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
+
+	return req, nil
+}
+
+// EncodePropertyVersionDetailRequest returns an encoder for requests sent to
+// the work_item_history property_version_detail server.
+func EncodePropertyVersionDetailRequest(encoder func(*http.Request) loomhttp.Encoder) func(*http.Request, any) error {
+	return func(req *http.Request, v any) error {
+		p, ok := v.(*workitemhistory.PropertyVersionDetailPayload)
+		if !ok {
+			return loomhttp.ErrInvalidType("work_item_history", "property_version_detail", "*workitemhistory.PropertyVersionDetailPayload", v)
+		}
+		if p.PlaneSessionCookieCredential != nil {
+			v := *p.PlaneSessionCookieCredential
+			if err := loomhttp.AddRequestCookie(req, "session-id", v); err != nil {
+				return loomhttp.ErrEncodingError("work_item_history", "property_version_detail", err)
+			}
+		}
+		return nil
+	}
+}
+
+// DecodePropertyVersionDetailResponse returns a decoder for responses returned
+// by the work_item_history property_version_detail endpoint. restoreBody
+// controls whether the response body should be restored after having been read.
+// DecodePropertyVersionDetailResponse may return the following errors:
+//   - "status_400" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusBadRequest
+//   - "status_401" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusUnauthorized
+//   - "status_403" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusForbidden
+//   - "status_404" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusNotFound
+//   - "status_500" (type *workitemhistory.WorkItemHistoryErrorResponse): http.StatusInternalServerError
+//   - error: internal error
+func DecodePropertyVersionDetailResponse(decoder func(*http.Response) loomhttp.Decoder, restoreBody bool) func(*http.Response) (any, error) {
+	return func(resp *http.Response) (any, error) {
+		return loomhttp.DecodeResponse(resp, restoreBody, false || resp.StatusCode == http.StatusOK, func(resp *http.Response) (any, error) {
+			switch resp.StatusCode {
+			case http.StatusOK:
+				var (
+					contentType string
+					err         error
+				)
+				{
+					contentTypeRaw := resp.Header.Get("Content-Type")
+					contentTypePresent := len(resp.Header.Values("Content-Type")) > 0
+
+					if contentTypePresent {
+						contentType = contentTypeRaw
+					} else {
+						err = loom.MergeErrors(err, loom.MissingFieldError("content_type", "header"))
+					}
+				}
+				if err != nil {
+					return nil, loomhttp.ErrValidationError("work_item_history", "property_version_detail", err)
+				}
+				res := NewHistoryWorkItemHistoryResponseMetadataOK(contentType)
+				return res, nil
+			case http.StatusBadRequest:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_version_detail", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_400")
+			case http.StatusUnauthorized:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_version_detail", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_401")
+			case http.StatusForbidden:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_version_detail", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_403")
+			case http.StatusNotFound:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_version_detail", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_404")
+			case http.StatusInternalServerError:
+				var (
+					body loom.JSONValue
+					err  error
+				)
+				err = decoder(resp).Decode(&body)
+				if err != nil {
+					return nil, loomhttp.ErrDecodingError("work_item_history", "property_version_detail", err)
+				}
+				return nil, NewHistoryStatus400(body, "status_500")
+			default:
+				body, err := loomhttp.ReadUnexpectedResponseBody(resp)
+				if err != nil {
+					return nil, err
+				}
+				return nil, loomhttp.ErrInvalidResponse("work_item_history", "property_version_detail", resp.StatusCode, string(body))
+			}
+		})
+	}
+}

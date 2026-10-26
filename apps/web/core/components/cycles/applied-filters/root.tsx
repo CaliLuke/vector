@@ -4,18 +4,19 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions, DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { CloseIcon } from "@plane/propel/icons";
 import type { TCycleFilters } from "@plane/types";
 import { Tag } from "@plane/ui";
-import { replaceUnderscoreIfSnakeCase } from "@plane/utils";
+import { replaceUnderscoreIfSnakeCase } from "@plane/utils/string";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
-import { AppliedDateFilters } from "./date";
+import { AppliedDateFilters } from "@/components/common/applied-filters/date";
 import { AppliedStatusFilters } from "./status";
 
 type Props = {
@@ -25,21 +26,20 @@ type Props = {
   alwaysAllowEditing?: boolean;
 };
 
-const DATE_FILTERS = ["start_date", "end_date"];
+const DATE_FILTERS = new Set<string>(["start_date", "end_date"]);
 
-export const CycleAppliedFiltersList = observer(function CycleAppliedFiltersList(props: Props) {
+export const CycleAppliedFiltersList = function CycleAppliedFiltersList(props: Props) {
   const { appliedFilters, handleClearAllFilters, handleRemoveFilter, alwaysAllowEditing } = props;
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   const { t } = useTranslation();
 
   if (!appliedFilters) return null;
 
   if (Object.keys(appliedFilters).length === 0) return null;
 
-  const isEditingAllowed =
-    alwaysAllowEditing ||
-    allowPermissions([EUserPermissions.ADMIN, EUserPermissions.MEMBER], EUserPermissionsLevel.PROJECT);
+  const isEditingAllowed = alwaysAllowEditing || canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   return (
     <div className="flex flex-wrap items-stretch gap-2 bg-surface-1">
@@ -60,8 +60,10 @@ export const CycleAppliedFiltersList = observer(function CycleAppliedFiltersList
                   values={value}
                 />
               )}
-              {DATE_FILTERS.includes(filterKey) && (
+              {DATE_FILTERS.has(filterKey) && (
                 <AppliedDateFilters
+                  options={DATE_AFTER_FILTER_OPTIONS}
+                  className="bg-layer-3"
                   editable={isEditingAllowed}
                   handleRemove={(val) => handleRemoveFilter(filterKey, val)}
                   values={value}
@@ -90,4 +92,4 @@ export const CycleAppliedFiltersList = observer(function CycleAppliedFiltersList
       )}
     </div>
   );
-});
+};

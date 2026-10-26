@@ -7,7 +7,7 @@
 import { NodeSelection } from "@tiptap/pm/state";
 import React, { useRef, useState, useCallback, useLayoutEffect, useEffect } from "react";
 // plane imports
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // local imports
 import { ECustomImageAttributeNames } from "../types";
 import type { Pixel, TCustomImageAttributes, TCustomImageSize } from "../types";
@@ -32,7 +32,6 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
   const {
     editor,
     editorContainer,
-    extension,
     getPos,
     imageFromFileSystem,
     node,
@@ -254,8 +253,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
           onLoad={handleImageLoad}
           onError={(_e) =>
             void (async () => {
-              // for old image extension this command doesn't exist or if the image failed to load for the first time
-              if (!extension.options.restoreImage || hasTriedRestoringImageOnce) {
+              if (hasTriedRestoringImageOnce) {
                 setFailedToLoadImage(true);
                 return;
               }
@@ -266,7 +264,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
                 if (!imgNodeSrc) {
                   throw new Error("No source image to restore from");
                 }
-                await extension.options.restoreImage?.(imgNodeSrc);
+                await editor.storage.utility.fileHandler.restore(imgNodeSrc);
                 if (!imageRef.current) {
                   throw new Error("Image reference not found");
                 }
@@ -274,7 +272,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
                   throw new Error("No resolved image source available");
                 }
                 if (isTouchDevice) {
-                  const refreshedSrc = await extension.options.getImageSource?.(imgNodeSrc);
+                  const refreshedSrc = await editor.storage.utility.fileHandler.getAssetSrc(imgNodeSrc);
                   imageRef.current.src = refreshedSrc;
                 } else {
                   imageRef.current.src = resolvedImageSrc;

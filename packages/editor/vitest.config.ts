@@ -1,7 +1,11 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    noExternal: ["prosemirror-codemark"],
+    mainFields: ["module", "main"],
+  },
   test: {
     maxWorkers: 1,
     fileParallelism: false,

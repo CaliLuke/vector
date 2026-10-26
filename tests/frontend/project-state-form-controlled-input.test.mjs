@@ -1,25 +1,23 @@
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
-import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 registerWebModuleHooks();
 
-const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
 const testModules = {
-  "@plane/ui": "tests/frontend/helpers/project-state-form-ui.mjs",
-  "@plane/propel/button": "tests/frontend/helpers/project-state-form-button.mjs",
-  "react-color": "tests/frontend/helpers/project-state-form-color-picker.mjs",
+  "@plane/ui": "./helpers/project-state-form-ui.mjs",
+  "@plane/propel/button": "./helpers/project-state-form-button.mjs",
+  "react-color": "./helpers/project-state-form-color-picker.mjs",
 };
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
     const relativePath = testModules[specifier];
     if (relativePath) {
-      return nextResolve(pathToFileURL(path.join(repositoryRoot, relativePath)).href, context);
+      return nextResolve(new URL(relativePath, import.meta.url).href, context);
     }
     return nextResolve(specifier, context);
   },

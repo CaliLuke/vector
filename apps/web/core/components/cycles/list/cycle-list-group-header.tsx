@@ -11,7 +11,7 @@ import type { TCycleGroups } from "@plane/types";
 // icons
 import { Row } from "@plane/ui";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   type: TCycleGroups;

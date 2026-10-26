@@ -34,45 +34,45 @@ type assetRepository interface {
 	AssetByID(context.Context, uuid.UUID) (FileAsset, error)
 	UserAssetByID(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error)
 	UserAssetsByKey(context.Context, uuid.UUID, string) ([]map[string]any, error)
-	WorkspaceAssetsByKey(context.Context, string) ([]map[string]any, error)
-	UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, bool) error
-	UpdateLegacyUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte) error
-	UpdateUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool) error
+	WorkspaceAssetsByKey(context.Context, string, uuid.UUID, uuid.UUID) ([]map[string]any, error)
+	UpdateAssetDeletedByKey(context.Context, string, *uuid.UUID, *uuid.UUID, uuid.UUID, bool) error
+	UpdateLegacyUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool) error
+	UpdateUserAsset(context.Context, uuid.UUID, uuid.UUID, []byte, bool, bool) error
 	DeleteUserAsset(context.Context, uuid.UUID, uuid.UUID) error
 	AssetByWorkspaceAndID(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error)
 	AssetByProjectAndID(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, error)
-	UpdateWorkspaceAssetUploaded(context.Context, uuid.UUID, uuid.UUID, bool) error
-	UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte) (bool, error)
+	UpdateWorkspaceAssetUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, bool, bool) error
+	UpdateWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []byte, bool) (bool, error)
 	DeleteWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
-	UpdateProjectAsset(context.Context, uuid.UUID, uuid.UUID, []byte) error
-	DeleteProjectAsset(context.Context, uuid.UUID, uuid.UUID) error
-	RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID) error
+	UpdateProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, []byte, bool) error
+	DeleteProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
+	RestoreWorkspaceAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
 	AssetByWorkspaceAndIDIncludingDeleted(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error)
-	WorkspaceAssetExists(context.Context, uuid.UUID, uuid.UUID) (bool, error)
-	AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID) (FileAsset, error)
+	WorkspaceAssetExists(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error)
+	AssetForDuplicate(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, error)
 	ProjectBelongsToWorkspace(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	ProjectPermissionAllowed(context.Context, uuid.UUID, string, uuid.UUID) (bool, error)
 	ProjectMemberActive(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error)
 	ProjectMemberActiveByProject(context.Context, uuid.UUID, uuid.UUID) (bool, error)
+	AssetParentVisible(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error)
 	WorkspaceMemberByID(context.Context, uuid.UUID, uuid.UUID) (bool, error)
 	WorkspaceRole(context.Context, uuid.UUID, uuid.UUID) (int, error)
 	CreateWorkspaceEntityUpload(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, string, []byte, int64, string, string, bool) error
 	CreateDuplicate(context.Context, FileAsset, uuid.UUID, uuid.UUID, uuid.UUID, string, string, string, string) error
 	CreateIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, string, []byte, int64, string, string) error
-	IssueAttachmentExternal(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, string, string) (uuid.UUID, bool, error)
-	IssuePermission(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, bool, error)
+	IssueAttachmentExternal(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, string, string) (uuid.UUID, bool, error)
+	IssueAccess(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (bool, bool, error)
 	IssueAttachments(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error)
-	IssueAttachmentsBySlug(context.Context, string, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error)
-	IssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error)
-	ProjectIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error)
-	UpdateIssueAttachmentUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
-	DeleteIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
+	VisibleIssueAttachments(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, bool) ([]map[string]any, error)
+	IssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) (FileAsset, map[string]any, error)
+	UpdateIssueAttachmentUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any, bool) error
+	DeleteIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any) error
 	UpdateAPIFileAssetUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
 	DeleteAPIFileAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
 	IssueAttachmentDeleteAllowed(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (bool, error)
 	CreateLegacyFileAsset(context.Context, uuid.UUID, uuid.UUID, map[string]any, string) (map[string]any, error)
 	LegacyRelationExists(context.Context, string, uuid.UUID) (bool, error)
-	CreateLegacyIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any, string) error
+	CreateLegacyIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any, string, string, map[string]any) error
 	PublicProjectBoard(context.Context, string, bool) (uuid.UUID, uuid.UUID, string, bool, error)
 	PublicProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, bool, bool) (FileAsset, error)
 	PublicOwnedProjectAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, bool) (FileAsset, error)
@@ -83,8 +83,11 @@ type assetRepository interface {
 	PublicBulkAssetRows(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []uuid.UUID) ([]uuid.UUID, string, error)
 	BulkAssociatePublicAssetComments(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, []uuid.UUID) error
 	BulkAssociateProjectAssets(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, []uuid.UUID) error
-	DeleteLegacyIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error
-	MarkDuplicateUploaded(context.Context, uuid.UUID) error
+	BulkAssociateDraftAssets(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, []uuid.UUID) error
+	DraftAssetAllowed(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (bool, error)
+	MutateDraftAsset(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, string, []byte, bool) error
+	DeleteLegacyIssueAttachment(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, map[string]any) error
+	MarkDuplicateUploaded(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error
 }
 
 type FileAsset struct {
@@ -93,6 +96,7 @@ type FileAsset struct {
 	WorkspaceID           *uuid.UUID
 	ProjectID             *uuid.UUID
 	IssueID               *uuid.UUID
+	DraftIssueID          *uuid.UUID
 	UserID                *uuid.UUID
 	IsUploaded            bool
 	IsDeleted             bool

@@ -2,7 +2,7 @@ import path from "node:path";
 import * as dotenv from "dotenv";
 import { reactRouter } from "@react-router/dev/vite";
 import { defineConfig } from "vite";
-import { joinUrlPath } from "@plane/utils";
+import { joinUrlPath } from "@plane/utils/string";
 
 dotenv.config({ path: path.resolve(import.meta.dirname, ".env") });
 
@@ -27,11 +27,6 @@ export default defineConfig(() => ({
   plugins: [reactRouter()],
   resolve: {
     tsconfigPaths: true,
-    alias: {
-      // Next.js compatibility shims used within admin
-      "next/link": path.resolve(import.meta.dirname, "app/compat/next/link.tsx"),
-      "next/navigation": path.resolve(import.meta.dirname, "app/compat/next/navigation.ts"),
-    },
     dedupe: ["react", "react-dom"],
   },
   server: {
@@ -39,5 +34,4 @@ export default defineConfig(() => ({
     port: Number(process.env.PLANE_ADMIN_PORT ?? 3001),
     strictPort: true,
   },
-  // No SSR-specific overrides needed; alias resolves to ESM build
 }));

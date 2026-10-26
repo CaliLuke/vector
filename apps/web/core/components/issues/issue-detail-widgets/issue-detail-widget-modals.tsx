@@ -5,18 +5,19 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
-import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+
+import { submitRelationSelection } from "@/components/issues/issue-detail/submit-relation-selection";
 import type { ISearchIssueResponse, TIssue, TIssueServiceType, TWorkItemWidgets } from "@plane/types";
 // components
 import { ExistingIssuesListModal } from "@/components/core/modals/existing-issues-list-modal";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useIssueRelations } from "@/hooks/use-issue-resources";
 // local imports
 import { IssueLinkCreateUpdateModal } from "../issue-detail/links/create-update-link-modal";
 // helpers
 import { CreateUpdateIssueModal } from "../issue-modal/modal";
-import { useLinkOperations } from "./links/helper";
+import { useLinkOperations } from "@/hooks/use-issue-link-operations";
 import { useSubIssueOperations } from "./sub-issues/helper";
 
 type Props = {
@@ -27,7 +28,7 @@ type Props = {
   hideWidgets?: TWorkItemWidgets[];
 };
 
-export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals(props: Props) {
+export const IssueDetailWidgetModals = function IssueDetailWidgetModals(props: Props) {
   const { workspaceSlug, projectId, issueId, issueServiceType, hideWidgets } = props;
   // store hooks
   const {
@@ -43,14 +44,19 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
     setRelationKey,
     setLastWidgetAction,
     toggleRelationModal,
-    createRelation,
     issueCrudOperationState,
     setIssueCrudOperationState,
-  } = useIssueDetail(issueServiceType);
+  } = useIssueDetailUiState(issueServiceType);
 
   // helper hooks
-  const subIssueOperations = useSubIssueOperations(issueServiceType);
+  const subIssueOperations = useSubIssueOperations(workspaceSlug, projectId, issueId, issueServiceType);
   const handleLinkOperations = useLinkOperations(workspaceSlug, projectId, issueId, issueServiceType);
+  const { create: createRelation } = useIssueRelations({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
 
   // handlers
   const handleIssueCrudState = (
@@ -108,24 +114,9 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
 
   const handleExistingIssueModalOnSubmit = async (data: ISearchIssueResponse[]) => {
     if (!relationKey) return;
-    if (data.length === 0) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please select at least one work item.",
-      });
-      return;
+    if (await submitRelationSelection(data, relationKey, createRelation)) {
+      toggleRelationModal(null, null);
     }
-
-    await createRelation(
-      workspaceSlug,
-      projectId,
-      issueId,
-      relationKey,
-      data.map((i) => i.id)
-    );
-
-    toggleRelationModal(null, null);
   };
 
   // helpers
@@ -180,6 +171,7 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
           isOpen={issueCrudOperationState?.existing?.toggle}
           handleClose={handleExistingIssuesModalClose}
           searchParams={existingIssuesModalSearchParams}
+          workspaceLevelToggle
           handleOnSubmit={handleExistingIssuesModalOnSubmit}
         />
       )}
@@ -197,4 +189,4 @@ export const IssueDetailWidgetModals = observer(function IssueDetailWidgetModals
       )}
     </>
   );
-});
+};

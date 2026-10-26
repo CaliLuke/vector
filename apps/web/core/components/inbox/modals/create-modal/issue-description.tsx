@@ -5,20 +5,17 @@
  */
 
 import type { RefObject } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { ETabIndices } from "@plane/constants";
 import type { EditorRefApi } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
-import type { TIssue } from "@plane/types";
 import { EFileAssetType } from "@plane/types";
-import { Loader } from "@plane/ui";
-import { getDescriptionPlaceholderI18n, getTabIndex } from "@plane/utils";
+import { getDescriptionPlaceholderI18n } from "@plane/utils/work-item";
+import { getTabIndex } from "@plane/utils/tab-indices";
 // components
 import { RichTextEditor } from "@/components/editor/rich-text/editor";
 // hooks
-import { useEditorAsset } from "@/hooks/store/use-editor-asset";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // services
 import { WorkspaceService } from "@/services/workspace.service";
@@ -30,22 +27,21 @@ type TInboxIssueDescription = {
   workspaceSlug: string;
   projectId: string;
   workspaceId: string;
-  data: Partial<TIssue>;
-  handleData: (issueKey: keyof Partial<TIssue>, issueValue: Partial<TIssue>[keyof Partial<TIssue>]) => void;
+  value: string;
+  onChange: (value: string) => void;
   editorRef: RefObject<EditorRefApi | null>;
-  onEnterKeyPress?: (e?: any) => void;
+  onEnterKeyPress?: () => void;
   onAssetUpload?: (assetId: string) => void;
 };
 
-// TODO: have to implement GPT Assistance
-export const InboxIssueDescription = observer(function InboxIssueDescription(props: TInboxIssueDescription) {
+export const InboxIssueDescription = function InboxIssueDescription(props: TInboxIssueDescription) {
   const {
     containerClassName,
     workspaceSlug,
     projectId,
     workspaceId,
-    data,
-    handleData,
+    value,
+    onChange,
     editorRef,
     onEnterKeyPress,
     onAssetUpload,
@@ -53,30 +49,22 @@ export const InboxIssueDescription = observer(function InboxIssueDescription(pro
   // i18n
   const { t } = useTranslation();
   // store hooks
-  const { uploadEditorAsset, duplicateEditorAsset } = useEditorAsset();
-  const { loader } = useProjectInbox();
   const { isMobile } = usePlatformOS();
 
   const { getIndex } = getTabIndex(ETabIndices.INTAKE_ISSUE_FORM, isMobile);
-
-  if (loader === "issue-loading")
-    return (
-      <Loader className="min-h-[6rem] rounded-md border border-subtle">
-        <Loader.Item width="100%" height="140px" />
-      </Loader>
-    );
 
   return (
     <RichTextEditor
       editable
       id="inbox-modal-editor"
-      initialValue={!data?.description_html || data?.description_html === "" ? "<p></p>" : data?.description_html}
+      initialValue={value}
+      value={null}
       ref={editorRef}
       workspaceSlug={workspaceSlug}
       workspaceId={workspaceId}
       projectId={projectId}
       dragDropEnabled={false}
-      onChange={(_description: object, description_html: string) => handleData("description_html", description_html)}
+      onChange={(_description: object, description_html: string) => onChange(description_html)}
       placeholder={(isFocused, description) => t(`${getDescriptionPlaceholderI18n(isFocused, description)}`)}
       searchMentionCallback={async (payload) =>
         await workspaceService.searchEntity(workspaceSlug?.toString() ?? "", {
@@ -87,39 +75,8 @@ export const InboxIssueDescription = observer(function InboxIssueDescription(pro
       containerClassName={containerClassName}
       onEnterKeyPress={onEnterKeyPress}
       tabIndex={getIndex("description_html")}
-      uploadFile={async (blockId, file) => {
-        try {
-          const { asset_id } = await uploadEditorAsset({
-            blockId,
-            data: {
-              entity_identifier: data.id ?? "",
-              entity_type: EFileAssetType.ISSUE_DESCRIPTION,
-            },
-            file,
-            projectId,
-            workspaceSlug,
-          });
-          onAssetUpload?.(asset_id);
-          return asset_id;
-        } catch (error) {
-          console.log("Error in uploading work item asset:", error);
-          throw new Error("Asset upload failed. Please try again later.");
-        }
-      }}
-      duplicateFile={async (assetId: string) => {
-        try {
-          const { asset_id } = await duplicateEditorAsset({
-            assetId,
-            entityType: EFileAssetType.ISSUE_DESCRIPTION,
-            projectId,
-            workspaceSlug,
-          });
-          onAssetUpload?.(asset_id);
-          return asset_id;
-        } catch {
-          throw new Error("Asset duplication failed. Please try again later.");
-        }
-      }}
+      fileAsset={{ entity_identifier: "", entity_type: EFileAssetType.ISSUE_DESCRIPTION }}
+      onAssetUpload={onAssetUpload}
     />
   );
-});
+};

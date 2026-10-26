@@ -136,7 +136,7 @@ await test("web ModuleService keeps its compatibility methods over the shared se
   responses.push(Object.assign(new Error("bad request"), nonAuthError));
   await assert.rejects(
     service.createModule("acme", "project-1", { name: "New" }),
-    (error) => error === nonAuthError.response.data
+    (error) => error.response === nonAuthError.response
   );
   assert.equal(requests[3].method, "post");
   assert.equal(requests[3].url, "/api/workspaces/acme/projects/project-1/modules/");
@@ -145,7 +145,7 @@ await test("web ModuleService keeps its compatibility methods over the shared se
 
   const authError = { response: { status: 401, data: { detail: "authentication required" } } };
   responses.push(Object.assign(new Error("unauthorized"), authError));
-  await assert.rejects(service.getModules("acme", "project-1"), (error) => error === authError.response.data);
+  await assert.rejects(service.getModules("acme", "project-1"), (error) => error.response === authError.response);
   assert.equal(requests[4].method, "get");
   assert.equal(requests[4].url, "/api/workspaces/acme/projects/project-1/modules/");
   assert.deepEqual(redirects, ["/?next_path=%2Facme%2Fprojects"]);
@@ -211,37 +211,44 @@ await test("web CycleService preserves requests, query configuration, data error
   const base = "/api/workspaces/acme/projects/project-1/cycles/";
   const created = { id: "cycle-1", name: "New cycle" };
   responses.push({ data: created });
-  assert.deepEqual(await service.createCycle("acme", "project-1", { name: "New cycle" }), created);
+  assert.deepEqual(await service.create("acme", "project-1", { name: "New cycle" }), created);
   assert.deepEqual(requests[0].data, { name: "New cycle" });
   assert.equal(requests[0].method, "post");
   assert.equal(requests[0].url, base);
 
-  await service.getCyclesWithParams("acme", "project-1", "current");
+  const controller = new AbortController();
+  await service.getWithParams("acme", "project-1", "current", controller.signal);
   assert.equal(requests.at(-1).url, base);
-  assert.deepEqual(requests.at(-1).config, { params: { cycle_view: "current" } });
-  await service.getCycleDetails("acme", "project-1", "cycle-1");
+  assert.deepEqual(requests.at(-1).config, { params: { cycle_view: "current" }, signal: controller.signal });
+  await service.retrieve("acme", "project-1", "cycle-1");
   assert.equal(requests.at(-1).url, `${base}cycle-1/`);
   assert.equal(requests.at(-1).method, "get");
   await service.getCycleIssues("acme", "project-1", "cycle-1", { cursor: "next" }, { timeout: 250 });
   assert.equal(requests.at(-1).url, `${base}cycle-1/cycle-issues/`);
   assert.deepEqual(requests.at(-1).config, { params: { cursor: "next" }, timeout: 250 });
-  await service.patchCycle("acme", "project-1", "cycle-1", { name: "Renamed" });
+  await service.update("acme", "project-1", "cycle-1", { name: "Renamed" });
   assert.equal(requests.at(-1).method, "patch");
   assert.deepEqual(requests.at(-1).data, { name: "Renamed" });
-  await service.deleteCycle("acme", "project-1", "cycle-1");
+  await service.destroy("acme", "project-1", "cycle-1");
   assert.equal(requests.at(-1).method, "delete");
   assert.equal(requests.at(-1).url, `${base}cycle-1/`);
   const dates = { start_date: "2026-10-01", end_date: "2026-10-14" };
-  await service.cycleDateCheck("acme", "project-1", dates);
+  await service.validateDates("acme", "project-1", dates);
   assert.equal(requests.at(-1).url, `${base}date-check/`);
   assert.deepEqual(requests.at(-1).data, dates);
 
   const errorData = { detail: "Cycle overlap" };
   responses.push(Object.assign(new Error("invalid"), { response: { status: 400, data: errorData } }));
-  await assert.rejects(service.createCycle("acme", "project-1", {}), (error) => error === errorData);
+  await assert.rejects(
+    service.create("acme", "project-1", {}),
+    (error) => error.response.status === 400 && error.response.data === errorData
+  );
   assert.deepEqual(redirects, []);
   responses.push(Object.assign(new Error("unauthorized"), { response: { status: 401, data: errorData } }));
-  await assert.rejects(service.getWorkspaceCycles("acme"), (error) => error === errorData);
+  await assert.rejects(
+    service.getWorkspaceCycles("acme"),
+    (error) => error.response.status === 401 && error.response.data === errorData
+  );
   assert.deepEqual(redirects, ["/?next_path=%2Facme%2Fprojects"]);
 });
 

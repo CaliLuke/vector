@@ -5,7 +5,7 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { Button } from "@plane/propel/button";
 import { ChevronDownIcon } from "@plane/propel/icons";
@@ -41,7 +41,7 @@ const WORKSPACE_ROLE_OPTIONS: IRoleOption[] = [
 ];
 
 // Role filter group component
-const RoleFilterGroup = observer(function RoleFilterGroup({
+const RoleFilterGroup = function RoleFilterGroup({
   appliedFilters,
   handleUpdate,
   memberType,
@@ -79,9 +79,9 @@ const RoleFilterGroup = observer(function RoleFilterGroup({
       )}
     </div>
   );
-});
+};
 
-export const MemberListFilters = observer(function MemberListFilters(props: Props) {
+export const MemberListFilters = function MemberListFilters(props: Props) {
   const { appliedFilters, handleUpdate, memberType } = props;
 
   return (
@@ -90,10 +90,10 @@ export const MemberListFilters = observer(function MemberListFilters(props: Prop
       <RoleFilterGroup appliedFilters={appliedFilters} handleUpdate={handleUpdate} memberType={memberType} />
     </div>
   );
-});
+};
 
 // Dropdown component for member list filters
-export const MemberListFiltersDropdown = observer(function MemberListFiltersDropdown(props: Props) {
+export const MemberListFiltersDropdown = function MemberListFiltersDropdown(props: Props) {
   const { appliedFilters, handleUpdate, memberType } = props;
 
   const appliedFiltersCount = appliedFilters?.length ?? 0;
@@ -115,4 +115,4 @@ export const MemberListFiltersDropdown = observer(function MemberListFiltersDrop
       <MemberListFilters appliedFilters={appliedFilters} handleUpdate={handleUpdate} memberType={memberType} />
     </CustomMenu>
   );
-});
+};

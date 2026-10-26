@@ -6,11 +6,10 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { observer } from "mobx-react";
 
 import { ArchiveRestore } from "lucide-react";
 // plane imports
-import { PROJECT_AUTOMATION_MONTHS, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { PROJECT_AUTOMATION_MONTHS, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { IProject } from "@plane/types";
 import { CustomSelect, Loader, ToggleSwitch } from "@plane/ui";
@@ -18,8 +17,8 @@ import { CustomSelect, Loader, ToggleSwitch } from "@plane/ui";
 import { SelectMonthModal } from "@/components/automation";
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 type Props = {
   handleChange: (formData: Partial<IProject>) => Promise<void>;
@@ -27,24 +26,20 @@ type Props = {
 
 const initialValues: Partial<IProject> = { archive_in: 1 };
 
-export const AutoArchiveAutomation = observer(function AutoArchiveAutomation(props: Props) {
+export const AutoArchiveAutomation = function AutoArchiveAutomation(props: Props) {
   const { handleChange } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [monthModal, setmonthModal] = useState(false);
   // store hooks
-  const { allowPermissions } = useUserPermissions();
   const { t } = useTranslation();
 
-  const { currentProjectDetails } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, currentProjectDetails?.id);
 
-  const isAdmin = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug?.toString(),
-    currentProjectDetails?.id
-  );
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
 
   const autoArchiveStatus = useMemo(() => {
     if (currentProjectDetails?.archive_in === undefined) return false;
@@ -126,4 +121,4 @@ export const AutoArchiveAutomation = observer(function AutoArchiveAutomation(pro
       </div>
     </>
   );
-});
+};

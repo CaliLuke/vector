@@ -4,15 +4,17 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 import { DueDatePropertyIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // helpers
 import { renderFormattedDate } from "@/helpers/date-time.helper";
 import { shouldHighlightIssueDueDate } from "@/helpers/issue.helper";
 // hooks
-import { useStates } from "@/hooks/store/use-state";
+import { statesOptions } from "@/queries/lookups";
 
 type Props = {
   due_date: string | undefined;
@@ -21,11 +23,11 @@ type Props = {
   shouldShowBorder?: boolean;
 };
 
-export const IssueBlockDate = observer(function IssueBlockDate(props: Props) {
+export const IssueBlockDate = function IssueBlockDate(props: Props) {
   const { due_date, stateId, shouldHighLight = true, shouldShowBorder = true } = props;
-  const { getStateById } = useStates();
+  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
 
-  const state = getStateById(stateId);
+  const state = states.find((item) => item.id === stateId);
 
   const formattedDate = renderFormattedDate(due_date);
 
@@ -42,4 +44,4 @@ export const IssueBlockDate = observer(function IssueBlockDate(props: Props) {
       </div>
     </Tooltip>
   );
-});
+};

@@ -21,15 +21,20 @@ const favoriteTestBody = `{"id":"` + favoriteTestID + `","entity_type":"folder",
 type favoriteRepoStub struct {
 	authorized bool
 	err        error
+	createErr  error
 	created    store.CreateInput
 	updated    store.UpdateInput
 	deleted    bool
+	listAll    bool
+	listCalls  int
 }
 
 func (r *favoriteRepoStub) Authorized(context.Context, uuid.UUID, string) (bool, error) {
 	return r.authorized, r.err
 }
-func (r *favoriteRepoStub) List(context.Context, uuid.UUID, string) (json.RawMessage, error) {
+func (r *favoriteRepoStub) List(_ context.Context, _ uuid.UUID, _ string, all bool) (json.RawMessage, error) {
+	r.listCalls++
+	r.listAll = all
 	return json.RawMessage("[" + favoriteTestBody + "]"), r.err
 }
 func (r *favoriteRepoStub) Group(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error) {
@@ -37,7 +42,17 @@ func (r *favoriteRepoStub) Group(context.Context, uuid.UUID, string, uuid.UUID) 
 }
 func (r *favoriteRepoStub) Create(_ context.Context, _ uuid.UUID, _ string, input store.CreateInput) (json.RawMessage, error) {
 	r.created = input
-	return json.RawMessage(favoriteTestBody), r.err
+	return json.RawMessage(favoriteTestBody), r.createErr
+}
+
+func TestWorkspaceFavoritesRejectsOutOfScopeTarget(t *testing.T) {
+	repository := &favoriteRepoStub{authorized: true, createErr: store.ErrInvalidScope}
+	service, ctx := favoriteService(t, repository)
+	_, err := service.Create(ctx, &api.CreatePayload{Slug: "demo", EntityType: loom.NullableValue("project")})
+	var invalid *api.WorkspaceFavoriteInvalid
+	if !errors.As(err, &invalid) || invalid.Message == nil || *invalid.Message != "Favorite target is not accessible." {
+		t.Fatalf("out-of-scope create error=%T %+v", err, err)
+	}
 }
 func (r *favoriteRepoStub) Update(_ context.Context, _ uuid.UUID, _ string, _ uuid.UUID, input store.UpdateInput) (json.RawMessage, error) {
 	r.updated = input
@@ -71,18 +86,18 @@ func TestWorkspaceFavoritesCRUDAndGroup(t *testing.T) {
 	repository := &favoriteRepoStub{authorized: true}
 	service, ctx := favoriteService(t, repository)
 	name := "Projects"
-	created, err := service.Create(ctx, &api.CreatePayload{
+	created, createErr := service.Create(ctx, &api.CreatePayload{
 		Slug:       "demo",
 		EntityType: loom.NullableValue("folder"),
 		Name:       loom.NullableValue(name),
 		IsFolder:   loom.NullableValue(true),
 	})
-	if err != nil || created.EntityType != "folder" || repository.created.Name == nil || *repository.created.Name != name {
-		t.Fatalf("create=%+v input=%+v err=%v", created, repository.created, err)
+	if createErr != nil || created.EntityType != "folder" || repository.created.Name == nil || *repository.created.Name != name {
+		t.Fatalf("create=%+v input=%+v err=%v", created, repository.created, createErr)
 	}
 	newName := "Renamed"
-	if _, err = service.Patch(ctx, &api.PatchPayload{Slug: "demo", FavoriteID: favoriteTestID, Name: loom.NullableValue(newName)}); err != nil {
-		t.Fatal(err)
+	if _, patchErr := service.Patch(ctx, &api.PatchPayload{Slug: "demo", FavoriteID: favoriteTestID, Name: loom.NullableValue(newName)}); patchErr != nil {
+		t.Fatal(patchErr)
 	}
 	if !repository.updated.NamePresent || repository.updated.Name == nil || *repository.updated.Name != newName {
 		t.Fatalf("update input=%+v", repository.updated)
@@ -90,20 +105,31 @@ func TestWorkspaceFavoritesCRUDAndGroup(t *testing.T) {
 	if values, err := service.List(ctx, &api.ListPayload{Slug: "demo"}); err != nil || len(values) != 1 {
 		t.Fatalf("list=%d err=%v", len(values), err)
 	}
+	if repository.listAll {
+		t.Fatal("List default unexpectedly included nested favorites")
+	}
+	includeAll := true
+	if values, err := service.List(ctx, &api.ListPayload{Slug: "demo", All: &includeAll}); err != nil || len(values) != 1 {
+		t.Fatalf("all list=%d err=%v", len(values), err)
+	}
+	if !repository.listAll {
+		t.Fatal("List all mode was not forwarded to repository")
+	}
 	if values, err := service.Group(ctx, &api.GroupPayload{Slug: "demo", FavoriteID: favoriteTestID}); err != nil || len(values) != 1 {
 		t.Fatalf("group=%d err=%v", len(values), err)
 	}
-	if err = service.Delete(ctx, &api.DeletePayload{Slug: "demo", FavoriteID: favoriteTestID}); err != nil || !repository.deleted {
-		t.Fatalf("delete=%v called=%t", err, repository.deleted)
+	if deleteErr := service.Delete(ctx, &api.DeletePayload{Slug: "demo", FavoriteID: favoriteTestID}); deleteErr != nil || !repository.deleted {
+		t.Fatalf("delete=%v called=%t", deleteErr, repository.deleted)
 	}
 }
 
 func TestWorkspaceFavoritesPreservesValidationAndPhantomMethods(t *testing.T) {
 	repository := &favoriteRepoStub{authorized: true}
 	service, ctx := favoriteService(t, repository)
+	var invalid *api.WorkspaceFavoriteInvalid
 	if _, err := service.Create(ctx, &api.CreatePayload{Slug: "demo"}); err == nil {
 		t.Fatal("expected required entity_type validation")
-	} else if invalid, ok := err.(*api.WorkspaceFavoriteInvalid); !ok || len(invalid.EntityType) != 1 {
+	} else if !errors.As(err, &invalid) || len(invalid.EntityType) != 1 {
 		t.Fatalf("validation=%T %+v", err, err)
 	}
 	if _, err := service.Retrieve(ctx, &api.RetrievePayload{Slug: "demo", FavoriteID: favoriteTestID}); err == nil {
@@ -123,10 +149,15 @@ func TestWorkspaceFavoritesPreservesValidationAndPhantomMethods(t *testing.T) {
 func TestWorkspaceFavoritesAuthorizationAndNotFound(t *testing.T) {
 	repository := &favoriteRepoStub{}
 	service, ctx := favoriteService(t, repository)
-	if _, err := service.List(ctx, &api.ListPayload{Slug: "demo"}); err == nil {
+	all := true
+	var forbidden *api.WorkspaceFavoriteForbidden
+	if _, err := service.List(ctx, &api.ListPayload{Slug: "demo", All: &all}); err == nil {
 		t.Fatal("expected forbidden")
-	} else if forbidden, ok := err.(*api.WorkspaceFavoriteForbidden); !ok || forbidden.Message != "You don't have the required permissions." {
+	} else if !errors.As(err, &forbidden) || forbidden.Message != "You don't have the required permissions." {
 		t.Fatalf("forbidden=%T %+v", err, err)
+	}
+	if repository.listCalls != 0 {
+		t.Fatalf("unauthorized all-list reached repository %d times", repository.listCalls)
 	}
 	repository.authorized = true
 	repository.err = store.ErrNotFound

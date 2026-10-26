@@ -9,16 +9,16 @@ import React, { useState } from "react";
 import type { EIssueCommentAccessSpecifier } from "@plane/constants";
 // plane editor
 import { LiteTextEditorWithRef } from "@plane/editor";
-import type { EditorRefApi, ILiteTextEditorProps, TFileHandler } from "@plane/editor";
+import type { EditorRefApi, ILiteTextEditorProps } from "@plane/editor";
 // components
 import type { TSticky } from "@plane/types";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
 import { useEditorConfig } from "@/hooks/editor";
 import { useParseEditorContent } from "@/hooks/use-parse-editor-content";
 // plane web hooks
-import { useEditorFlagging } from "@/hooks/use-editor-flagging";
+import { DISABLED_EDITOR_EXTENSIONS } from "@/components/editor/extensions";
 import { StickyEditorToolbar } from "./toolbar";
 
 interface StickyEditorWrapperProps extends Omit<
@@ -35,8 +35,6 @@ interface StickyEditorWrapperProps extends Omit<
   isSubmitting?: boolean;
   showToolbarInitially?: boolean;
   showToolbar?: boolean;
-  uploadFile: TFileHandler["upload"];
-  duplicateFile: TFileHandler["duplicate"];
   parentClassName?: string;
   handleColorChange: (data: Partial<TSticky>) => Promise<void>;
   handleDelete: () => void;
@@ -56,24 +54,21 @@ export const StickyEditor = React.forwardRef(function StickyEditor(
     showToolbarInitially = true,
     showToolbar = true,
     parentClassName = "",
-    uploadFile,
-    duplicateFile,
     ...rest
   } = props;
   // states
   const [isFocused, setIsFocused] = useState(showToolbarInitially);
-  // editor flaggings
-  const { liteText: liteTextEditorExtensions } = useEditorFlagging({
-    workspaceSlug,
-    projectId,
-  });
   // parse content
   const { getEditorMetaData } = useParseEditorContent({
     projectId,
     workspaceSlug,
   });
   // editor config
-  const { getEditorFileHandlers } = useEditorConfig();
+  const fileHandler = useEditorConfig({
+    projectId,
+    workspaceId,
+    workspaceSlug,
+  });
   function isMutableRefObject<T>(ref: React.ForwardedRef<T>): ref is React.MutableRefObject<T | null> {
     return !!ref && typeof ref === "object" && "current" in ref;
   }
@@ -88,16 +83,10 @@ export const StickyEditor = React.forwardRef(function StickyEditor(
     >
       <LiteTextEditorWithRef
         ref={ref}
-        disabledExtensions={[...liteTextEditorExtensions.disabled, "enter-key"]}
-        flaggedExtensions={liteTextEditorExtensions.flagged}
+        disabledExtensions={[...DISABLED_EDITOR_EXTENSIONS, "enter-key"]}
+        flaggedExtensions={[]}
         editable
-        fileHandler={getEditorFileHandlers({
-          projectId,
-          uploadFile,
-          duplicateFile,
-          workspaceId,
-          workspaceSlug,
-        })}
+        fileHandler={fileHandler}
         getEditorMetaData={getEditorMetaData}
         mentionHandler={{
           renderComponent: () => <></>,

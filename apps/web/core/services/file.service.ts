@@ -9,9 +9,10 @@ import type { AxiosRequestConfig } from "axios";
 import { API_BASE_URL } from "@plane/constants";
 import { getFileMetaDataForUpload, generateFileUploadPayload } from "@plane/services";
 import type { EFileAssetType, TFileEntityInfo, TFileSignedURLResponse } from "@plane/types";
-import { getAssetIdFromUrl } from "@plane/utils";
+import { getAssetIdFromUrl } from "@plane/utils/file";
 // helpers
 // services
+import { authService } from "./auth.service";
 import { APIService } from "@/services/api.service";
 import { FileUploadService } from "@/services/file-upload.service";
 
@@ -51,68 +52,52 @@ export enum TFileAssetType {
 }
 
 export class FileService extends APIService {
-  private cancelSource: any;
   private fileUploadService: FileUploadService;
 
   constructor() {
     super(API_BASE_URL);
-    this.cancelUpload = this.cancelUpload.bind(this);
     // upload service
     this.fileUploadService = new FileUploadService();
   }
 
-  private async updateWorkspaceAssetUploadStatus(workspaceSlug: string, assetId: string): Promise<void> {
-    return this.patch(`/api/assets/v2/workspaces/${workspaceSlug}/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  private async uploadAsset(
+    path: string,
+    data: TFileEntityInfo,
+    file: File,
+    uploadProgressHandler?: AxiosRequestConfig["onUploadProgress"],
+    signal?: AbortSignal
+  ): Promise<TFileSignedURLResponse> {
+    signal?.throwIfAborted();
+    const fileMetaData = await getFileMetaDataForUpload(file);
+    signal?.throwIfAborted();
+    const response = await this.post(path, { ...data, ...fileMetaData }, { signal });
+    const asset: TFileSignedURLResponse = response.data;
+    await this.fileUploadService.uploadFile(
+      asset.upload_data.url,
+      generateFileUploadPayload(asset, file),
+      uploadProgressHandler,
+      signal
+    );
+    signal?.throwIfAborted();
+    await this.patch(`${path}${asset.asset_id}/`, undefined, { signal });
+    return asset;
   }
 
   async uploadWorkspaceAsset(
     workspaceSlug: string,
     data: TFileEntityInfo,
     file: File,
-    uploadProgressHandler?: AxiosRequestConfig["onUploadProgress"]
+    uploadProgressHandler?: AxiosRequestConfig["onUploadProgress"],
+    signal?: AbortSignal
   ): Promise<TFileSignedURLResponse> {
-    const fileMetaData = await getFileMetaDataForUpload(file);
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/`, {
-      ...data,
-      ...fileMetaData,
-    })
-      .then(async (response) => {
-        const signedURLResponse: TFileSignedURLResponse = response?.data;
-        const fileUploadPayload = generateFileUploadPayload(signedURLResponse, file);
-        await this.fileUploadService.uploadFile(
-          signedURLResponse.upload_data.url,
-          fileUploadPayload,
-          uploadProgressHandler
-        );
-        await this.updateWorkspaceAssetUploadStatus(workspaceSlug.toString(), signedURLResponse.asset_id);
-        return signedURLResponse;
-      })
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.uploadAsset(`/api/assets/v2/workspaces/${workspaceSlug}/`, data, file, uploadProgressHandler, signal);
   }
 
   async deleteWorkspaceAsset(workspaceSlug: string, assetId: string): Promise<void> {
     return this.delete(`/api/assets/v2/workspaces/${workspaceSlug}/${assetId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
-      });
-  }
-
-  private async updateProjectAssetUploadStatus(
-    workspaceSlug: string,
-    projectId: string,
-    assetId: string
-  ): Promise<void> {
-    return this.patch(`/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -123,10 +108,14 @@ export class FileService extends APIService {
       asset_ids: string[];
     }
   ): Promise<void> {
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/${entityId}/bulk/`, data)
+    const { csrf_token } = await authService.requestCSRFToken();
+    if (!csrf_token) throw new Error("Could not verify this session. Reload and try again.");
+    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/${entityId}/bulk/`, data, {
+      headers: { "X-CSRFTOKEN": csrf_token },
+    })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -141,7 +130,7 @@ export class FileService extends APIService {
     return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/${entityId}/bulk/`, data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -150,60 +139,27 @@ export class FileService extends APIService {
     projectId: string,
     data: TFileEntityInfo,
     file: File,
-    uploadProgressHandler?: AxiosRequestConfig["onUploadProgress"]
+    uploadProgressHandler?: AxiosRequestConfig["onUploadProgress"],
+    signal?: AbortSignal
   ): Promise<TFileSignedURLResponse> {
-    const fileMetaData = await getFileMetaDataForUpload(file);
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/`, {
-      ...data,
-      ...fileMetaData,
-    })
-      .then(async (response) => {
-        const signedURLResponse: TFileSignedURLResponse = response?.data;
-        const fileUploadPayload = generateFileUploadPayload(signedURLResponse, file);
-        await this.fileUploadService.uploadFile(
-          signedURLResponse.upload_data.url,
-          fileUploadPayload,
-          uploadProgressHandler
-        );
-        await this.updateProjectAssetUploadStatus(workspaceSlug, projectId, signedURLResponse.asset_id);
-        return signedURLResponse;
-      })
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+    return this.uploadAsset(
+      `/api/assets/v2/workspaces/${workspaceSlug}/projects/${projectId}/`,
+      data,
+      file,
+      uploadProgressHandler,
+      signal
+    );
   }
 
-  private async updateUserAssetUploadStatus(assetId: string): Promise<void> {
-    return this.patch(`/api/assets/v2/user-assets/${assetId}/`)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response?.data;
-      });
-  }
-
-  async uploadUserAsset(data: TFileEntityInfo, file: File): Promise<TFileSignedURLResponse> {
-    const fileMetaData = await getFileMetaDataForUpload(file);
-    return this.post(`/api/assets/v2/user-assets/`, {
-      ...data,
-      ...fileMetaData,
-    })
-      .then(async (response) => {
-        const signedURLResponse: TFileSignedURLResponse = response?.data;
-        const fileUploadPayload = generateFileUploadPayload(signedURLResponse, file);
-        await this.fileUploadService.uploadFile(signedURLResponse.upload_data.url, fileUploadPayload);
-        await this.updateUserAssetUploadStatus(signedURLResponse.asset_id);
-        return signedURLResponse;
-      })
-      .catch((error) => {
-        throw error?.response?.data;
-      });
+  async uploadUserAsset(data: TFileEntityInfo, file: File, signal?: AbortSignal): Promise<TFileSignedURLResponse> {
+    return this.uploadAsset("/api/assets/v2/user-assets/", data, file, undefined, signal);
   }
 
   async deleteUserAsset(assetId: string): Promise<void> {
     return this.delete(`/api/assets/v2/user-assets/${assetId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -211,7 +167,7 @@ export class FileService extends APIService {
     return this.delete(assetPath)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -220,7 +176,7 @@ export class FileService extends APIService {
     return this.delete(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/`)
       .then((response) => response?.status)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -229,7 +185,7 @@ export class FileService extends APIService {
     return this.delete(`/api/users/file-assets/${assetKey}/`)
       .then((response) => response?.status)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -239,7 +195,7 @@ export class FileService extends APIService {
     return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/restore/${assetId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -252,7 +208,7 @@ export class FileService extends APIService {
     return this.get(`/api/assets/v2/workspaces/${workspaceSlug}/check/${assetId}/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -261,23 +217,20 @@ export class FileService extends APIService {
     return this.post(`/api/workspaces/file-assets/${workspaceId}/${assetKey}/restore/`)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
-  cancelUpload() {
-    this.cancelSource.cancel("Upload canceled");
-  }
-
-  async getUnsplashImages(query?: string): Promise<UnSplashImage[]> {
+  async getUnsplashImages(query?: string, signal?: AbortSignal): Promise<UnSplashImage[]> {
     return this.get(`/api/unsplash/`, {
+      signal,
       params: {
         query,
       },
     })
       .then((res) => res?.data?.results ?? res?.data)
       .catch((err) => {
-        throw err?.response?.data;
+        throw err?.response?.data ?? err;
       });
   }
 
@@ -288,12 +241,13 @@ export class FileService extends APIService {
       entity_id?: string;
       entity_type: EFileAssetType;
       project_id?: string;
-    }
+    },
+    signal?: AbortSignal
   ): Promise<{ asset_id: string }> {
-    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/${assetId}/`, data)
+    return this.post(`/api/assets/v2/workspaces/${workspaceSlug}/duplicate-assets/${assetId}/`, data, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

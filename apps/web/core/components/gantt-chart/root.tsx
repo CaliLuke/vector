@@ -4,21 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect } from "react";
-import { observer } from "mobx-react";
 // components
 import type { IBlockUpdateData, IBlockUpdateDependencyData } from "@plane/types";
 // hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
 import { ChartViewRoot } from "./chart/root";
+import type { TGanttItemData } from "./state";
 
-type GanttChartRootProps = {
+type GanttChartRootProps<TItem extends TGanttItemData> = {
   border?: boolean;
   title: string;
   loaderTitle: string;
   blockIds: string[];
-  blockUpdateHandler: (block: any, payload: IBlockUpdateData) => void;
-  blockToRender: (data: any) => React.ReactNode;
+  blockItems: readonly TItem[];
+  blockUpdateHandler: (block: TItem, payload: IBlockUpdateData) => void;
+  blockToRender: (data: TItem) => React.ReactNode;
   sidebarToRender: (props: any) => React.ReactNode;
   quickAdd?: React.ReactNode | undefined;
   canLoadMoreBlocks?: boolean;
@@ -37,11 +36,12 @@ type GanttChartRootProps = {
   isEpic?: boolean;
 };
 
-export const GanttChartRoot = observer(function GanttChartRoot(props: GanttChartRootProps) {
+export function GanttChartRoot<TItem extends TGanttItemData>(props: GanttChartRootProps<TItem>) {
   const {
     border = true,
     title,
     blockIds,
+    blockItems,
     loaderTitle = "blocks",
     blockUpdateHandler,
     sidebarToRender,
@@ -63,18 +63,12 @@ export const GanttChartRoot = observer(function GanttChartRoot(props: GanttChart
     isEpic = false,
   } = props;
 
-  const { setBlockIds } = useTimeLineChartStore();
-
-  // update the timeline store with updated blockIds
-  useEffect(() => {
-    setBlockIds(blockIds);
-  }, [blockIds]);
-
   return (
     <ChartViewRoot
       border={border}
       title={title}
       blockIds={blockIds}
+      blockItems={blockItems}
       loadMoreBlocks={loadMoreBlocks}
       canLoadMoreBlocks={canLoadMoreBlocks}
       loaderTitle={loaderTitle}
@@ -96,4 +90,4 @@ export const GanttChartRoot = observer(function GanttChartRoot(props: GanttChart
       isEpic={isEpic}
     />
   );
-});
+}

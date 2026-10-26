@@ -14,7 +14,7 @@ import { TrashIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TSticky } from "@plane/types";
 // constants
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import type { ToolbarMenuItem } from "@plane/editor";
 import { TOOLBAR_ITEMS } from "@plane/editor";
 // helpers

@@ -4,8 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import orderBy from "lodash-es/orderBy.js";
 import { useParams, useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { useTheme } from "next-themes";
 // plane imports
@@ -17,8 +17,10 @@ import lightWidgetsAsset from "@/app/assets/empty-state/dashboard/widgets-light.
 // components
 import { SimpleEmptyState } from "@/components/empty-state/simple-empty-state-root";
 // hooks
-import { useHome } from "@/hooks/store/use-home";
-import { useProject } from "@/hooks/store/use-project";
+import { useQuery } from "@tanstack/react-query";
+import { homeWidgetsOptions } from "@/queries/home";
+import { useHomeSettings } from "./provider";
+import { useRouteProject } from "@/hooks/use-projects";
 // local imports
 import { StickiesWidget } from "../stickies/widget";
 import { HomeLoader, NoProjectsEmptyState, RecentActivityWidget } from "./widgets";
@@ -59,7 +61,7 @@ export const HOME_WIDGETS_LIST: {
   },
 };
 
-export const DashboardWidgets = observer(function DashboardWidgets() {
+export const DashboardWidgets = function DashboardWidgets() {
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // navigation
@@ -67,9 +69,13 @@ export const DashboardWidgets = observer(function DashboardWidgets() {
   // theme hook
   const { resolvedTheme } = useTheme();
   // store hooks
-  const { toggleWidgetSettings, widgetsMap, showWidgetSettings, orderedWidgets, isAnyWidgetEnabled, loading } =
-    useHome();
-  const { loader } = useProject();
+  const { showWidgetSettings, setShowWidgetSettings } = useHomeSettings();
+  const widgetsQuery = useQuery(homeWidgetsOptions(workspaceSlug));
+  const widgets = orderBy(widgetsQuery.data ?? [], "sort_order", "desc");
+  const isAnyWidgetEnabled = widgets.some((widget) => widget.is_enabled);
+  const loading = widgetsQuery.isPending;
+  const routeProjectQuery = useRouteProject();
+  const loader = routeProjectQuery.isPending;
   // plane hooks
   const { t } = useTranslation();
   // derived values
@@ -78,22 +84,35 @@ export const DashboardWidgets = observer(function DashboardWidgets() {
   // derived values
   const isWikiApp = pathname.includes(`/${workspaceSlug.toString()}/pages`);
   if (!workspaceSlug) return null;
-  if (loading || loader !== "loaded") return <HomeLoader />;
+  if (loading || loader) return <HomeLoader />;
+  if (widgetsQuery.isError)
+    return (
+      <div role="alert">
+        Unable to load widgets.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void widgetsQuery.refetch();
+          }}
+        >
+          Try again
+        </button>
+      </div>
+    );
 
   return (
     <div className="relative flex h-full w-full flex-col gap-7">
       <ManageWidgetsModal
         workspaceSlug={workspaceSlug.toString()}
         isModalOpen={showWidgetSettings}
-        handleOnClose={() => toggleWidgetSettings(false)}
+        handleOnClose={() => setShowWidgetSettings(false)}
       />
       {!isWikiApp && <NoProjectsEmptyState />}
 
       {isAnyWidgetEnabled ? (
         <div className="flex flex-col">
-          {orderedWidgets.map((key) => {
+          {widgets.map(({ key, is_enabled: isEnabled }) => {
             const WidgetComponent = HOME_WIDGETS_LIST[key]?.component;
-            const isEnabled = widgetsMap[key]?.is_enabled;
             if (!WidgetComponent || !isEnabled) return null;
             return (
               <div key={key} className="py-4">
@@ -113,4 +132,4 @@ export const DashboardWidgets = observer(function DashboardWidgets() {
       )}
     </div>
   );
-});
+};

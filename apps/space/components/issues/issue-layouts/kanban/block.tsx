@@ -4,47 +4,46 @@
  * See the LICENSE file for details.
  */
 
-import type { MutableRefObject } from "react";
-import { observer } from "mobx-react";
-import { Link } from "react-router";
-import { useParams, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
+import { Link, useParams, useSearchParams } from "react-router";
+
 // plane types
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueDisplayProperties } from "@plane/types";
 // plane ui
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/with-display-properties-HOC";
 // helpers
-import { queryParamGenerator } from "@/helpers/query-param-generator";
+
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
+
 //
-import type { IIssue } from "@/types/issue";
+
+import type { IPublicIssue } from "@plane/types";
 import { IssueProperties } from "../properties/all-properties";
-import { getIssueBlockId } from "../utils";
+
 import { BlockReactions } from "./block-reactions";
 
 interface IssueBlockProps {
-  issueId: string;
+  issue: IPublicIssue;
   groupId: string;
-  subGroupId: string;
   displayProperties: IIssueDisplayProperties | undefined;
-  scrollableContainerRef?: MutableRefObject<HTMLDivElement | null>;
 }
 
 interface IssueDetailsBlockProps {
-  issue: IIssue;
+  issue: IPublicIssue;
   displayProperties: IIssueDisplayProperties | undefined;
 }
 
-const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props: IssueDetailsBlockProps) {
+const KanbanIssueDetailsBlock = function KanbanIssueDetailsBlock(props: IssueDetailsBlockProps) {
   const { issue, displayProperties } = props;
   const { anchor } = useParams();
   // hooks
-  const { project_details } = usePublish(anchor.toString());
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { project_details } = publishSettings ?? {};
 
   return (
     <div className="space-y-2 px-3 py-2">
@@ -69,25 +68,18 @@ const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props:
       />
     </div>
   );
-});
+};
 
-export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueBlockProps) {
-  const { issueId, groupId, subGroupId, displayProperties } = props;
-  const searchParams = useSearchParams();
+export const KanbanIssueBlock = function KanbanIssueBlock(props: IssueBlockProps) {
+  const { issue, groupId, displayProperties } = props;
+  const issueId = issue.id;
+  const [searchParams] = useSearchParams();
   // query params
-  const board = searchParams.get("board");
   // hooks
-  const { setPeekId, getIsIssuePeeked, getIssueById } = useIssueDetails();
-
-  const handleIssuePeekOverview = () => {
-    setPeekId(issueId);
-  };
-
-  const { queryParam } = queryParamGenerator(board ? { board, peekId: issueId } : { peekId: issueId });
-
-  const issue = getIssueById(issueId);
-
-  if (!issue) return null;
+  const query = new URLSearchParams(searchParams);
+  query.set("peekId", issue.id);
+  const queryParam = query.toString();
+  const isPeeked = searchParams.get("peekId") === issue.id;
 
   return (
     <div className={cn("group/kanban-block relative p-1.5")}>
@@ -95,20 +87,15 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
         className={cn(
           "relative block w-full rounded-lg border border-subtle bg-layer-2 text-13 transition-all hover:bg-layer-2-hover",
           {
-            "border-accent-strong hover:border-accent-strong": getIsIssuePeeked(issue.id),
+            "border-accent-strong hover:border-accent-strong": isPeeked,
           }
         )}
       >
-        <Link
-          id={getIssueBlockId(issueId, groupId, subGroupId)}
-          className="w-full"
-          to={`?${queryParam}`}
-          onClick={handleIssuePeekOverview}
-        >
+        <Link id={`issue_${issueId}_${groupId}`} className="w-full" to={`?${queryParam}`}>
           <KanbanIssueDetailsBlock issue={issue} displayProperties={displayProperties} />
         </Link>
-        <BlockReactions issueId={issueId} />
+        <BlockReactions issue={issue} />
       </div>
     </div>
   );
-});
+};

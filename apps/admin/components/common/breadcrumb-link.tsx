@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import Link from "next/link";
+import { Link } from "react-router";
 import { Tooltip } from "@plane/propel/tooltip";
 
 type Props = {
@@ -20,7 +20,7 @@ export function BreadcrumbLink(props: Props) {
       <li className="flex items-center space-x-2" tabIndex={-1}>
         <div className="flex flex-wrap items-center gap-2.5">
           {href ? (
-            <Link className="flex items-center gap-1 text-13 font-medium text-tertiary hover:text-primary" href={href}>
+            <Link className="flex items-center gap-1 text-13 font-medium text-tertiary hover:text-primary" to={href}>
               {icon && <div className="flex h-5 w-5 items-center justify-center overflow-hidden !text-16">{icon}</div>}
               <div className="relative line-clamp-1 block max-w-[150px] truncate overflow-hidden">{label}</div>
             </Link>

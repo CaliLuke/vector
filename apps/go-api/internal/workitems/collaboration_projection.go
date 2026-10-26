@@ -36,6 +36,16 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 		row = cloneCollaborationRow(row)
 		row["is_member"] = member
 	}
+	if kind == "comment" && row["description_id"] != nil {
+		owned, err := r.collaborationDescriptionOwned(ctx, q, row)
+		if err != nil {
+			return nil, err
+		}
+		if !owned {
+			row = cloneCollaborationRow(row)
+			row["description_id"] = nil
+		}
+	}
 	if q.API {
 		fields := apiCommentFields
 		if kind == "link" {
@@ -66,7 +76,7 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 		if _, selected := out["parent"]; commentParent && selected {
 			parent := map[string]any{}
 			if row["parent_id"] != nil {
-				parent, err = r.collaborationOptionalRow(ctx, `SELECT jsonb_build_object('id',id,'project_id',project_id) FROM issue_comments WHERE id=$1`, row["parent_id"])
+				parent, err = r.collaborationCommentParent(ctx, q, row)
 				if err != nil {
 					return nil, err
 				}
@@ -81,6 +91,19 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 	}
 
 	out := modelProjection(row, collaborationFieldOrder(kind))
+	if kind == "comment" {
+		parent, err := r.collaborationCommentParent(ctx, q, row)
+		if err != nil {
+			return nil, err
+		}
+		if row["parent_id"] != nil {
+			if parent == nil {
+				out["parent"] = nil
+			} else {
+				out["parent"] = parent["id"]
+			}
+		}
+	}
 	var err error
 	switch kind {
 	case "comment":
@@ -129,6 +152,34 @@ func (r *Repository) collaborationProjection(ctx context.Context, q Request, row
 	}
 	collaborationTimestamps(out, q.Timezone)
 	return out, nil
+}
+
+func (r *Repository) collaborationDescriptionOwned(ctx context.Context, q Request, row map[string]any) (bool, error) {
+	if row["description_id"] == nil {
+		return true, nil
+	}
+	var owned bool
+	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM descriptions d JOIN workspaces w ON w.id=d.workspace_id WHERE d.id=$1 AND d.project_id=$2 AND d.workspace_id=$3 AND w.slug=$4 AND d.deleted_at IS NULL)`, row["description_id"], row["project_id"], row["workspace_id"], q.Slug).Scan(&owned)
+	return owned, err
+}
+
+func (r *Repository) collaborationCommentParent(ctx context.Context, q Request, row map[string]any) (map[string]any, error) {
+	if row["parent_id"] == nil {
+		return nil, nil
+	}
+	query := `SELECT jsonb_build_object('id',parent.id,'project_id',parent.project_id)
+FROM issue_comments parent
+JOIN issues parent_issue ON parent_issue.id=parent.issue_id AND parent_issue.project_id=parent.project_id AND parent_issue.workspace_id=parent.workspace_id
+JOIN workspaces parent_workspace ON parent_workspace.id=parent.workspace_id
+WHERE parent.id=$1 AND parent.issue_id=$2 AND parent.project_id=$3 AND parent_workspace.slug=$4 AND parent.deleted_at IS NULL AND `
+	args := []any{row["parent_id"], q.IssueID, q.ProjectID, q.Slug}
+	if collaborationPublic(q) {
+		query += `parent.access='EXTERNAL' AND ` + djangoapi.PublicRelatedIssueSQL("parent_issue", "parent_issue")
+	} else {
+		query += djangoapi.IssueVisibleSQL("parent_issue", "NULLIF($5,'')::uuid", "parent_workspace.id")
+		args = append(args, q.ActorID)
+	}
+	return r.collaborationOptionalRow(ctx, query, args...)
 }
 
 func cloneCollaborationRow(row map[string]any) map[string]any {

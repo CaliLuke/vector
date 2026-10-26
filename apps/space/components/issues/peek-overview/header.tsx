@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 import { MoveRight } from "lucide-react";
 import { Listbox, Transition } from "@headlessui/react";
 // ui
@@ -14,14 +14,16 @@ import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // helpers
 import { copyTextToClipboard } from "@/helpers/string.helper";
 // hooks
-import { useIssueDetails } from "@/hooks/store/use-issue-details";
 import useClipboardWritePermission from "@/hooks/use-clipboard-write-permission";
 // types
-import type { IIssue, IPeekMode } from "@/types/issue";
+import type { IPeekMode } from "@/types/issue";
+import type { IPublicIssue } from "@plane/types";
 
 type Props = {
   handleClose: () => void;
-  issueDetails: IIssue | undefined;
+  peekMode: IPeekMode;
+  setPeekMode: (mode: IPeekMode) => void;
+  issueDetails: IPublicIssue | undefined;
 };
 
 const PEEK_MODES: {
@@ -42,10 +44,9 @@ const PEEK_MODES: {
   },
 ];
 
-export const PeekOverviewHeader = observer(function PeekOverviewHeader(props: Props) {
-  const { handleClose } = props;
+export const PeekOverviewHeader = function PeekOverviewHeader(props: Props) {
+  const { handleClose, peekMode, setPeekMode } = props;
 
-  const { peekMode, setPeekMode } = useIssueDetails();
   const isClipboardWriteAllowed = useClipboardWritePermission();
 
   const handleCopyLink = () => {
@@ -128,4 +129,4 @@ export const PeekOverviewHeader = observer(function PeekOverviewHeader(props: Pr
       </div>
     </>
   );
-});
+};

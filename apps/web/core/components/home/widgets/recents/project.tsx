@@ -8,7 +8,7 @@
 import { useRouter } from "@tanstack/react-router";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import type { TActivityEntityData, TProjectEntityData } from "@plane/types";
-import { calculateTimeAgo } from "@plane/utils";
+import { calculateTimeAgo } from "@plane/utils/datetime";
 // components
 import { ListItem } from "@/components/core/list";
 import { ButtonAvatars } from "@/components/dropdowns/member/avatar";
@@ -54,12 +54,19 @@ export function RecentProject(props: BlockProps) {
           {projectDetails?.project_members?.length > 0 && (
             <div className="h-5">
               <MemberDropdown
+                workspaceSlug={workspaceSlug}
                 projectId={projectDetails?.id}
                 value={projectDetails?.project_members}
                 onChange={() => {}}
                 disabled
                 multiple
-                button={<ButtonAvatars showTooltip={false} userIds={projectDetails?.project_members} />}
+                button={
+                  <ButtonAvatars
+                    showTooltip={false}
+                    userIds={projectDetails?.project_members}
+                    workspaceSlug={workspaceSlug}
+                  />
+                }
                 buttonVariant={
                   projectDetails?.project_members?.length > 0 ? "transparent-without-text" : "border-without-text"
                 }

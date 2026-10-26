@@ -26,6 +26,7 @@ func defaultIssue(project string) map[string]any {
 	return map[string]any{
 		"id": uuid.NewString(), "project_id": project, "workspace_id": nil,
 		"name": "", "description_html": "<p></p>", "description_json": map[string]any{},
+		"custom_properties":    map[string]any{},
 		"description_stripped": "", "description_binary": nil, "parent_id": nil, "state_id": nil,
 		"estimate_point_id": nil, "type_id": nil, "point": nil, "priority": "none",
 		"start_date": nil, "target_date": nil, "sequence_id": 1, "sort_order": 65535,
@@ -45,7 +46,7 @@ func stripTags(value string) any {
 
 // saveIssue applies Issue.save and ProjectBaseModel.save. Callers retain the
 // serializer's operation-specific validation and the timing of durable effects.
-func (r *Repository) saveIssue(ctx context.Context, actor string, row map[string]any, old map[string]any) (map[string]any, error) {
+func (r *Repository) saveIssueRow(ctx context.Context, actor string, row map[string]any, old map[string]any) (map[string]any, error) {
 	project, err := r.project(ctx, row["project_id"].(string))
 	if err != nil {
 		return nil, err
@@ -84,6 +85,10 @@ func (r *Repository) saveIssue(ctx context.Context, actor string, row map[string
 			return nil, err
 		}
 		defer tx.Rollback(ctx)
+		// All schema-aware creation paths take locks in the same order.
+		if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, row["workspace_id"]); err != nil {
+			return nil, err
+		}
 		if _, err = tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, projectLockKey(row["project_id"].(string))); err != nil {
 			return nil, err
 		}
@@ -127,10 +132,10 @@ func (r *Repository) saveIssue(ctx context.Context, actor string, row map[string
 		_, err = r.db.Exec(ctx, `UPDATE issues i SET
  (name,description_html,description_json,description_binary,description_stripped,parent_id,state_id,
  estimate_point_id,type_id,point,priority,start_date,target_date,sequence_id,sort_order,completed_at,
- archived_at,is_draft,external_id,external_source,created_at,created_by_id,updated_at,updated_by_id,deleted_at,project_id,workspace_id)=
+ archived_at,is_draft,external_id,external_source,created_at,created_by_id,updated_at,updated_by_id,deleted_at,project_id,workspace_id,custom_properties)=
  (v.name,v.description_html,v.description_json,v.description_binary,v.description_stripped,v.parent_id,v.state_id,
  v.estimate_point_id,v.type_id,v.point,v.priority,v.start_date,v.target_date,v.sequence_id,v.sort_order,v.completed_at,
- v.archived_at,v.is_draft,v.external_id,v.external_source,v.created_at,v.created_by_id,v.updated_at,v.updated_by_id,v.deleted_at,v.project_id,v.workspace_id)
+ v.archived_at,v.is_draft,v.external_id,v.external_source,v.created_at,v.created_by_id,v.updated_at,v.updated_by_id,v.deleted_at,v.project_id,v.workspace_id,v.custom_properties)
  FROM jsonb_populate_record(NULL::issues,$1::jsonb) v WHERE i.id=v.id`, encoded)
 		if err != nil {
 			return nil, err
@@ -177,7 +182,7 @@ func (r *Repository) deleteIssue(ctx context.Context, actor string, row map[stri
 	if _, err := r.saveIssue(ctx, actor, row, old); err != nil {
 		return err
 	}
-	return r.publisher.SoftDelete(ctx, "db", "issue", row["id"].(string))
+	return r.softDelete(ctx, "issue", row["id"].(string))
 }
 
 func asObject(value any) (map[string]any, error) {

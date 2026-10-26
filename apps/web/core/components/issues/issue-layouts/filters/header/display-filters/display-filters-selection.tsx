@@ -5,8 +5,9 @@
  */
 
 import React from "react";
-import { isEmpty } from "lodash-es";
-import { observer } from "mobx-react";
+import { CustomPropertyColumns } from "./custom-property-columns";
+import isEmpty from "lodash-es/isEmpty.js";
+
 import type {
   IIssueDisplayFilterOptions,
   IIssueDisplayProperties,
@@ -34,7 +35,7 @@ type Props = {
   isEpic?: boolean;
 };
 
-export const DisplayFiltersSelection = observer(function DisplayFiltersSelection(props: Props) {
+export const DisplayFiltersSelection = function DisplayFiltersSelection(props: Props) {
   const {
     displayFilters,
     displayProperties,
@@ -50,12 +51,12 @@ export const DisplayFiltersSelection = observer(function DisplayFiltersSelection
   const isDisplayFilterEnabled = (displayFilter: keyof IIssueDisplayFilterOptions) =>
     Object.keys(layoutDisplayFiltersOptions?.display_filters ?? {}).includes(displayFilter);
 
-  const computedIgnoreGroupedFilters: Partial<TIssueGroupByOptions>[] = [];
+  const computedIgnoreGroupedFilters: Partial<TIssueGroupByOptions>[] = [...ignoreGroupedFilters];
   if (cycleViewDisabled) {
-    ignoreGroupedFilters.push("cycle");
+    computedIgnoreGroupedFilters.push("cycle");
   }
   if (moduleViewDisabled) {
-    ignoreGroupedFilters.push("module");
+    computedIgnoreGroupedFilters.push("module");
   }
 
   return (
@@ -74,6 +75,12 @@ export const DisplayFiltersSelection = observer(function DisplayFiltersSelection
         </div>
       )}
 
+      <CustomPropertyColumns
+        displayProperties={displayProperties}
+        displayFilters={displayFilters}
+        isEpic={isEpic}
+        onChange={handleDisplayPropertiesUpdate}
+      />
       {/* group by */}
       {isDisplayFilterEnabled("group_by") && (
         <div className="py-2">
@@ -85,7 +92,7 @@ export const DisplayFiltersSelection = observer(function DisplayFiltersSelection
                 group_by: val,
               })
             }
-            ignoreGroupedFilters={[...ignoreGroupedFilters, ...computedIgnoreGroupedFilters]}
+            ignoreGroupedFilters={computedIgnoreGroupedFilters}
           />
         </div>
       )}
@@ -103,7 +110,7 @@ export const DisplayFiltersSelection = observer(function DisplayFiltersSelection
                 })
               }
               subGroupByOptions={layoutDisplayFiltersOptions?.display_filters.sub_group_by ?? []}
-              ignoreGroupedFilters={[...ignoreGroupedFilters, ...computedIgnoreGroupedFilters]}
+              ignoreGroupedFilters={computedIgnoreGroupedFilters}
             />
           </div>
         )}
@@ -142,4 +149,4 @@ export const DisplayFiltersSelection = observer(function DisplayFiltersSelection
       )}
     </div>
   );
-});
+};

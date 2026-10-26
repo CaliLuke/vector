@@ -4,10 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { useParams } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { observer } from "mobx-react";
+
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 // local imports
 import type { TDropdownProps } from "../types";
 import { ProjectDropdownBase } from "./base";
@@ -33,9 +35,18 @@ type Props = TDropdownProps & {
       }
   );
 
-export const ProjectDropdown = observer(function ProjectDropdown(props: Props) {
+export const ProjectDropdown = function ProjectDropdown(props: Props) {
   // store hooks
-  const { joinedProjectIds, getProjectById } = useProject();
+  const { workspaceSlug } = useParams({ strict: false });
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const joinedProjectIds = useJoinedProjectIds(workspaceSlug?.toString());
 
-  return <ProjectDropdownBase {...props} getProjectById={getProjectById} projectIds={joinedProjectIds} />;
-});
+  return (
+    <ProjectDropdownBase
+      {...props}
+      getProjectById={(projectId) => projectRows?.find((projectRow) => projectRow.id === projectId)}
+      projectIds={joinedProjectIds}
+    />
+  );
+};

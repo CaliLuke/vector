@@ -6,23 +6,21 @@
 
 import { lazy, Suspense } from "react";
 import { useTheme } from "next-themes";
-import { SWRConfig } from "swr";
 // Vector Imports
-import { WEB_SWR_CONFIG } from "@plane/constants";
 import { TranslationProvider } from "@plane/i18n";
 import { Toast } from "@plane/propel/toast";
 // helpers
-import { resolveGeneralTheme } from "@plane/utils";
-// mobx store provider
-import { StoreProvider } from "@/lib/store-context";
+import { resolveGeneralTheme } from "@plane/utils/theme-legacy";
+// application query and UI state
+import { AppStateProvider } from "@/providers/app-state";
 
 // lazy imports
 const AppProgressBar = lazy(function AppProgressBar() {
   return import("@/lib/b-progress/AppProgressBar");
 });
 
-const StoreWrapper = lazy(function StoreWrapper() {
-  return import("@/lib/wrappers/store-wrapper");
+const ProfileEffects = lazy(function ProfileEffects() {
+  return import("@/lib/wrappers/profile-effects");
 });
 
 const InstanceWrapper = lazy(function InstanceWrapper() {
@@ -39,22 +37,20 @@ export function AppProvider(props: IAppProvider) {
   const { resolvedTheme } = useTheme();
 
   return (
-    <StoreProvider>
+    <AppStateProvider>
       <Suspense fallback={null}>
         <>
           <AppProgressBar />
           <TranslationProvider>
             <Toast theme={resolveGeneralTheme(resolvedTheme)} />
-            <StoreWrapper>
+            <ProfileEffects>
               <InstanceWrapper>
-                <Suspense>
-                  <SWRConfig value={WEB_SWR_CONFIG}>{children}</SWRConfig>
-                </Suspense>
+                <Suspense>{children}</Suspense>
               </InstanceWrapper>
-            </StoreWrapper>
+            </ProfileEffects>
           </TranslationProvider>
         </>
       </Suspense>
-    </StoreProvider>
+    </AppStateProvider>
   );
 }

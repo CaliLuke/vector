@@ -6,15 +6,15 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { xor } from "lodash-es";
-import { observer } from "mobx-react";
+import xor from "lodash-es/xor.js";
 
 // types
 import type { TIssue } from "@plane/types";
 // components
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 // hooks
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 
 type Props = {
   issue: TIssue;
@@ -22,14 +22,12 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetModuleColumn = observer(function SpreadsheetModuleColumn(props: Props) {
+export function SpreadsheetModuleColumn(props: Props) {
   const { issue, disabled, onClose } = props;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // hooks
-  const {
-    issues: { changeModulesInIssue },
-  } = useIssuesStore();
+  const actions = useIssuesActions(useIssueListType());
 
   const handleModule = useCallback(
     async (moduleIds: string[] | null) => {
@@ -42,9 +40,9 @@ export const SpreadsheetModuleColumn = observer(function SpreadsheetModuleColumn
         if (issue.module_ids.includes(moduleId)) modulesToRemove.push(moduleId);
         else modulesToAdd.push(moduleId);
       }
-      changeModulesInIssue(workspaceSlug.toString(), issue.project_id, issue.id, modulesToAdd, modulesToRemove);
+      await actions.changeModulesInIssue(issue.project_id, issue.id, modulesToAdd, modulesToRemove);
     },
-    [workspaceSlug, issue, changeModulesInIssue]
+    [workspaceSlug, issue, actions]
   );
 
   return (
@@ -65,4 +63,4 @@ export const SpreadsheetModuleColumn = observer(function SpreadsheetModuleColumn
       />
     </div>
   );
-});
+}

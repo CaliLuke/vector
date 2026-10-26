@@ -4,18 +4,19 @@
  * See the LICENSE file for details.
  */
 
+import { useQuery } from "@tanstack/react-query";
+import { instanceInfoOptions } from "@/queries/instance";
+import { useSidebar } from "@/providers/sidebar";
 import { useState, useRef } from "react";
-import { observer } from "mobx-react";
-import Link from "next/link";
+import { Link } from "react-router";
 import { HelpCircle, MessageSquare, MoveLeft } from "lucide-react";
 import { Transition } from "@headlessui/react";
 import { WEB_BASE_URL } from "@plane/constants";
 // plane internal packages
 import { GithubIcon, NewTabIcon, PageIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useInstance, useTheme } from "@/hooks/store";
 // assets
 
 const helpOptions = [
@@ -36,12 +37,12 @@ const helpOptions = [
   },
 ];
 
-export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection() {
+export const AdminSidebarHelpSection = function AdminSidebarHelpSection() {
   // states
   const [isNeedHelpOpen, setIsNeedHelpOpen] = useState(false);
-  // store
-  const { instance } = useInstance();
-  const { isSidebarCollapsed, toggleSidebar } = useTheme();
+  const { data: instanceInfo } = useQuery(instanceInfoOptions);
+  const instance = instanceInfo?.instance;
+  const { isSidebarCollapsed, toggleSidebar } = useSidebar();
   // refs
   const helpOptionsRef = useRef<HTMLDivElement | null>(null);
 
@@ -112,7 +113,7 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
               {helpOptions.map(({ name, Icon, href }) => {
                 if (href)
                   return (
-                    <Link href={href} key={name} target="_blank">
+                    <Link to={href} key={name} target="_blank">
                       <div className="flex items-center gap-x-2 rounded-sm px-2 py-1 text-11 hover:bg-layer-1-hover">
                         <div className="grid flex-shrink-0 place-items-center">
                           <Icon className="h-3.5 w-3.5 text-secondary" />
@@ -142,4 +143,4 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
       </div>
     </div>
   );
-});
+};

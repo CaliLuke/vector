@@ -20,11 +20,26 @@ export type TOperatorForPayload = {
  * @returns Object with supported operator and negation flag
  */
 export const getOperatorForPayload = (displayOperator: TAllAvailableOperatorsForDisplay): TOperatorForPayload => {
-  const isNegation = false;
-  const operator = displayOperator;
-
-  return {
-    operator,
-    isNegation,
-  };
+  switch (displayOperator) {
+    case "not_exact":
+      return { operator: "exact", isNegation: true };
+    case "not_in":
+      return { operator: "in", isNegation: true };
+    case "not_range":
+      return { operator: "range", isNegation: true };
+    case "not_contains":
+      return { operator: "contains", isNegation: true };
+    case "not_isnull":
+      return { operator: "isnull", isNegation: true };
+    case "not_lt":
+      return { operator: "lt", isNegation: true };
+    case "not_lte":
+      return { operator: "lte", isNegation: true };
+    case "not_gt":
+      return { operator: "gt", isNegation: true };
+    case "not_gte":
+      return { operator: "gte", isNegation: true };
+    default:
+      return { operator: displayOperator, isNegation: false };
+  }
 };

@@ -4,36 +4,36 @@
  * See the LICENSE file for details.
  */
 
-import { useParams } from "@tanstack/react-router";
+import type { TPage } from "@plane/types";
+
 import { useMemo } from "react";
-import { observer } from "mobx-react";
 
 import { Download } from "lucide-react";
 // plane imports
 import { CORE_EXTENSIONS } from "@plane/editor";
 import type { TEditorAsset } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
-import { getEditorAssetDownloadSrc, getEditorAssetSrc } from "@plane/utils";
+import { getEditorAssetDownloadSrc, getEditorAssetSrc } from "@plane/utils/editor/common";
 // store
-import type { TPageInstance } from "@/store/pages/base-page";
 // local import
 import { PageNavigationPaneAssetsTabEmptyState } from "./empty-state/assets";
+import { usePageRecord } from "@/components/pages/page-record-context";
 
 type Props = {
-  page: TPageInstance;
+  page: TPage;
 };
 
 type AssetItemProps = {
   asset: TEditorAsset;
-  page: TPageInstance;
+  page: TPage;
 };
 
-const AssetItem = observer(function AssetItem(props: AssetItemProps) {
-  const { asset, page } = props;
+function AssetItem(props: AssetItemProps) {
+  const { asset } = props;
   // navigation
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
-  // derived values
-  const { project_ids } = page;
+  const {
+    scope: { workspaceSlug, projectId },
+  } = usePageRecord();
   // translation
   const { t } = useTranslation();
 
@@ -45,12 +45,12 @@ const AssetItem = observer(function AssetItem(props: AssetItemProps) {
       return (
         getEditorAssetSrc({
           assetId: asset.src,
-          projectId: project_ids?.[0],
+          projectId,
           workspaceSlug: workspaceSlug.toString(),
         }) ?? ""
       );
     }
-  }, [asset.src, project_ids, workspaceSlug]);
+  }, [asset.src, projectId, workspaceSlug]);
 
   const assetDownloadSrc: string = useMemo(() => {
     if (!asset.src || !workspaceSlug) return "";
@@ -60,12 +60,12 @@ const AssetItem = observer(function AssetItem(props: AssetItemProps) {
       return (
         getEditorAssetDownloadSrc({
           assetId: asset.src,
-          projectId: project_ids?.[0],
+          projectId,
           workspaceSlug: workspaceSlug.toString(),
         }) ?? ""
       );
     }
-  }, [asset.src, project_ids, workspaceSlug]);
+  }, [asset.src, projectId, workspaceSlug]);
 
   if ([CORE_EXTENSIONS.IMAGE, CORE_EXTENSIONS.CUSTOM_IMAGE].includes(asset.type as CORE_EXTENSIONS))
     return (
@@ -98,14 +98,11 @@ const AssetItem = observer(function AssetItem(props: AssetItemProps) {
     );
 
   return null;
-});
+}
 
-export const PageNavigationPaneAssetsTabPanel = observer(function PageNavigationPaneAssetsTabPanel(props: Props) {
+export function PageNavigationPaneAssetsTabPanel(props: Props) {
   const { page } = props;
-  // derived values
-  const {
-    editor: { assetsList },
-  } = page;
+  const { assets: assetsList } = usePageRecord();
 
   if (assetsList.length === 0) return <PageNavigationPaneAssetsTabEmptyState />;
 
@@ -116,4 +113,4 @@ export const PageNavigationPaneAssetsTabPanel = observer(function PageNavigation
       ))}
     </div>
   );
-});
+}

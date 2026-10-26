@@ -47,6 +47,7 @@ type Runtime struct {
 	LinkPreviews         *LinkPreviewDispatcher
 	Webhooks             *WebhookTaskDispatcher
 	Deletion             *DeletionDispatcher
+	workItemEffects      *workItemEffectWorker
 	pool                 *pgxpool.Pool
 	emailStore           *issueEmailStore
 }
@@ -121,6 +122,14 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 		return nil, err
 	}
 	assetDispatcher, err := NewFileAssetMetadataDispatcher(app, metadataWorkflow)
+	if err != nil {
+		return nil, err
+	}
+	assetDeleteWorkflow, err := assets.RegisterStorageObjectDeleteWorkflow(app, assetRepository, storage, nil)
+	if err != nil {
+		return nil, err
+	}
+	assetDeleteDispatcher, err := NewFileAssetStorageDeleteDispatcher(app, assetDeleteWorkflow)
 	if err != nil {
 		return nil, err
 	}
@@ -328,8 +337,29 @@ func NewRuntime(ctx context.Context, databaseURL string, options ...selvedge.Opt
 		_ = emailStore.Close()
 		return nil, err
 	}
+	effectActivities, err := NewIssueActivityAdmission(issueActivities)
+	if err != nil {
+		_ = emailStore.Close()
+		return nil, err
+	}
+	effectVersions, err := NewIssueDescriptionVersionAdmission(versions)
+	if err != nil {
+		_ = emailStore.Close()
+		return nil, err
+	}
+	effectWebhooks, err := NewWebhookTaskAdmission(webhooks)
+	if err != nil {
+		_ = emailStore.Close()
+		return nil, err
+	}
+	effectStore, err := NewPostgresWorkItemEffectStore(pool, effectActivities, effectVersions, deletion, effectWebhooks, assetDeleteDispatcher, assetDispatcher)
+	if err != nil {
+		_ = emailStore.Close()
+		return nil, err
+	}
+	workItemEffects := &workItemEffectWorker{store: effectStore}
 	closeOnError = false
-	return &Runtime{App: app, Logger: logger, Cleanup: cleanup, Assets: assetDispatcher, Exporter: exporterHistory, Versions: versions, IssueDescriptionSync: issueDescriptionSync, IssueVersionSync: issueVersionSync, IssueVersions: issueVersions, PageTransactions: pageTransactions, DescriptionAssets: descriptionAssets, RecentVisits: recentVisits, IssueActivities: issueActivities, IssueAutomation: issueAutomation, EmailNotifications: emailNotifications, TemplatedEmails: templatedEmails, EmailTaskAdmission: emailTaskAdmission, InstanceMetrics: instanceMetrics, IssueExports: issueExports, AnalyticsExports: analyticsExports, EventTracking: eventTracking, WorkspaceSeed: workspaceSeed, LinkPreviews: linkPreviews, Webhooks: webhooks, Deletion: deletion, emailStore: emailStore, pool: pool}, nil
+	return &Runtime{App: app, Logger: logger, Cleanup: cleanup, Assets: assetDispatcher, Exporter: exporterHistory, Versions: versions, IssueDescriptionSync: issueDescriptionSync, IssueVersionSync: issueVersionSync, IssueVersions: issueVersions, PageTransactions: pageTransactions, DescriptionAssets: descriptionAssets, RecentVisits: recentVisits, IssueActivities: issueActivities, IssueAutomation: issueAutomation, EmailNotifications: emailNotifications, TemplatedEmails: templatedEmails, EmailTaskAdmission: emailTaskAdmission, InstanceMetrics: instanceMetrics, IssueExports: issueExports, AnalyticsExports: analyticsExports, EventTracking: eventTracking, WorkspaceSeed: workspaceSeed, LinkPreviews: linkPreviews, Webhooks: webhooks, Deletion: deletion, workItemEffects: workItemEffects, emailStore: emailStore, pool: pool}, nil
 }
 
 func (runtime *Runtime) Start(ctx context.Context) error {
@@ -369,6 +399,11 @@ func (runtime *Runtime) Start(ctx context.Context) error {
 			return fmt.Errorf("start durable hard deletion Beat schedule: %w", err)
 		}
 	}
+	if runtime.workItemEffects != nil {
+		if err := runtime.workItemEffects.Start(ctx); err != nil {
+			return fmt.Errorf("start work item effect worker: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -377,8 +412,11 @@ func (runtime *Runtime) Shutdown(ctx context.Context) error {
 		return nil
 	}
 	var shutdownErr error
+	if runtime.workItemEffects != nil {
+		shutdownErr = runtime.workItemEffects.Shutdown(ctx)
+	}
 	if runtime.App != nil {
-		shutdownErr = runtime.App.Shutdown(ctx)
+		shutdownErr = errors.Join(shutdownErr, runtime.App.Shutdown(ctx))
 	}
 	if runtime.IssueActivities != nil {
 		if err := runtime.IssueActivities.Close(); err != nil && shutdownErr == nil {

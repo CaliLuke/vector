@@ -5,23 +5,24 @@
  */
 
 import { Link } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
-import { Controller, useForm } from "react-hook-form";
 import { CircleMinus } from "lucide-react";
 import { Disclosure } from "@headlessui/react";
 // plane imports
 import { ROLE, EUserPermissions, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { EUserProjectRoles, IUser, IWorkspaceMember, TProjectMembership } from "@plane/types";
+import { EUserProjectRoles, EUserWorkspaceRoles } from "@plane/types";
+import type { IWorkspaceMember, IUser, IUserLite, TProjectMembership, TUserPermissions } from "@plane/types";
 import { CustomMenu, CustomSelect } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUpdateProjectMemberRole } from "@/hooks/use-member-roster-mutations";
 
 export interface RowData extends Pick<TProjectMembership, "original_role"> {
-  member: IWorkspaceMember;
+  member: IUserLite;
+  workspaceRole: IWorkspaceMember["role"];
 }
 
 type NameProps = {
@@ -34,9 +35,14 @@ type NameProps = {
 
 type AccountTypeProps = {
   rowData: RowData;
-  currentProjectRole: EUserPermissions | undefined;
   workspaceSlug: string;
   projectId: string;
+};
+
+const PROJECT_ROLE_PERMISSIONS: Record<EUserProjectRoles, TUserPermissions> = {
+  [EUserProjectRoles.ADMIN]: EUserPermissions.ADMIN,
+  [EUserProjectRoles.MEMBER]: EUserPermissions.MEMBER,
+  [EUserProjectRoles.GUEST]: EUserPermissions.GUEST,
 };
 
 export function NameColumn(props: NameProps) {
@@ -46,7 +52,7 @@ export function NameColumn(props: NameProps) {
 
   return (
     <Disclosure>
-      {({}) => (
+      {() => (
         <div className="group relative">
           <div className="flex w-72 items-center gap-2">
             <div className="flex flex-1 items-center gap-x-2 gap-y-2">
@@ -76,15 +82,14 @@ export function NameColumn(props: NameProps) {
                 optionsClassName="p-1.5"
                 placement="bottom-end"
               >
-                <CustomMenu.MenuItem>
-                  <div
-                    className="flex cursor-pointer items-center gap-x-1 font-medium text-danger-primary"
-                    data-ph-element={MEMBER_TRACKER_ELEMENTS.PROJECT_MEMBER_TABLE_CONTEXT_MENU}
-                    onClick={() => setRemoveMemberModal(rowData)}
-                  >
+                <CustomMenu.MenuItem
+                  onClick={() => setRemoveMemberModal(rowData)}
+                  className="flex cursor-pointer items-center gap-x-1 font-medium text-danger-primary"
+                >
+                  <span data-ph-element={MEMBER_TRACKER_ELEMENTS.PROJECT_MEMBER_TABLE_CONTEXT_MENU}>
                     <CircleMinus className="size-3.5 flex-shrink-0" />
                     {rowData.member?.id === currentUser?.id ? "Leave " : "Remove "}
-                  </div>
+                  </span>
                 </CustomMenu.MenuItem>
               </CustomMenu>
             )}
@@ -95,97 +100,77 @@ export function NameColumn(props: NameProps) {
   );
 }
 
-export const AccountTypeColumn = observer(function AccountTypeColumn(props: AccountTypeProps) {
+export function AccountTypeColumn(props: AccountTypeProps) {
   const { rowData, projectId, workspaceSlug } = props;
-  // store hooks
-  const {
-    project: { updateMemberRole },
-    workspace: { getWorkspaceMemberDetails },
-  } = useMember();
-  const { data: currentUser } = useUser();
-  const { getProjectRoleByWorkspaceSlugAndProjectId } = useUserPermissions();
-  // form info
-  const {
-    control,
-    formState: { errors },
-  } = useForm();
+  const { data: currentUser } = useCurrentUser();
+  const { projectRole: currentProjectRole, workspaceRole } = useProjectPermissions(workspaceSlug, projectId);
+  const roleMutation = useUpdateProjectMemberRole(workspaceSlug, projectId, rowData.member.id, currentProjectRole);
   // derived values
   const roleLabel = ROLE[rowData.original_role ?? EUserPermissions.GUEST];
   const isCurrentUser = currentUser?.id === rowData.member.id;
-  const isRowDataWorkspaceAdmin = [EUserPermissions.ADMIN].includes(
-    Number(getWorkspaceMemberDetails(rowData.member.id)?.role) ?? EUserPermissions.GUEST
-  );
-  const isCurrentUserWorkspaceAdmin = currentUser
-    ? [EUserPermissions.ADMIN].includes(
-        Number(getWorkspaceMemberDetails(currentUser.id)?.role) ?? EUserPermissions.GUEST
-      )
-    : false;
-  const currentProjectRole = getProjectRoleByWorkspaceSlugAndProjectId(workspaceSlug, projectId);
-
-  const isCurrentUserProjectAdmin = currentProjectRole
-    ? ![EUserPermissions.MEMBER, EUserPermissions.GUEST].includes(Number(currentProjectRole) ?? EUserPermissions.GUEST)
-    : false;
+  const isRowDataWorkspaceAdmin = rowData.workspaceRole === EUserWorkspaceRoles.ADMIN;
+  const isRowDataWorkspaceGuest = rowData.workspaceRole === EUserWorkspaceRoles.GUEST;
+  const isCurrentUserWorkspaceAdmin = workspaceRole === EUserWorkspaceRoles.ADMIN;
+  const isCurrentUserProjectAdmin = currentProjectRole === EUserPermissions.ADMIN;
+  const currentProjectRoleValue =
+    currentProjectRole === undefined ? undefined : Number.parseInt(String(currentProjectRole), 10);
+  const memberProjectRoleValue = Number.parseInt(String(rowData.original_role ?? EUserPermissions.GUEST), 10);
 
   // logic
   // Workspace admin can change his own role
   // Project admin can change any role except his own and workspace admin's role
   const isRoleEditable =
-    (isCurrentUserWorkspaceAdmin && isCurrentUser) ||
-    (isCurrentUserProjectAdmin && !isRowDataWorkspaceAdmin && !isCurrentUser);
-  const checkCurrentOptionWorkspaceRole = (value: string) => {
-    const currentMemberWorkspaceRole = getWorkspaceMemberDetails(value)?.role as EUserPermissions | undefined;
-    if (!value || !currentMemberWorkspaceRole) return ROLE;
-
-    const isGuest = [EUserPermissions.GUEST].includes(currentMemberWorkspaceRole);
-
-    return Object.fromEntries(
-      Object.entries(ROLE).filter(([key]) => !isGuest || parseInt(key) === EUserPermissions.GUEST)
+    currentProjectRole !== undefined &&
+    ((isCurrentUserWorkspaceAdmin && isCurrentUser) ||
+      (isCurrentUserProjectAdmin &&
+        !isRowDataWorkspaceAdmin &&
+        !isCurrentUser &&
+        memberProjectRoleValue < (currentProjectRoleValue ?? 0)));
+  const allowedRoles = Object.entries(ROLE).filter(([key]) => {
+    const role = Number(key);
+    if (isRowDataWorkspaceGuest) return key === String(EUserPermissions.GUEST);
+    if (isCurrentUserWorkspaceAdmin && isCurrentUser) return true;
+    return (
+      isCurrentUserProjectAdmin &&
+      !isRowDataWorkspaceAdmin &&
+      !isCurrentUser &&
+      memberProjectRoleValue < (currentProjectRoleValue ?? 0) &&
+      role < (currentProjectRoleValue ?? 0)
     );
-  };
-
+  });
   return (
     <>
       {isRoleEditable ? (
-        <Controller
-          name="role"
-          control={control}
-          rules={{ required: "Role is required." }}
-          render={() => (
-            <CustomSelect
-              value={rowData.original_role}
-              onChange={async (value: EUserProjectRoles) => {
-                if (!workspaceSlug) return;
-                await updateMemberRole(workspaceSlug.toString(), projectId.toString(), rowData.member.id, value).catch(
-                  (err) => {
-                    console.log(err, "err");
-                    const error = err.error;
-                    const errorString = Array.isArray(error) ? error[0] : error;
-
-                    setToast({
-                      type: TOAST_TYPE.ERROR,
-                      title: "You can’t change this role yet.",
-                      message: errorString ?? "An error occurred while updating member role. Please try again.",
-                    });
-                  }
-                );
-              }}
-              label={
-                <div className="flex">
-                  <span>{roleLabel}</span>
-                </div>
-              }
-              buttonClassName={`!px-0 !justify-start hover:bg-surface-1 ${errors.role ? "border-danger-strong" : "border-none"}`}
-              className="w-32 rounded-md p-0"
-              input
-            >
-              {Object.entries(checkCurrentOptionWorkspaceRole(rowData.member.id)).map(([key, label]) => (
-                <CustomSelect.Option key={key} value={key}>
-                  {label}
-                </CustomSelect.Option>
-              ))}
-            </CustomSelect>
-          )}
-        />
+        <CustomSelect
+          value={rowData.original_role}
+          onChange={(value: EUserProjectRoles) => {
+            void roleMutation
+              .mutateAsync(PROJECT_ROLE_PERMISSIONS[value])
+              .catch((error: { error?: string | string[] }) => {
+                const message = Array.isArray(error?.error) ? error.error[0] : error?.error;
+                setToast({
+                  type: TOAST_TYPE.ERROR,
+                  title: "You can’t change this role yet.",
+                  message: message ?? "An error occurred while updating member role. Please try again.",
+                });
+              });
+          }}
+          disabled={roleMutation.isPending}
+          label={
+            <div className="flex">
+              <span>{roleLabel}</span>
+            </div>
+          }
+          buttonClassName="!px-0 !justify-start hover:bg-surface-1 border-none"
+          className="w-32 rounded-md p-0"
+          input
+        >
+          {allowedRoles.map(([key, label]) => (
+            <CustomSelect.Option key={key} value={Number(key)}>
+              {label}
+            </CustomSelect.Option>
+          ))}
+        </CustomSelect>
       ) : (
         <div className="flex w-32">
           <span>{roleLabel}</span>
@@ -193,4 +178,4 @@ export const AccountTypeColumn = observer(function AccountTypeColumn(props: Acco
       )}
     </>
   );
-});
+}

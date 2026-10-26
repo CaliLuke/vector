@@ -5,17 +5,13 @@
  */
 
 import { useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-import { Logo } from "@plane/propel/emoji-icon-picker";
-import { ProjectIcon } from "@plane/propel/icons";
-// plane imports
-import type { ICustomSearchSelectOption } from "@plane/types";
-import { BreadcrumbNavigationSearchDropdown, Breadcrumbs } from "@plane/ui";
-import { SwitcherLabel } from "@/components/common/switcher-label";
-// hooks
-import { useProject } from "@/hooks/store/use-project";
 
+import { Logo } from "@plane/propel/emoji-icon-picker";
+// plane imports
 import type { TProject } from "@plane/types";
+import { BreadcrumbNavigationSearchDropdown, Breadcrumbs } from "@plane/ui";
+// hooks
+import { getProjectSwitcherOptions, useProjectSwitcherData } from "@/components/navigation/project-switcher-options";
 
 type TProjectBreadcrumbProps = {
   workspaceSlug: string;
@@ -23,37 +19,23 @@ type TProjectBreadcrumbProps = {
   handleOnClick?: () => void;
 };
 
-export const ProjectBreadcrumb = observer(function ProjectBreadcrumb(props: TProjectBreadcrumbProps) {
+export const ProjectBreadcrumb = function ProjectBreadcrumb(props: TProjectBreadcrumbProps) {
   const { workspaceSlug, projectId, handleOnClick } = props;
   // router
   const router = useRouter();
   // store hooks
-  const { joinedProjectIds, getPartialProjectById } = useProject();
-  const currentProjectDetails = getPartialProjectById(projectId);
+  const {
+    projectRows,
+    joinedProjectIds,
+    currentProject: currentProjectDetails,
+  } = useProjectSwitcherData(workspaceSlug, projectId);
 
   // store hooks
 
   if (!currentProjectDetails) return null;
 
   // derived values
-  const switcherOptions = joinedProjectIds
-    // oxlint-disable-next-line no-shadow
-    .map((projectId) => {
-      const project = getPartialProjectById(projectId);
-      return {
-        value: projectId,
-        query: project?.name,
-        content: (
-          <SwitcherLabel
-            name={project?.name}
-            logo_props={project?.logo_props}
-            LabelIcon={ProjectIcon}
-            type="material"
-          />
-        ),
-      };
-    })
-    .filter((option) => option !== undefined) as ICustomSearchSelectOption[];
+  const switcherOptions = getProjectSwitcherOptions(joinedProjectIds, projectRows);
 
   // helpers
   // oxlint-disable-next-line unicorn/consistent-function-scoping
@@ -86,4 +68,4 @@ export const ProjectBreadcrumb = observer(function ProjectBreadcrumb(props: TPro
       />
     </>
   );
-});
+};

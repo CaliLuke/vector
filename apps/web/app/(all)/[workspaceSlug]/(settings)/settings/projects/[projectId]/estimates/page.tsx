@@ -5,43 +5,37 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // components
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
+import { ProjectSettingsAccess } from "@/components/settings/project/access";
 import { PageHead } from "@/components/core/page-title";
 import { EstimateRoot } from "@/components/estimates";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
 // local imports
 import { EstimatesProjectSettingsHeader } from "./header";
 
 function EstimatesSettingsPage(): React.JSX.Element | null {
   const { workspaceSlug, projectId } = Route.useParams();
   // store
-  const { currentProjectDetails } = useProject();
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
 
   // derived values
   const pageTitle = currentProjectDetails?.name ? `${currentProjectDetails?.name} - Estimates` : undefined;
-  const canPerformProjectAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
-
-  if (workspaceUserInfo && !canPerformProjectAdminActions) {
-    return <NotAuthorizedView section="settings" isProjectView className="h-auto" />;
-  }
-
   return (
-    <SettingsContentWrapper header={<EstimatesProjectSettingsHeader />}>
-      <PageHead title={pageTitle} />
-      <div className={`w-full ${canPerformProjectAdminActions ? "" : "pointer-events-none opacity-60"}`}>
-        <EstimateRoot workspaceSlug={workspaceSlug} projectId={projectId} isAdmin={canPerformProjectAdminActions} />
-      </div>
-    </SettingsContentWrapper>
+    <ProjectSettingsAccess workspaceSlug={workspaceSlug} projectId={projectId}>
+      <SettingsContentWrapper header={<EstimatesProjectSettingsHeader />}>
+        <PageHead title={pageTitle} />
+        <div className="w-full">
+          <EstimateRoot workspaceSlug={workspaceSlug} projectId={projectId} isAdmin />
+        </div>
+      </SettingsContentWrapper>
+    </ProjectSettingsAccess>
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/estimates")({
-  component: observer(EstimatesSettingsPage),
+  component: EstimatesSettingsPage,
 });

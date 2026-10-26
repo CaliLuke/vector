@@ -1,26 +1,20 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import assert from "node:assert/strict";
-import { registerHooks } from "node:module";
+import { createRequire, registerHooks } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerSpaceModuleHooks } from "./helpers/web-module-hooks.mjs";
+
+const { MemoryRouter, useSearchParams } = createRequire(new URL("../../apps/space/package.json", import.meta.url))(
+  "react-router"
+);
 
 registerSpaceModuleHooks();
 
 const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
-const stateStub = `data:text/javascript,${encodeURIComponent(`
-  const state = globalThis.__spacePeekTestState ??= { mode: "side", open: true };
-  const notify = () => window.dispatchEvent(new Event("space-peek-state-change"));
-  export const useIssueDetails = () => ({
-    get peekMode() { return state.mode; },
-    setPeekMode(mode) { state.mode = mode; notify(); },
-    setPeekId(value) { state.open = value !== null; notify(); },
-    getIssueById() { return { id: "issue-1" }; },
-    fetchIssueDetails() {},
-  });
-`)}`;
-
 const packageStubs = {
   "@plane/propel/icons": `export const MoveRight = () => null;
     export const LinkIcon = () => null;
@@ -29,27 +23,10 @@ const packageStubs = {
     export const SidePanelIcon = () => null;`,
   "@plane/propel/toast": "export const TOAST_TYPE = { SUCCESS: 'success' }; export const setToast = () => {};",
   "@plane/ui": `export const Loader = Object.assign(() => null, { Item: () => null });`,
-  "mobx-react": "export const observer = component => component;",
 };
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
-    if (specifier === "@/hooks/store/use-issue-details") return { shortCircuit: true, url: stateStub };
-    if (specifier === "next/navigation") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent(`
-          export const useRouter = () => ({ push() {} });
-          export const useSearchParams = () => new URLSearchParams();
-        `)}`,
-      };
-    }
-    if (specifier === "@/hooks/store/publish") {
-      return {
-        shortCircuit: true,
-        url: `data:text/javascript,${encodeURIComponent("export const usePublish = () => ({ canComment: false });")}`,
-      };
-    }
     if (specifier === "@/hooks/use-clipboard-write-permission") {
       return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent("export default () => false;")}` };
     }
@@ -79,32 +56,12 @@ registerHooks({
 let IssuePeekOverview;
 
 function TestHarness() {
-  const [, setRevision] = React.useState(0);
-  React.useEffect(() => {
-    const update = () => setRevision((revision) => revision + 1);
-    window.addEventListener("space-peek-state-change", update);
-    return () => window.removeEventListener("space-peek-state-change", update);
-  }, []);
-
+  const [params, setParams] = useSearchParams();
   return React.createElement(
     React.Fragment,
     null,
-    React.createElement(
-      "button",
-      {
-        type: "button",
-        id: "open-peek",
-        onClick() {
-          globalThis.__spacePeekTestState.open = true;
-          window.dispatchEvent(new Event("space-peek-state-change"));
-        },
-      },
-      "Open issue"
-    ),
-    React.createElement(IssuePeekOverview, {
-      anchor: "project",
-      peekId: globalThis.__spacePeekTestState.open ? "issue-1" : "",
-    })
+    React.createElement("button", { id: "open-peek", onClick: () => setParams({ peekId: "issue-1" }) }, "Open issue"),
+    React.createElement(IssuePeekOverview, { anchor: "project", peekId: params.get("peekId") ?? "" })
   );
 }
 
@@ -125,11 +82,9 @@ async function flushAnimationFrames() {
 }
 
 test("switching peek modes keeps one dialog, focus, Escape close, and full-screen sizing", async (t) => {
-  globalThis.__spacePeekTestState = { mode: "side", open: false };
   const environment = await createReactDomTestEnvironment();
   t.after(async () => {
     await environment.unmount();
-    delete globalThis.__spacePeekTestState;
     delete globalThis.ResizeObserver;
   });
   globalThis.ResizeObserver = class ResizeObserver {
@@ -146,7 +101,19 @@ test("switching peek modes keeps one dialog, focus, Escape close, and full-scree
   });
 
   ({ IssuePeekOverview } = await import("../../apps/space/components/issues/peek-overview/layout.tsx"));
-  await environment.render(React.createElement(TestHarness));
+  const client = new QueryClient();
+  const { issueOptions } = await import("../../apps/space/queries/issues.ts");
+  const { publishSettingsOptions } = await import("../../apps/space/queries/publishing.ts");
+  client.setQueryData(issueOptions("project", "issue-1").queryKey, { id: "issue-1" });
+  client.setQueryData(publishSettingsOptions("project").queryKey, { is_comments_enabled: false });
+  t.after(() => client.clear());
+  await environment.render(
+    React.createElement(
+      QueryClientProvider,
+      { client },
+      React.createElement(MemoryRouter, null, React.createElement(TestHarness))
+    )
+  );
   const opener = environment.container.querySelector("#open-peek");
   opener.focus();
   await React.act(async () => {

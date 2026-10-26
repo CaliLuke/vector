@@ -5,11 +5,10 @@
  */
 
 import { createFileRoute, useLocation, useRouter } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { useTheme } from "next-themes";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
+
 import { useTranslation } from "@plane/i18n";
 import { EUserProjectRoles, EInboxIssueCurrentTab } from "@plane/types";
 // assets
@@ -20,8 +19,8 @@ import { PageHead } from "@/components/core/page-title";
 import { DetailedEmptyState } from "@/components/empty-state/detailed-empty-state-root";
 import { InboxIssueRoot } from "@/components/inbox";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 function ProjectInboxPage(): React.JSX.Element | null {
   /// router
@@ -35,10 +34,11 @@ function ProjectInboxPage(): React.JSX.Element | null {
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { currentProjectDetails } = useProject();
-  const { allowPermissions } = useUserPermissions();
+  const routeProjectQuery = useRouteProject();
+  const currentProjectDetails = routeProjectQuery.project;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
-  const canPerformEmptyStateActions = allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT);
+  const canPerformEmptyStateActions = canProject([EUserProjectRoles.ADMIN]);
   const resolvedPath = resolvedTheme === "light" ? lightIntakeAsset : darkIntakeAsset;
 
   // No access to inbox
@@ -92,5 +92,5 @@ function ProjectInboxPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/intake/")({
-  component: observer(ProjectInboxPage),
+  component: ProjectInboxPage,
 });

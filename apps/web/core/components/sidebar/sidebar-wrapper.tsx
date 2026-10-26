@@ -5,7 +5,6 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
 // plane helpers
 import { useOutsideClickDetector } from "@plane/hooks";
 import { PreferencesIcon } from "@plane/propel/icons";
@@ -13,7 +12,7 @@ import { ScrollArea } from "@plane/propel/scrollarea";
 // components
 import { CustomizeNavigationDialog } from "@/components/navigation/customize-navigation-dialog";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
+import { useSidebarActions, useSidebarCollapsed } from "@/providers/sidebar-state";
 import useSize from "@/hooks/use-window-size";
 // plane web components
 import { WorkspaceEditionBadge } from "@/components/workspace/edition-badge";
@@ -26,12 +25,13 @@ type TSidebarWrapperProps = {
   quickActions?: React.ReactNode;
 };
 
-export const SidebarWrapper = observer(function SidebarWrapper(props: TSidebarWrapperProps) {
+export function SidebarWrapper(props: TSidebarWrapperProps) {
   const { title, children, quickActions } = props;
   // state
   const [isCustomizeNavDialogOpen, setIsCustomizeNavDialogOpen] = useState(false);
   // store hooks
-  const { toggleSidebar, sidebarCollapsed } = useAppTheme();
+  const sidebarCollapsed = useSidebarCollapsed();
+  const { toggleSidebar } = useSidebarActions();
   const windowSize = useSize();
   // refs
   const ref = useRef<HTMLDivElement>(null);
@@ -43,9 +43,8 @@ export const SidebarWrapper = observer(function SidebarWrapper(props: TSidebarWr
   });
 
   useEffect(() => {
-    if (windowSize[0] < 768 && !sidebarCollapsed) toggleSidebar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowSize]);
+    if (windowSize[0] < 768) toggleSidebar(true);
+  }, [windowSize, toggleSidebar]);
 
   return (
     <>
@@ -93,4 +92,4 @@ export const SidebarWrapper = observer(function SidebarWrapper(props: TSidebarWr
       </div>
     </>
   );
-});
+}

@@ -4,37 +4,30 @@
  * See the LICENSE file for details.
  */
 
-import { useRouter } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { observer } from "mobx-react";
 
 import { LogOut, Settings, Settings2 } from "lucide-react";
 // plane imports
-import { GOD_MODE_URL } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Avatar, CustomMenu } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { getFileURL } from "@plane/utils/file";
 // components
 import { CoverImage } from "@/components/common/cover-image";
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useUser } from "@/hooks/store/user";
+import { useSidebarActions } from "@/providers/sidebar-state";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useCurrentUser, useSignOut } from "@/hooks/use-current-user";
 
-export const UserMenuRoot = observer(function UserMenuRoot() {
+export function UserMenuRoot() {
   // states
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  // router
-  const router = useRouter();
   // store hooks
-  const { toggleAnySidebarDropdown } = useAppTheme();
-  const { data: currentUser } = useUser();
-  const { signOut } = useUser();
+  const { toggleAnySidebarDropdown } = useSidebarActions();
+  const { data: currentUser } = useCurrentUser();
+  const { mutateAsync: signOut } = useSignOut();
   const { toggleProfileSettingsModal } = useCommandPalette();
-  // derived values
-  const isUserInstanceAdmin = false;
   // translation
   const { t } = useTranslation();
 
@@ -140,14 +133,6 @@ export const UserMenuRoot = observer(function UserMenuRoot() {
         <LogOut className="size-3.5 shrink-0" />
         {t("sign_out")}
       </CustomMenu.MenuItem>
-      {isUserInstanceAdmin && (
-        <CustomMenu.MenuItem
-          onClick={() => void router.navigate({ href: GOD_MODE_URL })}
-          className="bg-accent-primary/20 text-accent-primary hover:bg-accent-primary/30 hover:text-accent-secondary"
-        >
-          {t("enter_god_mode")}
-        </CustomMenu.MenuItem>
-      )}
     </CustomMenu>
   );
-});
+}

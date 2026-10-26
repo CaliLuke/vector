@@ -117,13 +117,13 @@ describe("function-declaration", () => {
     `);
   });
 
-  it("should handle observer-wrapped components", async () => {
+  it("should handle memo-wrapped components", async () => {
     const result = await applyTransform(
       transformer,
       `
-      import { observer } from "mobx-react";
+      import { memo } from "react";
 
-      export const WorkspaceAnalyticsHeader = observer(() => {
+      export const WorkspaceAnalyticsHeader = memo(() => {
         return <div>Analytics</div>;
       });
       `,
@@ -131,9 +131,9 @@ describe("function-declaration", () => {
     );
 
     expect(result).toMatchInlineSnapshot(`
-      "import { observer } from "mobx-react";
+      "import { memo } from "react";
 
-            export const WorkspaceAnalyticsHeader = observer(function WorkspaceAnalyticsHeader() {
+            export const WorkspaceAnalyticsHeader = memo(function WorkspaceAnalyticsHeader() {
               return <div>Analytics</div>;
             });"
     `);
@@ -163,7 +163,7 @@ describe("function-declaration", () => {
       `
       import type { FC } from "react";
 
-      export const ProjectAppSidebar: FC = observer(() => {
+      export const ProjectAppSidebar: FC = memo(() => {
         return <div>Sidebar</div>;
       });
       `,
@@ -173,7 +173,7 @@ describe("function-declaration", () => {
     expect(result).toMatchInlineSnapshot(`
       "import type { FC } from "react";
 
-            export const ProjectAppSidebar = observer(function ProjectAppSidebar() {
+            export const ProjectAppSidebar = memo(function ProjectAppSidebar() {
               return <div>Sidebar</div>;
             });"
     `);
@@ -195,13 +195,13 @@ describe("function-declaration", () => {
     `);
   });
 
-  it("should handle observer with generic type parameters", async () => {
+  it("should handle memo with generic type parameters", async () => {
     const result = await applyTransform(
       transformer,
       `
-      import { observer } from "mobx-react";
+      import { memo } from "react";
 
-      export const InstanceProvider = observer<React.FC<React.PropsWithChildren>>((props) => {
+      export const InstanceProvider = memo<React.FC<React.PropsWithChildren>>((props) => {
         const { children } = props;
         return <>{children}</>;
       });
@@ -210,9 +210,9 @@ describe("function-declaration", () => {
     );
 
     expect(result).toMatchInlineSnapshot(`
-      "import { observer } from "mobx-react";
+      "import { memo } from "react";
 
-            export const InstanceProvider = observer(function InstanceProvider(props: React.PropsWithChildren) {
+            export const InstanceProvider = memo(function InstanceProvider(props: React.PropsWithChildren) {
               const { children } = props;
               return <>{children}</>;
             });"
@@ -224,9 +224,9 @@ describe("function-declaration", () => {
       transformer,
       `
       "use client";
-      import { observer } from "mobx-react";
+      import { memo } from "react";
 
-      export const MyComponent = observer(() => {
+      export const MyComponent = memo(() => {
         return <div>Hello</div>;
       });
       `,
@@ -235,9 +235,9 @@ describe("function-declaration", () => {
 
     expect(result).toMatchInlineSnapshot(`
       ""use client";
-            import { observer } from "mobx-react";
+            import { memo } from "react";
 
-            export const MyComponent = observer(function MyComponent() {
+            export const MyComponent = memo(function MyComponent() {
               return <div>Hello</div>;
             });"
     `);
@@ -427,8 +427,8 @@ export const PreloadResources = () =>
       transformer,
       `
 // This is a wrapped component
-// It uses observer for reactivity
-export const MyObserverComponent = observer(() => {
+// It uses memo for reactivity
+export const MyObserverComponent = memo(() => {
   return <div>Observer component</div>;
 });
       `,
@@ -437,8 +437,8 @@ export const MyObserverComponent = observer(() => {
 
     expect(result).toMatchInlineSnapshot(`
       "// This is a wrapped component
-      // It uses observer for reactivity
-      export const MyObserverComponent = observer(function MyObserverComponent() {
+      // It uses memo for reactivity
+      export const MyObserverComponent = memo(function MyObserverComponent() {
         return <div>Observer component</div>;
       });"
     `);

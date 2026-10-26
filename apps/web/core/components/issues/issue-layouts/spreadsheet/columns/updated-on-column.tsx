@@ -5,18 +5,18 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // types
 import type { TIssue } from "@plane/types";
 // helpers
 import { Row } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
+import { renderFormattedDate } from "@plane/utils/datetime";
 
 type Props = {
   issue: TIssue;
 };
 
-export const SpreadsheetUpdatedOnColumn = observer(function SpreadsheetUpdatedOnColumn(props: Props) {
+export const SpreadsheetUpdatedOnColumn = function SpreadsheetUpdatedOnColumn(props: Props) {
   const { issue } = props;
 
   return (
@@ -24,4 +24,4 @@ export const SpreadsheetUpdatedOnColumn = observer(function SpreadsheetUpdatedOn
       {renderFormattedDate(issue.updated_at)}
     </Row>
   );
-});
+};

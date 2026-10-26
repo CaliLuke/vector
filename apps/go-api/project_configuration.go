@@ -253,9 +253,6 @@ func (service *projectConfigurationService) DeleteEstimate(ctx context.Context, 
 	if err := service.repository.DeleteEstimate(ctx, identity.userID, payload.Slug, payload.ProjectID, stringValue(payload.EstimateID)); err != nil {
 		return service.mapError(err)
 	}
-	if err := service.effects.SoftDelete(ctx, "db", "estimate", stringValue(payload.EstimateID)); err != nil {
-		return service.mapError(err)
-	}
 	return nil
 }
 func (service *projectConfigurationService) CreateEstimatePoint(ctx context.Context, payload *api.CreateEstimatePointPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
@@ -271,28 +268,23 @@ func (service *projectConfigurationService) CreateEstimatePoint(ctx context.Cont
 	return jsonResponse(result)
 }
 func (service *projectConfigurationService) PatchEstimatePoint(ctx context.Context, payload *api.PatchEstimatePointPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
-	defer body.Close()
-	identity, err := service.appPrincipal(ctx, payload.Slug, payload.ProjectID, true)
-	if err != nil {
-		return nil, nil, service.mapError(err)
-	}
-	result, err := service.repository.PatchEstimatePoint(ctx, identity.userID, payload.Slug, payload.ProjectID, stringValue(payload.EstimateID), stringValue(payload.EstimatePointID), body, projectConfigurationContentType(ctx))
-	if err != nil {
-		return nil, nil, service.mapError(err)
-	}
-	return jsonResponse(result)
+	return service.mutateEstimatePoint(ctx, payload.Slug, payload.ProjectID, body, func(actor string) (json.RawMessage, error) {
+		return service.repository.PatchEstimatePoint(ctx, actor, payload.Slug, payload.ProjectID, stringValue(payload.EstimateID), stringValue(payload.EstimatePointID), body, projectConfigurationContentType(ctx))
+	})
 }
 func (service *projectConfigurationService) DeleteEstimatePoint(ctx context.Context, payload *api.DeleteEstimatePointPayload, body io.ReadCloser) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
+	return service.mutateEstimatePoint(ctx, payload.Slug, payload.ProjectID, body, func(actor string) (json.RawMessage, error) {
+		return service.repository.DeleteEstimatePoint(ctx, actor, payload.Slug, payload.ProjectID, stringValue(payload.EstimateID), stringValue(payload.EstimatePointID), body, projectConfigurationContentType(ctx))
+	})
+}
+func (service *projectConfigurationService) mutateEstimatePoint(ctx context.Context, slug, project string, body io.ReadCloser, operation func(string) (json.RawMessage, error)) (*api.ProjectConfigurationRawJSON, io.ReadCloser, error) {
 	defer body.Close()
-	identity, err := service.appPrincipal(ctx, payload.Slug, payload.ProjectID, true)
+	identity, err := service.appPrincipal(ctx, slug, project, true)
 	if err != nil {
 		return nil, nil, service.mapError(err)
 	}
-	result, err := service.repository.DeleteEstimatePoint(ctx, identity.userID, payload.Slug, payload.ProjectID, stringValue(payload.EstimateID), stringValue(payload.EstimatePointID), body, projectConfigurationContentType(ctx), service.effects.Task)
+	result, err := operation(identity.userID)
 	if err != nil {
-		return nil, nil, service.mapError(err)
-	}
-	if err := service.effects.SoftDelete(ctx, "db", "estimatepoint", stringValue(payload.EstimatePointID)); err != nil {
 		return nil, nil, service.mapError(err)
 	}
 	return jsonResponse(result)

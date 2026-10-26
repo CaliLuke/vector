@@ -8,7 +8,8 @@ import React from "react";
 import { Transition } from "@headlessui/react";
 // plane imports
 import type { SingleOrArray, IFilterOption, TFilterValue } from "@plane/types";
-import { cn, toFilterArray } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { toFilterArray } from "@plane/utils/rich-filters";
 import { EMPTY_FILTER_PLACEHOLDER_TEXT } from "../../shared";
 
 type TSelectedOptionsDisplayProps<V extends TFilterValue> = {
@@ -24,9 +25,14 @@ export function SelectedOptionsDisplay<V extends TFilterValue>(props: TSelectedO
   // derived values
   const selectedArray = toFilterArray(selectedValue);
   const remainingCount = selectedArray.length - displayCount;
-  const selectedOptions = selectedArray
-    .map((value) => options.find((opt) => opt.value === value))
-    .filter(Boolean) as IFilterOption<V>[];
+  const selectedOptions = selectedArray.map(
+    (value) =>
+      options.find((opt) => opt.value === value) ?? {
+        id: String(value),
+        value,
+        label: `Unavailable (${String(value)})`,
+      }
+  );
 
   // When no value is selected, display the empty value
   if (selectedArray.length === 0) {
@@ -34,7 +40,7 @@ export function SelectedOptionsDisplay<V extends TFilterValue>(props: TSelectedO
   }
 
   // When no options are found but we have a fallback text
-  if (options.length === 0) {
+  if (options.length === 0 && fallbackText) {
     return <span className="text-placeholder">{fallbackText ?? `${selectedArray.length} option(s) selected`}</span>;
   }
 

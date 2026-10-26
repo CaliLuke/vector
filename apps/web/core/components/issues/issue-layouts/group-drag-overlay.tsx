@@ -11,7 +11,7 @@ import { ISSUE_ORDER_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import type { TIssueOrderByOptions } from "@plane/types";
 // helpers
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   dragColumnOrientation: "justify-start" | "justify-center" | "justify-end";

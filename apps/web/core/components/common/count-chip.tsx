@@ -6,7 +6,7 @@
 
 //
 import { forwardRef, type ComponentPropsWithoutRef } from "react";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type TCountChip = Omit<ComponentPropsWithoutRef<"div">, "children" | "className"> & {
   count: string | number;

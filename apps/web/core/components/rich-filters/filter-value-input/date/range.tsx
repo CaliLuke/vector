@@ -5,10 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { TDateRangeFilterFieldConfig, TFilterConditionNodeForDisplay, TFilterProperty } from "@plane/types";
-import { cn, isValidDate, renderFormattedPayloadDate, toFilterArray } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getDate, isValidDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { toFilterArray } from "@plane/utils/rich-filters";
 // components
 import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 // local imports
@@ -21,14 +23,14 @@ type TDateRangeFilterValueInputProps<P extends TFilterProperty> = {
   onChange: (value: string[]) => void;
 };
 
-export const DateRangeFilterValueInput = observer(function DateRangeFilterValueInput<P extends TFilterProperty>(
+export const DateRangeFilterValueInput = function DateRangeFilterValueInput<P extends TFilterProperty>(
   props: TDateRangeFilterValueInputProps<P>
 ) {
   const { config, condition, isDisabled, onChange } = props;
   // derived values
   const [fromRaw, toRaw] = toFilterArray(condition.value) ?? [];
-  const from = isValidDate(fromRaw) ? new Date(fromRaw) : undefined;
-  const to = isValidDate(toRaw) ? new Date(toRaw) : undefined;
+  const from = isValidDate(fromRaw) ? getDate(fromRaw) : undefined;
+  const to = isValidDate(toRaw) ? getDate(toRaw) : undefined;
   const isIncomplete = !from || !to;
 
   // Handler for date range selection
@@ -62,4 +64,4 @@ export const DateRangeFilterValueInput = observer(function DateRangeFilterValueI
       disabled={isDisabled}
     />
   );
-});
+};

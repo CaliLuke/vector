@@ -4,24 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // hooks
 import { IntakeIcon } from "@plane/propel/icons";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueActivity } from "@plane/types";
 // components
 import { IssueActivityBlockComponent } from "./";
 // icons
 
-type TIssueInboxActivity = { activityId: string; ends: "top" | "bottom" | undefined };
+type TIssueInboxActivity = { activity: TIssueActivity; ends: "top" | "bottom" | undefined };
 
-export const IssueInboxActivity = observer(function IssueInboxActivity(props: TIssueInboxActivity) {
-  const { activityId, ends } = props;
+export const IssueInboxActivity = function IssueInboxActivity(props: TIssueInboxActivity) {
+  const { activity, ends } = props;
   // hooks
-  const {
-    activity: { getActivityById },
-  } = useIssueDetail();
-
-  const activity = getActivityById(activityId);
 
   const getInboxActivityMessage = () => {
     switch (activity?.verb) {
@@ -42,10 +36,10 @@ export const IssueInboxActivity = observer(function IssueInboxActivity(props: TI
   return (
     <IssueActivityBlockComponent
       icon={<IntakeIcon className="h-4 w-4 flex-shrink-0 text-secondary" />}
-      activityId={activityId}
+      activity={activity}
       ends={ends}
     >
       <>{getInboxActivityMessage()}</>
     </IssueActivityBlockComponent>
   );
-});
+};

@@ -12,52 +12,126 @@ import { useTranslation } from "@plane/i18n";
 import { LinkIcon, GlobeIcon, LockIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
 import { EPageAccess } from "@plane/types";
-import { copyTextToClipboard } from "@plane/utils";
+import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // plane web imports
-import { EPageStoreType, usePageStore } from "@/hooks/store";
 import { useParams } from "@tanstack/react-router";
+import { usePagePermissions } from "@/hooks/use-page-permissions";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useProjectPage } from "@/hooks/use-project-pages";
+import { useCollaborativePageActions } from "@/hooks/use-collaborative-page-actions";
+
+function createFavoriteCommand(isFavorite: boolean, canFavorite: boolean, action: () => void): TPowerKCommandConfig {
+  return {
+    id: "toggle_page_favorite",
+    i18n_title: isFavorite
+      ? "power_k.contextual_actions.page.remove_from_favorites"
+      : "power_k.contextual_actions.page.add_to_favorites",
+    icon: isFavorite ? StarOff : Star,
+    group: "contextual",
+    contextType: "page",
+    type: "action",
+    action,
+    modifierShortcut: "shift+f",
+    isEnabled: () => canFavorite,
+    isVisible: () => canFavorite,
+    closeOnSelect: true,
+  };
+}
+
+function createLockCommand(isLocked: boolean, canLock: boolean, action: () => void): TPowerKCommandConfig {
+  return {
+    id: "toggle_page_lock",
+    i18n_title: isLocked ? "power_k.contextual_actions.page.unlock" : "power_k.contextual_actions.page.lock",
+    icon: isLocked ? LockKeyholeOpen : LockKeyhole,
+    group: "contextual",
+    contextType: "page",
+    type: "action",
+    action: () => {
+      action();
+    },
+    modifierShortcut: "shift+l",
+    isEnabled: () => canLock,
+    isVisible: () => canLock,
+    closeOnSelect: true,
+  };
+}
+
+function createAccessCommand(
+  access: EPageAccess | undefined,
+  canChangeAccess: boolean,
+  action: () => void
+): TPowerKCommandConfig {
+  return {
+    id: "toggle_page_access",
+    i18n_title:
+      access === EPageAccess.PUBLIC
+        ? "power_k.contextual_actions.page.make_private"
+        : "power_k.contextual_actions.page.make_public",
+    icon: access === EPageAccess.PUBLIC ? LockIcon : GlobeIcon,
+    group: "contextual",
+    contextType: "page",
+    type: "action",
+    action: () => {
+      action();
+    },
+    modifierShortcut: "shift+a",
+    isEnabled: () => canChangeAccess,
+    isVisible: () => canChangeAccess,
+    closeOnSelect: true,
+  };
+}
 
 export const usePowerKPageContextBasedActions = (): TPowerKCommandConfig[] => {
   // navigation
-  const { pageId } = useParams({ strict: false });
-  // store hooks
-  const { getPageById } = usePageStore(EPageStoreType.PROJECT);
-  // derived values
-  const page = pageId ? getPageById(pageId.toString()) : null;
-  const {
-    access,
-    archived_at,
-    canCurrentUserArchivePage,
-    canCurrentUserChangeAccess,
-    canCurrentUserFavoritePage,
-    canCurrentUserLockPage,
-    addToFavorites,
-    removePageFromFavorites,
-    lock,
-    unlock,
-    makePrivate,
-    makePublic,
-    archive,
-    restore,
-  } = page ?? {};
-  const isFavorite = !!page?.is_favorite;
+  const { pageId, workspaceSlug, projectId } = useParams({ strict: false });
+  const pageQuery = useProjectPage(workspaceSlug, projectId, pageId, false);
+  const page = pageQuery.data;
+  const permissions = usePagePermissions(page, workspaceSlug);
+  const { access, archived_at } = page ?? {};
+  const { canCurrentUserArchivePage, canCurrentUserChangeAccess, canCurrentUserFavoritePage, canCurrentUserLockPage } =
+    permissions;
+  const { favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug?.toString());
+  const isFavorite = favoritesByEntity?.has(`page:${page?.id}`) ?? false;
   const isLocked = !!page?.is_locked;
+  const { executeCollaborativeAction } = useCollaborativePageActions({
+    page,
+    workspaceSlug: workspaceSlug ?? "",
+    projectId,
+  });
+  const performPageAction = useCallback(
+    async (message: "lock" | "unlock" | "archive" | "unarchive" | "make-public" | "make-private") => {
+      if (!page) return;
+      try {
+        await executeCollaborativeAction({ type: "sendMessageToServer", message });
+      } catch {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Some error occurred" });
+      }
+    },
+    [executeCollaborativeAction, page]
+  );
+  const lockAction = useCallback(() => {
+    void performPageAction(isLocked ? "unlock" : "lock");
+  }, [isLocked, performPageAction]);
+  const accessAction = useCallback(() => {
+    void performPageAction(access === EPageAccess.PUBLIC ? "make-private" : "make-public");
+  }, [access, performPageAction]);
+  const archiveAction = useCallback(() => {
+    void performPageAction(archived_at ? "unarchive" : "archive");
+  }, [archived_at, performPageAction]);
   // translation
   const { t } = useTranslation();
 
-  const toggleFavorite = useCallback(() => {
-    try {
-      if (isFavorite) removePageFromFavorites?.();
-      else addToFavorites?.();
-    } catch {
+  const togglePageFavorite = useCallback(() => {
+    if (!page?.id) return;
+    void toggleFavorite("page", page.id, page.project_ids?.[0] ?? null).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Some error occurred",
       });
-    }
-  }, [addToFavorites, removePageFromFavorites, isFavorite]);
+    });
+  }, [page?.id, page?.project_ids, toggleFavorite]);
 
   const copyPageUrlToClipboard = useCallback(() => {
     const url = new URL(window.location.href);
@@ -67,6 +141,7 @@ export const usePowerKPageContextBasedActions = (): TPowerKCommandConfig[] => {
           type: TOAST_TYPE.SUCCESS,
           title: t("power_k.contextual_actions.page.copy_url_toast_success"),
         });
+        return undefined;
       })
       .catch(() => {
         setToast({
@@ -78,55 +153,8 @@ export const usePowerKPageContextBasedActions = (): TPowerKCommandConfig[] => {
   }, []);
 
   return [
-    {
-      id: "toggle_page_lock",
-      i18n_title: isLocked ? "power_k.contextual_actions.page.unlock" : "power_k.contextual_actions.page.lock",
-      icon: isLocked ? LockKeyholeOpen : LockKeyhole,
-      group: "contextual",
-      contextType: "page",
-      type: "action",
-      action: () => {
-        if (isLocked)
-          unlock?.({
-            shouldSync: true,
-            recursive: true,
-          });
-        else
-          lock?.({
-            shouldSync: true,
-            recursive: true,
-          });
-      },
-      modifierShortcut: "shift+l",
-      isEnabled: () => !!canCurrentUserLockPage,
-      isVisible: () => !!canCurrentUserLockPage,
-      closeOnSelect: true,
-    },
-    {
-      id: "toggle_page_access",
-      i18n_title:
-        access === EPageAccess.PUBLIC
-          ? "power_k.contextual_actions.page.make_private"
-          : "power_k.contextual_actions.page.make_public",
-      icon: access === EPageAccess.PUBLIC ? LockIcon : GlobeIcon,
-      group: "contextual",
-      contextType: "page",
-      type: "action",
-      action: () => {
-        if (access === EPageAccess.PUBLIC)
-          makePrivate?.({
-            shouldSync: true,
-          });
-        else
-          makePublic?.({
-            shouldSync: true,
-          });
-      },
-      modifierShortcut: "shift+a",
-      isEnabled: () => !!canCurrentUserChangeAccess,
-      isVisible: () => !!canCurrentUserChangeAccess,
-      closeOnSelect: true,
-    },
+    createLockCommand(isLocked, canCurrentUserLockPage, lockAction),
+    createAccessCommand(access, canCurrentUserChangeAccess, accessAction),
     {
       id: "toggle_page_archive",
       i18n_title: archived_at ? "power_k.contextual_actions.page.restore" : "power_k.contextual_actions.page.archive",
@@ -135,35 +163,14 @@ export const usePowerKPageContextBasedActions = (): TPowerKCommandConfig[] => {
       contextType: "page",
       type: "action",
       action: () => {
-        if (archived_at)
-          restore?.({
-            shouldSync: true,
-          });
-        else
-          archive?.({
-            shouldSync: true,
-          });
+        archiveAction();
       },
       modifierShortcut: "shift+r",
-      isEnabled: () => !!canCurrentUserArchivePage,
-      isVisible: () => !!canCurrentUserArchivePage,
+      isEnabled: () => canCurrentUserArchivePage,
+      isVisible: () => canCurrentUserArchivePage,
       closeOnSelect: true,
     },
-    {
-      id: "toggle_page_favorite",
-      i18n_title: isFavorite
-        ? "power_k.contextual_actions.page.remove_from_favorites"
-        : "power_k.contextual_actions.page.add_to_favorites",
-      icon: isFavorite ? StarOff : Star,
-      group: "contextual",
-      contextType: "page",
-      type: "action",
-      action: () => toggleFavorite(),
-      modifierShortcut: "shift+f",
-      isEnabled: () => !!canCurrentUserFavoritePage,
-      isVisible: () => !!canCurrentUserFavoritePage,
-      closeOnSelect: true,
-    },
+    createFavoriteCommand(isFavorite, canCurrentUserFavoritePage, togglePageFavorite),
     {
       id: "copy_page_url",
       i18n_title: "power_k.contextual_actions.page.copy_url",

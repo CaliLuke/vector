@@ -6,79 +6,63 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
-import { ROLE, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { ROLE, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, TrashIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomSelect, CustomMenu } from "@plane/ui";
-import { cn, copyTextToClipboard } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import { ConfirmWorkspaceMemberRemove } from "@/components/workspace/confirm-workspace-member-remove";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useDeleteWorkspaceInvitation, useUpdateWorkspaceInvitation } from "@/hooks/use-member-roster-mutations";
+import type { IWorkspaceMemberInvitation } from "@plane/types";
 
 type Props = {
-  invitationId: string;
+  invitation: IWorkspaceMemberInvitation;
 };
 
-export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitationsListItem(props: Props) {
-  const { invitationId } = props;
+export function WorkspaceInvitationsListItem(props: Props) {
+  const { invitation } = props;
+  const invitationId = invitation.id;
   // router
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // states
   const [removeMemberModal, setRemoveMemberModal] = useState(false);
   // plane hooks
   const { t } = useTranslation();
-  // store hooks
-  const { allowPermissions, workspaceInfoBySlug } = useUserPermissions();
-  const {
-    workspace: { updateMemberInvitation, deleteMemberInvitation, getWorkspaceInvitationDetails },
-  } = useMember();
-  // derived values
-  const invitationDetails = getWorkspaceInvitationDetails(invitationId);
-  const currentWorkspaceMemberInfo = workspaceInfoBySlug(workspaceSlug.toString());
-  const currentWorkspaceRole = currentWorkspaceMemberInfo?.role;
+  // permissions
+  const { workspaceRole: currentWorkspaceRole, can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
+  const updateInvitation = useUpdateWorkspaceInvitation(workspaceSlug ?? "", invitationId);
+  const deleteInvitation = useDeleteWorkspaceInvitation(workspaceSlug ?? "", invitationId);
   // is the current logged in user admin
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
   // role change access-
   // 1. user cannot change their own role
   // 2. only admin or member can change role
   // 3. user cannot change role of higher role
-  const hasRoleChangeAccess = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const hasRoleChangeAccess = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const handleRemoveInvitation = async () => {
-    try {
-      if (!workspaceSlug || !invitationDetails) return;
-
-      await deleteMemberInvitation(workspaceSlug.toString(), invitationDetails.id);
-      setToast({
-        type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Invitation removed successfully.",
-      });
-    } catch (err: unknown) {
-      const error = err as { error?: string };
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: error?.error || "Something went wrong. Please try again.",
-      });
-    }
+    if (!workspaceSlug) throw new Error("A workspace is required.");
+    await deleteInvitation.mutateAsync();
+    setToast({
+      type: TOAST_TYPE.SUCCESS,
+      title: "Success!",
+      message: "Invitation removed successfully.",
+    });
   };
 
-  if (!invitationDetails || !currentWorkspaceMemberInfo) return null;
+  if (!currentWorkspaceRole) return null;
 
   const handleCopyText = async () => {
     try {
-      const inviteLink = new URL(invitationDetails.invite_link, window.location.origin).href;
+      const inviteLink = new URL(invitation.invite_link, window.location.origin).href;
       await copyTextToClipboard(inviteLink);
       setToast({
         type: TOAST_TYPE.SUCCESS,
@@ -96,7 +80,7 @@ export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitatio
       action: () => void handleCopyText(),
       title: t("common.actions.copy_link"),
       icon: LinkIcon,
-      shouldRender: !!invitationDetails.invite_link,
+      shouldRender: !!invitation.invite_link,
     },
     {
       key: "remove",
@@ -117,18 +101,18 @@ export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitatio
         isOpen={removeMemberModal}
         onClose={() => setRemoveMemberModal(false)}
         userDetails={{
-          id: invitationDetails.id,
-          display_name: `${invitationDetails.email}`,
+          id: invitation.id,
+          display_name: `${invitation.email}`,
         }}
         onSubmit={handleRemoveInvitation}
       />
       <div className="group flex h-full w-full items-center justify-between px-3 py-4 hover:bg-layer-transparent-hover">
         <div className="flex items-center gap-x-4 gap-y-2">
           <span className="relative flex h-10 w-10 items-center justify-center rounded-sm bg-layer-3 p-4 text-tertiary capitalize">
-            {(invitationDetails.email ?? "?")[0]}
+            {(invitation.email ?? "?")[0]}
           </span>
           <div>
-            <h4 className="cursor-default text-body-xs-regular">{invitationDetails.email}</h4>
+            <h4 className="cursor-default text-body-xs-regular">{invitation.email}</h4>
           </div>
         </div>
         <div className="flex items-center gap-2 text-11">
@@ -143,7 +127,7 @@ export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitatio
                     hasRoleChangeAccess ? "" : "text-placeholder"
                   }`}
                 >
-                  {ROLE[invitationDetails.role]}
+                  {ROLE[invitation.role]}
                 </span>
                 {hasRoleChangeAccess && (
                   <span className="grid place-items-center">
@@ -152,22 +136,25 @@ export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitatio
                 )}
               </div>
             }
-            value={invitationDetails.role}
+            value={invitation.role}
             onChange={(value: EUserPermissions) => {
               if (!workspaceSlug || !value) return;
 
-              updateMemberInvitation(workspaceSlug.toString(), invitationDetails.id, {
-                role: value,
-              }).catch((err: unknown) => {
-                const error = err as { error?: string };
-                setToast({
-                  type: TOAST_TYPE.ERROR,
-                  title: "Error!",
-                  message: error?.error || "An error occurred while updating member role. Please try again.",
-                });
-              });
+              updateInvitation.mutate(
+                { role: value },
+                {
+                  onError: (err: unknown) => {
+                    const error = err as { error?: string };
+                    setToast({
+                      type: TOAST_TYPE.ERROR,
+                      title: "Error!",
+                      message: error?.error || "An error occurred while updating member role. Please try again.",
+                    });
+                  },
+                }
+              );
             }}
-            disabled={!hasRoleChangeAccess}
+            disabled={!hasRoleChangeAccess || updateInvitation.isPending}
             placement="bottom-end"
           >
             {Object.keys(ROLE).map((key) => {
@@ -226,4 +213,4 @@ export const WorkspaceInvitationsListItem = observer(function WorkspaceInvitatio
       </div>
     </>
   );
-});
+}

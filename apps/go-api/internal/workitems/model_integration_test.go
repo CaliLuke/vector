@@ -4,6 +4,7 @@ package workitems
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"sync"
@@ -12,6 +13,7 @@ import (
 
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -31,18 +33,30 @@ func TestIssueModelPostgresInvariants(t *testing.T) {
 		}
 		defer conn.Close(ctx)
 		_, err = conn.Exec(ctx, `
+CREATE FUNCTION work_item_schema_lock(workspace uuid) RETURNS void LANGUAGE sql AS $$
+ SELECT pg_advisory_xact_lock(hashtextextended(workspace::text || ':work-item-schema',0));
+$$;
 CREATE TABLE projects(id uuid PRIMARY KEY, workspace_id uuid NOT NULL, deleted_at timestamptz);
 CREATE TABLE states(id uuid PRIMARY KEY,project_id uuid,"group" text,is_triage boolean NOT NULL DEFAULT false,"default" boolean NOT NULL DEFAULT false,sequence double precision,deleted_at timestamptz);
 CREATE TABLE issues(
  id uuid PRIMARY KEY, project_id uuid NOT NULL, workspace_id uuid NOT NULL, name text NOT NULL,
- description_html text,description_json jsonb,description_stripped text,description_binary bytea,
+ description_html text,description_json jsonb,description_stripped text,description_binary bytea,custom_properties jsonb NOT NULL DEFAULT '{}',
  parent_id uuid,state_id uuid,estimate_point_id uuid,type_id uuid,point integer,priority text,
  start_date date,target_date date,sequence_id integer NOT NULL,sort_order double precision NOT NULL,
  completed_at timestamptz,archived_at date,is_draft boolean,external_id text,external_source text,
  created_at timestamptz NOT NULL,updated_at timestamptz NOT NULL,created_by_id uuid,updated_by_id uuid,deleted_at timestamptz
 );
+-- Issue.save refreshes the current rich-text projection even for untyped items.
+CREATE TABLE work_item_properties(id uuid PRIMARY KEY,workspace_id uuid NOT NULL,definition jsonb NOT NULL);
+CREATE TABLE work_item_property_search(
+ issue_id uuid NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+ property_id uuid NOT NULL REFERENCES work_item_properties(id) ON DELETE CASCADE,
+ workspace_id uuid NOT NULL,source_hash text NOT NULL CHECK(length(source_hash)=64),search_text text NOT NULL,
+ PRIMARY KEY(issue_id,property_id)
+);
 CREATE TABLE issue_sequences(id uuid PRIMARY KEY,issue_id uuid,project_id uuid,workspace_id uuid,sequence bigint,deleted boolean,created_at timestamptz,updated_at timestamptz,created_by_id uuid,updated_by_id uuid,deleted_at timestamptz);
 CREATE TABLE issue_assignees(issue_id uuid,assignee_id uuid,created_at timestamptz,deleted_at timestamptz);
+CREATE TABLE labels(id uuid PRIMARY KEY,project_id uuid,workspace_id uuid,deleted_at timestamptz);
 CREATE TABLE issue_labels(issue_id uuid,label_id uuid,created_at timestamptz,deleted_at timestamptz);
 INSERT INTO projects(id,workspace_id) VALUES
 ('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000010'),
@@ -197,6 +211,42 @@ INSERT INTO issue_sequences(id,project_id,sequence,deleted,deleted_at) VALUES
 		}
 		if saved["state_id"] != nil || saved["completed_at"] != nil || saved["description_stripped"] != nil {
 			t.Fatalf("nullable model values=%v", saved)
+		}
+	})
+	t.Run("rejected model update rolls back relationship edits", func(t *testing.T) {
+		row := defaultIssue(project)
+		row["name"] = "Keep this item"
+		saved, saveErr := repo.saveIssue(ctx, actor, row, nil)
+		if saveErr != nil {
+			t.Fatal(saveErr)
+		}
+		if _, seedErr := pool.Exec(ctx, `INSERT INTO issue_assignees(issue_id,assignee_id) VALUES($1,$2)`, saved["id"], actor); seedErr != nil {
+			t.Fatal(seedErr)
+		}
+		changed := maps.Clone(saved)
+		changed["name"] = nil // The real NOT NULL constraint rejects the model write.
+		_, updateErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true})
+		var constraint *pgconn.PgError
+		if !errors.As(updateErr, &constraint) || constraint.Code != "23502" {
+			t.Fatalf("want model constraint rejection, got %v", updateErr)
+		}
+		var name string
+		var assignees int
+		if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
+			t.Fatal(readErr)
+		}
+		if name != "Keep this item" || assignees != 1 {
+			t.Fatalf("rejected edit persisted: name=%s assignees=%d", name, assignees)
+		}
+		changed["name"] = "Retry succeeds"
+		if _, retryErr := repo.updateIssueWithRelations(ctx, actor, changed, saved, issueChanges{assigneesSet: true}); retryErr != nil {
+			t.Fatal(retryErr)
+		}
+		if readErr := pool.QueryRow(ctx, `SELECT name,(SELECT count(*) FROM issue_assignees WHERE issue_id=$1 AND deleted_at IS NULL) FROM issues WHERE id=$1`, saved["id"]).Scan(&name, &assignees); readErr != nil {
+			t.Fatal(readErr)
+		}
+		if name != "Retry succeeds" || assignees != 0 {
+			t.Fatalf("successful retry not committed: name=%s assignees=%d", name, assignees)
 		}
 	})
 }

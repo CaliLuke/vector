@@ -4,74 +4,109 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
-import { observer } from "mobx-react";
+import { useEffect, useRef, useState } from "react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, MEMBER_TRACKER_ELEMENTS } from "@plane/constants";
+import type { IUserLite } from "@plane/types";
+import type { IMemberFilters } from "@/helpers/member-ordering";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { SearchIcon } from "@plane/propel/icons";
 // components
 import { MembersSettingsLoader } from "@/components/ui/loader/settings/members";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster, useProjectMemberRoster } from "@/hooks/use-member-rosters";
+import type { RowData } from "@/components/project/settings/member-columns";
+import type { IWorkspaceMember, TProjectMembership } from "@plane/types";
 // local imports
 import { MemberListFiltersDropdown } from "./dropdowns/filters/member-list";
 import { ProjectMemberListItem } from "./member-list-item";
 import { SendProjectInvitationModal } from "./send-project-invitation-modal";
+import { sortProjectMembers } from "@/helpers/member-ordering";
 
 type TProjectMemberListProps = {
   projectId: string;
   workspaceSlug: string;
 };
 
-export const ProjectMemberList = observer(function ProjectMemberList(props: TProjectMemberListProps) {
+function getProjectMemberDetails(
+  memberships: TProjectMembership[],
+  membersById: Map<string, IWorkspaceMember>,
+  filters: IMemberFilters,
+  searchQuery: string
+): RowData[] {
+  const visibleMemberships = memberships.filter((membership) => membersById.has(membership.member));
+  const memberDetailsById = Object.fromEntries(
+    visibleMemberships.map((membership) => {
+      const member = membersById.get(membership.member)!.member;
+      return [membership.member, { ...member, joining_date: membership.created_at ?? undefined }];
+    })
+  ) as Record<string, IUserLite>;
+  const normalizedSearch = searchQuery.toLowerCase();
+  return sortProjectMembers(visibleMemberships, memberDetailsById, (membership) => membership.member, filters).flatMap(
+    (membership) => {
+      const workspaceMember = membersById.get(membership.member);
+      if (!workspaceMember) return [];
+      const name = workspaceMember.member;
+      const searchable = `${name.first_name} ${name.last_name} ${name.display_name}`.toLowerCase();
+      if (!searchable.includes(normalizedSearch)) return [];
+      return [
+        {
+          ...membership,
+          member: { ...name, joining_date: membership.created_at ?? undefined },
+          workspaceRole: workspaceMember.role,
+        },
+      ];
+    }
+  );
+}
+
+export function ProjectMemberList(props: TProjectMemberListProps) {
+  const scopeKey = JSON.stringify([props.workspaceSlug, props.projectId]);
+  return <ProjectMemberListView key={scopeKey} {...props} />;
+}
+
+function ProjectMemberListView(props: TProjectMemberListProps) {
   const { projectId, workspaceSlug } = props;
   // states
   const [inviteModal, setInviteModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const {
-    project: { projectMemberIds, getFilteredProjectMemberDetails, filters },
-  } = useMember();
-  const { allowPermissions } = useUserPermissions();
+  const searchInput = useRef<HTMLInputElement | null>(null);
+  const [memberFilters, setMemberFilters] = useState<IMemberFilters>({});
+  const permissions = useProjectPermissions(workspaceSlug, projectId);
+  const { projectRole, can: canProject } = permissions;
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
 
   const { t } = useTranslation();
 
-  const searchedProjectMembers = (projectMemberIds ?? []).filter((userId) => {
-    const memberDetails = projectId ? getFilteredProjectMemberDetails(userId, projectId.toString()) : null;
+  useEffect(() => {
+    searchInput.current?.focus();
+  }, []);
 
-    if (!memberDetails?.member || !memberDetails.original_role) return false;
+  const memberDetails =
+    projectRoster.memberships && workspaceRoster.membersById
+      ? getProjectMemberDetails(projectRoster.memberships, workspaceRoster.membersById, memberFilters, searchQuery)
+      : [];
 
-    const fullName = `${memberDetails?.member.first_name} ${memberDetails?.member.last_name}`.toLowerCase();
-    const displayName = memberDetails?.member.display_name.toLowerCase();
-
-    return displayName?.includes(searchQuery.toLowerCase()) || fullName.includes(searchQuery.toLowerCase());
-  });
-
-  const memberDetails = searchedProjectMembers?.map((memberId) =>
-    projectId ? getFilteredProjectMemberDetails(memberId, projectId.toString()) : null
-  );
-
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
+  const updateFilters = (update: Partial<IMemberFilters>) => setMemberFilters((current) => ({ ...current, ...update }));
 
   // Handler for role filter updates
   const handleRoleFilterUpdate = (role: string) => {
     if (projectId) {
-      const currentFilters = filters.getFilters(projectId);
-      const currentRoles = currentFilters?.roles || [];
+      const currentRoles = memberFilters.roles || [];
       const updatedRoles = currentRoles.includes(role)
         ? currentRoles.filter((r) => r !== role)
         : [...currentRoles, role];
 
-      filters.updateFilters(projectId, {
-        roles: updatedRoles.length > 0 ? updatedRoles : undefined,
-      });
+      updateFilters({ roles: updatedRoles.length > 0 ? updatedRoles : undefined });
     }
   };
 
-  // Get current role filters
-  const appliedRoleFilters = projectId ? filters.getFilters(projectId)?.roles || [] : [];
+  const handleDisplayFilterUpdate = (update: Partial<IMemberFilters>) => updateFilters(update);
+  const appliedRoleFilters = memberFilters.roles || [];
 
   return (
     <>
@@ -87,10 +122,10 @@ export const ProjectMemberList = observer(function ProjectMemberList(props: TPro
           <div className="flex items-center justify-start gap-1.5 rounded-md border border-subtle bg-surface-1 px-2 py-1">
             <SearchIcon className="h-3.5 w-3.5" />
             <input
+              ref={searchInput}
               className="w-full max-w-[234px] border-none bg-transparent text-13 placeholder:text-placeholder focus:outline-none"
               placeholder="Search"
               value={searchQuery}
-              autoFocus
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
@@ -112,22 +147,43 @@ export const ProjectMemberList = observer(function ProjectMemberList(props: TPro
           )}
         </div>
       </div>
-      {!projectMemberIds ? (
+      {permissions.isError ||
+      projectRoster.query.isError ||
+      workspaceRoster.query.isError ||
+      (!permissions.isPending && projectRole === undefined) ? (
+        <div role="alert" className="p-4 text-13 text-danger-primary">
+          Unable to load project members. Please retry.
+          <button
+            type="button"
+            className="ml-2 underline"
+            onClick={() => {
+              void permissions.membershipQuery.refetch();
+              void permissions.rolesQuery.refetch();
+              void projectRoster.query.refetch();
+              void workspaceRoster.query.refetch();
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      ) : permissions.isPending || projectRoster.query.isPending || workspaceRoster.query.isPending ? (
         <MembersSettingsLoader />
       ) : (
         <div className="divide-y divide-subtle overflow-scroll">
-          {searchedProjectMembers.length !== 0 && (
+          {memberDetails.length !== 0 && (
             <ProjectMemberListItem
-              memberDetails={memberDetails ?? []}
+              memberDetails={memberDetails}
               projectId={projectId}
               workspaceSlug={workspaceSlug}
+              displayFilters={memberFilters}
+              handleDisplayFilterUpdate={handleDisplayFilterUpdate}
             />
           )}
-          {searchedProjectMembers.length === 0 && (
+          {memberDetails.length === 0 && (
             <h4 className="mt-16 text-center text-13 text-placeholder">{t("no_matching_members")}</h4>
           )}
         </div>
       )}
     </>
   );
-});
+}

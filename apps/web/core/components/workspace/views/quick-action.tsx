@@ -5,17 +5,18 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IWorkspaceView } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
-import { copyUrlToClipboard, cn } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
 // helpers
 import { useViewMenuItems } from "@/components/common/quick-actions-helper";
+import { renderQuickActionMenuItems } from "@/components/common/quick-action-menu";
 // hooks
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // local imports
 import { DeleteGlobalViewModal } from "./delete-view-modal";
 import { CreateUpdateWorkspaceViewModal } from "./modal";
@@ -25,17 +26,17 @@ type Props = {
   view: IWorkspaceView;
 };
 
-export const WorkspaceViewQuickActions = observer(function WorkspaceViewQuickActions(props: Props) {
+export function WorkspaceViewQuickActions(props: Props) {
   const { workspaceSlug, view } = props;
   // states
   const [updateViewModal, setUpdateViewModal] = useState(false);
   const [deleteViewModal, setDeleteViewModal] = useState(false);
   // store hooks
-  const { data } = useUser();
-  const { allowPermissions } = useUserPermissions();
+  const { data } = useCurrentUser();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   // auth
   const isOwner = view?.owned_by === data?.id;
-  const isAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const isAdmin = canWorkspace([EUserPermissions.ADMIN]);
 
   const viewLink = `${workspaceSlug}/workspace-views/${view.id}`;
   const handleCopyText = async () => {
@@ -70,40 +71,8 @@ export const WorkspaceViewQuickActions = observer(function WorkspaceViewQuickAct
         closeOnSelect
         buttonClassName="flex-shrink-0 flex items-center justify-center size-[26px] bg-layer-1/70 rounded-sm"
       >
-        {MENU_ITEMS.items.map((item) => {
-          if (item.shouldRender === false) return null;
-          return (
-            <CustomMenu.MenuItem
-              key={item.key}
-              onClick={() => {
-                item.action();
-              }}
-              className={cn(
-                "flex items-center gap-2",
-                {
-                  "text-placeholder": item.disabled,
-                },
-                item.className
-              )}
-              disabled={item.disabled}
-            >
-              {item.icon && <item.icon className={cn("h-3 w-3", item.iconClassName)} />}
-              <div>
-                <h5>{item.title}</h5>
-                {item.description && (
-                  <p
-                    className={cn("whitespace-pre-line text-tertiary", {
-                      "text-placeholder": item.disabled,
-                    })}
-                  >
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </CustomMenu.MenuItem>
-          );
-        })}
+        {renderQuickActionMenuItems(MENU_ITEMS.items)}
       </CustomMenu>
     </>
   );
-});
+}

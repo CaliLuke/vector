@@ -4,15 +4,12 @@
  * See the LICENSE file for details.
  */
 
-// react-hook-form
-import { useParams } from "@tanstack/react-router";
-import { Controller, useForm } from "react-hook-form";
+import { useForm, useStore } from "@tanstack/react-form";
 import { Button } from "@plane/propel/button";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { IProject } from "@plane/types";
-// ui
 import { Input, EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
 
-// types
 type Props = {
   isOpen: boolean;
   type: "auto-close" | "auto-archive";
@@ -21,109 +18,78 @@ type Props = {
   handleChange: (formData: Partial<IProject>) => Promise<void>;
 };
 
-export function SelectMonthModal({ type, initialValues, isOpen, handleClose, handleChange }: Props) {
-  const { workspaceSlug, projectId } = useParams({ strict: false });
+export function SelectMonthModal(props: Props) {
+  if (!props.isOpen) return null;
+  return <MonthForm key={props.type} {...props} />;
+}
 
-  const {
-    formState: { errors, isSubmitting },
-    handleSubmit,
-    control,
-    reset,
-  } = useForm<IProject>({
-    defaultValues: initialValues,
+function MonthForm({ type, initialValues, handleClose, handleChange }: Props) {
+  const fieldName = type === "auto-close" ? "close_in" : "archive_in";
+  const form = useForm({
+    defaultValues: { months: String(initialValues[fieldName] ?? "") },
+    onSubmit: async ({ value }) => {
+      try {
+        await handleChange({ [fieldName]: Number(value.months) });
+        handleClose();
+      } catch (cause) {
+        setToast({ type: TOAST_TYPE.ERROR, title: "Could not save time range", message: "Please try again." });
+        throw cause;
+      }
+    },
   });
-
+  const isSubmitting = useStore(form.store, (state) => state.isSubmitting);
   const onClose = () => {
-    handleClose();
-    reset(initialValues);
+    if (!isSubmitting) handleClose();
   };
-
-  const onSubmit = (formData: Partial<IProject>) => {
-    if (!workspaceSlug && !projectId) return;
-    handleChange(formData);
-    onClose();
-  };
-
   return (
-    <ModalCore isOpen={isOpen} handleClose={onClose} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <h3 className="text-16 leading-6 font-medium text-primary">Customize time range</h3>
-          <div className="mt-8 flex items-center gap-2">
-            <div className="flex w-full flex-col justify-center gap-1">
-              {type === "auto-close" ? (
-                <>
-                  <Controller
-                    control={control}
-                    name="close_in"
-                    rules={{
-                      required: "Select a month between 1 and 12.",
-                      min: 1,
-                      max: 12,
-                    }}
-                    render={({ field: { value, onChange, ref } }) => (
-                      <div className="relative flex w-full flex-col justify-center gap-1">
-                        <Input
-                          id="close_in"
-                          name="close_in"
-                          type="number"
-                          value={value?.toString()}
-                          onChange={onChange}
-                          ref={ref}
-                          hasError={Boolean(errors.close_in)}
-                          placeholder="Enter Months"
-                          className="w-full border-subtle"
-                          min={1}
-                          max={12}
-                        />
-                        <span className="absolute top-2.5 right-8 text-13 text-secondary">Months</span>
-                      </div>
-                    )}
-                  />
-
-                  {errors.close_in && (
-                    <span className="px-1 text-13 text-danger-primary">Select a month between 1 and 12.</span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Controller
-                    control={control}
-                    name="archive_in"
-                    rules={{
-                      required: "Select a month between 1 and 12.",
-                      min: 1,
-                      max: 12,
-                    }}
-                    render={({ field: { value, onChange, ref } }) => (
-                      <div className="relative flex w-full flex-col justify-center gap-1">
-                        <Input
-                          id="archive_in"
-                          name="archive_in"
-                          type="number"
-                          value={value?.toString()}
-                          onChange={onChange}
-                          ref={ref}
-                          hasError={Boolean(errors.archive_in)}
-                          placeholder="Enter Months"
-                          className="w-full border-subtle"
-                          min={1}
-                          max={12}
-                        />
-                        <span className="absolute top-2.5 right-8 text-13 text-secondary">Months</span>
-                      </div>
-                    )}
-                  />
-                  {errors.archive_in && (
-                    <span className="px-1 text-13 text-danger-primary">Select a month between 1 and 12.</span>
-                  )}
-                </>
+    <ModalCore isOpen handleClose={onClose} position={EModalPosition.CENTER} width={EModalWidth.XXL}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          form.setErrorMap({ onSubmit: undefined });
+          void form.handleSubmit().catch(() => {});
+        }}
+      >
+        <h3 className="text-16 leading-6 font-medium text-primary">Customize time range</h3>
+        <form.Field
+          name="months"
+          validators={{
+            onChange: ({ value }) => {
+              const months = Number(value);
+              return Number.isInteger(months) && months >= 1 && months <= 12
+                ? undefined
+                : "Select a month between 1 and 12.";
+            },
+          }}
+        >
+          {(field) => (
+            <div className="relative mt-8 flex w-full flex-col justify-center gap-1">
+              <Input
+                id={fieldName}
+                name={fieldName}
+                type="number"
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                hasError={!field.state.meta.isValid}
+                placeholder="Enter Months"
+                aria-label="Months"
+                className="w-full border-subtle"
+                min={1}
+                max={12}
+                disabled={isSubmitting}
+              />
+              <span className="absolute top-2.5 right-8 text-13 text-secondary">Months</span>
+              {!field.state.meta.isValid && (
+                <span role="alert" className="px-1 text-13 text-danger-primary">
+                  {field.state.meta.errors.join(" ")}
+                </span>
               )}
             </div>
-          </div>
-        </div>
+          )}
+        </form.Field>
         <div className="mt-5 flex justify-end gap-2">
-          <Button variant="secondary" size="lg" onClick={onClose}>
+          <Button variant="secondary" type="button" size="lg" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button variant="primary" size="lg" type="submit" loading={isSubmitting}>

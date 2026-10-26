@@ -14,7 +14,12 @@ import type { TAdditionalActiveDropbarExtensions } from "@/plane-editor/types/ut
 import { DropHandlerPlugin } from "@/plugins/drop";
 import { FilePlugins } from "@/plugins/file/root";
 import { MarkdownClipboardPlugin } from "@/plugins/markdown-clipboard";
-import type { IEditorProps, TEditorAsset, TFileHandler } from "@/types";
+import type { IEditorProps, TEditorAsset, TFileHandler, TMentionHandler } from "@/types";
+
+type TEditorIdentityHandlers = {
+  getEditorMetaData: IEditorProps["getEditorMetaData"];
+  mentionHandler: TMentionHandler;
+};
 
 type TActiveDropbarExtensions =
   | CORE_EXTENSIONS.MENTION
@@ -26,8 +31,11 @@ type TActiveDropbarExtensions =
   | TAdditionalActiveDropbarExtensions;
 
 declare module "@tiptap/core" {
-  interface Commands {
+  interface Commands<ReturnType> {
     [CORE_EXTENSIONS.UTILITY]: {
+      updateFileHandler: (fileHandler: TFileHandler) => ReturnType;
+      updateIdentityHandlers: (handlers: TEditorIdentityHandlers) => ReturnType;
+      setUploadActive: (id: symbol, active: boolean) => ReturnType;
       updateAssetsUploadStatus: (updatedStatus: TFileHandler["assetsUploadStatus"]) => () => void;
       updateAssetsList: (
         args:
@@ -48,8 +56,11 @@ declare module "@tiptap/core" {
 }
 
 export type UtilityExtensionStorage = {
+  fileHandler: TFileHandler;
+  identityHandlers: TEditorIdentityHandlers;
   assetsList: TEditorAsset[];
   assetsUploadStatus: TFileHandler["assetsUploadStatus"];
+  activeUploads: Set<symbol>;
   uploadInProgress: boolean;
   activeDropbarExtensions: TActiveDropbarExtensions[];
   isTouchDevice: boolean;
@@ -59,11 +70,19 @@ type Props = Pick<IEditorProps, "disabledExtensions" | "flaggedExtensions" | "ge
   fileHandler: TFileHandler;
   isEditable: boolean;
   isTouchDevice: boolean;
+  mentionHandler: TMentionHandler;
 };
 
 export const UtilityExtension = (props: Props) => {
-  const { disabledExtensions, flaggedExtensions, fileHandler, getEditorMetaData, isEditable, isTouchDevice } = props;
-  const { restore } = fileHandler;
+  const {
+    disabledExtensions,
+    flaggedExtensions,
+    fileHandler,
+    getEditorMetaData,
+    isEditable,
+    isTouchDevice,
+    mentionHandler,
+  } = props;
 
   return Extension.create<Record<string, unknown>, UtilityExtensionStorage>({
     name: CORE_EXTENSIONS.UTILITY,
@@ -79,7 +98,7 @@ export const UtilityExtension = (props: Props) => {
         ...codemark({ markType: this.editor.schema.marks.code }),
         MarkdownClipboardPlugin({
           editor: this.editor,
-          getEditorMetaData,
+          getEditorMetaData: (htmlContent) => this.storage.identityHandlers.getEditorMetaData(htmlContent),
         }),
         DropHandlerPlugin({
           disabledExtensions,
@@ -90,13 +109,16 @@ export const UtilityExtension = (props: Props) => {
     },
 
     onCreate() {
-      restorePublicImages(this.editor, restore);
+      restorePublicImages(this.editor, (src) => this.storage.fileHandler.restore(src));
     },
 
     addStorage() {
       return {
+        fileHandler,
+        identityHandlers: { getEditorMetaData, mentionHandler },
         assetsList: [],
         assetsUploadStatus: isEditable && "assetsUploadStatus" in fileHandler ? fileHandler.assetsUploadStatus : {},
+        activeUploads: new Set<symbol>(),
         uploadInProgress: false,
         activeDropbarExtensions: [],
         isTouchDevice,
@@ -105,6 +127,23 @@ export const UtilityExtension = (props: Props) => {
 
     addCommands() {
       return {
+        updateFileHandler: (nextFileHandler) => () => {
+          this.storage.fileHandler = nextFileHandler;
+          return true;
+        },
+        updateIdentityHandlers:
+          (nextHandlers) =>
+          ({ tr }) => {
+            this.storage.identityHandlers = nextHandlers;
+            tr.setMeta("preventDispatch", true);
+            return true;
+          },
+        setUploadActive: (id, active) => () => {
+          if (active) this.storage.activeUploads.add(id);
+          else this.storage.activeUploads.delete(id);
+          this.storage.uploadInProgress = this.storage.activeUploads.size > 0;
+          return true;
+        },
         updateAssetsUploadStatus: (updatedStatus) => () => {
           this.storage.assetsUploadStatus = updatedStatus;
         },

@@ -76,13 +76,19 @@ func workspaceFavoriteResponses() {
 var _ = Service("workspace_favorites", func() {
 	Method("list", func() {
 		Security(planeSessionCookie)
-		Payload(func() { stickySessionPayload(); Attribute("slug", String); Required("slug") })
+		Payload(func() {
+			stickySessionPayload()
+			Attribute("slug", String)
+			Attribute("all", Boolean)
+			Required("slug")
+		})
 		Result(ArrayOf(workspaceFavorite))
 		workspaceFavoriteErrors()
 		HTTP(func() {
 			GET("/api/workspaces/{slug}/user-favorites/")
 			Cookie("session_id:session-id")
 			Param("slug")
+			Param("all")
 			Response(StatusOK)
 			workspaceFavoriteResponses()
 		})

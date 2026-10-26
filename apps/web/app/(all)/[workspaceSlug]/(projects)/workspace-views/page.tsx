@@ -6,7 +6,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { DEFAULT_GLOBAL_VIEWS_LIST } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -17,12 +17,12 @@ import { PageHead } from "@/components/core/page-title";
 import { GlobalDefaultViewListItem } from "@/components/workspace/views/default-view-list-item";
 import { GlobalViewsList } from "@/components/workspace/views/views-list";
 // hooks
-import { useWorkspace } from "@/hooks/store/use-workspace";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
 
 function WorkspaceViewsPage(): React.JSX.Element | null {
   const [query, setQuery] = useState("");
   // store
-  const { currentWorkspace } = useWorkspace();
+  const { data: currentWorkspace } = useCurrentWorkspace();
   const { t } = useTranslation();
   // derived values
   const pageTitle = currentWorkspace?.name ? `${currentWorkspace?.name} - All Views` : undefined;
@@ -55,5 +55,5 @@ function WorkspaceViewsPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/workspace-views/")({
-  component: observer(WorkspaceViewsPage),
+  component: WorkspaceViewsPage,
 });

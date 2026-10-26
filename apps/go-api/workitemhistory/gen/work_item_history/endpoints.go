@@ -23,6 +23,9 @@ type Endpoints struct {
 	VersionDetail            loom.Endpoint
 	DescriptionVersions      loom.Endpoint
 	DescriptionVersionDetail loom.Endpoint
+	PropertyHistory          loom.Endpoint
+	PropertyVersions         loom.Endpoint
+	PropertyVersionDetail    loom.Endpoint
 }
 
 // HistoryResponseData holds both the result and the HTTP response body reader
@@ -79,6 +82,33 @@ type DescriptionVersionDetailResponseData struct {
 	Body io.ReadCloser
 }
 
+// PropertyHistoryResponseData holds both the result and the HTTP response body
+// reader of the "property_history" method.
+type PropertyHistoryResponseData struct {
+	// Result is the method result.
+	Result *WorkItemHistoryResponseMetadata
+	// Body streams the HTTP response body.
+	Body io.ReadCloser
+}
+
+// PropertyVersionsResponseData holds both the result and the HTTP response
+// body reader of the "property_versions" method.
+type PropertyVersionsResponseData struct {
+	// Result is the method result.
+	Result *WorkItemHistoryResponseMetadata
+	// Body streams the HTTP response body.
+	Body io.ReadCloser
+}
+
+// PropertyVersionDetailResponseData holds both the result and the HTTP
+// response body reader of the "property_version_detail" method.
+type PropertyVersionDetailResponseData struct {
+	// Result is the method result.
+	Result *WorkItemHistoryResponseMetadata
+	// Body streams the HTTP response body.
+	Body io.ReadCloser
+}
+
 // NewEndpoints wraps the methods of the "work_item_history" service with
 // endpoints.
 func NewEndpoints(s Service) *Endpoints {
@@ -91,6 +121,9 @@ func NewEndpoints(s Service) *Endpoints {
 		VersionDetail:            NewVersionDetailEndpoint(s, a.APIKeyAuth),
 		DescriptionVersions:      NewDescriptionVersionsEndpoint(s, a.APIKeyAuth),
 		DescriptionVersionDetail: NewDescriptionVersionDetailEndpoint(s, a.APIKeyAuth),
+		PropertyHistory:          NewPropertyHistoryEndpoint(s, a.APIKeyAuth),
+		PropertyVersions:         NewPropertyVersionsEndpoint(s, a.APIKeyAuth),
+		PropertyVersionDetail:    NewPropertyVersionDetailEndpoint(s, a.APIKeyAuth),
 	}
 }
 
@@ -103,6 +136,9 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.VersionDetail = m(e.VersionDetail)
 	e.DescriptionVersions = m(e.DescriptionVersions)
 	e.DescriptionVersionDetail = m(e.DescriptionVersionDetail)
+	e.PropertyHistory = m(e.PropertyHistory)
+	e.PropertyVersions = m(e.PropertyVersions)
+	e.PropertyVersionDetail = m(e.PropertyVersionDetail)
 }
 
 // NewHistoryEndpoint returns an endpoint function that calls the method
@@ -264,5 +300,86 @@ func NewDescriptionVersionDetailEndpoint(s Service, authAPIKeyFn security.AuthAP
 			return nil, err
 		}
 		return &DescriptionVersionDetailResponseData{Result: res, Body: body}, nil
+	}
+}
+
+// NewPropertyHistoryEndpoint returns an endpoint function that calls the
+// method "property_history" of service "work_item_history".
+func NewPropertyHistoryEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*PropertyHistoryPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "PlaneSessionCookie",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.PlaneSessionCookieCredential != nil {
+			key = *p.PlaneSessionCookieCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, body, err := s.PropertyHistory(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		return &PropertyHistoryResponseData{Result: res, Body: body}, nil
+	}
+}
+
+// NewPropertyVersionsEndpoint returns an endpoint function that calls the
+// method "property_versions" of service "work_item_history".
+func NewPropertyVersionsEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*PropertyVersionsPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "PlaneSessionCookie",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.PlaneSessionCookieCredential != nil {
+			key = *p.PlaneSessionCookieCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, body, err := s.PropertyVersions(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		return &PropertyVersionsResponseData{Result: res, Body: body}, nil
+	}
+}
+
+// NewPropertyVersionDetailEndpoint returns an endpoint function that calls the
+// method "property_version_detail" of service "work_item_history".
+func NewPropertyVersionDetailEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*PropertyVersionDetailPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "PlaneSessionCookie",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		var key string
+		if p.PlaneSessionCookieCredential != nil {
+			key = *p.PlaneSessionCookieCredential
+		}
+		ctx, err = authAPIKeyFn(ctx, key, &sc)
+		if err != nil {
+			return nil, err
+		}
+		res, body, err := s.PropertyVersionDetail(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		return &PropertyVersionDetailResponseData{Result: res, Body: body}, nil
 	}
 }

@@ -4,23 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { Expand, Shrink } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 // plane
 import type { TGanttViews } from "@plane/types";
 import { Row } from "@plane/ui";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { VIEWS_LIST } from "@/components/gantt-chart/data";
 // helpers
-// hooks
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
-//
 import { GANTT_BREADCRUMBS_HEIGHT } from "../constants";
 
 type Props = {
   blockIds: string[];
+  currentView: TGanttViews;
   fullScreenMode: boolean;
   handleChartView: (view: TGanttViews) => void;
   handleToday: () => void;
@@ -29,12 +26,18 @@ type Props = {
   showToday: boolean;
 };
 
-export const GanttChartHeader = observer(function GanttChartHeader(props: Props) {
+export function GanttChartHeader(props: Props) {
   const { t } = useTranslation();
-  const { blockIds, fullScreenMode, handleChartView, handleToday, loaderTitle, toggleFullScreenMode, showToday } =
-    props;
-  // chart hook
-  const { currentView } = useTimeLineChartStore();
+  const {
+    blockIds,
+    currentView,
+    fullScreenMode,
+    handleChartView,
+    handleToday,
+    loaderTitle,
+    toggleFullScreenMode,
+    showToday,
+  } = props;
 
   return (
     <Row
@@ -83,4 +86,4 @@ export const GanttChartHeader = observer(function GanttChartHeader(props: Props)
       </button>
     </Row>
   );
-});
+}

@@ -5,12 +5,12 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 import { StartDatePropertyIcon } from "@plane/propel/icons";
 // types
 import type { TIssue } from "@plane/types";
 // components
-import { getDate, renderFormattedPayloadDate } from "@plane/utils";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
 import { DateDropdown } from "@/components/dropdowns/date";
 // helpers
 
@@ -21,7 +21,7 @@ type Props = {
   disabled: boolean;
 };
 
-export const SpreadsheetStartDateColumn = observer(function SpreadsheetStartDateColumn(props: Props) {
+export const SpreadsheetStartDateColumn = function SpreadsheetStartDateColumn(props: Props) {
   const { issue, onChange, disabled, onClose } = props;
 
   return (
@@ -51,4 +51,4 @@ export const SpreadsheetStartDateColumn = observer(function SpreadsheetStartDate
       />
     </div>
   );
-});
+};

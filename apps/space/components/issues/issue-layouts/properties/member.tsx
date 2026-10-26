@@ -4,18 +4,20 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router";
+
 // icons
 import type { LucideIcon } from "lucide-react";
 import { MembersPropertyIcon } from "@plane/propel/icons";
 // plane ui
 import { Avatar, AvatarGroup } from "@plane/ui";
 // plane utils
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useMember } from "@/hooks/store/use-member";
+import { membersOptions } from "@/queries/lookups";
 //
-import type { TPublicMember } from "@/types/member";
+import type { TPublicMember } from "@plane/types";
 
 type Props = {
   memberIds: string[];
@@ -28,7 +30,7 @@ type AvatarProps = {
   icon?: LucideIcon;
 };
 
-export const ButtonAvatars = observer(function ButtonAvatars(props: AvatarProps) {
+export const ButtonAvatars = function ButtonAvatars(props: AvatarProps) {
   const { showTooltip, members, icon: Icon } = props;
 
   if (Array.isArray(members)) {
@@ -58,27 +60,27 @@ export const ButtonAvatars = observer(function ButtonAvatars(props: AvatarProps)
   ) : (
     <MembersPropertyIcon className="mx-[4px] h-3 w-3 flex-shrink-0" />
   );
-});
+};
 
-export const IssueBlockMembers = observer(function IssueBlockMembers({ memberIds, shouldShowBorder = true }: Props) {
-  const { getMembersByIds } = useMember();
+export const IssueBlockMembers = function IssueBlockMembers({ memberIds, shouldShowBorder = true }: Props) {
+  const { data: members = [] } = useQuery(membersOptions(useParams().anchor));
 
-  const members = getMembersByIds(memberIds);
+  const selectedMembers = members.filter((item) => memberIds.includes(item.member));
 
   return (
     <div className="relative flex h-full flex-wrap items-center gap-1">
       <div
         className={cn("flex flex-shrink-0 cursor-default items-center rounded-md text-11", {
-          "border-[0.5px] border-strong px-2.5 py-1": shouldShowBorder && !members?.length,
+          "border-[0.5px] border-strong px-2.5 py-1": shouldShowBorder && !selectedMembers?.length,
         })}
       >
         <div className="flex items-center gap-1.5 text-secondary">
-          <ButtonAvatars members={members} showTooltip={false} />
-          {!shouldShowBorder && members.length <= 1 && (
-            <span>{members?.[0]?.member__display_name ?? "No Assignees"}</span>
+          <ButtonAvatars members={selectedMembers} showTooltip={false} />
+          {!shouldShowBorder && selectedMembers.length <= 1 && (
+            <span>{selectedMembers?.[0]?.member__display_name ?? "No Assignees"}</span>
           )}
         </div>
       </div>
     </div>
   );
-});
+};

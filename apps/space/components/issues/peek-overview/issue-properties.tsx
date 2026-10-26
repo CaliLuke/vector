@@ -4,8 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-import { useParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { publishSettingsOptions } from "@/queries/publishing";
+
+import { useParams } from "react-router";
 import { LinkIcon } from "lucide-react";
 // plane imports
 import { useTranslation } from "@plane/i18n";
@@ -17,34 +19,33 @@ import {
   PriorityIcon,
 } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { cn, getIssuePriorityFilters } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getIssuePriorityFilters } from "@plane/utils/work-item";
 // helpers
 import { renderFormattedDate } from "@/helpers/date-time.helper";
 import { shouldHighlightIssueDueDate } from "@/helpers/issue.helper";
 import { copyTextToClipboard, addSpaceIfCamelCase } from "@/helpers/string.helper";
 // hooks
-import { usePublish } from "@/hooks/store/publish";
-import { useStates } from "@/hooks/store/use-state";
+import { statesOptions } from "@/queries/lookups";
 // types
-import type { IIssue, IPeekMode } from "@/types/issue";
+import type { IPeekMode } from "@/types/issue";
+import type { IPublicIssue } from "@plane/types";
 
 type Props = {
-  issueDetails: IIssue;
+  issueDetails: IPublicIssue;
   mode?: IPeekMode;
 };
 
-export const PeekOverviewIssueProperties = observer(function PeekOverviewIssueProperties({
-  issueDetails,
-  mode,
-}: Props) {
+export const PeekOverviewIssueProperties = function PeekOverviewIssueProperties({ issueDetails, mode }: Props) {
   // hooks
   const { t } = useTranslation();
-  const { getStateById } = useStates();
-  const state = getStateById(issueDetails?.state_id ?? undefined);
+  const { data: states = [] } = useQuery(statesOptions(useParams().anchor));
+  const state = states.find((item) => item.id === issueDetails.state_id);
 
   const { anchor } = useParams();
 
-  const { project_details } = usePublish(anchor?.toString());
+  const { data: publishSettings } = useQuery(publishSettingsOptions(anchor));
+  const { project_details } = publishSettings ?? {};
 
   const priority = issueDetails.priority ? getIssuePriorityFilters(issueDetails.priority) : null;
 
@@ -134,4 +135,4 @@ export const PeekOverviewIssueProperties = observer(function PeekOverviewIssuePr
       </div>
     </div>
   );
-});
+};

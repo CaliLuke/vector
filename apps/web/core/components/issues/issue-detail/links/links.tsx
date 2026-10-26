@@ -4,9 +4,9 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
-// computed
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import type { TIssueServiceType } from "@plane/types";
+import { EIssueServiceType } from "@plane/types";
+import { useIssueLinks } from "@/hooks/use-issue-resources";
 import { IssueLinkDetail } from "./link-detail";
 // hooks
 import type { TLinkOperations } from "./root";
@@ -15,29 +15,52 @@ export type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
 
 export type TIssueLinkList = {
   issueId: string;
+  projectId: string;
+  workspaceSlug: string;
+  issueServiceType?: TIssueServiceType;
   linkOperations: TLinkOperationsModal;
   disabled?: boolean;
 };
 
-export const IssueLinkList = observer(function IssueLinkList(props: TIssueLinkList) {
+export function IssueLinkList(props: TIssueLinkList) {
   // props
-  const { issueId, linkOperations, disabled = false } = props;
-  // hooks
   const {
-    link: { getLinksByIssueId },
-  } = useIssueDetail();
+    issueId,
+    projectId,
+    workspaceSlug,
+    issueServiceType = EIssueServiceType.ISSUES,
+    linkOperations,
+    disabled = false,
+  } = props;
+  const { links: issueLinks, query } = useIssueLinks({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
 
-  const issueLinks = getLinksByIssueId(issueId);
-
+  if (query.isError) {
+    return (
+      <button type="button" className="text-11 text-danger-primary" onClick={() => void query.refetch()}>
+        Retry
+      </button>
+    );
+  }
   if (!issueLinks) return <></>;
 
   return (
     <div className="space-y-2">
       {issueLinks &&
         issueLinks.length > 0 &&
-        issueLinks.map((linkId) => (
-          <IssueLinkDetail key={linkId} linkId={linkId} linkOperations={linkOperations} isNotAllowed={disabled} />
+        issueLinks.map((link) => (
+          <IssueLinkDetail
+            key={link.id}
+            link={link}
+            linkOperations={linkOperations}
+            isNotAllowed={disabled}
+            workspaceSlug={workspaceSlug}
+          />
         ))}
     </div>
   );
-});
+}

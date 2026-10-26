@@ -6,17 +6,17 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { useTheme } from "next-themes";
-import { EUserPermissionsLevel, CYCLE_TRACKER_ELEMENTS } from "@plane/constants";
+import { CYCLE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import type { TCycleFilters } from "@plane/types";
 import { EUserProjectRoles } from "@plane/types";
 // components
 import { Header, EHeaderVariant } from "@plane/ui";
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
 // assets
 import darkEmptyState from "@/app/assets/empty-state/disabled-feature/cycles-dark.webp?url";
 import lightEmptyState from "@/app/assets/empty-state/disabled-feature/cycles-light.webp?url";
@@ -28,37 +28,36 @@ import { CycleCreateUpdateModal } from "@/components/cycles/modal";
 import { DetailedEmptyState } from "@/components/empty-state/detailed-empty-state-root";
 import { CycleModuleListLayoutLoader } from "@/components/ui/loader/cycle-module-list-loader";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useCycleCataloguePreferences } from "@/providers/cycle-module-preferences";
+import { useRouteProject } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 
 function ProjectCyclesPage(): React.JSX.Element | null {
   // states
   const [createModal, setCreateModal] = useState(false);
   // store hooks
-  const { currentProjectCycleIds, loader } = useCycle();
-  const { getProjectById, currentProjectDetails } = useProject();
+  const { project: currentProjectDetails } = useRouteProject();
   // router
   const router = useRouter();
   const { workspaceSlug, projectId } = Route.useParams();
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
   // theme hook
   const { resolvedTheme } = useTheme();
   // plane hooks
   const { t } = useTranslation();
   // cycle filters hook
-  const { clearAllFilters, currentProjectFilters, updateFilters } = useCycleFilter();
-  const { allowPermissions } = useUserPermissions();
+  const preferences = useCycleCataloguePreferences(workspaceSlug, projectId);
+  const { filters: currentProjectFilters } = preferences;
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
   // derived values
   const resolvedEmptyState = resolvedTheme === "light" ? lightEmptyState : darkEmptyState;
-  const totalCycles = currentProjectCycleIds?.length ?? 0;
-  const project = getProjectById(projectId);
-  const pageTitle = project?.name ? `${project?.name} - ${t("common.cycles", { count: 2 })}` : undefined;
-  const hasAdminLevelPermission = allowPermissions([EUserProjectRoles.ADMIN], EUserPermissionsLevel.PROJECT);
-  const hasMemberLevelPermission = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const totalCycles = catalogue.cycles?.length ?? 0;
+  const project = currentProjectDetails;
+  const pageTitle = project?.name ? `${project.name} - ${t("common.cycles", { count: 2 })}` : undefined;
+  const hasAdminLevelPermission = canProject([EUserProjectRoles.ADMIN]);
+  const hasMemberLevelPermission = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
 
   const handleRemoveFilter = (key: keyof TCycleFilters, value: string | null) => {
     let newValues = currentProjectFilters?.[key] ?? [];
@@ -66,7 +65,7 @@ function ProjectCyclesPage(): React.JSX.Element | null {
     if (!value) newValues = [];
     else newValues = newValues.filter((val) => val !== value);
 
-    updateFilters(projectId, { [key]: newValues });
+    preferences.update({ filters: { ...preferences.filters, [key]: newValues } });
   };
 
   // No access to cycle
@@ -88,7 +87,9 @@ function ProjectCyclesPage(): React.JSX.Element | null {
       </div>
     );
 
-  if (loader) return <CycleModuleListLayoutLoader />;
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="cycles" retry={catalogue.retry} />;
+  if (catalogue.isPending) return <CycleModuleListLayoutLoader />;
 
   return (
     <>
@@ -123,7 +124,7 @@ function ProjectCyclesPage(): React.JSX.Element | null {
               <Header variant={EHeaderVariant.TERNARY}>
                 <CycleAppliedFiltersList
                   appliedFilters={currentProjectFilters ?? {}}
-                  handleClearAllFilters={() => clearAllFilters(projectId)}
+                  handleClearAllFilters={() => preferences.update({ filters: {} })}
                   handleRemoveFilter={handleRemoveFilter}
                 />
               </Header>
@@ -138,5 +139,5 @@ function ProjectCyclesPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/cycles/")({
-  component: observer(ProjectCyclesPage),
+  component: ProjectCyclesPage,
 });

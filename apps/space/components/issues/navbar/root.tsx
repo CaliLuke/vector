@@ -4,20 +4,18 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ProjectIcon } from "@plane/propel/icons";
 // components
 import { ProjectLogo } from "@/components/common/project-logo";
-// store
-import type { PublishStore } from "@/store/publish/publish.store";
+import type { TProjectPublishSettings } from "@plane/types";
 // local imports
 import { NavbarControls } from "./controls";
 
 type Props = {
-  publishSettings: PublishStore;
+  publishSettings: TProjectPublishSettings;
 };
 
-export const IssuesNavbarRoot = observer(function IssuesNavbarRoot(props: Props) {
+export const IssuesNavbarRoot = function IssuesNavbarRoot(props: Props) {
   const { publishSettings } = props;
   // hooks
   const { project_details } = publishSettings;
@@ -44,4 +42,4 @@ export const IssuesNavbarRoot = observer(function IssuesNavbarRoot(props: Props)
       </div>
     </div>
   );
-});
+};

@@ -6,9 +6,9 @@
 
 import { useParams } from "@tanstack/react-router";
 import React from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
+import { useParentIssuePreferences } from "@/providers/parent-issue-preferences";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 // plane imports
 import { ISSUE_DISPLAY_FILTERS_BY_PAGE, PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
 import { EIssuesStoreType, EIssueLayoutTypes } from "@plane/types";
@@ -16,8 +16,6 @@ import { Row, ERowVariant } from "@plane/ui";
 // hooks
 import { ProjectLevelWorkItemFiltersHOC } from "@/components/work-item-filters/filters-hoc/project-level";
 import { WorkItemFiltersRow } from "@/components/work-item-filters/filters-row";
-import { useIssues } from "@/hooks/store/use-issues";
-import { IssuesStoreContext } from "@/hooks/use-issue-layout-store";
 // local imports
 import { IssuePeekOverview } from "../../peek-overview";
 import { ModuleCalendarLayout } from "../calendar/roots/module-root";
@@ -43,45 +41,39 @@ function ModuleIssueLayout(props: { activeLayout: EIssueLayoutTypes | undefined;
   }
 }
 
-export const ModuleLayoutRoot = observer(function ModuleLayoutRoot() {
+export function ModuleLayoutRoot() {
   // router
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // hooks
-  const { issuesFilter } = useIssues(EIssuesStoreType.MODULE);
+  const preferences = useParentIssuePreferences();
   // derived values
-  const workItemFilters = moduleId ? issuesFilter?.getIssueFilters(moduleId) : undefined;
+  const workItemFilters = preferences.filters;
   const activeLayout = workItemFilters?.displayFilters?.layout || undefined;
 
-  useSWR(
-    workspaceSlug && projectId && moduleId
-      ? `MODULE_ISSUES_${workspaceSlug.toString()}_${projectId.toString()}_${moduleId.toString()}`
-      : null,
-    async () => {
-      if (workspaceSlug && projectId && moduleId) {
-        await issuesFilter?.fetchFilters(workspaceSlug.toString(), projectId.toString(), moduleId.toString());
-      }
-    },
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
-
+  if (preferences.isError || preferences.isAccessDenied)
+    return <CatalogueReadFailure label="module preferences" retry={preferences.retry} />;
+  if (preferences.isPending) return <output>Loading module preferences…</output>;
   if (!workspaceSlug || !projectId || !moduleId || !workItemFilters) return <></>;
   return (
-    <IssuesStoreContext.Provider value={EIssuesStoreType.MODULE}>
+    <>
+      {preferences.isSaveError && (
+        <CatalogueReadFailure label="saved module preferences" retry={preferences.retrySave} />
+      )}
       <ProjectLevelWorkItemFiltersHOC
         enableSaveView
         entityType={EIssuesStoreType.MODULE}
         entityId={moduleId}
         filtersToShowByLayout={ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.filters}
         initialWorkItemFilters={workItemFilters}
-        updateFilters={issuesFilter?.updateFilterExpression.bind(issuesFilter, workspaceSlug, projectId, moduleId)}
+        updateFilters={preferences.setRich}
         projectId={projectId}
         workspaceSlug={workspaceSlug}
       >
-        {({ filter: moduleWorkItemsFilter }) => (
+        {({ editor }) => (
           <div className="relative flex h-full w-full flex-col overflow-hidden">
-            {moduleWorkItemsFilter && (
+            {editor && (
               <WorkItemFiltersRow
-                filter={moduleWorkItemsFilter}
+                editor={editor}
                 trackerElements={{
                   saveView: PROJECT_VIEW_TRACKER_ELEMENTS.MODULE_HEADER_SAVE_AS_VIEW_BUTTON,
                 }}
@@ -95,6 +87,6 @@ export const ModuleLayoutRoot = observer(function ModuleLayoutRoot() {
           </div>
         )}
       </ProjectLevelWorkItemFiltersHOC>
-    </IssuesStoreContext.Provider>
+    </>
   );
-});
+}

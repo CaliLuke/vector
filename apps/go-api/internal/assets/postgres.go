@@ -23,6 +23,71 @@ type assetDatabase interface {
 
 type PostgresRepository struct{ database assetDatabase }
 
+func assetParentVisibilitySQL(asset, actor string) string {
+	return parentVisibilitySQL(asset+".workspace_id", asset+".project_id", asset+".issue_id", asset+".comment_id", asset+".page_id", actor)
+}
+
+func parentVisibilitySQL(workspace, project, issue, comment, page, actor string) string {
+	return `(` + issue + ` IS NULL OR EXISTS(SELECT 1 FROM issues asset_issue WHERE asset_issue.id=` + issue + `
+	 AND (` + project + ` IS NULL OR asset_issue.project_id=` + project + `)
+	 AND ` + djangoapi.IssueVisibleSQL("asset_issue", actor, workspace) + `))
+	AND (` + comment + ` IS NULL OR EXISTS(SELECT 1 FROM issue_comments asset_comment
+	 JOIN issues asset_comment_issue ON asset_comment_issue.id=asset_comment.issue_id
+	 WHERE asset_comment.id=` + comment + ` AND asset_comment.workspace_id=` + workspace + `
+	 AND (` + project + ` IS NULL OR asset_comment.project_id=` + project + `)
+	 AND (` + issue + ` IS NULL OR asset_comment.issue_id=` + issue + `)
+	 AND asset_comment.deleted_at IS NULL
+	 AND ` + djangoapi.IssueVisibleSQL("asset_comment_issue", actor, workspace) + `))
+	AND (` + page + ` IS NULL OR EXISTS(SELECT 1 FROM project_pages asset_page_link
+	 JOIN pages asset_page ON asset_page.id=asset_page_link.page_id
+	 WHERE asset_page.id=` + page + ` AND (` + project + ` IS NULL OR asset_page_link.project_id=` + project + `)
+	 AND ` + djangoapi.PageVisibleSQL("asset_page", actor, workspace, "asset_page_link.project_id") + `))`
+}
+
+func targetVisibilitySQL(entityType, actor, workspace, project, issue, comment, page string) string {
+	switch entityType {
+	case "ISSUE_ATTACHMENT", "ISSUE_DESCRIPTION":
+		return `EXISTS(SELECT 1 FROM issues target_issue WHERE target_issue.id=` + issue + ` AND ` + djangoapi.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_issue.project_id=` + project + `))`
+	case "COMMENT_DESCRIPTION":
+		return `EXISTS(SELECT 1 FROM issue_comments target_comment JOIN issues target_issue ON target_issue.id=target_comment.issue_id WHERE target_comment.id=` + comment + ` AND target_comment.workspace_id=` + workspace + ` AND target_comment.deleted_at IS NULL AND (` + issue + ` IS NULL OR target_comment.issue_id=` + issue + `) AND ` + djangoapi.IssueVisibleSQL("target_issue", actor, workspace) + ` AND (` + project + ` IS NULL OR target_comment.project_id=` + project + `))`
+	case "PAGE_DESCRIPTION":
+		return `EXISTS(SELECT 1 FROM project_pages target_page_link JOIN pages target_page ON target_page.id=target_page_link.page_id WHERE target_page.id=` + page + ` AND target_page_link.deleted_at IS NULL AND (` + project + ` IS NULL OR target_page_link.project_id=` + project + `) AND ` + djangoapi.PageVisibleSQL("target_page", actor, workspace, "target_page_link.project_id") + `)`
+	default:
+		return "TRUE"
+	}
+}
+
+func (repository *PostgresRepository) AssetParentVisible(ctx context.Context, actorID, workspaceID, assetID uuid.UUID) (bool, error) {
+	var visible bool
+	query := `SELECT EXISTS(SELECT 1 FROM file_assets asset WHERE asset.id=$1 AND asset.workspace_id=$2 AND ` + assetParentVisibilitySQL("asset", "$3::uuid") + `)`
+	if err := repository.database.QueryRow(ctx, query, assetID, workspaceID, actorID).Scan(&visible); err != nil {
+		return false, fmt.Errorf("check FileAsset parent visibility: %w", err)
+	}
+	return visible, nil
+}
+
+func insertWorkItemEffect(ctx context.Context, tx pgx.Tx, kind string, payload any) error {
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("encode %s FileAsset effect: %w", kind, err)
+	}
+	if _, err := tx.Exec(ctx, `INSERT INTO work_item_effects(id,kind,payload) VALUES($1,$2,$3::jsonb)`, uuid.New(), kind, encoded); err != nil {
+		return fmt.Errorf("enqueue %s FileAsset effect: %w", kind, err)
+	}
+	return nil
+}
+
+// ObjectKeyInUse prevents a delayed deletion from removing an object that has
+// since been restored or referenced by another live FileAsset.
+func (repository *PostgresRepository) ObjectKeyInUse(ctx context.Context, _ uuid.UUID, key string) (bool, error) {
+	var inUse bool
+	err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM file_assets WHERE asset=$1 AND deleted_at IS NULL)`, key).Scan(&inUse)
+	if err != nil {
+		return false, fmt.Errorf("check live FileAsset references for object key: %w", err)
+	}
+	return inUse, nil
+}
+
 func NewPostgresRepository(database assetDatabase) (*PostgresRepository, error) {
 	if database == nil {
 		return nil, fmt.Errorf("assets database is required")
@@ -172,6 +237,9 @@ func (repository *PostgresRepository) CreateWorkspaceEntityUpload(ctx context.Co
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
 	var projectID, userTarget, issueID, commentID, pageID, draftIssueID any
+	database := repository.database
+	var draftTransaction pgx.Tx
+	identifier := ""
 	if parentProjectID != uuid.Nil {
 		projectID = parentProjectID
 	}
@@ -201,22 +269,40 @@ func (repository *PostgresRepository) CreateWorkspaceEntityUpload(ctx context.Co
 		case "ISSUE_ATTACHMENT", "ISSUE_DESCRIPTION":
 			issueID = parsed
 		case "DRAFT_ISSUE_DESCRIPTION":
-			if projectAsset {
-				draftIssueID = parsed
+			draftTransaction, err = repository.database.Begin(ctx)
+			if err != nil {
+				return err
 			}
+			defer func() { _ = draftTransaction.Rollback(context.WithoutCancel(ctx)) }()
+			draftProject, err := lockOwnedAssetDraft(ctx, draftTransaction, workspaceID, userID, parsed)
+			if err != nil {
+				return err
+			}
+			if projectAsset && (draftProject == nil || *draftProject != parentProjectID) {
+				return notFoundAssetError()
+			}
+			projectID, draftIssueID, database = draftProject, parsed, draftTransaction
+			identifier = parsed.String()
 		case "COMMENT_DESCRIPTION":
 			commentID = parsed
 		case "PAGE_DESCRIPTION":
 			pageID = parsed
 		}
 	}
-	_, err := repository.database.Exec(ctx, `
+	result, err := database.Exec(ctx, `
 INSERT INTO file_assets
  (id,created_at,updated_at,attributes,asset,user_id,workspace_id,project_id,draft_issue_id,issue_id,comment_id,page_id,entity_type,entity_identifier,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id)
-VALUES ($1,NOW(),NOW(),$2::jsonb,$3,$5,$6,$7,$8,$9,$10,$11,$12,NULLIF($13,''),$14,false,false,false,'{}'::jsonb,$4)
-`, id, attributes, key, userID, userTarget, workspaceID, projectID, draftIssueID, issueID, commentID, pageID, entityType, "", float64(size))
+SELECT $1,NOW(),NOW(),$2::jsonb,$3,$5,$6,$7,$8,$9,$10,$11,$12,NULLIF($13,''),$14,false,false,false,'{}'::jsonb,$4
+WHERE `+targetVisibilitySQL(entityType, "$4::uuid", "$6::uuid", "$7::uuid", "$9::uuid", "$10::uuid", "$11::uuid")+`
+`, id, attributes, key, userID, userTarget, workspaceID, projectID, draftIssueID, issueID, commentID, pageID, entityType, identifier, float64(size))
 	if err != nil {
 		return fmt.Errorf("insert workspace FileAsset: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return notFoundAssetError()
+	}
+	if draftTransaction != nil {
+		return draftTransaction.Commit(ctx)
 	}
 	return nil
 }
@@ -263,20 +349,26 @@ func (repository *PostgresRepository) CreateIssueAttachment(ctx context.Context,
 	if !json.Valid(attributes) {
 		return fmt.Errorf("issue attachment attributes must be valid JSON")
 	}
-	_, err := repository.database.Exec(ctx, `
+	result, err := repository.database.Exec(ctx, `
 		INSERT INTO file_assets
 			 (id,created_at,updated_at,attributes,asset,workspace_id,project_id,issue_id,entity_type,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id)
-		VALUES ($1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,'ISSUE_ATTACHMENT',NULLIF($7,''),NULLIF($8,''),$9,false,false,false,'{}'::jsonb,$10)
+		SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,'ISSUE_ATTACHMENT',NULLIF($7,''),NULLIF($8,''),$9,false,false,false,'{}'::jsonb,$10
+ WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$6 AND attachment_item.project_id=$5 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$10::uuid", "$4::uuid")+`)
 	`, id, attributes, key, workspaceID, projectID, issueID, externalID, externalSource, float64(size), userID)
 	if err != nil {
 		return fmt.Errorf("insert issue attachment FileAsset: %w", err)
 	}
+	if result.RowsAffected() == 0 {
+		return notFoundAssetError()
+	}
 	return nil
 }
 
-func (repository *PostgresRepository) IssueAttachmentExternal(ctx context.Context, workspaceID, projectID, issueID uuid.UUID, externalID, externalSource string) (uuid.UUID, bool, error) {
+func (repository *PostgresRepository) IssueAttachmentExternal(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID, externalID, externalSource string) (uuid.UUID, bool, error) {
 	var id uuid.UUID
-	err := repository.database.QueryRow(ctx, `SELECT id FROM file_assets WHERE workspace_id=$1 AND project_id=$2 AND issue_id=$3 AND entity_type='ISSUE_ATTACHMENT' AND external_id=$4 AND external_source=$5 AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1`, workspaceID, projectID, issueID, externalID, externalSource).Scan(&id)
+	err := repository.database.QueryRow(ctx, `SELECT file.id FROM file_assets file WHERE file.workspace_id=$1 AND file.project_id=$2 AND file.issue_id=$3 AND file.entity_type='ISSUE_ATTACHMENT' AND file.external_id=$4 AND file.external_source=$5 AND file.deleted_at IS NULL
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$6::uuid", "$1::uuid")+`)
+		ORDER BY file.created_at ASC LIMIT 1`, workspaceID, projectID, issueID, externalID, externalSource, userID).Scan(&id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return uuid.Nil, false, nil
 	}
@@ -289,34 +381,37 @@ func (repository *PostgresRepository) IssueAttachmentExternal(ctx context.Contex
 func (repository *PostgresRepository) BulkAssociateProjectAssets(ctx context.Context, workspaceID, projectID, userID, entityID uuid.UUID, assetIDs []uuid.UUID) error {
 	var entityType string
 	err := repository.database.QueryRow(ctx, `
-		SELECT entity_type FROM file_assets
+		SELECT CASE WHEN draft_issue_id IS NOT NULL THEN 'DRAFT_ISSUE_DESCRIPTION' ELSE entity_type END FROM file_assets
 		WHERE id=ANY($1::uuid[]) AND workspace_id=$2 AND created_by_id=$3 AND deleted_at IS NULL
 		AND (project_id=$4 OR project_id IS NULL)
-		ORDER BY created_at DESC LIMIT 1`, assetIDs, workspaceID, userID, projectID).Scan(&entityType)
+		ORDER BY (entity_type='DRAFT_ISSUE_DESCRIPTION' OR draft_issue_id IS NOT NULL) DESC, created_at DESC LIMIT 1`, assetIDs, workspaceID, userID, projectID).Scan(&entityType)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The requested asset could not be found."}}
 	}
 	if err != nil {
 		return fmt.Errorf("find project bulk assets: %w", err)
 	}
+	if entityType == "DRAFT_ISSUE_DESCRIPTION" {
+		return repository.BulkAssociateDraftAssets(ctx, workspaceID, userID, entityID, assetIDs)
+	}
 	if entityType == "PROJECT_COVER" {
 		var ids []uuid.UUID
-		if err := repository.database.QueryRow(ctx, `SELECT COALESCE(array_agg(id ORDER BY created_at DESC), '{}'::uuid[]) FROM file_assets WHERE id=ANY($1::uuid[]) AND workspace_id=$2 AND created_by_id=$3 AND deleted_at IS NULL AND (project_id=$4 OR project_id IS NULL)`, assetIDs, workspaceID, userID, projectID).Scan(&ids); err != nil {
-			return fmt.Errorf("list project cover assets: %w", err)
+		if scanErr := repository.database.QueryRow(ctx, `SELECT COALESCE(array_agg(id ORDER BY created_at DESC), '{}'::uuid[]) FROM file_assets WHERE id=ANY($1::uuid[]) AND workspace_id=$2 AND created_by_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND entity_type='PROJECT_COVER' AND (project_id=$4 OR project_id IS NULL)`, assetIDs, workspaceID, userID, projectID).Scan(&ids); scanErr != nil {
+			return fmt.Errorf("list project cover assets: %w", scanErr)
 		}
-		if _, err := repository.database.Exec(ctx, `UPDATE file_assets SET project_id=$1 WHERE id=ANY($2::uuid[]) AND workspace_id=$3 AND created_by_id=$4 AND deleted_at IS NULL AND (project_id=$1 OR project_id IS NULL)`, projectID, assetIDs, workspaceID, userID); err != nil {
-			return fmt.Errorf("associate project cover assets: %w", err)
+		if _, execErr := repository.database.Exec(ctx, `UPDATE file_assets SET project_id=$1 WHERE id=ANY($2::uuid[]) AND workspace_id=$3 AND created_by_id=$4 AND deleted_at IS NULL AND draft_issue_id IS NULL AND entity_type='PROJECT_COVER' AND (project_id=$1 OR project_id IS NULL)`, projectID, assetIDs, workspaceID, userID); execErr != nil {
+			return fmt.Errorf("associate project cover assets: %w", execErr)
 		}
 		var projectExists bool
-		if err := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects WHERE id=$1 AND deleted_at IS NULL)`, projectID).Scan(&projectExists); err != nil {
-			return fmt.Errorf("load active project for cover association: %w", err)
+		if scanErr := repository.database.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM projects WHERE id=$1 AND deleted_at IS NULL)`, projectID).Scan(&projectExists); scanErr != nil {
+			return fmt.Errorf("load active project for cover association: %w", scanErr)
 		}
 		if !projectExists {
 			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
 		for _, id := range ids {
-			if _, err := repository.database.Exec(ctx, `UPDATE projects SET cover_image_asset_id=$1, updated_by_id=$3, updated_at=NOW() WHERE id=$2 AND deleted_at IS NULL`, id, projectID, userID); err != nil {
-				return fmt.Errorf("set project cover asset: %w", err)
+			if _, execErr := repository.database.Exec(ctx, `UPDATE projects SET cover_image_asset_id=$1, updated_by_id=$3, updated_at=NOW() WHERE id=$2 AND deleted_at IS NULL`, id, projectID, userID); execErr != nil {
+				return fmt.Errorf("set project cover asset: %w", execErr)
 			}
 		}
 		return nil
@@ -329,55 +424,101 @@ func (repository *PostgresRepository) BulkAssociateProjectAssets(ctx context.Con
 		column = "comment_id"
 	case "PAGE_DESCRIPTION":
 		column = "page_id"
-	case "DRAFT_ISSUE_DESCRIPTION":
-		column = "draft_issue_id"
 	default:
 		return nil
 	}
+	targetIssue, targetComment, targetPage := "NULL::uuid", "NULL::uuid", "NULL::uuid"
+	switch entityType {
+	case "ISSUE_DESCRIPTION":
+		targetIssue = "$1::uuid"
+	case "COMMENT_DESCRIPTION":
+		targetComment = "$1::uuid"
+	case "PAGE_DESCRIPTION":
+		targetPage = "$1::uuid"
+	}
 	query := `UPDATE file_assets SET ` + column + `=$1`
-	args := []any{value, assetIDs, workspaceID, userID, projectID}
-	query += ` WHERE id=ANY($2::uuid[]) AND workspace_id=$3 AND created_by_id=$4 AND deleted_at IS NULL AND (project_id=$5 OR project_id IS NULL)`
+	args := []any{value, assetIDs, workspaceID, userID, projectID, entityType}
+	query += ` WHERE id=ANY($2::uuid[]) AND workspace_id=$3 AND created_by_id=$4 AND deleted_at IS NULL AND (project_id=$5 OR project_id IS NULL) AND draft_issue_id IS NULL AND entity_type=$6`
+	query += ` AND ` + targetVisibilitySQL(entityType, "$4::uuid", "$3::uuid", "$5::uuid", targetIssue, targetComment, targetPage)
 	if entityType == "ISSUE_DESCRIPTION" {
 		query = `UPDATE file_assets SET issue_id=$1, project_id=$5` + query[len(`UPDATE file_assets SET issue_id=$1`):]
 	}
-	if _, err := repository.database.Exec(ctx, query, args...); err != nil {
+	result, err := repository.database.Exec(ctx, query, args...)
+	if err != nil {
 		// The source deliberately ignores a deleted target's FK violation for
 		// issue, comment, and draft-issue association requests.
 		var pgErr *pgconn.PgError
-		if (entityType == "ISSUE_DESCRIPTION" || entityType == "COMMENT_DESCRIPTION" || entityType == "DRAFT_ISSUE_DESCRIPTION") && errors.As(err, &pgErr) && strings.HasPrefix(pgErr.Code, "23") {
+		if (entityType == "ISSUE_DESCRIPTION" || entityType == "COMMENT_DESCRIPTION") && errors.As(err, &pgErr) && strings.HasPrefix(pgErr.Code, "23") {
 			return nil
 		}
 		return fmt.Errorf("associate project assets: %w", err)
 	}
+	if result.RowsAffected() == 0 {
+		return notFoundAssetError()
+	}
 	return nil
 }
 
-func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET asset='', deleted_at=NOW(), updated_by_id=$5, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL`, assetID, workspaceID, projectID, issueID, userID)
+func (repository *PostgresRepository) DeleteLegacyIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) error {
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin legacy issue attachment deletion: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	var objectKey string
+	err = tx.QueryRow(ctx, `SELECT file.asset FROM file_assets file
+		WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4 AND file.deleted_at IS NULL
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
+		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&objectKey)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
+	}
+	if err != nil {
+		return fmt.Errorf("load legacy issue attachment for deletion: %w", err)
+	}
+	result, err := tx.Exec(ctx, `UPDATE file_assets SET asset='', is_deleted=true, deleted_at=NOW(), updated_by_id=$5, updated_at=NOW()
+		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
+		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
 	if err != nil {
 		return fmt.Errorf("delete legacy issue attachment row: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Issue attachment not found."}}
 	}
+	if activity != nil {
+		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
+			return err
+		}
+	}
+	if err := insertWorkItemEffect(ctx, tx, "soft_delete", map[string]string{"app": "db", "model": "fileasset", "id": assetID.String()}); err != nil {
+		return err
+	}
+	if objectKey != "" {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_delete", map[string]string{"asset_id": assetID.String(), "object_key": objectKey}); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit legacy issue attachment deletion: %w", err)
+	}
 	return nil
 }
 
-func (repository *PostgresRepository) IssuePermission(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID) (bool, bool, bool, error) {
-	var found, member, creator bool
-	err := repository.database.QueryRow(ctx, `
-		SELECT EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.project_id=$3 AND i.deleted_at IS NULL),
-		 EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=$3 AND pm.member_id=$4 AND pm.is_active=true AND pm.deleted_at IS NULL AND pm.role IN (5,15,20)),
-		 EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.project_id=$3 AND i.deleted_at IS NULL AND i.created_by_id=$4)
-	`, issueID, workspaceID, projectID, userID).Scan(&found, &member, &creator)
+func (repository *PostgresRepository) IssueAccess(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID) (bool, bool, error) {
+	var found, allowed bool
+	err := repository.database.QueryRow(ctx, `SELECT
+ EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.workspace_id=$2 AND i.project_id=$3 AND i.deleted_at IS NULL),
+ EXISTS(SELECT 1 FROM issues i WHERE i.id=$1 AND i.project_id=$3 AND `+djangoapi.IssueVisibleSQL("i", "$4::uuid", "$2::uuid")+`)`, issueID, workspaceID, projectID, userID).Scan(&found, &allowed)
 	if err != nil {
-		return false, false, false, fmt.Errorf("check issue attachment permission: %w", err)
+		return false, false, fmt.Errorf("check issue attachment access: %w", err)
 	}
-	return found, member, creator, nil
+	return found, allowed, nil
 }
 
 func (repository *PostgresRepository) UpdateAPIFileAssetUploaded(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, created_by_id=CASE WHEN is_uploaded THEN created_by_id ELSE $4 END, updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, assetID, workspaceID, projectID, userID)
+	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, created_by_id=CASE WHEN is_uploaded THEN created_by_id ELSE $4 END, updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
+	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
 	if err != nil {
 		return fmt.Errorf("confirm API issue attachment: %w", err)
 	}
@@ -388,7 +529,8 @@ func (repository *PostgresRepository) UpdateAPIFileAssetUploaded(ctx context.Con
 }
 
 func (repository *PostgresRepository) DeleteAPIFileAsset(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL`, assetID, workspaceID, projectID, userID)
+	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$4, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
+	AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=file_assets.issue_id AND attachment_item.project_id=file_assets.project_id AND `+djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, userID)
 	if err != nil {
 		return fmt.Errorf("delete API issue attachment: %w", err)
 	}
@@ -399,15 +541,26 @@ func (repository *PostgresRepository) DeleteAPIFileAsset(ctx context.Context, us
 }
 
 func (repository *PostgresRepository) CreateLegacyFileAsset(ctx context.Context, id, userID uuid.UUID, fields map[string]any, key string) (map[string]any, error) {
+	if draft, ok := fields["draft_issue"].(uuid.UUID); ok {
+		return repository.createLegacyDraftAsset(ctx, id, userID, draft, fields, key)
+	}
+	return repository.insertLegacyFileAsset(ctx, id, userID, fields, key)
+}
+
+func (repository *PostgresRepository) insertLegacyFileAsset(ctx context.Context, id, userID uuid.UUID, fields map[string]any, key string) (map[string]any, error) {
 	attributes := legacyJSONField(fields, "attributes", `{}`)
 	metadata := legacyJSONField(fields, "storage_metadata", `{}`)
-	_, err := repository.database.Exec(ctx, `
+	result, err := repository.database.Exec(ctx, `
 		INSERT INTO file_assets
 			 (id,created_at,updated_at,attributes,asset,user_id,workspace_id,draft_issue_id,project_id,issue_id,comment_id,page_id,entity_type,entity_identifier,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id,deleted_at)
-		VALUES ($1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::jsonb,$20,$21)
+		SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19::jsonb,$20,$21
+		WHERE `+parentVisibilitySQL("$5::uuid", "$7::uuid", "$8::uuid", "$9::uuid", "$10::uuid", "$20::uuid")+`
 	`, id, attributes, key, legacyUUIDField(fields, "user"), legacyUUIDField(fields, "workspace"), legacyUUIDField(fields, "draft_issue"), legacyUUIDField(fields, "project"), legacyUUIDField(fields, "issue"), legacyUUIDField(fields, "comment"), legacyUUIDField(fields, "page"), legacyNullableStringField(fields, "entity_type"), legacyNullableStringField(fields, "entity_identifier"), legacyNullableStringField(fields, "external_id"), legacyNullableStringField(fields, "external_source"), legacyFloatField(fields, "size"), legacyBoolField(fields, "is_uploaded"), legacyBoolField(fields, "is_deleted"), legacyBoolField(fields, "is_archived"), metadata, userID, legacyTimeField(fields, "deleted_at"))
 	if err != nil {
 		return nil, fmt.Errorf("insert legacy FileAsset: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return nil, notFoundAssetError()
 	}
 	var encoded []byte
 	if err := repository.database.QueryRow(ctx, `
@@ -433,7 +586,7 @@ func (repository *PostgresRepository) CreateLegacyFileAsset(ctx context.Context,
 
 func (repository *PostgresRepository) LegacyRelationExists(ctx context.Context, field string, id uuid.UUID) (bool, error) {
 	tables := map[string]string{
-		"user": "users", "workspace": "workspaces", "draft_issue": "issues", "project": "projects",
+		"user": "users", "workspace": "workspaces", "draft_issue": "draft_issues", "project": "projects",
 		"issue": "issues", "comment": "issue_comments", "page": "pages",
 	}
 	table := tables[field]
@@ -453,14 +606,53 @@ func (repository *PostgresRepository) LegacyRelationExists(ctx context.Context, 
 	return exists, nil
 }
 
-func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Context, id, userID, workspaceID, projectID, issueID uuid.UUID, fields map[string]any, key string) error {
+func (repository *PostgresRepository) CreateLegacyIssueAttachment(ctx context.Context, id, userID, workspaceID, projectID, issueID uuid.UUID, fields map[string]any, key, assetURL string, activity map[string]any) error {
+	if legacyUUIDField(fields, "draft_issue") != nil {
+		return notFoundAssetError()
+	}
 	attributes, metadata := legacyJSONField(fields, "attributes", `{}`), legacyJSONField(fields, "storage_metadata", `{}`)
-	_, err := repository.database.Exec(ctx, `
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin legacy issue attachment creation: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	result, err := tx.Exec(ctx, `
 		INSERT INTO file_assets (id,created_at,updated_at,attributes,asset,user_id,workspace_id,draft_issue_id,project_id,issue_id,comment_id,page_id,entity_type,entity_identifier,external_id,external_source,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id,deleted_at)
-		VALUES ($1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,'ISSUE_ATTACHMENT',$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20)
+		SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,'ISSUE_ATTACHMENT',$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19,$20
+ WHERE `+parentVisibilitySQL("$5::uuid", "$7::uuid", "$8::uuid", "$9::uuid", "$10::uuid", "$19::uuid")+`
 	`, id, attributes, key, legacyUUIDField(fields, "user"), workspaceID, legacyUUIDField(fields, "draft_issue"), projectID, issueID, legacyUUIDField(fields, "comment"), legacyUUIDField(fields, "page"), legacyNullableStringField(fields, "entity_identifier"), legacyNullableStringField(fields, "external_id"), legacyNullableStringField(fields, "external_source"), legacyFloatField(fields, "size"), legacyBoolField(fields, "is_uploaded"), legacyBoolField(fields, "is_deleted"), legacyBoolField(fields, "is_archived"), metadata, userID, legacyTimeField(fields, "deleted_at"))
 	if err != nil {
 		return fmt.Errorf("insert legacy issue attachment: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return notFoundAssetError()
+	}
+	if activity != nil {
+		var encoded []byte
+		if err := tx.QueryRow(ctx, issueAttachmentsQuery("f.id=$1 AND f.workspace_id=$4", false), id, projectID, issueID, workspaceID).Scan(&encoded); err != nil {
+			return fmt.Errorf("read created legacy issue attachment for activity: %w", err)
+		}
+		var rows []map[string]any
+		decoder := json.NewDecoder(bytes.NewReader(encoded))
+		decoder.UseNumber()
+		if err := decoder.Decode(&rows); err != nil {
+			return fmt.Errorf("decode created legacy issue attachment for activity: %w", err)
+		}
+		if len(rows) != 1 {
+			return fmt.Errorf("created legacy issue attachment %s missing from activity snapshot", id)
+		}
+		rows[0]["asset_url"] = assetURL
+		currentInstance, err := json.Marshal(pythonJSONNumbers(rows[0]))
+		if err != nil {
+			return fmt.Errorf("encode created legacy issue attachment activity: %w", err)
+		}
+		activity["current_instance"] = string(currentInstance)
+		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit legacy issue attachment creation: %w", err)
 	}
 	return nil
 }
@@ -494,7 +686,7 @@ func (repository *PostgresRepository) PublicProjectAsset(ctx context.Context, wo
 	if err != nil {
 		return FileAsset{}, err
 	}
-	if asset.ProjectID == nil || *asset.ProjectID != projectID {
+	if privateDraftAsset(asset) || asset.ProjectID == nil || *asset.ProjectID != projectID {
 		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if descriptionsOnly && asset.EntityType != "ISSUE_DESCRIPTION" && asset.EntityType != "COMMENT_DESCRIPTION" {
@@ -523,18 +715,18 @@ func (repository *PostgresRepository) CreatePublicUpload(ctx context.Context, id
 		switch entityType {
 		case "COMMENT_DESCRIPTION":
 			var found uuid.UUID
-			if err := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND created_by_id=$4 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID, userID).Scan(&found); errors.Is(err, pgx.ErrNoRows) {
+			if scanErr := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND created_by_id=$4 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID, userID).Scan(&found); errors.Is(scanErr, pgx.ErrNoRows) {
 				return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-			} else if err != nil {
-				return fmt.Errorf("validate public upload comment: %w", err)
+			} else if scanErr != nil {
+				return fmt.Errorf("validate public upload comment: %w", scanErr)
 			}
 		case "ISSUE_DESCRIPTION":
 			relationColumn = "issue_id"
 			var found uuid.UUID
-			if err := tx.QueryRow(ctx, `SELECT id FROM issues WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID).Scan(&found); errors.Is(err, pgx.ErrNoRows) {
+			if scanErr := tx.QueryRow(ctx, `SELECT id FROM issues WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL FOR KEY SHARE`, parsedID, workspaceID, projectID).Scan(&found); errors.Is(scanErr, pgx.ErrNoRows) {
 				return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-			} else if err != nil {
-				return fmt.Errorf("validate public upload issue: %w", err)
+			} else if scanErr != nil {
+				return fmt.Errorf("validate public upload issue: %w", scanErr)
 			}
 		default:
 			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"error": "Invalid entity identifier.", "status": false}}
@@ -561,7 +753,7 @@ func (repository *PostgresRepository) UpdatePublicAsset(ctx context.Context, use
 	}
 	result, err := repository.database.Exec(ctx, `
 		UPDATE file_assets SET is_uploaded=true, attributes=@attributes::jsonb
-		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL
+		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND deleted_at IS NULL
 	`, pgx.StrictNamedArgs{"id": assetID, "workspace": workspaceID, "project": projectID, "attributes": attributes, "actor": userID})
 	if err != nil {
 		return fmt.Errorf("confirm public FileAsset upload: %w", err)
@@ -575,7 +767,7 @@ func (repository *PostgresRepository) UpdatePublicAsset(ctx context.Context, use
 func (repository *PostgresRepository) DeletePublicAsset(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
 	result, err := repository.database.Exec(ctx, `
 		UPDATE file_assets SET is_deleted=true, deleted_at=NOW()
-		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL
+		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND deleted_at IS NULL
 	`, pgx.StrictNamedArgs{"id": assetID, "workspace": workspaceID, "project": projectID, "actor": userID})
 	if err != nil {
 		return fmt.Errorf("delete public FileAsset: %w", err)
@@ -589,7 +781,7 @@ func (repository *PostgresRepository) DeletePublicAsset(ctx context.Context, use
 func (repository *PostgresRepository) RestorePublicAsset(ctx context.Context, userID, workspaceID, projectID, assetID uuid.UUID) error {
 	result, err := repository.database.Exec(ctx, `
 		UPDATE file_assets SET is_deleted=false, deleted_at=NULL
-		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor
+		WHERE id=@id AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
 	`, pgx.StrictNamedArgs{"id": assetID, "workspace": workspaceID, "project": projectID, "actor": userID})
 	if err != nil {
 		return fmt.Errorf("restore public FileAsset: %w", err)
@@ -611,14 +803,14 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 	var authorizedComment uuid.UUID
-	if err := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=@comment AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL FOR KEY SHARE`, pgx.StrictNamedArgs{"comment": commentID, "workspace": workspaceID, "project": projectID, "actor": userID}).Scan(&authorizedComment); errors.Is(err, pgx.ErrNoRows) {
+	if scanErr := tx.QueryRow(ctx, `SELECT id FROM issue_comments WHERE id=@comment AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor AND deleted_at IS NULL FOR KEY SHARE`, pgx.StrictNamedArgs{"comment": commentID, "workspace": workspaceID, "project": projectID, "actor": userID}).Scan(&authorizedComment); errors.Is(scanErr, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	} else if err != nil {
-		return fmt.Errorf("validate public asset comment association: %w", err)
+	} else if scanErr != nil {
+		return fmt.Errorf("validate public asset comment association: %w", scanErr)
 	}
 	rows, err := tx.Query(ctx, `SELECT id FROM file_assets
 		WHERE id=ANY(@ids) AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor
-			AND entity_type='COMMENT_DESCRIPTION' AND deleted_at IS NULL
+			AND draft_issue_id IS NULL AND entity_type='COMMENT_DESCRIPTION' AND deleted_at IS NULL
 		FOR UPDATE`, pgx.StrictNamedArgs{"ids": ids, "workspace": workspaceID, "project": projectID, "actor": userID})
 	if err != nil {
 		return fmt.Errorf("validate public FileAsset association: %w", err)
@@ -626,9 +818,9 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 	matched := make(map[uuid.UUID]struct{}, len(ids))
 	for rows.Next() {
 		var id uuid.UUID
-		if err := rows.Scan(&id); err != nil {
+		if scanErr := rows.Scan(&id); scanErr != nil {
 			rows.Close()
-			return fmt.Errorf("scan public FileAsset association: %w", err)
+			return fmt.Errorf("scan public FileAsset association: %w", scanErr)
 		}
 		matched[id] = struct{}{}
 	}
@@ -642,7 +834,7 @@ func (repository *PostgresRepository) BulkAssociatePublicAssetComments(ctx conte
 	}
 	result, err := tx.Exec(ctx, `UPDATE file_assets SET comment_id=@comment
 		WHERE id=ANY(@ids) AND workspace_id=@workspace AND project_id=@project AND created_by_id=@actor
-			AND entity_type='COMMENT_DESCRIPTION' AND deleted_at IS NULL`, pgx.StrictNamedArgs{"comment": commentID, "ids": ids, "workspace": workspaceID, "project": projectID, "actor": userID})
+			AND draft_issue_id IS NULL AND entity_type='COMMENT_DESCRIPTION' AND deleted_at IS NULL`, pgx.StrictNamedArgs{"comment": commentID, "ids": ids, "workspace": workspaceID, "project": projectID, "actor": userID})
 	if err != nil {
 		return fmt.Errorf("associate public FileAssets with comment: %w", err)
 	}
@@ -661,7 +853,7 @@ func (repository *PostgresRepository) PublicBulkAssetRows(ctx context.Context, u
 	err := repository.database.QueryRow(ctx, `
 		SELECT COALESCE(jsonb_agg(jsonb_build_object('id',id,'entity_type',entity_type) ORDER BY created_at DESC),'[]'::jsonb)
 		FROM file_assets
-		WHERE id=ANY($1) AND workspace_id=$2 AND project_id=$3 AND created_by_id=$4 AND deleted_at IS NULL
+		WHERE id=ANY($1) AND workspace_id=$2 AND project_id=$3 AND created_by_id=$4 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
 	`, ids, workspaceID, projectID, userID).Scan(&encoded)
 	if err != nil {
 		return nil, "", fmt.Errorf("list public bulk FileAssets: %w", err)
@@ -702,9 +894,7 @@ func uniquePublicAssetIDs(assetIDs []uuid.UUID) []uuid.UUID {
 	return unique
 }
 
-func (repository *PostgresRepository) IssueAttachments(ctx context.Context, workspaceID, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
-	var encoded []byte
-	query := `SELECT COALESCE(jsonb_agg(jsonb_build_object(
+const issueAttachmentProjection = `jsonb_build_object(
 		'asset', f.asset,
 		'attributes', f.attributes, 'comment', f.comment_id, 'created_at', f.created_at,
 		'created_by', f.created_by_id, 'deleted_at', f.deleted_at, 'draft_issue', f.draft_issue_id,
@@ -714,13 +904,24 @@ func (repository *PostgresRepository) IssueAttachments(ctx context.Context, work
 		'issue', f.issue_id, 'page', f.page_id, 'project', f.project_id, 'size', f.size,
 		'storage_metadata', f.storage_metadata, 'updated_at', f.updated_at,
 		'updated_by', f.updated_by_id, 'user', f.user_id, 'workspace', f.workspace_id
-	) ORDER BY f.created_at DESC), '[]'::jsonb)
+	)`
+
+func issueAttachmentsQuery(workspacePredicate string, uploadedOnly bool) string {
+	query := `SELECT COALESCE(jsonb_agg(` + issueAttachmentProjection + ` ORDER BY f.created_at DESC), '[]'::jsonb)
 	FROM file_assets f
-	WHERE f.workspace_id=$1 AND f.project_id=$2 AND f.issue_id=$3 AND f.deleted_at IS NULL`
+	WHERE ` + workspacePredicate + ` AND f.project_id=$2 AND f.issue_id=$3 AND f.deleted_at IS NULL AND f.draft_issue_id IS NULL AND COALESCE(f.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')`
 	if uploadedOnly {
 		query += ` AND f.entity_type='ISSUE_ATTACHMENT' AND f.is_uploaded=true`
 	}
-	if err := repository.database.QueryRow(ctx, query, workspaceID, projectID, issueID).Scan(&encoded); err != nil {
+	return query
+}
+
+func (repository *PostgresRepository) readIssueAttachmentRows(ctx context.Context, query string, args ...any) ([]map[string]any, error) {
+	var encoded []byte
+	if err := repository.database.QueryRow(ctx, query, args...).Scan(&encoded); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		}
 		return nil, fmt.Errorf("list issue FileAssets: %w", err)
 	}
 	var rows []map[string]any
@@ -732,117 +933,108 @@ func (repository *PostgresRepository) IssueAttachments(ctx context.Context, work
 	return rows, nil
 }
 
-func (repository *PostgresRepository) IssueAttachmentsBySlug(ctx context.Context, slug string, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
-	var encoded []byte
-	query := `SELECT COALESCE(jsonb_agg(jsonb_build_object(
-		'asset', f.asset,
-		'attributes', f.attributes, 'comment', f.comment_id, 'created_at', f.created_at,
-		'created_by', f.created_by_id, 'deleted_at', f.deleted_at, 'draft_issue', f.draft_issue_id,
-		'entity_identifier', f.entity_identifier, 'entity_type', f.entity_type,
-		'external_id', f.external_id, 'external_source', f.external_source, 'id', f.id,
-		'is_archived', f.is_archived, 'is_deleted', f.is_deleted, 'is_uploaded', f.is_uploaded,
-		'issue', f.issue_id, 'page', f.page_id, 'project', f.project_id, 'size', f.size,
-		'storage_metadata', f.storage_metadata, 'updated_at', f.updated_at,
-		'updated_by', f.updated_by_id, 'user', f.user_id, 'workspace', f.workspace_id
-	) ORDER BY f.created_at DESC), '[]'::jsonb)
-	FROM file_assets f
-	JOIN workspaces w ON w.id=f.workspace_id
-	WHERE w.slug=$1 AND f.project_id=$2 AND f.issue_id=$3 AND f.deleted_at IS NULL`
-	if uploadedOnly {
-		query += ` AND f.entity_type='ISSUE_ATTACHMENT' AND f.is_uploaded=true`
-	}
-	if err := repository.database.QueryRow(ctx, query, slug, projectID, issueID).Scan(&encoded); err != nil {
-		return nil, fmt.Errorf("list issue FileAssets by workspace slug: %w", err)
-	}
-	var rows []map[string]any
-	decoder := json.NewDecoder(bytes.NewReader(encoded))
-	decoder.UseNumber()
-	if err := decoder.Decode(&rows); err != nil {
-		return nil, fmt.Errorf("decode issue FileAssets by workspace slug: %w", err)
-	}
-	return rows, nil
+func (repository *PostgresRepository) IssueAttachments(ctx context.Context, workspaceID, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
+	return repository.readIssueAttachmentRows(ctx, issueAttachmentsQuery("f.workspace_id=$1", uploadedOnly), workspaceID, projectID, issueID)
 }
 
-func (repository *PostgresRepository) IssueAttachment(ctx context.Context, workspaceID, projectID, issueID, assetID uuid.UUID) (FileAsset, map[string]any, error) {
-	asset, err := repository.findAsset(ctx, assetID, workspaceID, true, true, false)
-	if err != nil {
-		return FileAsset{}, nil, err
-	}
-	if asset.ProjectID == nil || *asset.ProjectID != projectID || asset.IssueID == nil || *asset.IssueID != issueID {
-		return FileAsset{}, nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	rows, err := repository.IssueAttachments(ctx, workspaceID, projectID, issueID, false)
-	if err != nil {
-		return FileAsset{}, nil, err
-	}
-	for _, row := range rows {
-		if rowID, _ := row["id"].(string); rowID == assetID.String() {
-			return asset, row, nil
-		}
-	}
-	return FileAsset{}, nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+// VisibleIssueAttachments checks current item visibility in the statement returning
+// metadata, so an earlier project permission check cannot authorize a stale read.
+func (repository *PostgresRepository) VisibleIssueAttachments(ctx context.Context, userID, workspaceID, projectID, issueID uuid.UUID, uploadedOnly bool) ([]map[string]any, error) {
+	query := `SELECT attachment_result.data FROM (` + issueAttachmentsQuery("f.workspace_id=$1", uploadedOnly) + `) AS attachment_result(data)
+ WHERE EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$3 AND attachment_item.project_id=$2 AND ` + djangoapi.IssueVisibleSQL("attachment_item", "$4::uuid", "$1::uuid") + `)`
+	return repository.readIssueAttachmentRows(ctx, query, workspaceID, projectID, issueID, userID)
 }
 
-func (repository *PostgresRepository) ProjectIssueAttachment(ctx context.Context, workspaceID, projectID, assetID uuid.UUID) (FileAsset, map[string]any, error) {
-	asset, err := repository.AssetByProjectAndID(ctx, workspaceID, projectID, assetID)
+// IssueAttachment reads the object key and metadata from one authorized snapshot.
+func (repository *PostgresRepository) IssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID) (FileAsset, map[string]any, error) {
+	var encoded []byte
+	query := `SELECT ` + fileAssetColumns + `, ` + issueAttachmentProjection + ` FROM file_assets f
+ WHERE f.id=$1 AND f.workspace_id=$2 AND f.project_id=$3 AND f.issue_id=$4
+ AND f.deleted_at IS NULL AND f.draft_issue_id IS NULL
+ AND COALESCE(f.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
+ AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=f.issue_id AND attachment_item.project_id=f.project_id
+ AND ` + djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "f.workspace_id") + `)`
+	asset, err := scanFileAsset(repository.database.QueryRow(ctx, query, assetID, workspaceID, projectID, issueID, userID), &encoded)
 	if err != nil {
 		return FileAsset{}, nil, err
-	}
-	var encoded []byte
-	err = repository.database.QueryRow(ctx, `
-		SELECT jsonb_build_object(
-			'asset', f.asset,
-			'attributes', f.attributes, 'comment', f.comment_id, 'created_at', f.created_at,
-			'created_by', f.created_by_id, 'deleted_at', f.deleted_at, 'draft_issue', f.draft_issue_id,
-			'entity_identifier', f.entity_identifier, 'entity_type', f.entity_type,
-			'external_id', f.external_id, 'external_source', f.external_source, 'id', f.id,
-			'is_archived', f.is_archived, 'is_deleted', f.is_deleted, 'is_uploaded', f.is_uploaded,
-			'issue', f.issue_id, 'page', f.page_id, 'project', f.project_id, 'size', f.size,
-			'storage_metadata', f.storage_metadata, 'updated_at', f.updated_at,
-			'updated_by', f.updated_by_id, 'user', f.user_id, 'workspace', f.workspace_id
-		)
-		FROM file_assets f
-		WHERE f.workspace_id=$1 AND f.project_id=$2 AND f.id=$3 AND f.deleted_at IS NULL
-	`, workspaceID, projectID, assetID).Scan(&encoded)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return FileAsset{}, nil, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	if err != nil {
-		return FileAsset{}, nil, fmt.Errorf("serialize project issue FileAsset: %w", err)
 	}
 	row := make(map[string]any)
 	decoder := json.NewDecoder(bytes.NewReader(encoded))
 	decoder.UseNumber()
 	if err := decoder.Decode(&row); err != nil {
-		return FileAsset{}, nil, fmt.Errorf("decode project issue FileAsset: %w", err)
+		return FileAsset{}, nil, fmt.Errorf("decode issue attachment: %w", err)
 	}
 	return asset, row, nil
 }
 
-func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `
-		UPDATE file_assets SET is_uploaded=true, updated_by_id=$5, updated_at=NOW()
-		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL
-	`, assetID, workspaceID, projectID, issueID, userID)
+func (repository *PostgresRepository) UpdateIssueAttachmentUploaded(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any, enqueueMetadata bool) error {
+	tx, err := repository.database.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("confirm issue attachment upload: %w", err)
+		return fmt.Errorf("begin issue attachment confirmation: %w", err)
 	}
-	if result.RowsAffected() == 0 {
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	var uploaded bool
+	err = tx.QueryRow(ctx, `SELECT file.is_uploaded FROM file_assets file WHERE file.id=$1 AND file.workspace_id=$2 AND file.project_id=$3 AND file.issue_id=$4
+		AND file.deleted_at IS NULL AND file.draft_issue_id IS NULL AND COALESCE(file.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
+		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`) FOR UPDATE`, assetID, workspaceID, projectID, issueID, userID).Scan(&uploaded)
+	if errors.Is(err, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	}
+	if err != nil {
+		return fmt.Errorf("load issue attachment confirmation: %w", err)
+	}
+	if !uploaded {
+		result, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, updated_by_id=$5, updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4
+		AND deleted_at IS NULL AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
+		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
+		if err != nil {
+			return fmt.Errorf("confirm issue attachment upload: %w", err)
+		}
+		if result.RowsAffected() == 0 {
+			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+		}
+	}
+	if !uploaded && activity != nil {
+		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
+			return err
+		}
+	}
+	if enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit issue attachment confirmation: %w", err)
 	}
 	return nil
 }
 
-func (repository *PostgresRepository) DeleteIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `
-		UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$5, updated_at=NOW()
-		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL
-	`, assetID, workspaceID, projectID, issueID, userID)
+func (repository *PostgresRepository) DeleteIssueAttachment(ctx context.Context, userID, workspaceID, projectID, issueID, assetID uuid.UUID, activity map[string]any) error {
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin issue attachment deletion: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	result, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_by_id=$5, updated_at=NOW()
+		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND issue_id=$4 AND deleted_at IS NULL AND draft_issue_id IS NULL
+		AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')
+		AND EXISTS(SELECT 1 FROM issues attachment_item WHERE attachment_item.id=$4 AND attachment_item.project_id=$3
+		 AND `+djangoapi.IssueVisibleSQL("attachment_item", "$5::uuid", "$2::uuid")+`)`, assetID, workspaceID, projectID, issueID, userID)
 	if err != nil {
 		return fmt.Errorf("delete issue attachment: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	}
+	if activity != nil {
+		if err := insertWorkItemEffect(ctx, tx, "activity", activity); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("commit issue attachment deletion: %w", err)
 	}
 	return nil
 }
@@ -876,25 +1068,18 @@ func (repository *PostgresRepository) AssetByID(ctx context.Context, id uuid.UUI
 }
 
 func (repository *PostgresRepository) UserAssetByID(ctx context.Context, userID, assetID uuid.UUID) (FileAsset, error) {
-	asset, err := repository.findAsset(ctx, assetID, uuid.Nil, false, true, false)
-	if err != nil {
-		return FileAsset{}, err
-	}
-	if asset.UserID == nil || *asset.UserID != userID {
-		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
-	}
-	return asset, nil
+	return scanFileAsset(repository.database.QueryRow(ctx, `SELECT `+fileAssetColumns+` FROM file_assets f WHERE f.id=$1 AND f.user_id=$2 AND f.deleted_at IS NULL AND `+assetParentVisibilitySQL("f", "$2::uuid"), assetID, userID))
 }
 
 func (repository *PostgresRepository) UserAssetsByKey(ctx context.Context, userID uuid.UUID, key string) ([]map[string]any, error) {
-	return repository.assetsByKey(ctx, key, &userID)
+	return repository.assetsByKey(ctx, key, &userID, nil, &userID)
 }
 
-func (repository *PostgresRepository) WorkspaceAssetsByKey(ctx context.Context, key string) ([]map[string]any, error) {
-	return repository.assetsByKey(ctx, key, nil)
+func (repository *PostgresRepository) WorkspaceAssetsByKey(ctx context.Context, key string, workspaceID, actorID uuid.UUID) ([]map[string]any, error) {
+	return repository.assetsByKey(ctx, key, nil, &workspaceID, &actorID)
 }
 
-func (repository *PostgresRepository) assetsByKey(ctx context.Context, key string, createdBy *uuid.UUID) ([]map[string]any, error) {
+func (repository *PostgresRepository) assetsByKey(ctx context.Context, key string, createdBy, workspaceID, actorID *uuid.UUID) ([]map[string]any, error) {
 	var encoded []byte
 	err := repository.database.QueryRow(ctx, `
 		SELECT COALESCE(jsonb_agg(jsonb_build_object(
@@ -907,9 +1092,11 @@ func (repository *PostgresRepository) assetsByKey(ctx context.Context, key strin
 			'storage_metadata', COALESCE(storage_metadata,'{}'::jsonb), 'updated_at', updated_at,
 			'updated_by', updated_by_id, 'user', user_id, 'workspace', workspace_id
 		) ORDER BY created_at DESC), '[]'::jsonb)
-		FROM file_assets
-		WHERE asset=$1 AND deleted_at IS NULL AND ($2::uuid IS NULL OR created_by_id=$2)
-	`, key, createdBy).Scan(&encoded)
+		FROM file_assets asset
+		WHERE asset.asset=$1 AND asset.deleted_at IS NULL AND ($2::uuid IS NULL OR asset.created_by_id=$2)
+		AND ($3::uuid IS NULL OR asset.workspace_id=$3)
+		AND ($4::uuid IS NULL OR `+assetParentVisibilitySQL("asset", "$4::uuid")+`)
+	`, key, createdBy, workspaceID, actorID).Scan(&encoded)
 	if err != nil {
 		return nil, fmt.Errorf("list FileAssets by key: %w", err)
 	}
@@ -923,50 +1110,82 @@ func (repository *PostgresRepository) assetsByKey(ctx context.Context, key strin
 // UpdateAssetDeletedByKey mirrors the legacy endpoints' exact asset-key
 // lookup. A nil owner means the workspace route, which relies on the class
 // workspace-membership permission; a non-nil owner matches UserAssetsEndpoint.
-func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Context, key string, createdBy *uuid.UUID, deleted bool) error {
-	var matches int
-	if err := repository.database.QueryRow(ctx, `
-		SELECT COUNT(*) FROM file_assets
-		WHERE asset=$1 AND deleted_at IS NULL AND ($2::uuid IS NULL OR created_by_id=$2)
-	`, key, createdBy).Scan(&matches); err != nil {
-		return fmt.Errorf("count FileAssets by key for update: %w", err)
+
+func (repository *PostgresRepository) UpdateAssetDeletedByKey(ctx context.Context, key string, createdBy, workspaceID *uuid.UUID, actorID uuid.UUID, deleted bool) error {
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin FileAsset key mutation: %w", err)
 	}
-	if matches > 1 {
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	query := `SELECT asset.id FROM file_assets asset WHERE asset.asset=$1 AND asset.deleted_at IS NULL
+	 AND ($2::uuid IS NULL OR asset.created_by_id=$2) AND asset.draft_issue_id IS NULL
+	 AND COALESCE(asset.entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')`
+	args := []any{key, createdBy}
+	if workspaceID != nil {
+		query += ` AND asset.workspace_id=$3 AND ` + assetParentVisibilitySQL("asset", "$4::uuid")
+		args = append(args, workspaceID, actorID)
+	} else if createdBy != nil {
+		query += ` AND ` + assetParentVisibilitySQL("asset", "$3::uuid")
+		args = append(args, actorID)
+	}
+	query += ` ORDER BY asset.created_at DESC LIMIT 2 FOR UPDATE`
+	rows, err := tx.Query(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("find FileAsset by key for mutation: %w", err)
+	}
+	ids := make([]uuid.UUID, 0, 2)
+	for rows.Next() {
+		var id uuid.UUID
+		if scanErr := rows.Scan(&id); scanErr != nil {
+			rows.Close()
+			return fmt.Errorf("scan FileAsset key mutation target: %w", scanErr)
+		}
+		ids = append(ids, id)
+	}
+	if ErrErr := rows.Err(); ErrErr != nil {
+		rows.Close()
+		return fmt.Errorf("read FileAsset key mutation targets: %w", ErrErr)
+	}
+	rows.Close()
+	if len(ids) > 1 {
 		// Django's .get() raises MultipleObjectsReturned and the request makes
 		// no mutation when duplicate storage keys exist.
 		return fmt.Errorf("multiple FileAssets match storage key %q", key)
 	}
-	if matches == 0 {
+	if len(ids) == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	var id uuid.UUID
-	err := repository.database.QueryRow(ctx, `
-		SELECT id FROM file_assets
-		WHERE asset=$1 AND deleted_at IS NULL AND ($2::uuid IS NULL OR created_by_id=$2)
-	`, key, createdBy).Scan(&id)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	update := `UPDATE file_assets SET is_deleted=$1 WHERE id=$2 AND asset=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT')`
+	updateArgs := []any{deleted, ids[0], key}
+	if workspaceID != nil {
+		update += ` AND workspace_id=$4 AND ` + assetParentVisibilitySQL("file_assets", "$5::uuid")
+		updateArgs = append(updateArgs, workspaceID, actorID)
+	} else if createdBy != nil {
+		update += ` AND ` + assetParentVisibilitySQL("file_assets", "$4::uuid")
+		updateArgs = append(updateArgs, actorID)
 	}
-	if err != nil {
-		return fmt.Errorf("find FileAsset by key for update: %w", err)
-	}
-	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_deleted=$1 WHERE id=$2`, deleted, id)
+	result, err := tx.Exec(ctx, update, updateArgs...)
 	if err != nil {
 		return fmt.Errorf("update FileAsset deletion by key: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	return nil
+	return tx.Commit(ctx)
 }
 
-func (repository *PostgresRepository) UpdateLegacyUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte) error {
+func (repository *PostgresRepository) UpdateLegacyUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) error {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
-	result, err := repository.database.Exec(ctx, `
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin legacy user FileAsset confirmation: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	result, err := tx.Exec(ctx, `
 UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb, updated_at=NOW()
-WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL
+WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+`
 `, attributes, assetID, userID)
 	if err != nil {
 		return fmt.Errorf("confirm legacy user FileAsset upload: %w", err)
@@ -974,15 +1193,19 @@ WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL
 	if result.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	return nil
+	if enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
 // UpdateUserAsset applies the user-avatar/cover relationship update and the
-// FileAsset upload confirmation in one database transaction. The source view
-// marks the previous referenced asset as logically deleted before saving the
-// new upload, while cache invalidation and the metadata task are handled by
-// the domain service.
-func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, uploaded bool) error {
+// FileAsset upload confirmation in one database transaction. Reconfirming the
+// current asset preserves it; replacing it retires only the previous asset.
+// The domain service handles cache invalidation and metadata tasks.
+func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userID, assetID uuid.UUID, attributes []byte, uploaded, enqueueMetadata bool) error {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -998,7 +1221,8 @@ func (repository *PostgresRepository) UpdateUserAsset(ctx context.Context, userI
 	err = tx.QueryRow(ctx, `
 SELECT COALESCE(entity_type,''), CASE WHEN COALESCE(entity_type,'')='USER_AVATAR' THEN avatar_asset_id WHEN COALESCE(entity_type,'')='USER_COVER' THEN cover_image_asset_id ELSE NULL END
 FROM file_assets f JOIN users u ON u.id=f.user_id
-WHERE f.id=$1 AND f.user_id=$2 AND f.deleted_at IS NULL
+WHERE f.id=$1 AND f.user_id=$2 AND f.deleted_at IS NULL AND `+assetParentVisibilitySQL("f", "$2::uuid")+`
+FOR UPDATE OF f
 `, assetID, userID).Scan(&entityType, &previous)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
@@ -1017,18 +1241,23 @@ WHERE f.id=$1 AND f.user_id=$2 AND f.deleted_at IS NULL
 			return fmt.Errorf("set user asset relationship: %w", err)
 		}
 		if previous != nil {
-			if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1`, *previous); err != nil {
+			if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND id<>$2`, *previous, assetID); err != nil {
 				return fmt.Errorf("logically delete previous user FileAsset: %w", err)
 			}
 		}
 	}
 	if uploaded {
-		if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb, updated_at=NOW() WHERE id=$2`, attributes, assetID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb, updated_at=NOW() WHERE id=$2 AND user_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$3::uuid"), attributes, assetID, userID); err != nil {
 			return fmt.Errorf("confirm user FileAsset upload: %w", err)
 		}
 	} else {
-		if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1`, assetID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$2::uuid"), assetID, userID); err != nil {
 			return fmt.Errorf("delete user FileAsset: %w", err)
+		}
+	}
+	if uploaded && enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return err
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -1046,7 +1275,7 @@ func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userI
 	}
 	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
 	var entityType string
-	err = tx.QueryRow(ctx, `SELECT COALESCE(entity_type,'') FROM file_assets WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL`, assetID, userID).Scan(&entityType)
+	err = tx.QueryRow(ctx, `SELECT COALESCE(entity_type,'') FROM file_assets WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$2::uuid")+` FOR UPDATE`, assetID, userID).Scan(&entityType)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
@@ -1058,11 +1287,11 @@ func (repository *PostgresRepository) DeleteUserAsset(ctx context.Context, userI
 		if entityType == "USER_AVATAR" {
 			column = "avatar_asset_id"
 		}
-		if _, err := tx.Exec(ctx, `UPDATE users SET `+column+`=NULL, updated_at=NOW() WHERE id=$1`, userID); err != nil {
+		if _, err := tx.Exec(ctx, `UPDATE users SET `+column+`=NULL, updated_at=NOW() WHERE id=$1 AND `+column+`=$2`, userID, assetID); err != nil {
 			return fmt.Errorf("clear user asset relationship: %w", err)
 		}
 	}
-	if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1`, assetID); err != nil {
+	if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND user_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$2::uuid"), assetID, userID); err != nil {
 		return fmt.Errorf("logically delete user FileAsset: %w", err)
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -1086,21 +1315,31 @@ func (repository *PostgresRepository) AssetByProjectAndID(ctx context.Context, w
 	return asset, nil
 }
 
-func (repository *PostgresRepository) UpdateWorkspaceAssetUploaded(ctx context.Context, workspaceID, assetID uuid.UUID, uploaded bool) error {
-	result, err := repository.database.Exec(ctx, `
+func (repository *PostgresRepository) UpdateWorkspaceAssetUploaded(ctx context.Context, actorID, workspaceID, assetID uuid.UUID, uploaded, enqueueMetadata bool) error {
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin workspace FileAsset upload-state update: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	result, err := tx.Exec(ctx, `
 UPDATE file_assets SET is_uploaded=$1
-WHERE id=$2 AND workspace_id=$3 AND is_deleted=false AND deleted_at IS NULL
-`, uploaded, assetID, workspaceID)
+WHERE id=$2 AND workspace_id=$3 AND is_deleted=false AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$4::uuid")+`
+`, uploaded, assetID, workspaceID, actorID)
 	if err != nil {
 		return fmt.Errorf("update workspace FileAsset upload state: %w", err)
 	}
 	if result.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "Asset not found"}}
 	}
-	return nil
+	if uploaded && enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
-func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID, attributes []byte) (bool, error) {
+func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, userID, workspaceID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) (bool, error) {
 	if !json.Valid(attributes) {
 		return false, fmt.Errorf("asset attributes must be valid JSON")
 	}
@@ -1115,8 +1354,8 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 	var projectID *uuid.UUID
 	err = tx.QueryRow(ctx, `
 		SELECT COALESCE(entity_type,''), project_id FROM file_assets
-		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL
-	`, assetID, workspaceID).Scan(&entityType, &projectID)
+		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+` FOR UPDATE
+	`, assetID, workspaceID, userID).Scan(&entityType, &projectID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
@@ -1127,37 +1366,43 @@ func (repository *PostgresRepository) UpdateWorkspaceAsset(ctx context.Context, 
 	workspaceHookApplied := false
 	switch entityType {
 	case "WORKSPACE_LOGO":
-		err := tx.QueryRow(ctx, `SELECT logo_asset_id FROM workspaces WHERE id=$1 AND deleted_at IS NULL`, workspaceID).Scan(&previous)
-		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-			return false, fmt.Errorf("load previous workspace logo asset: %w", err)
+		scanErr := tx.QueryRow(ctx, `SELECT logo_asset_id FROM workspaces WHERE id=$1 AND deleted_at IS NULL`, workspaceID).Scan(&previous)
+		if scanErr != nil && !errors.Is(scanErr, pgx.ErrNoRows) {
+			return false, fmt.Errorf("load previous workspace logo asset: %w", scanErr)
 		}
-		if err == nil {
-			if _, err := tx.Exec(ctx, `UPDATE workspaces SET logo='', logo_asset_id=$1, updated_at=NOW(), updated_by_id=$3 WHERE id=$2 AND deleted_at IS NULL`, assetID, workspaceID, userID); err != nil {
-				return false, fmt.Errorf("set workspace logo asset: %w", err)
+		if scanErr == nil {
+			if _, execErr := tx.Exec(ctx, `UPDATE workspaces SET logo='', logo_asset_id=$1, updated_at=NOW(), updated_by_id=$3 WHERE id=$2 AND deleted_at IS NULL`, assetID, workspaceID, userID); execErr != nil {
+				return false, fmt.Errorf("set workspace logo asset: %w", execErr)
 			}
 			workspaceHookApplied = true
 		}
 	case "PROJECT_COVER":
 		if projectID != nil {
-			if err := tx.QueryRow(ctx, `SELECT cover_image_asset_id FROM projects WHERE id=$1 AND deleted_at IS NULL`, *projectID).Scan(&previous); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-				return false, fmt.Errorf("load previous project cover asset: %w", err)
+			if scanErr := tx.QueryRow(ctx, `SELECT cover_image_asset_id FROM projects WHERE id=$1 AND deleted_at IS NULL`, *projectID).Scan(&previous); scanErr != nil && !errors.Is(scanErr, pgx.ErrNoRows) {
+				return false, fmt.Errorf("load previous project cover asset: %w", scanErr)
 			}
-			if _, err := tx.Exec(ctx, `UPDATE projects SET cover_image='', cover_image_asset_id=$1, updated_at=NOW(), updated_by_id=$3 WHERE id=$2 AND deleted_at IS NULL`, assetID, *projectID, userID); err != nil {
-				return false, fmt.Errorf("set project cover asset: %w", err)
+			if _, execErr := tx.Exec(ctx, `UPDATE projects SET cover_image='', cover_image_asset_id=$1, updated_at=NOW(), updated_by_id=$3 WHERE id=$2 AND deleted_at IS NULL`, assetID, *projectID, userID); execErr != nil {
+				return false, fmt.Errorf("set project cover asset: %w", execErr)
 			}
 		}
 	}
-	// WorkspaceFileAssetEndpoint.entity_asset_save deletes the currently
-	// referenced asset before reassigning the uploaded asset. When the upload
-	// is already the referenced row, Django leaves that same row logically
-	// deleted after confirmation; preserve that source lifecycle quirk.
+	// A retried confirmation must not retire the asset it just attached.
 	if previous != nil {
-		if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, *previous); err != nil {
-			return false, fmt.Errorf("logically delete previous workspace asset: %w", err)
+		if _, execErr := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND id<>$2 AND deleted_at IS NULL`, *previous, assetID); execErr != nil {
+			return false, fmt.Errorf("logically delete previous workspace asset: %w", execErr)
 		}
 	}
-	if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb WHERE id=$2`, attributes, assetID); err != nil {
+	result, err := tx.Exec(ctx, `UPDATE file_assets SET is_uploaded=true, attributes=$1::jsonb WHERE id=$2 AND workspace_id=$3 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$4::uuid"), attributes, assetID, workspaceID, userID)
+	if err != nil {
 		return false, fmt.Errorf("confirm workspace FileAsset upload: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return false, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
+	}
+	if enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return false, err
+		}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return false, fmt.Errorf("commit workspace FileAsset confirmation: %w", err)
@@ -1177,8 +1422,8 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 	var projectID *uuid.UUID
 	err = tx.QueryRow(ctx, `
 		SELECT COALESCE(entity_type,''), project_id FROM file_assets
-		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL
-	`, assetID, workspaceID).Scan(&entityType, &projectID)
+		WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+` FOR UPDATE
+	`, assetID, workspaceID, userID).Scan(&entityType, &projectID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
@@ -1188,24 +1433,28 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 	switch entityType {
 	case "WORKSPACE_LOGO":
 		var exists bool
-		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspaces WHERE id=$1 AND deleted_at IS NULL)`, workspaceID).Scan(&exists); err != nil {
-			return fmt.Errorf("check active workspace for logo deletion: %w", err)
+		if scanErr := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM workspaces WHERE id=$1 AND deleted_at IS NULL)`, workspaceID).Scan(&exists); scanErr != nil {
+			return fmt.Errorf("check active workspace for logo deletion: %w", scanErr)
 		}
 		if !exists {
 			return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"error": "The required object does not exist."}}
 		}
-		if _, err := tx.Exec(ctx, `UPDATE workspaces SET logo_asset_id=NULL, updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, workspaceID); err != nil {
-			return fmt.Errorf("clear workspace logo asset: %w", err)
+		if _, execErr := tx.Exec(ctx, `UPDATE workspaces SET logo_asset_id=NULL, updated_at=NOW() WHERE id=$1 AND logo_asset_id=$2 AND deleted_at IS NULL`, workspaceID, assetID); execErr != nil {
+			return fmt.Errorf("clear workspace logo asset: %w", execErr)
 		}
 	case "PROJECT_COVER":
 		if projectID != nil {
-			if _, err := tx.Exec(ctx, `UPDATE projects SET cover_image_asset_id=NULL, updated_by_id=$2, updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, *projectID, userID); err != nil {
-				return fmt.Errorf("clear project cover asset: %w", err)
+			if _, execErr := tx.Exec(ctx, `UPDATE projects SET cover_image_asset_id=NULL, updated_by_id=$2, updated_at=NOW() WHERE id=$1 AND cover_image_asset_id=$3 AND deleted_at IS NULL`, *projectID, userID, assetID); execErr != nil {
+				return fmt.Errorf("clear project cover asset: %w", execErr)
 			}
 		}
 	}
-	if _, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1`, assetID); err != nil {
+	result, err := tx.Exec(ctx, `UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$3::uuid"), assetID, workspaceID, userID)
+	if err != nil {
 		return fmt.Errorf("logically delete workspace FileAsset: %w", err)
+	}
+	if result.RowsAffected() == 0 {
+		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("commit workspace FileAsset deletion: %w", err)
@@ -1213,28 +1462,38 @@ func (repository *PostgresRepository) DeleteWorkspaceAsset(ctx context.Context, 
 	return nil
 }
 
-func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, projectID, assetID uuid.UUID, attributes []byte) error {
+func (repository *PostgresRepository) UpdateProjectAsset(ctx context.Context, actorID, workspaceID, projectID, assetID uuid.UUID, attributes []byte, enqueueMetadata bool) error {
 	if !json.Valid(attributes) {
 		return fmt.Errorf("asset attributes must be valid JSON")
 	}
-	command, err := repository.database.Exec(ctx, `
-		UPDATE file_assets SET is_uploaded=true, attributes=$3::jsonb
-		WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL
-	`, assetID, projectID, attributes)
+	tx, err := repository.database.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("begin project FileAsset confirmation: %w", err)
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	command, err := tx.Exec(ctx, `
+		UPDATE file_assets SET is_uploaded=true, attributes=$5::jsonb
+		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$4::uuid")+`
+	`, assetID, workspaceID, projectID, actorID, attributes)
 	if err != nil {
 		return fmt.Errorf("confirm project FileAsset upload: %w", err)
 	}
 	if command.RowsAffected() == 0 {
 		return &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
-	return nil
+	if enqueueMetadata {
+		if err := insertWorkItemEffect(ctx, tx, "asset_storage_metadata", map[string]string{"asset_id": assetID.String()}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 
-func (repository *PostgresRepository) DeleteProjectAsset(ctx context.Context, projectID, assetID uuid.UUID) error {
+func (repository *PostgresRepository) DeleteProjectAsset(ctx context.Context, actorID, workspaceID, projectID, assetID uuid.UUID) error {
 	command, err := repository.database.Exec(ctx, `
 		UPDATE file_assets SET is_deleted=true, deleted_at=NOW(), updated_at=NOW()
-		WHERE id=$1 AND project_id=$2 AND deleted_at IS NULL
-	`, assetID, projectID)
+		WHERE id=$1 AND workspace_id=$2 AND project_id=$3 AND deleted_at IS NULL AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$4::uuid")+`
+	`, assetID, workspaceID, projectID, actorID)
 	if err != nil {
 		return fmt.Errorf("delete project FileAsset: %w", err)
 	}
@@ -1244,11 +1503,11 @@ func (repository *PostgresRepository) DeleteProjectAsset(ctx context.Context, pr
 	return nil
 }
 
-func (repository *PostgresRepository) RestoreWorkspaceAsset(ctx context.Context, workspaceID, assetID uuid.UUID) error {
+func (repository *PostgresRepository) RestoreWorkspaceAsset(ctx context.Context, actorID, workspaceID, assetID uuid.UUID) error {
 	result, err := repository.database.Exec(ctx, `
 UPDATE file_assets SET is_deleted=false, deleted_at=NULL, updated_at=NOW()
-WHERE id=$1 AND workspace_id=$2
-`, assetID, workspaceID)
+WHERE id=$1 AND workspace_id=$2 AND draft_issue_id IS NULL AND COALESCE(entity_type,'') NOT IN ('DRAFT_ISSUE_DESCRIPTION','DRAFT_ISSUE_ATTACHMENT') AND `+assetParentVisibilitySQL("file_assets", "$3::uuid")+`
+`, assetID, workspaceID, actorID)
 	if err != nil {
 		return fmt.Errorf("restore workspace FileAsset: %w", err)
 	}
@@ -1265,19 +1524,20 @@ func (repository *PostgresRepository) AssetByWorkspaceAndIDIncludingDeleted(ctx 
 // WorkspaceAssetExists matches AssetCheckEndpoint, which uses all_objects and
 // filters only deleted_at. Its observable result intentionally ignores the
 // legacy is_deleted and upload flags.
-func (repository *PostgresRepository) WorkspaceAssetExists(ctx context.Context, workspaceID, id uuid.UUID) (bool, error) {
+func (repository *PostgresRepository) WorkspaceAssetExists(ctx context.Context, actorID, workspaceID, id uuid.UUID) (bool, error) {
 	var exists bool
 	err := repository.database.QueryRow(ctx, `
-		SELECT EXISTS(SELECT 1 FROM file_assets WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL)
-	`, id, workspaceID).Scan(&exists)
+		SELECT EXISTS(SELECT 1 FROM file_assets asset WHERE asset.id=$1 AND asset.workspace_id=$2 AND asset.deleted_at IS NULL AND `+assetParentVisibilitySQL("asset", "$3::uuid")+`)
+	`, id, workspaceID, actorID).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("check workspace FileAsset %s: %w", id, err)
 	}
 	return exists, nil
 }
 
-func (repository *PostgresRepository) AssetForDuplicate(ctx context.Context, workspaceID, id uuid.UUID) (FileAsset, error) {
-	return repository.findAsset(ctx, id, workspaceID, true, true, false)
+func (repository *PostgresRepository) AssetForDuplicate(ctx context.Context, actorID, workspaceID, id uuid.UUID) (FileAsset, error) {
+	query := `SELECT ` + fileAssetColumns + ` FROM file_assets f WHERE f.id=$1 AND f.workspace_id=$2 AND f.deleted_at IS NULL AND ` + assetParentVisibilitySQL("f", "$3::uuid")
+	return scanFileAsset(repository.database.QueryRow(ctx, query, id, workspaceID, actorID))
 }
 
 func (repository *PostgresRepository) ProjectBelongsToWorkspace(ctx context.Context, workspaceID, projectID uuid.UUID) (bool, error) {
@@ -1344,8 +1604,8 @@ func (repository *PostgresRepository) CreateDuplicate(ctx context.Context, sourc
 	}
 	var project, user, relatedWorkspace, issue, comment, page any
 	if projectID != "" {
-		parsed, err := uuid.Parse(projectID)
-		if err != nil {
+		parsed, parseErr := uuid.Parse(projectID)
+		if parseErr != nil {
 			return &djangoapi.HTTPError{Status: 400, Body: map[string]any{"project_id": []string{"Must be a valid UUID."}}}
 		}
 		project = parsed
@@ -1353,14 +1613,14 @@ func (repository *PostgresRepository) CreateDuplicate(ctx context.Context, sourc
 	if entityID != "" {
 		switch entityType {
 		case "WORKSPACE_LOGO":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil {
-				return err
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil {
+				return parseErr
 			}
 			relatedWorkspace = parsed
 		case "PROJECT_COVER":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil || entityID == "" {
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil || entityID == "" {
 				return projectCoverEntityMismatchError()
 			}
 			if requested, ok := project.(uuid.UUID); ok && requested != parsed {
@@ -1370,27 +1630,27 @@ func (repository *PostgresRepository) CreateDuplicate(ctx context.Context, sourc
 				project = parsed
 			}
 		case "USER_AVATAR", "USER_COVER":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil {
-				return err
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil {
+				return parseErr
 			}
 			user = parsed
 		case "ISSUE_ATTACHMENT", "ISSUE_DESCRIPTION":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil {
-				return err
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil {
+				return parseErr
 			}
 			issue = parsed
 		case "COMMENT_DESCRIPTION":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil {
-				return err
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil {
+				return parseErr
 			}
 			comment = parsed
 		case "PAGE_DESCRIPTION":
-			parsed, err := uuid.Parse(entityID)
-			if err != nil {
-				return err
+			parsed, parseErr := uuid.Parse(entityID)
+			if parseErr != nil {
+				return parseErr
 			}
 			page = parsed
 		}
@@ -1403,23 +1663,34 @@ func (repository *PostgresRepository) CreateDuplicate(ctx context.Context, sourc
 	if err != nil {
 		return err
 	}
+	if entityType == "DRAFT_ISSUE_DESCRIPTION" {
+		parent := uuid.Nil
+		if project != nil {
+			parent = project.(uuid.UUID)
+		}
+		return repository.CreateWorkspaceEntityUpload(ctx, id, creatorID, workspaceID, parent, destinationKey, attributes, int64(source.Size), entityType, entityID, parent != uuid.Nil)
+	}
 	metadata, err := json.Marshal(source.StorageMetadata)
 	if err != nil {
 		return err
 	}
-	_, err = repository.database.Exec(ctx, `
+	result, err := repository.database.Exec(ctx, `
 INSERT INTO file_assets
  (id,created_at,updated_at,attributes,asset,workspace_id,project_id,user_id,issue_id,comment_id,page_id,entity_type,entity_identifier,size,is_uploaded,is_deleted,is_archived,storage_metadata,created_by_id)
-VALUES ($1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,NULL,$11,false,false,false,$12::jsonb,$13)
+SELECT $1,NOW(),NOW(),$2::jsonb,$3,$4,$5,$6,$7,$8,$9,$10,NULL,$11,false,false,false,$12::jsonb,$13
+WHERE `+targetVisibilitySQL(entityType, "$13::uuid", "$4::uuid", "$5::uuid", "$7::uuid", "$8::uuid", "$9::uuid")+`
 `, id, attributes, destinationKey, targetWorkspace, project, user, issue, comment, page, entityType, source.Size, metadata, creatorID)
 	if err != nil {
 		return fmt.Errorf("insert duplicated FileAsset: %w", err)
 	}
+	if result.RowsAffected() == 0 {
+		return notFoundAssetError()
+	}
 	return nil
 }
 
-func (repository *PostgresRepository) MarkDuplicateUploaded(ctx context.Context, assetID uuid.UUID) error {
-	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_uploaded=true WHERE id=$1`, assetID)
+func (repository *PostgresRepository) MarkDuplicateUploaded(ctx context.Context, actorID, workspaceID, assetID uuid.UUID) error {
+	result, err := repository.database.Exec(ctx, `UPDATE file_assets SET is_uploaded=true WHERE id=$1 AND workspace_id=$2 AND deleted_at IS NULL AND `+assetParentVisibilitySQL("file_assets", "$3::uuid"), assetID, workspaceID, actorID)
 	if err != nil {
 		return fmt.Errorf("mark duplicated FileAsset uploaded: %w", err)
 	}
@@ -1429,12 +1700,10 @@ func (repository *PostgresRepository) MarkDuplicateUploaded(ctx context.Context,
 	return nil
 }
 
+const fileAssetColumns = `f.id::text, f.asset, COALESCE(f.entity_type,''), f.attributes, f.workspace_id, f.project_id, f.issue_id, f.user_id, f.draft_issue_id, f.is_uploaded, f.is_deleted, f.size, COALESCE(f.storage_metadata,'{}'::jsonb)`
+
 func (repository *PostgresRepository) findAsset(ctx context.Context, id, workspaceFilter uuid.UUID, scopeWorkspace, filterDeletedAt, filterIsDeleted bool) (FileAsset, error) {
-	var asset FileAsset
-	var attributes []byte
-	var workspaceID, projectID, issueID, userID *uuid.UUID
-	var metadata []byte
-	query := `SELECT id::text, asset, COALESCE(entity_type,''), attributes, workspace_id, project_id, issue_id, user_id, is_uploaded, is_deleted, size, COALESCE(storage_metadata,'{}'::jsonb) FROM file_assets WHERE id=$1`
+	query := `SELECT ` + fileAssetColumns + ` FROM file_assets f WHERE id=$1`
 	args := []any{id}
 	if filterDeletedAt {
 		query += ` AND deleted_at IS NULL`
@@ -1446,19 +1715,27 @@ func (repository *PostgresRepository) findAsset(ctx context.Context, id, workspa
 	if filterIsDeleted {
 		query += ` AND is_deleted=false`
 	}
-	err := repository.database.QueryRow(ctx, query, args...).Scan(&asset.ID, &asset.Asset, &asset.EntityType, &attributes, &workspaceID, &projectID, &issueID, &userID, &asset.IsUploaded, &asset.IsDeleted, &asset.Size, &metadata)
+	return scanFileAsset(repository.database.QueryRow(ctx, query, args...))
+}
+
+func scanFileAsset(row pgx.Row, extra ...any) (FileAsset, error) {
+	var asset FileAsset
+	var attributes, metadata []byte
+	var workspaceID, projectID, issueID, userID *uuid.UUID
+	destinations := []any{&asset.ID, &asset.Asset, &asset.EntityType, &attributes, &workspaceID, &projectID, &issueID, &userID, &asset.DraftIssueID, &asset.IsUploaded, &asset.IsDeleted, &asset.Size, &metadata}
+	err := row.Scan(append(destinations, extra...)...)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return FileAsset{}, &djangoapi.HTTPError{Status: 404, Body: map[string]any{"detail": "Not found."}}
 	}
 	if err != nil {
-		return FileAsset{}, fmt.Errorf("load FileAsset %s: %w", id, err)
+		return FileAsset{}, fmt.Errorf("load FileAsset: %w", err)
 	}
 	asset.Attributes, err = decodeFileAssetAttributes(attributes)
 	if err != nil {
-		return FileAsset{}, fmt.Errorf("decode FileAsset %s attributes: %w", id, err)
+		return FileAsset{}, fmt.Errorf("decode FileAsset %s attributes: %w", asset.ID, err)
 	}
 	if err := json.Unmarshal(metadata, &asset.StorageMetadata); err != nil {
-		return FileAsset{}, fmt.Errorf("decode FileAsset %s storage metadata: %w", id, err)
+		return FileAsset{}, fmt.Errorf("decode FileAsset %s storage metadata: %w", asset.ID, err)
 	}
 	asset.WorkspaceID, asset.ProjectID, asset.IssueID, asset.UserID = workspaceID, projectID, issueID, userID
 	return asset, nil

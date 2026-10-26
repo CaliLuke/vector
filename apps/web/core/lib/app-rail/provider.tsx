@@ -6,7 +6,6 @@
 
 import { useParams } from "@tanstack/react-router";
 import React, { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
 
 import useLocalStorage from "@/hooks/use-local-storage";
 import { AppRailVisibilityContext } from "./context";
@@ -21,7 +20,7 @@ interface AppRailVisibilityProviderProps {
  * AppRailVisibilityProvider - manages app rail visibility state
  * Base provider that accepts isEnabled as a prop
  */
-export const AppRailVisibilityProvider = observer(function AppRailVisibilityProvider({
+export const AppRailVisibilityProvider = function AppRailVisibilityProvider({
   children,
   isEnabled = false,
 }: AppRailVisibilityProviderProps) {
@@ -51,4 +50,4 @@ export const AppRailVisibilityProvider = observer(function AppRailVisibilityProv
   );
 
   return <AppRailVisibilityContext.Provider value={value}>{children}</AppRailVisibilityContext.Provider>;
-});
+};

@@ -23,10 +23,11 @@ export interface InputColorPickerProps {
   className?: string;
   style?: React.CSSProperties;
   placeholder: string;
+  disabled?: boolean;
 }
 
 export function InputColorPicker(props: InputColorPickerProps) {
-  const { value, hasError, onChange, name, className, style, placeholder } = props;
+  const { value, hasError, onChange, name, className, style, placeholder, disabled } = props;
 
   const [referenceElement, setReferenceElement] = React.useState<HTMLButtonElement | null>(null);
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null);
@@ -36,6 +37,7 @@ export function InputColorPicker(props: InputColorPickerProps) {
   });
 
   const handleColorChange = (newColor: ColorResult) => {
+    if (disabled) return;
     const { hex } = newColor;
     onChange(hex);
   };
@@ -51,6 +53,7 @@ export function InputColorPicker(props: InputColorPickerProps) {
         name={name}
         type="text"
         value={value}
+        disabled={disabled}
         onChange={handleInputChange}
         hasError={hasError}
         placeholder={placeholder}
@@ -62,7 +65,14 @@ export function InputColorPicker(props: InputColorPickerProps) {
         {() => (
           <>
             <Popover.Button as={React.Fragment}>
-              <Button ref={setReferenceElement} variant="neutral-primary" className="border-none !bg-transparent">
+              <Button
+                type="button"
+                disabled={disabled}
+                aria-label={`Choose ${name} color`}
+                ref={setReferenceElement}
+                variant="neutral-primary"
+                className="border-none !bg-transparent"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="14"

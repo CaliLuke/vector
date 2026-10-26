@@ -5,32 +5,37 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
-import useSWR from "swr";
+import { useQuery } from "@tanstack/react-query";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
-import { APITokenService } from "@plane/services";
 // components
 import { CreateApiTokenModal } from "@/components/api-token/modal/create-token-modal";
 import { ApiTokenListItem } from "@/components/api-token/token-list-item";
 import { ProfileSettingsHeading } from "@/components/settings/profile/heading";
 import { APITokenSettingsLoader } from "@/components/ui/loader/settings/api-token";
 // constants
-import { API_TOKENS_LIST } from "@plane/constants";
+import { apiTokensOptions } from "@/queries/api-tokens";
 
-const apiTokenService = new APITokenService();
-
-export const APITokensProfileSettings = observer(function APITokensProfileSettings() {
+export function APITokensProfileSettings() {
   // states
   const [isCreateTokenModalOpen, setIsCreateTokenModalOpen] = useState(false);
-  // store hooks
-  const { data: tokens } = useSWR(API_TOKENS_LIST, () => apiTokenService.list());
+  const { data: tokens, isError, refetch } = useQuery(apiTokensOptions);
   // translation
   const { t } = useTranslation();
 
   if (!tokens) {
+    if (isError) {
+      return (
+        <div role="alert" className="flex items-center gap-3 p-5 text-13 text-danger-primary">
+          <span>Unable to load API tokens.</span>
+          <Button variant="secondary" onClick={() => void refetch()}>
+            Try again
+          </Button>
+        </div>
+      );
+    }
     return <APITokenSettingsLoader />;
   }
 
@@ -46,15 +51,17 @@ export const APITokensProfileSettings = observer(function APITokensProfileSettin
           </Button>
         }
       />
+      {isError && (
+        <div role="alert" className="mt-4 flex items-center gap-3 text-13 text-danger-primary">
+          <span>Could not refresh API tokens.</span>
+          <Button variant="secondary" onClick={() => void refetch()}>
+            Try again
+          </Button>
+        </div>
+      )}
       <div className="mt-7">
         {tokens.length > 0 ? (
-          <>
-            <div>
-              {tokens.map((token) => (
-                <ApiTokenListItem key={token.id} token={token} />
-              ))}
-            </div>
-          </>
+          tokens.map((token) => <ApiTokenListItem key={token.id} token={token} />)
         ) : (
           <EmptyStateCompact
             assetKey="token"
@@ -76,4 +83,4 @@ export const APITokensProfileSettings = observer(function APITokensProfileSettin
       </div>
     </div>
   );
-});
+}

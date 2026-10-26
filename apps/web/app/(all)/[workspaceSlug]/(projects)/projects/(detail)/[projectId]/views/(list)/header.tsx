@@ -5,7 +5,6 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // ui
 import { PROJECT_VIEW_TRACKER_ELEMENTS } from "@plane/constants";
@@ -16,24 +15,25 @@ import { Breadcrumbs, Header } from "@plane/ui";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { ViewListHeader } from "@/components/views/view-list-header";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useRouteProject } from "@/hooks/use-projects";
 // plane web imports
 import { CommonProjectBreadcrumbs } from "@/components/breadcrumbs/common";
 
-export const ProjectViewsHeader = observer(function ProjectViewsHeader() {
+export const ProjectViewsHeader = function ProjectViewsHeader() {
   const { workspaceSlug, projectId } = useParams({
     from: "/_authenticated/$workspaceSlug/_projects/projects/$projectId/views",
   });
   // store hooks
   const { toggleCreateViewModal } = useCommandPalette();
-  const { loader } = useProject();
+  const routeProjectQuery = useRouteProject();
+  const loader = routeProjectQuery.isPending;
 
   return (
     <>
       <Header>
         <Header.LeftItem>
-          <Breadcrumbs isLoading={loader === "init-loader"}>
+          <Breadcrumbs isLoading={loader}>
             <CommonProjectBreadcrumbs workspaceSlug={workspaceSlug?.toString()} projectId={projectId?.toString()} />
             <Breadcrumbs.Item
               component={
@@ -64,4 +64,4 @@ export const ProjectViewsHeader = observer(function ProjectViewsHeader() {
       </Header>
     </>
   );
-});
+};

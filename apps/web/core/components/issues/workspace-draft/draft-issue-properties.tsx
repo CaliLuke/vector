@@ -5,14 +5,13 @@
  */
 
 import { useParams } from "@tanstack/react-router";
-import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
 
 // icons
 import { DueDatePropertyIcon, StartDatePropertyIcon } from "@plane/propel/icons";
 // types
 import type { TIssuePriorities, TWorkspaceDraftIssue } from "@plane/types";
-import { getDate, renderFormattedPayloadDate, shouldHighlightIssueDueDate } from "@plane/utils";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { shouldHighlightIssueDueDate } from "@plane/utils/work-item";
 // components
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 import { DateDropdown } from "@/components/dropdowns/date";
@@ -23,11 +22,12 @@ import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
 // helpers
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useLabel } from "@/hooks/store/use-label";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useWorkspaceDraftIssues } from "@/hooks/store/workspace-draft";
+import { useProjectEstimates } from "@/hooks/use-estimates";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useWorkspaceDraftMutations } from "@/hooks/use-workspace-drafts";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { IssuePropertyLabels } from "../issue-layouts/properties";
 // local components
@@ -40,127 +40,53 @@ export interface IIssueProperties {
   className: string;
 }
 
-export const DraftIssueProperties = observer(function DraftIssueProperties(props: IIssueProperties) {
+export function DraftIssueProperties(props: IIssueProperties) {
   const { issue, updateIssue, className } = props;
+  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { getProjectById } = useProject();
-  const { labelMap } = useLabel();
-  const { addCycleToIssue, addModulesToIssue } = useWorkspaceDraftIssues();
-  const { areEstimateEnabledByProjectId } = useProjectEstimates();
-  const { getStateById } = useProjectState();
   const { isMobile } = usePlatformOS();
-  const projectDetails = getProjectById(issue.project_id);
+  const { getStateById } = useProjectStates(workspaceSlug, issue.project_id);
 
   // router
-  const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const { projectRole } = useProjectPermissions(workspaceSlug, issue.project_id ?? undefined);
+  const projectId = projectRole ? (issue.project_id ?? undefined) : undefined;
   // derived values
   const stateDetails = getStateById(issue.state_id);
 
-  const issueOperations = useMemo(
-    () => ({
-      updateIssueModules: async (moduleIds: string[]) => {
-        if (!workspaceSlug || !issue.id) return;
-        await addModulesToIssue(workspaceSlug.toString(), issue.id, moduleIds);
-      },
-      addIssueToCycle: async (cycleId: string) => {
-        if (!workspaceSlug || !issue.id) return;
-        await addCycleToIssue(workspaceSlug.toString(), issue.id, cycleId);
-      },
-      removeIssueFromCycle: async () => {
-        if (!workspaceSlug || !issue.id) return;
-        // TODO: To be checked
-        await addCycleToIssue(workspaceSlug.toString(), issue.id, "");
-      },
-    }),
-    [workspaceSlug, issue, addCycleToIssue, addModulesToIssue]
-  );
-
-  const handleState = (stateId: string) =>
-    issue?.project_id && updateIssue && updateIssue(issue.project_id, issue.id, { state_id: stateId });
-
-  const handlePriority = (value: TIssuePriorities) =>
-    issue?.project_id && updateIssue && updateIssue(issue.project_id, issue.id, { priority: value });
-
-  const handleLabel = (ids: string[]) =>
-    issue?.project_id && updateIssue && updateIssue(issue.project_id, issue.id, { label_ids: ids });
-
-  const handleAssignee = (ids: string[]) =>
-    issue?.project_id && updateIssue && updateIssue(issue.project_id, issue.id, { assignee_ids: ids });
-
-  const handleModule = useCallback(
-    (moduleIds: string[] | null) => {
-      if (!issue || !issue.module_ids || !moduleIds) return;
-      issueOperations.updateIssueModules(moduleIds);
-    },
-    [issueOperations, issue]
-  );
-
-  const handleCycle = useCallback(
-    (cycleId: string | null) => {
-      if (!issue || issue.cycle_id === cycleId) return;
-      if (cycleId) issueOperations.addIssueToCycle?.(cycleId);
-      else issueOperations.removeIssueFromCycle?.();
-    },
-    [issue, issueOperations]
-  );
-
-  const handleStartDate = (date: Date | null) =>
-    issue?.project_id &&
-    updateIssue &&
-    updateIssue(issue.project_id, issue.id, {
-      start_date: date ? (renderFormattedPayloadDate(date) ?? undefined) : undefined,
+  const handleStartDate = (date: Date | null) => {
+    if (!updateIssue) return;
+    void updateIssue(issue.project_id ?? null, issue.id, {
+      start_date: renderFormattedPayloadDate(date) ?? null,
     });
+  };
 
-  const handleTargetDate = (date: Date | null) =>
-    issue?.project_id &&
-    updateIssue &&
-    updateIssue(issue.project_id, issue.id, {
-      target_date: date ? (renderFormattedPayloadDate(date) ?? undefined) : undefined,
+  const handleTargetDate = (date: Date | null) => {
+    if (!updateIssue) return;
+    void updateIssue(issue.project_id ?? null, issue.id, {
+      target_date: renderFormattedPayloadDate(date) ?? null,
     });
-
-  const handleEstimate = (value: string | undefined) =>
-    issue?.project_id && updateIssue && updateIssue(issue.project_id, issue.id, { estimate_point: value });
-
-  if (!issue.project_id) return null;
-
-  const defaultLabelOptions =
-    issue?.label_ids?.flatMap((id) => {
-      const label = labelMap[id];
-      return label ? [label] : [];
-    }) || [];
+  };
 
   const minDate = getDate(issue.start_date);
-  minDate?.setDate(minDate.getDate());
 
   const maxDate = getDate(issue.target_date);
-  maxDate?.setDate(maxDate.getDate());
-
-  const handleEventPropagation = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
 
   return (
     <div className={className}>
+      <DraftProjectProperties
+        issue={issue}
+        updateIssue={updateIssue}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        isMobile={isMobile}
+      />
       {/* basic properties */}
-      {/* state */}
-      <div className="h-5" onClick={handleEventPropagation}>
-        <StateDropdown
-          buttonContainerClassName="truncate max-w-40"
-          value={issue.state_id}
-          onChange={handleState}
-          projectId={issue.project_id}
-          buttonVariant="border-with-text"
-          renderByDefault={isMobile}
-          showTooltip
-        />
-      </div>
-
-      {/* priority */}
-      <div className="h-5" onClick={handleEventPropagation}>
+      <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
         <PriorityDropdown
-          value={issue?.priority}
-          onChange={handlePriority}
+          value={issue.priority}
+          onChange={(value: TIssuePriorities) => {
+            if (issue.project_id) void updateIssue?.(issue.project_id, issue.id, { priority: value });
+          }}
           buttonVariant="border-without-text"
           buttonClassName="border"
           renderByDefault={isMobile}
@@ -168,19 +94,8 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
         />
       </div>
 
-      {/* label */}
-
-      <IssuePropertyLabels
-        projectId={issue?.project_id || null}
-        value={issue?.label_ids || null}
-        defaultOptions={defaultLabelOptions}
-        onChange={handleLabel}
-        renderByDefault={isMobile}
-        hideDropdownArrow
-      />
-
       {/* start date */}
-      <div className="h-5" onClick={handleEventPropagation}>
+      <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
         <DateDropdown
           value={issue.start_date ?? null}
           onChange={handleStartDate}
@@ -195,16 +110,16 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
       </div>
 
       {/* target/due date */}
-      <div className="h-5" onClick={handleEventPropagation}>
+      <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
         <DateDropdown
-          value={issue?.target_date ?? null}
+          value={issue.target_date ?? null}
           onChange={handleTargetDate}
           minDate={minDate}
           placeholder="Due date"
           icon={<DueDatePropertyIcon className="h-3 w-3 flex-shrink-0" />}
           buttonVariant={issue.target_date ? "border-with-text" : "border-without-text"}
           buttonClassName={
-            shouldHighlightIssueDueDate(issue?.target_date || null, stateDetails?.group) ? "text-danger-primary" : ""
+            shouldHighlightIssueDueDate(issue.target_date || null, stateDetails?.group) ? "text-danger-primary" : ""
           }
           clearIconClassName="!text-primary"
           optionsClassName="z-10"
@@ -212,32 +127,138 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
           showTooltip
         />
       </div>
+    </div>
+  );
+}
 
-      {/* assignee */}
-      <div className="h-5" onClick={handleEventPropagation}>
-        <MemberDropdown
-          projectId={issue?.project_id}
-          value={issue?.assignee_ids}
-          onChange={handleAssignee}
-          multiple
-          buttonVariant={issue.assignee_ids?.length > 0 ? "transparent-without-text" : "border-without-text"}
-          buttonClassName={issue.assignee_ids?.length > 0 ? "hover:bg-transparent px-0" : ""}
-          showTooltip={issue?.assignee_ids?.length === 0}
-          placeholder="Assignees"
-          optionsClassName="z-10"
-          tooltipContent=""
+function DraftProjectProperties({
+  issue,
+  updateIssue,
+  workspaceSlug,
+  projectId,
+  isMobile,
+}: {
+  issue: TWorkspaceDraftIssue;
+  updateIssue: IIssueProperties["updateIssue"];
+  workspaceSlug: string;
+  projectId: string | undefined;
+  isMobile: boolean;
+}) {
+  return (
+    <>
+      <DraftAssignmentProperties
+        issue={issue}
+        updateIssue={updateIssue}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        isMobile={isMobile}
+      />
+      <DraftPlanningProperties
+        issue={issue}
+        updateIssue={updateIssue}
+        workspaceSlug={workspaceSlug}
+        isMobile={isMobile}
+      />
+    </>
+  );
+}
+
+function DraftAssignmentProperties({
+  issue,
+  updateIssue,
+  workspaceSlug,
+  projectId,
+  isMobile,
+}: {
+  issue: TWorkspaceDraftIssue;
+  updateIssue: IIssueProperties["updateIssue"];
+  workspaceSlug: string;
+  projectId: string | undefined;
+  isMobile: boolean;
+}) {
+  const { labelsById } = useProjectLabels(workspaceSlug, issue.project_id);
+  const defaultLabelOptions = issue.label_ids?.flatMap((id) => (labelsById?.[id] ? [labelsById[id]] : [])) ?? [];
+
+  return (
+    <>
+      {projectId && (
+        <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
+          <StateDropdown
+            buttonContainerClassName="truncate max-w-40"
+            value={issue.state_id}
+            onChange={(stateId) => {
+              if (issue.project_id) void updateIssue?.(issue.project_id, issue.id, { state_id: stateId });
+            }}
+            projectId={projectId}
+            buttonVariant="border-with-text"
+            renderByDefault={isMobile}
+            showTooltip
+          />
+        </div>
+      )}
+      {projectId && (
+        <IssuePropertyLabels
+          projectId={issue.project_id || null}
+          value={issue.label_ids || null}
+          defaultOptions={defaultLabelOptions}
+          onChange={(ids) => {
+            if (issue.project_id) void updateIssue?.(issue.project_id, issue.id, { label_ids: ids });
+          }}
           renderByDefault={isMobile}
+          hideDropdownArrow
         />
-      </div>
+      )}
+      {projectId && (
+        <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
+          <MemberDropdown
+            workspaceSlug={workspaceSlug}
+            projectId={projectId}
+            value={issue.assignee_ids}
+            onChange={(ids) => {
+              if (issue.project_id) void updateIssue?.(issue.project_id, issue.id, { assignee_ids: ids });
+            }}
+            multiple
+            buttonVariant={issue.assignee_ids?.length ? "transparent-without-text" : "border-without-text"}
+            buttonClassName={issue.assignee_ids?.length ? "hover:bg-transparent px-0" : ""}
+            showTooltip={!issue.assignee_ids?.length}
+            placeholder="Assignees"
+            optionsClassName="z-10"
+            tooltipContent=""
+            renderByDefault={isMobile}
+          />
+        </div>
+      )}
+    </>
+  );
+}
 
-      {/* modules */}
-      {projectDetails?.module_view && (
-        <div className="h-5" onClick={handleEventPropagation}>
+function DraftPlanningProperties({
+  issue,
+  updateIssue,
+  workspaceSlug,
+  isMobile,
+}: {
+  issue: TWorkspaceDraftIssue;
+  updateIssue: IIssueProperties["updateIssue"];
+  workspaceSlug: string;
+  isMobile: boolean;
+}) {
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const project = projectCatalogue.projects?.find((row) => row.id === issue.project_id);
+  const { updateDraft } = useWorkspaceDraftMutations(workspaceSlug);
+  const { isEnabled: estimateEnabled } = useProjectEstimates(workspaceSlug, issue.project_id);
+
+  return (
+    <>
+      {project?.module_view && (
+        <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
           <ModuleDropdown
             buttonContainerClassName="truncate max-w-40"
-            projectId={issue?.project_id}
-            value={issue?.module_ids ?? []}
-            onChange={handleModule}
+            projectId={issue.project_id ?? undefined}
+            value={issue.module_ids ?? []}
+            onChange={(moduleIds) => {
+              if (issue.module_ids && moduleIds) void updateDraft(issue.id, { module_ids: moduleIds });
+            }}
             renderByDefault={isMobile}
             multiple
             buttonVariant="border-with-text"
@@ -246,28 +267,29 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
           />
         </div>
       )}
-
-      {/* cycles */}
-      {projectDetails?.cycle_view && (
-        <div className="h-5" onClick={handleEventPropagation}>
+      {project?.cycle_view && (
+        <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
           <CycleDropdown
             buttonContainerClassName="truncate max-w-40"
-            projectId={issue?.project_id}
-            value={issue?.cycle_id || null}
-            onChange={handleCycle}
+            projectId={issue.project_id ?? undefined}
+            value={issue.cycle_id || null}
+            onChange={(cycleId) => {
+              if (issue.cycle_id === cycleId) return;
+              void updateDraft(issue.id, { cycle_id: cycleId ?? "" });
+            }}
             buttonVariant="border-with-text"
             renderByDefault={isMobile}
             showTooltip
           />
         </div>
       )}
-
-      {/* estimates */}
-      {issue.project_id && areEstimateEnabledByProjectId(issue.project_id?.toString()) && (
-        <div className="h-5" onClick={handleEventPropagation}>
+      {estimateEnabled && issue.project_id && (
+        <div role="presentation" className="h-5" onClick={stopClickPropagation} onKeyDown={stopKeyPropagation}>
           <EstimateDropdown
             value={issue.estimate_point ?? undefined}
-            onChange={handleEstimate}
+            onChange={(value) => {
+              void updateIssue?.(issue.project_id ?? null, issue.id, { estimate_point: value ?? null });
+            }}
             projectId={issue.project_id}
             buttonVariant="border-with-text"
             renderByDefault={isMobile}
@@ -275,6 +297,15 @@ export const DraftIssueProperties = observer(function DraftIssueProperties(props
           />
         </div>
       )}
-    </div>
+    </>
   );
-});
+}
+
+function stopClickPropagation(event: React.MouseEvent) {
+  event.stopPropagation();
+  event.preventDefault();
+}
+
+function stopKeyPropagation(event: React.KeyboardEvent) {
+  event.stopPropagation();
+}

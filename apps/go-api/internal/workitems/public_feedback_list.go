@@ -98,7 +98,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		// Grouping's module_ids projection is evaluated after the source's live
 		// bridge filter. The ordinary, ungrouped collection keeps its broader
 		// archived and deleted bridge annotation above.
-		annotationSQL = issueAnnotationsSQLWithModuleConditions("$1", false, " AND m.deleted_at IS NULL")
+		annotationSQL = publicIssueAnnotationsSQL("$1", " AND m.deleted_at IS NULL")
 		annotationSQL += `||jsonb_build_object('_module_group_ids',COALESCE((
  SELECT jsonb_agg(DISTINCT live_group.module_id) FROM module_issues live_group
  WHERE live_group.issue_id=i.id AND live_group.deleted_at IS NULL
@@ -111,6 +111,7 @@ func (repository *Repository) PublicIssueList(ctx context.Context, scope PublicF
 		annotations += `||jsonb_build_object('issue_module__module_id',selected_module.module_id)`
 	}
 	query := `SELECT ` + djangoapi.IssueRowSQL("issue") + `||` + annotations + `||jsonb_build_object(
+ 'parent_id',` + djangoapi.PublicParentSQL("issue") + `,
  'state__group',(SELECT public_state."group" FROM states public_state WHERE public_state.id=issue.state_id),
  'vote_items',(SELECT jsonb_agg(jsonb_build_object('vote', vote.vote, 'actor_details', jsonb_build_object(
    'id', actor.id, 'first_name', actor.first_name, 'last_name', actor.last_name, 'avatar', actor.avatar,

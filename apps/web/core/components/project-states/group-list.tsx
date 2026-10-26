@@ -5,10 +5,10 @@
  */
 
 import { useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { GroupItem } from "@/components/project-states";
 
@@ -22,7 +22,7 @@ type TGroupList = {
   stateItemClassName?: string;
 };
 
-export const GroupList = observer(function GroupList(props: TGroupList) {
+export const GroupList = function GroupList(props: TGroupList) {
   const {
     groupedStates,
     stateOperationsCallbacks,
@@ -82,4 +82,4 @@ export const GroupList = observer(function GroupList(props: TGroupList) {
       })}
     </div>
   );
-});
+};

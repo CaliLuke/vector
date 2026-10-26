@@ -27,11 +27,11 @@ export class SitesStateService extends APIService {
    * @returns {Promise<IState[]>} The list of states
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string): Promise<IState[]> {
-    return this.get(`/api/public/anchor/${anchor}/states/`)
+  async list(anchor: string, signal?: AbortSignal): Promise<IState[]> {
+    return this.get(`/api/public/anchor/${anchor}/states/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

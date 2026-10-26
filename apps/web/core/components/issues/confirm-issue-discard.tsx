@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 // ui
 import { Button } from "@plane/propel/button";
 import { EModalPosition, EModalWidth, ModalCore } from "@plane/ui";
@@ -19,21 +19,13 @@ type Props = {
 export function ConfirmIssueDiscard(props: Props) {
   const { isOpen, handleClose, onDiscard, onConfirm } = props;
 
-  const [isLoading, setIsLoading] = useState(false);
-
+  const save = useMutation({ mutationFn: onConfirm, retry: false });
   const onClose = () => {
-    handleClose();
-    setIsLoading(false);
-  };
-
-  const handleDeletion = async () => {
-    setIsLoading(true);
-    await onConfirm();
-    setIsLoading(false);
+    if (!save.isPending) handleClose();
   };
 
   return (
-    <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.TOP} width={EModalWidth.XXL}>
+    <ModalCore isOpen={isOpen} handleClose={onClose} position={EModalPosition.TOP} width={EModalWidth.XXL}>
       <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
         <div className="sm:flex sm:items-start">
           <div className="mt-3 text-center sm:mt-0 sm:text-left">
@@ -46,18 +38,23 @@ export function ConfirmIssueDiscard(props: Props) {
           </div>
         </div>
       </div>
+      {save.isError && (
+        <p role="alert" className="px-4 text-13 text-danger-primary">
+          Could not save the draft. Please try again.
+        </p>
+      )}
       <div className="flex justify-between gap-2 p-4 sm:px-6">
         <div>
-          <Button variant="secondary" onClick={onDiscard}>
+          <Button variant="secondary" onClick={onDiscard} disabled={save.isPending}>
             Discard
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={save.isPending}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleDeletion} loading={isLoading}>
-            {isLoading ? "Saving" : "Save to Drafts"}
+          <Button variant="primary" onClick={() => save.mutate()} loading={save.isPending} disabled={save.isPending}>
+            {save.isPending ? "Saving" : "Save to Drafts"}
           </Button>
         </div>
       </div>

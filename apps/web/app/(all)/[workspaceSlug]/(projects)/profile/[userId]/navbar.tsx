@@ -9,7 +9,7 @@ import { Link, useParams, useLocation } from "@tanstack/react-router";
 import { PROFILE_VIEWER_TAB, PROFILE_ADMINS_TAB } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { Header, EHeaderVariant } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   isAuthorized: boolean;

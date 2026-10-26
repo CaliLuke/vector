@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { StateGroupIcon } from "@plane/propel/icons";
 import type { TStateGroups } from "@plane/types";
@@ -25,7 +24,7 @@ type TStateGroupStatComponent = {
   isEditable?: boolean;
 };
 
-export const StateGroupStatComponent = observer(function StateGroupStatComponent(props: TStateGroupStatComponent) {
+export const StateGroupStatComponent = function StateGroupStatComponent(props: TStateGroupStatComponent) {
   const { distribution, isEditable, totalIssuesCount, selectedStateGroups, handleStateGroupFiltersUpdate } = props;
 
   return (
@@ -49,4 +48,4 @@ export const StateGroupStatComponent = observer(function StateGroupStatComponent
       ))}
     </div>
   );
-});
+};

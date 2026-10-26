@@ -5,7 +5,6 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { observer } from "mobx-react";
 import { GANTT_TIMELINE_TYPE } from "@plane/types";
 import type {
   IBaseLayoutsGanttItem,
@@ -13,14 +12,12 @@ import type {
   TGanttBlockUpdateData,
   IBlockUpdateDependencyData,
 } from "@plane/types";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import { TimeLineTypeContext } from "@/components/gantt-chart/contexts";
 import { GanttChartRoot } from "@/components/gantt-chart/root";
 import { BaseGanttSidebar } from "./sidebar";
 
-export const BaseGanttLayout = observer(function BaseGanttLayout<T extends IBaseLayoutsGanttItem>(
-  props: IBaseLayoutsGanttProps<T>
-) {
+export function BaseGanttLayout<T extends IBaseLayoutsGanttItem>(props: IBaseLayoutsGanttProps<T>) {
   const {
     items,
     groupedItemIds,
@@ -123,6 +120,7 @@ export const BaseGanttLayout = observer(function BaseGanttLayout<T extends IBase
           title={title}
           loaderTitle={loaderTitle}
           blockIds={blockIds}
+          blockItems={Object.values(items)}
           blockUpdateHandler={handleBlockUpdate}
           blockToRender={blockToRender}
           sidebarToRender={sidebarToRender}
@@ -143,4 +141,4 @@ export const BaseGanttLayout = observer(function BaseGanttLayout<T extends IBase
       </div>
     </TimeLineTypeContext.Provider>
   );
-});
+}

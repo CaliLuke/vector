@@ -16,9 +16,30 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const apiDefaultIssueTypeSQL = `SELECT (SELECT t.id::text FROM issue_types t JOIN project_issue_types p ON p.issue_type_id=t.id WHERE p.project_id=$1 AND t.is_default AND t.deleted_at IS NULL ORDER BY t.id ASC LIMIT 1)`
+const apiDefaultIssueTypeSQL = `SELECT (SELECT t.id::text FROM issue_types t JOIN project_issue_types p ON p.issue_type_id=t.id WHERE p.project_id=$1 AND NOT EXISTS(SELECT 1 FROM work_item_type_settings s WHERE s.workspace_id=t.workspace_id AND s.enabled) AND t.is_default AND t.deleted_at IS NULL ORDER BY t.id ASC LIMIT 1)`
 
 func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
+	if !q.API && q.Method == "PUT" {
+		args := []any{q.ActorID, q.Slug, q.ProjectID, q.IssueID}
+		if _, err := issuequery.BuildComplexFilter(q.Params["filters"], &args); err != nil {
+			return Result{}, err
+		}
+	}
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return Result{}, err
+	}
+	defer func() { _ = tx.Rollback(context.WithoutCancel(ctx)) }()
+	writer := *r
+	writer.db, writer.transactionalEffects = tx, true
+	result, err := writer.writeIssueTransaction(ctx, q, body, contentType)
+	if err != nil {
+		return Result{}, err
+	}
+	return result, tx.Commit(ctx)
+}
+
+func (r *Repository) writeIssueTransaction(ctx context.Context, q Request, body io.Reader, contentType string) (Result, error) {
 	if !q.API && q.Method != "PUT" {
 		roles, creator := []int{15, 20}, q.Method != "POST"
 		if q.Method == "DELETE" {
@@ -28,12 +49,40 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 			return Result{}, err
 		}
 	}
+	project, err := r.row(ctx, `SELECT to_jsonb(p) FROM projects p JOIN workspaces w ON w.id=p.workspace_id WHERE p.id=$1 AND w.slug=$2 AND p.deleted_at IS NULL AND w.deleted_at IS NULL`, q.ProjectID, q.Slug)
+	if err != nil {
+		return Result{}, err
+	}
+	if _, err = r.db.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, project["workspace_id"]); err != nil {
+		return Result{}, err
+	}
+	if err = r.AuthorizeInitial(ctx, q); err != nil {
+		return Result{}, err
+	}
+	if err = r.allowWorkspace(ctx, q, []int{5, 15, 20}); err != nil {
+		return Result{}, err
+	}
+	if !q.API && q.Method != "PUT" {
+		roles := []int{15, 20}
+		if q.Method == "DELETE" {
+			roles = []int{20}
+		}
+		if err = r.allowProject(ctx, q, roles, q.Method != "POST"); err != nil {
+			return Result{}, err
+		}
+	}
+	if q.Method != "POST" {
+		// Lock before every old-value read. A partial update merges only its
+		// submitted fields into the latest committed row, never a stale snapshot.
+		if _, err = r.db.Exec(ctx, `SELECT id FROM issues WHERE id=$1 AND project_id=$2 AND workspace_id=$3 FOR UPDATE`, q.IssueID, q.ProjectID, project["workspace_id"]); err != nil {
+			return Result{}, err
+		}
+	}
 	if q.Method == "DELETE" {
 		return r.destroyIssue(ctx, q)
 	}
 	// API PATCH performs lookup before touching the request data.
 	var old map[string]any
-	var err error
 	if q.API && q.Method == "PATCH" {
 		old, err = r.issue(ctx, q, false)
 		if err != nil {
@@ -49,6 +98,10 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 		}
 	}
 	input, err := djangoinput.Parse(body, contentType)
+	if err != nil {
+		return Result{}, err
+	}
+	submitted, err := submittedCustomValues(input)
 	if err != nil {
 		return Result{}, err
 	}
@@ -69,13 +122,9 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 			return Result{}, err
 		}
 	}
-	project, err := r.project(ctx, q.ProjectID)
-	if err != nil {
-		return Result{}, err
-	}
-	options := issueValidation{Timezone: q.Timezone, API: q.API, Partial: q.Method == "PATCH", ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
+	options := issueValidation{ActorID: q.ActorID, Timezone: q.Timezone, API: q.API, Partial: q.Method == "PATCH", ProjectID: q.ProjectID, WorkspaceID: project["workspace_id"].(string)}
 	if q.Method == "PUT" {
-		options.ProjectID, options.WorkspaceID = "", ""
+		options.ProjectID = ""
 	}
 	validationInput := input
 	validationInput.Fields = maps.Clone(input.Fields)
@@ -114,7 +163,7 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 		var projection map[string]any
 		keys := detailFields
 		if q.API {
-			projection, err = djangoapi.SerializeIssue(ctx, r.db, old, "", "")
+			projection, err = r.serializeAuthorizedIssue(ctx, old, "", "")
 			keys = apiIssueOrder
 		} else {
 			detailQ := q
@@ -144,17 +193,31 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 			row["type_id"] = *defaultType
 		}
 	}
-	if old != nil {
-		if err = r.replaceIssueRelations(ctx, old, changes, false); err != nil {
-			return Result{}, err
+	row["workspace_id"] = project["workspace_id"]
+	creator := q.ActorID
+	if q.API && old == nil {
+		if value, exists := input.Fields["created_by"]; exists {
+			creator = stringValue(value)
 		}
 	}
-	row, err = r.saveIssue(ctx, q.ActorID, row, old)
+	subscribers, err := r.validateCustomValues(ctx, creator, row, old, submitted, false, old == nil, hasSubmittedType(input.Fields))
 	if err != nil {
 		return Result{}, err
 	}
+	input = r.composedItemEditInput(input, row)
+	if old != nil {
+		row, err = r.updateIssueWithRelations(ctx, q.ActorID, row, old, changes)
+	} else {
+		row, err = r.saveIssue(ctx, q.ActorID, row, old)
+	}
+	if err != nil {
+		return Result{}, err
+	}
+	if err = r.subscribePropertyMembers(ctx, q.ActorID, row, subscribers); err != nil {
+		return Result{}, err
+	}
 	if old == nil {
-		if len(changes.assignees) == 0 && project["default_assignee_id"] != nil {
+		if len(changes.assignees) == 0 && !changes.assigneesSet && project["default_assignee_id"] != nil {
 			ids, e := r.filteredIDs(ctx, `SELECT member_id::text FROM project_members WHERE project_id=$1 AND member_id=$2 AND role>=15 AND is_active AND deleted_at IS NULL`, q.ProjectID, project["default_assignee_id"])
 			if e != nil {
 				return Result{}, e
@@ -211,7 +274,7 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 		}
 	}
 	if q.API {
-		projection, err := djangoapi.SerializeIssue(ctx, r.db, row, "", "")
+		projection, err := r.serializeVisibleIssue(ctx, row, q, "", "")
 		status := 200
 		if old == nil {
 			status = 201
@@ -229,7 +292,8 @@ func (r *Repository) writeIssue(ctx context.Context, q Request, body io.Reader, 
 			}
 			row[relation] = value
 		}
-		return Result{200, appWriteProjection(row, input)}, nil
+		body, projectionErr := r.visibleAppWriteProjection(ctx, q, row, input)
+		return Result{200, body}, projectionErr
 	}
 	annotated, err := r.annotateIssue(ctx, row, q.ActorID, false)
 	if err != nil {
@@ -368,7 +432,7 @@ func dumpRequest(input djangoinput.Input) (string, error) {
 }
 
 func (r *Repository) issueWriteFollowups(ctx context.Context, q Request, input djangoinput.Input, previous any, requested string, create bool) error {
-	if err := r.publisher.Task(ctx, "plane.bgtasks.webhook_task.model_activity", []any{}, map[string]any{"model_name": "issue", "model_id": q.IssueID, "requested_data": input.Fields, "current_instance": previous, "actor_id": q.ActorID, "slug": q.Slug, "origin": r.origin}); err != nil {
+	if err := r.publishTask(ctx, "plane.bgtasks.webhook_task.model_activity", []any{}, map[string]any{"model_name": "issue", "model_id": q.IssueID, "requested_data": input.Fields, "current_instance": previous, "actor_id": q.ActorID, "slug": q.Slug, "origin": r.origin}); err != nil {
 		return err
 	}
 	if !q.API {
@@ -396,7 +460,7 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 		if !admin && row["created_by_id"] != q.ActorID {
 			return Result{}, failure(403, "error", "Only admin or creator can delete the work item")
 		}
-		projection, err := djangoapi.SerializeIssue(ctx, r.db, row, "", "")
+		projection, err := r.serializeVisibleIssue(ctx, row, q, "", "")
 		if err != nil {
 			return Result{}, err
 		}
@@ -422,6 +486,14 @@ func (r *Repository) destroyIssue(ctx context.Context, q Request) (Result, error
 		return Result{}, err
 	}
 	return Result{Status: 204}, nil
+}
+
+func (r *Repository) visibleAppWriteProjection(ctx context.Context, q Request, row map[string]any, input djangoinput.Input) (map[string]any, error) {
+	row, err := djangoapi.MaskIssueParent(ctx, r.db, row, q.ActorID)
+	if err != nil {
+		return nil, err
+	}
+	return appWriteProjection(row, input), nil
 }
 
 func appWriteProjection(row map[string]any, input djangoinput.Input) map[string]any {

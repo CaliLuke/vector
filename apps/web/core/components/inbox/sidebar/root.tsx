@@ -6,19 +6,19 @@
 
 import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import type { TInboxIssueCurrentTab } from "@plane/types";
 import { EInboxIssueCurrentTab } from "@plane/types";
 // plane imports
 import { Header, Loader, EHeaderVariant } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { InboxSidebarLoader } from "@/components/ui/loader/layouts/project-inbox/inbox-sidebar-loader";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useProjectDetail } from "@/hooks/use-projects";
+import { useIntakePreferences } from "@/providers/intake-preferences";
+import { useIntakeList } from "@/hooks/use-intake";
 
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 // local imports
@@ -44,7 +44,7 @@ const tabNavigationOptions: { key: TInboxIssueCurrentTab; i18n_label: string }[]
   },
 ];
 
-export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarProps) {
+export const InboxSidebar = function InboxSidebar(props: IInboxSidebarProps) {
   const { workspaceSlug, projectId, inboxIssueId, setIsMobileSidebar } = props;
   // router
   const router = useRouter();
@@ -54,41 +54,37 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
   // plane hooks
   const { t } = useTranslation();
   // store
-  const { currentProjectDetails } = useProject();
-  const {
-    currentTab,
-    handleCurrentTab,
-    loader,
-    filteredInboxIssueIds,
-    inboxIssuePaginationInfo,
-    fetchInboxPaginationIssues,
-    getAppliedFiltersCount,
-  } = useProjectInbox();
-  // derived values
+  const { data: currentProjectDetails } = useProjectDetail(workspaceSlug, projectId);
+  const { tab: currentTab, setTab, appliedFilterCount: getAppliedFiltersCount } = useIntakePreferences();
+  const list = useIntakeList();
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = list;
+  const filteredInboxIssueIds = list.rows.map((row) => row.issue.id);
+  const firstInboxIssueId = filteredInboxIssueIds[0];
+  const inboxIssuePaginationInfo = list.data?.pages[0];
   const fetchNextPages = useCallback(() => {
-    if (!workspaceSlug || !projectId) return;
-    fetchInboxPaginationIssues(workspaceSlug.toString(), projectId.toString());
-  }, [workspaceSlug, projectId, fetchInboxPaginationIssues]);
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // page observer
   useIntersectionObserver(containerRef, elementRef, fetchNextPages, "20%");
 
   useEffect(() => {
-    if (workspaceSlug && projectId && currentTab && filteredInboxIssueIds.length > 0) {
+    if (workspaceSlug && projectId && currentTab && firstInboxIssueId) {
       if (inboxIssueId === undefined) {
         void router.navigate({
-          href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${filteredInboxIssueIds[0]}`,
+          href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${currentTab}&inboxIssueId=${firstInboxIssueId}`,
         });
       }
     }
-  }, [currentTab, filteredInboxIssueIds, inboxIssueId, projectId, router, workspaceSlug]);
+  }, [currentTab, firstInboxIssueId, inboxIssueId, projectId, router, workspaceSlug]);
 
   return (
     <div className="h-full w-full flex-shrink-0 border-r border-strong bg-surface-1">
       <div className="relative flex h-full w-full flex-col overflow-hidden">
         <Header variant={EHeaderVariant.SECONDARY}>
           {tabNavigationOptions.map((option) => (
-            <div
+            <button
+              type="button"
               key={option?.key}
               className={cn(
                 `relative flex h-full cursor-pointer items-center gap-1 px-3 text-13 font-medium transition-all`,
@@ -96,7 +92,7 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
               )}
               onClick={() => {
                 if (currentTab != option?.key) {
-                  handleCurrentTab(workspaceSlug, projectId, option?.key);
+                  setTab(option.key);
                   void router.navigate({
                     href: `/${workspaceSlug}/projects/${projectId}/intake?currentTab=${option?.key}`,
                   });
@@ -115,7 +111,7 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
                   currentTab === option?.key ? `border-accent-strong` : `border-transparent`
                 )}
               />
-            </div>
+            </button>
           ))}
           <div className="m-auto mr-0">
             <FiltersRoot />
@@ -123,7 +119,7 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
         </Header>
         <InboxIssueAppliedFilters />
 
-        {loader != undefined && loader === "filter-loading" && !inboxIssuePaginationInfo?.next_page_results ? (
+        {list.isPending ? (
           <InboxSidebarLoader />
         ) : (
           <div
@@ -136,7 +132,7 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
                 workspaceSlug={workspaceSlug}
                 projectId={projectId}
                 projectIdentifier={currentProjectDetails?.identifier}
-                inboxIssueIds={filteredInboxIssueIds}
+                inboxIssues={list.rows}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
@@ -175,8 +171,13 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
                 )}
               </div>
             )}
+            {list.isFetchNextPageError && (
+              <button type="button" onClick={() => void list.fetchNextPage()}>
+                Could not load more work items. Retry
+              </button>
+            )}
             <div ref={setElementRef}>
-              {inboxIssuePaginationInfo?.next_page_results && (
+              {list.hasNextPage && (
                 <Loader className="mx-auto w-full space-y-4 px-2 py-4">
                   <Loader.Item height="64px" width="w-100" />
                   <Loader.Item height="64px" width="w-100" />
@@ -188,4 +189,4 @@ export const InboxSidebar = observer(function InboxSidebar(props: IInboxSidebarP
       </div>
     </div>
   );
-});
+};

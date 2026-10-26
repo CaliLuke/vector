@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { useTheme } from "next-themes";
 // plane imports
 import { PROGRESS_STATE_GROUPS_DETAILS } from "@plane/constants";
@@ -25,7 +24,7 @@ export type ActiveCycleProgressProps = {
   handleFiltersUpdate: (conditions: TWorkItemFilterCondition[]) => void;
 };
 
-export const ActiveCycleProgress = observer(function ActiveCycleProgress(props: ActiveCycleProgressProps) {
+export const ActiveCycleProgress = function ActiveCycleProgress(props: ActiveCycleProgressProps) {
   const { handleFiltersUpdate, cycle } = props;
   // theme hook
   const { resolvedTheme } = useTheme();
@@ -38,14 +37,14 @@ export const ActiveCycleProgress = observer(function ActiveCycleProgress(props: 
     value: cycle && cycle.total_issues > 0 ? (cycle[group.key as keyof ICycle] as number) : 0,
     color: group.color,
   }));
-  const groupedIssues: any = cycle
-    ? {
-        completed: cycle?.completed_issues,
-        started: cycle?.started_issues,
-        unstarted: cycle?.unstarted_issues,
-        backlog: cycle?.backlog_issues,
-      }
-    : {};
+  const groupedIssues = cycle
+    ? [
+        { name: "completed", value: cycle.completed_issues, color: PROGRESS_STATE_GROUPS_DETAILS[0].color },
+        { name: "started", value: cycle.started_issues, color: PROGRESS_STATE_GROUPS_DETAILS[1].color },
+        { name: "unstarted", value: cycle.unstarted_issues, color: PROGRESS_STATE_GROUPS_DETAILS[2].color },
+        { name: "backlog", value: cycle.backlog_issues, color: PROGRESS_STATE_GROUPS_DETAILS[3].color },
+      ]
+    : [];
   const resolvedPath = resolvedTheme === "light" ? lightProgressAsset : darkProgressAsset;
 
   return cycle && cycle.hasOwnProperty("started_issues") ? (
@@ -66,33 +65,32 @@ export const ActiveCycleProgress = observer(function ActiveCycleProgress(props: 
 
       {cycle.total_issues > 0 ? (
         <div className="flex flex-col gap-5">
-          {Object.keys(groupedIssues).map((group, index) => (
-            <>
-              {groupedIssues[group] > 0 && (
-                <div key={index}>
-                  <div
-                    className="flex cursor-pointer items-center justify-between gap-2 text-13"
-                    onClick={() => {
-                      handleFiltersUpdate([{ property: "state_group", operator: "in", value: [group] }]);
-                    }}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="block h-3 w-3 rounded-full"
-                        style={{
-                          backgroundColor: PROGRESS_STATE_GROUPS_DETAILS[index].color,
-                        }}
-                      />
-                      <span className="w-16 font-medium text-tertiary capitalize">{group}</span>
-                    </div>
-                    <span className="text-tertiary">{`${groupedIssues[group]} ${
-                      groupedIssues[group] > 1 ? "Work items" : "Work item"
-                    }`}</span>
+          {groupedIssues.map(({ name, value, color }) =>
+            value > 0 ? (
+              <button
+                key={name}
+                type="button"
+                className="w-full"
+                aria-label={`${value} ${name} work items`}
+                onClick={() => {
+                  handleFiltersUpdate([{ property: "state_group", operator: "in", value: [name] }]);
+                }}
+              >
+                <div className="flex cursor-pointer items-center justify-between gap-2 text-13">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="block h-3 w-3 rounded-full"
+                      style={{
+                        backgroundColor: color,
+                      }}
+                    />
+                    <span className="w-16 font-medium text-tertiary capitalize">{name}</span>
                   </div>
+                  <span className="text-tertiary">{`${value} ${value > 1 ? "Work items" : "Work item"}`}</span>
                 </div>
-              )}
-            </>
-          ))}
+              </button>
+            ) : null
+          )}
           {cycle.cancelled_issues > 0 && (
             <span className="flex items-center gap-2 text-13 text-tertiary">
               <span>
@@ -114,4 +112,4 @@ export const ActiveCycleProgress = observer(function ActiveCycleProgress(props: 
       <Loader.Item width="100%" height="100%" />
     </Loader>
   );
-});
+};

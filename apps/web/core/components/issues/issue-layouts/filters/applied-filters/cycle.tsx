@@ -4,11 +4,13 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
+
 import { CloseIcon, CycleGroupIcon } from "@plane/propel/icons";
-import type { TCycleGroups } from "@plane/types";
+import { cycleGroup } from "@/queries/cycle-module-selectors";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
 // ui
 // types
 
@@ -18,19 +20,23 @@ type Props = {
   editable: boolean | undefined;
 };
 
-export const AppliedCycleFilters = observer(function AppliedCycleFilters(props: Props) {
+export const AppliedCycleFilters = function AppliedCycleFilters(props: Props) {
   const { handleRemove, values, editable } = props;
   // store hooks
-  const { getCycleById } = useCycle();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
 
   return (
     <>
+      {(catalogue.isError || catalogue.isAccessDenied) && (
+        <CatalogueReadFailure label="cycles" retry={catalogue.retry} />
+      )}
       {values.map((cycleId) => {
-        const cycleDetails = getCycleById(cycleId) ?? null;
+        const cycleDetails = catalogue.cycles?.find((row) => row.id === cycleId) ?? null;
 
         if (!cycleDetails) return null;
 
-        const cycleStatus = (cycleDetails?.status ? cycleDetails?.status.toLocaleLowerCase() : "draft") as TCycleGroups;
+        const cycleStatus = cycleGroup(cycleDetails.status);
 
         return (
           <div key={cycleId} className="flex items-center gap-1 truncate rounded-sm bg-layer-1 p-1 text-11">
@@ -50,4 +56,4 @@ export const AppliedCycleFilters = observer(function AppliedCycleFilters(props: 
       })}
     </>
   );
-});
+};

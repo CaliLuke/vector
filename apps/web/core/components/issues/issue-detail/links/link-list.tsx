@@ -4,42 +4,50 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import type { TIssueServiceType } from "@plane/types";
-// computed
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueLinks } from "@/hooks/use-issue-resources";
 // local imports
 import { IssueLinkItem } from "./link-item";
+import { IssueResourceRetryButton } from "../resource-retry-button";
 import type { TLinkOperations } from "./root";
 
 type TLinkOperationsModal = Exclude<TLinkOperations, "create">;
 
 type TLinkList = {
   issueId: string;
+  workspaceSlug: string;
+  projectId: string;
   linkOperations: TLinkOperationsModal;
   disabled?: boolean;
   issueServiceType: TIssueServiceType;
 };
 
-export const LinkList = observer(function LinkList(props: TLinkList) {
+export function LinkList(props: TLinkList) {
   // props
-  const { issueId, linkOperations, disabled = false, issueServiceType } = props;
-  // hooks
+  const { issueId, workspaceSlug, projectId, linkOperations, disabled = false, issueServiceType } = props;
   const {
-    link: { getLinksByIssueId },
-  } = useIssueDetail(issueServiceType);
+    links: issueLinks,
+    query,
+    isError,
+    retry,
+  } = useIssueLinks({
+    workspaceSlug,
+    projectId,
+    issueId,
+    serviceType: issueServiceType,
+  });
 
-  const issueLinks = getLinksByIssueId(issueId);
-
+  if (query.isError || isError)
+    return <IssueResourceRetryButton onRetry={() => void (isError ? retry() : query.refetch())} />;
   if (!issueLinks) return null;
 
   return (
     <div className="flex flex-col gap-2 pt-4">
-      {issueLinks.map((linkId) => (
+      {issueLinks.map((link) => (
         <IssueLinkItem
-          key={linkId}
-          linkId={linkId}
+          key={link.id}
+          link={link}
           linkOperations={linkOperations}
           isNotAllowed={disabled}
           issueServiceType={issueServiceType}
@@ -47,4 +55,4 @@ export const LinkList = observer(function LinkList(props: TLinkList) {
       ))}
     </div>
   );
-});
+}

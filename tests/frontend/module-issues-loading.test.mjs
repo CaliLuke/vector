@@ -1,131 +1,110 @@
 import assert from "node:assert/strict";
-import { createRequire, registerHooks } from "node:module";
 import test from "node:test";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { QueryClient, QueryObserver } from "@tanstack/react-query";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
-
-const repositoryRoot = fileURLToPath(new URL("../../", import.meta.url));
-const webRoot = path.join(repositoryRoot, "apps/web");
-const requireFromWeb = createRequire(path.join(webRoot, "package.json"));
-globalThis.__moduleIssuesTestMobx = requireFromWeb("mobx");
-globalThis.__moduleIssuesTestMobxUtils = requireFromWeb("mobx-utils");
+import { seedIssueReadAccess } from "./helpers/issue-query-fixtures.mjs";
+import { deferredIssueListRequest, observeIssueList } from "./helpers/issue-list-loading-fixtures.mjs";
 
 registerWebModuleHooks();
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const cjsShims = {
-      mobx: ["action", "computed", "makeObservable", "observable", "runInAction"],
-      "mobx-utils": ["computedFn"],
-    };
-    if (cjsShims[specifier]) {
-      const globalName = specifier === "mobx" ? "__moduleIssuesTestMobx" : "__moduleIssuesTestMobxUtils";
-      const exports = cjsShims[specifier]
-        .map((name) => `export const ${name} = globalThis.${globalName}.${name};`)
-        .join("\n");
-      return { shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(exports)}` };
-    }
-    return nextResolve(specifier, context);
-  },
-});
+const { issueListKeys, issueListOptions } = await import("../../apps/web/core/queries/issue-lists.ts");
+const { IssueService } = await import("../../apps/web/core/services/issue/index.ts");
 
-const { ModuleIssues } = await import("../../apps/web/core/store/issue/module/issue.store.ts");
+const scope = {
+  accountId: "alice",
+  sessionGeneration: 0,
+  workspaceSlug: "acme",
+  workspaceRole: 15,
+  membershipRevision: "read-scope-1",
+  projectId: "project-id",
+  projectRole: 20,
+  projectMembershipRole: 20,
+};
+const pagination = { canGroup: true, perPageCount: 100 };
+const issue = (id) => ({ id, project_id: scope.projectId, created_at: "2026-01-01T00:00:00Z" });
+const response = (...issues) => ({ results: issues, total_count: issues.length });
 
-function deferred() {
-  let resolve;
-  let reject;
-  const promise = new Promise((resolvePromise, rejectPromise) => {
-    resolve = resolvePromise;
-    reject = rejectPromise;
+function moduleRead(moduleId) {
+  const input = {
+    kind: "module",
+    workspaceSlug: scope.workspaceSlug,
+    projectId: scope.projectId,
+    viewId: moduleId,
+    accountId: scope.accountId,
+    richFilters: {},
+    displayFilters: { layout: "list", group_by: null, order_by: "-created_at" },
+    isScopeCurrent: () => true,
+    isReadScopeCurrent: () => true,
+  };
+  return { scope, pagination, request: { family: "module", input, isReadCurrent: () => true } };
+}
+
+function fixture() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+  seedIssueReadAccess(client, {
+    workspaceSlug: scope.workspaceSlug,
+    projectRoles: { [scope.projectId]: 20 },
+    revision: scope.membershipRevision,
   });
-  return { promise, reject, resolve };
+  return client;
 }
 
-function issue(id) {
-  return { id, project_id: "project-id", created_at: "2026-01-01T00:00:00Z" };
+async function switchModules(t) {
+  const client = fixture(),
+    first = deferredIssueListRequest(),
+    second = deferredIssueListRequest();
+  let call = 0;
+  t.mock.method(IssueService.prototype, "getIssues", (...args) => [first, second][call++].call(...args));
+  const oldRead = moduleRead("module-a");
+  const observer = observeIssueList(t, client, oldRead, QueryObserver, issueListOptions);
+  const oldRequest = await first.started.promise;
+  observer.setOptions(issueListOptions(moduleRead("module-b")));
+  const currentRequest = await second.started.promise;
+  return { client, first, second, oldRead, observer, oldRequest, currentRequest };
 }
 
-function response(...issues) {
-  return { results: issues, total_count: issues.length };
-}
+test("switching modules cancels the old Query and keeps the current read active", async (t) => {
+  const { client, first, second, oldRead, observer, oldRequest, currentRequest } = await switchModules(t);
 
-function createModuleIssues() {
-  const issuesById = new Map();
-  const issues = {
-    addIssue(items) {
-      for (const item of items) issuesById.set(item.id, item);
-    },
-    getIssuesByIds(ids) {
-      return ids.map((id) => issuesById.get(id)).filter(Boolean);
-    },
-  };
-  const rootStore = {
-    router: {},
-    module: { fetchModuleDetails() {} },
-  };
-  const rootIssueStore = {
-    rootStore,
-    moduleId: "module-id",
-    issues,
-    issueDetail: { relation: { extractRelationsFromIssues() {} } },
-  };
-  const filters = { getFilterParams: () => ({}) };
-  const store = new ModuleIssues(rootIssueStore, filters);
-  const requests = [];
-  store.issueService = {
-    getIssues(_workspaceSlug, _projectId, _params, config) {
-      const request = deferred();
-      requests.push({ ...request, signal: config.signal });
-      return request.promise;
-    },
-  };
-  return { requests, store };
-}
+  assert.equal(oldRequest.params.module, "module-a");
+  assert.equal(currentRequest.params.module, "module-b");
+  assert.equal(oldRequest.signal.aborted, true);
+  first.result.reject(new Error("aborted old read"));
+  second.result.resolve(response(issue("current-ticket")));
+  await new Promise((resolve) => setTimeout(resolve, 20));
 
-const options = { canGroup: true, perPageCount: 100 };
-const fetchModuleIssues = (store) => store.fetchIssues("default", "project-id", "init-loader", options, "module-id");
-
-test("a superseded module request rejection does not escape or clear the active loader", async () => {
-  const { requests, store } = createModuleIssues();
-  const staleRequest = fetchModuleIssues(store);
-  const currentRequest = fetchModuleIssues(store);
-
-  assert.equal(requests[0].signal.aborted, true);
-  requests[0].reject(new Error("request aborted"));
-  assert.equal(await staleRequest, undefined);
-  assert.equal(store.getIssueLoader(), "init-loader");
-
-  requests[1].resolve(response(issue("current-ticket")));
-  await currentRequest;
-
-  assert.equal(store.getIssueLoader(), undefined);
-  assert.deepEqual(store.getIssueIds(), ["current-ticket"]);
-});
-
-test("a late stale module response cannot overwrite the current request's issues", async () => {
-  const { requests, store } = createModuleIssues();
-  const staleRequest = fetchModuleIssues(store);
-  const currentRequest = fetchModuleIssues(store);
-
-  requests[1].resolve(response(issue("current-ticket")));
-  await currentRequest;
-  requests[0].resolve(response(issue("stale-ticket")));
-  assert.equal(await staleRequest, undefined);
-
-  assert.deepEqual(store.getIssueIds(), ["current-ticket"]);
-});
-
-test("an active module request failure remains rejected and clears its loader", async () => {
-  const { requests, store } = createModuleIssues();
-  const requestError = new Error("module issues unavailable");
-  const fetch = fetchModuleIssues(store);
-
-  requests[0].reject(requestError);
-  await fetch.then(
-    () => assert.fail("the active request failure should remain visible"),
-    (error) => assert.equal(error, requestError)
+  assert.equal(observer.getCurrentResult().isSuccess, true);
+  assert.deepEqual(
+    observer.getCurrentResult().data.response.results.map((row) => row.id),
+    ["current-ticket"]
   );
+  assert.equal(client.getQueryData(issueListKeys.list(oldRead)), undefined);
+});
 
-  assert.equal(store.getIssueLoader(), undefined);
-  assert.equal(store.getIssueIds(), undefined);
+test("a late module response cannot overwrite its replacement module query", async (t) => {
+  const { client, first, second, oldRead, observer, oldRequest, currentRequest } = await switchModules(t);
+  second.result.resolve(response(issue("replacement-ticket")));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  first.result.resolve(response(issue("stale-ticket")));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(oldRequest.signal.aborted, true);
+  assert.deepEqual(
+    observer.getCurrentResult().data.response.results.map((row) => row.id),
+    ["replacement-ticket"]
+  );
+  assert.equal(client.getQueryData(issueListKeys.list(oldRead)), undefined);
+  assert.ok(currentRequest.signal instanceof AbortSignal);
+});
+
+test("an active module failure remains visible as a native Query error", async (t) => {
+  const client = fixture();
+  const request = deferredIssueListRequest();
+  t.mock.method(IssueService.prototype, "getIssues", request.call);
+  const observer = observeIssueList(t, client, moduleRead("module-a"), QueryObserver, issueListOptions);
+  await request.started.promise;
+  request.result.reject(new Error("module issues unavailable"));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(observer.getCurrentResult().isError, true);
+  assert.match(observer.getCurrentResult().error.message, /module issues unavailable/);
 });

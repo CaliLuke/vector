@@ -5,18 +5,20 @@
  */
 
 import type { RefObject } from "react";
-import { useState } from "react";
-import { observer } from "mobx-react";
 import type { IBaseLayoutsBaseItem, IBlockUpdateData } from "@plane/types";
-import { Loader, Row } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { Row } from "@plane/ui";
+import { cn } from "@plane/utils/common";
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { BLOCK_HEIGHT } from "@/components/gantt-chart/constants";
 import { GanttDnDHOC } from "@/components/gantt-chart/sidebar/gantt-dnd-HOC";
-import { handleOrderChange } from "@/components/gantt-chart/sidebar/utils";
 import { GanttLayoutListItemLoader } from "@/components/ui/loader/layouts/gantt-layout-loader";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { useTimeLineChartStore } from "@/hooks/use-timeline-chart";
+import { useGanttChartState } from "@/components/gantt-chart/contexts/chart-state";
+import { daysFromGanttWidth } from "@/components/gantt-chart/state";
+import {
+  createGanttSidebarOrderChangeHandler,
+  GanttSidebarDuration,
+  GanttSidebarRows,
+} from "@/components/gantt-chart/sidebar/common";
 
 type Props<T extends IBaseLayoutsBaseItem> = {
   blockUpdateHandler: (block: T, payload: IBlockUpdateData) => void;
@@ -30,7 +32,7 @@ type Props<T extends IBaseLayoutsBaseItem> = {
   renderItem: (item: T) => React.ReactNode;
 };
 
-export const BaseGanttSidebar = observer(function BaseGanttSidebar<T extends IBaseLayoutsBaseItem>(props: Props<T>) {
+export function BaseGanttSidebar<T extends IBaseLayoutsBaseItem>(props: Props<T>) {
   const {
     blockUpdateHandler,
     blockIds,
@@ -43,113 +45,84 @@ export const BaseGanttSidebar = observer(function BaseGanttSidebar<T extends IBa
     renderItem,
   } = props;
 
-  const { getBlockById, updateActiveBlockId, isBlockActive, getNumberOfDaysFromPosition } = useTimeLineChartStore();
-
-  const [intersectionElement, setIntersectionElement] = useState<HTMLDivElement | null>(null);
+  const { blocksById, activeBlockId, setActiveBlockId, viewData } = useGanttChartState();
 
   const isPaginating = false; // TODO: Add proper pagination state
 
-  useIntersectionObserver(
-    ganttContainerRef,
-    isPaginating ? null : intersectionElement,
-    loadMoreItems ? () => loadMoreItems("") : undefined,
-    "100% 0% 100% 0%"
-  );
-
-  const handleOnDrop = (
-    draggingBlockId: string | undefined,
-    droppedBlockId: string | undefined,
-    dropAtEndOfList: boolean
-  ) => {
-    handleOrderChange(draggingBlockId, droppedBlockId, dropAtEndOfList, blockIds, getBlockById, blockUpdateHandler);
-  };
+  const handleOnDrop = createGanttSidebarOrderChangeHandler(blockIds, blocksById, blockUpdateHandler);
 
   return (
     <div>
-      {blockIds ? (
-        <>
-          {blockIds.map((blockId, index) => {
-            const block = getBlockById(blockId);
-            const item = items[blockId];
-            const isBlockVisibleOnSidebar = block?.start_date && block?.target_date;
+      <GanttSidebarRows
+        blockIds={blockIds}
+        canLoadMore={Boolean(canLoadMoreBlocks)}
+        ganttContainerRef={ganttContainerRef}
+        loadMore={loadMoreItems ? () => loadMoreItems("") : undefined}
+        isPaginating={isPaginating}
+        renderBlock={(blockId, index) => {
+          const block = blocksById[blockId];
+          const item = items[blockId];
+          const isBlockVisibleOnSidebar = block?.start_date && block?.target_date;
 
-            // hide the block if it doesn't have start and target dates and showAllBlocks is false
-            if (!block || (!showAllBlocks && !isBlockVisibleOnSidebar)) return null;
+          // hide the block if it doesn't have start and target dates and showAllBlocks is false
+          if (!block || (!showAllBlocks && !isBlockVisibleOnSidebar)) return null;
+          if (!item) return null;
 
-            if (!item) return null;
-
-            return (
-              <RenderIfVisible
-                key={blockId}
-                root={ganttContainerRef}
-                horizontalOffset={100}
-                verticalOffset={200}
-                shouldRecordHeights={false}
-                placeholderChildren={<GanttLayoutListItemLoader />}
+          return (
+            <RenderIfVisible
+              key={blockId}
+              root={ganttContainerRef}
+              horizontalOffset={100}
+              verticalOffset={200}
+              shouldRecordHeights={false}
+              placeholderChildren={<GanttLayoutListItemLoader />}
+            >
+              <GanttDnDHOC
+                id={blockId}
+                isLastChild={index === blockIds.length - 1}
+                isDragEnabled={enableReorder}
+                onDrop={handleOnDrop}
               >
-                <GanttDnDHOC
-                  id={blockId}
-                  isLastChild={index === blockIds.length - 1}
-                  isDragEnabled={enableReorder}
-                  onDrop={handleOnDrop}
-                >
-                  {(isDragging: boolean) => {
-                    const block = getBlockById(blockId);
-                    const isBlockComplete = !!block?.start_date && !!block?.target_date;
-                    const duration = isBlockComplete ? getNumberOfDaysFromPosition(block?.position?.width) : undefined;
-                    const isBlockHoveredOn = isBlockActive(blockId);
+                {(isDragging: boolean) => {
+                  const currentBlock = blocksById[blockId];
+                  const isBlockComplete = !!currentBlock?.start_date && !!currentBlock?.target_date;
+                  const duration = isBlockComplete
+                    ? daysFromGanttWidth(viewData, currentBlock?.position?.width)
+                    : undefined;
+                  const isBlockHoveredOn = activeBlockId === blockId;
 
-                    return (
-                      <div
-                        className={cn("group/list-block", {
-                          "rounded-sm bg-layer-1": isDragging,
-                        })}
-                        onMouseEnter={() => updateActiveBlockId(blockId)}
-                        onMouseLeave={() => updateActiveBlockId(null)}
+                  return (
+                    <div
+                      className={cn("group/list-block", {
+                        "rounded-sm bg-layer-1": isDragging,
+                      })}
+                      onMouseEnter={() => setActiveBlockId(blockId)}
+                      onMouseLeave={() => setActiveBlockId(null)}
+                    >
+                      <Row
+                        className={cn(
+                          "group flex w-full items-center gap-2 bg-layer-transparent pr-4 hover:bg-layer-transparent-hover",
+                          {
+                            "bg-layer-transparent-hover": isBlockHoveredOn,
+                          }
+                        )}
+                        style={{
+                          height: `${BLOCK_HEIGHT}px`,
+                        }}
                       >
-                        <Row
-                          className={cn(
-                            "group flex w-full items-center gap-2 bg-layer-transparent pr-4 hover:bg-layer-transparent-hover",
-                            {
-                              "bg-layer-transparent-hover": isBlockHoveredOn,
-                            }
-                          )}
-                          style={{
-                            height: `${BLOCK_HEIGHT}px`,
-                          }}
-                        >
-                          <div className="flex h-full flex-grow items-center justify-between gap-2 truncate">
-                            <div className="flex-grow truncate">{renderItem(item)}</div>
-                            {duration && (
-                              <div className="flex-shrink-0 text-13 text-secondary">
-                                <span>
-                                  {duration} day{duration > 1 ? "s" : ""}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </Row>
-                      </div>
-                    );
-                  }}
-                </GanttDnDHOC>
-              </RenderIfVisible>
-            );
-          })}
-          {canLoadMoreBlocks && (
-            <div ref={setIntersectionElement} className="p-2">
-              <div className="flex h-10 w-full animate-pulse items-center justify-between gap-1.5 rounded-sm bg-layer-1 px-4 py-1.5 md:h-8 md:px-1" />
-            </div>
-          )}
-        </>
-      ) : (
-        <Loader className="space-y-3 pr-2">
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-          <Loader.Item height="34px" />
-        </Loader>
-      )}
+                        <div className="flex h-full flex-grow items-center justify-between gap-2 truncate">
+                          <div className="flex-grow truncate">{renderItem(item)}</div>
+                          {duration && <GanttSidebarDuration days={duration} />}
+                        </div>
+                      </Row>
+                    </div>
+                  );
+                }}
+              </GanttDnDHOC>
+            </RenderIfVisible>
+          );
+        }}
+      />
     </div>
   );
-});
+}

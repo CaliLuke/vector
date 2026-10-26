@@ -10,16 +10,16 @@ import { useTranslation } from "@plane/i18n";
 import { LinkIcon, SearchIcon } from "@plane/propel/icons";
 // plane imports
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import { copyTextToClipboard } from "@plane/utils";
+import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { usePowerK } from "@/hooks/store/use-power-k";
+import { useSidebarActions } from "@/providers/sidebar-state";
+import { usePowerK } from "@/hooks/use-power-k";
 
 export const usePowerKMiscellaneousCommands = (): TPowerKCommandConfig[] => {
   // store hooks
-  const { toggleSidebar } = useAppTheme();
+  const { toggleSidebar } = useSidebarActions();
   const { topNavInputRef, topNavSearchInputRef } = usePowerK();
   // translation
   const { t } = useTranslation();

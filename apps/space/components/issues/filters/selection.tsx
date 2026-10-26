@@ -5,7 +5,6 @@
  */
 
 import React, { useState } from "react";
-import { observer } from "mobx-react";
 import { SearchIcon, CloseIcon } from "@plane/propel/icons";
 // types
 import type { IIssueFilterOptions, TIssueFilterKeys } from "@/types/issue";
@@ -19,7 +18,7 @@ type Props = {
   layoutDisplayFiltersOptions: TIssueFilterKeys[];
 };
 
-export const FilterSelection = observer(function FilterSelection(props: Props) {
+export const FilterSelection = function FilterSelection(props: Props) {
   const { filters, handleFilters, layoutDisplayFiltersOptions } = props;
 
   const [filtersSearchQuery, setFiltersSearchQuery] = useState("");
@@ -68,19 +67,7 @@ export const FilterSelection = observer(function FilterSelection(props: Props) {
             />
           </div>
         )}
-
-        {/* labels */}
-        {/* {isFilterEnabled("labels") && (
-          <div className="py-2">
-            <FilterLabels
-              appliedFilters={filters.labels ?? null}
-              handleUpdate={(val) => handleFilters("labels", val)}
-              labels={labels}
-              searchQuery={filtersSearchQuery}
-            />
-          </div>
-        )} */}
       </div>
     </div>
   );
-});
+};

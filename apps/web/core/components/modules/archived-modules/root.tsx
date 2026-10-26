@@ -6,42 +6,32 @@
 
 import { useParams } from "@tanstack/react-router";
 import React, { useCallback } from "react";
-import { observer } from "mobx-react";
 
-import useSWR from "swr";
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import type { TModuleFilters } from "@plane/types";
 // components
-import { calculateTotalFilters } from "@plane/utils";
+import { calculateTotalFilters } from "@plane/utils/filter";
 import { ArchivedModulesView, ModuleAppliedFiltersList } from "@/components/modules";
 import { CycleModuleListLayoutLoader } from "@/components/ui/loader/cycle-module-list-loader";
 // helpers
 // hooks
-import { useModule } from "@/hooks/store/use-module";
-import { useModuleFilter } from "@/hooks/store/use-module-filter";
+import { useProjectModules } from "@/hooks/use-modules";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useModuleCataloguePreferences } from "@/providers/cycle-module-preferences";
 
-export const ArchivedModuleLayoutRoot = observer(function ArchivedModuleLayoutRoot() {
+export const ArchivedModuleLayoutRoot = function ArchivedModuleLayoutRoot() {
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane hooks
   const { t } = useTranslation();
   // hooks
-  const { fetchArchivedModules, projectArchivedModuleIds, loader } = useModule();
-  const { clearAllFilters, currentProjectArchivedFilters, updateFilters } = useModuleFilter();
+  const catalogue = useProjectModules(workspaceSlug, projectId, true);
+  const preferences = useModuleCataloguePreferences(workspaceSlug, projectId);
+  const { archivedFilters: currentProjectArchivedFilters, update } = preferences;
   // derived values
-  const totalArchivedModules = projectArchivedModuleIds?.length ?? 0;
-
-  useSWR(
-    workspaceSlug && projectId ? `ARCHIVED_MODULES_${workspaceSlug.toString()}_${projectId.toString()}` : null,
-    async () => {
-      if (workspaceSlug && projectId) {
-        await fetchArchivedModules(workspaceSlug.toString(), projectId.toString());
-      }
-    },
-    { revalidateIfStale: false, revalidateOnFocus: false }
-  );
+  const totalArchivedModules = catalogue.modules?.length ?? 0;
 
   const handleRemoveFilter = useCallback(
     (key: keyof TModuleFilters, value: string | null) => {
@@ -51,14 +41,16 @@ export const ArchivedModuleLayoutRoot = observer(function ArchivedModuleLayoutRo
       if (!value) newValues = [];
       else newValues = newValues.filter((val) => val !== value);
 
-      updateFilters(projectId.toString(), { [key]: newValues }, "archived");
+      update({ archivedFilters: { ...currentProjectArchivedFilters, [key]: newValues } });
     },
-    [currentProjectArchivedFilters, projectId, updateFilters]
+    [currentProjectArchivedFilters, projectId, update]
   );
 
   if (!workspaceSlug || !projectId) return <></>;
 
-  if (loader || !projectArchivedModuleIds) {
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="modules" retry={catalogue.retry} />;
+  if (catalogue.isPending) {
     return <CycleModuleListLayoutLoader />;
   }
 
@@ -68,7 +60,9 @@ export const ArchivedModuleLayoutRoot = observer(function ArchivedModuleLayoutRo
         <div className="border-b border-subtle px-5 py-3">
           <ModuleAppliedFiltersList
             appliedFilters={currentProjectArchivedFilters ?? {}}
-            handleClearAllFilters={() => clearAllFilters(projectId.toString(), "archived")}
+            handleClearAllFilters={() =>
+              update({ archivedFilters: {}, display: { ...preferences.display, favorites: false } })
+            }
             handleRemoveFilter={handleRemoveFilter}
             alwaysAllowEditing
             isArchived
@@ -90,4 +84,4 @@ export const ArchivedModuleLayoutRoot = observer(function ArchivedModuleLayoutRo
       )}
     </>
   );
-});
+};

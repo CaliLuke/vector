@@ -8,6 +8,7 @@ import type { Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 // constants
+import { ECustomImageStatus } from "@/extensions/custom-image/types";
 import { CORE_EDITOR_META } from "@/constants/meta";
 // plane editor imports
 import { NODE_FILE_MAP } from "@/plane-editor/constants/utility";
@@ -52,6 +53,13 @@ export const TrackFileDeletionPlugin = (editor: Editor, deleteHandler: TFileHand
         const isAValidNode = NODE_FILE_MAP[nodeType];
         // if the node doesn't match, then return as no point in checking
         if (!isAValidNode) return;
+        // A copied image still points at its source until duplication completes.
+        // Replacing/removing that provisional reference must not delete the source.
+        if (
+          node.attrs.status === ECustomImageStatus.DUPLICATING ||
+          node.attrs.status === ECustomImageStatus.DUPLICATION_FAILED
+        )
+          return;
         // Check if the node has been deleted or replaced
         if (!newFileSources[nodeType]?.has(node.attrs.src)) {
           removedFiles.push(node as TFileNode);

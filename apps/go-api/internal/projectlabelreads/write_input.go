@@ -9,7 +9,9 @@ import (
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
+	"github.com/CaliLuke/go-plane/internal/labelhierarchy"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type labelInput struct {
@@ -27,15 +29,13 @@ func parseLabelInput(body io.Reader, contentType string) (labelInput, error) {
 	}
 	return labelInput{input.Fields, input.Surrogates, input.Kind, input.Null, input.Form}, err
 }
-func pythonType(value any) string         { return djangoinput.PythonType(value) }
 func pythonScalarString(value any) string { return djangoinput.ScalarString(value) }
 func charField(value any, allowBlank bool, surrogates []string) (string, []string) {
 	return djangoinput.CharField(value, allowBlank, surrogates)
 }
 func labelParentUUID(value any) (uuid.UUID, error) { return djangoinput.UUID(value) }
 func labelFloatField(value any) (float64, string)  { return djangoinput.FloatField(value) }
-func labelFloat(value string) (float64, error)     { return djangoinput.Float(value) }
-func (r *WriteRepository) validateInput(ctx context.Context, input labelInput, label *Label, project, method string) error {
+func (r *WriteRepository) validateInput(ctx context.Context, tx pgx.Tx, input labelInput, label *Label, project, method string) error {
 	if input.null {
 		return &HTTPError{400, map[string]any{"non_field_errors": []string{"No data provided"}}}
 	}
@@ -55,15 +55,14 @@ func (r *WriteRepository) validateInput(ctx context.Context, input labelInput, l
 				failures["parent"] = []string{"“" + text + "” is not a valid UUID."}
 			} else {
 				id := parsed.String()
-				var found bool
-				err := r.database.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM labels WHERE id=$1 AND deleted_at IS NULL)`, id).Scan(&found)
+				valid, err := labelhierarchy.ValidateParent(ctx, tx, label.ID, id, project, label.WorkspaceID)
 				if err != nil {
 					return err
 				}
-				if found {
-					label.Parent = &id
-				} else {
+				if !valid {
 					failures["parent"] = []string{fmt.Sprintf("Invalid pk %q - object does not exist.", text)}
+				} else {
+					label.Parent = &id
 				}
 			}
 		}
@@ -108,7 +107,7 @@ func (r *WriteRepository) validateInput(ctx context.Context, input labelInput, l
 			label.Color = value
 		}
 	}
-	if order, present := input.fields["sort_order"]; present && !(input.form && order == "") {
+	if order, present := input.fields["sort_order"]; present && (!input.form || order != "") {
 		if order == nil {
 			failures["sort_order"] = []string{"This field may not be null."}
 		} else {

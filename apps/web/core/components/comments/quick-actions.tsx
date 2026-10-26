@@ -4,33 +4,33 @@
  * See the LICENSE file for details.
  */
 
+import type { CommentActions } from "@/components/comments/types";
 import { useMemo } from "react";
-import { observer } from "mobx-react";
 import { MoreHorizontal } from "lucide-react";
 // plane imports
 import { EIssueCommentAccessSpecifier } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { IconButton } from "@plane/propel/icon-button";
 import { LinkIcon, GlobeIcon, LockIcon, EditIcon, TrashIcon } from "@plane/propel/icons";
-import type { TIssueComment, TCommentsOperations } from "@plane/types";
+import type { TIssueComment } from "@plane/types";
 import type { TContextMenuItem } from "@plane/ui";
 import { CustomMenu } from "@plane/ui";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // hooks
-import { useUser } from "@/hooks/store/user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 type TCommentCard = {
-  activityOperations: TCommentsOperations;
+  activityOperations: CommentActions;
   comment: TIssueComment;
   setEditMode: () => void;
   showAccessSpecifier: boolean;
   showCopyLinkOption: boolean;
 };
 
-export const CommentQuickActions = observer(function CommentQuickActions(props: TCommentCard) {
+export const CommentQuickActions = function CommentQuickActions(props: TCommentCard) {
   const { activityOperations, comment, setEditMode, showAccessSpecifier, showCopyLinkOption } = props;
   // store hooks
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
   // derived values
   const isAuthor = currentUser?.id === comment.actor;
   const canEdit = isAuthor;
@@ -94,7 +94,9 @@ export const CommentQuickActions = observer(function CommentQuickActions(props: 
       {MENU_ITEMS.map((item) => (
         <CustomMenu.MenuItem
           key={item.key}
-          onClick={() => item.action()}
+          onClick={() => {
+            void Promise.resolve(item.action()).catch(() => {});
+          }}
           className={cn(
             "flex items-center gap-2",
             {
@@ -121,4 +123,4 @@ export const CommentQuickActions = observer(function CommentQuickActions(props: 
       ))}
     </CustomMenu>
   );
-});
+};

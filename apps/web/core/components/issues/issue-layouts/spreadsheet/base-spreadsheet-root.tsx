@@ -3,25 +3,31 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { IssueLayoutQuickActions } from "../issue-layout-quick-actions";
 
+import { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
+import { useIssueListPaginationOptions } from "@/hooks/use-issue-list-pagination-options";
 import { useParams } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useCallback, useEffect } from "react";
-import { observer } from "mobx-react";
+import { useCallback } from "react";
 
 // plane imports
-import { ALL_ISSUES, EIssueFilterType, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import type { EIssuesStoreType, IIssueDisplayFilterOptions } from "@plane/types";
-import { EIssueLayoutTypes } from "@plane/types";
+import { ALL_ISSUES, EIssueFilterType, EUserPermissions } from "@plane/constants";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
+import type { IIssueDisplayFilterOptions } from "@plane/types";
+import { EIssueLayoutTypes, EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
-import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { useIssueLayoutActions } from "@/hooks/use-issue-layout-actions";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+
 // local imports
 import { IssueLayoutHOC } from "../issue-layout-HOC";
 import type { IQuickActionProps, TRenderQuickActions } from "../list/list-view-types";
 import { SpreadsheetView } from "./spreadsheet-view";
+import { projectAllIssueIdsByDisplayOrder } from "../issue-display-ordering";
+import { IssueListViewProvider } from "@/providers/issue-list-view";
 
 export type SpreadsheetStoreType =
   | EIssuesStoreType.PROJECT
@@ -32,105 +38,149 @@ export type SpreadsheetStoreType =
   | EIssuesStoreType.TEAM_VIEW
   | EIssuesStoreType.EPIC;
 
+function isSpreadsheetStoreType(storeType: EIssuesStoreType): storeType is SpreadsheetStoreType {
+  return (
+    storeType === EIssuesStoreType.PROJECT ||
+    storeType === EIssuesStoreType.MODULE ||
+    storeType === EIssuesStoreType.CYCLE ||
+    storeType === EIssuesStoreType.PROJECT_VIEW ||
+    storeType === EIssuesStoreType.TEAM ||
+    storeType === EIssuesStoreType.TEAM_VIEW ||
+    storeType === EIssuesStoreType.EPIC
+  );
+}
+
 interface IBaseSpreadsheetRoot {
   QuickActions: FC<IQuickActionProps>;
   canEditPropertiesBasedOnProject?: (projectId: string) => boolean;
   isCompletedCycle?: boolean;
-  viewId?: string | undefined;
+  viewId?: string;
   isEpic?: boolean;
 }
 
-export const BaseSpreadsheetRoot = observer(function BaseSpreadsheetRoot(props: IBaseSpreadsheetRoot) {
-  const { QuickActions, canEditPropertiesBasedOnProject, isCompletedCycle = false, viewId, isEpic = false } = props;
+export function BaseSpreadsheetRoot(props: IBaseSpreadsheetRoot) {
+  const { QuickActions, canEditPropertiesBasedOnProject, isCompletedCycle = false, isEpic = false } = props;
   // router
   const { projectId } = useParams({ strict: false });
   // store hooks
-  const storeType = useIssueStoreType() as SpreadsheetStoreType;
-  const { allowPermissions } = useUserPermissions();
-  const { issues, issuesFilter } = useIssues(storeType);
-  const {
-    fetchIssues,
-    fetchNextIssues,
-    quickAddIssue,
-    updateIssue,
-    removeIssue,
-    removeIssueFromView,
-    archiveIssue,
-    restoreIssue,
-    updateFilters,
-  } = useIssuesActions(storeType);
+  const issueListType = useIssueListType();
+  if (!isSpreadsheetStoreType(issueListType)) throw new Error("Spreadsheet layouts require a supported issue list.");
+  const storeType = issueListType;
+  const { workspaceSlug } = useParams({ strict: false });
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { issueFilters: displayPreferences, projectPreferences, actions } = useIssueLayoutActions(storeType);
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { quickAddIssue, updateIssue, removeIssue, removeIssueFromView, archiveIssue, restoreIssue, updateFilters } =
+    actions;
   // derived values
-  const { enableInlineEditing, enableQuickAdd, enableIssueCreation } = issues?.viewFlags || {};
+  const enableQuickAdd = true;
+  const enableIssueCreation = true;
+  const enableInlineEditing = true;
+  const displayFilters = displayPreferences?.displayFilters ?? {};
+  const displayProperties = displayPreferences?.displayProperties ?? {};
   // user role validation
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
-  );
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
-  useEffect(() => {
-    fetchIssues("init-loader", { canGroup: false, perPageCount: 100 }, viewId);
-  }, [fetchIssues, storeType, viewId]);
+  const paginationOptions = useIssueListPaginationOptions(storeType, displayFilters, EIssueLayoutTypes.SPREADSHEET);
+  const readState = useIssueListPresentation(storeType, paginationOptions, displayFilters);
+  const { labelsById, estimateProjection, stateProjection, parentProjection } = readState;
 
   const canEditProperties = useCallback(
-    (projectId: string | undefined) => {
+    (targetProjectId: string | undefined) => {
       const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && projectId ? canEditPropertiesBasedOnProject(projectId) : isEditingAllowed;
+        canEditPropertiesBasedOnProject && targetProjectId
+          ? canEditPropertiesBasedOnProject(targetProjectId)
+          : isEditingAllowed;
 
       return enableInlineEditing && isEditingAllowedBasedOnProject;
     },
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 
-  const issueIds = issues.groupedIssueIds?.[ALL_ISSUES] ?? [];
-  const nextPageResults = issues.getPaginationData(ALL_ISSUES, undefined)?.nextPageResults;
+  const issueIds =
+    projectAllIssueIdsByDisplayOrder(
+      readState.groupedIssueIds,
+      (issueId) => readState.issuesById[issueId],
+      membersById,
+      displayFilters.order_by,
+      labelsById,
+      estimateProjection,
+      stateProjection,
+      parentProjection
+    ) ?? [];
+  const nextPageResults = readState.getPaginationData(ALL_ISSUES, undefined)?.nextPageResults;
 
+  const saveDisplayFilters = useCallback(
+    async (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
+      try {
+        if (storeType === EIssuesStoreType.PROJECT) {
+          if (!projectPreferences) throw new Error("Project preferences are unavailable for the active issue list.");
+          await projectPreferences.save({ display_filters: updatedDisplayFilter });
+          return;
+        }
+        if (!updateFilters) throw new Error("Issue display filters are unavailable for this list.");
+        await updateFilters(projectId ?? "", EIssueFilterType.DISPLAY_FILTERS, updatedDisplayFilter);
+      } catch (error) {
+        setToast({
+          title: "Error!",
+          type: TOAST_TYPE.ERROR,
+          message: error instanceof Error ? error.message : "Failed to update issue display filters.",
+        });
+      }
+    },
+    [projectId, projectPreferences, storeType, updateFilters]
+  );
   const handleDisplayFiltersUpdate = useCallback(
     (updatedDisplayFilter: Partial<IIssueDisplayFilterOptions>) => {
-      updateFilters(projectId?.toString() ?? "", EIssueFilterType.DISPLAY_FILTERS, {
-        ...updatedDisplayFilter,
-      });
+      void saveDisplayFilters(updatedDisplayFilter);
     },
-    [projectId, updateFilters]
+    [saveDisplayFilters]
   );
 
   const renderQuickActions: TRenderQuickActions = useCallback(
     ({ issue, parentRef, customActionButton, placement, portalElement }) => (
-      <QuickActions
+      <IssueLayoutQuickActions
+        QuickActions={QuickActions}
         parentRef={parentRef}
         customActionButton={customActionButton}
         issue={issue}
-        handleDelete={async () => removeIssue(issue.project_id, issue.id)}
-        handleUpdate={async (data) => updateIssue && updateIssue(issue.project_id, issue.id, data)}
-        handleRemoveFromView={async () => removeIssueFromView && removeIssueFromView(issue.project_id, issue.id)}
-        handleArchive={async () => archiveIssue && archiveIssue(issue.project_id, issue.id)}
-        handleRestore={async () => restoreIssue && restoreIssue(issue.project_id, issue.id)}
+        actions={{ removeIssue, updateIssue, removeIssueFromView, archiveIssue, restoreIssue }}
         portalElement={portalElement}
         readOnly={!canEditProperties(issue.project_id ?? undefined) || isCompletedCycle}
-        placements={placement}
+        placement={placement}
       />
     ),
-    [isCompletedCycle, canEditProperties, removeIssue, updateIssue, removeIssueFromView, archiveIssue, restoreIssue]
+    [
+      isCompletedCycle,
+      canEditProperties,
+      removeIssue,
+      QuickActions,
+      updateIssue,
+      removeIssueFromView,
+      archiveIssue,
+      restoreIssue,
+    ]
   );
-
-  if (!Array.isArray(issueIds)) return null;
 
   return (
-    <IssueLayoutHOC layout={EIssueLayoutTypes.SPREADSHEET}>
-      <SpreadsheetView
-        displayProperties={issuesFilter.issueFilters?.displayProperties ?? {}}
-        displayFilters={issuesFilter.issueFilters?.displayFilters ?? {}}
-        handleDisplayFilterUpdate={handleDisplayFiltersUpdate}
-        issueIds={issueIds}
-        quickActions={renderQuickActions}
-        updateIssue={updateIssue}
-        canEditProperties={canEditProperties}
-        quickAddCallback={quickAddIssue}
-        enableQuickCreateIssue={enableQuickAdd}
-        disableIssueCreation={!enableIssueCreation || !isEditingAllowed || isCompletedCycle}
-        canLoadMoreIssues={!!nextPageResults}
-        loadMoreIssues={fetchNextIssues}
-        isEpic={isEpic}
-      />
-    </IssueLayoutHOC>
+    <IssueListViewProvider readState={readState}>
+      <IssueLayoutHOC readState={readState} layout={EIssueLayoutTypes.SPREADSHEET}>
+        <SpreadsheetView
+          displayProperties={displayProperties}
+          displayFilters={displayFilters}
+          handleDisplayFilterUpdate={handleDisplayFiltersUpdate}
+          issueIds={issueIds}
+          quickActions={renderQuickActions}
+          updateIssue={updateIssue}
+          canEditProperties={canEditProperties}
+          quickAddCallback={quickAddIssue}
+          enableQuickCreateIssue={enableQuickAdd}
+          disableIssueCreation={!enableIssueCreation || !isEditingAllowed || isCompletedCycle}
+          canLoadMoreIssues={nextPageResults}
+          loadMoreIssues={() => void readState.fetchNextIssues()}
+          isEpic={isEpic}
+        />
+      </IssueLayoutHOC>
+    </IssueListViewProvider>
   );
-});
+}

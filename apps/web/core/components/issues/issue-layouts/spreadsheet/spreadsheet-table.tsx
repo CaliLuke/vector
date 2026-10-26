@@ -1,3 +1,4 @@
+import type { WorkItemPropertyIdentity } from "@/services/work-item-types.service";
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
@@ -6,42 +7,52 @@
 
 import type { MutableRefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
+
 // plane imports
-import type { IIssueDisplayFilterOptions, IIssueDisplayProperties, TIssue } from "@plane/types";
+import type {
+  TIssueStandardDisplayProperty,
+  IIssueDisplayFilterOptions,
+  IIssueDisplayProperties,
+  TIssue,
+} from "@plane/types";
 // components
 import { SpreadsheetIssueRowLoader } from "@/components/ui/loader/layouts/spreadsheet-layout-loader";
 // hooks
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { useIssuesStore } from "@/hooks/use-issue-layout-store";
+import { useIssueListView } from "@/providers/issue-list-view";
 import type { TSelectionHelper } from "@/hooks/use-multiple-select";
 import { useTableKeyboardNavigation } from "@/hooks/use-table-keyboard-navigation";
 // local imports
 import type { TRenderQuickActions } from "../list/list-view-types";
-import { getDisplayPropertiesCount } from "../utils";
+import { shouldRenderColumn } from "@/helpers/issue-filter.helper";
 import { SpreadsheetIssueRow } from "./issue-row";
 import { SpreadsheetHeader } from "./spreadsheet-header";
 
 type Props = {
+  onEditProperties: (issue: TIssue) => void;
+  customColumns: WorkItemPropertyIdentity[];
   displayProperties: IIssueDisplayProperties;
   displayFilters: IIssueDisplayFilterOptions;
   handleDisplayFilterUpdate: (data: Partial<IIssueDisplayFilterOptions>) => void;
   issueIds: string[];
   isEstimateEnabled: boolean;
   quickActions: TRenderQuickActions;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   canEditProperties: (projectId: string | undefined) => boolean;
   portalElement: React.MutableRefObject<HTMLDivElement | null>;
   containerRef: MutableRefObject<HTMLTableElement | null>;
   canLoadMoreIssues: boolean;
   loadMoreIssues: () => void;
-  spreadsheetColumnsList: (keyof IIssueDisplayProperties)[];
+  spreadsheetColumnsList: TIssueStandardDisplayProperty[];
+  propertyRevision?: number;
   selectionHelpers: TSelectionHelper;
   isEpic?: boolean;
 };
 
-export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props) {
+export const SpreadsheetTable = function SpreadsheetTable(props: Props) {
   const {
+    onEditProperties,
+    customColumns,
     displayProperties,
     displayFilters,
     handleDisplayFilterUpdate,
@@ -55,6 +66,7 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
     containerRef,
     loadMoreIssues,
     spreadsheetColumnsList,
+    propertyRevision,
     selectionHelpers,
     isEpic = false,
   } = props;
@@ -63,9 +75,7 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
   const isScrolled = useRef(false);
   const [intersectionElement, setIntersectionElement] = useState<HTMLTableSectionElement | null>(null);
 
-  const {
-    issues: { getIssueLoader },
-  } = useIssuesStore();
+  const { isLoadingNextPage } = useIssueListView();
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
@@ -100,19 +110,21 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
     };
   }, [handleScroll, containerRef]);
 
-  const isPaginating = !!getIssueLoader();
+  const isPaginating = isLoadingNextPage();
 
   useIntersectionObserver(containerRef, isPaginating ? null : intersectionElement, loadMoreIssues, `100% 0% 100% 0%`);
 
   const handleKeyBoardNavigation = useTableKeyboardNavigation();
 
-  const ignoreFieldsForCounting: (keyof IIssueDisplayProperties)[] = ["key"];
-  if (!isEstimateEnabled) ignoreFieldsForCounting.push("estimate");
-  const displayPropertiesCount = getDisplayPropertiesCount(displayProperties, ignoreFieldsForCounting);
+  const displayPropertiesCount =
+    spreadsheetColumnsList.filter(
+      (property) => displayProperties[property] && shouldRenderColumn(property, isEstimateEnabled)
+    ).length + customColumns.length;
 
   return (
     <table className="w-full overflow-y-auto bg-surface-1" onKeyDown={handleKeyBoardNavigation}>
       <SpreadsheetHeader
+        customColumns={customColumns}
         displayProperties={displayProperties}
         displayFilters={displayFilters}
         handleDisplayFilterUpdate={handleDisplayFilterUpdate}
@@ -126,7 +138,9 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
         {issueIds.map((id) => (
           <SpreadsheetIssueRow
             key={id}
+            onEditProperties={onEditProperties}
             issueId={id}
+            customColumns={customColumns}
             displayProperties={displayProperties}
             quickActions={quickActions}
             canEditProperties={canEditProperties}
@@ -137,6 +151,7 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
             containerRef={containerRef}
             isScrolled={isScrolled}
             spreadsheetColumnsList={spreadsheetColumnsList}
+            propertyRevision={propertyRevision}
             selectionHelpers={selectionHelpers}
             isEpic={isEpic}
           />
@@ -151,4 +166,4 @@ export const SpreadsheetTable = observer(function SpreadsheetTable(props: Props)
       )}
     </table>
   );
-});
+};

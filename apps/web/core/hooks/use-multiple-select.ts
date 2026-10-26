@@ -4,13 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useEffect, useMemo } from "react";
-// hooks
-import { useMultipleSelectStore } from "@/hooks/store/use-multiple-select-store";
-//
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useReloadConfirmations from "./use-reload-confirmation";
 
-export type TEntityDetails = {
+type TEntityDetails = {
   entityID: string;
   groupID: string;
 };
@@ -18,15 +15,11 @@ export type TEntityDetails = {
 type Props = {
   containerRef: React.MutableRefObject<HTMLElement | null>;
   disabled: boolean;
-  entities: Record<string, string[]>; // { groupID: entityIds[] }
-};
-
-export type TSelectionSnapshot = {
-  isSelectionActive: boolean;
-  selectedEntityIds: string[];
+  entities: Record<string, string[]>;
 };
 
 export type TSelectionHelper = {
+  isSelectionActive: boolean;
   handleClearSelection: () => void;
   handleEntityClick: (event: React.MouseEvent, entityID: string, groupId: string) => void;
   getIsEntitySelected: (entityID: string) => boolean;
@@ -36,359 +29,165 @@ export type TSelectionHelper = {
   isSelectionDisabled: boolean;
 };
 
-export const useMultipleSelect = (props: Props) => {
-  const { containerRef, disabled, entities } = props;
-  // router
-  // const router = useAppRouter();
-  // store hooks
-  const {
-    selectedEntityIds,
-    updateSelectedEntityDetails,
-    bulkUpdateSelectedEntityDetails,
-    getActiveEntityDetails,
-    updateActiveEntityDetails,
-    getPreviousActiveEntity,
-    updatePreviousActiveEntity,
-    getNextActiveEntity,
-    updateNextActiveEntity,
-    getLastSelectedEntityDetails,
-    clearSelection,
-    getIsEntitySelected,
-    getIsEntityActive,
-    getEntityDetailsFromEntityID,
-  } = useMultipleSelectStore();
+type Selection = { entities: TEntityDetails[]; anchor: TEntityDetails | null };
+
+function isSelectionKey(event: KeyboardEvent, container: HTMLElement | null) {
+  if (
+    event.defaultPrevented ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.altKey ||
+    !["ArrowUp", "ArrowDown"].includes(event.key)
+  )
+    return false;
+  const target = event.target;
+  if (
+    target instanceof Element &&
+    target.closest(
+      'input:not([type="checkbox"]), textarea, select, [contenteditable]:not([contenteditable="false"]), [role="dialog"]'
+    )
+  )
+    return false;
+  return !(target instanceof Node) || target === document.body || !!container?.contains(target);
+}
+
+export const useMultipleSelect = ({ containerRef, disabled, entities }: Props): TSelectionHelper => {
+  const [selection, setSelection] = useState<Selection>({ entities: [], anchor: null });
+  const [activeEntity, setActiveEntity] = useState<TEntityDetails | null>(null);
+  const entitiesList = useMemo(
+    () => Object.entries(entities).flatMap(([groupID, ids]) => ids.map((entityID) => ({ entityID, groupID }))),
+    [entities]
+  );
+  // Prune in the same render, before descendants observe a removed entity.
+  const availableIds = useMemo(() => new Set(entitiesList.map(({ entityID }) => entityID)), [entitiesList]);
+  const visibleSelection = selection.entities.filter(({ entityID }) => availableIds.has(entityID));
+  if (visibleSelection.length !== selection.entities.length) {
+    setSelection({ entities: visibleSelection, anchor: visibleSelection.at(-1) ?? null });
+  }
+  if (activeEntity && !availableIds.has(activeEntity.entityID)) setActiveEntity(null);
+  const selectedIds = useMemo(() => new Set(selection.entities.map(({ entityID }) => entityID)), [selection.entities]);
+  const getIsEntitySelected = useCallback((entityID: string) => selectedIds.has(entityID), [selectedIds]);
+  const getIsEntityActive = useCallback((entityID: string) => activeEntity?.entityID === entityID, [activeEntity]);
+  const handleClearSelection = useCallback(() => {
+    setSelection({ entities: [], anchor: null });
+    setActiveEntity(null);
+  }, []);
 
   useReloadConfirmations(
-    selectedEntityIds && selectedEntityIds.length > 0,
+    !disabled && selectedIds.size > 0,
     "Are you sure you want to leave? Your current bulk operation selections will be lost.",
     true,
-    () => {
-      clearSelection();
-    }
+    handleClearSelection
   );
 
-  const groups = useMemo(() => Object.keys(entities), [entities]);
-
-  const entitiesList: TEntityDetails[] = useMemo(
-    () =>
-      groups
-        ?.map((groupID) =>
-          entities?.[groupID]?.map((entityID) => ({
-            entityID,
-            groupID,
-          }))
-        )
-        .flat(1),
-    [entities, groups]
-  );
-
-  const getPreviousAndNextEntities = useCallback(
-    (entityID: string) => {
-      const currentEntityIndex = entitiesList.findIndex((entity) => entity?.entityID === entityID);
-
-      // entity position
-      const isFirstEntity = currentEntityIndex === 0;
-      const isLastEntity = currentEntityIndex === entitiesList.length - 1;
-
-      let previousEntity: TEntityDetails | null = null;
-      let nextEntity: TEntityDetails | null = null;
-
-      if (isLastEntity) {
-        nextEntity = null;
-      } else {
-        nextEntity = entitiesList[currentEntityIndex + 1];
-      }
-
-      if (isFirstEntity) {
-        previousEntity = null;
-      } else {
-        previousEntity = entitiesList[currentEntityIndex - 1];
-      }
-
-      return {
-        previousEntity,
-        nextEntity,
-      };
-    },
-    [entitiesList]
-  );
-
-  const handleActiveEntityChange = useCallback(
-    (entityDetails: TEntityDetails | null, shouldScroll: boolean = true) => {
-      if (disabled) return;
-
-      if (!entityDetails) {
-        updateActiveEntityDetails(null);
-        updatePreviousActiveEntity(null);
-        updateNextActiveEntity(null);
-        return;
-      }
-
-      updateActiveEntityDetails(entityDetails);
-
-      // scroll to get the active element in view
-      const activeElement = document.querySelector(
-        `[data-entity-id="${entityDetails.entityID}"][data-entity-group-id="${entityDetails.groupID}"]`
+  const activate = useCallback(
+    (entity: TEntityDetails, scroll: boolean) => {
+      setActiveEntity(entity);
+      const container = containerRef.current;
+      if (!scroll || !container) return;
+      const element = Array.from(container.querySelectorAll<HTMLElement>("[data-entity-id]")).find(
+        (node) => node.dataset.entityId === entity.entityID && node.dataset.entityGroupId === entity.groupID
       );
-      if (activeElement && containerRef.current && shouldScroll) {
-        const SCROLL_OFFSET = 200;
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const elementRect = activeElement.getBoundingClientRect();
-
-        const isInView =
-          elementRect.top >= containerRect.top + SCROLL_OFFSET &&
-          elementRect.bottom <= containerRect.bottom - SCROLL_OFFSET;
-
-        if (!isInView) {
-          containerRef.current.scrollBy({
-            top: elementRect.top < containerRect.top + SCROLL_OFFSET ? -50 : 50,
-          });
-        }
-      }
-
-      const { previousEntity: previousActiveEntity, nextEntity: nextActiveEntity } = getPreviousAndNextEntities(
-        entityDetails.entityID
-      );
-      updatePreviousActiveEntity(previousActiveEntity);
-      updateNextActiveEntity(nextActiveEntity);
-    },
-    [
-      containerRef,
-      disabled,
-      getPreviousAndNextEntities,
-      updateActiveEntityDetails,
-      updateNextActiveEntity,
-      updatePreviousActiveEntity,
-    ]
-  );
-
-  const handleEntitySelection = useCallback(
-    (
-      entityDetails: TEntityDetails | TEntityDetails[],
-      shouldScroll: boolean = true,
-      forceAction: "force-add" | "force-remove" | null = null
-    ) => {
-      if (disabled) return;
-
-      if (Array.isArray(entityDetails)) {
-        bulkUpdateSelectedEntityDetails(entityDetails, forceAction === "force-add" ? "add" : "remove");
-        if (forceAction === "force-add" && entityDetails.length > 0) {
-          handleActiveEntityChange(entityDetails[entityDetails.length - 1], shouldScroll);
-        }
-        return;
-      }
-
-      if (forceAction) {
-        if (forceAction === "force-add") {
-          console.log("force adding");
-          updateSelectedEntityDetails(entityDetails, "add");
-          handleActiveEntityChange(entityDetails, shouldScroll);
-        }
-        if (forceAction === "force-remove") {
-          updateSelectedEntityDetails(entityDetails, "remove");
-        }
-        return;
-      }
-
-      const isSelected = getIsEntitySelected(entityDetails.entityID);
-      if (isSelected) {
-        updateSelectedEntityDetails(entityDetails, "remove");
-        handleActiveEntityChange(entityDetails, shouldScroll);
-      } else {
-        updateSelectedEntityDetails(entityDetails, "add");
-        handleActiveEntityChange(entityDetails, shouldScroll);
+      if (!element) return;
+      const bounds = container.getBoundingClientRect();
+      const itemBounds = element.getBoundingClientRect();
+      const offset = 200;
+      if (itemBounds.top < bounds.top + offset || itemBounds.bottom > bounds.bottom - offset) {
+        container.scrollBy({ top: itemBounds.top < bounds.top + offset ? -50 : 50 });
       }
     },
-    [
-      bulkUpdateSelectedEntityDetails,
-      disabled,
-      getIsEntitySelected,
-      handleActiveEntityChange,
-      updateSelectedEntityDetails,
-    ]
+    [containerRef]
   );
 
-  /**
-   * @description toggle entity selection
-   * @param {React.MouseEvent} event
-   * @param {string} entityID
-   * @param {string} groupID
-   */
+  const toggle = useCallback(
+    (entity: TEntityDetails, scroll = false) => {
+      setSelection((previous) => {
+        const selected = previous.entities.some(({ entityID }) => entityID === entity.entityID);
+        const remaining = previous.entities.filter(({ entityID }) => entityID !== entity.entityID);
+        const next = selected ? remaining : [...remaining, entity];
+        return { entities: next, anchor: selected ? (next.at(-1) ?? null) : entity };
+      });
+      activate(entity, scroll);
+    },
+    [activate]
+  );
+
   const handleEntityClick = useCallback(
-    (e: React.MouseEvent, entityID: string, groupID: string) => {
+    (event: React.MouseEvent, entityID: string, groupID: string) => {
       if (disabled) return;
-      const lastSelectedEntityDetails = getLastSelectedEntityDetails();
-      if (e.shiftKey && lastSelectedEntityDetails) {
-        const currentEntityIndex = entitiesList.findIndex((entity) => entity?.entityID === entityID);
-
-        const lastEntityIndex = entitiesList.findIndex(
-          (entity) => entity?.entityID === lastSelectedEntityDetails.entityID
-        );
-        if (lastEntityIndex < currentEntityIndex) {
-          for (let i = lastEntityIndex + 1; i <= currentEntityIndex; i++) {
-            const entityDetails = entitiesList[i];
-            if (entityDetails) {
-              handleEntitySelection(entityDetails, false);
-            }
-          }
-        } else if (lastEntityIndex > currentEntityIndex) {
-          for (let i = currentEntityIndex; i <= lastEntityIndex - 1; i++) {
-            const entityDetails = entitiesList[i];
-            if (entityDetails) {
-              handleEntitySelection(entityDetails, false);
-            }
-          }
-        } else {
-          const startIndex = lastEntityIndex + 1;
-          const endIndex = currentEntityIndex;
-          for (let i = startIndex; i <= endIndex; i++) {
-            const entityDetails = entitiesList[i];
-            if (entityDetails) {
-              handleEntitySelection(entityDetails, false);
-            }
-          }
-        }
+      const currentIndex = entitiesList.findIndex(
+        (entity) => entity.entityID === entityID && entity.groupID === groupID
+      );
+      const anchorIndex = selection.anchor
+        ? entitiesList.findIndex(
+            (entity) => entity.entityID === selection.anchor?.entityID && entity.groupID === selection.anchor?.groupID
+          )
+        : -1;
+      if (event.shiftKey && anchorIndex >= 0 && anchorIndex === currentIndex) return;
+      if (event.shiftKey && anchorIndex >= 0 && currentIndex >= 0 && anchorIndex !== currentIndex) {
+        const range =
+          anchorIndex < currentIndex
+            ? entitiesList.slice(anchorIndex + 1, currentIndex + 1)
+            : entitiesList.slice(currentIndex, anchorIndex);
+        range.forEach((entity) => toggle(entity));
         return;
       }
-
-      handleEntitySelection({ entityID, groupID }, false);
+      toggle({ entityID, groupID });
     },
-    [disabled, entitiesList, handleEntitySelection, getLastSelectedEntityDetails]
+    [disabled, entitiesList, selection.anchor, toggle]
   );
 
-  /**
-   * @description check if any entity of the group is selected
-   * @param {string} groupID
-   * @returns {boolean}
-   */
   const isGroupSelected = useCallback(
     (groupID: string) => {
-      const groupEntities = entitiesList.filter((entity) => entity.groupID === groupID);
-      const totalSelected = groupEntities.filter((entity) => getIsEntitySelected(entity?.entityID ?? "")).length;
-      if (totalSelected === 0) return "empty";
-      if (totalSelected === groupEntities.length) return "complete";
-      return "partial";
+      const ids = entities[groupID] ?? [];
+      const count = ids.filter((id) => selectedIds.has(id)).length;
+      if (count === 0) return "empty";
+      return count === ids.length ? "complete" : "partial";
     },
-    [entitiesList, getIsEntitySelected]
+    [entities, selectedIds]
   );
 
-  /**
-   * @description toggle group selection
-   * @param {string} groupID
-   */
   const handleGroupClick = useCallback(
     (groupID: string) => {
       if (disabled) return;
-
-      const groupEntities = entitiesList.filter((entity) => entity.groupID === groupID);
-      const groupSelectionStatus = isGroupSelected(groupID);
-      handleEntitySelection(groupEntities, false, groupSelectionStatus === "empty" ? "force-add" : "force-remove");
+      const members = entitiesList.filter((entity) => entity.groupID === groupID);
+      if (!members.length) return;
+      const ids = new Set(members.map(({ entityID }) => entityID));
+      const add = isGroupSelected(groupID) === "empty";
+      setSelection((previous) => {
+        const remaining = previous.entities.filter(({ entityID }) => !ids.has(entityID));
+        const next = add ? [...remaining, ...members] : remaining;
+        return { entities: next, anchor: next.at(-1) ?? null };
+      });
+      if (add) activate(members[members.length - 1], false);
     },
-    [disabled, entitiesList, handleEntitySelection, isGroupSelected]
+    [activate, disabled, entitiesList, isGroupSelected]
   );
 
-  // select entities on shift + arrow up/down key press
   useEffect(() => {
-    if (disabled) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!e.shiftKey) return;
-
-      const activeEntityDetails = getActiveEntityDetails();
-      const nextActiveEntity = getNextActiveEntity();
-      const previousActiveEntity = getPreviousActiveEntity();
-
-      if (e.key === "ArrowDown" && activeEntityDetails) {
-        if (!nextActiveEntity) return;
-        handleEntitySelection(nextActiveEntity);
-      }
-      if (e.key === "ArrowUp" && activeEntityDetails) {
-        if (!previousActiveEntity) return;
-        handleEntitySelection(previousActiveEntity);
-      }
+    if (disabled) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!isSelectionKey(event, containerRef.current)) return;
+      const index = activeEntity
+        ? entitiesList.findIndex(
+            (entity) => entity.entityID === activeEntity.entityID && entity.groupID === activeEntity.groupID
+          )
+        : -1;
+      if (event.shiftKey && index < 0) return;
+      const next = index < 0 ? entitiesList[0] : entitiesList[index + (event.key === "ArrowDown" ? 1 : -1)];
+      if (!next) return;
+      event.preventDefault();
+      if (event.shiftKey) toggle(next, true);
+      else activate(next, true);
     };
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activate, activeEntity, containerRef, disabled, entitiesList, toggle]);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [
-    disabled,
-    getActiveEntityDetails,
-    handleEntitySelection,
-    getLastSelectedEntityDetails,
-    getNextActiveEntity,
-    getPreviousActiveEntity,
-  ]);
-
-  useEffect(() => {
-    if (disabled) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey) return;
-      const activeEntityDetails = getActiveEntityDetails();
-      // set active entity id to the first entity
-      if (["ArrowUp", "ArrowDown"].includes(e.key) && !activeEntityDetails) {
-        const firstElementDetails = entitiesList[0];
-        if (!firstElementDetails) return;
-        handleActiveEntityChange(firstElementDetails);
-      }
-
-      if (e.key === "ArrowDown" && activeEntityDetails) {
-        if (!activeEntityDetails) return;
-        const { nextEntity: nextActiveEntity } = getPreviousAndNextEntities(activeEntityDetails.entityID);
-        if (nextActiveEntity) {
-          handleActiveEntityChange(nextActiveEntity);
-        }
-      }
-
-      if (e.key === "ArrowUp" && activeEntityDetails) {
-        if (!activeEntityDetails) return;
-        const { previousEntity: previousActiveEntity } = getPreviousAndNextEntities(activeEntityDetails.entityID);
-        if (previousActiveEntity) {
-          handleActiveEntityChange(previousActiveEntity);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [disabled, getActiveEntityDetails, entitiesList, groups, getPreviousAndNextEntities, handleActiveEntityChange]);
-
-  // clear selection on route change
-  // useEffect(() => {
-  //   const handleRouteChange = () => clearSelection();
-
-  //   router.events.on("routeChangeComplete", handleRouteChange);
-
-  //   return () => {
-  //     router.events.off("routeChangeComplete", handleRouteChange);
-  //   };
-  // }, [clearSelection, router.events]);
-
-  // when entities list change, remove entityIds from the selected entities array, which are not present in the new list
-  useEffect(() => {
-    if (disabled) return;
-    selectedEntityIds.map((entityID) => {
-      const isEntityPresent = entitiesList.find((en) => en?.entityID === entityID);
-      if (!isEntityPresent) {
-        const entityDetails = getEntityDetailsFromEntityID(entityID);
-        if (entityDetails) {
-          handleEntitySelection(entityDetails);
-        }
-      }
-    });
-  }, [disabled, entitiesList, getEntityDetailsFromEntityID, handleEntitySelection, selectedEntityIds]);
-
-  /**
-   * @description helper functions for selection
-   */
-  const helpers: TSelectionHelper = useMemo(
+  return useMemo(
     () => ({
-      handleClearSelection: clearSelection,
+      isSelectionActive: selectedIds.size > 0,
+      handleClearSelection,
       handleEntityClick,
       getIsEntitySelected,
       getIsEntityActive,
@@ -397,15 +196,14 @@ export const useMultipleSelect = (props: Props) => {
       isSelectionDisabled: disabled,
     }),
     [
-      clearSelection,
       disabled,
       getIsEntityActive,
       getIsEntitySelected,
+      handleClearSelection,
       handleEntityClick,
       handleGroupClick,
       isGroupSelected,
+      selectedIds.size,
     ]
   );
-
-  return helpers;
 };

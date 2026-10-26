@@ -7,12 +7,10 @@
 import { useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/adapter/element-adapter";
-import { observer } from "mobx-react";
+
 import type { IBaseLayoutsListItem, IBaseLayoutsListItemProps } from "@plane/types";
 
-export const BaseListItem = observer(function BaseListItem<T extends IBaseLayoutsListItem>(
-  props: IBaseLayoutsListItemProps<T>
-) {
+export const BaseListItem = function BaseListItem<T extends IBaseLayoutsListItem>(props: IBaseLayoutsListItemProps<T>) {
   const { item, groupId, renderItem, enableDragDrop, canDrag, isLast: _isLast, index: _index } = props;
   const itemRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,4 +41,4 @@ export const BaseListItem = observer(function BaseListItem<T extends IBaseLayout
       {renderedItem}
     </div>
   );
-});
+};

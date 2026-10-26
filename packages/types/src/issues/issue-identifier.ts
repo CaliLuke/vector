@@ -12,6 +12,7 @@ export type TIdentifierTextVariant = "default" | "secondary" | "tertiary" | "pri
 
 export type TIssueIdentifierBaseProps = {
   projectId: string;
+  workspaceSlug?: string;
   size?: TIssueIdentifierSize;
   variant?: TIdentifierTextVariant;
   displayProperties?: IIssueDisplayProperties | undefined;

@@ -191,13 +191,27 @@ func (store *PostgresIssueAutomationStore) ApplyIssueAutomationBatch(ctx context
 		return issueAutomationBatchOutput{}, fmt.Errorf("begin issue automation batch: %w", err)
 	}
 	defer tx.Rollback(ctx)
-	candidates, err := loadIssueAutomationCandidates(ctx, tx, input)
+	candidates, err := loadIssueAutomationCandidates(ctx, tx, input, nil)
 	if err != nil {
 		return issueAutomationBatchOutput{}, err
 	}
-	result := issueAutomationBatchOutput{Events: make([]issueActivityExecutionInput, 0, len(candidates))}
+	result := issueAutomationBatchOutput{Events: make([]issueActivityExecutionInput, 0, len(candidates)), HasMore: len(candidates) == issueAutomationBatchSize}
+	if len(candidates) > 0 {
+		result.LastID = candidates[len(candidates)-1].IssueID
+		if err = lockIssueAutomationSchemas(ctx, tx, candidates); err != nil {
+			return issueAutomationBatchOutput{}, err
+		}
+		ids := make([]string, 0, len(candidates))
+		for _, candidate := range candidates {
+			ids = append(ids, candidate.IssueID)
+		}
+		// Recheck eligibility after acquiring schema locks and before row locks.
+		candidates, err = loadIssueAutomationCandidates(ctx, tx, input, ids)
+		if err != nil {
+			return issueAutomationBatchOutput{}, err
+		}
+	}
 	for _, candidate := range candidates {
-		result.LastID = candidate.IssueID
 		event, changed, err := applyIssueAutomationCandidate(ctx, tx, input, candidate)
 		if err != nil {
 			return issueAutomationBatchOutput{}, err
@@ -206,14 +220,13 @@ func (store *PostgresIssueAutomationStore) ApplyIssueAutomationBatch(ctx context
 			result.Events = append(result.Events, event)
 		}
 	}
-	result.HasMore = len(candidates) == issueAutomationBatchSize
 	if err := tx.Commit(ctx); err != nil {
 		return issueAutomationBatchOutput{}, fmt.Errorf("commit issue automation batch: %w", err)
 	}
 	return result, nil
 }
 
-func loadIssueAutomationCandidates(ctx context.Context, tx pgx.Tx, input issueAutomationBatchInput) ([]issueAutomationCandidate, error) {
+func loadIssueAutomationCandidates(ctx context.Context, tx pgx.Tx, input issueAutomationBatchInput, lockedIDs []string) ([]issueAutomationCandidate, error) {
 	query := `
 SELECT project.id::text, COALESCE(project.created_by_id::text,''), issue.id::text,
        CASE WHEN project.default_state_id IS NULL THEN (
@@ -250,8 +263,16 @@ WHERE project.deleted_at IS NULL AND project.archived_at IS NULL
        OR EXISTS (SELECT 1 FROM issue_activities activity WHERE activity.issue_id=issue.id AND activity.deleted_at IS NULL
          AND activity.field='state' AND activity.comment='Plane updated the state to ' AND activity.epoch=EXTRACT(EPOCH FROM $1)::double precision))`
 	}
-	query += ` ORDER BY issue.id LIMIT $3 FOR UPDATE OF issue SKIP LOCKED`
-	rows, err := tx.Query(ctx, query, input.ScheduledAt, input.AfterID, issueAutomationBatchSize)
+	args := []any{input.ScheduledAt, input.AfterID, issueAutomationBatchSize}
+	if lockedIDs != nil {
+		query += ` AND issue.id=ANY($4::uuid[])`
+		args = append(args, lockedIDs)
+	}
+	query += ` ORDER BY issue.id LIMIT $3`
+	if lockedIDs != nil {
+		query += ` FOR UPDATE OF issue SKIP LOCKED`
+	}
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("select issue automation batch: %w", err)
 	}
@@ -382,6 +403,38 @@ func persistIssueAutomationActivityRows(ctx context.Context, tx pgx.Tx, eventID,
 		}
 		if _, err := tx.Exec(ctx, `INSERT INTO issue_activities (id,created_at,updated_at,deleted_at,created_by_id,updated_by_id,workspace_id,project_id,issue_id,issue_comment_id,actor_id,verb,field,old_value,new_value,comment,attachments,old_identifier,new_identifier,epoch) VALUES ($1,COALESCE($15::timestamptz,NOW()),NOW(),NULL,NULL,NULL,$2,$3,$4,$5,$6,$7,NULLIF($8,''),$9,$10,$11,ARRAY[]::text[],$12,$13,NULLIF($14,0)) ON CONFLICT (id) DO NOTHING`, id, workspaceID, projectID, issueID, commentID, actorID, row.Verb, row.Field, row.OldValue, row.NewValue, row.Comment, row.OldIdentifier, row.NewIdentifier, row.Epoch, row.CreatedAt); err != nil {
 			return fmt.Errorf("persist issue automation activity: %w", err)
+		}
+	}
+	return nil
+}
+
+// Take workspace locks in a stable order before any item row lock. Batch
+// candidates are read again under these locks, since eligibility may change.
+func lockIssueAutomationSchemas(ctx context.Context, tx pgx.Tx, candidates []issueAutomationCandidate) error {
+	projects := make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		projects = append(projects, candidate.ProjectID)
+	}
+	rows, err := tx.Query(ctx, `SELECT DISTINCT workspace_id::text FROM projects WHERE id=ANY($1::uuid[]) ORDER BY workspace_id::text`, projects)
+	if err != nil {
+		return err
+	}
+	workspaces := []string{}
+	for rows.Next() {
+		var workspace string
+		if err = rows.Scan(&workspace); err != nil {
+			rows.Close()
+			return err
+		}
+		workspaces = append(workspaces, workspace)
+	}
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	for _, workspace := range workspaces {
+		if _, err = tx.Exec(ctx, `SELECT work_item_schema_lock($1::uuid)`, workspace); err != nil {
+			return err
 		}
 	}
 	return nil

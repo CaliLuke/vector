@@ -5,24 +5,23 @@
  */
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
-import { observer } from "mobx-react";
 
 // plane package imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { Tabs } from "@plane/propel/tabs";
 // components
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 import AnalyticsFilterActions from "@/components/analytics/analytics-filter-actions";
 import { PageHead } from "@/components/core/page-title";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useAnalyticsTabs } from "@/components/analytics/use-analytics-tabs";
+import { AnalyticsStateProvider } from "@/providers/analytics-state-provider";
 
 function AnalyticsPage(): React.JSX.Element | null {
   const params = Route.useParams();
@@ -36,108 +35,98 @@ function AnalyticsPage(): React.JSX.Element | null {
 
   // store hooks
   const { toggleCreateProjectModal } = useCommandPalette();
-  const { workspaceProjectIds, loader } = useProject();
-  const { currentWorkspace } = useWorkspace();
-  const { allowPermissions } = useUserPermissions();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
+  const loader = projectCatalogue.isPending;
+  const { data: currentWorkspace } = useCurrentWorkspace();
+  const { can: canWorkspace } = useWorkspacePermissions(params.workspaceSlug);
+
+  const workspaceProjectIds = projectRows
+    ?.filter((project) => project.workspace === currentWorkspace?.id && !project.archived_at)
+    .map((project) => project.id);
 
   const pageTitle = currentWorkspace?.name
     ? t(`workspace_analytics.page_label`, { workspace: currentWorkspace?.name })
     : undefined;
 
   // permissions
-  const canPerformEmptyStateActions = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const canPerformEmptyStateActions = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   const workspaceSlug = params.workspaceSlug;
   const ANALYTICS_TABS = useAnalyticsTabs(workspaceSlug.toString());
 
-  const [selectedTab, setSelectedTab] = useState(tabId || ANALYTICS_TABS[0]?.key);
-
-  useEffect(() => {
-    if (tabId) {
-      setSelectedTab(tabId);
-    }
-  }, [tabId]);
-
-  // Handle tab change
   const handleTabChange = (value: string) => {
-    setSelectedTab(value);
-    void router.navigate({ href: `/${currentWorkspace?.slug}/analytics/${value}` });
+    void router.navigate({ href: `/${workspaceSlug}/analytics/${value}` });
   };
 
   return (
-    <>
-      <PageHead title={pageTitle} />
-      {workspaceProjectIds && (
-        <>
-          {workspaceProjectIds.length > 0 || loader === "init-loader" ? (
-            <div className="flex h-full overflow-hidden">
-              <Tabs value={selectedTab} onValueChange={handleTabChange} className="h-full w-full">
-                <div className={"flex h-full w-full flex-col"}>
-                  <div
-                    className={cn(
-                      "flex w-full items-center justify-between gap-4 overflow-hidden border-b border-subtle bg-surface-1 px-6 py-2"
-                    )}
-                  >
-                    <Tabs.List className={"flex h-7 w-fit overflow-x-auto"}>
-                      {ANALYTICS_TABS.map((tab) => (
-                        <Tabs.Trigger
-                          key={tab.key}
-                          value={tab.key}
-                          disabled={tab.isDisabled}
-                          size="md"
-                          className="h-6 px-3"
-                          onClick={() => {
-                            if (!tab.isDisabled) {
-                              handleTabChange(tab.key);
-                            }
-                          }}
-                        >
-                          {tab.label}
-                        </Tabs.Trigger>
-                      ))}
-                    </Tabs.List>
-
-                    <div className="flex-shrink-0">
-                      <AnalyticsFilterActions />
-                    </div>
-                  </div>
-                  {ANALYTICS_TABS.map((tab) => (
-                    <Tabs.Content
-                      key={tab.key}
-                      value={tab.key}
-                      className={"h-full overflow-hidden overflow-y-auto px-2"}
+    <AnalyticsStateProvider workspaceSlug={workspaceSlug}>
+      <>
+        <PageHead title={pageTitle} />
+        {workspaceProjectIds && (
+          <>
+            {workspaceProjectIds.length > 0 || loader ? (
+              <div className="flex h-full overflow-hidden">
+                <Tabs value={tabId || ANALYTICS_TABS[0]?.key} onValueChange={handleTabChange} className="h-full w-full">
+                  <div className={"flex h-full w-full flex-col"}>
+                    <div
+                      className={cn(
+                        "flex w-full items-center justify-between gap-4 overflow-hidden border-b border-subtle bg-surface-1 px-6 py-2"
+                      )}
                     >
-                      <tab.content />
-                    </Tabs.Content>
-                  ))}
-                </div>
-              </Tabs>
-            </div>
-          ) : (
-            <EmptyStateDetailed
-              assetKey="project"
-              title={t("workspace_projects.empty_state.no_projects.title")}
-              description={t("workspace_projects.empty_state.no_projects.description")}
-              actions={[
-                {
-                  label: "Create a project",
-                  onClick: () => {
-                    toggleCreateProjectModal(true);
+                      <Tabs.List className={"flex h-7 w-fit overflow-x-auto"}>
+                        {ANALYTICS_TABS.map((tab) => (
+                          <Tabs.Trigger
+                            key={tab.key}
+                            value={tab.key}
+                            disabled={tab.isDisabled}
+                            size="md"
+                            className="h-6 px-3"
+                          >
+                            {tab.label}
+                          </Tabs.Trigger>
+                        ))}
+                      </Tabs.List>
+
+                      <div className="flex-shrink-0">
+                        <AnalyticsFilterActions />
+                      </div>
+                    </div>
+                    {ANALYTICS_TABS.map((tab) => (
+                      <Tabs.Content
+                        key={tab.key}
+                        value={tab.key}
+                        className={"h-full overflow-hidden overflow-y-auto px-2"}
+                      >
+                        <tab.content />
+                      </Tabs.Content>
+                    ))}
+                  </div>
+                </Tabs>
+              </div>
+            ) : (
+              <EmptyStateDetailed
+                assetKey="project"
+                title={t("workspace_projects.empty_state.no_projects.title")}
+                description={t("workspace_projects.empty_state.no_projects.description")}
+                actions={[
+                  {
+                    label: "Create a project",
+                    onClick: () => {
+                      toggleCreateProjectModal(true);
+                    },
+                    disabled: !canPerformEmptyStateActions,
                   },
-                  disabled: !canPerformEmptyStateActions,
-                },
-              ]}
-            />
-          )}
-        </>
-      )}
-    </>
+                ]}
+              />
+            )}
+          </>
+        )}
+      </>
+    </AnalyticsStateProvider>
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/analytics/$tabId/")({
-  component: observer(AnalyticsPage),
+  component: AnalyticsPage,
 });

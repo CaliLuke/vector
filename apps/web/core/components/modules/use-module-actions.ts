@@ -9,9 +9,16 @@ import { IS_FAVORITE_MENU_OPEN } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
 import { TOAST_TYPE, setPromiseToast, setToast } from "@plane/propel/toast";
 import type { IModule } from "@plane/types";
-import { useModule } from "@/hooks/store/use-module";
+import { EUserPermissions } from "@plane/constants";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useQueryClient } from "@tanstack/react-query";
+import { captureParentAccess } from "@/queries/cycle-module-scope";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { useFavorites } from "@/hooks/use-favorites";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 
-type ModuleActionsProps = {
+export type ModuleActionsProps = {
   moduleId: string;
   workspaceSlug: string | undefined;
   projectId: string | undefined;
@@ -19,7 +26,15 @@ type ModuleActionsProps = {
 
 export function useModuleActions(props: ModuleActionsProps) {
   const { moduleId, workspaceSlug, projectId } = props;
-  const { addModuleToFavorites, removeModuleFromFavorites, updateModuleDetails } = useModule();
+  const catalogue = useProjectModules(workspaceSlug, projectId),
+    client = useQueryClient();
+  const current = useCommittedScope(JSON.stringify([catalogue.scope, moduleId]));
+  const access = captureParentAccess(client, catalogue.scope);
+  const { favorites, favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug);
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const isFavorite = favoritesByEntity?.has(`module:${moduleId}`) ?? false;
+  const getUserDetails = (userId: string) => membersById?.get(userId)?.member;
   const { setValue: toggleFavoriteMenu, storedValue } = useLocalStorage<boolean>(IS_FAVORITE_MENU_OPEN, false);
 
   const handleAddToFavorites = (event: MouseEvent<HTMLButtonElement>) => {
@@ -27,7 +42,7 @@ export function useModuleActions(props: ModuleActionsProps) {
     event.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
-    const addToFavoritePromise = addModuleToFavorites(workspaceSlug, projectId, moduleId).then((result) => {
+    const addToFavoritePromise = toggleFavorite("module", moduleId, projectId).then((result) => {
       if (!storedValue) toggleFavoriteMenu(true);
       return result;
     });
@@ -50,7 +65,7 @@ export function useModuleActions(props: ModuleActionsProps) {
     event.preventDefault();
     if (!workspaceSlug || !projectId) return;
 
-    const removeFromFavoritePromise = removeModuleFromFavorites(workspaceSlug, projectId, moduleId);
+    const removeFromFavoritePromise = toggleFavorite("module", moduleId, projectId);
 
     setPromiseToast(removeFromFavoritePromise, {
       loading: "Removing module from favorites...",
@@ -69,7 +84,8 @@ export function useModuleActions(props: ModuleActionsProps) {
     if (!workspaceSlug || !projectId) return;
 
     try {
-      await updateModuleDetails(workspaceSlug, projectId, moduleId, payload);
+      const result = await catalogue.mutation.mutateAsync({ type: "patch", id: moduleId, data: payload });
+      if (!current() || !result.captured.isCurrent()) return;
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success!",
@@ -81,13 +97,22 @@ export function useModuleActions(props: ModuleActionsProps) {
           ? error.detail
           : "Module could not be updated. Please try again.";
 
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: detail,
-      });
+      if (current() && access.isCurrent())
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Error!",
+          message: detail,
+        });
     }
   };
 
-  return { handleAddToFavorites, handleRemoveFromFavorites, handleModuleDetailsChange };
+  return {
+    handleAddToFavorites,
+    handleRemoveFromFavorites,
+    handleModuleDetailsChange,
+    isFavorite,
+    isFavoritesReady: favorites !== undefined,
+    isEditingAllowed: canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]),
+    getUserDetails,
+  };
 }

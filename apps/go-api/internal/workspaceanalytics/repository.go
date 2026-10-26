@@ -7,8 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
 	"uuid"
+
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -202,7 +203,7 @@ type chartDimension struct{ id, name, joins, valid string }
 var chartDimensions = map[string]chartDimension{
 	"STATES":          {"state.id::text", "state.name", `LEFT JOIN states state ON state.id=i.state_id`, ``},
 	"STATE_GROUPS":    {`state."group"`, `state."group"`, `LEFT JOIN states state ON state.id=i.state_id`, ``},
-	"LABELS":          {"label.id::text", "label.name", `JOIN label_issues label_link ON label_link.issue_id=i.id AND label_link.deleted_at IS NULL JOIN labels label ON label.id=label_link.label_id`, ``},
+	"LABELS":          {"label.id::text", "label.name", `JOIN issue_labels label_link ON ` + issuequery.LiveIssueLabelPredicate("i", "label_link") + ` JOIN labels label ON label.id=label_link.label_id`, ``},
 	"ASSIGNEES":       {"assignee.id::text", "assignee.display_name", `JOIN issue_assignees assignment ON assignment.issue_id=i.id AND assignment.deleted_at IS NULL JOIN users assignee ON assignee.id=assignment.assignee_id`, ``},
 	"ESTIMATE_POINTS": {"estimate_point.key::text", "estimate_point.value::text", `LEFT JOIN estimate_points estimate_point ON estimate_point.id=i.estimate_point_id`, ``},
 	"CYCLES":          {"cycle.id::text", "cycle.name", `JOIN cycle_issues cycle_link ON cycle_link.issue_id=i.id AND cycle_link.deleted_at IS NULL JOIN cycles cycle ON cycle.id=cycle_link.cycle_id`, ``},

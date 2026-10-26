@@ -27,11 +27,11 @@ export class SitesMemberService extends APIService {
    * @returns {Promise<TPublicMember[]>} The list of members
    * @throws {Error} If the API request fails
    */
-  async list(anchor: string): Promise<TPublicMember[]> {
-    return this.get(`/api/public/anchor/${anchor}/members/`)
+  async list(anchor: string, signal?: AbortSignal): Promise<TPublicMember[]> {
+    return this.get(`/api/public/anchor/${anchor}/members/`, { signal })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

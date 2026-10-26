@@ -4,16 +4,17 @@
  * See the LICENSE file for details.
  */
 
+import { TypeGroupingStatus } from "@/components/issues/issue-layouts/type-group-columns";
+import { useGroupColumns } from "@/components/issues/issue-layouts/use-group-columns";
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
 // plane constants
 import { ALL_ISSUES } from "@plane/constants";
 // types
 import type {
   GroupByColumnTypes,
-  TGroupedIssues,
   TIssue,
   IIssueDisplayProperties,
   TIssueMap,
@@ -21,27 +22,31 @@ import type {
   TIssueOrderByOptions,
   IGroupByColumn,
   TIssueKanbanFilters,
+  TPaginationData,
+  TLoader,
 } from "@plane/types";
 // components
 import { MultipleSelectGroup } from "@/components/core/multiple-select";
 // hooks
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
 // plane web components
 import { IssueBulkOperationsRoot } from "@/components/issues/bulk-operations";
 // plane web hooks
 import { useBulkOperationStatus } from "@/hooks/use-bulk-operation-status";
 // utils
 import type { GroupDropLocation } from "../utils";
-import { getGroupByColumns, isWorkspaceLevel, isSubGrouped } from "../utils";
+import { isWorkspaceLevel } from "../utils";
+import { getGroupedIssueIds } from "../issue-display-ordering";
+import type { IssueListGroupedIds } from "@/queries/issue-lists";
 import { ListGroup } from "./list-group";
 import type { TRenderQuickActions } from "./list-view-types";
 
 export interface IList {
-  groupedIssueIds: TGroupedIssues;
+  groupedIssueIds: IssueListGroupedIds;
   issuesMap: TIssueMap;
   group_by: TIssueGroupByOptions | null;
   orderBy: TIssueOrderByOptions | undefined;
-  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
+  updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<unknown>) | undefined;
   quickActions: TRenderQuickActions;
   displayProperties: IIssueDisplayProperties | undefined;
   enableIssueQuickAdd: boolean;
@@ -50,15 +55,18 @@ export interface IList {
   quickAddCallback?: (projectId: string | null | undefined, data: TIssue) => Promise<TIssue | undefined>;
   disableIssueCreation?: boolean;
   handleOnDrop: (source: GroupDropLocation, destination: GroupDropLocation) => Promise<void>;
-  addIssuesToView?: (issueIds: string[]) => Promise<TIssue>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   isCompletedCycle?: boolean;
   loadMoreIssues: (groupId?: string) => void;
   handleCollapsedGroups: (value: string) => void;
   collapsedGroups: TIssueKanbanFilters;
   isEpic?: boolean;
+  getGroupIssueCount: (groupId?: string, subGroupId?: string, cumulative?: boolean) => number | undefined;
+  getPaginationData: (groupId?: string, subGroupId?: string) => TPaginationData | undefined;
+  getIssueLoader: (groupId?: string, subGroupId?: string) => TLoader;
 }
 
-export const List = observer(function List(props: IList) {
+export function List(props: IList) {
   const {
     groupedIssueIds,
     issuesMap,
@@ -79,15 +87,21 @@ export const List = observer(function List(props: IList) {
     handleCollapsedGroups,
     collapsedGroups,
     isEpic = false,
+    getGroupIssueCount,
+    getPaginationData,
+    getIssueLoader,
   } = props;
 
-  const storeType = useIssueStoreType();
+  const storeType = useIssueListType();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
   // plane web hooks
   const isBulkOperationsEnabled = useBulkOperationStatus();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const groups = getGroupByColumns({
+  const groups = useGroupColumns({
+    workspaceSlug,
+    projectId,
     groupBy: group_by as GroupByColumnTypes,
     includeNone: true,
     isWorkspaceLevel: isWorkspaceLevel(storeType),
@@ -107,11 +121,11 @@ export const List = observer(function List(props: IList) {
     );
   }, [containerRef]);
 
-  if (!groups) return null;
+  if (!groups) return <TypeGroupingStatus active={group_by === "type_id"} />;
 
   const getGroupIndex = (groupId: string | undefined) => groups.findIndex(({ id }) => id === groupId);
 
-  const is_list = group_by === null ? true : false;
+  const is_list = group_by === null;
 
   // create groupIds array and entities object for bulk ops
   const groupIds = groups.map((g) => g.id);
@@ -122,11 +136,15 @@ export const List = observer(function List(props: IList) {
   let entities: Record<string, string[]> = {};
 
   if (is_list) {
-    entities = Object.assign(orderedGroups, { [groupIds[0]]: groupedIssueIds[ALL_ISSUES] ?? [] });
-  } else if (!isSubGrouped(groupedIssueIds)) {
-    entities = Object.assign(orderedGroups, { ...groupedIssueIds });
+    entities = Object.assign(orderedGroups, {
+      [groupIds[0]]: getGroupedIssueIds(groupedIssueIds, ALL_ISSUES) ?? [],
+    });
   } else {
-    entities = orderedGroups;
+    entities = { ...orderedGroups };
+    for (const groupId of groupIds) {
+      const issueIds = getGroupedIssueIds(groupedIssueIds, groupId);
+      if (issueIds) entities[groupId] = issueIds;
+    }
   }
   return (
     <div className="relative flex size-full flex-col">
@@ -145,7 +163,7 @@ export const List = observer(function List(props: IList) {
                 {groups.map((group: IGroupByColumn) => (
                   <ListGroup
                     key={group.id}
-                    groupIssueIds={groupedIssueIds?.[group.id]}
+                    groupIssueIds={getGroupedIssueIds(groupedIssueIds, group.id)}
                     issuesMap={issuesMap}
                     group_by={group_by}
                     group={group}
@@ -168,6 +186,9 @@ export const List = observer(function List(props: IList) {
                     handleCollapsedGroups={handleCollapsedGroups}
                     collapsedGroups={collapsedGroups}
                     isEpic={isEpic}
+                    getGroupIssueCount={getGroupIssueCount}
+                    getPaginationData={getPaginationData}
+                    getIssueLoader={getIssueLoader}
                   />
                 ))}
               </div>
@@ -179,4 +200,4 @@ export const List = observer(function List(props: IList) {
       )}
     </div>
   );
-});
+}

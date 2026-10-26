@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 import { ListFilter } from "lucide-react";
 // plane imports
 import type { ENotificationFilterType } from "@plane/constants";
@@ -15,7 +14,7 @@ import { PopoverMenu } from "@plane/ui";
 import { NotificationFilterOptionItem } from "./menu-option-item";
 import { IconButton } from "@plane/propel/icon-button";
 
-export const NotificationFilter = observer(function NotificationFilter() {
+export const NotificationFilter = function NotificationFilter() {
   const { t } = useTranslation();
 
   // oxlint-disable-next-line no-map-spread -- Translations must not mutate shared filter options.
@@ -41,4 +40,4 @@ export const NotificationFilter = observer(function NotificationFilter() {
       render={(item) => <NotificationFilterOptionItem {...item} />}
     />
   );
-});
+};

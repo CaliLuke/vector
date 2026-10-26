@@ -3,7 +3,8 @@
 // WorkItemCore HTTP client CLI support package
 //
 // Command:
-// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design --output ..
+// $ loom gen github.com/CaliLuke/go-plane/work_item_core/design -o
+// work_item_core
 
 package client
 
@@ -2587,7 +2588,7 @@ func BuildPutAPIWorkspacesBySlugProjectsByProjectIDModulesByModuleIDIssuesByIssu
 // payload for the WorkItemCore
 // GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssues endpoint from CLI
 // flags.
-func BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlug string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectID string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearch string) (*workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload, error) {
+func BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSlug string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesProjectID string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeID string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeID string, workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearch string) (*workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload, error) {
 	var err error
 	var slug string
 	{
@@ -2601,6 +2602,26 @@ func BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(workItemC
 			return nil, err
 		}
 	}
+	var typeID *string
+	{
+		if workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeID != "" {
+			typeID = &workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesTypeID
+			err = loom.MergeErrors(err, loom.ValidateFormat("type_id", *typeID, loom.FormatUUID))
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	var childTypeID *string
+	{
+		if workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeID != "" {
+			childTypeID = &workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesChildTypeID
+			err = loom.MergeErrors(err, loom.ValidateFormat("child_type_id", *childTypeID, loom.FormatUUID))
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	var search *string
 	{
 		if workItemCoreGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesSearch != "" {
@@ -2610,6 +2631,8 @@ func BuildGetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload(workItemC
 	v := &workitemcore.GetAPIWorkspacesBySlugProjectsByProjectIDSearchIssuesPayload{}
 	v.Slug = slug
 	v.ProjectID = projectID
+	v.TypeID = typeID
+	v.ChildTypeID = childTypeID
 	v.Search = search
 
 	return v, nil

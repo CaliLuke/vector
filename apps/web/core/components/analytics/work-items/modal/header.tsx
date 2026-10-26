@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane package imports
 import { Expand, Shrink } from "lucide-react";
 import { CloseIcon } from "@plane/propel/icons";
@@ -20,7 +19,7 @@ type Props = {
   module?: IModule;
 };
 
-export const WorkItemsModalHeader = observer(function WorkItemsModalHeader(props: Props) {
+export const WorkItemsModalHeader = function WorkItemsModalHeader(props: Props) {
   const { fullScreen, handleClose, setFullScreen, title, cycle, module } = props;
 
   return (
@@ -31,6 +30,7 @@ export const WorkItemsModalHeader = observer(function WorkItemsModalHeader(props
       <div className="flex items-center gap-2">
         <button
           type="button"
+          aria-label={fullScreen ? "Restore analytics size" : "Expand analytics"}
           className="hidden place-items-center p-1 text-secondary hover:text-primary md:grid"
           onClick={() => setFullScreen((prevData) => !prevData)}
         >
@@ -38,6 +38,7 @@ export const WorkItemsModalHeader = observer(function WorkItemsModalHeader(props
         </button>
         <button
           type="button"
+          aria-label="Close analytics"
           className="grid place-items-center p-1 text-secondary hover:text-primary"
           onClick={handleClose}
         >
@@ -46,4 +47,4 @@ export const WorkItemsModalHeader = observer(function WorkItemsModalHeader(props
       </div>
     </div>
   );
-});
+};

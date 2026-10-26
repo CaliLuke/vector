@@ -5,62 +5,21 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
-// plane imports
-import { useTranslation } from "@plane/i18n";
-// components
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
-import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
-import { PageHead } from "@/components/core/page-title";
-import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
-import { SettingsHeading } from "@/components/settings/heading";
-import { ProjectSettingsFeatureControlItem } from "@/components/settings/project/content/feature-control-item";
-// hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
-// local imports
+import { ProjectFeatureSettings } from "@/components/settings/project/feature";
 import { FeaturesViewsProjectSettingsHeader } from "./header";
 
-function FeaturesViewsSettingsPage(): React.JSX.Element | null {
+function FeaturesViewsSettingsPage() {
   const { workspaceSlug, projectId } = Route.useParams();
-  // store hooks
-  const { workspaceUserInfo, allowPermissions } = useUserPermissions();
-  const { currentProjectDetails } = useProject();
-  // translation
-  const { t } = useTranslation();
-  // derived values
-  const pageTitle = currentProjectDetails?.name
-    ? `${currentProjectDetails?.name} settings - ${t("project_settings.features.views.short_title")}`
-    : undefined;
-  const canPerformProjectAdminActions = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
-
-  if (workspaceUserInfo && !canPerformProjectAdminActions) {
-    return <NotAuthorizedView section="settings" isProjectView className="h-auto" />;
-  }
-
   return (
-    <SettingsContentWrapper header={<FeaturesViewsProjectSettingsHeader />}>
-      <PageHead title={pageTitle} />
-      <section className="w-full">
-        <SettingsHeading
-          title={t("project_settings.features.views.title")}
-          description={t("project_settings.features.views.description")}
-        />
-        <div className="mt-7">
-          <ProjectSettingsFeatureControlItem
-            title={t("project_settings.features.views.toggle_title")}
-            description={t("project_settings.features.views.toggle_description")}
-            featureProperty="issue_views_view"
-            projectId={projectId}
-            value={!!currentProjectDetails?.issue_views_view}
-            workspaceSlug={workspaceSlug}
-          />
-        </div>
-      </section>
-    </SettingsContentWrapper>
+    <ProjectFeatureSettings
+      workspaceSlug={workspaceSlug}
+      projectId={projectId}
+      feature="views"
+      header={<FeaturesViewsProjectSettingsHeader />}
+    />
   );
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/settings/projects/$projectId/features/views")({
-  component: observer(FeaturesViewsSettingsPage),
+  component: FeaturesViewsSettingsPage,
 });

@@ -53,6 +53,8 @@ export type TFilterConditionNode<P extends TFilterProperty, V extends TFilterVal
   property: P;
   operator: TSupportedOperators;
   value: SingleOrArray<V>;
+  /** Preserve the wire representation of an imported array predicate. */
+  valueFormat?: "array";
 };
 
 /**
@@ -82,7 +84,20 @@ export type TFilterAndGroupNode<P extends TFilterProperty> = TBaseFilterNode & {
  * Union type for all group node types - AND, OR, and NOT groups.
  * @template P - Property key type
  */
-export type TFilterGroupNode<P extends TFilterProperty> = TFilterAndGroupNode<P>;
+export type TFilterNotGroupNode<P extends TFilterProperty> = TBaseFilterNode & {
+  type: typeof FILTER_NODE_TYPE.GROUP;
+  logicalOperator: typeof LOGICAL_OPERATOR.NOT;
+  child: TFilterExpression<P>;
+};
+
+export type TFilterOrGroupNode<P extends TFilterProperty> = TBaseFilterNode & {
+  type: typeof FILTER_NODE_TYPE.GROUP;
+  logicalOperator: typeof LOGICAL_OPERATOR.OR;
+  children: TFilterExpression<P>[];
+};
+
+export type TFilterBooleanGroupNode<P extends TFilterProperty> = TFilterAndGroupNode<P> | TFilterOrGroupNode<P>;
+export type TFilterGroupNode<P extends TFilterProperty> = TFilterBooleanGroupNode<P> | TFilterNotGroupNode<P>;
 
 /**
  * Union type for any filter node - either a single condition or a group container.
@@ -113,4 +128,6 @@ export type TFilterAndGroupPayload<P extends TFilterProperty> = Omit<TFilterAndG
  * Union payload type for creating/updating any group node - excludes base node properties.
  * @template P - Property key type
  */
-export type TFilterGroupPayload<P extends TFilterProperty> = TFilterAndGroupPayload<P>;
+export type TFilterGroupPayload<P extends TFilterProperty> =
+  | TFilterAndGroupPayload<P>
+  | Omit<TFilterNotGroupNode<P>, keyof TBaseFilterNode>;

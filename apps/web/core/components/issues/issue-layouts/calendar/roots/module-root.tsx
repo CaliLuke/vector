@@ -6,29 +6,25 @@
 
 import { useParams } from "@tanstack/react-router";
 import { useCallback } from "react";
-import { observer } from "mobx-react";
 
 // plane imports
 import { EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
+import { useIssuesActions } from "@/hooks/use-issues-actions";
 // local imports
 import { ModuleIssueQuickActions } from "../../quick-action-dropdowns";
 import { BaseCalendarRoot } from "../base-calendar-root";
 
-export const ModuleCalendarLayout = observer(function ModuleCalendarLayout() {
+export function ModuleCalendarLayout() {
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
-
-  const {
-    issues: { addIssuesToModule },
-  } = useIssues(EIssuesStoreType.MODULE);
+  const actions = useIssuesActions(EIssuesStoreType.MODULE);
 
   const addIssuesToView = useCallback(
-    (issueIds: string[]) => {
+    async (issueIds: string[]) => {
       if (!workspaceSlug || !projectId || !moduleId) throw new Error();
-      return addIssuesToModule(workspaceSlug.toString(), projectId.toString(), moduleId.toString(), issueIds);
+      return actions.addIssuesToModule(projectId, moduleId, issueIds);
     },
-    [addIssuesToModule, workspaceSlug, projectId, moduleId]
+    [actions, workspaceSlug, projectId, moduleId]
   );
 
   if (!moduleId) return null;
@@ -40,4 +36,4 @@ export const ModuleCalendarLayout = observer(function ModuleCalendarLayout() {
       viewId={moduleId?.toString()}
     />
   );
-});
+}

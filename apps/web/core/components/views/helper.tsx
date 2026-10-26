@@ -6,20 +6,19 @@
 
 import { EIssueLayoutTypes } from "@plane/types";
 import { WorkspaceSpreadsheetRoot } from "@/components/issues/issue-layouts/spreadsheet/roots/workspace-root";
+import type { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
 
 export type TWorkspaceLayoutProps = {
   activeLayout: EIssueLayoutTypes | undefined;
   isDefaultView: boolean;
   isLoading?: boolean;
-  toggleLoading: (value: boolean) => void;
   workspaceSlug: string;
   globalViewId: string;
   routeFilters: {
     [key: string]: string;
   };
-  fetchNextPages: () => void;
+  readState: ReturnType<typeof useIssueListPresentation>;
   globalViewsLoading: boolean;
-  issuesLoading: boolean;
 };
 
 export function WorkspaceActiveLayout(props: TWorkspaceLayoutProps) {
@@ -27,13 +26,11 @@ export function WorkspaceActiveLayout(props: TWorkspaceLayoutProps) {
     activeLayout = EIssueLayoutTypes.SPREADSHEET,
     isDefaultView,
     isLoading,
-    toggleLoading,
     workspaceSlug,
     globalViewId,
     routeFilters,
-    fetchNextPages,
+    readState,
     globalViewsLoading,
-    issuesLoading,
   } = props;
   switch (activeLayout) {
     case EIssueLayoutTypes.SPREADSHEET:
@@ -41,13 +38,11 @@ export function WorkspaceActiveLayout(props: TWorkspaceLayoutProps) {
         <WorkspaceSpreadsheetRoot
           isDefaultView={isDefaultView}
           isLoading={isLoading}
-          toggleLoading={toggleLoading}
           workspaceSlug={workspaceSlug}
           globalViewId={globalViewId}
           routeFilters={routeFilters}
-          fetchNextPages={fetchNextPages}
+          readState={readState}
           globalViewsLoading={globalViewsLoading}
-          issuesLoading={issuesLoading}
         />
       );
     default:

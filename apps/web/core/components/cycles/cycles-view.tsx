@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // components
 import { useTranslation } from "@plane/i18n";
 // assets
@@ -14,30 +13,33 @@ import NameFilterImage from "@/app/assets/empty-state/cycle/name-filter.svg?url"
 import { CyclesList } from "@/components/cycles/list";
 import { CycleModuleListLayoutLoader } from "@/components/ui/loader/cycle-module-list-loader";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useCycleFilter } from "@/hooks/store/use-cycle-filter";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { visibleCycles, visibleCompletedCycles, activeCycle } from "@/queries/cycle-module-selectors";
+import { CatalogueReadFailure } from "@/components/common/catalogue-read-failure";
+import { useCycleCataloguePreferences } from "@/providers/cycle-module-preferences";
 
 export interface ICyclesView {
   workspaceSlug: string;
   projectId: string;
 }
 
-export const CyclesView = observer(function CyclesView(props: ICyclesView) {
+export const CyclesView = function CyclesView(props: ICyclesView) {
   const { workspaceSlug, projectId } = props;
   // store hooks
-  const { getFilteredCycleIds, getFilteredCompletedCycleIds, loader, currentProjectActiveCycleId } = useCycle();
-  const { searchQuery } = useCycleFilter();
+  const catalogue = useProjectCycles(workspaceSlug, projectId);
+  const preferences = useCycleCataloguePreferences(workspaceSlug, projectId);
+  const { search: searchQuery } = preferences;
   const { t } = useTranslation();
   // derived values
-  const filteredCycleIds = getFilteredCycleIds(projectId, false);
-  const filteredCompletedCycleIds = getFilteredCompletedCycleIds(projectId);
-  const filteredUpcomingCycleIds = (filteredCycleIds ?? []).filter(
-    (cycleId) => cycleId !== currentProjectActiveCycleId
-  );
+  const cycles = visibleCycles(catalogue.cycles, preferences.filters, preferences.search);
+  const completed = visibleCompletedCycles(catalogue.cycles, preferences.filters, preferences.search);
+  const active = activeCycle(catalogue.cycles);
+  const upcoming = cycles?.filter((cycle) => cycle.id !== active?.id);
+  if (catalogue.isError || catalogue.isAccessDenied)
+    return <CatalogueReadFailure label="cycles" retry={catalogue.retry} />;
+  if (catalogue.isPending || !cycles || !completed) return <CycleModuleListLayoutLoader />;
 
-  if (loader || !filteredCycleIds) return <CycleModuleListLayoutLoader />;
-
-  if (filteredCycleIds.length === 0 && filteredCompletedCycleIds?.length === 0)
+  if (cycles.length === 0 && completed.length === 0)
     return (
       <div className="grid h-full w-full place-items-center">
         <div className="text-center">
@@ -58,11 +60,11 @@ export const CyclesView = observer(function CyclesView(props: ICyclesView) {
 
   return (
     <CyclesList
-      completedCycleIds={filteredCompletedCycleIds ?? []}
-      upcomingCycleIds={filteredUpcomingCycleIds}
-      cycleIds={filteredCycleIds}
+      completedCycles={completed}
+      upcomingCycles={upcoming}
+      cycles={cycles}
       workspaceSlug={workspaceSlug}
       projectId={projectId}
     />
   );
-});
+};

@@ -12,6 +12,7 @@ import type { CompleteOrEmpty } from "./utils";
 export type TIssueLayouts = "list" | "kanban" | "calendar" | "spreadsheet" | "gantt_chart";
 
 export type TIssueGroupByOptions =
+  | "type_id"
   | "state"
   | "priority"
   | "labels"
@@ -76,6 +77,10 @@ export type TIssueParams =
   | "project"
   | "team_project"
   | "group_by"
+  | "group_filter_by"
+  | "group_filter_value"
+  | "sub_group_filter_by"
+  | "sub_group_filter_value"
   | "sub_group_by"
   | "order_by"
   | "type"
@@ -86,6 +91,7 @@ export type TIssueParams =
   | "issue_type"
   | "layout"
   | "expand"
+  | "include_properties"
   | "filters";
 
 export type TCalendarLayouts = "month" | "week";
@@ -94,6 +100,7 @@ export type TCalendarLayouts = "month" | "week";
  * Keys for the work item filter properties
  */
 export const WORK_ITEM_FILTER_PROPERTY_KEYS = [
+  "type_id",
   "state_group",
   "priority",
   "start_date",
@@ -110,21 +117,37 @@ export const WORK_ITEM_FILTER_PROPERTY_KEYS = [
   "created_at",
   "updated_at",
 ] as const;
-export type TWorkItemFilterProperty = (typeof WORK_ITEM_FILTER_PROPERTY_KEYS)[number];
+export type TWorkItemFilterProperty = (typeof WORK_ITEM_FILTER_PROPERTY_KEYS)[number] | `customproperty_${string}`;
 
-export type TWorkItemFilterConditionKey = `${TWorkItemFilterProperty}__${TSupportedOperators}`;
+export type TWorkItemFilterConditionKey =
+  | TWorkItemFilterProperty
+  | `${TWorkItemFilterProperty}__${TSupportedOperators}`;
 
 export type TWorkItemFilterConditionData = Partial<{
-  [K in TWorkItemFilterConditionKey]: string | boolean | number;
+  [K in TWorkItemFilterConditionKey]: string | boolean | number | null | (string | boolean | number | null)[];
 }>;
 
-export type TWorkItemFilterAndGroup = {
-  [LOGICAL_OPERATOR.AND]: TWorkItemFilterConditionData[];
+// The API accepts at most five filter-node levels. Bound the serialized type too,
+// so form libraries can derive field paths without recursing indefinitely.
+export type TWorkItemFilterAndGroup<Depth extends unknown[] = []> = {
+  [LOGICAL_OPERATOR.AND]: TWorkItemFilterExpressionData<[...Depth, unknown]>[];
 };
 
-export type TWorkItemFilterGroup = TWorkItemFilterAndGroup;
+export type TWorkItemFilterOrGroup<Depth extends unknown[] = []> = {
+  [LOGICAL_OPERATOR.OR]: TWorkItemFilterExpressionData<[...Depth, unknown]>[];
+};
 
-export type TWorkItemFilterExpressionData = TWorkItemFilterConditionData | TWorkItemFilterGroup;
+export type TWorkItemFilterNotGroup<Depth extends unknown[] = []> = {
+  [LOGICAL_OPERATOR.NOT]: TWorkItemFilterExpressionData<[...Depth, unknown]>;
+};
+export type TWorkItemFilterGroup<Depth extends unknown[] = []> =
+  | TWorkItemFilterAndGroup<Depth>
+  | TWorkItemFilterOrGroup<Depth>
+  | TWorkItemFilterNotGroup<Depth>;
+
+export type TWorkItemFilterExpressionData<Depth extends unknown[] = []> =
+  | TWorkItemFilterConditionData
+  | (Depth["length"] extends 4 ? never : TWorkItemFilterGroup<Depth>);
 
 export type TWorkItemFilterExpression = CompleteOrEmpty<TWorkItemFilterExpressionData>;
 
@@ -158,7 +181,7 @@ export interface IIssueDisplayFilterOptions {
   show_empty_groups?: boolean;
   sub_issue?: boolean;
 }
-export interface IIssueDisplayProperties {
+export interface IIssueStandardDisplayProperties {
   assignee?: boolean;
   start_date?: boolean;
   due_date?: boolean;
@@ -176,6 +199,11 @@ export interface IIssueDisplayProperties {
   cycle?: boolean;
   issue_type?: boolean;
 }
+
+export interface IIssueDisplayProperties extends IIssueStandardDisplayProperties {
+  [key: `customproperty_${string}`]: boolean | undefined;
+}
+export type TIssueStandardDisplayProperty = keyof IIssueStandardDisplayProperties;
 
 export type TIssueKanbanFilters = {
   group_by: string[];

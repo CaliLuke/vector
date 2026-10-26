@@ -1,258 +1,221 @@
-// oxlint-disable jsx_a11y/prefer-tag-over-role
-// oxlint-disable jsx_a11y/click-events-have-key-events
 /**
  * Copyright (c) 2023-present Plane Software, Inc. and contributors
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
 import { useRouter } from "@tanstack/react-router";
-import type { FormEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { observer } from "mobx-react";
-// plane imports
+import { useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { ETabIndices } from "@plane/constants";
 import type { EditorRefApi } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
 import { Button } from "@plane/propel/button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { TIssue } from "@plane/types";
-import { ToggleSwitch } from "@plane/ui";
-import { renderFormattedPayloadDate, getTabIndex } from "@plane/utils";
-// hooks
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-
+import { Input, ToggleSwitch } from "@plane/ui";
+import { getTabIndex } from "@plane/utils/tab-indices";
+import {
+  issueDraftDefaults,
+  issueTitleValidators,
+  useIssueDraftForm,
+} from "@/components/issues/issue-modal/form-state";
+import { useIntakeMutation } from "@/hooks/use-intake";
+import { useWorkspaceBySlug } from "@/hooks/use-workspaces";
 import useKeypress from "@/hooks/use-keypress";
 import { usePlatformOS } from "@/hooks/use-platform-os";
-// services
 import { FileService } from "@/services/file.service";
-// local imports
 import { InboxIssueDescription } from "./issue-description";
 import { InboxIssueProperties } from "./issue-properties";
-import { InboxIssueTitle } from "./issue-title";
-
 const fileService = new FileService();
-
-type TInboxIssueCreateRoot = {
-  workspaceSlug: string;
-  projectId: string;
-  handleModalClose: () => void;
-  isDuplicateModalOpen: boolean;
-  handleDuplicateIssueModal: (value: boolean) => void;
-};
-
-export const defaultIssueData: Partial<TIssue> = {
-  id: undefined,
-  name: "",
-  description_html: "",
-  priority: "none",
-  state_id: "",
-  label_ids: [],
-  assignee_ids: [],
-  start_date: renderFormattedPayloadDate(new Date()),
-  target_date: "",
-};
-
-export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props: TInboxIssueCreateRoot) {
-  const { workspaceSlug, projectId, handleModalClose } = props;
-  // states
-  const [uploadedAssetIds, setUploadedAssetIds] = useState<string[]>([]);
-  // router
+type Props = { workspaceSlug: string; projectId: string; handleModalClose: () => void };
+export const InboxIssueCreateRoot = function InboxIssueCreateRoot({
+  workspaceSlug,
+  projectId,
+  handleModalClose,
+}: Props) {
   const router = useRouter();
-  // refs
-  const descriptionEditorRef = useRef<EditorRefApi>(null);
-  const submitBtnRef = useRef<HTMLButtonElement | null>(null);
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const modalContainerRef = useRef<HTMLDivElement | null>(null);
-  // hooks
-  const { createInboxIssue } = useProjectInbox();
-  const { getWorkspaceBySlug } = useWorkspace();
-  const workspaceId = getWorkspaceBySlug(workspaceSlug)?.id;
+  const create = useIntakeMutation(workspaceSlug, projectId);
+  const { data: workspaceDetails } = useWorkspaceBySlug(workspaceSlug);
+  const workspaceId = workspaceDetails?.id;
   const { isMobile } = usePlatformOS();
   const { t } = useTranslation();
-  // states
-  const [createMore, setCreateMore] = useState<boolean>(false);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formData, setFormData] = useState<Partial<TIssue>>(defaultIssueData);
-  const handleFormData = useCallback(
-    <T extends keyof Partial<TIssue>>(issueKey: T, issueValue: Partial<TIssue>[T]) => {
-      setFormData({
-        ...formData,
-        [issueKey]: issueValue,
-      });
-    },
-    [formData]
-  );
-
   const { getIndex } = getTabIndex(ETabIndices.INTAKE_ISSUE_FORM, isMobile);
-
-  const handleEscKeyDown = (event: KeyboardEvent) => {
-    if (descriptionEditorRef.current?.isEditorReadyToDiscard()) {
-      handleModalClose();
-    } else {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Editor is still processing changes. Please wait before proceeding.",
-      });
-      event.preventDefault(); // Prevent default action if editor is not ready to discard
-    }
+  const editor = useRef<EditorRefApi>(null);
+  const title = useRef<HTMLInputElement>(null);
+  const submitButton = useRef<HTMLButtonElement>(null);
+  const formElement = useRef<HTMLFormElement>(null);
+  const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
+  const [createMore, setCreateMore] = useState(false);
+  const [initial] = useState(() => issueDraftDefaults(projectId, {}));
+  const finalize = useMutation({
+    mutationFn: (id: string) =>
+      fileService.updateBulkProjectAssetsUploadStatus(workspaceSlug, projectId, id, { asset_ids: uploadedAssets }),
+    retry: false,
+  });
+  const ready = () => {
+    if (editor.current?.isEditorReadyToDiscard()) return true;
+    setToast({ type: TOAST_TYPE.ERROR, title: t("error"), message: t("editor_is_not_ready_to_discard_changes") });
+    return false;
   };
-
-  useKeypress("Escape", handleEscKeyDown);
-
-  useEffect(() => {
-    const formElement = formRef?.current;
-    const modalElement = modalContainerRef?.current;
-
-    if (!formElement || !modalElement) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      modalElement.style.maxHeight = `${formElement?.offsetHeight}px`;
-    });
-
-    resizeObserver.observe(formElement);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [formRef, modalContainerRef]);
-
-  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (!descriptionEditorRef.current?.isEditorReadyToDiscard()) {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Editor is still processing changes. Please wait before proceeding.",
-      });
-      return;
-    }
-
-    const payload: Partial<TIssue> = {
-      name: formData.name || "",
-      description_html: formData.description_html || "<p></p>",
-      priority: formData.priority || "none",
-      state_id: formData.state_id || "",
-      label_ids: formData.label_ids || [],
-      assignee_ids: formData.assignee_ids || [],
-      target_date: formData.target_date || null,
-    };
-    setFormSubmitting(true);
-
-    await createInboxIssue(workspaceSlug, projectId, payload)
-      // oxlint-disable-next-line promise/always-return
-      .then(async (res) => {
-        if (uploadedAssetIds.length > 0) {
-          await fileService.updateBulkProjectAssetsUploadStatus(workspaceSlug, projectId, res?.issue.id ?? "", {
-            asset_ids: uploadedAssetIds,
-          });
-          setUploadedAssetIds([]);
-        }
-        if (!createMore) {
-          void router.navigate({
-            href: `/${workspaceSlug}/projects/${projectId}/intake/?currentTab=open&inboxIssueId=${res?.issue?.id}`,
-          });
-          handleModalClose();
+  const form = useIssueDraftForm(
+    initial,
+    async (value, _action, formApi) => {
+      formApi.setErrorMap({ onSubmit: undefined });
+      try {
+        const created =
+          create.data?.saved ??
+          (
+            await create.mutateAsync({
+              kind: "create",
+              data: {
+                name: value.name,
+                description_html: value.description_html,
+                priority: value.priority,
+                state_id: value.state_id,
+                label_ids: value.label_ids,
+                assignee_ids: value.assignee_ids,
+                target_date: value.target_date,
+              },
+            })
+          ).saved;
+        if (!created) throw new Error("The server did not return the created intake work item.");
+        if (uploadedAssets.length && !finalize.isSuccess) await finalize.mutateAsync(created.issue.id);
+        setUploadedAssets([]);
+        setToast({ type: TOAST_TYPE.SUCCESS, title: t("success"), message: t("issue_created_successfully") });
+        if (createMore) {
+          formApi.reset();
+          editor.current?.clearEditor();
+          create.reset();
+          finalize.reset();
+          title.current?.focus();
         } else {
-          descriptionEditorRef?.current?.clearEditor();
-          setFormData(defaultIssueData);
+          handleModalClose();
+          void router.navigate({
+            href: `/${workspaceSlug}/projects/${projectId}/intake/?currentTab=open&inboxIssueId=${created.issue.id}`,
+          });
         }
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: `Success!`,
-          message: "Work item created successfully.",
+      } catch (cause) {
+        formApi.setErrorMap({
+          onSubmit: {
+            form: "Could not finish creating the work item. Your progress is saved; please try again.",
+            fields: {},
+          },
         });
-      })
-      .catch((error) => {
-        console.error(error);
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: `Error!`,
-          message: "Some error occurred. Please try again.",
-        });
-      });
-    setFormSubmitting(false);
-  };
-
-  const isTitleLengthMoreThan255Character = formData?.name ? formData.name.length > 255 : false;
-
-  if (!workspaceSlug || !projectId || !workspaceId) return <></>;
-  return (
-    <div className="flex w-full gap-2 bg-transparent">
-      <div className="w-full rounded-lg">
-        <form ref={formRef} onSubmit={handleFormSubmit} className="flex w-full flex-col">
-          <div className="space-y-5 rounded-t-lg bg-surface-1 p-5">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-18 font-medium text-secondary">{t("inbox_issue.modal.title")}</h3>
-            </div>
-            <div className="space-y-3">
-              <InboxIssueTitle
-                data={formData}
-                handleData={handleFormData}
-                isTitleLengthMoreThan255Character={isTitleLengthMoreThan255Character}
-              />
-              <InboxIssueDescription
-                workspaceSlug={workspaceSlug}
-                projectId={projectId}
-                workspaceId={workspaceId}
-                data={formData}
-                handleData={handleFormData}
-                editorRef={descriptionEditorRef}
-                containerClassName="bg-layer-2 border-[0.5px] border-subtle-1 py-3 min-h-[150px]"
-                onEnterKeyPress={() => submitBtnRef?.current?.click()}
-                onAssetUpload={(assetId) => setUploadedAssetIds((prev) => [...prev, assetId])}
-              />
-              <InboxIssueProperties projectId={projectId} data={formData} handleData={handleFormData} />
-            </div>
-          </div>
-          <div className="flex items-center justify-between gap-2 rounded-b-lg border-t-[0.5px] border-subtle bg-surface-1 px-5 py-4">
-            <div
-              className="inline-flex cursor-pointer items-center gap-1.5"
-              onClick={() => setCreateMore((prevData) => !prevData)}
-              role="button"
-              tabIndex={getIndex("create_more")}
-            >
-              <ToggleSwitch value={createMore} onChange={() => {}} size="sm" />
-              <span className="text-11">{t("create_more")}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="secondary"
-                size="lg"
-                type="button"
-                onClick={() => {
-                  if (descriptionEditorRef.current?.isEditorReadyToDiscard()) {
-                    handleModalClose();
-                  } else {
-                    setToast({
-                      type: TOAST_TYPE.ERROR,
-                      title: "Error!",
-                      message: "Editor is still processing changes. Please wait before proceeding.",
-                    });
-                  }
-                }}
-                tabIndex={getIndex("discard_button")}
-              >
-                {t("discard")}
-              </Button>
-              <Button
-                variant="primary"
-                ref={submitBtnRef}
-                type="submit"
-                loading={formSubmitting}
-                disabled={isTitleLengthMoreThan255Character}
-                tabIndex={getIndex("submit_button")}
-                size="lg"
-              >
-                {formSubmitting ? t("creating") : t("create_work_item")}
-              </Button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+        throw cause;
+      }
+    },
+    () => (editor.current?.isEditorReadyToDiscard() ? undefined : t("editor_is_not_ready_to_discard_changes"))
   );
-});
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const locked = busy || create.isSuccess;
+  const error = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const close = () => {
+    if (!busy && ready()) handleModalClose();
+  };
+  useKeypress(
+    "Escape",
+    (event) => {
+      if (busy) return;
+      event.preventDefault();
+      close();
+    },
+    formElement
+  );
+  useEffect(() => {
+    title.current?.focus();
+  }, []);
+  if (!workspaceId) return null;
+  return (
+    <form
+      ref={formElement}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch(() => {});
+      }}
+      className="flex w-full flex-col rounded-lg"
+    >
+      <fieldset disabled={locked} inert={locked} className="space-y-5 rounded-t-lg bg-surface-1 p-5">
+        <h3 className="text-18 font-medium text-secondary">{t("inbox_issue.modal.title")}</h3>
+        <form.Field
+          name="name"
+          validators={issueTitleValidators(t("title_is_required"), t("title_should_be_less_than_255_characters"))}
+        >
+          {(field) => (
+            <div className="space-y-1">
+              <Input
+                ref={title}
+                name={field.name}
+                value={field.state.value}
+                onChange={(event) => field.handleChange(event.target.value)}
+                onBlur={field.handleBlur}
+                hasError={!field.state.meta.isValid}
+                placeholder={t("title")}
+                className="w-full text-14"
+                tabIndex={getIndex("name")}
+              />
+              {[...new Set(field.state.meta.errors)].map((message) => (
+                <p key={message} role="alert" className="text-11 text-danger-primary">
+                  {message}
+                </p>
+              ))}
+            </div>
+          )}
+        </form.Field>
+        <form.Field name="description_html">
+          {(field) => (
+            <InboxIssueDescription
+              value={field.state.value ?? "<p></p>"}
+              onChange={field.handleChange}
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              workspaceId={workspaceId}
+              editorRef={editor}
+              containerClassName="bg-layer-2 border-[0.5px] border-subtle-1 py-3 min-h-[150px]"
+              onEnterKeyPress={() => submitButton.current?.click()}
+              onAssetUpload={(id) => setUploadedAssets((ids) => [...ids, id])}
+            />
+          )}
+        </form.Field>
+        <InboxIssueProperties projectId={projectId} form={form} />
+      </fieldset>
+      <div className="rounded-b-lg border-t-[0.5px] border-subtle bg-surface-1 px-5 py-4">
+        {error && (
+          <p role="alert" className="mb-3 text-13 text-danger-primary">
+            {error}
+          </p>
+        )}
+        <div className="flex items-center justify-between gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-1.5">
+            <ToggleSwitch value={createMore} onChange={setCreateMore} disabled={busy} size="sm" />
+            <span className="text-11">{t("create_more")}</span>
+          </label>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="lg"
+              type="button"
+              onClick={close}
+              disabled={busy}
+              tabIndex={getIndex("discard_button")}
+            >
+              {t("discard")}
+            </Button>
+            <Button
+              variant="primary"
+              ref={submitButton}
+              type="submit"
+              loading={busy}
+              disabled={busy}
+              tabIndex={getIndex("submit_button")}
+              size="lg"
+            >
+              {busy ? t("creating") : t("create_work_item")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+};

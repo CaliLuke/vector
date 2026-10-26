@@ -5,18 +5,17 @@
  */
 
 import type { SetStateAction } from "react";
-import { observer } from "mobx-react";
 import { GripVertical } from "lucide-react";
 import { EIconSize, STATE_TRACKER_ELEMENTS } from "@plane/constants";
 // plane imports
 import { EditIcon, StateGroupIcon } from "@plane/propel/icons";
 import type { IState, TStateOperationsCallbacks } from "@plane/types";
 // local imports
-import { useProjectState } from "@/hooks/store/use-project-state";
 import { StateDelete, StateMarksAsDefault } from "./options";
 
 type TBaseStateItemTitleProps = {
   stateCount: number;
+  statePercentage: number;
   state: IState;
   shouldShowDescription?: boolean;
   setUpdateStateModal: (value: SetStateAction<boolean>) => void;
@@ -34,12 +33,9 @@ type TDisabledStateItemTitleProps = TBaseStateItemTitleProps & {
 
 export type TStateItemTitleProps = TEnabledStateItemTitleProps | TDisabledStateItemTitleProps;
 
-export const StateItemTitle = observer(function StateItemTitle(props: TStateItemTitleProps) {
-  const { stateCount, setUpdateStateModal, disabled, state, shouldShowDescription = true } = props;
-  // store hooks
-  const { getStatePercentageInGroup } = useProjectState();
+export function StateItemTitle(props: TStateItemTitleProps) {
+  const { stateCount, statePercentage, setUpdateStateModal, disabled, state, shouldShowDescription = true } = props;
   // derived values
-  const statePercentage = getStatePercentageInGroup(state.id);
   const percentage = statePercentage ? statePercentage / 100 : undefined;
 
   return (
@@ -91,4 +87,4 @@ export const StateItemTitle = observer(function StateItemTitle(props: TStateItem
       )}
     </div>
   );
-});
+}

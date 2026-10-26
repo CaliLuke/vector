@@ -5,8 +5,13 @@
  */
 
 import { useEffect, useRef } from "react";
+import type { RefObject } from "react";
 
-const useKeypress = (key: string, callback: (event: KeyboardEvent) => void) => {
+const useKeypress = (
+  key: string,
+  callback: (event: KeyboardEvent) => void,
+  targetRef?: RefObject<HTMLElement | null>
+) => {
   // Keep the latest callback in a ref so callers can pass an inline arrow
   // without tearing down and re-adding the document listener every render.
   const callbackRef = useRef(callback);
@@ -17,9 +22,10 @@ const useKeypress = (key: string, callback: (event: KeyboardEvent) => void) => {
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === key) {
-        callbackRef.current(event);
-      }
+      if (event.key !== key || event.defaultPrevented) return;
+      const target = event.target;
+      if (targetRef && (!targetRef.current || !(target instanceof Node) || !targetRef.current.contains(target))) return;
+      callbackRef.current(event);
     };
 
     document.addEventListener("keydown", handleKeydown);
@@ -27,7 +33,7 @@ const useKeypress = (key: string, callback: (event: KeyboardEvent) => void) => {
     return () => {
       document.removeEventListener("keydown", handleKeydown);
     };
-  }, [key]);
+  }, [key, targetRef]);
 };
 
 export default useKeypress;

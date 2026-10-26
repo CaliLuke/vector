@@ -1,4 +1,4 @@
-import { React, act } from "./react-dom.mjs";
+import { React, act } from "./react.mjs";
 import { registerHooks } from "node:module";
 import { routes } from "../../../apps/web/routes.ts";
 
@@ -12,7 +12,8 @@ registerHooks({
     return nextResolve(specifier, context);
   },
 });
-export const routerApi = await import("@tanstack/react-router");
+export const routerModuleUrl = import.meta.resolve("@tanstack/react-router");
+export const routerApi = await import(routerModuleUrl);
 
 const Content = React.createContext(null);
 function TestContent() {

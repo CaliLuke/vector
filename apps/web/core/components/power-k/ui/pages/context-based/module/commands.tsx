@@ -9,58 +9,57 @@ import { useCallback } from "react";
 
 import { Star, StarOff, Users } from "lucide-react";
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { LinkIcon, ModuleStatusIcon } from "@plane/propel/icons";
 import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { IModule, TModuleStatus } from "@plane/types";
-import { EUserPermissions } from "@plane/types";
-import { copyTextToClipboard } from "@plane/utils";
+import type { IModule } from "@plane/types";
+import { EUserProjectRoles } from "@plane/types";
+import { copyTextToClipboard } from "@plane/utils/string";
 // components
 import type { TPowerKCommandConfig } from "@/components/power-k/core/types";
 // hooks
-import { useModule } from "@/hooks/store/use-module";
-import { useUser } from "@/hooks/store/user";
+import { useModuleDetails, useProjectModules } from "@/hooks/use-modules";
+import { useCommittedScope } from "@/hooks/use-committed-scope";
+import { MODULE_STATUS } from "@plane/constants";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useFavorites } from "@/hooks/use-favorites";
 
 export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => {
   // navigation
   const { workspaceSlug, projectId, moduleId } = useParams({ strict: false });
   // store
-  const {
-    permission: { allowPermissions },
-  } = useUser();
-  const { getModuleById, addModuleToFavorites, removeModuleFromFavorites, updateModuleDetails } = useModule();
+  const { module: moduleDetails } = useModuleDetails(workspaceSlug, projectId, moduleId);
+  const catalogue = useProjectModules(workspaceSlug, projectId);
+  const current = useCommittedScope(JSON.stringify([catalogue.scope, moduleId]));
   // derived values
-  const moduleDetails = moduleId ? getModuleById(moduleId.toString()) : null;
-  const isFavorite = !!moduleDetails?.is_favorite;
+  const { favoritesByEntity, toggleFavorite } = useFavorites(workspaceSlug?.toString());
+  const isFavorite = favoritesByEntity?.has(`module:${moduleDetails?.id}`) ?? false;
   // permission
-  const isEditingAllowed =
-    allowPermissions([EUserPermissions.ADMIN, EUserPermissions.MEMBER], EUserPermissionsLevel.PROJECT) &&
-    !moduleDetails?.archived_at;
+  const { can } = useProjectPermissions(workspaceSlug?.toString(), moduleDetails?.project_id);
+  const isEditingAllowed = can([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]) && !moduleDetails?.archived_at;
   // translation
   const { t } = useTranslation();
 
   const handleUpdateModule = useCallback(
     async (formData: Partial<IModule>) => {
       if (!workspaceSlug || !projectId || !moduleDetails) return;
-      await updateModuleDetails(workspaceSlug.toString(), projectId.toString(), moduleDetails.id, formData).catch(
-        () => {
+      await catalogue.mutation.mutateAsync({ type: "patch", id: moduleDetails.id, data: formData }).catch(() => {
+        if (current())
           setToast({
             type: TOAST_TYPE.ERROR,
             title: "Error!",
             message: "Module could not be updated. Please try again.",
           });
-        }
-      );
+      });
     },
-    [moduleDetails, projectId, updateModuleDetails, workspaceSlug]
+    [moduleDetails, projectId, catalogue.mutation, workspaceSlug, current]
   );
 
   const handleUpdateMember = useCallback(
     (memberId: string) => {
       if (!moduleDetails) return;
 
-      const updatedMembers = moduleDetails.member_ids ?? [];
+      const updatedMembers = [...(moduleDetails.member_ids ?? [])];
       if (updatedMembers.includes(memberId)) updatedMembers.splice(updatedMembers.indexOf(memberId), 1);
       else updatedMembers.push(memberId);
 
@@ -69,18 +68,15 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
     [handleUpdateModule, moduleDetails]
   );
 
-  const toggleFavorite = useCallback(() => {
+  const toggleModuleFavorite = useCallback(() => {
     if (!workspaceSlug || !moduleDetails || !moduleDetails.project_id) return;
-    try {
-      if (isFavorite) removeModuleFromFavorites(workspaceSlug.toString(), moduleDetails.project_id, moduleDetails.id);
-      else addModuleToFavorites(workspaceSlug.toString(), moduleDetails.project_id, moduleDetails.id);
-    } catch {
+    void toggleFavorite("module", moduleDetails.id, moduleDetails.project_id).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Some error occurred",
       });
-    }
-  }, [addModuleToFavorites, removeModuleFromFavorites, workspaceSlug, moduleDetails, isFavorite]);
+    });
+  }, [toggleFavorite, workspaceSlug, moduleDetails]);
 
   const copyModuleUrlToClipboard = useCallback(() => {
     const url = new URL(window.location.href);
@@ -110,8 +106,7 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
       type: "change-page",
       page: "update-module-member",
       onSelect: (data) => {
-        const memberId = data as string;
-        handleUpdateMember(memberId);
+        if (typeof data === "string") handleUpdateMember(data);
       },
       shortcut: "m",
       isEnabled: () => isEditingAllowed,
@@ -127,8 +122,8 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
       type: "change-page",
       page: "update-module-status",
       onSelect: (data) => {
-        const status = data as TModuleStatus;
-        handleUpdateModule({ status });
+        const status = MODULE_STATUS.find((row) => row.value === data)?.value;
+        if (status) void handleUpdateModule({ status });
       },
       shortcut: "s",
       isEnabled: () => isEditingAllowed,
@@ -144,7 +139,7 @@ export const usePowerKModuleContextBasedActions = (): TPowerKCommandConfig[] => 
       group: "contextual",
       contextType: "module",
       type: "action",
-      action: toggleFavorite,
+      action: toggleModuleFavorite,
       modifierShortcut: "shift+f",
       isEnabled: () => isEditingAllowed,
       isVisible: () => isEditingAllowed,

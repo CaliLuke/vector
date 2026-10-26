@@ -4,28 +4,29 @@
  * See the LICENSE file for details.
  */
 
-import { useCallback, useMemo, useState } from "react";
-import { isEqual, cloneDeep } from "lodash-es";
-import { observer } from "mobx-react";
+import { useCallback, useMemo } from "react";
+
 // plane imports
-import { EUserPermissionsLevel } from "@plane/constants";
-import { setToast, TOAST_TYPE } from "@plane/propel/toast";
-import type { IProjectView, TWorkItemFilterExpression } from "@plane/types";
-import { EUserProjectRoles, EViewAccess } from "@plane/types";
+import { EIssuesStoreType, EUserProjectRoles } from "@plane/types";
 // components
-import { removeNillKeys } from "@/components/issues/issue-layouts/utils";
 import { CreateUpdateProjectViewModal } from "@/components/views/modal";
 // hooks
-import { useCycle } from "@/hooks/store/use-cycle";
-import { useLabel } from "@/hooks/store/use-label";
-import { useMember } from "@/hooks/store/use-member";
-import { useModule } from "@/hooks/store/use-module";
-import { useProject } from "@/hooks/store/use-project";
-import { useProjectState } from "@/hooks/store/use-project-state";
-import { useProjectView } from "@/hooks/store/use-project-view";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useProjectCycles } from "@/hooks/use-cycles";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useProjectModules } from "@/hooks/use-modules";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectStates } from "@/hooks/use-project-states";
+import { useProjectView, useProjectViewMutations } from "@/hooks/use-project-views";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProjectMemberRoster, useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
+import { projectRosterMemberIds } from "@/helpers/member-rosters";
 // local imports
 import { WorkItemFiltersHOC } from "./base";
+import { persistViewUpdate, requireViewForUpdate } from "./view-update";
+import { useWorkspaceViewActionScope } from "@/hooks/use-workspace-views";
+import { useViewFilterActions } from "./use-view-filter-actions";
+import type { ViewFilterPayload } from "./use-view-filter-actions";
 import type { TEnableSaveViewProps, TEnableUpdateViewProps, TSharedWorkItemFiltersHOCProps } from "./shared";
 
 type TProjectLevelWorkItemFiltersHOCProps = TSharedWorkItemFiltersHOCProps & {
@@ -34,37 +35,44 @@ type TProjectLevelWorkItemFiltersHOCProps = TSharedWorkItemFiltersHOCProps & {
 } & TEnableSaveViewProps &
   TEnableUpdateViewProps;
 
-export const ProjectLevelWorkItemFiltersHOC = observer(function ProjectLevelWorkItemFiltersHOC(
+function canEditViewFilters(query: ReturnType<typeof useProjectView>, accountId: string | undefined) {
+  const view = query.view;
+  return Boolean(
+    view &&
+    accountId &&
+    view.owned_by === accountId &&
+    !view.is_locked &&
+    !query.isPending &&
+    !query.isError &&
+    !query.isDenied &&
+    query.isScopeCurrent()
+  );
+}
+
+export const ProjectLevelWorkItemFiltersHOC = function ProjectLevelWorkItemFiltersHOC(
   props: TProjectLevelWorkItemFiltersHOCProps
 ) {
-  const { children, enableSaveView, enableUpdateView, entityId, initialWorkItemFilters, projectId, workspaceSlug } =
-    props;
-  // states
-  const [isCreateViewModalOpen, setIsCreateViewModalOpen] = useState(false);
-  const [createViewPayload, setCreateViewPayload] = useState<Partial<IProjectView> | null>(null);
+  const { children, enableSaveView, enableUpdateView, entityId, entityType, projectId, workspaceSlug } = props;
   // hooks
-  const { getProjectById } = useProject();
-  const { getViewById, updateView } = useProjectView();
-  const { data: currentUser } = useUser();
-  const { allowPermissions } = useUserPermissions();
-  const { getProjectCycleIds } = useCycle();
-  const { getProjectLabelIds } = useLabel();
-  const {
-    project: { getProjectMemberIds },
-  } = useMember();
-  const { getProjectModuleIds } = useModule();
-  const { getProjectStateIds } = useProjectState();
+  const projectCatalogue = useWorkspaceProjectDetails(workspaceSlug);
+  const projectRows = projectCatalogue.projects;
+  const viewId = entityType === EIssuesStoreType.PROJECT_VIEW ? entityId : undefined;
+  const viewQuery = useProjectView(workspaceSlug, projectId, viewId);
+  const { update } = useProjectViewMutations(workspaceSlug, projectId);
+  const updateView = update.mutateAsync;
+  const { data: currentUser } = useCurrentUser();
+  const captureActionScope = useWorkspaceViewActionScope(workspaceSlug, true, entityId);
+  const workspaceRoster = useWorkspaceMemberRoster(workspaceSlug);
+  const projectRoster = useProjectMemberRoster(workspaceSlug, projectId);
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const cycleCatalogue = useProjectCycles(workspaceSlug, projectId);
+  const { labelIds: projectLabelIds } = useProjectLabels(workspaceSlug, projectId);
+  const moduleCatalogue = useProjectModules(workspaceSlug, projectId);
+  const { getProjectStateIds } = useProjectStates(workspaceSlug, projectId);
   // derived values
-  const hasProjectMemberLevelPermissions = allowPermissions(
-    [EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    projectId
-  );
-  const projectDetails = getProjectById(projectId);
-  const viewDetails = entityId ? getViewById(entityId) : null;
-  const isViewLocked = viewDetails ? viewDetails?.is_locked : false;
-  const isCurrentUserOwner = viewDetails ? viewDetails.owned_by === currentUser?.id : false;
+  const hasProjectMemberLevelPermissions = canProject([EUserProjectRoles.ADMIN, EUserProjectRoles.MEMBER]);
+  const projectDetails = projectRows?.find((project) => project.id === projectId);
+  const viewDetails = viewQuery.view ?? null;
   const canCreateView = useMemo(
     () =>
       projectDetails?.issue_views_view === true &&
@@ -78,113 +86,26 @@ export const ProjectLevelWorkItemFiltersHOC = observer(function ProjectLevelWork
       hasProjectMemberLevelPermissions,
     ]
   );
-  const canUpdateView = useMemo(
-    () =>
-      enableUpdateView &&
-      !props.updateViewOptions?.isDisabled &&
-      !isViewLocked &&
-      hasProjectMemberLevelPermissions &&
-      isCurrentUserOwner,
-    [
-      enableUpdateView,
-      props.updateViewOptions?.isDisabled,
-      isViewLocked,
-      hasProjectMemberLevelPermissions,
-      isCurrentUserOwner,
-    ]
-  );
-  const createViewLabel = useMemo(() => props.saveViewOptions?.label, [props.saveViewOptions?.label]);
-  const updateViewLabel = useMemo(() => props.updateViewOptions?.label, [props.updateViewOptions?.label]);
-  const hasAdditionalChanges = useMemo(
-    () =>
-      !isEqual(initialWorkItemFilters?.displayFilters, viewDetails?.display_filters) ||
-      !isEqual(
-        removeNillKeys(initialWorkItemFilters?.displayProperties),
-        removeNillKeys(viewDetails?.display_properties)
-      ),
-    [initialWorkItemFilters, viewDetails]
-  );
-
-  const getDefaultViewDetailPayload: () => Partial<IProjectView> = useCallback(
-    () => ({
-      name: viewDetails ? `${viewDetails?.name} 2` : "Untitled",
-      description: viewDetails ? viewDetails.description : "",
-      logo_props: viewDetails ? viewDetails.logo_props : undefined,
-      access: viewDetails ? viewDetails.access : EViewAccess.PUBLIC,
-    }),
-    [viewDetails]
-  );
-
-  const getViewFilterPayload: (filterExpression: TWorkItemFilterExpression) => Partial<IProjectView> = useCallback(
-    (filterExpression: TWorkItemFilterExpression) => ({
-      rich_filters: cloneDeep(filterExpression),
-      display_filters: cloneDeep(initialWorkItemFilters?.displayFilters),
-      display_properties: cloneDeep(initialWorkItemFilters?.displayProperties),
-    }),
-    [initialWorkItemFilters]
-  );
-
-  const handleViewSave = useCallback(
-    (expression: TWorkItemFilterExpression) => {
-      setCreateViewPayload({
-        ...getDefaultViewDetailPayload(),
-        ...getViewFilterPayload(expression),
-      });
-      setIsCreateViewModalOpen(true);
-    },
-    [getDefaultViewDetailPayload, getViewFilterPayload]
-  );
-
+  const canUpdateView =
+    enableUpdateView &&
+    !props.updateViewOptions?.isDisabled &&
+    hasProjectMemberLevelPermissions &&
+    canEditViewFilters(viewQuery, currentUser?.id);
   const handleViewUpdate = useCallback(
-    (filterExpression: TWorkItemFilterExpression) => {
-      if (!viewDetails) {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "We couldn't find the view",
-          message: "The view you're trying to update doesn't exist.",
-        });
-
-        return;
-      }
-
-      updateView(workspaceSlug, projectId, viewDetails.id, {
-        ...getViewFilterPayload(filterExpression),
-      })
-        .then(() => {
-          setToast({
-            type: TOAST_TYPE.SUCCESS,
-            title: "Success!",
-            message: "Your view has been updated successfully.",
-          });
-        })
-        .catch(() => {
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: "Error!",
-            message: "Your view could not be updated. Please try again.",
-          });
-        });
+    async (payload: ViewFilterPayload) => {
+      const view = requireViewForUpdate(viewDetails);
+      return persistViewUpdate(() => updateView({ viewId: view.id, data: payload }), captureActionScope());
     },
-    [viewDetails, updateView, workspaceSlug, projectId, getViewFilterPayload]
+    [viewDetails, updateView, captureActionScope]
   );
-
-  const saveViewOptions = useMemo(
-    () => ({
-      label: createViewLabel,
-      isDisabled: !canCreateView,
-      onViewSave: handleViewSave,
-    }),
-    [createViewLabel, canCreateView, handleViewSave]
-  );
-
-  const updateViewOptions = useMemo(
-    () => ({
-      label: updateViewLabel,
-      isDisabled: !canUpdateView,
-      hasAdditionalChanges,
-      onViewUpdate: handleViewUpdate,
-    }),
-    [updateViewLabel, canUpdateView, hasAdditionalChanges, handleViewUpdate]
+  const { createViewPayload, isCreateViewModalOpen, saveViewOptions, updateViewOptions, close } = useViewFilterActions(
+    props,
+    viewDetails,
+    {
+      canCreate: canCreateView,
+      canUpdate: canUpdateView,
+      update: handleViewUpdate,
+    }
   );
 
   return (
@@ -194,18 +115,18 @@ export const ProjectLevelWorkItemFiltersHOC = observer(function ProjectLevelWork
         projectId={projectId}
         preLoadedData={createViewPayload}
         isOpen={isCreateViewModalOpen}
-        onClose={() => {
-          setCreateViewPayload(null);
-          setIsCreateViewModalOpen(false);
-        }}
+        onClose={close}
       />
       <WorkItemFiltersHOC
         {...props}
         workspaceSlug={workspaceSlug}
-        cycleIds={getProjectCycleIds(projectId) ?? undefined}
-        labelIds={getProjectLabelIds(projectId)}
-        memberIds={getProjectMemberIds(projectId, false) ?? undefined}
-        moduleIds={getProjectModuleIds(projectId) ?? undefined}
+        cycleIds={cycleCatalogue.cycles?.map((row) => row.id)}
+        labelIds={projectLabelIds}
+        memberIds={
+          projectRosterMemberIds(projectRoster.memberships, workspaceRoster.membersById, currentUser?.id, false) ??
+          undefined
+        }
+        moduleIds={moduleCatalogue.modules?.map((row) => row.id)}
         stateIds={getProjectStateIds(projectId)}
         saveViewOptions={saveViewOptions}
         updateViewOptions={updateViewOptions}
@@ -214,4 +135,4 @@ export const ProjectLevelWorkItemFiltersHOC = observer(function ProjectLevelWork
       </WorkItemFiltersHOC>
     </>
   );
-});
+};

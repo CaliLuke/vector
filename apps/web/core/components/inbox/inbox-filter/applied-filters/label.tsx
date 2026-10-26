@@ -4,59 +4,49 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
+import { useParams } from "@tanstack/react-router";
 // hooks
-import { CloseIcon } from "@plane/propel/icons";
-import { Tag } from "@plane/ui";
-import { useLabel } from "@/hooks/store/use-label";
-import { useProjectInbox } from "@/hooks/store/use-project-inbox";
+import { useProjectLabels } from "@/hooks/use-labels";
+import { useIntakePreferences } from "@/providers/intake-preferences";
+import { InboxAppliedFilterGroup, toggleAppliedFilterValue } from "./shared";
 
 function LabelIcons({ color }: { color: string }) {
   return <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />;
 }
 
-export const InboxIssueAppliedFiltersLabel = observer(function InboxIssueAppliedFiltersLabel() {
+export const InboxIssueAppliedFiltersLabel = function InboxIssueAppliedFiltersLabel() {
   // hooks
-  const { inboxFilters, handleInboxIssueFilters } = useProjectInbox();
-  const { getLabelById } = useLabel();
+  const { filters, setFilter } = useIntakePreferences();
+  const { workspaceSlug, projectId } = useParams({ strict: false });
+  const { getLabelById } = useProjectLabels(workspaceSlug?.toString(), projectId?.toString());
   // derived values
-  const filteredValues = inboxFilters?.labels || [];
+  const filteredValues = filters?.labels || [];
   const currentOptionDetail = (labelId: string) => getLabelById(labelId) || undefined;
 
-  const handleFilterValue = (value: string): string[] =>
-    filteredValues?.includes(value) ? filteredValues.filter((v) => v !== value) : [...filteredValues, value];
-
-  const clearFilter = () => handleInboxIssueFilters("labels", undefined);
-
-  if (filteredValues.length === 0) return <></>;
-  return (
-    <Tag>
-      <div className="text-11 text-secondary">Label</div>
-      {filteredValues.map((value) => {
-        const optionDetail = currentOptionDetail(value);
-        if (!optionDetail) return <></>;
-        return (
-          <div key={value} className="relative flex items-center gap-1 rounded-sm bg-layer-1 p-1 text-11">
-            <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
-              <LabelIcons color={optionDetail.color} />
-            </div>
-            <div className="truncate text-11">{optionDetail?.name}</div>
-            <div
-              className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-              onClick={() => handleInboxIssueFilters("labels", handleFilterValue(value))}
-            >
-              <CloseIcon className={`h-3 w-3`} />
-            </div>
+  const clearFilter = () => setFilter("labels", undefined);
+  const options = filteredValues.flatMap((value) => {
+    const optionDetail = currentOptionDetail(value);
+    if (!optionDetail) return [];
+    return [
+      {
+        key: value,
+        leading: (
+          <div className="relative flex h-3 w-3 flex-shrink-0 items-center justify-center overflow-hidden">
+            <LabelIcons color={optionDetail.color} />
           </div>
-        );
-      })}
+        ),
+        label: optionDetail.name,
+        onRemove: () => setFilter("labels", toggleAppliedFilterValue(filteredValues, value)),
+      },
+    ];
+  });
 
-      <div
-        className="relative flex h-3 w-3 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden text-tertiary transition-all hover:text-secondary"
-        onClick={clearFilter}
-      >
-        <CloseIcon className={`h-3 w-3`} />
-      </div>
-    </Tag>
+  return (
+    <InboxAppliedFilterGroup
+      label="Label"
+      options={options}
+      hasFilters={filteredValues.length > 0}
+      onClearAll={clearFilter}
+    />
   );
-});
+};

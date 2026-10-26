@@ -35,13 +35,12 @@ export class InstanceService extends APIService {
    * Retrieves information about the current instance
    * @returns {Promise<IInstanceInfo>} Promise resolving to instance information
    * @throws {Error} If the API request fails
-   * @remarks This method uses the validateStatus: null option to bypass interceptors for unauthorized errors.
    */
-  async info(): Promise<IInstanceInfo> {
-    return this.get("/api/instances/", { validateStatus: null })
+  async info(signal?: AbortSignal): Promise<IInstanceInfo> {
+    return this.get("/api/instances/", { signal })
       .then((response) => response.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -54,7 +53,7 @@ export class InstanceService extends APIService {
     return this.get("/api/instances/changelog/")
       .then((response) => response.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -62,13 +61,12 @@ export class InstanceService extends APIService {
    * Fetches the list of instance admins
    * @returns {Promise<IInstanceAdmin[]>} Promise resolving to an array of instance admins
    * @throws {Error} If the API request fails
-   * @remarks This method uses the validateStatus: null option to bypass interceptors for unauthorized errors.
    */
-  async admins(): Promise<IInstanceAdmin[]> {
-    return this.get("/api/instances/admins/", { validateStatus: null })
+  async admins(signal?: AbortSignal): Promise<IInstanceAdmin[]> {
+    return this.get("/api/instances/admins/", { signal })
       .then((response) => response.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -82,7 +80,7 @@ export class InstanceService extends APIService {
     return this.patch("/api/instances/", data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -91,11 +89,11 @@ export class InstanceService extends APIService {
    * @returns {Promise<IInstanceConfiguration[]>} Promise resolving to an array of instance configurations
    * @throws {Error} If the API request fails
    */
-  async configurations(): Promise<IInstanceConfiguration[]> {
-    return this.get("/api/instances/configurations/")
+  async configurations(signal?: AbortSignal): Promise<IInstanceConfiguration[]> {
+    return this.get("/api/instances/configurations/", { signal })
       .then((response) => response.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -109,7 +107,7 @@ export class InstanceService extends APIService {
     return this.patch("/api/instances/configurations/", data)
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -125,7 +123,7 @@ export class InstanceService extends APIService {
     })
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 
@@ -138,7 +136,7 @@ export class InstanceService extends APIService {
     return this.delete("/api/instances/configurations/disable-email-feature/")
       .then((response) => response?.data)
       .catch((error) => {
-        throw error?.response?.data;
+        throw error?.response?.data ?? error;
       });
   }
 }

@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import type { AxiosInstance } from "axios";
 import { API_BASE_URL } from "@plane/constants";
 import type { TCycleDistribution, TProgressSnapshot, TCycleEstimateDistribution } from "@plane/types";
 import { APIService } from "../api.service";
@@ -14,8 +15,8 @@ import { APIService } from "../api.service";
  * @extends {APIService}
  */
 export class CycleAnalyticsService extends APIService {
-  constructor(BASE_URL?: string) {
-    super(BASE_URL || API_BASE_URL);
+  constructor(BASE_URL?: string, configureAxiosInstance?: (axiosInstance: AxiosInstance) => void) {
+    super(BASE_URL || API_BASE_URL, configureAxiosInstance);
   }
 
   /**
@@ -34,7 +35,7 @@ export class CycleAnalyticsService extends APIService {
     analytic_type: string = "points"
   ): Promise<TCycleDistribution | TCycleEstimateDistribution> {
     return this.get(
-      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/analytics?type=${analytic_type}`
+      `/api/workspaces/${workspaceSlug}/projects/${projectId}/cycles/${cycleId}/analytics/?type=${analytic_type}`
     )
       .then((res) => res?.data)
       .catch((err) => {

@@ -3,30 +3,36 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
+import { useIssueLayoutQuickActions } from "../issue-layout-quick-actions";
 
+import { useIssueListPresentation } from "@/hooks/use-issue-list-presentation";
+import { useIssueListPaginationOptions } from "@/hooks/use-issue-list-pagination-options";
+import { IssueListViewProvider } from "@/providers/issue-list-view";
 import { useParams } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useCallback, useEffect } from "react";
-import { observer } from "mobx-react";
+import { useCallback } from "react";
 
 // plane constants
-import { EIssueFilterType, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 // types
-import type { EIssuesStoreType, GroupByColumnTypes, TGroupedIssues, TIssueKanbanFilters } from "@plane/types";
-import { EIssueLayoutTypes } from "@plane/types";
-// constants
+import type { GroupByColumnTypes, TIssue } from "@plane/types";
+import { EIssueLayoutTypes, EIssuesStoreType } from "@plane/types";
 // hooks
-import { useIssues } from "@/hooks/store/use-issues";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectPermissions } from "@/hooks/use-permissions";
+import { useIssueLayoutActions } from "@/hooks/use-issue-layout-actions";
+import { useIssueKanbanCollapse } from "@/hooks/use-issue-kanban-collapse";
+import { useWorkspaceMemberRoster } from "@/hooks/use-member-rosters";
 // hooks
 import { useGroupIssuesDragNDrop } from "@/hooks/use-group-dragndrop";
-import { useIssueStoreType } from "@/hooks/use-issue-layout-store";
-import { useIssuesActions } from "@/hooks/use-issues-actions";
+import { useIssueListType } from "@/hooks/use-issue-list-type";
+
+import { projectGroupedIssueIdsByDisplayOrder } from "../issue-display-ordering";
+import { isSubscribedProfileRequest } from "../utils";
 // components
 import { IssueLayoutHOC } from "../issue-layout-HOC";
 import { List } from "./default";
 // types
-import type { IQuickActionProps, TRenderQuickActions } from "./list-view-types";
+import type { IQuickActionProps } from "./list-view-types";
 
 type ListStoreType =
   | EIssuesStoreType.PROJECT
@@ -35,78 +41,71 @@ type ListStoreType =
   | EIssuesStoreType.PROJECT_VIEW
   | EIssuesStoreType.PROFILE
   | EIssuesStoreType.ARCHIVED
-  | EIssuesStoreType.WORKSPACE_DRAFT
   | EIssuesStoreType.TEAM
   | EIssuesStoreType.TEAM_VIEW
   | EIssuesStoreType.EPIC;
 
 interface IBaseListRoot {
   QuickActions: FC<IQuickActionProps>;
-  addIssuesToView?: (issueIds: string[]) => Promise<any>;
+  addIssuesToView?: (issueIds: string[]) => Promise<void | TIssue>;
   canEditPropertiesBasedOnProject?: (projectId: string) => boolean;
   viewId?: string | undefined;
   isCompletedCycle?: boolean;
   isEpic?: boolean;
 }
-export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot) {
+export function BaseListRoot(props: IBaseListRoot) {
   const {
     QuickActions,
-    viewId,
     addIssuesToView,
     canEditPropertiesBasedOnProject,
     isCompletedCycle = false,
     isEpic = false,
   } = props;
   // router
-  const storeType = useIssueStoreType() as ListStoreType;
-  //stores
-  const { issuesFilter, issues } = useIssues(storeType);
-  const {
-    fetchIssues,
-    fetchNextIssues,
-    quickAddIssue,
-    updateIssue,
-    removeIssue,
-    removeIssueFromView,
-    archiveIssue,
-    restoreIssue,
-  } = useIssuesActions(storeType);
-  // mobx store
-  const { allowPermissions } = useUserPermissions();
-  const { issueMap } = useIssues();
-
-  const displayFilters = issuesFilter?.issueFilters?.displayFilters;
-  const displayProperties = issuesFilter?.issueFilters?.displayProperties;
+  const storeType = useIssueListType() as ListStoreType;
+  const { issueFilters: displayPreferences, requestInput, actions } = useIssueLayoutActions(storeType);
+  const { quickAddIssue, updateIssue, updateFilters } = actions;
+  const displayFilters = displayPreferences?.displayFilters;
+  const displayProperties = displayPreferences?.displayProperties;
   const orderBy = displayFilters?.order_by || undefined;
 
   const group_by = (displayFilters?.group_by || null) as GroupByColumnTypes | null;
   const showEmptyGroup = displayFilters?.show_empty_groups ?? false;
 
   const { workspaceSlug, projectId } = useParams({ strict: false });
-  const { updateFilters } = useIssuesActions(storeType);
-  const collapsedGroups =
-    issuesFilter?.issueFilters?.kanbanFilters || ({ group_by: [], sub_group_by: [] } as TIssueKanbanFilters);
-
-  const retryInitialIssues = useCallback(async () => {
-    try {
-      await fetchIssues("init-loader", { canGroup: true, perPageCount: group_by ? 50 : 100 }, viewId);
-    } catch (error) {
-      // The issue layout renders the observable loadError state with a retry action.
-      console.error("Failed to load issue list", error);
-    }
-  }, [fetchIssues, group_by, viewId]);
-
-  useEffect(() => {
-    void retryInitialIssues();
-  }, [retryInitialIssues, storeType]);
-
-  const groupedIssueIds = issues?.groupedIssueIds as TGroupedIssues | undefined;
-  // auth
-  const isEditingAllowed = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.PROJECT
+  const { membersById } = useWorkspaceMemberRoster(workspaceSlug);
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const { filters: collapsedGroups, toggle: toggleCollapsedGroup } = useIssueKanbanCollapse(
+    storeType,
+    workspaceSlug,
+    projectId,
+    displayPreferences?.kanbanFilters,
+    updateFilters
   );
-  const { enableInlineEditing, enableQuickAdd, enableIssueCreation } = issues?.viewFlags || {};
+
+  const paginationOptions = useIssueListPaginationOptions(storeType, displayFilters, EIssueLayoutTypes.LIST);
+  const readState = useIssueListPresentation(storeType, paginationOptions, displayFilters);
+  const { fetchNextIssues } = readState;
+  const { labelsById, estimateProjection, stateProjection, parentProjection } = readState;
+
+  const issueMap = readState.issuesById;
+  const groupedIssueIds = readState.groupedIssueIds;
+  const visibleGroupedIssueIds = projectGroupedIssueIdsByDisplayOrder(
+    groupedIssueIds,
+    (issueId) => issueMap[issueId],
+    membersById,
+    orderBy,
+    labelsById,
+    estimateProjection,
+    stateProjection,
+    parentProjection
+  );
+  // auth
+  const isEditingAllowed = canProject([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const enableQuickAdd = storeType !== EIssuesStoreType.PROFILE && storeType !== EIssuesStoreType.ARCHIVED;
+  const isSubscribedProfile = isSubscribedProfileRequest(requestInput);
+  const enableIssueCreation = storeType !== EIssuesStoreType.ARCHIVED && !isSubscribedProfile;
+  const enableInlineEditing = storeType !== EIssuesStoreType.ARCHIVED;
 
   const canEditProperties = useCallback(
     (issueProjectId: string | undefined) => {
@@ -120,79 +119,60 @@ export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot)
     [canEditPropertiesBasedOnProject, enableInlineEditing, isEditingAllowed]
   );
 
-  const handleOnDrop = useGroupIssuesDragNDrop(storeType, orderBy, group_by);
-
-  const renderQuickActions: TRenderQuickActions = useCallback(
-    ({ issue, parentRef }) => (
-      <QuickActions
-        parentRef={parentRef}
-        issue={issue}
-        handleDelete={async () => removeIssue(issue.project_id, issue.id)}
-        handleUpdate={async (data) => updateIssue && updateIssue(issue.project_id, issue.id, data)}
-        handleRemoveFromView={async () => removeIssueFromView && removeIssueFromView(issue.project_id, issue.id)}
-        handleArchive={async () => archiveIssue && archiveIssue(issue.project_id, issue.id)}
-        handleRestore={async () => restoreIssue && restoreIssue(issue.project_id, issue.id)}
-        readOnly={!canEditProperties(issue.project_id ?? undefined) || isCompletedCycle}
-      />
-    ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isCompletedCycle, canEditProperties, removeIssue, updateIssue, removeIssueFromView, archiveIssue, restoreIssue]
+  const handleOnDrop = useGroupIssuesDragNDrop(
+    storeType,
+    orderBy,
+    group_by,
+    undefined,
+    visibleGroupedIssueIds,
+    issueMap,
+    groupedIssueIds
   );
 
-  const loadMoreIssues = useCallback(
-    (groupId?: string) => {
-      fetchNextIssues(groupId);
-    },
-    [fetchNextIssues]
-  );
+  const renderQuickActions = useIssueLayoutQuickActions({
+    QuickActions,
+    actions,
+    canEditProperties,
+    isCompletedCycle,
+  });
 
-  // kanbanFilters and EIssueFilterType.KANBAN_FILTERS are used because the state is shared between kanban view and list view
+  const loadMoreIssues = useCallback((groupId?: string) => void fetchNextIssues(groupId), [fetchNextIssues]);
+
   const handleCollapsedGroups = useCallback(
-    (value: string) => {
-      if (workspaceSlug) {
-        let collapsedGroupIds = issuesFilter?.issueFilters?.kanbanFilters?.group_by || [];
-        if (collapsedGroupIds.includes(value)) {
-          collapsedGroupIds = collapsedGroupIds.filter((_value) => _value != value);
-        } else {
-          collapsedGroupIds.push(value);
-        }
-        updateFilters(projectId?.toString() ?? "", EIssueFilterType.KANBAN_FILTERS, {
-          group_by: collapsedGroupIds,
-        } as TIssueKanbanFilters);
-      }
-    },
-    [workspaceSlug, issuesFilter, projectId, updateFilters]
+    (value: string) => toggleCollapsedGroup("group_by", value),
+    [toggleCollapsedGroup]
   );
 
   return (
-    <IssueLayoutHOC
-      layout={EIssueLayoutTypes.LIST}
-      loadError={"loadError" in issues ? Boolean(issues.loadError) : false}
-      onRetry={retryInitialIssues}
-    >
-      <div className={`relative size-full bg-surface-2`}>
-        <List
-          issuesMap={issueMap}
-          displayProperties={displayProperties}
-          group_by={group_by}
-          orderBy={orderBy}
-          updateIssue={updateIssue}
-          quickActions={renderQuickActions}
-          groupedIssueIds={groupedIssueIds ?? {}}
-          loadMoreIssues={loadMoreIssues}
-          showEmptyGroup={showEmptyGroup}
-          quickAddCallback={quickAddIssue}
-          enableIssueQuickAdd={!!enableQuickAdd}
-          canEditProperties={canEditProperties}
-          disableIssueCreation={!enableIssueCreation || !isEditingAllowed}
-          addIssuesToView={addIssuesToView}
-          isCompletedCycle={isCompletedCycle}
-          handleOnDrop={handleOnDrop}
-          handleCollapsedGroups={handleCollapsedGroups}
-          collapsedGroups={collapsedGroups}
-          isEpic={isEpic}
-        />
-      </div>
-    </IssueLayoutHOC>
+    <IssueListViewProvider readState={readState}>
+      <IssueLayoutHOC readState={readState} layout={EIssueLayoutTypes.LIST}>
+        <div className={`relative size-full bg-surface-2`}>
+          <List
+            issuesMap={issueMap}
+            displayProperties={displayProperties}
+            group_by={group_by}
+            orderBy={orderBy}
+            updateIssue={updateIssue}
+            quickActions={renderQuickActions}
+            groupedIssueIds={visibleGroupedIssueIds ?? {}}
+            loadMoreIssues={loadMoreIssues}
+            showEmptyGroup={showEmptyGroup}
+            quickAddCallback={quickAddIssue}
+            enableIssueQuickAdd={!!enableQuickAdd}
+            canEditProperties={canEditProperties}
+            disableIssueCreation={!enableIssueCreation || !isEditingAllowed}
+            addIssuesToView={addIssuesToView}
+            isCompletedCycle={isCompletedCycle}
+            handleOnDrop={handleOnDrop}
+            handleCollapsedGroups={handleCollapsedGroups}
+            collapsedGroups={collapsedGroups}
+            isEpic={isEpic}
+            getGroupIssueCount={readState.getGroupIssueCount}
+            getPaginationData={readState.getPaginationData}
+            getIssueLoader={readState.getIssueLoader}
+          />
+        </div>
+      </IssueLayoutHOC>
+    </IssueListViewProvider>
   );
-});
+}

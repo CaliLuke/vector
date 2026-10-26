@@ -7,37 +7,47 @@
 import { useParams, useLocation } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
 
 import { Ellipsis } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
+import { EUserPermissions, PROJECT_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon, ChevronRightIcon } from "@plane/propel/icons";
 import { IconButton } from "@plane/propel/icon-button";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
 import { Loader } from "@plane/ui";
-import { copyUrlToClipboard, cn, orderJoinedProjects } from "@plane/utils";
+import { copyUrlToClipboard } from "@plane/utils/string";
+import { cn } from "@plane/utils/common";
 // components
 import { CreateProjectModal } from "@/components/project/create-project-modal";
 import { SidebarNavItem } from "@/components/sidebar/sidebar-navigation";
 // hooks
-import { useAppTheme } from "@/hooks/store/use-app-theme";
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useSidebarActions, useExtendedProjectSidebarOpen } from "@/providers/sidebar-state";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useWorkspaceProjects } from "@/hooks/use-projects";
+import { useWorkspaceProjectReordering } from "@/hooks/use-workspace-project-reordering";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 import { useProjectNavigationPreferences } from "@/hooks/use-navigation-preferences";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
 import { findSidebarScrollViewport } from "./projects-list.utils";
 // plane web imports
-import type { TProject } from "@plane/types";
 // local imports
 import { SidebarProjectsListItem } from "./projects-list-item";
 
-export const SidebarProjectsList = observer(function SidebarProjectsList() {
+function getProjectListDisplay(projectIds: string[], showLimitedProjects: boolean, limitedProjectsCount: number) {
+  return {
+    displayedProjects: showLimitedProjects ? projectIds.slice(0, limitedProjectsCount) : projectIds,
+    hasMoreProjects: showLimitedProjects && projectIds.length > limitedProjectsCount,
+  };
+}
+
+export const SidebarProjectsList = function SidebarProjectsList() {
   // states
-  const [isAllProjectsListOpen, setIsAllProjectsListOpen] = useState(true);
+  const [projectListDisclosure, setProjectListDisclosure] = useState<{ pathname: string | undefined; isOpen: boolean }>(
+    { pathname: undefined, isOpen: true }
+  );
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false); // scroll animation state
   // refs
@@ -45,29 +55,34 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
   // store hooks
   const { t } = useTranslation();
   const { toggleCreateProjectModal } = useCommandPalette();
-  const { allowPermissions } = useUserPermissions();
   const { preferences: projectPreferences } = useProjectNavigationPreferences();
-  const { isExtendedProjectSidebarOpened, toggleExtendedProjectSidebar } = useAppTheme();
+  const isExtendedProjectSidebarOpened = useExtendedProjectSidebarOpen();
+  const { toggleExtendedProjectSidebar } = useSidebarActions();
 
-  const { loader, getPartialProjectById, joinedProjectIds: joinedProjects, updateProjectView } = useProject();
   // router params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
+  const projectCatalogue = useWorkspaceProjects(workspaceSlug);
+  const joinedProjects = useJoinedProjectIds(workspaceSlug);
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
+  const handleOnProjectDrop = useWorkspaceProjectReordering({
+    workspaceSlug,
+    joinedProjectIds: joinedProjects,
+  });
   const pathname = useLocation({ select: (location) => location.pathname });
+  const isAllProjectsListOpen =
+    projectListDisclosure.pathname === pathname
+      ? projectListDisclosure.isOpen
+      : pathname.includes("projects") || projectListDisclosure.isOpen;
 
   // auth
-  const isAuthorizedUser = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
+  const isAuthorizedUser = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
 
   // Compute limited projects for main sidebar
-  const displayedProjects = projectPreferences.showLimitedProjects
-    ? joinedProjects.slice(0, projectPreferences.limitedProjectsCount)
-    : joinedProjects;
-
-  // Check if there are more projects to show
-  const hasMoreProjects =
-    projectPreferences.showLimitedProjects && joinedProjects.length > projectPreferences.limitedProjectsCount;
+  const { displayedProjects, hasMoreProjects } = getProjectListDisplay(
+    joinedProjects,
+    projectPreferences.showLimitedProjects,
+    projectPreferences.limitedProjectsCount
+  );
 
   const handleCopyText = (projectId: string) => {
     copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`).then(() => {
@@ -78,36 +93,6 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
       });
       return undefined;
     });
-  };
-
-  const handleOnProjectDrop = (
-    sourceId: string | undefined,
-    destinationId: string | undefined,
-    shouldDropAtEnd: boolean
-  ) => {
-    if (!sourceId || !destinationId || !workspaceSlug) return;
-    if (sourceId === destinationId) return;
-
-    const joinedProjectsList: TProject[] = [];
-    joinedProjects.map((projectId) => {
-      const projectDetails = getPartialProjectById(projectId);
-      if (projectDetails) joinedProjectsList.push(projectDetails);
-    });
-
-    const sourceIndex = joinedProjects.indexOf(sourceId);
-    const destinationIndex = shouldDropAtEnd ? joinedProjects.length : joinedProjects.indexOf(destinationId);
-
-    if (joinedProjectsList.length <= 0) return;
-
-    const updatedSortOrder = orderJoinedProjects(sourceIndex, destinationIndex, sourceId, joinedProjectsList);
-    if (updatedSortOrder != undefined)
-      updateProjectView(workspaceSlug.toString(), sourceId, { sort_order: updatedSortOrder }).catch(() => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: t("error"),
-          message: t("something_went_wrong"),
-        });
-      });
   };
 
   /**
@@ -144,14 +129,11 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
   }, [containerRef]);
 
   const toggleListDisclosure = (isOpen: boolean) => {
-    setIsAllProjectsListOpen(isOpen);
+    setProjectListDisclosure({ pathname, isOpen });
     localStorage.setItem("isAllProjectsListOpen", isOpen.toString());
   };
   useEffect(() => {
-    if (pathname.includes("projects")) {
-      setIsAllProjectsListOpen(true);
-      localStorage.setItem("isAllProjectsListOpen", "true");
-    }
+    if (pathname.includes("projects")) localStorage.setItem("isAllProjectsListOpen", "true");
   }, [pathname]);
   return (
     <>
@@ -229,12 +211,20 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
               leaveFrom="transform scale-100 opacity-100"
               leaveTo="transform scale-95 opacity-0"
             >
-              {loader === "init-loader" && (
+              {projectCatalogue.isPending && (
                 <Loader className="w-full space-y-1.5">
                   {[1, 2, 3, 4].map((placeholder) => (
                     <Loader.Item key={placeholder} height="28px" />
                   ))}
                 </Loader>
+              )}
+              {projectCatalogue.isError && (
+                <div className="text-error px-2 py-2 text-11" role="alert">
+                  <span>{t("common.error.generic")}</span>
+                  <button type="button" className="ml-2 underline" onClick={() => void projectCatalogue.retryAccess()}>
+                    {t("common.retry")}
+                  </button>
+                </div>
               )}
               {isAllProjectsListOpen && (
                 <Disclosure.Panel as="div" className="flex flex-col gap-0.5" static>
@@ -276,7 +266,7 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
           </Disclosure>
         </>
 
-        {isAuthorizedUser && joinedProjects?.length === 0 && (
+        {isAuthorizedUser && joinedProjects.length === 0 && (
           <button
             type="button"
             data-ph-element={PROJECT_TRACKER_ELEMENTS.SIDEBAR_CREATE_PROJECT_BUTTON}
@@ -291,4 +281,4 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
       </div>
     </>
   );
-});
+};

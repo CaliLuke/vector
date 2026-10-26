@@ -6,32 +6,32 @@
 
 import { Link, useParams } from "@tanstack/react-router";
 import React from "react";
-// mobx
-import { observer } from "mobx-react";
 
 import { Hotel } from "lucide-react";
 // plane ui
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useLocalStorage } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 import { MembersPropertyIcon, CheckIcon, ProjectIcon, CloseIcon } from "@plane/propel/icons";
-import { cn, getFileURL } from "@plane/utils";
+import { cn } from "@plane/utils/common";
+import { getFileURL } from "@plane/utils/file";
 // hooks
-import { useCommandPalette } from "@/hooks/store/use-command-palette";
-import { useProject } from "@/hooks/store/use-project";
-import { useWorkspace } from "@/hooks/store/use-workspace";
-import { useUser, useUserPermissions } from "@/hooks/store/user";
+import { useCommandPalette } from "@/hooks/use-command-palette";
+import { useJoinedProjectIds } from "@/hooks/use-joined-project-ids";
+import { useCurrentWorkspace } from "@/hooks/use-workspaces";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
+import { useCurrentUser } from "@/hooks/use-current-user";
 // plane web constants
 
-export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
+export function NoProjectsEmptyState() {
   // navigation
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   const { toggleCreateProjectModal } = useCommandPalette();
-  const { data: currentUser } = useUser();
-  const { joinedProjectIds } = useProject();
-  const { currentWorkspace: activeWorkspace } = useWorkspace();
+  const { data: currentUser } = useCurrentUser();
+  const { data: activeWorkspace } = useCurrentWorkspace();
+  const joinedProjectIds = useJoinedProjectIds(workspaceSlug);
   // local storage
   const { storedValue, setValue } = useLocalStorage(`quickstart-guide-${workspaceSlug}`, {
     hide: false,
@@ -41,11 +41,8 @@ export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
   });
   const { t } = useTranslation();
   // derived values
-  const canCreateProject = allowPermissions(
-    [EUserPermissions.ADMIN, EUserPermissions.MEMBER],
-    EUserPermissionsLevel.WORKSPACE
-  );
-  const isWorkspaceAdmin = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.WORKSPACE);
+  const canCreateProject = canWorkspace([EUserPermissions.ADMIN, EUserPermissions.MEMBER]);
+  const isWorkspaceAdmin = canWorkspace([EUserPermissions.ADMIN]);
 
   if (!currentUser) return null;
 
@@ -205,4 +202,4 @@ export const NoProjectsEmptyState = observer(function NoProjectsEmptyState() {
       </div>
     </div>
   );
-});
+}

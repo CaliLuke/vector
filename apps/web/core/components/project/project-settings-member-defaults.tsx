@@ -5,28 +5,20 @@
  */
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
-import { observer } from "mobx-react";
-import { Controller, useForm } from "react-hook-form";
-import useSWR from "swr";
 // plane imports
-import { EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import type { IProject, IUserLite, IWorkspace } from "@plane/types";
+import type { IProject, IUserLite } from "@plane/types";
 import { Loader, ToggleSwitch } from "@plane/ui";
 // constants
-import { PROJECT_DETAILS } from "@plane/constants";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useProjectDetail, useProjectMutations } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 // local imports
 import { MemberSelect } from "./member-select";
 
-const defaultValues: Partial<IProject> = {
-  project_lead: null,
-  default_assignee: null,
-};
+const memberId = (member: string | IUserLite | null | undefined) => (typeof member === "string" ? member : member?.id);
 
 type TDefaultSettingItemProps = {
   title: string;
@@ -46,151 +38,126 @@ function DefaultSettingItem({ title, description, children }: TDefaultSettingIte
   );
 }
 
+type TProjectMemberSettingProps = {
+  title: string;
+  description: string;
+  value: string | undefined;
+  workspaceSlug: string;
+  projectId: string;
+  isDisabled: boolean;
+  onChange: (value: string) => void;
+  isLoading: boolean;
+};
+
+function ProjectMemberSetting({
+  title,
+  description,
+  value,
+  workspaceSlug,
+  projectId,
+  isDisabled,
+  onChange,
+  isLoading,
+}: TProjectMemberSettingProps) {
+  return (
+    <DefaultSettingItem title={title} description={description}>
+      {isLoading ? (
+        <Loader className="h-9 w-full">
+          <Loader.Item width="100%" height="100%" />
+        </Loader>
+      ) : (
+        <MemberSelect
+          value={value}
+          onChange={onChange}
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          isDisabled={isDisabled}
+        />
+      )}
+    </DefaultSettingItem>
+  );
+}
+
 type TProjectSettingsMemberDefaultsProps = {
   workspaceSlug: string;
   projectId: string;
 };
 
-export const ProjectSettingsMemberDefaults = observer(function ProjectSettingsMemberDefaults(
-  props: TProjectSettingsMemberDefaultsProps
-) {
+export function ProjectSettingsMemberDefaults(props: TProjectSettingsMemberDefaultsProps) {
   const { workspaceSlug, projectId } = props;
   // plane hooks
   const { t } = useTranslation();
   // store hooks
-  const { allowPermissions } = useUserPermissions();
-
-  const { currentProjectDetails, fetchProjectDetails, updateProject } = useProject();
+  const { can: canProject } = useProjectPermissions(workspaceSlug, projectId);
+  const projectQuery = useProjectDetail(workspaceSlug, projectId);
+  const projectMutation = useProjectMutations(workspaceSlug, projectId);
   // derived values
-  const isAdmin = allowPermissions(
-    [EUserPermissions.ADMIN],
-    EUserPermissionsLevel.PROJECT,
-    workspaceSlug,
-    currentProjectDetails?.id
-  );
-  // form info
-  const { reset, control } = useForm<IProject>({ defaultValues });
-  // fetching user members
-  useSWR(
-    workspaceSlug && projectId ? PROJECT_DETAILS(workspaceSlug, projectId) : null,
-    workspaceSlug && projectId ? () => fetchProjectDetails(workspaceSlug, projectId) : null
-  );
-
-  useEffect(() => {
-    if (!currentProjectDetails) return;
-
-    reset({
-      ...currentProjectDetails,
-      default_assignee:
-        (currentProjectDetails.default_assignee as IUserLite)?.id ?? currentProjectDetails.default_assignee,
-      project_lead: (currentProjectDetails.project_lead as IUserLite)?.id ?? currentProjectDetails.project_lead,
-      workspace: (currentProjectDetails.workspace as IWorkspace).id,
-    });
-  }, [currentProjectDetails, reset]);
-
-  const submitChanges = async (formData: Partial<IProject>) => {
-    if (!workspaceSlug || !projectId) return;
-
-    reset({
-      ...currentProjectDetails,
-      default_assignee:
-        (currentProjectDetails?.default_assignee as IUserLite)?.id ?? currentProjectDetails?.default_assignee,
-      project_lead: (currentProjectDetails?.project_lead as IUserLite)?.id ?? currentProjectDetails?.project_lead,
-      ...formData,
-    });
-
-    await updateProject(workspaceSlug, projectId, {
-      default_assignee:
-        formData.default_assignee === "none"
-          ? null
-          : (formData.default_assignee ?? currentProjectDetails?.default_assignee),
-      project_lead:
-        formData.project_lead === "none" ? null : (formData.project_lead ?? currentProjectDetails?.project_lead),
-    })
-      .then(() => {
-        setToast({
-          title: `${t("success")}!`,
-          type: TOAST_TYPE.SUCCESS,
-          message: t("project_settings.general.toast.success"),
-        });
-      })
-      .catch((err) => {
-        console.error(err);
+  const isAdmin = canProject([EUserPermissions.ADMIN]);
+  const project = projectQuery.project;
+  const isError = projectQuery.isError;
+  if (projectQuery.accessDenied) return <div role="alert">You do not have access to this project.</div>;
+  if (isError)
+    return (
+      <div role="alert">
+        Unable to load project settings.{" "}
+        <button
+          type="button"
+          onClick={() => {
+            void projectQuery.retryAccess();
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
+  const updateSettings = async (data: Partial<IProject>) => {
+    try {
+      await projectMutation.mutateAsync({ type: "update", projectId, data });
+      setToast({
+        title: t("success"),
+        type: TOAST_TYPE.SUCCESS,
+        message: t("project_settings.general.toast.success"),
       });
-  };
-
-  const toggleGuestViewAllIssues = async (value: boolean) => {
-    if (!workspaceSlug || !projectId) return;
-
-    updateProject(workspaceSlug, projectId, {
-      guest_view_all_features: value,
-    })
-      .then(() => {
-        setToast({
-          title: `${t("success")}!`,
-          type: TOAST_TYPE.SUCCESS,
-          message: t("project_settings.general.toast.success"),
-        });
-      })
-      .catch((err) => {
-        console.error(err);
+    } catch {
+      setToast({
+        title: t("error"),
+        type: TOAST_TYPE.ERROR,
+        message: "Unable to update project settings. Please try again.",
       });
+    }
   };
-
   return (
     <div className="my-6 flex flex-col gap-y-6">
-      <DefaultSettingItem title="Project Lead" description="Select the project lead for the project.">
-        {currentProjectDetails ? (
-          <Controller
-            control={control}
-            name="project_lead"
-            render={({ field: { value } }) => (
-              <MemberSelect
-                value={value}
-                onChange={(val: string) => {
-                  submitChanges({ project_lead: val });
-                }}
-                isDisabled={!isAdmin}
-              />
-            )}
-          />
-        ) : (
-          <Loader className="h-9 w-full">
-            <Loader.Item width="100%" height="100%" />
-          </Loader>
-        )}
-      </DefaultSettingItem>
-      <DefaultSettingItem title="Default Assignee" description="Select the default assignee for the project.">
-        {currentProjectDetails ? (
-          <Controller
-            control={control}
-            name="default_assignee"
-            render={({ field: { value } }) => (
-              <MemberSelect
-                value={value}
-                onChange={(val: string) => {
-                  submitChanges({ default_assignee: val });
-                }}
-                isDisabled={!isAdmin}
-              />
-            )}
-          />
-        ) : (
-          <Loader className="h-9 w-full">
-            <Loader.Item width="100%" height="100%" />
-          </Loader>
-        )}
-      </DefaultSettingItem>
-      {currentProjectDetails && (
+      <ProjectMemberSetting
+        title="Project Lead"
+        description="Select the project lead for the project."
+        value={memberId(project?.project_lead)}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        isDisabled={!isAdmin || projectMutation.isPending}
+        onChange={(value) => void updateSettings({ project_lead: value === "none" ? null : value })}
+        isLoading={!project}
+      />
+      <ProjectMemberSetting
+        title="Default Assignee"
+        description="Select the default assignee for the project."
+        value={memberId(project?.default_assignee)}
+        workspaceSlug={workspaceSlug}
+        projectId={projectId}
+        isDisabled={!isAdmin || projectMutation.isPending}
+        onChange={(value) => void updateSettings({ default_assignee: value === "none" ? null : value })}
+        isLoading={!project}
+      />
+      {project && (
         <DefaultSettingItem
           title="Guest access"
           description="This will allow guests to have view access to all the project work items."
         >
           <div className="flex items-center justify-end">
             <ToggleSwitch
-              value={!!currentProjectDetails?.guest_view_all_features}
-              onChange={() => toggleGuestViewAllIssues(!currentProjectDetails?.guest_view_all_features)}
-              disabled={!isAdmin}
+              value={!!project?.guest_view_all_features}
+              onChange={(value) => void updateSettings({ guest_view_all_features: value })}
+              disabled={!isAdmin || projectMutation.isPending}
               size="sm"
             />
           </div>
@@ -198,4 +165,4 @@ export const ProjectSettingsMemberDefaults = observer(function ProjectSettingsMe
       )}
     </div>
   );
-});
+}

@@ -5,30 +5,28 @@
  */
 
 import { useLocation, useParams } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 // plane imports
 import {
-  EUserPermissionsLevel,
   GROUPED_WORKSPACE_SETTINGS,
   WORKSPACE_SETTINGS_CATEGORIES,
   WORKSPACE_SETTINGS_CATEGORY_LABELS,
 } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
-import { joinUrlPath } from "@plane/utils";
+import { joinUrlPath } from "@plane/utils/string";
 // components
 import { SettingsSidebarItem } from "@/components/settings/sidebar/item";
 // hooks
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspacePermissions } from "@/hooks/use-permissions";
 // local imports
 import { WORKSPACE_SETTINGS_ICONS } from "./item-icon";
 
-export const WorkspaceSettingsSidebarItemCategories = observer(function WorkspaceSettingsSidebarItemCategories() {
+export const WorkspaceSettingsSidebarItemCategories = function WorkspaceSettingsSidebarItemCategories() {
   // params
   const { workspaceSlug } = useParams({ from: "/_authenticated/$workspaceSlug" });
   const pathname = useLocation({ select: (location) => location.pathname });
   // store hooks
-  const { allowPermissions } = useUserPermissions();
+  const { can: canWorkspace } = useWorkspacePermissions(workspaceSlug);
   // translation
   const { t } = useTranslation();
 
@@ -36,9 +34,7 @@ export const WorkspaceSettingsSidebarItemCategories = observer(function Workspac
     <div className="mt-3 flex flex-col divide-y divide-subtle px-3">
       {WORKSPACE_SETTINGS_CATEGORIES.map((category) => {
         const categoryItems = GROUPED_WORKSPACE_SETTINGS[category];
-        const accessibleItems = categoryItems.filter((item) =>
-          allowPermissions(item.access, EUserPermissionsLevel.WORKSPACE, workspaceSlug)
-        );
+        const accessibleItems = categoryItems.filter((item) => canWorkspace(item.access));
 
         if (accessibleItems.length === 0) return null;
 
@@ -71,4 +67,4 @@ export const WorkspaceSettingsSidebarItemCategories = observer(function Workspac
       })}
     </div>
   );
-});
+};

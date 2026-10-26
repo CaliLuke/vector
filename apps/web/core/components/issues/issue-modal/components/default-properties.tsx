@@ -4,18 +4,19 @@
  * See the LICENSE file for details.
  */
 
+import type { IssueDraftForm } from "../form-state";
 import { useState } from "react";
-import { observer } from "mobx-react";
-import type { Control } from "react-hook-form";
-import { Controller } from "react-hook-form";
-import { ETabIndices, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { useStore } from "@tanstack/react-form";
+
+import { ETabIndices, EUserPermissions } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { ParentPropertyIcon } from "@plane/propel/icons";
 // types
-import type { ISearchIssueResponse, TIssue } from "@plane/types";
+import type { ISearchIssueResponse } from "@plane/types";
 // ui
-import { CustomMenu } from "@plane/ui";
-import { getDate, renderFormattedPayloadDate, getTabIndex } from "@plane/utils";
+import { CustomMenu, FormErrors } from "@plane/ui";
+import { getDate, renderFormattedPayloadDate } from "@plane/utils/datetime";
+import { getTabIndex } from "@plane/utils/tab-indices";
 // components
 import { CycleDropdown } from "@/components/dropdowns/cycle";
 import { DateDropdown } from "@/components/dropdowns/date";
@@ -24,17 +25,16 @@ import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
-import { ParentIssuesListModal } from "@/components/issues/parent-issues-list-modal";
+import { WorkItemSelectionModal } from "@/components/issues/work-item-selection-modal";
 import { IssueLabelSelect } from "@/components/issues/select";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
-import { useProjectEstimates } from "@/hooks/store/estimates";
-import { useProject } from "@/hooks/store/use-project";
-import { useUserPermissions } from "@/hooks/store/user";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useProjectPermissions } from "@/hooks/use-permissions";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 
 type TIssueDefaultPropertiesProps = {
-  control: Control<TIssue>;
+  form: IssueDraftForm;
   id: string | undefined;
   projectId: string | null;
   workspaceSlug: string;
@@ -43,227 +43,245 @@ type TIssueDefaultPropertiesProps = {
   targetDate: string | null;
   parentId: string | null;
   isDraft: boolean;
-  handleFormChange: () => void;
   setSelectedParentIssue: (issue: ISearchIssueResponse) => void;
 };
 
-export const IssueDefaultProperties = observer(function IssueDefaultProperties(props: TIssueDefaultPropertiesProps) {
-  const {
-    control,
-    id,
-    projectId,
-    workspaceSlug,
-    selectedParentIssue,
-    startDate,
-    targetDate,
-    parentId,
-    isDraft,
-    handleFormChange,
-    setSelectedParentIssue,
-  } = props;
+export const IssueDefaultProperties = function IssueDefaultProperties(props: TIssueDefaultPropertiesProps) {
+  const { form, projectId, workspaceSlug, startDate, targetDate } = props;
   // states
-  const [parentIssueListModalOpen, setParentIssueListModalOpen] = useState(false);
   // store hooks
-  const { t } = useTranslation();
-  const { areEstimateEnabledByProjectId } = useProjectEstimates();
-  const { getProjectById } = useProject();
   const { isMobile } = usePlatformOS();
-  const { allowPermissions } = useUserPermissions();
-  // derived values
-  const projectDetails = getProjectById(projectId);
-
   const { getIndex } = getTabIndex(ETabIndices.ISSUE_FORM, isMobile);
-
-  const canCreateLabel =
-    projectId && allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT, workspaceSlug, projectId);
-
-  const minDate = getDate(startDate);
-  minDate?.setDate(minDate.getDate());
-
-  const maxDate = getDate(targetDate);
-  maxDate?.setDate(maxDate.getDate());
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Controller
-        control={control}
-        name="state_id"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <StateDropdown
-              value={value}
-              onChange={(stateId) => {
-                onChange(stateId);
-                handleFormChange();
-              }}
-              projectId={projectId ?? undefined}
-              buttonVariant="border-with-text"
-              tabIndex={getIndex("state_id")}
-              isForWorkItemCreation={!id}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="priority"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <PriorityDropdown
-              value={value}
-              onChange={(priority) => {
-                onChange(priority);
-                handleFormChange();
-              }}
-              buttonVariant="border-with-text"
-              tabIndex={getIndex("priority")}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="assignee_ids"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <MemberDropdown
-              projectId={projectId ?? undefined}
-              value={value}
-              onChange={(assigneeIds) => {
-                onChange(assigneeIds);
-                handleFormChange();
-              }}
-              buttonVariant={value?.length > 0 ? "transparent-without-text" : "border-with-text"}
-              buttonClassName={value?.length > 0 ? "hover:bg-transparent" : ""}
-              placeholder={t("assignees")}
-              multiple
-              tabIndex={getIndex("assignee_ids")}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="label_ids"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <IssueLabelSelect
-              value={value}
-              onChange={(labelIds) => {
-                onChange(labelIds);
-                handleFormChange();
-              }}
-              projectId={projectId ?? undefined}
-              tabIndex={getIndex("label_ids")}
-              createLabelEnabled={!!canCreateLabel}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="start_date"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <DateDropdown
-              value={value}
-              onChange={(date) => {
-                onChange(date ? renderFormattedPayloadDate(date) : null);
-                handleFormChange();
-              }}
-              buttonVariant="border-with-text"
-              maxDate={maxDate ?? undefined}
-              placeholder={t("start_date")}
-              tabIndex={getIndex("start_date")}
-            />
-          </div>
-        )}
-      />
-      <Controller
-        control={control}
-        name="target_date"
-        render={({ field: { value, onChange } }) => (
-          <div className="h-7">
-            <DateDropdown
-              value={value}
-              onChange={(date) => {
-                onChange(date ? renderFormattedPayloadDate(date) : null);
-                handleFormChange();
-              }}
-              buttonVariant="border-with-text"
-              minDate={minDate ?? undefined}
-              placeholder={t("due_date")}
-              tabIndex={getIndex("target_date")}
-            />
-          </div>
-        )}
-      />
-      {projectDetails?.cycle_view && (
-        <Controller
-          control={control}
-          name="cycle_id"
-          render={({ field: { value, onChange } }) => (
+      <form.Field name="priority">
+        {({ state: { value, meta }, handleChange: onChange }) => (
+          <div data-issue-field="priority" tabIndex={-1}>
             <div className="h-7">
-              <CycleDropdown
-                projectId={projectId ?? undefined}
-                onChange={(cycleId) => {
-                  onChange(cycleId);
-                  handleFormChange();
-                }}
-                placeholder={t("cycle.label", { count: 1 })}
+              <PriorityDropdown
                 value={value}
+                onChange={(priority) => {
+                  onChange(priority);
+                }}
                 buttonVariant="border-with-text"
-                tabIndex={getIndex("cycle_id")}
+                tabIndex={getIndex("priority")}
               />
             </div>
-          )}
-        />
-      )}
-      {projectDetails?.module_view && workspaceSlug && (
-        <Controller
-          control={control}
-          name="module_ids"
-          render={({ field: { value, onChange } }) => (
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+      <IssueDateProperties form={form} startDate={startDate} targetDate={targetDate} getIndex={getIndex} />
+      <IssueProjectProperties form={form} projectId={projectId} workspaceSlug={workspaceSlug} getIndex={getIndex} />
+      {projectId && <IssueParentProperty {...props} projectId={projectId} tabIndex={getIndex("parent_id")} />}
+    </div>
+  );
+};
+
+function IssueProjectProperties({
+  form,
+  projectId,
+  workspaceSlug,
+  getIndex,
+}: Pick<TIssueDefaultPropertiesProps, "form" | "projectId" | "workspaceSlug"> & {
+  getIndex: (key: string) => number | undefined;
+}) {
+  const { t } = useTranslation();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const project = projectCatalogue.projects?.find((projectRow) => projectRow.id === projectId);
+  const { can } = useProjectPermissions(workspaceSlug, projectId ?? undefined);
+  if (!projectId) return null;
+
+  return (
+    <>
+      <form.Field name="state_id">
+        {({ state: { value, meta }, handleChange }) => (
+          <div data-issue-field="state_id" tabIndex={-1}>
             <div className="h-7">
-              <ModuleDropdown
-                projectId={projectId ?? undefined}
-                value={value ?? []}
-                onChange={(moduleIds) => {
-                  onChange(moduleIds);
-                  handleFormChange();
-                }}
-                placeholder={t("modules")}
-                buttonVariant="border-with-text"
-                tabIndex={getIndex("module_ids")}
-                multiple
-                showCount
-              />
-            </div>
-          )}
-        />
-      )}
-      {projectId && areEstimateEnabledByProjectId(projectId) && (
-        <Controller
-          control={control}
-          name="estimate_point"
-          render={({ field: { value, onChange } }) => (
-            <div className="h-7">
-              <EstimateDropdown
-                value={value || undefined}
-                onChange={(estimatePoint) => {
-                  onChange(estimatePoint);
-                  handleFormChange();
-                }}
+              <StateDropdown
+                value={value}
+                onChange={handleChange}
                 projectId={projectId}
                 buttonVariant="border-with-text"
-                tabIndex={getIndex("estimate_point")}
-                placeholder={t("estimate")}
+                tabIndex={getIndex("state_id")}
               />
             </div>
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="assignee_ids">
+        {({ state: { value, meta }, handleChange }) => (
+          <div data-issue-field="assignee_ids" tabIndex={-1}>
+            <div className="h-7">
+              <MemberDropdown
+                workspaceSlug={workspaceSlug}
+                projectId={projectId}
+                value={value}
+                onChange={handleChange}
+                buttonVariant={value?.length ? "transparent-without-text" : "border-with-text"}
+                buttonClassName={value?.length ? "hover:bg-transparent" : ""}
+                placeholder={t("assignees")}
+                multiple
+                tabIndex={getIndex("assignee_ids")}
+              />
+            </div>
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="label_ids">
+        {({ state: { value, meta }, handleChange }) => (
+          <div data-issue-field="label_ids" tabIndex={-1}>
+            <div className="h-7">
+              <IssueLabelSelect
+                value={value}
+                onChange={handleChange}
+                projectId={projectId}
+                tabIndex={getIndex("label_ids")}
+                createLabelEnabled={can([EUserPermissions.ADMIN])}
+              />
+            </div>
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+      {project?.cycle_view && (
+        <form.Field name="cycle_id">
+          {({ state: { value, meta }, handleChange }) => (
+            <div data-issue-field="cycle_id" tabIndex={-1}>
+              <div className="h-7">
+                <CycleDropdown
+                  projectId={projectId}
+                  onChange={handleChange}
+                  placeholder={t("cycle.label", { count: 1 })}
+                  value={value}
+                  buttonVariant="border-with-text"
+                  tabIndex={getIndex("cycle_id")}
+                />
+              </div>
+              <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+            </div>
           )}
-        />
+        </form.Field>
       )}
-      <div className="h-7">
+      {project?.module_view && (
+        <form.Field name="module_ids">
+          {({ state: { value, meta }, handleChange }) => (
+            <div data-issue-field="module_ids" tabIndex={-1}>
+              <div className="h-7">
+                <ModuleDropdown
+                  projectId={projectId}
+                  value={value ?? []}
+                  onChange={handleChange}
+                  placeholder={t("modules")}
+                  buttonVariant="border-with-text"
+                  tabIndex={getIndex("module_ids")}
+                  multiple
+                  showCount
+                />
+              </div>
+              <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+            </div>
+          )}
+        </form.Field>
+      )}
+      {project?.estimate && (
+        <form.Field name="estimate_point">
+          {({ state: { value, meta }, handleChange }) => (
+            <div data-issue-field="estimate_point" tabIndex={-1}>
+              <div className="h-7">
+                <EstimateDropdown
+                  value={value || undefined}
+                  onChange={(estimatePoint) => handleChange(estimatePoint ?? null)}
+                  projectId={projectId}
+                  buttonVariant="border-with-text"
+                  tabIndex={getIndex("estimate_point")}
+                  placeholder={t("estimate")}
+                />
+              </div>
+              <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+            </div>
+          )}
+        </form.Field>
+      )}
+    </>
+  );
+}
+
+function IssueDateProperties({
+  form,
+  startDate,
+  targetDate,
+  getIndex,
+}: Pick<TIssueDefaultPropertiesProps, "form" | "startDate" | "targetDate"> & {
+  getIndex: (key: string) => number | undefined;
+}) {
+  const { t } = useTranslation();
+  const minDate = getDate(startDate);
+  const maxDate = getDate(targetDate);
+
+  return (
+    <>
+      <form.Field name="start_date">
+        {({ state: { value, meta }, handleChange: onChange }) => (
+          <div data-issue-field="start_date" tabIndex={-1}>
+            <div className="h-7">
+              <DateDropdown
+                value={value}
+                onChange={(date) => onChange(renderFormattedPayloadDate(date) ?? null)}
+                buttonVariant="border-with-text"
+                maxDate={maxDate ?? undefined}
+                placeholder={t("start_date")}
+                tabIndex={getIndex("start_date")}
+              />
+            </div>
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+      <form.Field name="target_date">
+        {({ state: { value, meta }, handleChange: onChange }) => (
+          <div data-issue-field="target_date" tabIndex={-1}>
+            <div className="h-7">
+              <DateDropdown
+                value={value}
+                onChange={(date) => onChange(renderFormattedPayloadDate(date) ?? null)}
+                buttonVariant="border-with-text"
+                minDate={minDate ?? undefined}
+                placeholder={t("due_date")}
+                tabIndex={getIndex("target_date")}
+              />
+            </div>
+            <FormErrors errors={meta.errors} className="mt-1 max-w-48 text-12 text-danger-primary" />
+          </div>
+        )}
+      </form.Field>
+    </>
+  );
+}
+
+function IssueParentProperty({
+  form,
+  id,
+  projectId,
+  workspaceSlug,
+  selectedParentIssue,
+  parentId,
+  isDraft,
+  setSelectedParentIssue,
+  tabIndex,
+}: Pick<
+  TIssueDefaultPropertiesProps,
+  "form" | "id" | "workspaceSlug" | "selectedParentIssue" | "parentId" | "isDraft" | "setSelectedParentIssue"
+> & { projectId: string; tabIndex: number | undefined }) {
+  const { t } = useTranslation();
+  const [parentIssueListModalOpen, setParentIssueListModalOpen] = useState(false);
+  const childTypeId = useStore(form.store, (state) => state.values.type_id);
+  return (
+    <>
+      <div className="h-7" data-issue-field="parent_id" tabIndex={-1}>
         {parentId ? (
           <CustomMenu
             customButtonAsChild
@@ -286,27 +304,24 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
             placement="bottom-start"
             className="h-full w-full"
             customButtonClassName="h-full"
-            tabIndex={getIndex("parent_id")}
+            tabIndex={tabIndex}
           >
             <>
               <CustomMenu.MenuItem className="!p-1" onClick={() => setParentIssueListModalOpen(true)}>
                 {t("change_parent_issue")}
               </CustomMenu.MenuItem>
-              <Controller
-                control={control}
-                name="parent_id"
-                render={({ field: { onChange } }) => (
+              <form.Field name="parent_id">
+                {({ handleChange: onChange }) => (
                   <CustomMenu.MenuItem
                     className="!p-1"
                     onClick={() => {
                       onChange(null);
-                      handleFormChange();
                     }}
                   >
                     {t("remove_parent_issue")}
                   </CustomMenu.MenuItem>
                 )}
-              />
+              </form.Field>
             </>
           </CustomMenu>
         ) : (
@@ -320,23 +335,25 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
           </button>
         )}
       </div>
-      <Controller
-        control={control}
-        name="parent_id"
-        render={({ field: { onChange } }) => (
-          <ParentIssuesListModal
-            isOpen={parentIssueListModalOpen}
-            handleClose={() => setParentIssueListModalOpen(false)}
-            onChange={(issue) => {
-              onChange(issue.id);
-              handleFormChange();
-              setSelectedParentIssue(issue);
-            }}
-            projectId={projectId ?? undefined}
-            issueId={isDraft ? undefined : id}
-          />
+      <form.Field name="parent_id">
+        {({ state: { meta }, handleChange: onChange }) => (
+          <>
+            <FormErrors errors={meta.errors} className="text-12 text-danger-primary" />
+            <WorkItemSelectionModal
+              workspaceSlug={workspaceSlug}
+              filters={{ parent: true, issue_id: isDraft ? undefined : id, child_type_id: childTypeId ?? undefined }}
+              isOpen={parentIssueListModalOpen}
+              onClose={() => setParentIssueListModalOpen(false)}
+              onSelect={(issue) => {
+                onChange(issue.id);
+                setSelectedParentIssue(issue);
+              }}
+              projectId={projectId ?? undefined}
+              issueId={isDraft ? undefined : id}
+            />
+          </>
         )}
-      />
-    </div>
+      </form.Field>
+    </>
   );
-});
+}

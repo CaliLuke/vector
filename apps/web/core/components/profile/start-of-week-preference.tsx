@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { observer } from "mobx-react";
 // plane imports
 import { START_OF_THE_WEEK_OPTIONS } from "@plane/constants";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -13,16 +12,17 @@ import { CustomSelect } from "@plane/ui";
 // components
 import { SettingsControlItem } from "@/components/settings/control-item";
 // hooks
-import { useUserProfile } from "@/hooks/store/user";
+import { useCurrentUserProfile, useUpdateUserProfile } from "@/hooks/use-current-user-profile";
 
 const getStartOfWeekLabel = (startOfWeek: EStartOfTheWeek) =>
   START_OF_THE_WEEK_OPTIONS.find((option) => option.value === startOfWeek)?.label;
 
-export const StartOfWeekPreference = observer(function StartOfWeekPreference(props: {
+export const StartOfWeekPreference = function StartOfWeekPreference(props: {
   option: { title: string; description: string };
 }) {
   // hooks
-  const { data: userProfile, updateUserProfile } = useUserProfile();
+  const { data: userProfile } = useCurrentUserProfile();
+  const { mutateAsync: updateUserProfile } = useUpdateUserProfile();
 
   const handleStartOfWeekChange = async (val: number) => {
     try {
@@ -32,6 +32,8 @@ export const StartOfWeekPreference = observer(function StartOfWeekPreference(pro
       setToast({ type: TOAST_TYPE.ERROR, title: "Update failed", message: "Please try again later." });
     }
   };
+
+  if (!userProfile) return null;
 
   return (
     <SettingsControlItem
@@ -58,4 +60,4 @@ export const StartOfWeekPreference = observer(function StartOfWeekPreference(pro
       }
     />
   );
-});
+};

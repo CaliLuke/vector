@@ -7,22 +7,22 @@
 import { useParams, useRouter } from "@tanstack/react-router";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Command } from "cmdk";
-import { observer } from "mobx-react";
 
 // hooks
 import { CloseIcon, SearchIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // power-k
 import type { TPowerKCommandConfig, TPowerKContext } from "@/components/power-k/core/types";
 import { ProjectsAppPowerKCommandsList } from "@/components/power-k/ui/modal/commands-list";
 import { PowerKModalFooter } from "@/components/power-k/ui/modal/footer";
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
-import { usePowerK } from "@/hooks/store/use-power-k";
-import { useUser } from "@/hooks/store/user";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
+import { useWorkItemByIdentifier } from "@/hooks/use-work-item-detail";
+import { usePowerK } from "@/hooks/use-power-k";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 import { useExpandableSearch } from "@/hooks/use-expandable-search";
 
-export const TopNavPowerK = observer(() => {
+export const TopNavPowerK = () => {
   // router
   const router = useRouter();
   const params = useParams({ strict: false });
@@ -36,7 +36,7 @@ export const TopNavPowerK = observer(() => {
 
   // store hooks
   const { activeContext, setActivePage, activePage, setTopNavInputRef } = usePowerK();
-  const { data: currentUser } = useUser();
+  const { data: currentUser } = useCurrentUser();
 
   const handleOnClose = useCallback(() => {
     setSearchTerm("");
@@ -58,12 +58,18 @@ export const TopNavPowerK = observer(() => {
   });
 
   // derived values
-  const {
-    issue: { getIssueById, getIssueIdByIdentifier },
-  } = useIssueDetail();
-
-  const workItemId = workItemIdentifier ? getIssueIdByIdentifier(workItemIdentifier.toString()) : undefined;
-  const workItemDetails = workItemId ? getIssueById(workItemId) : undefined;
+  const projectCatalogue = useWorkspaceProjectDetails(params.workspaceSlug?.toString());
+  const [projectIdentifier, sequenceId] = (workItemIdentifier?.toString() ?? "").split("-");
+  const identifierProjectId = projectCatalogue.projects?.find(
+    (project) => project.identifier === projectIdentifier
+  )?.id;
+  const workItemQuery = useWorkItemByIdentifier(
+    params.workspaceSlug?.toString(),
+    projectIdentifier,
+    sequenceId,
+    identifierProjectId
+  );
+  const workItemDetails = workItemQuery.issue;
   const projectId = routerProjectId ?? workItemDetails?.project_id ?? undefined;
 
   // Build command context
@@ -102,7 +108,7 @@ export const TopNavPowerK = observer(() => {
     return () => {
       setTopNavInputRef(null);
     };
-  }, [setTopNavInputRef]);
+  }, [inputRef, setTopNavInputRef]);
 
   const handleClear = () => {
     setSearchTerm("");
@@ -204,7 +210,7 @@ export const TopNavPowerK = observer(() => {
         return;
       }
     },
-    [searchTerm, activePage, context, shouldShowContextBasedActions, setActivePage, closePanel]
+    [searchTerm, activePage, context, shouldShowContextBasedActions, setActivePage, closePanel, isOpen, containerRef]
   );
 
   return (
@@ -292,4 +298,4 @@ export const TopNavPowerK = observer(() => {
       </div>
     </div>
   );
-});
+};

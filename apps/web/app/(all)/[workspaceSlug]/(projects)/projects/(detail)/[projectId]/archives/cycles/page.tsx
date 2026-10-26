@@ -5,21 +5,22 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
-import { observer } from "mobx-react";
+
 // components
 import { PageHead } from "@/components/core/page-title";
 import { ArchivedCycleLayoutRoot } from "@/components/cycles/archived-cycles";
 import { ArchivedCyclesHeader } from "@/components/cycles/archived-cycles/header";
 // hooks
-import { useProject } from "@/hooks/store/use-project";
+import { useWorkspaceProjectDetails } from "@/hooks/use-projects";
 
 function ProjectArchivedCyclesPage(): React.JSX.Element | null {
   // router
   const { projectId } = Route.useParams();
   // store hooks
-  const { getProjectById } = useProject();
+  const projectCatalogue = useWorkspaceProjectDetails();
+  const projectRows = projectCatalogue.projects;
   // derived values
-  const project = getProjectById(projectId);
+  const project = projectRows?.find((candidate) => candidate.id === projectId);
   const pageTitle = project?.name && `${project?.name} - Archived cycles`;
 
   return (
@@ -34,5 +35,5 @@ function ProjectArchivedCyclesPage(): React.JSX.Element | null {
 }
 
 export const Route = createFileRoute("/_authenticated/$workspaceSlug/_projects/projects/$projectId/archives/cycles/")({
-  component: observer(ProjectArchivedCyclesPage),
+  component: ProjectArchivedCyclesPage,
 });

@@ -5,7 +5,7 @@
  */
 
 import { SearchIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 
 type Props = {
   isActive?: boolean;

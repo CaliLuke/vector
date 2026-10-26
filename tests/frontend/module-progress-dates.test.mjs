@@ -3,7 +3,8 @@ import { createRouterFixture } from "./helpers/router.mjs";
 import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
-import { React, createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { createReactDomTestEnvironment } from "./helpers/react-dom.mjs";
+import { React } from "./helpers/react.mjs";
 import { registerWebModuleHooks } from "./helpers/web-module-hooks.mjs";
 
 const state = { moduleDetails: undefined };
@@ -31,18 +32,12 @@ const stubs = {
     }`,
   "@/components/modules": `${react}
     export const ModuleProgressStats = () => React.createElement('div', { 'data-testid': 'module-progress-stats' });`,
-  "@/hooks/store/estimates":
-    "export const useProjectEstimates = () => ({ areEstimateEnabledByProjectId: () => false });",
-  "@/hooks/store/use-module": `export const useModule = () => ({
-    getPlotTypeByModuleId: () => 'burndown',
-    setPlotType: () => {},
-    getModuleById: () => globalThis.__moduleProgressDates.moduleDetails,
-    fetchModuleDetails: async () => {},
-    fetchArchivedModuleDetails: async () => {},
-  });`,
-  "@/hooks/store/work-item-filters/use-work-item-filters": `export const useWorkItemFilters = () => ({
-    getFilter: () => undefined,
-    updateFilterValueFromSidebar: () => {},
+  "@/hooks/use-estimate-statistics":
+    "export const useEstimateStatistics = () => ({ isEnabled: false, activeEstimate: undefined, statistics: { isError:false, isPending:false, retry:async()=>{} } });",
+  "@/hooks/use-modules": `export const useModuleDetails=()=>({module:globalThis.__moduleProgressDates.moduleDetails});`,
+  "@/providers/cycle-module-preferences": `export const useParentChartPreferences=()=>({measure:"issues",update:patch=>{globalThis.__moduleProgressDates.chart=patch;}});`,
+  "@/providers/parent-issue-preferences": `export const useParentIssuePreferences=()=>({
+    filters:{richFilters:{}}, setRich:async()=>{}, isSaveError:false, retrySave:async()=>{}
   });`,
 };
 

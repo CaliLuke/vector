@@ -3,449 +3,245 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  * See the LICENSE file for details.
  */
-
-import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Info } from "lucide-react";
-import { NETWORK_CHOICES } from "@plane/constants";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "@plane/i18n";
-// plane imports
 import { Button } from "@plane/propel/button";
-import { EmojiPicker, EmojiIconPickerTypes, Logo } from "@plane/propel/emoji-icon-picker";
-import { LockIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
-import { Tooltip } from "@plane/propel/tooltip";
 import { EFileAssetType } from "@plane/types";
-import type { IProject, IWorkspace } from "@plane/types";
-import { CustomSelect, Input, TextArea } from "@plane/ui";
-import { renderFormattedDate } from "@plane/utils";
+import type { IProject } from "@plane/types";
+import { Input, TextArea } from "@plane/ui";
+import { renderFormattedDate } from "@plane/utils/datetime";
+import { projectIdentifierSanitizer } from "@plane/utils/project";
 import { CoverImage } from "@/components/common/cover-image";
 import { ImagePickerPopover } from "@/components/core/image-picker-popover";
-import { TimezoneSelect } from "@/components/global";
-// helpers
+import { TimezoneSelect } from "@/components/global/timezone-select";
 import { handleCoverImageChange } from "@/helpers/cover-image.helper";
-// hooks
-import { useProject } from "@/hooks/store/use-project";
-import { usePlatformOS } from "@/hooks/use-platform-os";
-// services
+import { useProjectMutations } from "@/hooks/use-projects";
 import { ProjectService } from "@/services/project";
-// local imports
-import { ProjectNetworkIcon } from "./project-network-icon";
+import { ProjectLogoPicker } from "./project-logo-picker";
+import { ProjectNetworkSelect } from "./project-network-select";
 
-export interface IProjectDetailsForm {
-  project: IProject;
-  workspaceSlug: string;
-  projectId: string;
-  isAdmin: boolean;
+type Props = { project: IProject; workspaceSlug: string; projectId: string; isAdmin: boolean };
+const service = new ProjectService();
+function defaults(project: IProject) {
+  return {
+    name: project.name,
+    identifier: project.identifier,
+    description: project.description ?? "",
+    logo_props: project.logo_props,
+    network: project.network ?? 2,
+    timezone: project.timezone ?? "UTC",
+    cover_image_url: project.cover_image_url ?? "",
+  };
 }
-const projectService = new ProjectService();
-
-export function ProjectDetailsForm(props: IProjectDetailsForm) {
-  const { project, workspaceSlug, projectId, isAdmin } = props;
+export function ProjectDetailsForm(props: Props) {
+  return <ProjectSettingsForm key={`${props.workspaceSlug}/${props.projectId}`} {...props} />;
+}
+function ProjectSettingsForm({ project, workspaceSlug, isAdmin }: Props) {
   const { t } = useTranslation();
-  // states
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  // store hooks
-  const { updateProject } = useProject();
-  const { isMobile } = usePlatformOS();
-
-  // form info
-  const {
-    handleSubmit,
-    watch,
-    control,
-    setValue,
-    setError,
-    reset,
-    formState: { errors },
-    getValues,
-  } = useForm<IProject>({
-    defaultValues: {
-      ...project,
-      workspace: (project.workspace as IWorkspace).id,
-    },
-  });
-  // derived values
-  const currentNetwork = NETWORK_CHOICES.find((n) => n.key === project?.network);
-  const coverImage = watch("cover_image_url");
-
-  useEffect(() => {
-    if (project && projectId !== getValues("id")) {
-      reset({
-        ...project,
-        workspace: (project.workspace as IWorkspace).id,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project, projectId]);
-
-  // handlers
-  const handleIdentifierChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, "");
-    const formattedValue = alphanumericValue.toUpperCase();
-    setValue("identifier", formattedValue);
-  };
-
-  const handleUpdateChange = async (payload: Partial<IProject>) => {
-    if (!workspaceSlug || !project) return;
-    return updateProject(workspaceSlug.toString(), project.id, payload)
-      .then(() => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: t("toast.success"),
-          message: t("project_settings.general.toast.success"),
-        });
-      })
-      .catch((err) => {
-        try {
-          // Handle the new error format where codes are nested in arrays under field names
-          const errorData = err ?? {};
-
-          const nameError = errorData.name?.includes("PROJECT_NAME_ALREADY_EXIST");
-          const identifierError = errorData?.identifier?.includes("PROJECT_IDENTIFIER_ALREADY_EXIST");
-          const nameSpecialCharError = errorData?.name?.includes("PROJECT_NAME_CANNOT_CONTAIN_SPECIAL_CHARACTERS");
-
-          if (nameError || identifierError || nameSpecialCharError) {
-            if (nameError) {
-              setToast({
-                type: TOAST_TYPE.ERROR,
-                title: t("toast.error"),
-                message: t("project_name_already_taken"),
-              });
-            }
-
-            if (identifierError) {
-              setToast({
-                type: TOAST_TYPE.ERROR,
-                title: t("toast.error"),
-                message: t("project_identifier_already_taken"),
-              });
-            }
-
-            if (nameSpecialCharError) {
-              setToast({
-                type: TOAST_TYPE.ERROR,
-                title: t("toast.error"),
-                message: t("project_name_cannot_contain_special_characters"),
-              });
-            }
-          } else {
-            setToast({
-              type: TOAST_TYPE.ERROR,
-              title: t("toast.error"),
-              message: t("something_went_wrong"),
-            });
-          }
-        } catch (error) {
-          // Fallback error handling if the error processing fails
-          console.error("Error processing API error:", error);
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: t("toast.error"),
-            message: t("something_went_wrong"),
-          });
-        }
-      });
-  };
-
-  const onSubmit = async (formData: IProject) => {
-    if (!workspaceSlug) return;
-    setIsLoading(true);
-    const payload: Partial<IProject> = {
-      name: formData.name,
-      network: formData.network,
-      identifier: formData.identifier,
-      description: formData.description,
-
-      logo_props: formData.logo_props,
-      timezone: formData.timezone,
-    };
-
-    // Handle cover image changes
-    try {
-      const coverImagePayload = await handleCoverImageChange(project.cover_image_url, formData.cover_image_url, {
-        workspaceSlug: workspaceSlug.toString(),
+  const projectMutation = useProjectMutations(workspaceSlug, project.id);
+  const cover = useMutation({
+    mutationFn: async (url: string) => ({
+      url,
+      payload: await handleCoverImageChange(project.cover_image_url, url, {
+        workspaceSlug,
         entityIdentifier: project.id,
         entityType: EFileAssetType.PROJECT_COVER,
         isUserAsset: false,
+      }),
+    }),
+  });
+  const form = useForm({
+    defaultValues: defaults(project),
+    validators: {
+      onSubmitAsync: async ({ value }) => {
+        if (!isAdmin || value.identifier === project.identifier) return undefined;
+        try {
+          const availability = await service.checkProjectIdentifierAvailability(workspaceSlug, value.identifier);
+          return availability.exists ? { fields: { identifier: t("common.identifier_already_exists") } } : undefined;
+        } catch {
+          return { fields: { identifier: "Could not verify this project ID. Please try again." } };
+        }
+      },
+    },
+    onSubmit: async ({ value, formApi }) => {
+      if (!isAdmin) return;
+      const image =
+        cover.data?.url === value.cover_image_url ? cover.data : await cover.mutateAsync(value.cover_image_url);
+      const { cover_image_url: _coverUrl, ...fields } = value;
+      const result = await projectMutation.mutateAsync({
+        type: "update",
+        projectId: project.id,
+        data: { ...fields, ...image.payload },
       });
-
-      if (coverImagePayload) {
-        Object.assign(payload, coverImagePayload);
-      }
-    } catch (error) {
-      console.error("Error handling cover image:", error);
+      const saved = result.project;
+      if (!saved) throw new Error("The server did not return the updated project.");
+      formApi.reset(defaults(saved));
+      cover.reset();
       setToast({
-        type: TOAST_TYPE.ERROR,
-        title: t("toast.error"),
-        message: error instanceof Error ? error.message : "Failed to process cover image",
+        type: TOAST_TYPE.SUCCESS,
+        title: t("toast.success"),
+        message: t("project_settings.general.toast.success"),
       });
-      setIsLoading(false);
-      return;
-    }
-
-    if (project.identifier !== formData.identifier)
-      await projectService
-        .checkProjectIdentifierAvailability(workspaceSlug, payload.identifier ?? "")
-        .then(async (res) => {
-          if (res.exists) setError("identifier", { message: t("common.identifier_already_exists") });
-          else await handleUpdateChange(payload);
-        });
-    else await handleUpdateChange(payload);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-  };
-
+    },
+  });
+  const values = useStore(form.store, (state) => state.values);
+  const busy = useStore(form.store, (state) => state.isSubmitting);
+  const formError = useStore(form.store, (state) => state.errorMap.onSubmit);
+  const disabled = !isAdmin || busy;
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="relative h-44 w-full">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <CoverImage src={coverImage} alt="Project cover image" className="h-44 w-full rounded-md" />
-        <div className="absolute bottom-4 z-5 flex w-full items-end justify-between gap-3 px-4">
-          <div className="flex flex-grow gap-3 truncate">
-            <Controller
-              control={control}
-              name="logo_props"
-              render={({ field: { value, onChange } }) => (
-                <EmojiPicker
-                  iconType="material"
-                  closeOnSelect={false}
-                  isOpen={isOpen}
-                  handleToggle={(val: boolean) => setIsOpen(val)}
-                  className="flex items-center justify-center"
-                  buttonClassName="flex h-[52px] w-[52px] flex-shrink-0 items-center justify-center rounded-lg bg-white/10"
-                  label={<Logo logo={value} size={28} />}
-                  // TODO: fix types
-                  onChange={(val: any) => {
-                    let logoValue = {};
-
-                    if (val?.type === "emoji")
-                      logoValue = {
-                        value: val.value,
-                      };
-                    else if (val?.type === "icon") logoValue = val.value;
-
-                    onChange({
-                      in_use: val?.type,
-                      [val?.type]: logoValue,
-                    });
-                    setIsOpen(false);
-                  }}
-                  defaultIconColor={value?.in_use && value.in_use === "icon" ? value?.icon?.color : undefined}
-                  defaultOpen={
-                    value.in_use && value.in_use === "emoji" ? EmojiIconPickerTypes.EMOJI : EmojiIconPickerTypes.ICON
-                  }
-                  disabled={!isAdmin}
-                />
-              )}
-            />
-            <div className="flex flex-col gap-1 truncate text-on-color">
-              <span className="truncate text-16 font-semibold">{watch("name")}</span>
-              <span className="flex items-center gap-2 text-13">
-                <span>{watch("identifier")} .</span>
-                <span className="flex items-center gap-1.5">
-                  {project.network === 0 && <LockIcon className="h-2.5 w-2.5 text-on-color" />}
-                  {currentNetwork && t(currentNetwork?.i18n_label)}
-                </span>
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-shrink-0 justify-center">
-            <div>
-              <Controller
-                control={control}
-                name="cover_image_url"
-                render={({ field: { value, onChange } }) => (
-                  <ImagePickerPopover
-                    label={t("change_cover")}
-                    onChange={onChange}
-                    value={value ?? null}
-                    disabled={!isAdmin}
-                    projectId={project.id}
-                  />
-                )}
+    <form
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.setErrorMap({ onSubmit: undefined });
+        void form.handleSubmit().catch(() => {
+          form.setErrorMap({ onSubmit: { form: t("something_went_wrong"), fields: {} } });
+        });
+      }}
+    >
+      <fieldset disabled={disabled} inert={busy}>
+        <div className="relative h-44 w-full">
+          <CoverImage src={values.cover_image_url} alt="Project cover image" className="h-44 w-full rounded-md" />
+          <div className="absolute bottom-4 flex w-full items-end justify-between gap-3 px-4">
+            <div className="flex items-center gap-3">
+              <ProjectLogoPicker
+                value={values.logo_props}
+                onChange={(value) => form.setFieldValue("logo_props", value)}
+                disabled={disabled}
               />
+              <div className="flex flex-col text-on-color">
+                <span className="text-16 font-semibold">{values.name}</span>
+                <span className="text-13">{values.identifier}</span>
+              </div>
             </div>
+            <ImagePickerPopover
+              workspaceSlug={workspaceSlug}
+              label={t("change_cover")}
+              value={values.cover_image_url}
+              onChange={(value) => form.setFieldValue("cover_image_url", value)}
+              disabled={disabled}
+              projectId={project.id}
+            />
           </div>
         </div>
-      </div>
-      <div className="mt-8 flex flex-col gap-8">
-        <div className="flex flex-col gap-1">
-          <h4 className="text-13">{t("common.project_name")}</h4>
-          <Controller
-            control={control}
+        <div className="mt-8 flex flex-col gap-8">
+          <form.Field
             name="name"
-            rules={{
-              required: t("name_is_required"),
-              maxLength: {
-                value: 255,
-                message: "Project name should be less than 255 characters",
-              },
+            validators={{
+              onChange: ({ value }) =>
+                !value.trim()
+                  ? t("name_is_required")
+                  : value.length > 255
+                    ? t("title_should_be_less_than_255_characters")
+                    : undefined,
             }}
-            render={({ field: { value, onChange, ref } }) => (
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                ref={ref}
-                value={value}
-                onChange={onChange}
-                hasError={Boolean(errors.name)}
-                className="rounded-md !p-3 font-medium"
-                placeholder={t("common.project_name")}
-                disabled={!isAdmin}
-              />
+          >
+            {(field) => (
+              <label className="flex flex-col gap-1 text-13">
+                {t("common.project_name")}
+                <Input
+                  name={field.name}
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  hasError={!field.state.meta.isValid}
+                  className="rounded-md !p-3 font-medium"
+                />
+                {field.state.meta.errors.map((message) => (
+                  <span key={message} role="alert" className="text-11 text-danger-primary">
+                    {message}
+                  </span>
+                ))}
+              </label>
             )}
-          />
-          <span className="text-11 text-danger-primary">{errors?.name?.message}</span>
-        </div>
-        <div className="flex flex-col gap-1">
-          <h4 className="text-13">{t("description")}</h4>
-          <Controller
-            name="description"
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <TextArea
-                id="description"
-                name="description"
-                value={value}
-                placeholder={t("project_description_placeholder")}
-                onChange={onChange}
-                className="min-h-[102px] text-13 font-medium"
-                hasError={Boolean(errors?.description)}
-                disabled={!isAdmin}
-              />
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <h4 className="text-13">Project ID</h4>
-            <div className="relative">
-              <Controller
-                control={control}
-                name="identifier"
-                rules={{
-                  required: t("project_id_is_required"),
-                  validate: (value) => /^[ÇŞĞIİÖÜA-Z0-9]+$/.test(value.toUpperCase()) || t("project_id_allowed_char"),
-                  minLength: {
-                    value: 1,
-                    message: t("project_id_min_char"),
-                  },
-                  maxLength: {
-                    value: 10,
-                    message: t("project_id_max_char"),
-                  },
-                }}
-                render={({ field: { value, ref } }) => (
-                  <Input
-                    id="identifier"
-                    name="identifier"
-                    type="text"
-                    value={value}
-                    onChange={handleIdentifierChange}
-                    ref={ref}
-                    hasError={Boolean(errors.identifier)}
-                    placeholder={t("project_settings.general.enter_project_id")}
-                    className="w-full font-medium"
-                    disabled={!isAdmin}
-                  />
-                )}
-              />
-              <Tooltip
-                isMobile={isMobile}
-                tooltipContent={t("project_id_tooltip_content")}
-                className="text-13"
-                position="right-start"
-              >
-                <Info className="absolute top-2.5 right-2 h-4 w-4 text-placeholder" />
-              </Tooltip>
-            </div>
-            <span className="text-11 text-danger-primary">
-              <>{errors?.identifier?.message}</>
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <h4 className="text-13">{t("workspace_projects.network.label")}</h4>
-            <Controller
-              name="network"
-              control={control}
-              render={({ field: { value, onChange } }) => {
-                const selectedNetwork = NETWORK_CHOICES.find((n) => n.key === value);
-                return (
-                  <CustomSelect
-                    value={value}
-                    onChange={onChange}
-                    label={
-                      <div className="flex items-center gap-1">
-                        {selectedNetwork ? (
-                          <>
-                            <ProjectNetworkIcon iconKey={selectedNetwork.iconKey} className="h-3.5 w-3.5" />
-                            {t(selectedNetwork.i18n_label)}
-                          </>
-                        ) : (
-                          <span className="text-placeholder">{t("select_network")}</span>
-                        )}
-                      </div>
-                    }
-                    buttonClassName="!border-subtle !shadow-none font-medium rounded-md"
-                    input
-                    disabled={!isAdmin}
-                    // optionsClassName="w-full"
-                  >
-                    {NETWORK_CHOICES.map((network) => (
-                      <CustomSelect.Option key={network.key} value={network.key}>
-                        <div className="flex items-start gap-2">
-                          <ProjectNetworkIcon iconKey={network.iconKey} className="h-3.5 w-3.5" />
-                          <div className="-mt-1">
-                            <p>{t(network.i18n_label)}</p>
-                            <p className="text-11 text-placeholder">{t(network.description)}</p>
-                          </div>
-                        </div>
-                      </CustomSelect.Option>
-                    ))}
-                  </CustomSelect>
-                );
+          </form.Field>
+          <label className="flex flex-col gap-1 text-13">
+            {t("description")}
+            <TextArea
+              name="description"
+              value={values.description}
+              onChange={(event) => form.setFieldValue("description", event.target.value)}
+              className="min-h-[102px] text-13 font-medium"
+            />
+          </label>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <form.Field
+              name="identifier"
+              validators={{
+                onChange: ({ value }) =>
+                  !value ? t("project_id_is_required") : value.length > 10 ? t("project_id_max_char") : undefined,
               }}
-            />
-          </div>
-          <div className="col-span-1 flex flex-col gap-1 sm:col-span-2 xl:col-span-1">
-            <h4 className="text-13">{t("common.project_timezone")}</h4>
-            <Controller
-              name="timezone"
-              control={control}
-              rules={{ required: t("project_settings.general.please_select_a_timezone") }}
-              render={({ field: { value, onChange } }) => (
-                <>
-                  <TimezoneSelect
-                    value={value}
-                    onChange={(value: string) => {
-                      onChange(value);
-                    }}
-                    error={Boolean(errors.timezone)}
-                    buttonClassName="!border-subtle !shadow-none font-medium rounded-md"
-                    disabled={!isAdmin}
+            >
+              {(field) => (
+                <label className="flex flex-col gap-1 text-13">
+                  Project ID
+                  <Input
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(event) =>
+                      field.handleChange(projectIdentifierSanitizer(event.target.value).toUpperCase())
+                    }
+                    onBlur={field.handleBlur}
+                    hasError={!field.state.meta.isValid}
                   />
-                </>
+                  {field.state.meta.errors.map((message) => (
+                    <span key={message} role="alert" className="text-11 text-danger-primary">
+                      {message}
+                    </span>
+                  ))}
+                </label>
               )}
-            />
-            {errors.timezone && <span className="text-11 text-danger-primary">{errors.timezone.message}</span>}
+            </form.Field>
+            <div className="flex flex-col gap-1">
+              <h4 className="text-13">{t("workspace_projects.network.label")}</h4>
+              <ProjectNetworkSelect
+                value={values.network}
+                onChange={(value) => form.setFieldValue("network", value)}
+                disabled={disabled}
+                input
+              />
+            </div>
+            <form.Field
+              name="timezone"
+              validators={{
+                onChange: ({ value }) => (value ? undefined : t("project_settings.general.please_select_a_timezone")),
+              }}
+            >
+              {(field) => (
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-13">{t("common.project_timezone")}</h4>
+                  <TimezoneSelect
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    error={!field.state.meta.isValid}
+                    disabled={disabled}
+                  />
+                  {field.state.meta.errors.map((message) => (
+                    <span key={message} role="alert" className="text-11 text-danger-primary">
+                      {message}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </form.Field>
           </div>
-        </div>
-        <div className="flex items-center justify-between py-2">
-          <>
-            <Button variant="primary" size="lg" type="submit" loading={isLoading} disabled={!isAdmin}>
-              {isLoading ? t("updating") : t("common.update_project")}
+          {typeof formError === "string" && (
+            <p role="alert" className="text-13 text-danger-primary">
+              {formError}
+            </p>
+          )}
+          <div className="flex items-center justify-between py-2">
+            <Button type="submit" variant="primary" loading={busy} disabled={disabled}>
+              {t("common.update_project")}
             </Button>
             <span className="text-13 text-placeholder italic">
-              {t("common.created_on")} {renderFormattedDate(project?.created_at)}
+              {t("common.created_on")} {renderFormattedDate(project.created_at)}
             </span>
-          </>
+          </div>
         </div>
-      </div>
+      </fieldset>
     </form>
   );
 }

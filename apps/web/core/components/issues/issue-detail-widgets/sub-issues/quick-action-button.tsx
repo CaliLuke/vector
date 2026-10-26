@@ -5,14 +5,15 @@
  */
 
 import React from "react";
-import { observer } from "mobx-react";
+
 // plane imports
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { TIssue, TIssueServiceType } from "@plane/types";
 import { CustomMenu } from "@plane/ui";
 // hooks
-import { useIssueDetail } from "@/hooks/store/use-issue-detail";
+import { useIssueDetailUiState } from "@/providers/issue-detail-ui-state";
+import { useWorkItemDetailRecord } from "@/providers/work-item-detail-record";
 
 type Props = {
   issueId: string;
@@ -21,21 +22,17 @@ type Props = {
   issueServiceType: TIssueServiceType;
 };
 
-export const SubIssuesActionButton = observer(function SubIssuesActionButton(props: Props) {
+export const SubIssuesActionButton = function SubIssuesActionButton(props: Props) {
   const { issueId, customButton, disabled = false, issueServiceType } = props;
   // translation
   const { t } = useTranslation();
   // store hooks
-  const {
-    issue: { getIssueById },
-    toggleCreateIssueModal,
-    toggleSubIssuesModal,
-    setIssueCrudOperationState,
-    issueCrudOperationState,
-  } = useIssueDetail(issueServiceType);
+  const { toggleCreateIssueModal, toggleSubIssuesModal, setIssueCrudOperationState, issueCrudOperationState } =
+    useIssueDetailUiState(issueServiceType);
+  const record = useWorkItemDetailRecord();
 
   // derived values
-  const issue = getIssueById(issueId);
+  const issue = record?.issueId === issueId ? record.issue : undefined;
 
   if (!issue) return <></>;
 
@@ -105,4 +102,4 @@ export const SubIssuesActionButton = observer(function SubIssuesActionButton(pro
       ))}
     </CustomMenu>
   );
-});
+};

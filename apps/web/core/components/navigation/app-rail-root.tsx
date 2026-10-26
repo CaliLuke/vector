@@ -6,12 +6,11 @@
 
 "use client";
 import { useParams, useLocation } from "@tanstack/react-router";
-import { observer } from "mobx-react";
 
 import { SettingsIcon } from "lucide-react";
 import { ContextMenu } from "@plane/propel/context-menu";
 import { CheckIcon } from "@plane/propel/icons";
-import { cn } from "@plane/utils";
+import { cn } from "@plane/utils/common";
 // components
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 // hooks
@@ -20,7 +19,7 @@ import { useAppRailVisibility } from "@/lib/app-rail/context";
 // local imports
 import { AppSidebarItemsRoot } from "./items-root";
 
-export const AppRailRoot = observer(() => {
+export const AppRailRoot = () => {
   // router
   const { workspaceSlug, projectId } = useParams({ strict: false });
   const pathname = useLocation({ select: (location) => location.pathname });
@@ -86,4 +85,4 @@ export const AppRailRoot = observer(() => {
       </ContextMenu>
     </div>
   );
-});
+};
