@@ -54,12 +54,6 @@ RUN pnpm turbo run build --filter=live
 FROM base AS runner
 WORKDIR /app
 
-# Remove go from Alpine APK database; not needed at runtime and carries stdlib CVEs
-RUN apk del go 2>/dev/null || true
-
-# Remove vulnerable picomatch bundled inside npm (CVE-2026-33671); npm is not used at runtime
-RUN rm -rf /usr/local/lib/node_modules/npm/node_modules/picomatch
-
 COPY --from=installer /app/packages ./packages
 COPY --from=installer /app/apps/live/dist ./apps/live/dist
 COPY --from=installer /app/apps/live/node_modules ./apps/live/node_modules

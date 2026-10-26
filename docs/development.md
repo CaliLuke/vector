@@ -21,10 +21,15 @@ HTML server currently has a scoped Happy DOM 21.0.4 override to include the fix 
 outdated peer range. Remove the override when Tiptap accepts the fixed release;
 the editor serialization regression covers the consumer integration.
 
-The Compose PostgreSQL and Valkey images stay on their existing data-format lines
-with current patch releases. Upgrading PostgreSQL to a new major requires a
-verified backup and restore or `pg_upgrade`; changing the image tag alone does
-not migrate an existing volume.
+Compose uses PostgreSQL 18.6 and keeps the existing `/var/lib/postgresql/data`
+mount and explicit `PGDATA` for compatibility with the current physical volume.
+The default named volume remains `<Compose project>_pgdata`; set
+`POSTGRES_DATA_VOLUME` in the ignored `.env` file to select a separate physical
+volume for a verified major-version restore. A new image tag does not migrate
+the database. Before switching an existing installation, make and verify a
+backup, restore it into the selected volume, then start the upgraded service.
+This prevents a new empty volume from silently replacing the database selected
+by the default project-scoped name.
 
 ## Start
 

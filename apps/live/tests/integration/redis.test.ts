@@ -101,7 +101,7 @@ describe("Redis manager and collaboration transport", () => {
       "--rm",
       "--publish",
       "127.0.0.1::6379",
-      "valkey/valkey:7.2.11-alpine",
+      "valkey/valkey:9.1.2-alpine",
     ]);
     containerId = container.stdout.trim();
     const binding = await run("docker", ["port", containerId, "6379/tcp"]);
