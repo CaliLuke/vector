@@ -134,9 +134,12 @@ The test-result guard rejects failures, incomplete reports, and unreviewed skips
 fixtures; each entry states its prerequisite. Never point these tests at a database
 with valuable data.
 
-Checks run sequentially. Frontend tests use two isolated workers, a 384 MiB JavaScript heap
-limit, a 1 GiB sampled process-tree RSS ceiling, and an external five-minute
-deadline. Each TypeScript gate has a ten-minute deadline and 3 GiB RSS ceiling;
+The full Go gate and frontend pipeline run concurrently. Within the frontend pipeline,
+production builds run first, followed by TypeScript checks; builds and checks remain
+sequential so generated package output is ready before typechecking. Frontend tests
+use two isolated workers, a 384 MiB JavaScript heap limit, a 1 GiB sampled
+process-tree RSS ceiling, and an external five-minute deadline. Each TypeScript gate
+has a ten-minute deadline and 3 GiB RSS ceiling;
 production builds use one Turbo task at a time with a 4 GiB RSS ceiling. The Go
 gate has a 6 GiB RSS ceiling and two Go runtime threads. These are process-group
 watchdogs sampled every 100 ms, not OS-enforced total-memory reservations. They

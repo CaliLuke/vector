@@ -18,6 +18,7 @@ for argument in "$@"; do
 done
 
 failed=()
+
 run_gate() {
   local name="$1"
   shift
@@ -26,15 +27,30 @@ run_gate() {
   fi
 }
 
-if [[ "$scope" == build || ( "$scope" == all && "$mode" == --full ) ]]; then
+run_frontend_builds() {
   run_gate "Frontend build" pnpm build
   run_gate "Component Storybooks" node scripts/quality/run-bounded.mjs --seconds 1200 --memory-mib 4096 --heap-mib 2048 -- pnpm --workspace-concurrency=1 --filter @plane/ui --filter @plane/propel build-storybook
-fi
-if [[ "$scope" == all || "$scope" == go ]]; then
-  run_gate Go node scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
-fi
-if [[ "$scope" == all || "$scope" == typescript ]]; then
-  run_gate TypeScript bash scripts/quality/typescript.sh "$mode"
+}
+
+run_frontend_full_pipeline() {
+  run_frontend_builds
+  run_gate "TypeScript" bash scripts/quality/typescript.sh --full
+}
+
+if [[ "$scope" == all && "$mode" == --full ]]; then
+  exec prek run --all-files --group full --stage manual
+elif [[ "$scope" == typescript && "$mode" == --full ]]; then
+  run_frontend_full_pipeline
+else
+  if [[ "$scope" == build ]]; then
+    run_frontend_builds
+  fi
+  if [[ "$scope" == all || "$scope" == go ]]; then
+    run_gate Go node scripts/quality/run-bounded.mjs --seconds 3600 --memory-mib 6144 --heap-mib 512 -- env GOMEMLIMIT=2GiB GOMAXPROCS=2 bash scripts/quality/go.sh "$mode"
+  fi
+  if [[ "$scope" == all || "$scope" == typescript ]]; then
+    run_gate TypeScript bash scripts/quality/typescript.sh "$mode"
+  fi
 fi
 
 if ((${#failed[@]})); then

@@ -29,17 +29,8 @@ repos:
         always_run: true
         stages: [pre-push, manual]
         groups: [full, ci, go]
-      - id: vector-typescript-build
-        priority: 30
-        name: Frontend production builds
-        entry: ./check.sh --build
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push, manual]
-        groups: [full, ci, typescript]
       - id: vector-typescript-full
-        priority: 40
+        priority: 20
         name: TypeScript full gates
         entry: ./check.sh --typescript --full
         language: system
