@@ -296,6 +296,12 @@ regression for disabling and re-enabling cycle and module grouping.
 
 Adding canonical cycle status filtering removes two obsolete duplicate pairs between the cycle and module API declarations. The Go duplicate baseline falls from 501 to 499 pairs; no allowance or exclusion was added.
 
+The milestone activity visibility checks add the active-user column to two existing
+history/profile SQL fixtures. Their duplicated schema spans were compared with
+HEAD; only that column changes. One duplicate fingerprint (two directed reports)
+was replaced, with the total unchanged at 499. No new allowance or exclusion was
+added.
+
 ## Logs
 
 ```sh

@@ -40,11 +40,14 @@ func (r *ActionRepository) Set(ctx context.Context, p Principal, slug, id, field
 	if !slices.Contains([]string{"read_at", "archived_at", "deleted_at", "snoozed_till"}, field) {
 		return nil, errors.New("invalid notification action field")
 	}
-	// Django first fetches the instance, then saves by primary key. Publishing is
-	// deliberately after the save, without a transaction that could undo it.
-	_, err := r.writer.Exec(ctx, `UPDATE notifications SET `+field+`=$2,updated_at=clock_timestamp(),updated_by_id=$3 WHERE id=$1`, id, value, p.UserID)
+	// Recheck visibility at the write after the service lookup. Publishing remains
+	// after the save, without a transaction that could undo it.
+	tag, err := r.writer.Exec(ctx, `UPDATE notifications n SET `+field+`=$4,updated_at=clock_timestamp(),updated_by_id=$1 FROM workspaces w WHERE w.id=n.workspace_id AND `+scope+` AND n.id=$3`, p.UserID, slug, id, value)
 	if err != nil {
 		return nil, err
+	}
+	if tag.RowsAffected() == 0 {
+		return nil, Failure(404, "error", "The required object does not exist.")
 	}
 	if field == "deleted_at" {
 		return nil, r.publisher.SoftDelete(ctx, "db", "notification", id)
@@ -56,9 +59,7 @@ func (r *ActionRepository) Set(ctx context.Context, p Principal, slug, id, field
 // Authorization is performed by the service before this method is called.
 func (r *ActionRepository) MarkAllRead(ctx context.Context, p Principal, slug string, snoozed, archived bool, kind string) error {
 	filters := []string{
-		"n.deleted_at IS NULL",
-		"n.receiver_id=$1",
-		"w.slug=$2",
+		scope,
 		"n.read_at IS NULL",
 	}
 	if snoozed {

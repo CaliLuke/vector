@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -423,8 +424,9 @@ var commentBase = `((to_jsonb(c)-'workspace_id'-'project_id'-'issue_id'-'descrip
  'comment_reactions',COALESCE((SELECT jsonb_agg((to_jsonb(cr)-'workspace_id'-'project_id'-'comment_id'-'actor_id'-'created_by_id'-'updated_by_id')||jsonb_build_object('workspace',cr.workspace_id,'project',cr.project_id,'comment',cr.comment_id,'actor',cr.actor_id,'created_by',cr.created_by_id,'updated_by',cr.updated_by_id,'display_name',(SELECT u.display_name FROM users u WHERE u.id=cr.actor_id)) ORDER BY cr.created_at DESC) FROM comment_reactions cr WHERE cr.comment_id=c.id AND cr.deleted_at IS NULL),'[]'::jsonb)
  ))`
 
-const activityFilter = `a.issue_id=$1 AND a.project_id=$2 AND w.slug=$3 AND a.deleted_at IS NULL AND p.archived_at IS NULL
- AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND ($4::timestamptz IS NULL OR a.created_at>$4)`
+var activityFilter = `a.issue_id=$1 AND a.project_id=$2 AND w.slug=$3 AND a.deleted_at IS NULL AND p.archived_at IS NULL
+ AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND ($4::timestamptz IS NULL OR a.created_at>$4) AND ` + issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$5::uuid")
+
 const commentFilter = `$5::uuid IS NOT NULL AND c.issue_id=$1 AND c.project_id=$2 AND w.slug=$3 AND c.deleted_at IS NULL AND p.archived_at IS NULL AND ($4::timestamptz IS NULL OR c.created_at>$4)`
 
 var historyActivitiesSQL = `SELECT COALESCE(jsonb_agg(row_json ORDER BY created_at ASC,id), '[]'::jsonb) FROM (

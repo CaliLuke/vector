@@ -46,9 +46,11 @@ func notificationTestDB(t *testing.T) pgx.Tx {
 	_, err = tx.Exec(ctx, `
  CREATE TEMP TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
  CREATE TEMP TABLE workspace_members(workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
- CREATE TEMP TABLE users(id uuid PRIMARY KEY,first_name text DEFAULT '',last_name text DEFAULT '',avatar text DEFAULT '',display_name text DEFAULT '',is_bot boolean DEFAULT false,avatar_asset_id uuid);
+ CREATE TEMP TABLE users(id uuid PRIMARY KEY,is_active boolean DEFAULT true,first_name text DEFAULT '',last_name text DEFAULT '',avatar text DEFAULT '',display_name text DEFAULT '',is_bot boolean DEFAULT false,avatar_asset_id uuid);
  CREATE TEMP TABLE file_assets(id uuid PRIMARY KEY,workspace_id uuid,project_id uuid,issue_id uuid,entity_type text);
- CREATE TEMP TABLE issues(id uuid PRIMARY KEY,workspace_id uuid,created_by_id uuid,deleted_at timestamptz);
+ CREATE TEMP TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,deleted_at timestamptz,archived_at timestamptz,guest_view_all_features boolean DEFAULT false);
+ CREATE TEMP TABLE project_members(project_id uuid,workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
+ CREATE TEMP TABLE issues(id uuid PRIMARY KEY,project_id uuid,is_draft boolean DEFAULT false,workspace_id uuid,created_by_id uuid,deleted_at timestamptz);
  CREATE TEMP TABLE intake_issues(issue_id uuid,status integer,deleted_at timestamptz);
  CREATE TEMP TABLE issue_assignees(id uuid PRIMARY KEY,issue_id uuid,workspace_id uuid,assignee_id uuid,deleted_at timestamptz);
  CREATE TEMP TABLE issue_subscribers(issue_id uuid,workspace_id uuid,subscriber_id uuid,deleted_at timestamptz);

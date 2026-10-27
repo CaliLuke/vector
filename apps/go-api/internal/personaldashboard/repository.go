@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,7 +29,7 @@ func (r *Repository) Dashboard(ctx context.Context, userID, slug, month string) 
 	return r.json(ctx, `WITH ws AS (SELECT id,slug FROM workspaces WHERE slug=$2),
 activities AS (
  SELECT COALESCE(json_agg(json_build_object('created_date',x.day,'activity_count',x.n) ORDER BY x.day),'[]'::json) value
- FROM (SELECT a.created_at::date AS day,count(a.id)::int n FROM issue_activities a JOIN ws ON ws.id=a.workspace_id WHERE a.actor_id=$1 AND a.deleted_at IS NULL AND a.created_at::date>=CURRENT_DATE-INTERVAL '3 months' GROUP BY 1) x),
+ FROM (SELECT a.created_at::date AS day,count(a.id)::int n FROM issue_activities a JOIN ws ON ws.id=a.workspace_id WHERE a.actor_id=$1 AND a.deleted_at IS NULL AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$1::uuid")+` AND a.created_at::date>=CURRENT_DATE-INTERVAL '3 months' GROUP BY 1) x),
 completed AS (
  SELECT COALESCE(json_agg(json_build_object('week_in_month',x.week,'completed_count',x.n) ORDER BY x.week),'[]'::json) value
  FROM (SELECT floor((extract(day FROM i.completed_at)-1)/7)+1 week,count(i.id)::int n FROM issues i JOIN ws ON ws.id=i.workspace_id JOIN projects p ON p.id=i.project_id LEFT JOIN states s ON s.id=i.state_id JOIN issue_assignees ia ON ia.issue_id=i.id AND ia.assignee_id=$1 WHERE i.deleted_at IS NULL AND s."group" IS DISTINCT FROM 'triage' AND i.archived_at IS NULL AND i.is_draft IS NOT TRUE AND i.completed_at IS NOT NULL AND p.archived_at IS NULL AND extract(month FROM i.completed_at)=$3::numeric GROUP BY 1) x),
@@ -54,7 +55,7 @@ SELECT json_build_object(
 }
 
 func (r *Repository) ActivityGraph(ctx context.Context, userID, slug string) (json.RawMessage, error) {
-	return r.json(ctx, `SELECT COALESCE(json_agg(json_build_object('created_date',day,'activity_count',n) ORDER BY day),'[]'::json) FROM (SELECT a.created_at::date AS day,count(a.id)::int n FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id WHERE a.actor_id=$1 AND a.deleted_at IS NULL AND w.slug=$2 AND a.created_at::date>=CURRENT_DATE-INTERVAL '6 months' GROUP BY 1) x`, userID, slug)
+	return r.json(ctx, `SELECT COALESCE(json_agg(json_build_object('created_date',day,'activity_count',n) ORDER BY day),'[]'::json) FROM (SELECT a.created_at::date AS day,count(a.id)::int n FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id WHERE a.actor_id=$1 AND a.deleted_at IS NULL AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$1::uuid")+` AND w.slug=$2 AND a.created_at::date>=CURRENT_DATE-INTERVAL '6 months' GROUP BY 1) x`, userID, slug)
 }
 
 func (r *Repository) CompletedGraph(ctx context.Context, userID, slug, month string) (json.RawMessage, error) {

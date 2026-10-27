@@ -54,7 +54,7 @@ CREATE TABLE project_members (
   project_id uuid NOT NULL, member_id uuid NOT NULL, is_active boolean NOT NULL, workspace_id uuid, role integer NOT NULL DEFAULT 15, deleted_at timestamptz
 );
 CREATE TABLE users (
-  id uuid PRIMARY KEY, email text, first_name text, last_name text, avatar text,
+  id uuid PRIMARY KEY, is_active boolean NOT NULL DEFAULT true, email text, first_name text, last_name text, avatar text,
   avatar_asset_id uuid, is_bot boolean NOT NULL DEFAULT false, display_name text,
   cover_image text, cover_image_asset_id uuid, user_timezone text, date_joined timestamptz
 );

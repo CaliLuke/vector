@@ -36,7 +36,7 @@ func TestRepositoryReadsAllHistoryRoutesAgainstPostgres(t *testing.T) {
 		_, err = connection.Exec(ctx, `
 CREATE TABLE workspaces (id uuid PRIMARY KEY, slug text, name text, logo text, logo_asset_id uuid, deleted_at timestamptz);
 CREATE TABLE projects (id uuid PRIMARY KEY, workspace_id uuid, identifier text, name text, cover_image text, cover_image_asset_id uuid, logo_props jsonb, description text, archived_at timestamptz, deleted_at timestamptz, guest_view_all_features boolean);
-CREATE TABLE users (id uuid PRIMARY KEY, first_name text, last_name text, avatar text, avatar_asset_id uuid, is_bot boolean, display_name text, user_timezone text);
+CREATE TABLE users (id uuid PRIMARY KEY, is_active boolean NOT NULL DEFAULT true, first_name text, last_name text, avatar text, avatar_asset_id uuid, is_bot boolean, display_name text, user_timezone text);
 CREATE TABLE file_assets (id uuid PRIMARY KEY, entity_type text, workspace_id uuid, project_id uuid, issue_id uuid);
 CREATE TABLE workspace_members (id uuid PRIMARY KEY, workspace_id uuid, member_id uuid, role integer, is_active boolean, deleted_at timestamptz);
 CREATE TABLE project_members (id uuid PRIMARY KEY, workspace_id uuid, project_id uuid, member_id uuid, role integer, is_active boolean, deleted_at timestamptz);

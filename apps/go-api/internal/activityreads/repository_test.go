@@ -29,7 +29,7 @@ type activityDatabase struct {
 func (database *activityDatabase) QueryRow(_ context.Context, query string, arguments ...any) pgx.Row {
 	database.queries = append(database.queries, query)
 	database.arguments = append(database.arguments, arguments)
-	if strings.Contains(query, "SELECT EXISTS") {
+	if strings.HasPrefix(query, "SELECT EXISTS") {
 		return activityRow{scan: func(destinations ...any) error {
 			*destinations[0].(*bool) = database.allowed
 			return nil

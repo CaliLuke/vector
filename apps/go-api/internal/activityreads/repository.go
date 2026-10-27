@@ -260,7 +260,7 @@ func (repository *Repository) userActivities(ctx context.Context, principal Prin
 	}
 	order := activityOrder(request, "a.created_at DESC")
 	value, err := repository.json(ctx, `WITH matching AS (
-SELECT a.* FROM issue_activities a WHERE a.actor_id=$1 AND a.deleted_at IS NULL
+SELECT a.* FROM issue_activities a WHERE a.actor_id=$1 AND a.deleted_at IS NULL AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$1::uuid")+`
 ), page AS (
 SELECT * FROM matching a ORDER BY `+order+` LIMIT $2 OFFSET $3
 )
@@ -288,7 +288,7 @@ func (repository *Repository) apiActivities(ctx context.Context, principal Princ
 		if err != nil {
 			return Result{}, ErrNotFound
 		}
-		value, err := repository.json(ctx, `SELECT `+serializer+` FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id WHERE a.id=$1 AND a.issue_id=$2 AND a.project_id=$3 AND w.slug=$4 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND EXISTS (SELECT 1 FROM project_members membership WHERE membership.project_id=p.id AND membership.member_id=$5 AND membership.is_active=true) LIMIT 1`, pk, issueID, projectID, param(request, "slug"), principal.UserID)
+		value, err := repository.json(ctx, `SELECT `+serializer+` FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id WHERE a.id=$1 AND a.issue_id=$2 AND a.project_id=$3 AND w.slug=$4 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND EXISTS (SELECT 1 FROM project_members membership WHERE membership.project_id=p.id AND membership.member_id=$5 AND membership.is_active=true) AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$5::uuid")+` LIMIT 1`, pk, issueID, projectID, param(request, "slug"), principal.UserID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return Result{}, &HTTPError{Status: 404, Body: map[string]any{"message": "Activity not found.", "code": "NOT_FOUND"}}
 		}
@@ -300,7 +300,7 @@ func (repository *Repository) apiActivities(ctx context.Context, principal Princ
 	}
 	order := activityOrder(request, "a.created_at ASC")
 	value, err := repository.json(ctx, `WITH matching AS (
-SELECT a.* FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id JOIN project_members membership ON membership.project_id=p.id AND membership.member_id=$4 AND membership.is_active=true WHERE a.issue_id=$1 AND a.project_id=$2 AND w.slug=$3 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft'))
+SELECT a.* FROM issue_activities a JOIN workspaces w ON w.id=a.workspace_id JOIN projects p ON p.id=a.project_id JOIN project_members membership ON membership.project_id=p.id AND membership.member_id=$4 AND membership.is_active=true WHERE a.issue_id=$1 AND a.project_id=$2 AND w.slug=$3 AND a.deleted_at IS NULL AND p.archived_at IS NULL AND (a.field IS NULL OR a.field NOT IN ('comment','vote','reaction','draft')) AND `+issuequery.MilestoneActivityVisibleSQL("a.field", "a.issue_id", "a.project_id", "a.workspace_id", "$4::uuid")+`
 ), page AS (
 SELECT * FROM matching a ORDER BY `+order+` LIMIT $5 OFFSET $6
 )

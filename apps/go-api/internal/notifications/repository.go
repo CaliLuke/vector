@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/CaliLuke/go-plane/internal/issuequery"
 	"github.com/CaliLuke/go-plane/internal/pythoncompat"
 	"github.com/jackc/pgx/v5"
 )
@@ -55,7 +56,8 @@ func (r *Repository) Authorize(ctx context.Context, p Principal, slug string) er
 	return nil
 }
 
-const scope = `n.deleted_at IS NULL AND n.receiver_id=$1 AND w.slug=$2`
+var scope = `n.deleted_at IS NULL AND n.receiver_id=$1 AND w.slug=$2 AND ` + issuequery.MilestoneActivityVisibleSQL("n.data#>>'{issue_activity,field}'", "n.entity_identifier", "n.project_id", "n.workspace_id", "$1::uuid")
+
 const joins = ` FROM notifications n JOIN workspaces w ON w.id=n.workspace_id
  LEFT JOIN users u ON u.id=n.triggered_by_id
  LEFT JOIN file_assets a ON a.id=u.avatar_asset_id
