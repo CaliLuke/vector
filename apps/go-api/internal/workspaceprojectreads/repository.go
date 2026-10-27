@@ -52,14 +52,20 @@ type ProjectDetailsOptions struct {
 	OrderBy *string
 }
 
-type APIProjectDetailOptions struct{ Fields, Expand string }
+type APIProjectDetailOptions struct {
+	Fields, Expand string
+	// ExpectedWorkspaceID binds a previously selected workspace through slug changes.
+	ExpectedWorkspaceID *uuid.UUID
+}
 
 type APIProjectListOptions struct {
-	Fields, Expand  string
-	IncludeArchived bool
-	PerPage         *string
-	Cursor          *string
-	OrderBy         *string
+	// ExpectedWorkspaceID binds a previously selected workspace through slug changes.
+	ExpectedWorkspaceID *uuid.UUID
+	Fields, Expand      string
+	IncludeArchived     bool
+	PerPage             *string
+	Cursor              *string
+	OrderBy             *string
 }
 
 type APIProjectSummaryOptions struct{ Fields []string }

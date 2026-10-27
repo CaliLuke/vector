@@ -56,7 +56,8 @@ func (s *Service) workspaceMembers(ctx context.Context, actor mcpauth.Principal,
 		return nil, err
 	}
 	query := membership.WorkspaceMembersQuery{
-		FirstName: optionalMemberText(input.FirstName), LastName: optionalMemberText(input.LastName),
+		ExpectedWorkspaceID: new(uuid.UUID(actor.WorkspaceID)),
+		FirstName:           optionalMemberText(input.FirstName), LastName: optionalMemberText(input.LastName),
 		Email: optionalMemberText(input.Email), DisplayName: optionalMemberText(input.DisplayName),
 		RoleSlug: optionalMemberText(input.RoleSlug), OrderBy: optionalMemberText(input.OrderBy),
 		IsActive: optionalMemberBool(input.IsActive), IsBot: optionalMemberBool(input.IsBot), Limit: size, Page: page,
@@ -82,7 +83,7 @@ func (s *Service) memberRoles(ctx context.Context, actor mcpauth.Principal, inpu
 	if err != nil {
 		return nil, err
 	}
-	roles, total, err := s.directory.ListRoles(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, optionalMemberText(input.Namespace), size, page)
+	roles, total, err := s.directory.ListRolesInWorkspace(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, optionalMemberText(input.Namespace), size, page, uuid.UUID(actor.WorkspaceID))
 	if err != nil {
 		return nil, directoryFailure(err)
 	}
@@ -99,7 +100,7 @@ func (s *Service) memberRole(ctx context.Context, actor mcpauth.Principal, input
 	if err != nil || actor.WorkspaceSlug == "" {
 		return nil, directoryFailure(membership.ErrInvalidMemberQuery)
 	}
-	role, err := s.directory.RetrieveRole(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id)
+	role, err := s.directory.RetrieveRoleInWorkspace(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, id, uuid.UUID(actor.WorkspaceID))
 	if err != nil {
 		return nil, directoryFailure(err)
 	}

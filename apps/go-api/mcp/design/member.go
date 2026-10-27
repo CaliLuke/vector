@@ -54,15 +54,7 @@ func member() {
 		Description("Read authorized identities, workspace and project members, and role definitions.")
 		Payload(memberRequest)
 		Result(memberResult)
-		for _, failure := range []struct{ name, message string }{
-			{"unauthorized", "Authentication is no longer valid."},
-			{"forbidden", "Access is no longer allowed."},
-			{"invalid_params", "The action or workspace selector is invalid."},
-			{"not_found", "The requested resource is no longer available."},
-			{"internal_error", "The member information could not be read."},
-		} {
-			Error(failure.name, func() { Remedy(func() { SafeMessage(failure.message) }) })
-		}
+		readErrors()
 		Meta("mcp:annotation:readOnlyHint", "true")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")

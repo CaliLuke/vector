@@ -77,6 +77,26 @@ type MemberRetrieveRoleTransport struct {
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
 }
 
+// ProjectListTransport preserves JSON field presence before service conversion.
+type ProjectListTransport struct {
+	Action  *string `json:"action"`
+	Cursor  *string `json:"cursor,omitzero"`
+	OrderBy *string `json:"order_by,omitzero"`
+	// Zero or omitted uses 100.
+	PerPage       *int    `json:"per_page,omitzero"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+}
+
+// ProjectMCPInput preserves JSON field presence before service conversion.
+type ProjectMCPInput = ProjectRequest
+
+// ProjectRetrieveTransport preserves JSON field presence before service conversion.
+type ProjectRetrieveTransport struct {
+	Action        *string `json:"action"`
+	ProjectID     *string `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+}
+
 // MemberRequest is a sum-type union.
 type MemberRequest struct {
 	kind                MemberRequestKind
@@ -1101,6 +1121,439 @@ func validateMemberRequestMemberRetrieveRoleTransport(body *MemberRetrieveRoleTr
 	return
 }
 
+// ProjectRequest is a sum-type union.
+type ProjectRequest struct {
+	kind            ProjectRequestKind
+	ProjectList     *ProjectListTransport
+	ProjectRetrieve *ProjectRetrieveTransport
+}
+
+// ProjectRequestKind enumerates the union variants for ProjectRequest.
+type ProjectRequestKind string
+
+const (
+	// ProjectRequestKindProjectList identifies the ProjectList branch of the union.
+	ProjectRequestKindProjectList ProjectRequestKind = "ProjectList"
+	// ProjectRequestKindProjectRetrieve identifies the ProjectRetrieve branch of the union.
+	ProjectRequestKindProjectRetrieve ProjectRequestKind = "ProjectRetrieve"
+)
+
+// Kind returns the discriminator value of the union.
+func (u ProjectRequest) Kind() ProjectRequestKind {
+	return u.kind
+}
+
+// NewProjectRequestProjectList constructs a ProjectRequest with the
+// ProjectList branch set.
+func NewProjectRequestProjectList(v *ProjectListTransport) ProjectRequest {
+	return ProjectRequest{
+		kind:        ProjectRequestKindProjectList,
+		ProjectList: v,
+	}
+}
+
+// AsProjectList returns the value of the ProjectList branch if set.
+func (u ProjectRequest) AsProjectList() (_ *ProjectListTransport, ok bool) {
+	if u.kind != ProjectRequestKindProjectList {
+		return
+	}
+	return u.ProjectList, true
+}
+
+// SetProjectList sets the ProjectList branch of the union.
+func (u *ProjectRequest) SetProjectList(v *ProjectListTransport) {
+	u.kind = ProjectRequestKindProjectList
+	u.ProjectList = v
+}
+
+// NewProjectRequestProjectRetrieve constructs a ProjectRequest with the
+// ProjectRetrieve branch set.
+func NewProjectRequestProjectRetrieve(v *ProjectRetrieveTransport) ProjectRequest {
+	return ProjectRequest{
+		kind:            ProjectRequestKindProjectRetrieve,
+		ProjectRetrieve: v,
+	}
+}
+
+// AsProjectRetrieve returns the value of the ProjectRetrieve branch if set.
+func (u ProjectRequest) AsProjectRetrieve() (_ *ProjectRetrieveTransport, ok bool) {
+	if u.kind != ProjectRequestKindProjectRetrieve {
+		return
+	}
+	return u.ProjectRetrieve, true
+}
+
+// SetProjectRetrieve sets the ProjectRetrieve branch of the union.
+func (u *ProjectRequest) SetProjectRetrieve(v *ProjectRetrieveTransport) {
+	u.kind = ProjectRequestKindProjectRetrieve
+	u.ProjectRetrieve = v
+}
+
+// Validate ensures the union discriminant is valid.
+func (u ProjectRequest) Validate() error {
+	switch u.kind {
+	case "":
+		return loom.InvalidEnumValueError("type", "", []any{
+			string(ProjectRequestKindProjectList),
+			string(ProjectRequestKindProjectRetrieve),
+		})
+	case ProjectRequestKindProjectList:
+		return nil
+	case ProjectRequestKindProjectRetrieve:
+		return nil
+	default:
+		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(ProjectRequestKindProjectList),
+			string(ProjectRequestKindProjectRetrieve),
+		})
+	}
+}
+
+// MarshalJSON marshals the selected union branch directly.
+func (u ProjectRequest) MarshalJSON() ([]byte, error) {
+	if err := u.Validate(); err != nil {
+		return nil, err
+	}
+	var data []byte
+	var err error
+	selected := -1
+	switch u.kind {
+	case ProjectRequestKindProjectList:
+		selected = 0
+		data, err = json.Marshal(u.ProjectList, loom.JSONOptions(), json.Deterministic(true))
+	case ProjectRequestKindProjectRetrieve:
+		selected = 1
+		data, err = json.Marshal(u.ProjectRetrieve, loom.JSONOptions(), json.Deterministic(true))
+	}
+	if err != nil {
+		return nil, err
+	}
+	_, matched, err := u.matchJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	if matched != selected {
+		return nil, fmt.Errorf("untagged union changed selected branch")
+	}
+	return data, nil
+}
+
+// UnmarshalJSON selects the single valid untagged union branch.
+func (u *ProjectRequest) UnmarshalJSON(data []byte) error {
+	matched, _, err := u.matchJSON(data)
+	if err != nil {
+		return err
+	}
+	*u = matched
+	return nil
+}
+func (u ProjectRequest) matchJSON(data []byte) (ProjectRequest, int, error) {
+	var value0 *ProjectListTransport
+	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[3]},
+			{Name: "order_by", Required: false, Shape: &schema0Nodes[4]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema0 := &schema0Nodes[0]
+	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[3]},
+			{Name: "order_by", Required: false, Shape: &runtime0Nodes[4]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[5] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime0 := &runtime0Nodes[0]
+	var value1 *ProjectRetrieveTransport
+	schema1Nodes := make([]loom.JSONShape, 5)
+	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema1 := &schema1Nodes[0]
+	runtime1Nodes := make([]loom.JSONShape, 5)
+	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime1 := &runtime1Nodes[0]
+	candidates := []loom.JSONUnionBranch{
+		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *ProjectListTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "list") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list"}))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage < 0 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage > 1000 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "1e3", false))
+					}
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *ProjectRetrieveTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "retrieve") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"retrieve"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value1 = v
+			return true, nil
+		}},
+	}
+	matched, err := loom.MatchUntaggedJSON("ProjectRequest", data, candidates)
+	if err != nil {
+		return ProjectRequest{}, -1, err
+	}
+	switch matched {
+	case 0:
+		return ProjectRequest{kind: ProjectRequestKindProjectList, ProjectList: value0}, matched, nil
+	case 1:
+		return ProjectRequest{kind: ProjectRequestKindProjectRetrieve, ProjectRetrieve: value1}, matched, nil
+	}
+	return ProjectRequest{}, -1, fmt.Errorf("invalid untagged union match index")
+}
+func validateProjectRequestProjectListTransport(body *ProjectListTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "list") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list"}))
+		}
+	}
+	if body.PerPage != nil {
+		if *body.PerPage < 0 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "0", true))
+		}
+	}
+	if body.PerPage != nil {
+		if *body.PerPage > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "1e3", false))
+		}
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
+func validateProjectRequestProjectRetrieveTransport(body *ProjectRetrieveTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "retrieve") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"retrieve"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
 func decodeMemberPayload(raw jsontext.Value) (out *vector_mcp.MemberRequest, err error) {
 	var in *MemberMCPInput
 	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
@@ -1160,6 +1613,40 @@ func decodeMemberPayload(raw jsontext.Value) (out *vector_mcp.MemberRequest, err
 			u = *out
 		}
 		u.SetMemberRetrieveRole((*vector_mcp.MemberRetrieveRole)(obj))
+		out = &u
+	}
+	return out, err
+}
+
+func decodeProjectPayload(raw jsontext.Value) (out *vector_mcp.ProjectRequest, err error) {
+	var in *ProjectMCPInput
+	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
+		return out, err
+	}
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+		return out, err
+	}
+
+	switch string(in.Kind()) {
+	case "ProjectList":
+		actual, _ := in.AsProjectList()
+		obj := decodeProjectPayloadProjectListTransportToVectorMcpProjectList(actual)
+
+		var u vector_mcp.ProjectRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetProjectList((*vector_mcp.ProjectList)(obj))
+		out = &u
+	case "ProjectRetrieve":
+		actual, _ := in.AsProjectRetrieve()
+		obj := decodeProjectPayloadProjectRetrieveTransportToVectorMcpProjectRetrieve(actual)
+
+		var u vector_mcp.ProjectRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetProjectRetrieve((*vector_mcp.ProjectRetrieve)(obj))
 		out = &u
 	}
 	return out, err
@@ -1234,6 +1721,34 @@ func decodeMemberPayloadMemberRetrieveRoleTransportToVectorMcpMemberRetrieveRole
 	res := &vector_mcp.MemberRetrieveRole{
 		Action:        *v.Action,
 		RoleID:        *v.RoleID,
+		WorkspaceSlug: v.WorkspaceSlug,
+	}
+
+	return res
+}
+
+func decodeProjectPayloadProjectListTransportToVectorMcpProjectList(v *ProjectListTransport) *vector_mcp.ProjectList {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.ProjectList{
+		Action:        *v.Action,
+		Cursor:        v.Cursor,
+		OrderBy:       v.OrderBy,
+		PerPage:       v.PerPage,
+		WorkspaceSlug: v.WorkspaceSlug,
+	}
+
+	return res
+}
+
+func decodeProjectPayloadProjectRetrieveTransportToVectorMcpProjectRetrieve(v *ProjectRetrieveTransport) *vector_mcp.ProjectRetrieve {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.ProjectRetrieve{
+		Action:        *v.Action,
+		ProjectID:     *v.ProjectID,
 		WorkspaceSlug: v.WorkspaceSlug,
 	}
 

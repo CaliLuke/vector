@@ -70,6 +70,7 @@ func TestAPIProjectLiteIncludesArchivedOnlyWhenRequested(t *testing.T) {
 		workspaceProjectRow(func(destinations ...any) error {
 			*destinations[0].(*[]byte) = []byte(`[]`)
 			*destinations[1].(*int) = 0
+			*destinations[2].(*bool) = true
 			return nil
 		}),
 	}}

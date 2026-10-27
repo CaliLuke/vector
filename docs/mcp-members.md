@@ -11,6 +11,11 @@ This contract is implemented for personal-token and generic OAuth MCP, and the
 HTTP member reads. Production OAuth deployment, complete browser proof and overall
 MCP parity remain incomplete.
 
+All four workspace-scoped MCP member actions bind the verified workspace UUID
+in their data statement, so a concurrent slug reassignment cannot switch tenants.
+The project roster also rechecks workspace membership after action admission.
+The existing HTTP entry points retain their permission rules and wire shapes.
+
 ## Problem statement and current state
 
 `Repository.Roles` returns the caller's project-to-numeric-role assignments. It

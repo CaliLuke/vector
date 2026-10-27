@@ -83,7 +83,12 @@ func oauthHandler(t *testing.T, f fixture, authenticate mcptransport.Authenticat
 
 func oauthCall(t *testing.T, h http.Handler, version, token, workspace, input string, status int) rpcResult {
 	t.Helper()
-	params := memberCall(input)
+	return oauthToolCall(t, h, version, token, workspace, "member", input, status)
+}
+
+func oauthToolCall(t *testing.T, h http.Handler, version, token, workspace, tool, input string, status int) rpcResult {
+	t.Helper()
+	params := map[string]any{"name": tool, "arguments": json.RawMessage(input)}
 	if version == "2026-07-28" {
 		params["_meta"] = map[string]any{"io.modelcontextprotocol/protocolVersion": version, "io.modelcontextprotocol/clientInfo": map[string]string{"name": "test", "version": "1"}, "io.modelcontextprotocol/clientCapabilities": map[string]any{}}
 	}
@@ -95,7 +100,7 @@ func oauthCall(t *testing.T, h http.Handler, version, token, workspace, input st
 	r.Header.Set("Mcp-Protocol-Version", version)
 	if version == "2026-07-28" {
 		r.Header.Set("Mcp-Method", "tools/call")
-		r.Header.Set("Mcp-Name", "member")
+		r.Header.Set("Mcp-Name", tool)
 	}
 	r.Header.Set("Authorization", "Bearer "+token)
 	if workspace != "" {

@@ -14,7 +14,12 @@ import (
 func TestAPIProjectLiteSortOrderUsesProjectMemberAnnotation(t *testing.T) {
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	order := "-sort_order"
-	db := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20), workspaceProjectRow(func(dest ...any) error { *dest[0].(*[]byte) = []byte(`[]`); *dest[1].(*int) = 0; return nil })}}
+	db := &workspaceProjectDatabase{rows: []pgx.Row{workspaceProjectRoleRow(20), workspaceProjectRow(func(dest ...any) error {
+		*dest[0].(*[]byte) = []byte(`[]`)
+		*dest[1].(*int) = 0
+		*dest[2].(*bool) = true
+		return nil
+	})}}
 	repo, _ := NewRepository(db)
 	if _, err := repo.APIProjects(context.Background(), user, "space", APIProjectListOptions{OrderBy: &order}); err != nil {
 		t.Fatal(err)
@@ -28,7 +33,11 @@ func TestAPIProjectListUsesFullSerializerAndProjectVisibility(t *testing.T) {
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	db := &workspaceProjectDatabase{rows: []pgx.Row{
 		workspaceProjectRoleRow(20),
-		workspaceProjectRow(func(dest ...any) error { *dest[0].(*[]byte) = []byte(`{"results":[]}`); return nil }),
+		workspaceProjectRow(func(dest ...any) error {
+			*dest[0].(*[]byte) = []byte(`{"results":[]}`)
+			*dest[1].(*bool) = true
+			return nil
+		}),
 	}}
 	repo, _ := NewRepository(db)
 	body, err := repo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{})
@@ -59,7 +68,11 @@ func TestAPIProjectListKeepsSourceSortPrimaryAndUsesStableIDTie(t *testing.T) {
 	user := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	db := &workspaceProjectDatabase{rows: []pgx.Row{
 		workspaceProjectRoleRow(20),
-		workspaceProjectRow(func(dest ...any) error { *dest[0].(*[]byte) = []byte(`{"results":[]}`); return nil }),
+		workspaceProjectRow(func(dest ...any) error {
+			*dest[0].(*[]byte) = []byte(`{"results":[]}`)
+			*dest[1].(*bool) = true
+			return nil
+		}),
 	}}
 	repo, _ := NewRepository(db)
 	if _, err := repo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{}); err != nil {
@@ -78,6 +91,7 @@ func TestAPIProjectDetailRestrictsWorkspaceAndVisibility(t *testing.T) {
 		workspaceProjectRoleRow(20),
 		workspaceProjectRow(func(dest ...any) error {
 			*dest[0].(*[]byte) = []byte(`{"id":"00000000-0000-4000-8000-000000000003"}`)
+			*dest[1].(*bool) = true
 			return nil
 		}),
 	}}
@@ -104,7 +118,11 @@ func TestAPIProjectListAndDetailVisibilityAllowsPublicProjectsForWorkspaceRoles(
 		t.Run(fmt.Sprintf("role-%d", role), func(t *testing.T) {
 			listDB := &workspaceProjectDatabase{rows: []pgx.Row{
 				workspaceProjectRoleRow(role),
-				workspaceProjectRow(func(dest ...any) error { *dest[0].(*[]byte) = []byte(`{"results":[]}`); return nil }),
+				workspaceProjectRow(func(dest ...any) error {
+					*dest[0].(*[]byte) = []byte(`{"results":[]}`)
+					*dest[1].(*bool) = true
+					return nil
+				}),
 			}}
 			listRepo, _ := NewRepository(listDB)
 			if _, err := listRepo.APIProjectList(context.Background(), user, "space", APIProjectListOptions{}); err != nil {
@@ -118,6 +136,7 @@ func TestAPIProjectListAndDetailVisibilityAllowsPublicProjectsForWorkspaceRoles(
 				workspaceProjectRoleRow(role),
 				workspaceProjectRow(func(dest ...any) error {
 					*dest[0].(*[]byte) = []byte(`{"id":"00000000-0000-4000-8000-000000000003"}`)
+					*dest[1].(*bool) = true
 					return nil
 				}),
 			}}

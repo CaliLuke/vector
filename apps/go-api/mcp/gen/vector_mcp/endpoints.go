@@ -15,19 +15,22 @@ import (
 
 // Endpoints wraps the "VectorMCP" service endpoints.
 type Endpoints struct {
-	Member loom.Endpoint
+	Member  loom.Endpoint
+	Project loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
 	return &Endpoints{
-		Member: NewMemberEndpoint(s),
+		Member:  NewMemberEndpoint(s),
+		Project: NewProjectEndpoint(s),
 	}
 }
 
 // Use applies the given middleware to all the "VectorMCP" service endpoints.
 func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.Member = m(e.Member)
+	e.Project = m(e.Project)
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -36,5 +39,14 @@ func NewMemberEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*MemberRequest)
 		return s.Member(ctx, p)
+	}
+}
+
+// NewProjectEndpoint returns an endpoint function that calls the method
+// "project" of service "VectorMCP".
+func NewProjectEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*ProjectRequest)
+		return s.Project(ctx, p)
 	}
 }

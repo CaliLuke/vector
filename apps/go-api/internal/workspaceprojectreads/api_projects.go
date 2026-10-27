@@ -16,6 +16,24 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// apiProjectRequesterSQL rechecks the actor and workspace membership in the
+// same PostgreSQL snapshot as the project data. Earlier admission cannot grant
+// a later read after membership, workspace, or account revocation.
+func apiProjectRequesterSQL(workspaceArgument int) string {
+	return fmt.Sprintf(`
+ SELECT set_config('TimeZone',COALESCE(NULLIF(requester_user.user_timezone,''),'UTC'),true) AS user_timezone
+ FROM users requester_user
+ WHERE requester_user.id=$1 AND requester_user.is_active=true
+ AND EXISTS (
+  SELECT 1 FROM workspace_members current_member
+  JOIN workspaces current_workspace ON current_workspace.id=current_member.workspace_id
+  WHERE current_member.member_id=requester_user.id AND current_workspace.slug=$2
+  AND ($%[1]d::uuid IS NULL OR current_workspace.id=$%[1]d)
+  AND current_workspace.deleted_at IS NULL AND current_member.is_active=true
+  AND current_member.deleted_at IS NULL AND current_member.role IN (5,15,20)
+ )`, workspaceArgument)
+}
+
 // APIProjects implements the API-key lightweight project picker collection.
 func (repository *Repository) APIProjects(ctx context.Context, userID uuid.UUID, slug string, options APIProjectListOptions) (json.RawMessage, error) {
 	role, err := repository.apiWorkspaceRole(ctx, userID, slug)
@@ -79,11 +97,8 @@ func (repository *Repository) apiProjectPage(ctx context.Context, userID uuid.UU
   'member_role', (SELECT member.role FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL ORDER BY member.created_at DESC LIMIT 1)
 )`
 	query := fmt.Sprintf(`
-WITH requester AS MATERIALIZED (
-  SELECT set_config('TimeZone', COALESCE(NULLIF(requester_user.user_timezone, ''), 'UTC'), true) AS user_timezone
-  FROM users requester_user WHERE requester_user.id=$1 AND requester_user.is_active=true
-), rows AS (
-  SELECT %s AS item, project.id AS project_id, project.created_at, project.updated_at, project.name,
+WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(7)+`), rows AS (
+  SELECT %s AS item, project.id AS project_id, project.created_at, project.updated_at, project.name, project.network,
     (SELECT member.sort_order FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL ORDER BY member.created_at DESC LIMIT 1) AS sort_order
   FROM projects project JOIN workspaces workspace ON workspace.id=project.workspace_id CROSS JOIN requester
   WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL AND requester.user_timezone IS NOT NULL
@@ -99,9 +114,9 @@ SELECT json_build_object(
   'total_pages', CASE WHEN total=0 THEN 0 ELSE ceil(total::numeric/$6)::int END,
   'total_results', total, 'extra_stats', NULL,
   'results', COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordinal>$5 AND ordinal<=$5+$6),'[]'::json)
-) FROM totals`, project, order)
-	var body []byte
-	if err := repository.database.QueryRow(ctx, query, userID, slug, role, page, offset, limit).Scan(&body); err != nil {
+), EXISTS(SELECT 1 FROM requester) FROM totals`, project, order)
+	body, err := authorizedProjectBody(repository.database.QueryRow(ctx, query, userID, slug, role, page, offset, limit, optionalUUID(options.ExpectedWorkspaceID)))
+	if err != nil {
 		return nil, fmt.Errorf("list API projects: %w", err)
 	}
 	return repository.projectProjection(ctx, body, options.Fields, options.Expand, true)
@@ -122,19 +137,15 @@ func (repository *Repository) APIProject(ctx context.Context, userID uuid.UUID, 
   'is_deployed', EXISTS(SELECT 1 FROM deploy_boards board WHERE board.entity_name='project' AND board.entity_identifier=project.id AND board.workspace_id=project.workspace_id AND board.deleted_at IS NULL),
   'member_role', (SELECT member.role FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL ORDER BY member.created_at DESC LIMIT 1)
 )`
-	query := fmt.Sprintf(`WITH requester AS MATERIALIZED (
- SELECT set_config('TimeZone',COALESCE(NULLIF(user_timezone,''),'UTC'),true) FROM users WHERE id=$1 AND is_active=true
-)
-SELECT %s FROM projects project JOIN workspaces workspace ON workspace.id=project.workspace_id CROSS JOIN requester
+	query := fmt.Sprintf(`WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(5)+`)
+SELECT (SELECT %s FROM projects project JOIN workspaces workspace ON workspace.id=project.workspace_id CROSS JOIN requester
 WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL AND project.id=$3 AND project.deleted_at IS NULL
- AND requester.set_config IS NOT NULL
+ AND requester.user_timezone IS NOT NULL
  AND $4 IN (5,15,20)
  AND (project.network=2 OR EXISTS (SELECT 1 FROM project_members visible WHERE visible.project_id=project.id AND visible.workspace_id=project.workspace_id AND visible.member_id=$1 AND visible.is_active=true AND visible.deleted_at IS NULL))
-LIMIT 1`, project)
-	var body []byte
-	if err := repository.database.QueryRow(ctx, query, userID, slug, projectID, role).Scan(&body); errors.Is(err, pgx.ErrNoRows) {
-		return nil, ErrNotFound
-	} else if err != nil {
+LIMIT 1), EXISTS(SELECT 1 FROM requester)`, project)
+	body, err := authorizedProjectBody(repository.database.QueryRow(ctx, query, userID, slug, projectID, role, optionalUUID(options.ExpectedWorkspaceID)))
+	if err != nil {
 		return nil, fmt.Errorf("get API project: %w", err)
 	}
 	return repository.projectProjection(ctx, body, options.Fields, options.Expand, false)
@@ -162,9 +173,7 @@ func apiProjectOrder(value, fallback string) string {
 func (repository *Repository) apiProjectLitePage(ctx context.Context, userID uuid.UUID, slug string, _ int, options APIProjectListOptions, limit, page, offset int, order string) (json.RawMessage, error) {
 	includeArchived := options.IncludeArchived
 	query := fmt.Sprintf(`
-WITH requester AS MATERIALIZED (
- SELECT set_config('TimeZone',COALESCE(NULLIF(user_timezone,''),'UTC'),true) AS user_timezone FROM users WHERE id=$1 AND is_active=true
-), rows AS (
+WITH requester AS MATERIALIZED (`+apiProjectRequesterSQL(6)+`), rows AS (
   SELECT json_build_object(
     'id', project.id, 'name', project.name, 'identifier', project.identifier,
     'description', project.description, 'emoji', project.emoji, 'icon_prop', project.icon_prop,
@@ -177,11 +186,15 @@ WITH requester AS MATERIALIZED (
     AND ($3 OR project.archived_at IS NULL)
     AND (project.network=2 OR EXISTS (SELECT 1 FROM project_members member WHERE member.project_id=project.id AND member.workspace_id=project.workspace_id AND member.member_id=$1 AND member.is_active=true AND member.deleted_at IS NULL))
 ), ordered AS (SELECT item, row_number() OVER (ORDER BY %s) AS ordinal FROM rows), totals AS (SELECT count(*)::int AS total FROM rows)
-SELECT COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordinal > $4 AND ordinal <= $4+$5), '[]'::json), total FROM totals`, apiProjectCoverImageURL(), djangoTimestamp("project.archived_at"), order)
+SELECT COALESCE((SELECT json_agg(item ORDER BY ordinal) FROM ordered WHERE ordinal > $4 AND ordinal <= $4+$5), '[]'::json), total, EXISTS(SELECT 1 FROM requester) FROM totals`, apiProjectCoverImageURL(), djangoTimestamp("project.archived_at"), order)
 	var body []byte
 	var total int
-	if err := repository.database.QueryRow(ctx, query, userID, slug, includeArchived, offset, limit).Scan(&body, &total); err != nil {
+	var authorized bool
+	if err := repository.database.QueryRow(ctx, query, userID, slug, includeArchived, offset, limit, optionalUUID(options.ExpectedWorkspaceID)).Scan(&body, &total, &authorized); err != nil {
 		return nil, fmt.Errorf("list lite API projects: %w", err)
+	}
+	if !authorized {
+		return nil, ErrForbidden
 	}
 	var rows []any
 	if err := json.Unmarshal(body, &rows); err != nil {
@@ -244,7 +257,7 @@ LEFT JOIN LATERAL (
     AND member.role IN (5,15,20)
   ORDER BY member.created_at DESC LIMIT 1
 ) membership ON true
-WHERE workspace.slug=$2
+WHERE workspace.slug=$2 AND workspace.deleted_at IS NULL
 LIMIT 1`, userID, slug).Scan(&role)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, ErrNotFound
@@ -342,4 +355,21 @@ func (repository *Repository) projectProjection(ctx context.Context, body json.R
 		}
 	}
 	return json.Marshal(document)
+}
+
+func authorizedProjectBody(row pgx.Row) ([]byte, error) {
+	var body []byte
+	var authorized bool
+	if err := row.Scan(&body, &authorized); errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrNotFound
+	} else if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, ErrForbidden
+	}
+	if len(body) == 0 {
+		return nil, ErrNotFound
+	}
+	return body, nil
 }

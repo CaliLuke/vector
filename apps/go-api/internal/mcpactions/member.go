@@ -21,26 +21,27 @@ type identityReader interface {
 }
 
 type projectMemberReader interface {
-	ListProjectMembers(context.Context, uuid.UUID, string, uuid.UUID) (json.RawMessage, error)
+	ListProjectMembersInWorkspace(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (json.RawMessage, error)
 }
 
 type memberDirectory interface {
 	ListWorkspaceMembers(context.Context, uuid.UUID, string, membership.WorkspaceMembersQuery) (membership.WorkspaceMembersPage, error)
-	ListRoles(context.Context, uuid.UUID, string, string, int, int) ([]membership.RoleDefinition, int, error)
-	RetrieveRole(context.Context, uuid.UUID, string, uuid.UUID) (membership.RoleDefinition, error)
+	ListRolesInWorkspace(context.Context, uuid.UUID, string, string, int, int, uuid.UUID) ([]membership.RoleDefinition, int, error)
+	RetrieveRoleInWorkspace(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (membership.RoleDefinition, error)
 }
 
 type Service struct {
-	identity  identityReader
-	projects  projectMemberReader
-	directory memberDirectory
+	identity     identityReader
+	projects     projectMemberReader
+	directory    memberDirectory
+	projectReads projectReader
 }
 
-func New(identity identityReader, projects projectMemberReader, directory memberDirectory) (*Service, error) {
-	if identity == nil || projects == nil || directory == nil {
-		return nil, errors.New("MCP identity, project member and directory applications are required")
+func New(identity identityReader, projects projectMemberReader, directory memberDirectory, projectReads projectReader) (*Service, error) {
+	if identity == nil || projects == nil || directory == nil || projectReads == nil {
+		return nil, errors.New("MCP identity, member directory and project read applications are required")
 	}
-	return &Service{identity: identity, projects: projects, directory: directory}, nil
+	return &Service{identity: identity, projects: projects, directory: directory, projectReads: projectReads}, nil
 }
 
 func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.MemberResult, error) {
@@ -48,26 +49,9 @@ func (s *Service) Member(ctx context.Context, input *api.MemberRequest) (*api.Me
 	if err != nil {
 		return nil, err
 	}
-	ctx, err = mcpauth.Revalidate(ctx)
+	ctx, actor, err := readActor(ctx, request.workspace)
 	if err != nil {
-		return nil, authenticationError(err)
-	}
-	if err = mcpauth.RequireScopes(ctx, false); err != nil {
-		return nil, authenticationError(err)
-	}
-	slug := ""
-	if request.workspace != nil {
-		slug = *request.workspace
-	}
-	actor, err := mcpauth.SelectWorkspace(ctx, slug)
-	if err != nil {
-		if errors.Is(err, mcpauth.ErrWorkspaceMismatch) {
-			return nil, api.MakeInvalidParams(errors.New("invalid workspace selector"))
-		}
-		return nil, authenticationError(err)
-	}
-	if timezoneErr := djangosession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
-		return nil, memberReadFailure()
+		return nil, err
 	}
 
 	switch request.action {
@@ -161,3 +145,29 @@ func memberReadFailure() error {
 }
 
 var _ api.Service = (*Service)(nil)
+
+func readActor(ctx context.Context, workspace *string) (context.Context, mcpauth.Principal, error) {
+	ctx, err := mcpauth.Revalidate(ctx)
+	if err != nil {
+		return nil, mcpauth.Principal{}, authenticationError(err)
+	}
+	if err = mcpauth.RequireScopes(ctx, false); err != nil {
+		return nil, mcpauth.Principal{}, authenticationError(err)
+	}
+	slug := ""
+	if workspace != nil {
+		slug = *workspace
+	}
+	actor, err := mcpauth.SelectWorkspace(ctx, slug)
+	if err != nil {
+		if errors.Is(err, mcpauth.ErrWorkspaceMismatch) {
+			return nil, mcpauth.Principal{}, api.MakeInvalidParams(errors.New("invalid workspace selector"))
+		}
+		return nil, mcpauth.Principal{}, authenticationError(err)
+	}
+	if timezoneErr := djangosession.ValidateUserTimezone(actor.Timezone); timezoneErr != nil {
+		return nil, mcpauth.Principal{}, memberReadFailure()
+	}
+
+	return ctx, actor, nil
+}

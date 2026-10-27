@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	storeuuid "uuid"
 
 	"github.com/CaliLuke/go-plane/internal/djangoapi"
 	"github.com/CaliLuke/go-plane/internal/djangoinput"
@@ -21,6 +22,7 @@ import (
 )
 
 type LifecycleCommand struct {
+	ExpectedWorkspaceID                                  *storeuuid.UUID
 	Operation, Method, UserID, Slug, ProjectID, MemberID string
 	Params                                               map[string]string
 	Present                                              map[string]bool

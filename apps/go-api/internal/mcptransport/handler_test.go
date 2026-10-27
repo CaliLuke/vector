@@ -328,3 +328,7 @@ func TestEnabledTransportRequiresApplicationService(t *testing.T) {
 	_, err := mcptransport.New(config("header"), options(), http.NotFoundHandler())
 	require.ErrorContains(t, err, "application service is required")
 }
+
+func (transportTestService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
+	return nil, errors.New("this fixture does not execute project reads")
+}

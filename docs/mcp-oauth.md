@@ -135,8 +135,8 @@ The initial 403 insufficient_scope challenge requests vector:read. Ordinary doma
 emits OAuth challenges or metadata. Authentication/validation failure outputs
 remain safe and correlated by the shared request ID.
 
-Generated action declarations remain the catalogue source of truth. All five
-current member actions are reads and thus eligible for authenticated read-scope
+Generated action declarations remain the catalogue source of truth. All seven
+current member and project actions are reads and thus eligible for authenticated read-scope
 discovery; resource-specific rights are checked at invocation. Later mixed
 tools use the generated receiving/interceptor extension points to project only
 eligible authored action branches per principal, without a second action

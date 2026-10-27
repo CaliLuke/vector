@@ -72,6 +72,54 @@ var VectorMCPVectorToolsetToolSpecs = []tools.ToolSpec{tools.ToolSpec{
 	},
 	Service: "VectorMCP",
 	Toolset: "VectorMCP.vector",
+}, tools.ToolSpec{
+	Description: "List projects or retrieve full detail using the selected action.",
+	Meta: map[string][]string{
+		"destructiveHint": []string{"false"},
+		"openWorldHint":   []string{"false"},
+		"readOnlyHint":    []string{"true"},
+	},
+	Name: "project",
+	Payload: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.ProjectRequest",
+		Schema: []byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"),
+	},
+	Result: tools.TypeSpec{
+		Codec: tools.JSONCodec[any]{
+			FromJSON: func(data []byte) (any, error) {
+				if len(data) == 0 {
+					return nil, nil
+				}
+				var out any
+				if err := json.Unmarshal(data, &out); err != nil {
+					return nil, err
+				}
+				return out, nil
+			},
+			ToJSON: func(v any) ([]byte, error) {
+				return json.Marshal(v)
+			},
+		},
+		Name:   "*vector_mcp.ProjectResult",
+		Schema: nil,
+	},
+	Service: "VectorMCP",
+	Toolset: "VectorMCP.vector",
 }}
 
 // RegisterVectorMCPVectorToolset registers the vector toolset with the runtime.
@@ -170,6 +218,9 @@ func VectorMCPVectorToolsetRetryHint(toolName tools.Ident, err error) *planner.R
 			case "member":
 				schemaJSON = "{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List workspace members with case-insensitive substring filters combined with AND.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workspace\"]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List existing Vector roles. Slugs are unique within namespace, not globally.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_roles\"]},\"cursor\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"role_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_role\"]},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]},{\"type\":\"string\",\"enum\":[\"list_workspace\"]},{\"type\":\"string\",\"enum\":[\"list_roles\"]},{\"type\":\"string\",\"enum\":[\"retrieve_role\"]}]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255},{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}]}},\"type\":\"object\"}"
 				example = "{\"action\":\"me\"}"
+			case "project":
+				schemaJSON = "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"
+				example = "{\"action\":\"list\"}"
 			}
 			prompt := retry.BuildRepairPrompt("tools/call:"+key, rpcErr.Message, example, schemaJSON)
 			return &planner.RetryHint{

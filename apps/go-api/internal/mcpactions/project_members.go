@@ -18,7 +18,7 @@ func (s *Service) projectMembers(ctx context.Context, actor mcpauth.Principal, p
 	if err != nil || actor.WorkspaceSlug == "" {
 		return nil, api.MakeInvalidParams(errors.New("project and workspace are required"))
 	}
-	body, err := s.projects.ListProjectMembers(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, project)
+	body, err := s.projects.ListProjectMembersInWorkspace(ctx, uuid.UUID(actor.UserID), actor.WorkspaceSlug, project, uuid.UUID(actor.WorkspaceID))
 	if err != nil {
 		var failure *djangoapi.HTTPError
 		if errors.As(err, &failure) && failure.Status == http.StatusForbidden {

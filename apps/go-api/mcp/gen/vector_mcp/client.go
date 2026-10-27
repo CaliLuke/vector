@@ -15,12 +15,13 @@ import (
 
 // Client is the "VectorMCP" service client.
 type Client struct {
-	MemberEndpoint loom.Endpoint
+	MemberEndpoint  loom.Endpoint
+	ProjectEndpoint loom.Endpoint
 }
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient(member loom.Endpoint) *Client {
-	return &Client{MemberEndpoint: member}
+func NewClient(member, project loom.Endpoint) *Client {
+	return &Client{MemberEndpoint: member, ProjectEndpoint: project}
 }
 
 // Member calls the "member" endpoint of the "VectorMCP" service.
@@ -38,4 +39,21 @@ func (c *Client) Member(ctx context.Context, p *MemberRequest) (res *MemberResul
 		return
 	}
 	return ires.(*MemberResult), nil
+}
+
+// Project calls the "project" endpoint of the "VectorMCP" service.
+// Project may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Project(ctx context.Context, p *ProjectRequest) (res *ProjectResult, err error) {
+	var ires any
+	ires, err = c.ProjectEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*ProjectResult), nil
 }

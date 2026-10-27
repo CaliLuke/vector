@@ -498,6 +498,12 @@ func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"description\":\"Read the authenticated user's identity.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"me\"]},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List the members of a project the authenticated user can access.\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_project\"]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List workspace members with case-insensitive substring filters combined with AND.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workspace\"]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"description\":\"List existing Vector roles. Slugs are unique within namespace, not globally.\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_roles\"]},\"cursor\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"per_page\":{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"role_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve_role\"]},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"me\"]},{\"type\":\"string\",\"enum\":[\"list_project\"]},{\"type\":\"string\",\"enum\":[\"list_workspace\"]},{\"type\":\"string\",\"enum\":[\"list_roles\"]},{\"type\":\"string\",\"enum\":[\"retrieve_role\"]}]},\"cursor\":{\"type\":\"string\"},\"display_name\":{\"type\":\"string\"},\"email\":{\"type\":\"string\"},\"first_name\":{\"type\":\"string\"},\"is_active\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter membership activity; omit or null to include both.\"},{\"type\":\"null\"}]},\"is_bot\":{\"anyOf\":[{\"type\":\"boolean\",\"description\":\"Filter bot accounts; omit or null to include both.\"},{\"type\":\"null\"}]},\"last_name\":{\"type\":\"string\"},\"namespace\":{\"type\":\"string\",\"description\":\"Omit or empty for both namespaces.\",\"enum\":[\"\",\"workspace\",\"project\"]},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"anyOf\":[{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},{\"type\":\"integer\",\"description\":\"Page size; zero or omitted uses 20.\",\"minimum\":0,\"maximum\":1e3}]},\"project_id\":{\"type\":\"string\",\"description\":\"Project identifier.\",\"format\":\"uuid\"},\"role_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"role_slug\":{\"type\":\"string\"},\"workspace_slug\":{\"anyOf\":[{\"type\":\"string\",\"description\":\"Optional workspace selector; must match the authenticated workspace.\",\"maxLength\":255},{\"type\":\"string\",\"description\":\"Optional workspace selector; must match an authenticated workspace header.\",\"maxLength\":255}]}},\"type\":\"object\"}")),
 		Name:        "member",
 		Title:       stringPtr("Members and roles"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":false,\"openWorldHint\":false,\"readOnlyHint\":true}")),
+		Description: stringPtr("List projects or retrieve full detail using the selected action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"cursor\":{\"type\":\"string\"},\"order_by\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 100.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "project",
+		Title:       stringPtr("Projects"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
@@ -527,6 +533,8 @@ func (a *MCPAdapter) isToolCallProxyName(name string) bool {
 func isGeneratedToolName(name string) bool {
 	switch name {
 	case "member":
+		return true
+	case "project":
 		return true
 	default:
 		return false
@@ -1261,6 +1269,21 @@ func memberInputRecovery(err error, raw jsontext.Value) string {
 	}
 	return "Provide valid tool arguments. Example: " + example
 }
+func projectInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func (a *MCPAdapter) ToolsCall(ctx context.Context, p *ToolsCallPayload) (res *ToolsCallResult, err error) {
 	attrs := []attribute.KeyValue{}
 	var rawArguments jsontext.Value
@@ -1348,6 +1371,32 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 			return false, err
 		}
 		result, err := a.service.Member(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "project":
+		payload, err := decodeProjectPayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", projectInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Project(ctx, payload)
 		if err != nil {
 			return true, a.sendToolError(ctx, stream, p.Name, err)
 		}

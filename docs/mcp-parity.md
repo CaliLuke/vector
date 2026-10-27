@@ -2,11 +2,13 @@
 
 The accepted scope is 30 tools and 207 operations. The pinned [catalogue](../apps/go-api/mcp/testdata/plane-mcp/catalogue.json) supplies the expected names and input declarations. This tracker records implementation evidence; catalogue presence alone is not implementation.
 
-Five member reads are implemented with personal tokens and OAuth and tested through the generated server under both MCP revisions. OAuth tests use an isolated TLS issuer and real PostgreSQL; deployed issuer and complete browser verification remain pending. The remaining 202 actions are not implemented. No full-parity claim is made.
+Five member reads and two project reads are implemented with personal tokens and OAuth and tested through the generated server under both MCP revisions. OAuth tests use an isolated TLS issuer and real PostgreSQL; deployed issuer and complete browser verification remain pending. The remaining 200 actions are not implemented. No full-parity claim is made.
 
 For each action, completion requires inspected pinned handler/SDK behavior, typed generated contracts, current authorization and tenant checks, both authentication modes and protocol revisions, and real PostgreSQL proof. Mutations additionally require durable receipt/replay, request-hash conflicts, current authorization on replay, CAS on all relevant writers, and durable effects. Asset operations require real object-storage and SSRF proof. Missing domain features require an accepted domain design before transport implementation.
 
 Member proof: [identity and project members](../apps/go-api/internal/mcpactions/member_integration_test.go), [workspace directory and roles](../apps/go-api/internal/mcpactions/member_directory_integration_test.go), [OAuth invocation and revocation](../apps/go-api/internal/mcpactions/oauth_integration_test.go), and [domain authorization](../apps/go-api/internal/projectmembershipreads/directory_integration_test.go). [Member contract notes](mcp-members.md) record limits and compatibility decisions.
+
+Project proof: [project contracts and primary data](../apps/go-api/internal/mcpactions/project_integration_test.go), [scope changes after admission](../apps/go-api/internal/mcpactions/scope_integration_test.go), and [repository revocation regressions](../apps/go-api/internal/workspaceprojectreads/mcp_authorization_integration_test.go). [Project contract notes](mcp-projects.md) record pagination, SDK projection and workspace binding.
 
 | Operation                                  | Kind     | Required upstream inputs                                 | Vector implementation | Remaining proof                                     |
 | ------------------------------------------ | -------- | -------------------------------------------------------- | --------------------- | --------------------------------------------------- |
@@ -92,8 +94,8 @@ Member proof: [identity and project members](../apps/go-api/internal/mcpactions/
 | `page.list_workitem_pages`                 | Read     | `project_id`, `workitem_id`                              | Not implemented       | Domain mapping, contract and authorization          |
 | `page.attach_to_workitem`                  | Mutation | `project_id`, `workitem_id`, `page_id`                   | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `page.detach_from_workitem`                | Mutation | `project_id`, `workitem_id`, `workitem_page_id`          | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
-| `project.list`                             | Read     | None                                                     | Not implemented       | Domain mapping, contract and authorization          |
-| `project.retrieve`                         | Read     | `project_id`                                             | Not implemented       | Domain mapping, contract and authorization          |
+| `project.list`                             | Read     | None                                                     | PAT and OAuth         | Deployed issuer and complete browser verification   |
+| `project.retrieve`                         | Read     | `project_id`                                             | PAT and OAuth         | Deployed issuer and complete browser verification   |
 | `project.create`                           | Mutation | `name`, `identifier`                                     | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `project.update`                           | Mutation | `project_id`                                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |
 | `project.delete`                           | Mutation | `project_id`                                             | Not implemented       | Domain mapping, contract, receipts, CAS and effects |

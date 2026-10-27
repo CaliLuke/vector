@@ -14,6 +14,7 @@ import (
 	"github.com/CaliLuke/go-plane/internal/projectmembershipreads"
 	postgresfixture "github.com/CaliLuke/go-plane/internal/testsupport/postgres"
 	"github.com/CaliLuke/go-plane/internal/useridentity"
+	"github.com/CaliLuke/go-plane/internal/workspaceprojectreads"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -81,7 +82,9 @@ func databaseFixture(t *testing.T) (fixture, *pgxpool.Pool) {
 	require.NoError(t, err)
 	directory, err := projectmembershipreads.NewDirectoryReader(pool)
 	require.NoError(t, err)
-	service, err := mcpactions.New(reader, projectReader, directory)
+	projectReads, err := workspaceprojectreads.NewRepository(pool)
+	require.NoError(t, err)
+	service, err := mcpactions.New(reader, projectReader, directory, projectReads)
 	require.NoError(t, err)
 	keys, err := apikey.NewWithReaderWriter(pool, pool)
 	require.NoError(t, err)

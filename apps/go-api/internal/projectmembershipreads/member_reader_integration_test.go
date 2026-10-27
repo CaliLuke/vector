@@ -104,6 +104,7 @@ func TestProjectRosterRechecksAccessAfterInitialAuthorization(t *testing.T) {
 
 const projectRosterSchema = `
 CREATE TABLE workspaces(id uuid PRIMARY KEY,slug text,deleted_at timestamptz);
+CREATE TABLE workspace_members(workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
 CREATE TABLE projects(id uuid PRIMARY KEY,workspace_id uuid,deleted_at timestamptz);
 CREATE TABLE project_members(project_id uuid,workspace_id uuid,member_id uuid,role integer,is_active boolean,deleted_at timestamptz);
 CREATE TABLE users(id uuid PRIMARY KEY,is_active boolean,created_at timestamptz,first_name text,last_name text,email text,avatar text,display_name text,avatar_asset_id uuid);

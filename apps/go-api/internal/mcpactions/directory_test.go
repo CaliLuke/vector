@@ -25,10 +25,10 @@ type directoryStub struct {
 func (s *directoryStub) ListWorkspaceMembers(context.Context, uuid.UUID, string, membership.WorkspaceMembersQuery) (membership.WorkspaceMembersPage, error) {
 	return membership.WorkspaceMembersPage{Results: s.body, Total: s.total}, s.err
 }
-func (s *directoryStub) ListRoles(context.Context, uuid.UUID, string, string, int, int) ([]membership.RoleDefinition, int, error) {
+func (s *directoryStub) ListRolesInWorkspace(context.Context, uuid.UUID, string, string, int, int, uuid.UUID) ([]membership.RoleDefinition, int, error) {
 	return nil, s.total, s.err
 }
-func (s *directoryStub) RetrieveRole(context.Context, uuid.UUID, string, uuid.UUID) (membership.RoleDefinition, error) {
+func (s *directoryStub) RetrieveRoleInWorkspace(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (membership.RoleDefinition, error) {
 	return membership.RoleDefinition{}, s.err
 }
 

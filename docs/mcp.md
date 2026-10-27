@@ -1,7 +1,7 @@
 # Remote MCP transport
 
 VEC-2 is **in progress**. The Go API contains a generated, stateless MCP server
-and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
+and ingress routing. Available member actions are `me`, `list_workspace`, `list_project`, `list_roles`, and `retrieve_role`. The `project` tool also provides `list` and `retrieve`. Personal-token and external-issuer OAuth authentication are wired. MCP is disabled
 by default. OAuth requires an explicitly configured issuer and deliberate account
 linking; invalid configuration or discovery fails before database startup.
 
@@ -120,7 +120,7 @@ proofs are not logged.
 ## Available actions
 
 `member` accepts the five read actions below, each with an optional
-`workspace_slug` selector. Discovery advertises only these implemented actions.
+`workspace_slug` selector. Discovery advertises only implemented actions.
 
 | Action           | Inputs                                                                   |
 | ---------------- | ------------------------------------------------------------------------ |
@@ -129,6 +129,11 @@ proofs are not logged.
 | `list_project`   | Required `project_id`.                                                   |
 | `list_roles`     | Optional namespace, cursor and page size.                                |
 | `retrieve_role`  | Required `role_id`.                                                      |
+
+`project` provides `list` with optional cursor, page size and ordering, and
+`retrieve` with a required project UUID. Both accept `workspace_slug` and use
+current primary-backed authorization. The [project contract](mcp-projects.md)
+defines SDK projections, archive inclusion and immutable workspace binding.
 
 The [member directory contract](mcp-members.md) defines filters, role mappings,
 IDs, permissions, defaults and compatibility behavior. The
@@ -143,18 +148,18 @@ active state. The MCP projection normalizes absent UserLite fields to null, as t
 pinned Plane SDK does; the HTTP response shape remains unchanged. Both designs
 reference the same API identity field declaration.
 
-The generated contract declares stable `MemberRequest` and `MemberResult` unions, typed identities, member pages and role results, and safe named errors.
+The generated contract declares stable member and project request/result unions, typed identities, pages, role and project records, and safe named errors.
 Tests use the generated HTTP server and real PostgreSQL-backed token, membership,
 and identity readers. They cover both protocol revisions, actor isolation, fresh
 profile data, and revocation between request authentication and action execution.
-Separate OAuth integration tests exercise the same five actions with a real TLS
+Separate OAuth integration tests exercise all seven actions with a real TLS
 issuer and PostgreSQL, including scope reduction and revocation between HTTP
 authentication and execution. Complete browser verification and VEC-36 proof
 remain pending.
 
 The `list_project` action and the project-member HTTP endpoint use the same credential-neutral `MemberReader`.
 It reads the primary database and checks project access in the same SQL statement
-as the roster read. PostgreSQL tests cover revocation after initial authorization,
+as the roster read. MCP also binds the selected workspace ID and rechecks current workspace membership in that statement. All scoped member reads reject a reassigned workspace slug. PostgreSQL tests cover revocation after initial authorization,
 deleted projects and workspaces, and tenant isolation. Its response remains the
 existing UserLite array. The MCP projection fills the SDK's absent role fields
 with null; it does not infer role metadata absent from the HTTP contract. The
@@ -198,10 +203,10 @@ size and legacy cursor/errors remain unchanged.
   condition; no dependency source is patched.
 - **Discovery authorization:** prove per-principal permitted-action schemas and
   invocation checks across actions with different permissions. The current
-  member read actions share a credential class; project access is checked at
+  member and project read actions require read scope; resource access is checked at
   invocation. There is no handwritten replacement registry.
 - **VEC-35 and VEC-3:** personal-token and generic OAuth invocation are implemented
-  for the five member reads, including current scopes, linking and revocation.
+  for the seven member and project reads, including current scopes, linking and revocation.
   Production issuer selection and complete browser/proxy evidence remain open.
   Mixed-action discovery filtering and receipt replay still need implementation
   and end-to-end proof.

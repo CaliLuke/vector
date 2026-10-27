@@ -29,6 +29,8 @@ func NewDirectoryReader(primary directoryDatabase) (*DirectoryReader, error) {
 var ErrInvalidMemberQuery = errors.New("invalid member query")
 
 type WorkspaceMembersQuery struct {
+	// ExpectedWorkspaceID binds a previously verified workspace through slug changes.
+	ExpectedWorkspaceID                               *uuid.UUID
 	FirstName, LastName, Email, DisplayName, RoleSlug string
 	IsActive, IsBot                                   *bool
 	OrderBy                                           string
@@ -68,7 +70,7 @@ var membershipRoleMappings = [...]roleMapping{
 	{"workspace", "guest", "Guest", 5, false},
 }
 
-func (r *DirectoryReader) roleCatalogue(ctx context.Context, actor uuid.UUID, slug string) ([]RoleDefinition, error) {
+func (r *DirectoryReader) roleCatalogue(ctx context.Context, actor uuid.UUID, slug string, expectedWorkspace *uuid.UUID) ([]RoleDefinition, error) {
 	if actor == (uuid.UUID{}) || slug == "" {
 		return nil, ErrForbidden
 	}
@@ -76,9 +78,9 @@ func (r *DirectoryReader) roleCatalogue(ctx context.Context, actor uuid.UUID, sl
 	err := r.primary.QueryRow(ctx, `SELECT w.id FROM workspaces w
  JOIN workspace_members actor ON actor.workspace_id=w.id
  JOIN users actor_user ON actor_user.id=actor.member_id
- WHERE w.slug=$2 AND w.deleted_at IS NULL AND actor.member_id=$1
+ WHERE w.slug=$2 AND ($3::uuid IS NULL OR w.id=$3) AND w.deleted_at IS NULL AND actor.member_id=$1
  AND actor.is_active AND actor.deleted_at IS NULL AND actor.role IN (5,15,20)
- AND actor_user.is_active`, actor, slug).Scan(&workspace)
+ AND actor_user.is_active`, actor, slug, expectedWorkspace).Scan(&workspace)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrForbidden
 	}
@@ -94,11 +96,20 @@ func (r *DirectoryReader) roleCatalogue(ctx context.Context, actor uuid.UUID, sl
 }
 
 func (r *DirectoryReader) ListRoles(ctx context.Context, actor uuid.UUID, slug, namespace string, limit, page int) ([]RoleDefinition, int, error) {
+	return r.listRoles(ctx, actor, slug, namespace, limit, page, nil)
+}
+
+// ListRolesInWorkspace retains the caller's immutable workspace selection.
+func (r *DirectoryReader) ListRolesInWorkspace(ctx context.Context, actor uuid.UUID, slug, namespace string, limit, page int, workspace uuid.UUID) ([]RoleDefinition, int, error) {
+	return r.listRoles(ctx, actor, slug, namespace, limit, page, &workspace)
+}
+
+func (r *DirectoryReader) listRoles(ctx context.Context, actor uuid.UUID, slug, namespace string, limit, page int, expectedWorkspace *uuid.UUID) ([]RoleDefinition, int, error) {
 	offset, err := memberPageOffset(limit, page)
 	if err != nil || (namespace != "" && namespace != "workspace" && namespace != "project") {
 		return nil, 0, ErrInvalidMemberQuery
 	}
-	roles, err := r.roleCatalogue(ctx, actor, slug)
+	roles, err := r.roleCatalogue(ctx, actor, slug, expectedWorkspace)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -115,7 +126,16 @@ func (r *DirectoryReader) ListRoles(ctx context.Context, actor uuid.UUID, slug, 
 }
 
 func (r *DirectoryReader) RetrieveRole(ctx context.Context, actor uuid.UUID, slug string, id uuid.UUID) (RoleDefinition, error) {
-	roles, err := r.roleCatalogue(ctx, actor, slug)
+	return r.retrieveRole(ctx, actor, slug, id, nil)
+}
+
+// RetrieveRoleInWorkspace retains the caller's immutable workspace selection.
+func (r *DirectoryReader) RetrieveRoleInWorkspace(ctx context.Context, actor uuid.UUID, slug string, id, workspace uuid.UUID) (RoleDefinition, error) {
+	return r.retrieveRole(ctx, actor, slug, id, &workspace)
+}
+
+func (r *DirectoryReader) retrieveRole(ctx context.Context, actor uuid.UUID, slug string, id uuid.UUID, expectedWorkspace *uuid.UUID) (RoleDefinition, error) {
+	roles, err := r.roleCatalogue(ctx, actor, slug, expectedWorkspace)
 	if err != nil {
 		return RoleDefinition{}, err
 	}
@@ -183,7 +203,7 @@ func (r *DirectoryReader) ListWorkspaceMembers(ctx context.Context, actor uuid.U
 	var total int
 	err = r.primary.QueryRow(ctx, `WITH scope AS (
  SELECT w.id,w.owner_id FROM workspaces w
- WHERE w.slug=@slug AND w.deleted_at IS NULL AND EXISTS (
+ WHERE w.slug=@slug AND (@workspace::uuid IS NULL OR w.id=@workspace) AND w.deleted_at IS NULL AND EXISTS (
   SELECT 1 FROM workspace_members actor JOIN users actor_user ON actor_user.id=actor.member_id
   WHERE actor.workspace_id=w.id AND actor.member_id=@actor AND actor.is_active
   AND actor.deleted_at IS NULL AND actor.role IN (15,20) AND actor_user.is_active
@@ -218,7 +238,7 @@ SELECT COALESCE((SELECT jsonb_agg(jsonb_build_object(
  'role',role,'role_slug',role_slug,'is_active',is_active,'is_bot',is_bot
  ) ORDER BY position) FROM page),'[]'::jsonb),
  (SELECT count(*)::int FROM filtered) FROM scope`, pgx.StrictNamedArgs{
-		"slug": slug, "actor": actor, "mappings": string(mappingJSON),
+		"slug": slug, "workspace": query.ExpectedWorkspaceID, "actor": actor, "mappings": string(mappingJSON),
 		"first_name": query.FirstName, "last_name": query.LastName, "email": query.Email, "display_name": query.DisplayName,
 		"role_slug": query.RoleSlug, "is_active": query.IsActive, "is_bot": query.IsBot,
 		"limit": query.Limit + 1, "offset": offset,

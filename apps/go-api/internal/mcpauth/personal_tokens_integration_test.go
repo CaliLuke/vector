@@ -134,3 +134,7 @@ type tokenTransportService struct{}
 func (tokenTransportService) Member(context.Context, *api.MemberRequest) (*api.MemberResult, error) {
 	return nil, errors.New("authentication tests do not execute identity reads")
 }
+
+func (tokenTransportService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
+	return nil, errors.New("this fixture does not execute project reads")
+}

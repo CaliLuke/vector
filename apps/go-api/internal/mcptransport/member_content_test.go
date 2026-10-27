@@ -86,3 +86,7 @@ func TestGeneratedMemberResultsPreservePinnedContentAcrossRevisions(t *testing.T
 		}
 	}
 }
+
+func (memberResponseService) Project(context.Context, *api.ProjectRequest) (*api.ProjectResult, error) {
+	return nil, errors.New("this fixture does not execute project reads")
+}

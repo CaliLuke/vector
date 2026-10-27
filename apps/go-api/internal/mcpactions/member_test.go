@@ -70,13 +70,14 @@ func (throttle) AllowCacheKey(context.Context, string, string) (apikey.Rate, err
 }
 
 type fixture struct {
-	service   *mcpactions.Service
-	auth      *mcpauth.PersonalTokens
-	store     *identityStore
-	keys      *tokens
-	members   *memberships
-	projects  *projectStore
-	directory *directoryStub
+	service      *mcpactions.Service
+	auth         *mcpauth.PersonalTokens
+	store        *identityStore
+	keys         *tokens
+	members      *memberships
+	projects     *projectStore
+	directory    *directoryStub
+	projectReads *projectReadStub
 }
 
 func newFixture(t *testing.T) fixture {
@@ -93,7 +94,8 @@ func newFixture(t *testing.T) fixture {
 	projectReader, err := projectmembershipreads.NewMemberReader(projects)
 	require.NoError(t, err)
 	directory := &directoryStub{}
-	service, err := mcpactions.New(reader, projectReader, directory)
+	projectReads := newProjectReadStub()
+	service, err := mcpactions.New(reader, projectReader, directory, projectReads)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -101,7 +103,7 @@ func newFixture(t *testing.T) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {
@@ -155,7 +157,7 @@ func rpcVersion(t *testing.T, handler http.Handler, token, method string, params
 	if version == "2026-07-28" {
 		r.Header.Set("Mcp-Method", method)
 		if method == "tools/call" {
-			r.Header.Set("Mcp-Name", "member")
+			r.Header.Set("Mcp-Name", params.(map[string]any)["name"].(string))
 		}
 	}
 	r.Header.Set("Authorization", "Bearer "+token)
@@ -181,7 +183,7 @@ func TestMemberDiscoveryAndIdentityAreScopedToTheAuthenticatedUser(t *testing.T)
 	f := newFixture(t)
 	h := f.handler(t, nil)
 	discovery := rpc(t, h, "test-one", "tools/list", map[string]any{})
-	require.Len(t, discovery.Tools, 1)
+	require.Len(t, discovery.Tools, 2)
 	assert.Equal(t, "member", discovery.Tools[0].Name)
 	assert.Equal(t, map[string]bool{"readOnlyHint": true, "destructiveHint": false, "idempotentHint": false, "openWorldHint": false}, discovery.Tools[0].Annotations)
 	assert.Equal(t, "object", discovery.Tools[0].InputSchema.Type)
@@ -291,11 +293,11 @@ func TestMemberRequiresAuthenticatedContextAndValidAction(t *testing.T) {
 	_, err = f.service.Member(t.Context(), nil)
 	require.Error(t, err)
 	assert.Zero(t, f.store.reads.Load())
-	_, err = mcpactions.New(nil, nil, nil)
+	_, err = mcpactions.New(nil, nil, nil, nil)
 	require.Error(t, err)
 	reader, err := useridentity.NewIdentityReader(f.store)
 	require.NoError(t, err)
-	_, err = mcpactions.New(reader, nil, &directoryStub{})
+	_, err = mcpactions.New(reader, nil, &directoryStub{}, nil)
 	require.Error(t, err)
 }
 

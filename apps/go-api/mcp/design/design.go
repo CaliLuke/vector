@@ -19,4 +19,18 @@ var _ = Service("VectorMCP", func() {
 	Description("Remote access to Vector.")
 	mcp.MCP("vector", "1.0.0")
 	member()
+	project()
 })
+
+// Shared error names must have one consistent remedy across resource methods.
+func readErrors() {
+	for _, failure := range []struct{ name, message string }{
+		{"unauthorized", "Authentication is no longer valid."},
+		{"forbidden", "Access is no longer allowed."},
+		{"invalid_params", "The action or workspace selector is invalid."},
+		{"not_found", "The requested resource is no longer available."},
+		{"internal_error", "The requested information could not be read."},
+	} {
+		Error(failure.name, func() { Remedy(func() { SafeMessage(failure.message) }) })
+	}
+}
