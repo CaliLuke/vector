@@ -168,3 +168,7 @@ func (tokenTransportService) WorkitemLink(context.Context, *api.WorkitemLinkRequ
 func (tokenTransportService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
 	return nil, nil
 }
+
+func (tokenTransportService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
+	return loom.NullValue[api.MilestoneResult](), nil
+}

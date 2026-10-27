@@ -362,3 +362,7 @@ func (transportTestService) WorkitemLink(context.Context, *api.WorkitemLinkReque
 func (transportTestService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
 	return nil, nil
 }
+
+func (transportTestService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
+	return loom.Nullable[api.MilestoneResult]{}, errors.New("this fixture does not execute milestone operations")
+}

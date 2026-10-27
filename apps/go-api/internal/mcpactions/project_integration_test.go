@@ -14,11 +14,11 @@ import (
 
 const mcpProjectReadSchema = `
 ALTER TABLE projects ADD COLUMN name text, ADD COLUMN identifier text, ADD COLUMN description text, ADD COLUMN emoji text, ADD COLUMN icon_prop jsonb,
- ADD COLUMN cover_image text, ADD COLUMN cover_image_asset_id uuid, ADD COLUMN archived_at timestamptz, ADD COLUMN created_at timestamptz,
+ ADD COLUMN cover_image text, ADD COLUMN cover_image_asset_id uuid, ADD COLUMN created_at timestamptz,
  ADD COLUMN updated_at timestamptz, ADD COLUMN network int, ADD COLUMN archive_in int, ADD COLUMN close_in int, ADD COLUMN created_by_id uuid,
  ADD COLUMN cycle_view boolean, ADD COLUMN default_assignee_id uuid, ADD COLUMN default_state_id uuid, ADD COLUMN description_html text,
  ADD COLUMN description_text text, ADD COLUMN estimate_id uuid, ADD COLUMN external_id text, ADD COLUMN external_source text,
- ADD COLUMN guest_view_all_features boolean, ADD COLUMN intake_view boolean, ADD COLUMN is_issue_type_enabled boolean,
+ ADD COLUMN intake_view boolean, ADD COLUMN is_issue_type_enabled boolean,
  ADD COLUMN is_time_tracking_enabled boolean, ADD COLUMN issue_views_view boolean, ADD COLUMN logo_props jsonb, ADD COLUMN module_view boolean,
  ADD COLUMN page_view boolean, ADD COLUMN project_lead_id uuid, ADD COLUMN timezone text, ADD COLUMN updated_by_id uuid;
 ALTER TABLE project_members ADD COLUMN created_at timestamptz DEFAULT now(), ADD COLUMN sort_order double precision;

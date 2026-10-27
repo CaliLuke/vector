@@ -1612,7 +1612,7 @@ func run(ctx context.Context, args []string, output io.Writer) (runErr error) {
 	if err != nil {
 		return err
 	}
-	mcpOptions.Service, err = mcpactions.New(mcpactions.Applications{Identity: mcpIdentity, ProjectMembers: mcpMembers, MemberDirectory: mcpDirectory, Projects: workspaceProjectReadsRepository, ProjectWrites: projectLifecycleRepository, Cycles: mcpCycleReads, Modules: moduleReadsRepository, Labels: projectLabelReadsRepository, Collaboration: workItemRepository, Activities: activityReadsPrimaryAPIRepository}, mcpactions.WithLogContext(logCtx))
+	mcpOptions.Service, err = mcpactions.New(mcpactions.Applications{Identity: mcpIdentity, ProjectMembers: mcpMembers, MemberDirectory: mcpDirectory, Projects: workspaceProjectReadsRepository, ProjectWrites: projectLifecycleRepository, Cycles: mcpCycleReads, Modules: moduleReadsRepository, Labels: projectLabelReadsRepository, Collaboration: workItemRepository, Activities: activityReadsPrimaryAPIRepository, Milestones: milestoneRepository}, mcpactions.WithLogContext(logCtx), mcpactions.WithOrigin(os.Getenv("WEB_URL")))
 	if err != nil {
 		return err
 	}

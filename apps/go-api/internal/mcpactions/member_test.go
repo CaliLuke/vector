@@ -84,6 +84,7 @@ type fixture struct {
 	labelReads         *labelReadStub
 	collaborationReads *collaborationReadStub
 	activityReads      *activityReadStub
+	milestones         *milestoneStub
 }
 
 func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
@@ -105,7 +106,8 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	cycleReads := &cycleReadStub{}
 	moduleReads, labelReads := &moduleReadStub{}, &labelReadStub{}
 	collaborationReads, activityReads := &collaborationReadStub{}, &activityReadStub{}
-	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads}, options...)
+	milestones := &milestoneStub{}
+	service, err := mcpactions.New(mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectWrites, Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestones}, options...)
 	require.NoError(t, err)
 	keys := &tokens{owners: map[string]apikey.Principal{
 		"test-one": {UserID: one, Timezone: "UTC"}, "test-two": {UserID: two, Timezone: "UTC"},
@@ -113,7 +115,7 @@ func newFixture(t *testing.T, options ...mcpactions.Option) fixture {
 	members := &memberships{}
 	auth, err := mcpauth.NewPersonalTokens(keys, members, throttle{})
 	require.NoError(t, err)
-	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads, collaborationReads: collaborationReads, activityReads: activityReads}
+	return fixture{service: service, auth: auth, store: store, keys: keys, members: members, projects: projects, directory: directory, projectReads: projectReads, projectWrites: projectWrites, cycleReads: cycleReads, moduleReads: moduleReads, labelReads: labelReads, collaborationReads: collaborationReads, activityReads: activityReads, milestones: milestones}
 }
 
 func (f fixture) handler(t *testing.T, authenticate mcptransport.Authenticate) http.Handler {

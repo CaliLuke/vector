@@ -33,6 +33,12 @@ type liveIssuer struct {
 func oauthFixture(t *testing.T) (fixture, *pgxpool.Pool, *mcpauth.OAuth, *liveIssuer) {
 	t.Helper()
 	f, pool := databaseFixture(t)
+	auth, issuer := oauthForPool(t, pool, "10000000-0000-4000-8000-000000000001")
+	return f, pool, auth, issuer
+}
+
+func oauthForPool(t *testing.T, pool *pgxpool.Pool, actor string) (*mcpauth.OAuth, *liveIssuer) {
+	t.Helper()
 	issuer := &liveIssuer{active: true, scope: "vector:read", client: "agent-client", status: 200}
 	issuer.server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -59,9 +65,9 @@ func oauthFixture(t *testing.T) (fixture, *pgxpool.Pool, *mcpauth.OAuth, *liveIs
 	provider, err := oauth.NewProvider(t.Context(), oauth.Config{Issuer: issuer.server.URL, Resource: "https://vector.example/mcp", IntrospectionURL: issuer.server.URL + "/introspect",
 		IntrospectionClientID: "resource-client", IntrospectionClientSecret: "resource-secret", LinkClientID: "link-client", LinkClientSecret: "link-secret"}, issuer.server.Client())
 	require.NoError(t, err)
-	_, err = pool.Exec(t.Context(), `CREATE TABLE mcp_oauth_links(issuer text NOT NULL,subject text NOT NULL,user_id uuid NOT NULL REFERENCES users(id),PRIMARY KEY(issuer,subject),UNIQUE(issuer,user_id));`)
+	_, err = pool.Exec(t.Context(), `CREATE TABLE IF NOT EXISTS mcp_oauth_links(issuer text NOT NULL,subject text NOT NULL,user_id uuid NOT NULL REFERENCES users(id),PRIMARY KEY(issuer,subject),UNIQUE(issuer,user_id));`)
 	require.NoError(t, err)
-	_, err = pool.Exec(t.Context(), `INSERT INTO mcp_oauth_links VALUES($1,'subject-one','10000000-0000-4000-8000-000000000001')`, issuer.server.URL)
+	_, err = pool.Exec(t.Context(), `INSERT INTO mcp_oauth_links(issuer,subject,user_id) VALUES($1,'subject-one',$2)`, issuer.server.URL, actor)
 	require.NoError(t, err)
 	links, err := oauth.NewLinks(pool, issuer.server.URL)
 	require.NoError(t, err)
@@ -69,7 +75,7 @@ func oauthFixture(t *testing.T) (fixture, *pgxpool.Pool, *mcpauth.OAuth, *liveIs
 	require.NoError(t, err)
 	auth, err := mcpauth.NewOAuth(provider, links, members, throttle{})
 	require.NoError(t, err)
-	return f, pool, auth, issuer
+	return auth, issuer
 }
 
 func oauthHandler(t *testing.T, f fixture, authenticate mcptransport.Authenticate) http.Handler {

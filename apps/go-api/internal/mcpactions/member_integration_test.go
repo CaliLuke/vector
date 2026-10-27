@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/CaliLuke/go-plane/internal/activityreads"
+	"github.com/CaliLuke/go-plane/internal/milestones"
 	"github.com/CaliLuke/go-plane/internal/workitems"
 
 	"github.com/CaliLuke/go-plane/internal/authentication/apikey"
@@ -53,6 +54,7 @@ INSERT INTO project_members VALUES
  ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',15,true,NULL),
  ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002',15,true,NULL),
  ('30000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',15,true,NULL);
+ALTER TABLE projects ADD COLUMN archived_at timestamptz, ADD COLUMN guest_view_all_features boolean;
 ALTER TABLE users ADD COLUMN is_bot boolean NOT NULL DEFAULT false;
 ALTER TABLE workspaces ADD COLUMN owner_id uuid NOT NULL DEFAULT '10000000-0000-4000-8000-000000000001';
 ALTER TABLE workspace_members ADD COLUMN id uuid NOT NULL DEFAULT gen_random_uuid();
@@ -171,5 +173,7 @@ func databaseApplications(t *testing.T, pool *pgxpool.Pool) mcpactions.Applicati
 	require.NoError(t, err)
 	activityReads, err := activityreads.NewRepository(pool)
 	require.NoError(t, err)
-	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads}
+	milestoneRepository, err := milestones.NewRepository(pool)
+	require.NoError(t, err)
+	return mcpactions.Applications{Identity: reader, ProjectMembers: projectReader, MemberDirectory: directory, Projects: projectReads, ProjectWrites: projectLifecycle(t, pool), Cycles: cycleReads, Modules: moduleReads, Labels: labelReads, Collaboration: collaborationReads, Activities: activityReads, Milestones: milestoneRepository}
 }

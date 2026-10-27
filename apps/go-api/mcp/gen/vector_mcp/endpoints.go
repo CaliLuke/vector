@@ -23,6 +23,7 @@ type Endpoints struct {
 	WorkitemComment  loom.Endpoint
 	WorkitemLink     loom.Endpoint
 	WorkitemActivity loom.Endpoint
+	Milestone        loom.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "VectorMCP" service with endpoints.
@@ -36,6 +37,7 @@ func NewEndpoints(s Service) *Endpoints {
 		WorkitemComment:  NewWorkitemCommentEndpoint(s),
 		WorkitemLink:     NewWorkitemLinkEndpoint(s),
 		WorkitemActivity: NewWorkitemActivityEndpoint(s),
+		Milestone:        NewMilestoneEndpoint(s),
 	}
 }
 
@@ -49,6 +51,7 @@ func (e *Endpoints) Use(m func(loom.Endpoint) loom.Endpoint) {
 	e.WorkitemComment = m(e.WorkitemComment)
 	e.WorkitemLink = m(e.WorkitemLink)
 	e.WorkitemActivity = m(e.WorkitemActivity)
+	e.Milestone = m(e.Milestone)
 }
 
 // NewMemberEndpoint returns an endpoint function that calls the method
@@ -120,5 +123,14 @@ func NewWorkitemActivityEndpoint(s Service) loom.Endpoint {
 	return func(ctx context.Context, req any) (any, error) {
 		p := req.(*WorkitemActivityRequest)
 		return s.WorkitemActivity(ctx, p)
+	}
+}
+
+// NewMilestoneEndpoint returns an endpoint function that calls the method
+// "milestone" of service "VectorMCP".
+func NewMilestoneEndpoint(s Service) loom.Endpoint {
+	return func(ctx context.Context, req any) (any, error) {
+		p := req.(*MilestoneRequest)
+		return s.Milestone(ctx, p)
 	}
 }

@@ -48,16 +48,7 @@ func (s *Service) projectMutation(ctx context.Context, input *api.ProjectArchive
 }
 
 func mutationFields(actor mcpauth.Principal, input *api.ProjectArchive, result *api.ProjectResult, err error) map[string]any {
-	fields := map[string]any{"mcp_tool": "project", "mcp_action": input.Action, "outcome": mutationOutcome(err), "replayed": false}
-	if actor.UserID != uuid.Nil {
-		fields["actor_id"], fields["credential_class"] = actor.UserID.String(), actor.CredentialClass()
-	}
-	if actor.WorkspaceID != uuid.Nil {
-		fields["workspace_id"] = actor.WorkspaceID.String()
-	}
-	if actor.ClientID != "" {
-		fields["client_id"] = actor.ClientID
-	}
+	fields := mutationActorFields(actor, "project", input.Action, err)
 	if err == nil {
 		id, _ := uuid.Parse(input.ProjectID)
 		fields["committed_project_id"] = id.String()
@@ -66,6 +57,20 @@ func mutationFields(actor mcpauth.Principal, input *api.ProjectArchive, result *
 				fields["replayed"] = *receipt.Replayed
 			}
 		}
+	}
+	return fields
+}
+
+func mutationActorFields(actor mcpauth.Principal, tool, action string, err error) map[string]any {
+	fields := map[string]any{"mcp_tool": tool, "mcp_action": action, "outcome": mutationOutcome(err), "replayed": false}
+	if actor.UserID != uuid.Nil {
+		fields["actor_id"], fields["credential_class"] = actor.UserID.String(), actor.CredentialClass()
+	}
+	if actor.WorkspaceID != uuid.Nil {
+		fields["workspace_id"] = actor.WorkspaceID.String()
+	}
+	if actor.ClientID != "" {
+		fields["client_id"] = actor.ClientID
 	}
 	return fields
 }
@@ -107,7 +112,7 @@ func mutationOutcome(err error) string {
 		return "committed"
 	}
 	var serviceError *loom.ServiceError
-	if errors.As(err, &serviceError) && slices.Contains([]string{"unauthorized", "forbidden", "not_found", "invalid_params", "request_conflict", "revision_conflict", "indeterminate"}, serviceError.Name) {
+	if errors.As(err, &serviceError) && slices.Contains([]string{"unauthorized", "forbidden", "not_found", "invalid_params", "request_conflict", "conflict", "revision_conflict", "indeterminate"}, serviceError.Name) {
 		return serviceError.Name
 	}
 	return "internal_error"

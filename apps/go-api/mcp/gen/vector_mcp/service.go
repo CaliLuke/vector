@@ -42,6 +42,8 @@ type Service interface {
 	// Work item activity for a visible work item. List records or retrieve a
 	// record.
 	WorkitemActivity(context.Context, *WorkitemActivityRequest) (res *WorkitemActivityResult, err error)
+	// Milestones within a project. Use an advertised action.
+	Milestone(context.Context, *MilestoneRequest) (res loom.Nullable[MilestoneResult], err error)
 }
 
 // APIName is the name of the API as defined in the design.
@@ -58,7 +60,7 @@ const ServiceName = "VectorMCP"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [8]string{"member", "project", "cycle", "module", "label", "workitem_comment", "workitem_link", "workitem_activity"}
+var MethodNames = [9]string{"member", "project", "cycle", "module", "label", "workitem_comment", "workitem_link", "workitem_activity", "milestone"}
 
 type CycleList struct {
 	Action    string `json:"action"`
@@ -295,6 +297,125 @@ type MemberRoleDefinition struct {
 	Name      string `json:"name"`
 	Slug      string `json:"slug"`
 	Namespace string `json:"namespace"`
+}
+
+type MilestoneCreate struct {
+	Action           string  `json:"action"`
+	ProjectID        string  `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	Title            string  `json:"title"`
+	TargetDate       *string `json:"target_date,omitzero"`
+	ExternalSource   *string `json:"external_source,omitzero"`
+	ExternalID       *string `json:"external_id,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+type MilestoneDelete struct {
+	Action           string  `json:"action"`
+	ProjectID        string  `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	MilestoneID      string  `json:"milestone_id"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+type MilestoneList struct {
+	Action        string  `json:"action"`
+	ProjectID     string  `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	Cursor        *string `json:"cursor,omitzero"`
+	// Zero or omitted uses 1000.
+	PerPage *int `json:"per_page,omitzero"`
+}
+
+type MilestoneListWorkitems struct {
+	Action        string  `json:"action"`
+	ProjectID     string  `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	MilestoneID   string  `json:"milestone_id"`
+	Cursor        *string `json:"cursor,omitzero"`
+	// Zero or omitted uses 1000.
+	PerPage *int `json:"per_page,omitzero"`
+}
+
+type MilestoneManageWorkitems struct {
+	Action        string  `json:"action"`
+	ProjectID     string  `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	MilestoneID   string  `json:"milestone_id"`
+	// Work item UUIDs as a comma-separated string or a JSON array encoded as a
+	// string.
+	AddIds *string `json:"add_ids,omitzero"`
+	// Work item UUIDs as a comma-separated string or a JSON array encoded as a
+	// string. Removal wins on overlap.
+	RemoveIds        *string `json:"remove_ids,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+type MilestoneMutationReceipt struct {
+	MilestoneID     string                         `json:"milestone_id"`
+	Revision        string                         `json:"revision"`
+	Result          loom.Nullable[MilestoneRecord] `json:"result"`
+	RequestID       *string                        `json:"request_id,omitzero"`
+	ReplayExpiresAt *string                        `json:"replay_expires_at,omitzero"`
+	Replayed        *bool                          `json:"replayed,omitzero"`
+}
+
+type MilestonePage struct {
+	Results         []*MilestonePageEntry `json:"results"`
+	Count           int                   `json:"count"`
+	TotalCount      int                   `json:"total_count"`
+	NextCursor      string                `json:"next_cursor"`
+	PrevCursor      string                `json:"prev_cursor"`
+	NextPageResults bool                  `json:"next_page_results"`
+	PrevPageResults bool                  `json:"prev_page_results"`
+}
+
+type MilestonePageEntry struct {
+	ID             loom.Nullable[string] `json:"id"`
+	Title          *string               `json:"title,omitzero"`
+	CreatedAt      *string               `json:"created_at,omitzero"`
+	UpdatedAt      *string               `json:"updated_at,omitzero"`
+	Issue          *string               `json:"issue,omitzero"`
+	Milestone      *string               `json:"milestone,omitzero"`
+	TargetDate     loom.Nullable[string] `json:"target_date,omitzero"`
+	ExternalSource loom.Nullable[string] `json:"external_source,omitzero"`
+	ExternalID     loom.Nullable[string] `json:"external_id,omitzero"`
+}
+
+type MilestoneRecord struct {
+	ID             string                `json:"id"`
+	Title          string                `json:"title"`
+	TargetDate     loom.Nullable[string] `json:"target_date"`
+	ExternalSource loom.Nullable[string] `json:"external_source"`
+	ExternalID     loom.Nullable[string] `json:"external_id"`
+	CreatedAt      string                `json:"created_at"`
+	UpdatedAt      string                `json:"updated_at"`
+	// Present only when include_revision is requested.
+	Revision *string `json:"revision,omitzero"`
+}
+
+type MilestoneRetrieve struct {
+	Action          string  `json:"action"`
+	ProjectID       string  `json:"project_id"`
+	WorkspaceSlug   *string `json:"workspace_slug,omitzero"`
+	MilestoneID     string  `json:"milestone_id"`
+	IncludeRevision *bool   `json:"include_revision,omitzero"`
+}
+
+type MilestoneUpdate struct {
+	Action           string  `json:"action"`
+	ProjectID        string  `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	MilestoneID      string  `json:"milestone_id"`
+	Title            *string `json:"title,omitzero"`
+	TargetDate       *string `json:"target_date,omitzero"`
+	ExternalSource   *string `json:"external_source,omitzero"`
+	ExternalID       *string `json:"external_id,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
 }
 
 type ModuleList struct {
@@ -1047,6 +1168,327 @@ func ValidateMemberRoleDefinition(result *MemberRoleDefinition, validationContex
 	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
 	if !(result.Namespace == "workspace" || result.Namespace == "project") {
 		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".namespace", result.Namespace, []any{"workspace", "project"}))
+	}
+	return
+}
+
+// runs the validations defined on MilestoneCreate.
+func ValidateMilestoneCreate(result *MilestoneCreate, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "create") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"create"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 1, true))
+		}
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestoneDelete.
+func ValidateMilestoneDelete(result *MilestoneDelete, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "delete") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"delete"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 1, true))
+		}
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestoneList.
+func ValidateMilestoneList(result *MilestoneList, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "list") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"list"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	if result.PerPage != nil {
+		if *result.PerPage < 0 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "0", true))
+		}
+	}
+	if result.PerPage != nil {
+		if *result.PerPage > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "1e3", false))
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestoneListWorkitems.
+func ValidateMilestoneListWorkitems(result *MilestoneListWorkitems, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "list_workitems") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"list_workitems"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	if result.PerPage != nil {
+		if *result.PerPage < 0 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "0", true))
+		}
+	}
+	if result.PerPage != nil {
+		if *result.PerPage > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *result.PerPage, "1e3", false))
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestoneManageWorkitems.
+func ValidateMilestoneManageWorkitems(result *MilestoneManageWorkitems, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "manage_workitems") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"manage_workitems"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 1, true))
+		}
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestoneMutationReceipt.
+func ValidateMilestoneMutationReceipt(result *MilestoneMutationReceipt, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !result.Result.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("result", validationPath))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	if actual, ok := result.Result.Value(); ok {
+		if err2 := ValidateMilestoneRecord(&actual, validationPath+".result"); err2 != nil {
+			err = loom.MergeErrors(err, err2)
+		}
+	}
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ReplayExpiresAt != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".replay_expires_at", *result.ReplayExpiresAt, loom.FormatDateTime))
+	}
+	return
+}
+
+// runs the validations defined on MilestonePage.
+func ValidateMilestonePage(result *MilestonePage, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if result.Results == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("results", validationPath))
+	}
+	for i, e := range result.Results {
+		if e == nil {
+			err = loom.MergeErrors(err, loom.InvalidNullElementError(validationPath+".results", i))
+		}
+		if e != nil {
+			if err2 := ValidateMilestonePageEntry(e, validationPath+".results[*]"); err2 != nil {
+				err = loom.MergeErrors(err, err2)
+			}
+		}
+	}
+	return
+}
+
+// runs the validations defined on MilestonePageEntry.
+func ValidateMilestonePageEntry(result *MilestonePageEntry, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !result.ID.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("id", validationPath))
+	}
+	if actual, ok := result.ID.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", actual, loom.FormatUUID))
+	}
+	return
+}
+
+// runs the validations defined on MilestoneRecord.
+func ValidateMilestoneRecord(result *MilestoneRecord, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".id", result.ID, loom.FormatUUID))
+	if !result.TargetDate.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("target_date", validationPath))
+	}
+	if actual, ok := result.TargetDate.Value(); ok {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".target_date", actual, loom.FormatDate))
+	}
+	if !result.ExternalSource.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("external_source", validationPath))
+	}
+	if !result.ExternalID.Present() {
+		err = loom.MergeErrors(err, loom.MissingFieldError("external_id", validationPath))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".created_at", result.CreatedAt, loom.FormatDateTime))
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".updated_at", result.UpdatedAt, loom.FormatDateTime))
+	return
+}
+
+// runs the validations defined on MilestoneRetrieve.
+func ValidateMilestoneRetrieve(result *MilestoneRetrieve, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "retrieve") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"retrieve"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	return
+}
+
+// runs the validations defined on MilestoneUpdate.
+func ValidateMilestoneUpdate(result *MilestoneUpdate, validationContext ...string) (err error) {
+	validationPath := "result"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if !(result.Action == "update") {
+		err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", result.Action, []any{"update"}))
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", result.ProjectID, loom.FormatUUID))
+	if result.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*result.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*result.WorkspaceSlug), 255, false))
+		}
+	}
+	err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", result.MilestoneID, loom.FormatUUID))
+	if result.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *result.RequestID, loom.FormatUUID))
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 1, true))
+		}
+	}
+	if result.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*result.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*result.ExpectedRevision), 128, false))
+		}
 	}
 	return
 }
@@ -6567,6 +7009,2403 @@ func (u MemberResult) matchJSON(data []byte) (MemberResult, int, error) {
 		return MemberResult{kind: MemberResultKindMemberRoleDefinition, MemberRoleDefinition: value3}, matched, nil
 	}
 	return MemberResult{}, -1, fmt.Errorf("invalid untagged union match index")
+}
+
+// MilestoneRequest is a sum-type union.
+type MilestoneRequest struct {
+	kind                     MilestoneRequestKind
+	MilestoneList            *MilestoneList
+	MilestoneRetrieve        *MilestoneRetrieve
+	MilestoneCreate          *MilestoneCreate
+	MilestoneUpdate          *MilestoneUpdate
+	MilestoneDelete          *MilestoneDelete
+	MilestoneListWorkitems   *MilestoneListWorkitems
+	MilestoneManageWorkitems *MilestoneManageWorkitems
+}
+
+// MilestoneRequestKind enumerates the union variants for MilestoneRequest.
+type MilestoneRequestKind string
+
+const (
+	// MilestoneRequestKindMilestoneList identifies the MilestoneList branch of the union.
+	MilestoneRequestKindMilestoneList MilestoneRequestKind = "MilestoneList"
+	// MilestoneRequestKindMilestoneRetrieve identifies the MilestoneRetrieve branch of the union.
+	MilestoneRequestKindMilestoneRetrieve MilestoneRequestKind = "MilestoneRetrieve"
+	// MilestoneRequestKindMilestoneCreate identifies the MilestoneCreate branch of the union.
+	MilestoneRequestKindMilestoneCreate MilestoneRequestKind = "MilestoneCreate"
+	// MilestoneRequestKindMilestoneUpdate identifies the MilestoneUpdate branch of the union.
+	MilestoneRequestKindMilestoneUpdate MilestoneRequestKind = "MilestoneUpdate"
+	// MilestoneRequestKindMilestoneDelete identifies the MilestoneDelete branch of the union.
+	MilestoneRequestKindMilestoneDelete MilestoneRequestKind = "MilestoneDelete"
+	// MilestoneRequestKindMilestoneListWorkitems identifies the MilestoneListWorkitems branch of the union.
+	MilestoneRequestKindMilestoneListWorkitems MilestoneRequestKind = "MilestoneListWorkitems"
+	// MilestoneRequestKindMilestoneManageWorkitems identifies the MilestoneManageWorkitems branch of the union.
+	MilestoneRequestKindMilestoneManageWorkitems MilestoneRequestKind = "MilestoneManageWorkitems"
+)
+
+// Kind returns the discriminator value of the union.
+func (u MilestoneRequest) Kind() MilestoneRequestKind {
+	return u.kind
+}
+
+// NewMilestoneRequestMilestoneList constructs a MilestoneRequest with the
+// MilestoneList branch set.
+func NewMilestoneRequestMilestoneList(v *MilestoneList) MilestoneRequest {
+	return MilestoneRequest{
+		kind:          MilestoneRequestKindMilestoneList,
+		MilestoneList: v,
+	}
+}
+
+// AsMilestoneList returns the value of the MilestoneList branch if set.
+func (u MilestoneRequest) AsMilestoneList() (_ *MilestoneList, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneList {
+		return
+	}
+	return u.MilestoneList, true
+}
+
+// SetMilestoneList sets the MilestoneList branch of the union.
+func (u *MilestoneRequest) SetMilestoneList(v *MilestoneList) {
+	u.kind = MilestoneRequestKindMilestoneList
+	u.MilestoneList = v
+}
+
+// NewMilestoneRequestMilestoneRetrieve constructs a MilestoneRequest with the
+// MilestoneRetrieve branch set.
+func NewMilestoneRequestMilestoneRetrieve(v *MilestoneRetrieve) MilestoneRequest {
+	return MilestoneRequest{
+		kind:              MilestoneRequestKindMilestoneRetrieve,
+		MilestoneRetrieve: v,
+	}
+}
+
+// AsMilestoneRetrieve returns the value of the MilestoneRetrieve branch if set.
+func (u MilestoneRequest) AsMilestoneRetrieve() (_ *MilestoneRetrieve, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneRetrieve {
+		return
+	}
+	return u.MilestoneRetrieve, true
+}
+
+// SetMilestoneRetrieve sets the MilestoneRetrieve branch of the union.
+func (u *MilestoneRequest) SetMilestoneRetrieve(v *MilestoneRetrieve) {
+	u.kind = MilestoneRequestKindMilestoneRetrieve
+	u.MilestoneRetrieve = v
+}
+
+// NewMilestoneRequestMilestoneCreate constructs a MilestoneRequest with the
+// MilestoneCreate branch set.
+func NewMilestoneRequestMilestoneCreate(v *MilestoneCreate) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneCreate,
+		MilestoneCreate: v,
+	}
+}
+
+// AsMilestoneCreate returns the value of the MilestoneCreate branch if set.
+func (u MilestoneRequest) AsMilestoneCreate() (_ *MilestoneCreate, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneCreate {
+		return
+	}
+	return u.MilestoneCreate, true
+}
+
+// SetMilestoneCreate sets the MilestoneCreate branch of the union.
+func (u *MilestoneRequest) SetMilestoneCreate(v *MilestoneCreate) {
+	u.kind = MilestoneRequestKindMilestoneCreate
+	u.MilestoneCreate = v
+}
+
+// NewMilestoneRequestMilestoneUpdate constructs a MilestoneRequest with the
+// MilestoneUpdate branch set.
+func NewMilestoneRequestMilestoneUpdate(v *MilestoneUpdate) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneUpdate,
+		MilestoneUpdate: v,
+	}
+}
+
+// AsMilestoneUpdate returns the value of the MilestoneUpdate branch if set.
+func (u MilestoneRequest) AsMilestoneUpdate() (_ *MilestoneUpdate, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneUpdate {
+		return
+	}
+	return u.MilestoneUpdate, true
+}
+
+// SetMilestoneUpdate sets the MilestoneUpdate branch of the union.
+func (u *MilestoneRequest) SetMilestoneUpdate(v *MilestoneUpdate) {
+	u.kind = MilestoneRequestKindMilestoneUpdate
+	u.MilestoneUpdate = v
+}
+
+// NewMilestoneRequestMilestoneDelete constructs a MilestoneRequest with the
+// MilestoneDelete branch set.
+func NewMilestoneRequestMilestoneDelete(v *MilestoneDelete) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneDelete,
+		MilestoneDelete: v,
+	}
+}
+
+// AsMilestoneDelete returns the value of the MilestoneDelete branch if set.
+func (u MilestoneRequest) AsMilestoneDelete() (_ *MilestoneDelete, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneDelete {
+		return
+	}
+	return u.MilestoneDelete, true
+}
+
+// SetMilestoneDelete sets the MilestoneDelete branch of the union.
+func (u *MilestoneRequest) SetMilestoneDelete(v *MilestoneDelete) {
+	u.kind = MilestoneRequestKindMilestoneDelete
+	u.MilestoneDelete = v
+}
+
+// NewMilestoneRequestMilestoneListWorkitems constructs a MilestoneRequest with
+// the MilestoneListWorkitems branch set.
+func NewMilestoneRequestMilestoneListWorkitems(v *MilestoneListWorkitems) MilestoneRequest {
+	return MilestoneRequest{
+		kind:                   MilestoneRequestKindMilestoneListWorkitems,
+		MilestoneListWorkitems: v,
+	}
+}
+
+// AsMilestoneListWorkitems returns the value of the MilestoneListWorkitems
+// branch if set.
+func (u MilestoneRequest) AsMilestoneListWorkitems() (_ *MilestoneListWorkitems, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneListWorkitems {
+		return
+	}
+	return u.MilestoneListWorkitems, true
+}
+
+// SetMilestoneListWorkitems sets the MilestoneListWorkitems branch of the
+// union.
+func (u *MilestoneRequest) SetMilestoneListWorkitems(v *MilestoneListWorkitems) {
+	u.kind = MilestoneRequestKindMilestoneListWorkitems
+	u.MilestoneListWorkitems = v
+}
+
+// NewMilestoneRequestMilestoneManageWorkitems constructs a MilestoneRequest
+// with the MilestoneManageWorkitems branch set.
+func NewMilestoneRequestMilestoneManageWorkitems(v *MilestoneManageWorkitems) MilestoneRequest {
+	return MilestoneRequest{
+		kind:                     MilestoneRequestKindMilestoneManageWorkitems,
+		MilestoneManageWorkitems: v,
+	}
+}
+
+// AsMilestoneManageWorkitems returns the value of the MilestoneManageWorkitems
+// branch if set.
+func (u MilestoneRequest) AsMilestoneManageWorkitems() (_ *MilestoneManageWorkitems, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneManageWorkitems {
+		return
+	}
+	return u.MilestoneManageWorkitems, true
+}
+
+// SetMilestoneManageWorkitems sets the MilestoneManageWorkitems branch of the
+// union.
+func (u *MilestoneRequest) SetMilestoneManageWorkitems(v *MilestoneManageWorkitems) {
+	u.kind = MilestoneRequestKindMilestoneManageWorkitems
+	u.MilestoneManageWorkitems = v
+}
+
+// Validate ensures the union discriminant is valid.
+func (u MilestoneRequest) Validate() error {
+	switch u.kind {
+	case "":
+		return loom.InvalidEnumValueError("type", "", []any{
+			string(MilestoneRequestKindMilestoneList),
+			string(MilestoneRequestKindMilestoneRetrieve),
+			string(MilestoneRequestKindMilestoneCreate),
+			string(MilestoneRequestKindMilestoneUpdate),
+			string(MilestoneRequestKindMilestoneDelete),
+			string(MilestoneRequestKindMilestoneListWorkitems),
+			string(MilestoneRequestKindMilestoneManageWorkitems),
+		})
+	case MilestoneRequestKindMilestoneList:
+		return nil
+	case MilestoneRequestKindMilestoneRetrieve:
+		return nil
+	case MilestoneRequestKindMilestoneCreate:
+		return nil
+	case MilestoneRequestKindMilestoneUpdate:
+		return nil
+	case MilestoneRequestKindMilestoneDelete:
+		return nil
+	case MilestoneRequestKindMilestoneListWorkitems:
+		return nil
+	case MilestoneRequestKindMilestoneManageWorkitems:
+		return nil
+	default:
+		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(MilestoneRequestKindMilestoneList),
+			string(MilestoneRequestKindMilestoneRetrieve),
+			string(MilestoneRequestKindMilestoneCreate),
+			string(MilestoneRequestKindMilestoneUpdate),
+			string(MilestoneRequestKindMilestoneDelete),
+			string(MilestoneRequestKindMilestoneListWorkitems),
+			string(MilestoneRequestKindMilestoneManageWorkitems),
+		})
+	}
+}
+
+// MarshalJSON marshals the selected union branch directly.
+func (u MilestoneRequest) MarshalJSON() ([]byte, error) {
+	if err := u.Validate(); err != nil {
+		return nil, err
+	}
+	var data []byte
+	var err error
+	selected := -1
+	switch u.kind {
+	case MilestoneRequestKindMilestoneList:
+		selected = 0
+		data, err = json.Marshal(u.MilestoneList, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneRetrieve:
+		selected = 1
+		data, err = json.Marshal(u.MilestoneRetrieve, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneCreate:
+		selected = 2
+		data, err = json.Marshal(u.MilestoneCreate, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneUpdate:
+		selected = 3
+		data, err = json.Marshal(u.MilestoneUpdate, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneDelete:
+		selected = 4
+		data, err = json.Marshal(u.MilestoneDelete, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneListWorkitems:
+		selected = 5
+		data, err = json.Marshal(u.MilestoneListWorkitems, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneManageWorkitems:
+		selected = 6
+		data, err = json.Marshal(u.MilestoneManageWorkitems, loom.JSONOptions(), json.Deterministic(true))
+	}
+	if err != nil {
+		return nil, err
+	}
+	_, matched, err := u.matchJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	if matched != selected {
+		return nil, fmt.Errorf("untagged union changed selected branch")
+	}
+	return data, nil
+}
+
+// MarshalFormValues marshals the union into application/x-www-form-urlencoded
+// values using the discriminator field plus flattened object fields for
+// object-shaped branches and the canonical {type,value} form shape for scalar
+// branches.
+func (u MilestoneRequest) MarshalFormValues(values url.Values, prefix string) error {
+	if err := u.Validate(); err != nil {
+		return err
+	}
+	values.Set(loomhttp.FormChildKey(prefix, "type"), string(u.kind))
+	switch u.kind {
+	case MilestoneRequestKindMilestoneList:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneList)
+		return err
+	case MilestoneRequestKindMilestoneRetrieve:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneRetrieve)
+		return err
+	case MilestoneRequestKindMilestoneCreate:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneCreate)
+		return err
+	case MilestoneRequestKindMilestoneUpdate:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneUpdate)
+		return err
+	case MilestoneRequestKindMilestoneDelete:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneDelete)
+		return err
+	case MilestoneRequestKindMilestoneListWorkitems:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneListWorkitems)
+		return err
+	case MilestoneRequestKindMilestoneManageWorkitems:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneManageWorkitems)
+		return err
+	default:
+		return fmt.Errorf("unexpected MilestoneRequest discriminant %q", u.kind)
+	}
+}
+
+// UnmarshalFormValues unmarshals the union from application/x-www-form-urlencoded
+// values using the discriminator field plus flattened object fields for
+// object-shaped branches and the canonical {type,value} form shape for scalar
+// branches.
+func (u *MilestoneRequest) UnmarshalFormValues(values url.Values, prefix string) error {
+	typeKey := loomhttp.FormChildKey(prefix, "type")
+	rawType := values.Get(typeKey)
+	if rawType == "" {
+		return loom.MissingFieldError("type", "body")
+	}
+	switch rawType {
+	case string(MilestoneRequestKindMilestoneList):
+		var v *MilestoneList
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneList
+		u.MilestoneList = v
+	case string(MilestoneRequestKindMilestoneRetrieve):
+		var v *MilestoneRetrieve
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneRetrieve
+		u.MilestoneRetrieve = v
+	case string(MilestoneRequestKindMilestoneCreate):
+		var v *MilestoneCreate
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneCreate
+		u.MilestoneCreate = v
+	case string(MilestoneRequestKindMilestoneUpdate):
+		var v *MilestoneUpdate
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneUpdate
+		u.MilestoneUpdate = v
+	case string(MilestoneRequestKindMilestoneDelete):
+		var v *MilestoneDelete
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneDelete
+		u.MilestoneDelete = v
+	case string(MilestoneRequestKindMilestoneListWorkitems):
+		var v *MilestoneListWorkitems
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneListWorkitems
+		u.MilestoneListWorkitems = v
+	case string(MilestoneRequestKindMilestoneManageWorkitems):
+		var v *MilestoneManageWorkitems
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneRequestKindMilestoneManageWorkitems
+		u.MilestoneManageWorkitems = v
+	default:
+		return loom.InvalidEnumValueError("type", rawType, []any{
+			string(MilestoneRequestKindMilestoneList),
+			string(MilestoneRequestKindMilestoneRetrieve),
+			string(MilestoneRequestKindMilestoneCreate),
+			string(MilestoneRequestKindMilestoneUpdate),
+			string(MilestoneRequestKindMilestoneDelete),
+			string(MilestoneRequestKindMilestoneListWorkitems),
+			string(MilestoneRequestKindMilestoneManageWorkitems),
+		})
+	}
+	return nil
+}
+
+// UnmarshalJSON selects the single valid untagged union branch.
+func (u *MilestoneRequest) UnmarshalJSON(data []byte) error {
+	matched, _, err := u.matchJSON(data)
+	if err != nil {
+		return err
+	}
+	*u = matched
+	return nil
+}
+func (u MilestoneRequest) matchJSON(data []byte) (MilestoneRequest, int, error) {
+	var value0 *MilestoneList
+	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema0Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[4]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0 := &schema0Nodes[0]
+	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime0Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[4]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0 := &runtime0Nodes[0]
+	var value1 *MilestoneRetrieve
+	schema1Nodes := make([]loom.JSONShape, 7)
+	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema1Nodes[5]},
+			{Name: "include_revision", Required: false, Shape: &schema1Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1 := &schema1Nodes[0]
+	runtime1Nodes := make([]loom.JSONShape, 7)
+	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime1Nodes[5]},
+			{Name: "include_revision", Required: false, Shape: &runtime1Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1 := &runtime1Nodes[0]
+	var value2 *MilestoneCreate
+	schema2Nodes := make([]loom.JSONShape, 11)
+	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema2Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema2Nodes[4]},
+			{Name: "title", Required: true, Shape: &schema2Nodes[5]},
+			{Name: "target_date", Required: false, Shape: &schema2Nodes[6]},
+			{Name: "external_source", Required: false, Shape: &schema2Nodes[7]},
+			{Name: "external_id", Required: false, Shape: &schema2Nodes[8]},
+			{Name: "request_id", Required: false, Shape: &schema2Nodes[9]},
+			{Name: "expected_revision", Required: false, Shape: &schema2Nodes[10]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"create\""),
+				},
+			},
+		},
+	}
+	schema2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema2 := &schema2Nodes[0]
+	runtime2Nodes := make([]loom.JSONShape, 11)
+	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime2Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime2Nodes[4]},
+			{Name: "title", Required: true, Shape: &runtime2Nodes[5]},
+			{Name: "target_date", Required: false, Shape: &runtime2Nodes[6]},
+			{Name: "external_source", Required: false, Shape: &runtime2Nodes[7]},
+			{Name: "external_id", Required: false, Shape: &runtime2Nodes[8]},
+			{Name: "request_id", Required: false, Shape: &runtime2Nodes[9]},
+			{Name: "expected_revision", Required: false, Shape: &runtime2Nodes[10]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"create\""),
+				},
+			},
+		},
+	}
+	runtime2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime2 := &runtime2Nodes[0]
+	var value3 *MilestoneUpdate
+	schema3Nodes := make([]loom.JSONShape, 12)
+	schema3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema3Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema3Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema3Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema3Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema3Nodes[5]},
+			{Name: "title", Required: false, Shape: &schema3Nodes[6]},
+			{Name: "target_date", Required: false, Shape: &schema3Nodes[7]},
+			{Name: "external_source", Required: false, Shape: &schema3Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &schema3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &schema3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &schema3Nodes[11]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update\""),
+				},
+			},
+		},
+	}
+	schema3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema3Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema3 := &schema3Nodes[0]
+	runtime3Nodes := make([]loom.JSONShape, 12)
+	runtime3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime3Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime3Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime3Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime3Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime3Nodes[5]},
+			{Name: "title", Required: false, Shape: &runtime3Nodes[6]},
+			{Name: "target_date", Required: false, Shape: &runtime3Nodes[7]},
+			{Name: "external_source", Required: false, Shape: &runtime3Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &runtime3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &runtime3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &runtime3Nodes[11]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update\""),
+				},
+			},
+		},
+	}
+	runtime3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime3Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime3 := &runtime3Nodes[0]
+	var value4 *MilestoneDelete
+	schema4Nodes := make([]loom.JSONShape, 8)
+	schema4Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema4Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema4Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema4Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema4Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema4Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema4Nodes[5]},
+			{Name: "request_id", Required: false, Shape: &schema4Nodes[6]},
+			{Name: "expected_revision", Required: false, Shape: &schema4Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema4Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"delete\""),
+				},
+			},
+		},
+	}
+	schema4Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema4Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema4 := &schema4Nodes[0]
+	runtime4Nodes := make([]loom.JSONShape, 8)
+	runtime4Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime4Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime4Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime4Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime4Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime4Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime4Nodes[5]},
+			{Name: "request_id", Required: false, Shape: &runtime4Nodes[6]},
+			{Name: "expected_revision", Required: false, Shape: &runtime4Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime4Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"delete\""),
+				},
+			},
+		},
+	}
+	runtime4Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime4Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime4 := &runtime4Nodes[0]
+	var value5 *MilestoneListWorkitems
+	schema5Nodes := make([]loom.JSONShape, 8)
+	schema5Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema5Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema5Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema5Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema5Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema5Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &schema5Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &schema5Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_workitems\""),
+				},
+			},
+		},
+	}
+	schema5Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema5Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema5Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema5Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5 := &schema5Nodes[0]
+	runtime5Nodes := make([]loom.JSONShape, 8)
+	runtime5Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime5Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime5Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime5Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime5Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime5Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &runtime5Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &runtime5Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_workitems\""),
+				},
+			},
+		},
+	}
+	runtime5Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime5Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime5Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime5Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5 := &runtime5Nodes[0]
+	var value6 *MilestoneManageWorkitems
+	schema6Nodes := make([]loom.JSONShape, 10)
+	schema6Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema6Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema6Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema6Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema6Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema6Nodes[5]},
+			{Name: "add_ids", Required: false, Shape: &schema6Nodes[6]},
+			{Name: "remove_ids", Required: false, Shape: &schema6Nodes[7]},
+			{Name: "request_id", Required: false, Shape: &schema6Nodes[8]},
+			{Name: "expected_revision", Required: false, Shape: &schema6Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"manage_workitems\""),
+				},
+			},
+		},
+	}
+	schema6Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema6Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema6 := &schema6Nodes[0]
+	runtime6Nodes := make([]loom.JSONShape, 10)
+	runtime6Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime6Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime6Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime6Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime6Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime6Nodes[5]},
+			{Name: "add_ids", Required: false, Shape: &runtime6Nodes[6]},
+			{Name: "remove_ids", Required: false, Shape: &runtime6Nodes[7]},
+			{Name: "request_id", Required: false, Shape: &runtime6Nodes[8]},
+			{Name: "expected_revision", Required: false, Shape: &runtime6Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"manage_workitems\""),
+				},
+			},
+		},
+	}
+	runtime6Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime6Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime6 := &runtime6Nodes[0]
+	candidates := []loom.JSONUnionBranch{
+		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneList
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "list") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"list"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage < 0 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage > 1000 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "1e3", false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneRetrieve
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "retrieve") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"retrieve"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value1 = v
+			return true, nil
+		}},
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneCreate
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "create") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"create"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value2 = v
+			return true, nil
+		}},
+		{Schema: schema3, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime3.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneUpdate
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "update") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"update"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value3 = v
+			return true, nil
+		}},
+		{Schema: schema4, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime4.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneDelete
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "delete") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"delete"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value4 = v
+			return true, nil
+		}},
+		{Schema: schema5, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime5.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneListWorkitems
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "list_workitems") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"list_workitems"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				if v.PerPage != nil {
+					if *v.PerPage < 0 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage > 1000 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "1e3", false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value5 = v
+			return true, nil
+		}},
+		{Schema: schema6, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime6.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneManageWorkitems
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !(v.Action == "manage_workitems") {
+					err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", v.Action, []any{"manage_workitems"}))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", v.ProjectID, loom.FormatUUID))
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value6 = v
+			return true, nil
+		}},
+	}
+	matched, err := loom.MatchUntaggedJSON("MilestoneRequest", data, candidates)
+	if err != nil {
+		return MilestoneRequest{}, -1, err
+	}
+	switch matched {
+	case 0:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneList, MilestoneList: value0}, matched, nil
+	case 1:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneRetrieve, MilestoneRetrieve: value1}, matched, nil
+	case 2:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneCreate, MilestoneCreate: value2}, matched, nil
+	case 3:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneUpdate, MilestoneUpdate: value3}, matched, nil
+	case 4:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneDelete, MilestoneDelete: value4}, matched, nil
+	case 5:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneListWorkitems, MilestoneListWorkitems: value5}, matched, nil
+	case 6:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneManageWorkitems, MilestoneManageWorkitems: value6}, matched, nil
+	}
+	return MilestoneRequest{}, -1, fmt.Errorf("invalid untagged union match index")
+}
+
+// MilestoneResult is a sum-type union.
+type MilestoneResult struct {
+	kind                     MilestoneResultKind
+	MilestonePage            *MilestonePage
+	MilestoneRecord          *MilestoneRecord
+	MilestoneMutationReceipt *MilestoneMutationReceipt
+}
+
+// MilestoneResultKind enumerates the union variants for MilestoneResult.
+type MilestoneResultKind string
+
+const (
+	// MilestoneResultKindMilestonePage identifies the MilestonePage branch of the union.
+	MilestoneResultKindMilestonePage MilestoneResultKind = "MilestonePage"
+	// MilestoneResultKindMilestoneRecord identifies the MilestoneRecord branch of the union.
+	MilestoneResultKindMilestoneRecord MilestoneResultKind = "MilestoneRecord"
+	// MilestoneResultKindMilestoneMutationReceipt identifies the MilestoneMutationReceipt branch of the union.
+	MilestoneResultKindMilestoneMutationReceipt MilestoneResultKind = "MilestoneMutationReceipt"
+)
+
+// Kind returns the discriminator value of the union.
+func (u MilestoneResult) Kind() MilestoneResultKind {
+	return u.kind
+}
+
+// NewMilestoneResultMilestonePage constructs a MilestoneResult with the
+// MilestonePage branch set.
+func NewMilestoneResultMilestonePage(v *MilestonePage) MilestoneResult {
+	return MilestoneResult{
+		kind:          MilestoneResultKindMilestonePage,
+		MilestonePage: v,
+	}
+}
+
+// AsMilestonePage returns the value of the MilestonePage branch if set.
+func (u MilestoneResult) AsMilestonePage() (_ *MilestonePage, ok bool) {
+	if u.kind != MilestoneResultKindMilestonePage {
+		return
+	}
+	return u.MilestonePage, true
+}
+
+// SetMilestonePage sets the MilestonePage branch of the union.
+func (u *MilestoneResult) SetMilestonePage(v *MilestonePage) {
+	u.kind = MilestoneResultKindMilestonePage
+	u.MilestonePage = v
+}
+
+// NewMilestoneResultMilestoneRecord constructs a MilestoneResult with the
+// MilestoneRecord branch set.
+func NewMilestoneResultMilestoneRecord(v *MilestoneRecord) MilestoneResult {
+	return MilestoneResult{
+		kind:            MilestoneResultKindMilestoneRecord,
+		MilestoneRecord: v,
+	}
+}
+
+// AsMilestoneRecord returns the value of the MilestoneRecord branch if set.
+func (u MilestoneResult) AsMilestoneRecord() (_ *MilestoneRecord, ok bool) {
+	if u.kind != MilestoneResultKindMilestoneRecord {
+		return
+	}
+	return u.MilestoneRecord, true
+}
+
+// SetMilestoneRecord sets the MilestoneRecord branch of the union.
+func (u *MilestoneResult) SetMilestoneRecord(v *MilestoneRecord) {
+	u.kind = MilestoneResultKindMilestoneRecord
+	u.MilestoneRecord = v
+}
+
+// NewMilestoneResultMilestoneMutationReceipt constructs a MilestoneResult with
+// the MilestoneMutationReceipt branch set.
+func NewMilestoneResultMilestoneMutationReceipt(v *MilestoneMutationReceipt) MilestoneResult {
+	return MilestoneResult{
+		kind:                     MilestoneResultKindMilestoneMutationReceipt,
+		MilestoneMutationReceipt: v,
+	}
+}
+
+// AsMilestoneMutationReceipt returns the value of the MilestoneMutationReceipt
+// branch if set.
+func (u MilestoneResult) AsMilestoneMutationReceipt() (_ *MilestoneMutationReceipt, ok bool) {
+	if u.kind != MilestoneResultKindMilestoneMutationReceipt {
+		return
+	}
+	return u.MilestoneMutationReceipt, true
+}
+
+// SetMilestoneMutationReceipt sets the MilestoneMutationReceipt branch of the
+// union.
+func (u *MilestoneResult) SetMilestoneMutationReceipt(v *MilestoneMutationReceipt) {
+	u.kind = MilestoneResultKindMilestoneMutationReceipt
+	u.MilestoneMutationReceipt = v
+}
+
+// Validate ensures the union discriminant is valid.
+func (u MilestoneResult) Validate() error {
+	switch u.kind {
+	case "":
+		return loom.InvalidEnumValueError("type", "", []any{
+			string(MilestoneResultKindMilestonePage),
+			string(MilestoneResultKindMilestoneRecord),
+			string(MilestoneResultKindMilestoneMutationReceipt),
+		})
+	case MilestoneResultKindMilestonePage:
+		return nil
+	case MilestoneResultKindMilestoneRecord:
+		return nil
+	case MilestoneResultKindMilestoneMutationReceipt:
+		return nil
+	default:
+		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(MilestoneResultKindMilestonePage),
+			string(MilestoneResultKindMilestoneRecord),
+			string(MilestoneResultKindMilestoneMutationReceipt),
+		})
+	}
+}
+
+// MarshalJSON marshals the selected union branch directly.
+func (u MilestoneResult) MarshalJSON() ([]byte, error) {
+	if err := u.Validate(); err != nil {
+		return nil, err
+	}
+	var data []byte
+	var err error
+	selected := -1
+	switch u.kind {
+	case MilestoneResultKindMilestonePage:
+		selected = 0
+		data, err = json.Marshal(u.MilestonePage, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneResultKindMilestoneRecord:
+		selected = 1
+		data, err = json.Marshal(u.MilestoneRecord, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneResultKindMilestoneMutationReceipt:
+		selected = 2
+		data, err = json.Marshal(u.MilestoneMutationReceipt, loom.JSONOptions(), json.Deterministic(true))
+	}
+	if err != nil {
+		return nil, err
+	}
+	_, matched, err := u.matchJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	if matched != selected {
+		return nil, fmt.Errorf("untagged union changed selected branch")
+	}
+	return data, nil
+}
+
+// MarshalFormValues marshals the union into application/x-www-form-urlencoded
+// values using the discriminator field plus flattened object fields for
+// object-shaped branches and the canonical {type,value} form shape for scalar
+// branches.
+func (u MilestoneResult) MarshalFormValues(values url.Values, prefix string) error {
+	if err := u.Validate(); err != nil {
+		return err
+	}
+	values.Set(loomhttp.FormChildKey(prefix, "type"), string(u.kind))
+	switch u.kind {
+	case MilestoneResultKindMilestonePage:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestonePage)
+		return err
+	case MilestoneResultKindMilestoneRecord:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneRecord)
+		return err
+	case MilestoneResultKindMilestoneMutationReceipt:
+		_, err := loomhttp.EncodeFormValue(values, prefix, u.MilestoneMutationReceipt)
+		return err
+	default:
+		return fmt.Errorf("unexpected MilestoneResult discriminant %q", u.kind)
+	}
+}
+
+// UnmarshalFormValues unmarshals the union from application/x-www-form-urlencoded
+// values using the discriminator field plus flattened object fields for
+// object-shaped branches and the canonical {type,value} form shape for scalar
+// branches.
+func (u *MilestoneResult) UnmarshalFormValues(values url.Values, prefix string) error {
+	typeKey := loomhttp.FormChildKey(prefix, "type")
+	rawType := values.Get(typeKey)
+	if rawType == "" {
+		return loom.MissingFieldError("type", "body")
+	}
+	switch rawType {
+	case string(MilestoneResultKindMilestonePage):
+		var v *MilestonePage
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneResultKindMilestonePage
+		u.MilestonePage = v
+	case string(MilestoneResultKindMilestoneRecord):
+		var v *MilestoneRecord
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneResultKindMilestoneRecord
+		u.MilestoneRecord = v
+	case string(MilestoneResultKindMilestoneMutationReceipt):
+		var v *MilestoneMutationReceipt
+		seen, err := loomhttp.DecodeFormValue(values, prefix, &v)
+		if err != nil {
+			return err
+		}
+		if !seen {
+			return loom.MissingFieldError("value", "body")
+		}
+		u.kind = MilestoneResultKindMilestoneMutationReceipt
+		u.MilestoneMutationReceipt = v
+	default:
+		return loom.InvalidEnumValueError("type", rawType, []any{
+			string(MilestoneResultKindMilestonePage),
+			string(MilestoneResultKindMilestoneRecord),
+			string(MilestoneResultKindMilestoneMutationReceipt),
+		})
+	}
+	return nil
+}
+
+// UnmarshalJSON selects the single valid untagged union branch.
+func (u *MilestoneResult) UnmarshalJSON(data []byte) error {
+	matched, _, err := u.matchJSON(data)
+	if err != nil {
+		return err
+	}
+	*u = matched
+	return nil
+}
+func (u MilestoneResult) matchJSON(data []byte) (MilestoneResult, int, error) {
+	var value0 *MilestonePage
+	schema0Nodes := make([]loom.JSONShape, 20)
+	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "results", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "count", Required: true, Shape: &schema0Nodes[14]},
+			{Name: "total_count", Required: true, Shape: &schema0Nodes[15]},
+			{Name: "next_cursor", Required: true, Shape: &schema0Nodes[16]},
+			{Name: "prev_cursor", Required: true, Shape: &schema0Nodes[17]},
+			{Name: "next_page_results", Required: true, Shape: &schema0Nodes[18]},
+			{Name: "prev_page_results", Required: true, Shape: &schema0Nodes[19]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[2] = loom.JSONShape{Kind: "array", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[3],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[4],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[4] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &schema0Nodes[5]},
+			{Name: "title", Required: false, Shape: &schema0Nodes[6]},
+			{Name: "created_at", Required: false, Shape: &schema0Nodes[7]},
+			{Name: "updated_at", Required: false, Shape: &schema0Nodes[8]},
+			{Name: "issue", Required: false, Shape: &schema0Nodes[9]},
+			{Name: "milestone", Required: false, Shape: &schema0Nodes[10]},
+			{Name: "target_date", Required: false, Shape: &schema0Nodes[11]},
+			{Name: "external_source", Required: false, Shape: &schema0Nodes[12]},
+			{Name: "external_id", Required: false, Shape: &schema0Nodes[13]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[11] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[12] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[13] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[14] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[15] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[16] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[17] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[18] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[19] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0 := &schema0Nodes[0]
+	runtime0Nodes := make([]loom.JSONShape, 20)
+	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "results", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "count", Required: true, Shape: &runtime0Nodes[14]},
+			{Name: "total_count", Required: true, Shape: &runtime0Nodes[15]},
+			{Name: "next_cursor", Required: true, Shape: &runtime0Nodes[16]},
+			{Name: "prev_cursor", Required: true, Shape: &runtime0Nodes[17]},
+			{Name: "next_page_results", Required: true, Shape: &runtime0Nodes[18]},
+			{Name: "prev_page_results", Required: true, Shape: &runtime0Nodes[19]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[2] = loom.JSONShape{Kind: "array", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[3],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[4],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[4] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &runtime0Nodes[5]},
+			{Name: "title", Required: false, Shape: &runtime0Nodes[6]},
+			{Name: "created_at", Required: false, Shape: &runtime0Nodes[7]},
+			{Name: "updated_at", Required: false, Shape: &runtime0Nodes[8]},
+			{Name: "issue", Required: false, Shape: &runtime0Nodes[9]},
+			{Name: "milestone", Required: false, Shape: &runtime0Nodes[10]},
+			{Name: "target_date", Required: false, Shape: &runtime0Nodes[11]},
+			{Name: "external_source", Required: false, Shape: &runtime0Nodes[12]},
+			{Name: "external_id", Required: false, Shape: &runtime0Nodes[13]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[11] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[12] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[13] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[14] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[15] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[16] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[17] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[18] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[19] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0 := &runtime0Nodes[0]
+	var value1 *MilestoneRecord
+	schema1Nodes := make([]loom.JSONShape, 10)
+	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &schema1Nodes[2]},
+			{Name: "title", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "target_date", Required: true, Shape: &schema1Nodes[4]},
+			{Name: "external_source", Required: true, Shape: &schema1Nodes[5]},
+			{Name: "external_id", Required: true, Shape: &schema1Nodes[6]},
+			{Name: "created_at", Required: true, Shape: &schema1Nodes[7]},
+			{Name: "updated_at", Required: true, Shape: &schema1Nodes[8]},
+			{Name: "revision", Required: false, Shape: &schema1Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date",
+			},
+		},
+	}
+	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema1Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema1Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1 := &schema1Nodes[0]
+	runtime1Nodes := make([]loom.JSONShape, 10)
+	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &runtime1Nodes[2]},
+			{Name: "title", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "target_date", Required: true, Shape: &runtime1Nodes[4]},
+			{Name: "external_source", Required: true, Shape: &runtime1Nodes[5]},
+			{Name: "external_id", Required: true, Shape: &runtime1Nodes[6]},
+			{Name: "created_at", Required: true, Shape: &runtime1Nodes[7]},
+			{Name: "updated_at", Required: true, Shape: &runtime1Nodes[8]},
+			{Name: "revision", Required: false, Shape: &runtime1Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date",
+			},
+		},
+	}
+	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[6] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime1Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime1Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1 := &runtime1Nodes[0]
+	var value2 *MilestoneMutationReceipt
+	schema2Nodes := make([]loom.JSONShape, 17)
+	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "milestone_id", Required: true, Shape: &schema2Nodes[2]},
+			{Name: "revision", Required: true, Shape: &schema2Nodes[3]},
+			{Name: "result", Required: true, Shape: &schema2Nodes[4]},
+			{Name: "request_id", Required: false, Shape: &schema2Nodes[14]},
+			{Name: "replay_expires_at", Required: false, Shape: &schema2Nodes[15]},
+			{Name: "replayed", Required: false, Shape: &schema2Nodes[16]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[4] = loom.JSONShape{Kind: "alias", Nullable: true, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[5],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[5] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &schema2Nodes[6]},
+			{Name: "title", Required: true, Shape: &schema2Nodes[7]},
+			{Name: "target_date", Required: true, Shape: &schema2Nodes[8]},
+			{Name: "external_source", Required: true, Shape: &schema2Nodes[9]},
+			{Name: "external_id", Required: true, Shape: &schema2Nodes[10]},
+			{Name: "created_at", Required: true, Shape: &schema2Nodes[11]},
+			{Name: "updated_at", Required: true, Shape: &schema2Nodes[12]},
+			{Name: "revision", Required: false, Shape: &schema2Nodes[13]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date",
+			},
+		},
+	}
+	schema2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema2Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema2Nodes[13] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[14] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	schema2Nodes[16] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2 := &schema2Nodes[0]
+	runtime2Nodes := make([]loom.JSONShape, 17)
+	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "milestone_id", Required: true, Shape: &runtime2Nodes[2]},
+			{Name: "revision", Required: true, Shape: &runtime2Nodes[3]},
+			{Name: "result", Required: true, Shape: &runtime2Nodes[4]},
+			{Name: "request_id", Required: false, Shape: &runtime2Nodes[14]},
+			{Name: "replay_expires_at", Required: false, Shape: &runtime2Nodes[15]},
+			{Name: "replayed", Required: false, Shape: &runtime2Nodes[16]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[4] = loom.JSONShape{Kind: "alias", Nullable: true, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[5],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[5] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "id", Required: true, Shape: &runtime2Nodes[6]},
+			{Name: "title", Required: true, Shape: &runtime2Nodes[7]},
+			{Name: "target_date", Required: true, Shape: &runtime2Nodes[8]},
+			{Name: "external_source", Required: true, Shape: &runtime2Nodes[9]},
+			{Name: "external_id", Required: true, Shape: &runtime2Nodes[10]},
+			{Name: "created_at", Required: true, Shape: &runtime2Nodes[11]},
+			{Name: "updated_at", Required: true, Shape: &runtime2Nodes[12]},
+			{Name: "revision", Required: false, Shape: &runtime2Nodes[13]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date",
+			},
+		},
+	}
+	runtime2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: true, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime2Nodes[12] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime2Nodes[13] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[14] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[15] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"date-time",
+			},
+		},
+	}
+	runtime2Nodes[16] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2 := &runtime2Nodes[0]
+	candidates := []loom.JSONUnionBranch{
+		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestonePage
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Results == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("results", "v"))
+				}
+				for i, e := range v.Results {
+					if e == nil {
+						err = loom.MergeErrors(err, loom.InvalidNullElementError("v.results", i))
+					}
+					if e != nil {
+						if err2 := ValidateMilestonePageEntry(e, "v.results[*]"); err2 != nil {
+							err = loom.MergeErrors(err, err2)
+						}
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneRecord
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.id", v.ID, loom.FormatUUID))
+				if !v.TargetDate.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("target_date", "v"))
+				}
+				if actual, ok := v.TargetDate.Value(); ok {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.target_date", actual, loom.FormatDate))
+				}
+				if !v.ExternalSource.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("external_source", "v"))
+				}
+				if !v.ExternalID.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("external_id", "v"))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.created_at", v.CreatedAt, loom.FormatDateTime))
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.updated_at", v.UpdatedAt, loom.FormatDateTime))
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value1 = v
+			return true, nil
+		}},
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneMutationReceipt
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if !v.Result.Present() {
+					err = loom.MergeErrors(err, loom.MissingFieldError("result", "v"))
+				}
+				err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", v.MilestoneID, loom.FormatUUID))
+				if actual, ok := v.Result.Value(); ok {
+					if err2 := ValidateMilestoneRecord(&actual, "v.result"); err2 != nil {
+						err = loom.MergeErrors(err, err2)
+					}
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ReplayExpiresAt != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.replay_expires_at", *v.ReplayExpiresAt, loom.FormatDateTime))
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value2 = v
+			return true, nil
+		}},
+	}
+	matched, err := loom.MatchUntaggedJSON("MilestoneResult", data, candidates)
+	if err != nil {
+		return MilestoneResult{}, -1, err
+	}
+	switch matched {
+	case 0:
+		return MilestoneResult{kind: MilestoneResultKindMilestonePage, MilestonePage: value0}, matched, nil
+	case 1:
+		return MilestoneResult{kind: MilestoneResultKindMilestoneRecord, MilestoneRecord: value1}, matched, nil
+	case 2:
+		return MilestoneResult{kind: MilestoneResultKindMilestoneMutationReceipt, MilestoneMutationReceipt: value2}, matched, nil
+	}
+	return MilestoneResult{}, -1, fmt.Errorf("invalid untagged union match index")
 }
 
 // ModuleRequest is a sum-type union.
@@ -13573,7 +16412,7 @@ func MakeRevisionConflict(err error) *loom.ServiceError {
 	serr := loom.NewServiceError(err, "revision_conflict", false, false, false)
 	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
 		Code:        "",
-		SafeMessage: "The project changed. Read its current revision before trying a new update.",
+		SafeMessage: "The resource changed. Read its current revision before trying a new update.",
 		RetryHint:   "",
 	})
 	return serr
@@ -13585,6 +16424,17 @@ func MakeIndeterminate(err error) *loom.ServiceError {
 	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
 		Code:        "",
 		SafeMessage: "The commit outcome is unknown. Retry with the same request_id, or reconcile with a read before another unkeyed write.",
+		RetryHint:   "",
+	})
+	return serr
+}
+
+// MakeConflict builds a loom.ServiceError from an error.
+func MakeConflict(err error) *loom.ServiceError {
+	serr := loom.NewServiceError(err, "conflict", false, false, false)
+	loom.WithErrorRemedy(serr, &loom.ErrorRemedy{
+		Code:        "",
+		SafeMessage: "The operation conflicts with an existing resource.",
 		RetryHint:   "",
 	})
 	return serr

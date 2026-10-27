@@ -156,3 +156,7 @@ func (memberResponseService) WorkitemLink(context.Context, *api.WorkitemLinkRequ
 func (memberResponseService) WorkitemActivity(context.Context, *api.WorkitemActivityRequest) (*api.WorkitemActivityResult, error) {
 	return nil, nil
 }
+
+func (memberResponseService) Milestone(context.Context, *api.MilestoneRequest) (loom.Nullable[api.MilestoneResult], error) {
+	return loom.NullValue[api.MilestoneResult](), nil
+}

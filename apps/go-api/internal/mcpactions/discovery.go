@@ -27,6 +27,12 @@ func (s *Service) DiscoverActions(ctx context.Context) (mcptransport.ActionVisib
 		visible[tool] = map[string]bool{"list": reads.ProjectMembers, "retrieve": reads.ProjectMembers}
 	}
 	visible["project"] = map[string]bool{"list": reads.Workspace, "retrieve": reads.Workspace}
+	milestone, err := s.milestones.VisibleActions(ctx, actor.UserID, actor.WorkspaceID, actor.WorkspaceSlug)
+	if err != nil {
+		return nil, err
+	}
+	write := milestone.Write && actor.AllowsAction(true)
+	visible["milestone"] = map[string]bool{"list": milestone.Read, "retrieve": milestone.Read, "list_workitems": milestone.Read, "create": write, "update": write, "delete": write, "manage_workitems": write}
 	if !actor.AllowsAction(true) || !reads.Workspace {
 		return visible, nil
 	}

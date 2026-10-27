@@ -124,6 +124,92 @@ type MemberRetrieveRoleTransport struct {
 	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
 }
 
+// MilestoneCreateTransport preserves JSON field presence before service conversion.
+type MilestoneCreateTransport struct {
+	Action           *string `json:"action"`
+	ProjectID        *string `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	Title            *string `json:"title"`
+	TargetDate       *string `json:"target_date,omitzero"`
+	ExternalSource   *string `json:"external_source,omitzero"`
+	ExternalID       *string `json:"external_id,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+// MilestoneDeleteTransport preserves JSON field presence before service conversion.
+type MilestoneDeleteTransport struct {
+	Action           *string `json:"action"`
+	ProjectID        *string `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	MilestoneID      *string `json:"milestone_id"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+// MilestoneListTransport preserves JSON field presence before service conversion.
+type MilestoneListTransport struct {
+	Action        *string `json:"action"`
+	ProjectID     *string `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	Cursor        *string `json:"cursor,omitzero"`
+	// Zero or omitted uses 1000.
+	PerPage *int `json:"per_page,omitzero"`
+}
+
+// MilestoneListWorkitemsTransport preserves JSON field presence before service conversion.
+type MilestoneListWorkitemsTransport struct {
+	Action        *string `json:"action"`
+	ProjectID     *string `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	MilestoneID   *string `json:"milestone_id"`
+	Cursor        *string `json:"cursor,omitzero"`
+	// Zero or omitted uses 1000.
+	PerPage *int `json:"per_page,omitzero"`
+}
+
+// MilestoneMCPInput preserves JSON field presence before service conversion.
+type MilestoneMCPInput = MilestoneRequest
+
+// MilestoneManageWorkitemsTransport preserves JSON field presence before service conversion.
+type MilestoneManageWorkitemsTransport struct {
+	Action        *string `json:"action"`
+	ProjectID     *string `json:"project_id"`
+	WorkspaceSlug *string `json:"workspace_slug,omitzero"`
+	MilestoneID   *string `json:"milestone_id"`
+	// Work item UUIDs as a comma-separated string or a JSON array encoded as a
+	// string.
+	AddIds *string `json:"add_ids,omitzero"`
+	// Work item UUIDs as a comma-separated string or a JSON array encoded as a
+	// string. Removal wins on overlap.
+	RemoveIds        *string `json:"remove_ids,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
+// MilestoneRetrieveTransport preserves JSON field presence before service conversion.
+type MilestoneRetrieveTransport struct {
+	Action          *string `json:"action"`
+	ProjectID       *string `json:"project_id"`
+	WorkspaceSlug   *string `json:"workspace_slug,omitzero"`
+	MilestoneID     *string `json:"milestone_id"`
+	IncludeRevision *bool   `json:"include_revision,omitzero"`
+}
+
+// MilestoneUpdateTransport preserves JSON field presence before service conversion.
+type MilestoneUpdateTransport struct {
+	Action           *string `json:"action"`
+	ProjectID        *string `json:"project_id"`
+	WorkspaceSlug    *string `json:"workspace_slug,omitzero"`
+	MilestoneID      *string `json:"milestone_id"`
+	Title            *string `json:"title,omitzero"`
+	TargetDate       *string `json:"target_date,omitzero"`
+	ExternalSource   *string `json:"external_source,omitzero"`
+	ExternalID       *string `json:"external_id,omitzero"`
+	RequestID        *string `json:"request_id,omitzero"`
+	ExpectedRevision *string `json:"expected_revision,omitzero"`
+}
+
 // ModuleListTransport preserves JSON field presence before service conversion.
 type ModuleListTransport struct {
 	Action    *string `json:"action"`
@@ -2233,6 +2319,1822 @@ func validateMemberRequestMemberRetrieveRoleTransport(body *MemberRetrieveRoleTr
 	if body.WorkspaceSlug != nil {
 		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
 			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	return
+}
+
+// MilestoneRequest is a sum-type union.
+type MilestoneRequest struct {
+	kind                     MilestoneRequestKind
+	MilestoneList            *MilestoneListTransport
+	MilestoneRetrieve        *MilestoneRetrieveTransport
+	MilestoneCreate          *MilestoneCreateTransport
+	MilestoneUpdate          *MilestoneUpdateTransport
+	MilestoneDelete          *MilestoneDeleteTransport
+	MilestoneListWorkitems   *MilestoneListWorkitemsTransport
+	MilestoneManageWorkitems *MilestoneManageWorkitemsTransport
+}
+
+// MilestoneRequestKind enumerates the union variants for MilestoneRequest.
+type MilestoneRequestKind string
+
+const (
+	// MilestoneRequestKindMilestoneList identifies the MilestoneList branch of the union.
+	MilestoneRequestKindMilestoneList MilestoneRequestKind = "MilestoneList"
+	// MilestoneRequestKindMilestoneRetrieve identifies the MilestoneRetrieve branch of the union.
+	MilestoneRequestKindMilestoneRetrieve MilestoneRequestKind = "MilestoneRetrieve"
+	// MilestoneRequestKindMilestoneCreate identifies the MilestoneCreate branch of the union.
+	MilestoneRequestKindMilestoneCreate MilestoneRequestKind = "MilestoneCreate"
+	// MilestoneRequestKindMilestoneUpdate identifies the MilestoneUpdate branch of the union.
+	MilestoneRequestKindMilestoneUpdate MilestoneRequestKind = "MilestoneUpdate"
+	// MilestoneRequestKindMilestoneDelete identifies the MilestoneDelete branch of the union.
+	MilestoneRequestKindMilestoneDelete MilestoneRequestKind = "MilestoneDelete"
+	// MilestoneRequestKindMilestoneListWorkitems identifies the MilestoneListWorkitems branch of the union.
+	MilestoneRequestKindMilestoneListWorkitems MilestoneRequestKind = "MilestoneListWorkitems"
+	// MilestoneRequestKindMilestoneManageWorkitems identifies the MilestoneManageWorkitems branch of the union.
+	MilestoneRequestKindMilestoneManageWorkitems MilestoneRequestKind = "MilestoneManageWorkitems"
+)
+
+// Kind returns the discriminator value of the union.
+func (u MilestoneRequest) Kind() MilestoneRequestKind {
+	return u.kind
+}
+
+// NewMilestoneRequestMilestoneList constructs a MilestoneRequest with the
+// MilestoneList branch set.
+func NewMilestoneRequestMilestoneList(v *MilestoneListTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:          MilestoneRequestKindMilestoneList,
+		MilestoneList: v,
+	}
+}
+
+// AsMilestoneList returns the value of the MilestoneList branch if set.
+func (u MilestoneRequest) AsMilestoneList() (_ *MilestoneListTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneList {
+		return
+	}
+	return u.MilestoneList, true
+}
+
+// SetMilestoneList sets the MilestoneList branch of the union.
+func (u *MilestoneRequest) SetMilestoneList(v *MilestoneListTransport) {
+	u.kind = MilestoneRequestKindMilestoneList
+	u.MilestoneList = v
+}
+
+// NewMilestoneRequestMilestoneRetrieve constructs a MilestoneRequest with the
+// MilestoneRetrieve branch set.
+func NewMilestoneRequestMilestoneRetrieve(v *MilestoneRetrieveTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:              MilestoneRequestKindMilestoneRetrieve,
+		MilestoneRetrieve: v,
+	}
+}
+
+// AsMilestoneRetrieve returns the value of the MilestoneRetrieve branch if set.
+func (u MilestoneRequest) AsMilestoneRetrieve() (_ *MilestoneRetrieveTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneRetrieve {
+		return
+	}
+	return u.MilestoneRetrieve, true
+}
+
+// SetMilestoneRetrieve sets the MilestoneRetrieve branch of the union.
+func (u *MilestoneRequest) SetMilestoneRetrieve(v *MilestoneRetrieveTransport) {
+	u.kind = MilestoneRequestKindMilestoneRetrieve
+	u.MilestoneRetrieve = v
+}
+
+// NewMilestoneRequestMilestoneCreate constructs a MilestoneRequest with the
+// MilestoneCreate branch set.
+func NewMilestoneRequestMilestoneCreate(v *MilestoneCreateTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneCreate,
+		MilestoneCreate: v,
+	}
+}
+
+// AsMilestoneCreate returns the value of the MilestoneCreate branch if set.
+func (u MilestoneRequest) AsMilestoneCreate() (_ *MilestoneCreateTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneCreate {
+		return
+	}
+	return u.MilestoneCreate, true
+}
+
+// SetMilestoneCreate sets the MilestoneCreate branch of the union.
+func (u *MilestoneRequest) SetMilestoneCreate(v *MilestoneCreateTransport) {
+	u.kind = MilestoneRequestKindMilestoneCreate
+	u.MilestoneCreate = v
+}
+
+// NewMilestoneRequestMilestoneUpdate constructs a MilestoneRequest with the
+// MilestoneUpdate branch set.
+func NewMilestoneRequestMilestoneUpdate(v *MilestoneUpdateTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneUpdate,
+		MilestoneUpdate: v,
+	}
+}
+
+// AsMilestoneUpdate returns the value of the MilestoneUpdate branch if set.
+func (u MilestoneRequest) AsMilestoneUpdate() (_ *MilestoneUpdateTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneUpdate {
+		return
+	}
+	return u.MilestoneUpdate, true
+}
+
+// SetMilestoneUpdate sets the MilestoneUpdate branch of the union.
+func (u *MilestoneRequest) SetMilestoneUpdate(v *MilestoneUpdateTransport) {
+	u.kind = MilestoneRequestKindMilestoneUpdate
+	u.MilestoneUpdate = v
+}
+
+// NewMilestoneRequestMilestoneDelete constructs a MilestoneRequest with the
+// MilestoneDelete branch set.
+func NewMilestoneRequestMilestoneDelete(v *MilestoneDeleteTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:            MilestoneRequestKindMilestoneDelete,
+		MilestoneDelete: v,
+	}
+}
+
+// AsMilestoneDelete returns the value of the MilestoneDelete branch if set.
+func (u MilestoneRequest) AsMilestoneDelete() (_ *MilestoneDeleteTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneDelete {
+		return
+	}
+	return u.MilestoneDelete, true
+}
+
+// SetMilestoneDelete sets the MilestoneDelete branch of the union.
+func (u *MilestoneRequest) SetMilestoneDelete(v *MilestoneDeleteTransport) {
+	u.kind = MilestoneRequestKindMilestoneDelete
+	u.MilestoneDelete = v
+}
+
+// NewMilestoneRequestMilestoneListWorkitems constructs a MilestoneRequest with
+// the MilestoneListWorkitems branch set.
+func NewMilestoneRequestMilestoneListWorkitems(v *MilestoneListWorkitemsTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:                   MilestoneRequestKindMilestoneListWorkitems,
+		MilestoneListWorkitems: v,
+	}
+}
+
+// AsMilestoneListWorkitems returns the value of the MilestoneListWorkitems
+// branch if set.
+func (u MilestoneRequest) AsMilestoneListWorkitems() (_ *MilestoneListWorkitemsTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneListWorkitems {
+		return
+	}
+	return u.MilestoneListWorkitems, true
+}
+
+// SetMilestoneListWorkitems sets the MilestoneListWorkitems branch of the
+// union.
+func (u *MilestoneRequest) SetMilestoneListWorkitems(v *MilestoneListWorkitemsTransport) {
+	u.kind = MilestoneRequestKindMilestoneListWorkitems
+	u.MilestoneListWorkitems = v
+}
+
+// NewMilestoneRequestMilestoneManageWorkitems constructs a MilestoneRequest
+// with the MilestoneManageWorkitems branch set.
+func NewMilestoneRequestMilestoneManageWorkitems(v *MilestoneManageWorkitemsTransport) MilestoneRequest {
+	return MilestoneRequest{
+		kind:                     MilestoneRequestKindMilestoneManageWorkitems,
+		MilestoneManageWorkitems: v,
+	}
+}
+
+// AsMilestoneManageWorkitems returns the value of the MilestoneManageWorkitems
+// branch if set.
+func (u MilestoneRequest) AsMilestoneManageWorkitems() (_ *MilestoneManageWorkitemsTransport, ok bool) {
+	if u.kind != MilestoneRequestKindMilestoneManageWorkitems {
+		return
+	}
+	return u.MilestoneManageWorkitems, true
+}
+
+// SetMilestoneManageWorkitems sets the MilestoneManageWorkitems branch of the
+// union.
+func (u *MilestoneRequest) SetMilestoneManageWorkitems(v *MilestoneManageWorkitemsTransport) {
+	u.kind = MilestoneRequestKindMilestoneManageWorkitems
+	u.MilestoneManageWorkitems = v
+}
+
+// Validate ensures the union discriminant is valid.
+func (u MilestoneRequest) Validate() error {
+	switch u.kind {
+	case "":
+		return loom.InvalidEnumValueError("type", "", []any{
+			string(MilestoneRequestKindMilestoneList),
+			string(MilestoneRequestKindMilestoneRetrieve),
+			string(MilestoneRequestKindMilestoneCreate),
+			string(MilestoneRequestKindMilestoneUpdate),
+			string(MilestoneRequestKindMilestoneDelete),
+			string(MilestoneRequestKindMilestoneListWorkitems),
+			string(MilestoneRequestKindMilestoneManageWorkitems),
+		})
+	case MilestoneRequestKindMilestoneList:
+		return nil
+	case MilestoneRequestKindMilestoneRetrieve:
+		return nil
+	case MilestoneRequestKindMilestoneCreate:
+		return nil
+	case MilestoneRequestKindMilestoneUpdate:
+		return nil
+	case MilestoneRequestKindMilestoneDelete:
+		return nil
+	case MilestoneRequestKindMilestoneListWorkitems:
+		return nil
+	case MilestoneRequestKindMilestoneManageWorkitems:
+		return nil
+	default:
+		return loom.InvalidEnumValueError("type", u.kind, []any{
+			string(MilestoneRequestKindMilestoneList),
+			string(MilestoneRequestKindMilestoneRetrieve),
+			string(MilestoneRequestKindMilestoneCreate),
+			string(MilestoneRequestKindMilestoneUpdate),
+			string(MilestoneRequestKindMilestoneDelete),
+			string(MilestoneRequestKindMilestoneListWorkitems),
+			string(MilestoneRequestKindMilestoneManageWorkitems),
+		})
+	}
+}
+
+// MarshalJSON marshals the selected union branch directly.
+func (u MilestoneRequest) MarshalJSON() ([]byte, error) {
+	if err := u.Validate(); err != nil {
+		return nil, err
+	}
+	var data []byte
+	var err error
+	selected := -1
+	switch u.kind {
+	case MilestoneRequestKindMilestoneList:
+		selected = 0
+		data, err = json.Marshal(u.MilestoneList, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneRetrieve:
+		selected = 1
+		data, err = json.Marshal(u.MilestoneRetrieve, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneCreate:
+		selected = 2
+		data, err = json.Marshal(u.MilestoneCreate, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneUpdate:
+		selected = 3
+		data, err = json.Marshal(u.MilestoneUpdate, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneDelete:
+		selected = 4
+		data, err = json.Marshal(u.MilestoneDelete, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneListWorkitems:
+		selected = 5
+		data, err = json.Marshal(u.MilestoneListWorkitems, loom.JSONOptions(), json.Deterministic(true))
+	case MilestoneRequestKindMilestoneManageWorkitems:
+		selected = 6
+		data, err = json.Marshal(u.MilestoneManageWorkitems, loom.JSONOptions(), json.Deterministic(true))
+	}
+	if err != nil {
+		return nil, err
+	}
+	_, matched, err := u.matchJSON(data)
+	if err != nil {
+		return nil, err
+	}
+	if matched != selected {
+		return nil, fmt.Errorf("untagged union changed selected branch")
+	}
+	return data, nil
+}
+
+// UnmarshalJSON selects the single valid untagged union branch.
+func (u *MilestoneRequest) UnmarshalJSON(data []byte) error {
+	matched, _, err := u.matchJSON(data)
+	if err != nil {
+		return err
+	}
+	*u = matched
+	return nil
+}
+func (u MilestoneRequest) matchJSON(data []byte) (MilestoneRequest, int, error) {
+	var value0 *MilestoneListTransport
+	schema0Nodes := make([]loom.JSONShape, 7)
+	schema0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema0Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema0Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema0Nodes[4]},
+			{Name: "cursor", Required: false, Shape: &schema0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &schema0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	schema0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema0 := &schema0Nodes[0]
+	runtime0Nodes := make([]loom.JSONShape, 7)
+	runtime0Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime0Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime0Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime0Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime0Nodes[4]},
+			{Name: "cursor", Required: false, Shape: &runtime0Nodes[5]},
+			{Name: "per_page", Required: false, Shape: &runtime0Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list\""),
+				},
+			},
+		},
+	}
+	runtime0Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime0Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime0Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0Nodes[6] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime0 := &runtime0Nodes[0]
+	var value1 *MilestoneRetrieveTransport
+	schema1Nodes := make([]loom.JSONShape, 7)
+	schema1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema1Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema1Nodes[5]},
+			{Name: "include_revision", Required: false, Shape: &schema1Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	schema1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema1Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema1 := &schema1Nodes[0]
+	runtime1Nodes := make([]loom.JSONShape, 7)
+	runtime1Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime1Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime1Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime1Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime1Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime1Nodes[5]},
+			{Name: "include_revision", Required: false, Shape: &runtime1Nodes[6]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"retrieve\""),
+				},
+			},
+		},
+	}
+	runtime1Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime1Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime1Nodes[6] = loom.JSONShape{Kind: "boolean", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime1 := &runtime1Nodes[0]
+	var value2 *MilestoneCreateTransport
+	schema2Nodes := make([]loom.JSONShape, 11)
+	schema2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema2Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema2Nodes[4]},
+			{Name: "title", Required: true, Shape: &schema2Nodes[5]},
+			{Name: "target_date", Required: false, Shape: &schema2Nodes[6]},
+			{Name: "external_source", Required: false, Shape: &schema2Nodes[7]},
+			{Name: "external_id", Required: false, Shape: &schema2Nodes[8]},
+			{Name: "request_id", Required: false, Shape: &schema2Nodes[9]},
+			{Name: "expected_revision", Required: false, Shape: &schema2Nodes[10]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"create\""),
+				},
+			},
+		},
+	}
+	schema2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema2 := &schema2Nodes[0]
+	runtime2Nodes := make([]loom.JSONShape, 11)
+	runtime2Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime2Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime2Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime2Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime2Nodes[4]},
+			{Name: "title", Required: true, Shape: &runtime2Nodes[5]},
+			{Name: "target_date", Required: false, Shape: &runtime2Nodes[6]},
+			{Name: "external_source", Required: false, Shape: &runtime2Nodes[7]},
+			{Name: "external_id", Required: false, Shape: &runtime2Nodes[8]},
+			{Name: "request_id", Required: false, Shape: &runtime2Nodes[9]},
+			{Name: "expected_revision", Required: false, Shape: &runtime2Nodes[10]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"create\""),
+				},
+			},
+		},
+	}
+	runtime2Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime2Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime2Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime2Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime2 := &runtime2Nodes[0]
+	var value3 *MilestoneUpdateTransport
+	schema3Nodes := make([]loom.JSONShape, 12)
+	schema3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema3Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema3Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema3Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema3Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema3Nodes[5]},
+			{Name: "title", Required: false, Shape: &schema3Nodes[6]},
+			{Name: "target_date", Required: false, Shape: &schema3Nodes[7]},
+			{Name: "external_source", Required: false, Shape: &schema3Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &schema3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &schema3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &schema3Nodes[11]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update\""),
+				},
+			},
+		},
+	}
+	schema3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema3Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema3 := &schema3Nodes[0]
+	runtime3Nodes := make([]loom.JSONShape, 12)
+	runtime3Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime3Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime3Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime3Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime3Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime3Nodes[5]},
+			{Name: "title", Required: false, Shape: &runtime3Nodes[6]},
+			{Name: "target_date", Required: false, Shape: &runtime3Nodes[7]},
+			{Name: "external_source", Required: false, Shape: &runtime3Nodes[8]},
+			{Name: "external_id", Required: false, Shape: &runtime3Nodes[9]},
+			{Name: "request_id", Required: false, Shape: &runtime3Nodes[10]},
+			{Name: "expected_revision", Required: false, Shape: &runtime3Nodes[11]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"update\""),
+				},
+			},
+		},
+	}
+	runtime3Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime3Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime3Nodes[10] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime3Nodes[11] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime3 := &runtime3Nodes[0]
+	var value4 *MilestoneDeleteTransport
+	schema4Nodes := make([]loom.JSONShape, 8)
+	schema4Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema4Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema4Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema4Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema4Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema4Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema4Nodes[5]},
+			{Name: "request_id", Required: false, Shape: &schema4Nodes[6]},
+			{Name: "expected_revision", Required: false, Shape: &schema4Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema4Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"delete\""),
+				},
+			},
+		},
+	}
+	schema4Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema4Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema4Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema4 := &schema4Nodes[0]
+	runtime4Nodes := make([]loom.JSONShape, 8)
+	runtime4Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime4Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime4Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime4Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime4Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime4Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime4Nodes[5]},
+			{Name: "request_id", Required: false, Shape: &runtime4Nodes[6]},
+			{Name: "expected_revision", Required: false, Shape: &runtime4Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime4Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"delete\""),
+				},
+			},
+		},
+	}
+	runtime4Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime4Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime4Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime4 := &runtime4Nodes[0]
+	var value5 *MilestoneListWorkitemsTransport
+	schema5Nodes := make([]loom.JSONShape, 8)
+	schema5Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema5Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema5Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema5Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema5Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema5Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &schema5Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &schema5Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_workitems\""),
+				},
+			},
+		},
+	}
+	schema5Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema5Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema5Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema5Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema5 := &schema5Nodes[0]
+	runtime5Nodes := make([]loom.JSONShape, 8)
+	runtime5Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime5Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime5Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime5Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime5Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime5Nodes[5]},
+			{Name: "cursor", Required: false, Shape: &runtime5Nodes[6]},
+			{Name: "per_page", Required: false, Shape: &runtime5Nodes[7]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"list_workitems\""),
+				},
+			},
+		},
+	}
+	runtime5Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime5Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime5Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime5Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5Nodes[7] = loom.JSONShape{Kind: "integer", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "0", Maximum: "1e3", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime5 := &runtime5Nodes[0]
+	var value6 *MilestoneManageWorkitemsTransport
+	schema6Nodes := make([]loom.JSONShape, 10)
+	schema6Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &schema6Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &schema6Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &schema6Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &schema6Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &schema6Nodes[5]},
+			{Name: "add_ids", Required: false, Shape: &schema6Nodes[6]},
+			{Name: "remove_ids", Required: false, Shape: &schema6Nodes[7]},
+			{Name: "request_id", Required: false, Shape: &schema6Nodes[8]},
+			{Name: "expected_revision", Required: false, Shape: &schema6Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"manage_workitems\""),
+				},
+			},
+		},
+	}
+	schema6Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	schema6Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	schema6Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	schema6Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	schema6 := &schema6Nodes[0]
+	runtime6Nodes := make([]loom.JSONShape, 10)
+	runtime6Nodes[0] = loom.JSONShape{Kind: "alias", Nullable: false, Closed: false, NonNullableElements: false,
+		Child: &runtime6Nodes[1],
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[1] = loom.JSONShape{Kind: "object", Nullable: false, Closed: true, NonNullableElements: false,
+		Fields: []loom.JSONShapeField{
+			{Name: "action", Required: true, Shape: &runtime6Nodes[2]},
+			{Name: "project_id", Required: true, Shape: &runtime6Nodes[3]},
+			{Name: "workspace_slug", Required: false, Shape: &runtime6Nodes[4]},
+			{Name: "milestone_id", Required: true, Shape: &runtime6Nodes[5]},
+			{Name: "add_ids", Required: false, Shape: &runtime6Nodes[6]},
+			{Name: "remove_ids", Required: false, Shape: &runtime6Nodes[7]},
+			{Name: "request_id", Required: false, Shape: &runtime6Nodes[8]},
+			{Name: "expected_revision", Required: false, Shape: &runtime6Nodes[9]},
+		},
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[2] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Enums: [][]jsontext.Value{
+				{
+					jsontext.Value("\"manage_workitems\""),
+				},
+			},
+		},
+	}
+	runtime6Nodes[3] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[4] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MaxLength: new(255),
+		},
+	}
+	runtime6Nodes[5] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[6] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[7] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: ""},
+	}
+	runtime6Nodes[8] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			Formats: []loom.Format{
+				"uuid",
+			},
+		},
+	}
+	runtime6Nodes[9] = loom.JSONShape{Kind: "string", Nullable: false, Closed: false, NonNullableElements: false,
+		Rules: loom.JSONShapeRules{Minimum: "", Maximum: "", ExclusiveMinimum: "", ExclusiveMaximum: "",
+			MinLength: new(1),
+			MaxLength: new(128),
+		},
+	}
+	runtime6 := &runtime6Nodes[0]
+	candidates := []loom.JSONUnionBranch{
+		{Schema: schema0, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime0.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneListTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "list") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage < 0 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage > 1000 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "1e3", false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value0 = v
+			return true, nil
+		}},
+		{Schema: schema1, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime1.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneRetrieveTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.MilestoneID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "retrieve") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"retrieve"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.MilestoneID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", *v.MilestoneID, loom.FormatUUID))
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value1 = v
+			return true, nil
+		}},
+		{Schema: schema2, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime2.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneCreateTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.Title == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("title", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "create") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"create"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value2 = v
+			return true, nil
+		}},
+		{Schema: schema3, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime3.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneUpdateTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.MilestoneID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "update") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"update"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.MilestoneID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", *v.MilestoneID, loom.FormatUUID))
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value3 = v
+			return true, nil
+		}},
+		{Schema: schema4, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime4.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneDeleteTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.MilestoneID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "delete") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"delete"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.MilestoneID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", *v.MilestoneID, loom.FormatUUID))
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value4 = v
+			return true, nil
+		}},
+		{Schema: schema5, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime5.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneListWorkitemsTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.MilestoneID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "list_workitems") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"list_workitems"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.MilestoneID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", *v.MilestoneID, loom.FormatUUID))
+				}
+				if v.PerPage != nil {
+					if *v.PerPage < 0 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "0", true))
+					}
+				}
+				if v.PerPage != nil {
+					if *v.PerPage > 1000 {
+						err = loom.MergeErrors(err, loom.InvalidRangeError("v.per_page", *v.PerPage, "1e3", false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value5 = v
+			return true, nil
+		}},
+		{Schema: schema6, Decode: func(wire jsontext.Value) (bool, error) {
+			matched, err := runtime6.Match(wire)
+			if err != nil || !matched {
+				return matched, err
+			}
+			var v *MilestoneManageWorkitemsTransport
+			matched, err = loom.DecodeJSONCandidate(wire, &v)
+			if err != nil || !matched {
+				return matched, err
+			}
+			if err := func() (err error) {
+				if v.Action == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("action", "v"))
+				}
+				if v.ProjectID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("project_id", "v"))
+				}
+				if v.MilestoneID == nil {
+					err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", "v"))
+				}
+				if v.Action != nil {
+					if !(*v.Action == "manage_workitems") {
+						err = loom.MergeErrors(err, loom.InvalidEnumValueError("v.action", *v.Action, []any{"manage_workitems"}))
+					}
+				}
+				if v.ProjectID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.project_id", *v.ProjectID, loom.FormatUUID))
+				}
+				if v.WorkspaceSlug != nil {
+					if utf8.RuneCountInString(*v.WorkspaceSlug) > 255 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.workspace_slug", utf8.RuneCountInString(*v.WorkspaceSlug), 255, false))
+					}
+				}
+				if v.MilestoneID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.milestone_id", *v.MilestoneID, loom.FormatUUID))
+				}
+				if v.RequestID != nil {
+					err = loom.MergeErrors(err, loom.ValidateFormat("v.request_id", *v.RequestID, loom.FormatUUID))
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) < 1 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 1, true))
+					}
+				}
+				if v.ExpectedRevision != nil {
+					if utf8.RuneCountInString(*v.ExpectedRevision) > 128 {
+						err = loom.MergeErrors(err, loom.InvalidLengthError("v.expected_revision", utf8.RuneCountInString(*v.ExpectedRevision), 128, false))
+					}
+				}
+				return
+			}(); err != nil {
+				return false, nil
+			}
+			value6 = v
+			return true, nil
+		}},
+	}
+	matched, err := loom.MatchUntaggedJSON("MilestoneRequest", data, candidates)
+	if err != nil {
+		return MilestoneRequest{}, -1, err
+	}
+	switch matched {
+	case 0:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneList, MilestoneList: value0}, matched, nil
+	case 1:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneRetrieve, MilestoneRetrieve: value1}, matched, nil
+	case 2:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneCreate, MilestoneCreate: value2}, matched, nil
+	case 3:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneUpdate, MilestoneUpdate: value3}, matched, nil
+	case 4:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneDelete, MilestoneDelete: value4}, matched, nil
+	case 5:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneListWorkitems, MilestoneListWorkitems: value5}, matched, nil
+	case 6:
+		return MilestoneRequest{kind: MilestoneRequestKindMilestoneManageWorkitems, MilestoneManageWorkitems: value6}, matched, nil
+	}
+	return MilestoneRequest{}, -1, fmt.Errorf("invalid untagged union match index")
+}
+func validateMilestoneRequestMilestoneListTransport(body *MilestoneListTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "list") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.PerPage != nil {
+		if *body.PerPage < 0 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "0", true))
+		}
+	}
+	if body.PerPage != nil {
+		if *body.PerPage > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "1e3", false))
+		}
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneRetrieveTransport(body *MilestoneRetrieveTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.MilestoneID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "retrieve") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"retrieve"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.MilestoneID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", *body.MilestoneID, loom.FormatUUID))
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneCreateTransport(body *MilestoneCreateTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.Title == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("title", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "create") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"create"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *body.RequestID, loom.FormatUUID))
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 1, true))
+		}
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneUpdateTransport(body *MilestoneUpdateTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.MilestoneID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "update") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"update"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.MilestoneID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", *body.MilestoneID, loom.FormatUUID))
+	}
+	if body.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *body.RequestID, loom.FormatUUID))
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 1, true))
+		}
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneDeleteTransport(body *MilestoneDeleteTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.MilestoneID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "delete") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"delete"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.MilestoneID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", *body.MilestoneID, loom.FormatUUID))
+	}
+	if body.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *body.RequestID, loom.FormatUUID))
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 1, true))
+		}
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 128, false))
+		}
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneListWorkitemsTransport(body *MilestoneListWorkitemsTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.MilestoneID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "list_workitems") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"list_workitems"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.MilestoneID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", *body.MilestoneID, loom.FormatUUID))
+	}
+	if body.PerPage != nil {
+		if *body.PerPage < 0 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "0", true))
+		}
+	}
+	if body.PerPage != nil {
+		if *body.PerPage > 1000 {
+			err = loom.MergeErrors(err, loom.InvalidRangeError(validationPath+".per_page", *body.PerPage, "1e3", false))
+		}
+	}
+	return
+}
+
+func validateMilestoneRequestMilestoneManageWorkitemsTransport(body *MilestoneManageWorkitemsTransport, validationContext ...string) (err error) {
+	validationPath := "body"
+	if len(validationContext) > 0 {
+		validationPath = ""
+		for _, validationPart := range validationContext {
+			validationPath += validationPart
+		}
+	}
+	if body.Action == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("action", validationPath))
+	}
+	if body.ProjectID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("project_id", validationPath))
+	}
+	if body.MilestoneID == nil {
+		err = loom.MergeErrors(err, loom.MissingFieldError("milestone_id", validationPath))
+	}
+	if body.Action != nil {
+		if !(*body.Action == "manage_workitems") {
+			err = loom.MergeErrors(err, loom.InvalidEnumValueError(validationPath+".action", *body.Action, []any{"manage_workitems"}))
+		}
+	}
+	if body.ProjectID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".project_id", *body.ProjectID, loom.FormatUUID))
+	}
+	if body.WorkspaceSlug != nil {
+		if utf8.RuneCountInString(*body.WorkspaceSlug) > 255 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".workspace_slug", utf8.RuneCountInString(*body.WorkspaceSlug), 255, false))
+		}
+	}
+	if body.MilestoneID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".milestone_id", *body.MilestoneID, loom.FormatUUID))
+	}
+	if body.RequestID != nil {
+		err = loom.MergeErrors(err, loom.ValidateFormat(validationPath+".request_id", *body.RequestID, loom.FormatUUID))
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) < 1 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 1, true))
+		}
+	}
+	if body.ExpectedRevision != nil {
+		if utf8.RuneCountInString(*body.ExpectedRevision) > 128 {
+			err = loom.MergeErrors(err, loom.InvalidLengthError(validationPath+".expected_revision", utf8.RuneCountInString(*body.ExpectedRevision), 128, false))
 		}
 	}
 	return
@@ -5338,6 +7240,90 @@ func decodeWorkitemActivityPayload(raw jsontext.Value) (out *vector_mcp.Workitem
 	return out, err
 }
 
+func decodeMilestonePayload(raw jsontext.Value) (out *vector_mcp.MilestoneRequest, err error) {
+	var in *MilestoneMCPInput
+	if err = decodeMCPPayloadStrict(raw, &in); err != nil {
+		return out, err
+	}
+	if err = sdkbridge.ValidateToolArguments(raw, "{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"title\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}"); err != nil {
+		return out, err
+	}
+
+	switch string(in.Kind()) {
+	case "MilestoneList":
+		actual, _ := in.AsMilestoneList()
+		obj := decodeMilestonePayloadMilestoneListTransportToVectorMcpMilestoneList(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneList((*vector_mcp.MilestoneList)(obj))
+		out = &u
+	case "MilestoneRetrieve":
+		actual, _ := in.AsMilestoneRetrieve()
+		obj := decodeMilestonePayloadMilestoneRetrieveTransportToVectorMcpMilestoneRetrieve(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneRetrieve((*vector_mcp.MilestoneRetrieve)(obj))
+		out = &u
+	case "MilestoneCreate":
+		actual, _ := in.AsMilestoneCreate()
+		obj := decodeMilestonePayloadMilestoneCreateTransportToVectorMcpMilestoneCreate(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneCreate((*vector_mcp.MilestoneCreate)(obj))
+		out = &u
+	case "MilestoneUpdate":
+		actual, _ := in.AsMilestoneUpdate()
+		obj := decodeMilestonePayloadMilestoneUpdateTransportToVectorMcpMilestoneUpdate(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneUpdate((*vector_mcp.MilestoneUpdate)(obj))
+		out = &u
+	case "MilestoneDelete":
+		actual, _ := in.AsMilestoneDelete()
+		obj := decodeMilestonePayloadMilestoneDeleteTransportToVectorMcpMilestoneDelete(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneDelete((*vector_mcp.MilestoneDelete)(obj))
+		out = &u
+	case "MilestoneListWorkitems":
+		actual, _ := in.AsMilestoneListWorkitems()
+		obj := decodeMilestonePayloadMilestoneListWorkitemsTransportToVectorMcpMilestoneListWorkitems(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneListWorkitems((*vector_mcp.MilestoneListWorkitems)(obj))
+		out = &u
+	case "MilestoneManageWorkitems":
+		actual, _ := in.AsMilestoneManageWorkitems()
+		obj := decodeMilestonePayloadMilestoneManageWorkitemsTransportToVectorMcpMilestoneManageWorkitems(actual)
+
+		var u vector_mcp.MilestoneRequest
+		if out != nil {
+			u = *out
+		}
+		u.SetMilestoneManageWorkitems((*vector_mcp.MilestoneManageWorkitems)(obj))
+		out = &u
+	}
+	return out, err
+}
+
 func decodeMemberPayloadMemberMeTransportToVectorMcpMemberMe(v *MemberMeTransport) *vector_mcp.MemberMe {
 	if v == nil {
 		return nil
@@ -5637,6 +7623,125 @@ func decodeWorkitemActivityPayloadWorkitemActivityRetrieveTransportToVectorMcpWo
 		WorkitemID:    *v.WorkitemID,
 		ActivityID:    *v.ActivityID,
 		WorkspaceSlug: v.WorkspaceSlug,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneListTransportToVectorMcpMilestoneList(v *MilestoneListTransport) *vector_mcp.MilestoneList {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneList{
+		Action:        *v.Action,
+		ProjectID:     *v.ProjectID,
+		WorkspaceSlug: v.WorkspaceSlug,
+		Cursor:        v.Cursor,
+		PerPage:       v.PerPage,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneRetrieveTransportToVectorMcpMilestoneRetrieve(v *MilestoneRetrieveTransport) *vector_mcp.MilestoneRetrieve {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneRetrieve{
+		Action:          *v.Action,
+		ProjectID:       *v.ProjectID,
+		WorkspaceSlug:   v.WorkspaceSlug,
+		MilestoneID:     *v.MilestoneID,
+		IncludeRevision: v.IncludeRevision,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneCreateTransportToVectorMcpMilestoneCreate(v *MilestoneCreateTransport) *vector_mcp.MilestoneCreate {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneCreate{
+		Action:           *v.Action,
+		ProjectID:        *v.ProjectID,
+		WorkspaceSlug:    v.WorkspaceSlug,
+		Title:            *v.Title,
+		TargetDate:       v.TargetDate,
+		ExternalSource:   v.ExternalSource,
+		ExternalID:       v.ExternalID,
+		RequestID:        v.RequestID,
+		ExpectedRevision: v.ExpectedRevision,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneUpdateTransportToVectorMcpMilestoneUpdate(v *MilestoneUpdateTransport) *vector_mcp.MilestoneUpdate {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneUpdate{
+		Action:           *v.Action,
+		ProjectID:        *v.ProjectID,
+		WorkspaceSlug:    v.WorkspaceSlug,
+		MilestoneID:      *v.MilestoneID,
+		Title:            v.Title,
+		TargetDate:       v.TargetDate,
+		ExternalSource:   v.ExternalSource,
+		ExternalID:       v.ExternalID,
+		RequestID:        v.RequestID,
+		ExpectedRevision: v.ExpectedRevision,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneDeleteTransportToVectorMcpMilestoneDelete(v *MilestoneDeleteTransport) *vector_mcp.MilestoneDelete {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneDelete{
+		Action:           *v.Action,
+		ProjectID:        *v.ProjectID,
+		WorkspaceSlug:    v.WorkspaceSlug,
+		MilestoneID:      *v.MilestoneID,
+		RequestID:        v.RequestID,
+		ExpectedRevision: v.ExpectedRevision,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneListWorkitemsTransportToVectorMcpMilestoneListWorkitems(v *MilestoneListWorkitemsTransport) *vector_mcp.MilestoneListWorkitems {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneListWorkitems{
+		Action:        *v.Action,
+		ProjectID:     *v.ProjectID,
+		WorkspaceSlug: v.WorkspaceSlug,
+		MilestoneID:   *v.MilestoneID,
+		Cursor:        v.Cursor,
+		PerPage:       v.PerPage,
+	}
+
+	return res
+}
+
+func decodeMilestonePayloadMilestoneManageWorkitemsTransportToVectorMcpMilestoneManageWorkitems(v *MilestoneManageWorkitemsTransport) *vector_mcp.MilestoneManageWorkitems {
+	if v == nil {
+		return nil
+	}
+	res := &vector_mcp.MilestoneManageWorkitems{
+		Action:           *v.Action,
+		ProjectID:        *v.ProjectID,
+		WorkspaceSlug:    v.WorkspaceSlug,
+		MilestoneID:      *v.MilestoneID,
+		AddIds:           v.AddIds,
+		RemoveIds:        v.RemoveIds,
+		RequestID:        v.RequestID,
+		ExpectedRevision: v.ExpectedRevision,
 	}
 
 	return res

@@ -103,18 +103,22 @@ func project() {
 		Payload(projectRequest)
 		Result(projectResult, func() { Nullable() })
 		readErrors()
-		Error("request_conflict", func() { Remedy(func() { SafeMessage("This request_id was already used with different input.") }) })
-		Error("revision_conflict", func() {
-			Remedy(func() { SafeMessage("The project changed. Read its current revision before trying a new update.") })
-		})
-		Error("indeterminate", func() {
-			Remedy(func() {
-				SafeMessage("The commit outcome is unknown. Retry with the same request_id, or reconcile with a read before another unkeyed write.")
-			})
-		})
+		writeErrors()
 		Meta("mcp:annotation:readOnlyHint", "false")
 		Meta("mcp:annotation:destructiveHint", "false")
 		Meta("mcp:annotation:openWorldHint", "false")
 		mcp.Tool("project", "Projects in a workspace. Use an advertised action.", mcp.ToolTitle("Projects"))
+	})
+}
+
+func writeErrors() {
+	Error("request_conflict", func() { Remedy(func() { SafeMessage("This request_id was already used with different input.") }) })
+	Error("revision_conflict", func() {
+		Remedy(func() { SafeMessage("The resource changed. Read its current revision before trying a new update.") })
+	})
+	Error("indeterminate", func() {
+		Remedy(func() {
+			SafeMessage("The commit outcome is unknown. Retry with the same request_id, or reconcile with a read before another unkeyed write.")
+		})
 	})
 }

@@ -540,6 +540,12 @@ func (a *MCPAdapter) generatedToolCatalog() []*ToolInfo {
 		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"workitem_id\",\"activity_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"activity_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]}]},\"activity_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workitem_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
 		Name:        "workitem_activity",
 		Title:       stringPtr("Work item activity"),
+	}, &ToolInfo{
+		Annotations: jsontext.Value([]byte("{\"destructiveHint\":true,\"openWorldHint\":false,\"readOnlyHint\":false}")),
+		Description: stringPtr("Milestones within a project. Use an advertised action."),
+		InputSchema: jsontext.Value([]byte("{\"oneOf\":[{\"type\":\"object\",\"required\":[\"action\",\"project_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list\"]},\"cursor\":{\"type\":\"string\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"retrieve\"]},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"title\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"create\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"update\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"delete\"]},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"list_workitems\"]},\"cursor\":{\"type\":\"string\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false},{\"type\":\"object\",\"required\":[\"action\",\"project_id\",\"milestone_id\"],\"properties\":{\"action\":{\"type\":\"string\",\"enum\":[\"manage_workitems\"]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"additionalProperties\":false}],\"properties\":{\"action\":{\"anyOf\":[{\"type\":\"string\",\"enum\":[\"list\"]},{\"type\":\"string\",\"enum\":[\"retrieve\"]},{\"type\":\"string\",\"enum\":[\"create\"]},{\"type\":\"string\",\"enum\":[\"update\"]},{\"type\":\"string\",\"enum\":[\"delete\"]},{\"type\":\"string\",\"enum\":[\"list_workitems\"]},{\"type\":\"string\",\"enum\":[\"manage_workitems\"]}]},\"add_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string.\"},\"cursor\":{\"type\":\"string\"},\"expected_revision\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":128},\"external_id\":{\"type\":\"string\"},\"external_source\":{\"type\":\"string\"},\"include_revision\":{\"type\":\"boolean\"},\"milestone_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"per_page\":{\"type\":\"integer\",\"description\":\"Zero or omitted uses 1000.\",\"minimum\":0,\"maximum\":1e3},\"project_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"remove_ids\":{\"type\":\"string\",\"description\":\"Work item UUIDs as a comma-separated string or a JSON array encoded as a string. Removal wins on overlap.\"},\"request_id\":{\"type\":\"string\",\"format\":\"uuid\"},\"target_date\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"workspace_slug\":{\"type\":\"string\",\"maxLength\":255}},\"type\":\"object\"}")),
+		Name:        "milestone",
+		Title:       stringPtr("Milestones"),
 	}}
 }
 func (a *MCPAdapter) toolSearchEnabled() bool {
@@ -583,6 +589,8 @@ func isGeneratedToolName(name string) bool {
 	case "workitem_link":
 		return true
 	case "workitem_activity":
+		return true
+	case "milestone":
 		return true
 	default:
 		return false
@@ -1422,6 +1430,21 @@ func workitemActivityInputRecovery(err error, raw jsontext.Value) string {
 	}
 	return "Provide valid tool arguments. Example: " + example
 }
+func milestoneInputRecovery(err error, raw jsontext.Value) string {
+	message := strings.TrimSpace(loom.ErrorSafeMessage(err))
+	if message == "" {
+		message = strings.TrimSpace(err.Error())
+	}
+	_ = raw
+	example := "{\"action\":\"list\",\"project_id\":\"example\"}"
+	if field := missingFieldFromMessage(message); field != "" {
+		return fmt.Sprintf("Include required field %q. Example: %s", field, example)
+	}
+	if strings.Contains(message, "unexpected end of JSON input") || strings.Contains(message, "unexpected EOF") {
+		return "Provide complete JSON arguments. Example: " + example
+	}
+	return "Provide valid tool arguments. Example: " + example
+}
 func (a *MCPAdapter) ToolsCall(ctx context.Context, p *ToolsCallPayload) (res *ToolsCallResult, err error) {
 	attrs := []attribute.KeyValue{}
 	var rawArguments jsontext.Value
@@ -1691,6 +1714,32 @@ func (a *MCPAdapter) executeRealTool(ctx context.Context, p *ToolsCallPayload, s
 			return false, err
 		}
 		result, err := a.service.WorkitemActivity(ctx, payload)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, err)
+		}
+		structuredContent, serr := json.Marshal(result)
+		if serr != nil {
+			return false, serr
+		}
+		s := string(structuredContent)
+		final := &ToolsCallResult{
+			Content:           []*ContentItem{buildContentItem(a, s)},
+			StructuredContent: mcpJSONFromRaw(structuredContent),
+		}
+		a.log(ctx, "response", map[string]any{
+			"method": "tools/call",
+			"name":   p.Name,
+		})
+		return false, stream.SendAndClose(ctx, final)
+	case "milestone":
+		payload, err := decodeMilestonePayload(arguments)
+		if err != nil {
+			return true, a.sendToolError(ctx, stream, p.Name, mcpruntime.NewToolInputError(err, "invalid_params", milestoneInputRecovery(err, arguments)))
+		}
+		if err := agentruntime.RecordToolPayload(ctx, payload); err != nil {
+			return false, err
+		}
+		result, err := a.service.Milestone(ctx, payload)
 		if err != nil {
 			return true, a.sendToolError(ctx, stream, p.Name, err)
 		}

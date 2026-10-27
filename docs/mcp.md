@@ -134,6 +134,14 @@ proofs are not logged.
 current primary-backed authorization. The [project contract](mcp-projects.md)
 defines SDK projections, archive inclusion and immutable workspace binding.
 
+`milestone` provides `list`, `retrieve`, `create`, `update`, `delete`,
+`list_workitems`, and `manage_workitems`. All require `project_id`; target actions
+also require `milestone_id`. `manage_workitems` accepts `add_ids` and `remove_ids`
+as comma-separated UUIDs or JSON arrays encoded as strings. The [milestone
+contract](mcp-milestones.md) defines current project permissions, the seven-field
+pagination envelope, empty-string omission and optional receipt/revision results.
+Discovery reflects current project access and OAuth scopes.
+
 The [member directory contract](mcp-members.md) defines filters, role mappings,
 IDs, permissions, defaults and compatibility behavior. The
 generated union schema retains a top-level object and typed properties, with

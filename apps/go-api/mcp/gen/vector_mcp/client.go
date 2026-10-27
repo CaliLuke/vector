@@ -23,11 +23,12 @@ type Client struct {
 	WorkitemCommentEndpoint  loom.Endpoint
 	WorkitemLinkEndpoint     loom.Endpoint
 	WorkitemActivityEndpoint loom.Endpoint
+	MilestoneEndpoint        loom.Endpoint
 }
 
 // NewClient initializes a "VectorMCP" service client given the endpoints.
-func NewClient(member, project, cycle, module, label, workitemComment, workitemLink, workitemActivity loom.Endpoint) *Client {
-	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label, WorkitemCommentEndpoint: workitemComment, WorkitemLinkEndpoint: workitemLink, WorkitemActivityEndpoint: workitemActivity}
+func NewClient(member, project, cycle, module, label, workitemComment, workitemLink, workitemActivity, milestone loom.Endpoint) *Client {
+	return &Client{MemberEndpoint: member, ProjectEndpoint: project, CycleEndpoint: cycle, ModuleEndpoint: module, LabelEndpoint: label, WorkitemCommentEndpoint: workitemComment, WorkitemLinkEndpoint: workitemLink, WorkitemActivityEndpoint: workitemActivity, MilestoneEndpoint: milestone}
 }
 
 // Member calls the "member" endpoint of the "VectorMCP" service.
@@ -169,4 +170,25 @@ func (c *Client) WorkitemActivity(ctx context.Context, p *WorkitemActivityReques
 		return
 	}
 	return ires.(*WorkitemActivityResult), nil
+}
+
+// Milestone calls the "milestone" endpoint of the "VectorMCP" service.
+// Milestone may return the following errors:
+// - "unauthorized" (type *loom.ServiceError)
+// - "forbidden" (type *loom.ServiceError)
+// - "invalid_params" (type *loom.ServiceError)
+// - "not_found" (type *loom.ServiceError)
+// - "internal_error" (type *loom.ServiceError)
+// - "request_conflict" (type *loom.ServiceError)
+// - "revision_conflict" (type *loom.ServiceError)
+// - "indeterminate" (type *loom.ServiceError)
+// - "conflict" (type *loom.ServiceError)
+// - error: internal error
+func (c *Client) Milestone(ctx context.Context, p *MilestoneRequest) (res loom.Nullable[MilestoneResult], err error) {
+	var ires any
+	ires, err = c.MilestoneEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(loom.Nullable[MilestoneResult]), nil
 }
